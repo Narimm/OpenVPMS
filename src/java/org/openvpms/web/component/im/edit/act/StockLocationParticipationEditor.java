@@ -85,7 +85,12 @@ public class StockLocationParticipationEditor
         }
 
         /**
-         * Creates a query to select objects.
+         * Creates a query to select stock locations.
+         * <p/>
+         * If the participation is not an
+         * <em>participation.stockTransferLocation</em>,
+         * constrains the stock location to those associated with the current
+         * practice location, if any.
          *
          * @param name a name to filter on. May be <tt>null</tt>
          * @param name the name to filter on. May be <tt>null</tt>
@@ -96,14 +101,17 @@ public class StockLocationParticipationEditor
         @Override
         protected Query<Party> createQuery(String name) {
             Query<Party> query = super.createQuery(name);
-            Context context = getLayoutContext().getContext();
-            Party location = context.getLocation();
-            if (location != null) {
-                CollectionNodeConstraint node
-                        = new CollectionNodeConstraint("locations");
-                node.add(new NodeConstraint("source",
-                                            location.getObjectReference()));
-                query.setConstraints(node);
+            if (!TypeHelper.isA(getObject(),
+                                STOCK_XFER_LOCATION_PARTICIPATION)) {
+                Context context = getLayoutContext().getContext();
+                Party location = context.getLocation();
+                if (location != null) {
+                    CollectionNodeConstraint node
+                            = new CollectionNodeConstraint("locations");
+                    node.add(new NodeConstraint("source",
+                                                location.getObjectReference()));
+                    query.setConstraints(node);
+                }
             }
             return query;
         }

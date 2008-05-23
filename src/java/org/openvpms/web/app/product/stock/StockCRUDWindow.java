@@ -65,6 +65,7 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
                 buttons.add(getDeleteButton());
                 buttons.add(getPostButton());
             }
+            buttons.add(getPrintButton());
         } else {
             buttons.add(getCreateButton());
         }

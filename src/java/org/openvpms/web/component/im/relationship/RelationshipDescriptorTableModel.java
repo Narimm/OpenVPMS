@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
@@ -82,44 +81,23 @@ public class RelationshipDescriptorTableModel<T extends IMObjectRelationship>
     }
 
     /**
-     * Returns a filtered list of node descriptor names for an archetype.
+     * Returns the node names for a set of archetypes.
      * <p/>
      * This is prepended by the <em>source</em> or <em>target</em> node,
      * depending on the value of the {@link #displayTarget} parameter passed at
      * construction.
      *
-     * @param archetype the archetype
-     * @param context   the layout context
-     * @return a filtered list of node descriptor names for the archetype
+     * @param archetypes the archetype descriptors
+     * @param context    the layout context
+     * @return the node names for the archetypes
      */
     @Override
-    protected List<String> getNodeNames(ArchetypeDescriptor archetype,
+    protected List<String> getNodeNames(List<ArchetypeDescriptor> archetypes,
                                         LayoutContext context) {
-        List<String> result = new ArrayList<String>();
-        String[] names = getNodeNames();
+        List<String> result = new ArrayList<String>(
+                super.getNodeNames(archetypes, context));
         String entity = (displayTarget) ? "target" : "source";
-
-        if (names != null && names.length != 0) {
-            String[] buff = new String[names.length + 1];
-            buff[0] = entity;
-            System.arraycopy(names, 0, buff, 1, names.length);
-            for (String name : buff) {
-                NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-                if (descriptor != null) {
-                    result.add(descriptor.getName());
-                }
-            }
-        } else {
-            NodeDescriptor desc = archetype.getNodeDescriptor(entity);
-            if (desc != null) {
-                result.add(entity);
-            }
-            List<NodeDescriptor> descriptors
-                    = filter(archetype.getSimpleNodeDescriptors(), context);
-            for (NodeDescriptor descriptor : descriptors) {
-                result.add(descriptor.getName());
-            }
-        }
+        result.add(0, entity);
         return result;
     }
 
