@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.stock;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
@@ -103,9 +103,9 @@ public class ChargeStockUpdater {
      */
     public void remove(FinancialAct act) {
         try {
-            if (TypeHelper.isA(act, CustomerAccountActTypes.CHARGES_INVOICE,
-                               CustomerAccountActTypes.CHARGES_COUNTER,
-                               CustomerAccountActTypes.CHARGES_CREDIT)) {
+            if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE,
+                               CustomerAccountArchetypes.COUNTER,
+                               CustomerAccountArchetypes.CREDIT)) {
                 removeCharge(act);
             } else {
                 removeChargeItem(act);
@@ -126,7 +126,7 @@ public class ChargeStockUpdater {
      */
     private void updateChargeItem(FinancialAct act) {
         ActBean bean = new ActBean(act, service);
-        boolean credit = bean.isA(CustomerAccountActTypes.CHARGES_CREDIT_ITEM);
+        boolean credit = bean.isA(CustomerAccountArchetypes.CREDIT_ITEM);
 
         StockQty current = new StockQty(bean);
         StockQty prior = getSavedStockQty(act);
@@ -208,7 +208,7 @@ public class ChargeStockUpdater {
             StockQty stockQty = new StockQty(bean);
             if (stockQty.isValid()) {
                 boolean credit = bean.isA(
-                        CustomerAccountActTypes.CHARGES_CREDIT_ITEM);
+                        CustomerAccountArchetypes.CREDIT_ITEM);
                 BigDecimal quantity = stockQty.getQuantity();
                 updateStockQuantities(stockQty, quantity.negate(),
                                       credit);

@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.ACCOUNT_BALANCE_SHORTNAME;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;

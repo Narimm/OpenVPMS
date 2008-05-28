@@ -18,11 +18,8 @@
 
 package org.openvpms.archetype.rules.party;
 
+import org.openvpms.archetype.rules.util.MappingCopyHandler;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
-import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 
 
@@ -34,22 +31,14 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHand
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityRelationshipCopyHandler extends AbstractIMObjectCopyHandler {
+public class EntityRelationshipCopyHandler extends MappingCopyHandler {
 
     /**
-     * Determines how {@link IMObjectCopier} should treat an object.
-     *
-     * @param object  the source object
-     * @param service the archetype service
-     * @return <tt>object</tt> if the object shouldn't be copied,
-     *         <tt>null</tt> if it should be replaced with <tt>null</tt>,
-     *         or a new instance if the object should be copied
+     * Creates a new <tt>EntityRelationshipCopyHandler</tt>.
      */
-    @Override
-    public IMObject getObject(IMObject object, IArchetypeService service) {
-        if (object instanceof EntityRelationship) {
-            return super.getObject(object, service);
-        }
-        return object;
+    public EntityRelationshipCopyHandler() {
+        setCopy(EntityRelationship.class);
+        setDefaultTreatment(Treatment.REFERENCE);
     }
+
 }

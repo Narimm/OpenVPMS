@@ -19,7 +19,6 @@
 package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -36,7 +35,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProductPriceUpdaterTestCase extends ArchetypeServiceTest {
+public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
     /**
      * Package units.
@@ -192,25 +191,6 @@ public class ProductPriceUpdaterTestCase extends ArchetypeServiceTest {
 
         // verify that the price has updated
         checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
-    }
-
-    /**
-     * Helper to add an <em>productPrice.unitPrice</em> to a product.
-     *
-     * @param product the product
-     * @param cost    the cost
-     * @param price   the price
-     */
-    private void addUnitPrice(Product product, BigDecimal cost,
-                              BigDecimal price) {
-        ProductPrice unitPrice
-                = (ProductPrice) create("productPrice.unitPrice");
-        IMObjectBean priceBean = new IMObjectBean(unitPrice);
-        priceBean.setValue("cost", cost);
-        priceBean.setValue("markup", BigDecimal.valueOf(100));
-        priceBean.setValue("price", price);
-        product.addProductPrice(unitPrice);
-        save(product);
     }
 
     /**

@@ -21,7 +21,7 @@ package org.openvpms.archetype.rules.finance.account;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.*;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -536,8 +536,8 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
                 }
             } else {
                 IMObjectReference act = (IMObjectReference) set.get("p.act");
-                if (TypeHelper.isA(act, CHARGES_INVOICE, CHARGES_COUNTER,
-                                   CHARGES_CREDIT)) {
+                if (TypeHelper.isA(act, INVOICE, COUNTER,
+                                   CREDIT)) {
                     unbilled = calculator.addAmount(unbilled, amount, credit);
                 }
             }

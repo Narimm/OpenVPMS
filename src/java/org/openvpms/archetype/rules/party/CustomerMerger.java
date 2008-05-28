@@ -18,7 +18,7 @@
 
 package org.openvpms.archetype.rules.party;
 
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -157,7 +157,7 @@ class CustomerMerger extends PartyMerger {
      */
     private Date getFirstTransactionStartTime(Party party) {
         ArchetypeQuery query = CustomerAccountQueryFactory.createObjectSetQuery(
-                party, CustomerAccountActTypes.DEBIT_CREDIT_SHORT_NAMES, true);
+                party, CustomerAccountArchetypes.DEBIT_CREDIT_SHORT_NAMES, true);
         query.add(new NodeSelectConstraint("a.startTime"));
         query.setMaxResults(1);
         Date startTime = null;
@@ -177,8 +177,8 @@ class CustomerMerger extends PartyMerger {
      * @return a new query
      */
     private ArchetypeQuery createOpeningClosingBalanceQuery(Party party) {
-        String[] shortNames = {CustomerAccountActTypes.OPENING_BALANCE,
-                               CustomerAccountActTypes.CLOSING_BALANCE};
+        String[] shortNames = {CustomerAccountArchetypes.OPENING_BALANCE,
+                               CustomerAccountArchetypes.CLOSING_BALANCE};
         ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
                 party, shortNames);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);

@@ -20,12 +20,12 @@ package org.openvpms.archetype.rules.finance.account;
 
 
 /**
- * Customer account act types.
+ * Customer account archetypes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerAccountActTypes {
+public class CustomerAccountArchetypes {
 
     /**
      * Bad debt act short name.
@@ -35,55 +35,60 @@ public class CustomerAccountActTypes {
     /**
      * Counter charge act short name.
      */
-    public static final String CHARGES_COUNTER
+    public static final String COUNTER
             = "act.customerAccountChargesCounter";
 
     /**
      * Counter charge item act short name.
      */
-    public static final String CHARGES_COUNTER_ITEM
+    public static final String COUNTER_ITEM
             = "act.customerAccountCounterItem";
 
     /**
      * Counter charge item act relationship short name.
      */
-    public static final String CHARGES_COUNTER_RELATIONSHIP
+    public static final String COUNTER_ITEM_RELATIONSHIP
             = "actRelationship.customerAccountCounterItem";
 
     /**
      * Invoice charge act short name.
      */
-    public static final String CHARGES_INVOICE
+    public static final String INVOICE
             = "act.customerAccountChargesInvoice";
 
     /**
      * Invoice charge item act short name.
      */
-    public static final String CHARGES_INVOICE_ITEM
+    public static final String INVOICE_ITEM
             = "act.customerAccountInvoiceItem";
 
     /**
      * Invoice charge item act relationship short name.
      */
-    public static final String CHARGES_INVOICE_RELATIONSHIP
+    public static final String INVOICE_ITEM_RELATIONSHIP
             = "actRelationship.customerAccountInvoiceItem";
 
     /**
+     * Invoice charge item dispensing act relationship short name.
+     */
+    public static final String DISPENSING_ITEM_RELATIONSHIP
+            = "actRelationship.invoiceItemDispensing";
+    /**
      * Credit charge act short name.
      */
-    public static final String CHARGES_CREDIT
+    public static final String CREDIT
             = "act.customerAccountChargesCredit";
 
     /**
      * Credit charge item act short name.
      */
-    public static final String CHARGES_CREDIT_ITEM
+    public static final String CREDIT_ITEM
             = "act.customerAccountCreditItem";
 
     /**
      * Credit charge item act relationship short name.
      */
-    public static final String CHARGES_CREDIT_RELATIONSHIP
+    public static final String CREDIT_ITEM_RELATIONSHIP
             = "actRelationship.customerAccountCreditItem";
 
     /**
@@ -95,7 +100,43 @@ public class CustomerAccountActTypes {
     /**
      * Payment act short name.
      */
-    public static final String PAYMENT = "act.customerAccountPayment";
+    public static final String PAYMENT
+            = "act.customerAccountPayment";
+
+    /**
+     * Cash payment act short name.
+     */
+    public static final String PAYMENT_CASH
+            = "act.customerAccountPaymentCash";
+
+    /**
+     * Cheque payment act short name.
+     */
+    public static final String PAYMENT_CHEQUE
+            = "act.customerAccountPaymentCheque";
+
+    /**
+     * Credit payment act short name.
+     */
+    public static final String PAYMENT_CREDIT
+            = "act.customerAccountPaymentCredit";
+
+    /**
+     * Discount payment act short name.
+     */
+    public static final String PAYMENT_DISCOUNT
+            = "act.customerAccountPaymentDiscount";
+
+    /**
+     * EFT payment act short name.
+     */
+    public static final String PAYMENT_EFT = "act.customerAccountPaymentEFT";
+
+    /**
+     * Payment item act relationship act short name.
+     */
+    public static final String PAYMENT_ITEM_RELATIONSHIP
+            = "actRelationship.customerAccountPaymentItem";
 
     /**
      * Debit adjust act short name.
@@ -108,6 +149,41 @@ public class CustomerAccountActTypes {
     public static final String REFUND = "act.customerAccountRefund";
 
     /**
+     * Refund item act relationship act short name.
+     */
+    public static final String REFUND_ITEM_RELATIONSHIP
+            = "actRelationship.customerAccountRefundItem";
+
+    /**
+     * Cash refund act short name.
+     */
+    public static final String REFUND_CASH
+            = "act.customerAccountRefundCash";
+
+    /**
+     * Cheque refund act short name.
+     */
+    public static final String REFUND_CHEQUE
+            = "act.customerAccountRefundCheque";
+
+    /**
+     * Credit refund act short name.
+     */
+    public static final String REFUND_CREDIT
+            = "act.customerAccountRefundCredit";
+
+    /**
+     * Discount refund act short name.
+     */
+    public static final String REFUND_DISCOUNT
+            = "act.customerAccountRefundDiscount";
+
+    /**
+     * EFT refund act short name.
+     */
+    public static final String REFUND_EFT = "act.customerAccountRefundEFT";
+
+    /**
      * Initial balance act short name.
      */
     public static final String INITIAL_BALANCE
@@ -117,9 +193,9 @@ public class CustomerAccountActTypes {
      * Short names of the credit and debit acts the affect the balance.
      */
     public static final String[] DEBIT_CREDIT_SHORT_NAMES = {
-            CHARGES_COUNTER,
-            CHARGES_CREDIT,
-            CHARGES_INVOICE,
+            COUNTER,
+            CREDIT,
+            INVOICE,
             CREDIT_ADJUST,
             DEBIT_ADJUST,
             PAYMENT,
@@ -131,8 +207,8 @@ public class CustomerAccountActTypes {
      * All customer debit act short names.
      */
     public static final String[] DEBIT_SHORT_NAMES = {
-            CHARGES_COUNTER,
-            CHARGES_INVOICE,
+            COUNTER,
+            INVOICE,
             DEBIT_ADJUST,
             REFUND,
             INITIAL_BALANCE
@@ -142,7 +218,7 @@ public class CustomerAccountActTypes {
      * All customer credit act short names.
      */
     public static final String[] CREDIT_SHORT_NAMES = {
-            CHARGES_CREDIT,
+            CREDIT,
             CREDIT_ADJUST,
             PAYMENT,
             BAD_DEBT};

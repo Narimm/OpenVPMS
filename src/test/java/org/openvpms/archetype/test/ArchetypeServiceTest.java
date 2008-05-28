@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 
 
@@ -75,6 +76,17 @@ public abstract class ArchetypeServiceTest
      */
     protected void save(IMObject object) {
         service.save(object);
+    }
+
+    /**
+     * Helper to save a collection of objects.
+     *
+     * @param objects the object to save
+     * @throws ArchetypeServiceException if the service cannot save the objects
+     * @throws ValidationException       if the object cannot be validated
+     */
+    protected <T extends IMObject> void save(T ... objects) {
+        save(Arrays.asList(objects));
     }
 
     /**

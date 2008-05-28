@@ -19,9 +19,9 @@
 package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.CLOSING_BALANCE;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.OPENING_BALANCE;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CLOSING_BALANCE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.OPENING_BALANCE;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -101,17 +101,17 @@ class StatementActHelper {
      * Charge short names.
      */
     private static final String[] CHARGE_SHORT_NAMES = {
-            CustomerAccountActTypes.CHARGES_INVOICE,
-            CustomerAccountActTypes.CHARGES_COUNTER,
-            CustomerAccountActTypes.CHARGES_CREDIT
+            CustomerAccountArchetypes.INVOICE,
+            CustomerAccountArchetypes.COUNTER,
+            CustomerAccountArchetypes.CREDIT
     };
 
     static {
         List<String> shortNames = new ArrayList<String>();
         shortNames.addAll(Arrays.asList(
-                CustomerAccountActTypes.DEBIT_CREDIT_SHORT_NAMES));
-        shortNames.add(CustomerAccountActTypes.OPENING_BALANCE);
-        shortNames.add(CustomerAccountActTypes.CLOSING_BALANCE);
+                CustomerAccountArchetypes.DEBIT_CREDIT_SHORT_NAMES));
+        shortNames.add(CustomerAccountArchetypes.OPENING_BALANCE);
+        shortNames.add(CustomerAccountArchetypes.CLOSING_BALANCE);
         SHORT_NAMES = shortNames.toArray(new String[0]);
     }
 

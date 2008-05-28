@@ -20,7 +20,7 @@ package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.*;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -184,8 +184,8 @@ class BalanceCalculator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getUnbilledAmount(Party customer) {
-        String[] shortNames = {CHARGES_INVOICE, CHARGES_COUNTER,
-                               CHARGES_CREDIT};
+        String[] shortNames = {INVOICE, COUNTER,
+                               CREDIT};
         ArchetypeQuery query
                 = CustomerAccountQueryFactory.createUnbilledObjectSetQuery(
                 customer, shortNames);
