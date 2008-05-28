@@ -19,7 +19,7 @@
 package org.openvpms.web.app.customer.payment;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
@@ -43,7 +43,8 @@ public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
      * Payment and refund shortnames supported by the workspace.
      */
     private static final String[] SHORT_NAMES = {
-            CustomerAccountActTypes.PAYMENT, CustomerAccountActTypes.REFUND};
+            CustomerAccountArchetypes.PAYMENT,
+            CustomerAccountArchetypes.REFUND};
 
 
     /**

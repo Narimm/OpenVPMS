@@ -18,6 +18,9 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.openvpms.archetype.rules.act.ActCopyHandler;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.PRODUCT_PARTICIPATION;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -147,7 +150,7 @@ public class ActRelationshipCollectionEditor
         if (editor instanceof ActItemEditor
                 && hasProductTemplate((ActItemEditor) editor)) {
             IMObjectReference product = ((ActItemEditor) editor).getProduct();
-            if (TypeHelper.isA(product, "product.template")) {
+            if (TypeHelper.isA(product, TEMPLATE)) {
                 result = expandTemplate((ActItemEditor) editor, act, product);
                 if (result) {
                     populateTable();
@@ -182,10 +185,10 @@ public class ActRelationshipCollectionEditor
      */
     protected IMObjectReference getProductTemplate(Act act) {
         Participation participant = IMObjectHelper.getObject(
-                "participation.product", act.getParticipations());
+                PRODUCT_PARTICIPATION, act.getParticipations());
         if (participant != null) {
             IMObjectReference ref = participant.getEntity();
-            if (TypeHelper.isA(ref, "product.template")) {
+            if (TypeHelper.isA(ref, TEMPLATE)) {
                 return ref;
             }
         }
@@ -260,7 +263,7 @@ public class ActRelationshipCollectionEditor
      */
     private boolean hasProductTemplate(ActItemEditor editor) {
         IMObjectReference product = editor.getProduct();
-        return TypeHelper.isA(product, "product.template");
+        return TypeHelper.isA(product, TEMPLATE);
     }
 
     private class ActItemCopyHandler extends ActCopyHandler {
@@ -270,17 +273,16 @@ public class ActRelationshipCollectionEditor
          *
          * @param object  the source object
          * @param service the archetype service
-         * @return <code>object</code> if the object shouldn't be copied,
-         *         <code>null</code> if it should be replaced with
-         *         <code>null</code>, or a new instance if the object should be
+         * @return <tt>object</tt> if the object shouldn't be copied,
+         *         <tt>null</tt> if it should be replaced with
+         *         <tt>null</tt>, or a new instance if the object should be
          *         copied
          */
         public IMObject getObject(IMObject object, IArchetypeService service) {
             IMObject result;
             if (object instanceof Participation) {
                 Participation participant = (Participation) object;
-                if (TypeHelper.isA(participant.getEntity(),
-                                   "product.template")) {
+                if (TypeHelper.isA(participant.getEntity(), TEMPLATE)) {
                     result = null;
                 } else {
                     result = super.getObject(object, service);

@@ -21,8 +21,6 @@ package org.openvpms.web.app.product;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -30,6 +28,7 @@ import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -114,11 +113,10 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
                                           name);
             final ConfirmationDialog dialog
                     = new ConfirmationDialog(title, message);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent e) {
-                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        copy(product);
-                    }
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    copy(product);
                 }
             });
             dialog.show();
@@ -134,7 +132,8 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
         Product copy = null;
         try {
             ProductRules rules = new ProductRules();
-            copy = rules.copy(product);
+            String name = Messages.get("product.copy.name", product.getName());
+            copy = rules.copy(product, name);
         } catch (OpenVPMSException exception) {
             String title = Messages.get(
                     "product.information.copy.failed",

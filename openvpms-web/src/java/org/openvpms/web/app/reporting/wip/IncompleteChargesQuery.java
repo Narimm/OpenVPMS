@@ -19,7 +19,7 @@
 package org.openvpms.web.app.reporting.wip;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -40,9 +40,9 @@ public class IncompleteChargesQuery extends DateRangeActQuery<Act> {
      * The act short names.
      */
     public static final String[] SHORT_NAMES = new String[]{
-            CustomerAccountActTypes.CHARGES_INVOICE,
-            CustomerAccountActTypes.CHARGES_CREDIT,
-            CustomerAccountActTypes.CHARGES_COUNTER};
+            CustomerAccountArchetypes.INVOICE,
+            CustomerAccountArchetypes.CREDIT,
+            CustomerAccountArchetypes.COUNTER};
 
     /**
      * The default sort constraint.
@@ -55,7 +55,7 @@ public class IncompleteChargesQuery extends DateRangeActQuery<Act> {
      * The act statuses, excluding POSTED.
      */
     private static final ActStatuses STATUSES
-            = new ActStatuses(CustomerAccountActTypes.CHARGES_INVOICE,
+            = new ActStatuses(CustomerAccountArchetypes.INVOICE,
                               ActStatus.POSTED);
 
 

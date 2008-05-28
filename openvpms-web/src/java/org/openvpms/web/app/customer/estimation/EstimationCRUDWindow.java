@@ -21,38 +21,23 @@ package org.openvpms.web.app.customer.estimation;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import static org.openvpms.archetype.rules.act.EstimationActStatus.INVOICED;
 import static org.openvpms.archetype.rules.act.FinancialActStatus.*;
+import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.act.ActHelper;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.edit.act.ActCopyHandler;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
-import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -66,12 +51,12 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     /**
      * The copy button.
      */
-    private Button _copy;
+    private Button copy;
 
     /**
      * The invoice button.
      */
-    private Button _invoice;
+    private Button invoice;
 
     /**
      * Copy button identifier.
@@ -84,38 +69,9 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     private static final String INVOICE_ID = "invoice";
 
     /**
-     * Estimation short name.
+     * The rules.
      */
-    private static final String ESTIMATION_TYPE = "act.customerEstimation";
-
-    /**
-     * Estimation item short name.
-     */
-    private static final String ESTIMATION_ITEM_TYPE = "act.customerEstimationItem";
-
-    /**
-     * Estimation item relationship short name.
-     */
-    private static final String ESTIMATION_ITEM_RELATIONSHIP_TYPE
-            = "actRelationship.customerEstimationItem";
-
-    /**
-     * Invoice act short name.
-     */
-    private static final String INVOICE_TYPE
-            = "act.customerAccountChargesInvoice";
-
-    /**
-     * Invoice act item short name.
-     */
-    private static final String INVOICE_ITEM_TYPE
-            = "act.customerAccountInvoiceItem";
-
-    /**
-     * Invoice act item relationship short name.
-     */
-    private static final String INVOICE_ITEM_RELATIONSHIP_TYPE
-            = "actRelationship.customerAccountInvoiceItem";
+    private EstimationRules rules;
 
 
     /**
@@ -125,6 +81,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      */
     public EstimationCRUDWindow(Archetypes<Act> archetypes) {
         super(archetypes);
+        rules = new EstimationRules();
     }
 
     /**
@@ -134,12 +91,12 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        _copy = ButtonFactory.create(COPY_ID, new ActionListener() {
+        copy = ButtonFactory.create(COPY_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onCopy();
             }
         });
-        _invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
+        invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onInvoice();
             }
@@ -162,8 +119,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
             buttons.add(getDeleteButton());
             buttons.add(getPostButton());
             buttons.add(getPreviewButton());
-            buttons.add(_copy);
-            buttons.add(_invoice);
+            buttons.add(copy);
+            buttons.add(invoice);
         } else {
             buttons.add(getCreateButton());
         }
@@ -173,19 +130,15 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      * Invoked when the 'copy' button is pressed.
      */
     protected void onCopy() {
-        IMObject object = getObject();
+        Act object = getObject();
         try {
-            IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
-            List<IMObject> objects = copier.apply(object);
-            Act act = (Act) objects.get(0);
-            act.setStatus(IN_PROGRESS);
-            act.setActivityStartTime(new Date());
-            setPrintStatus(act, false);
-            SaveHelper.save(objects);
-            setObject(act);
+            String title = Messages.get("customer.estimation.copy.title",
+                                        object.getTitle());
+            Act copy = rules.copy(object, title);
+            setObject(copy);
             CRUDWindowListener<Act> listener = getListener();
             if (listener != null) {
-                listener.saved(act, false);
+                listener.saved(copy, true);
             }
         } catch (OpenVPMSException exception) {
             String title = Messages.get("customer.estimation.copy.failed");
@@ -198,22 +151,27 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      */
     protected void onInvoice() {
         final Act act = getObject();
-        if (canInvoice(act)) {
+        String status = act.getStatus();
+        if (CANCELLED.equals(status) || INVOICED.equals(status)) {
+            showStatusError(act, "customer.estimation.noinvoice.title",
+                            "customer.estimation.noinvoice.message");
+        } else if (act.getActivityEndTime() != null
+                && act.getActivityEndTime().before(new Date())) {
+            showStatusError(act, "customer.estimation.expired.title",
+                            "customer.estimation.expired.message");
+        } else {
             String title = Messages.get("customer.estimation.invoice.title");
             String message = Messages.get(
                     "customer.estimation.invoice.message");
-            final ConfirmationDialog dialog
-                    = new ConfirmationDialog(title, message);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent e) {
-                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        invoice(act);
-                    }
+            ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    invoice(act);
                 }
             });
             dialog.show();
         }
-
     }
 
     /**
@@ -222,24 +180,14 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      * @param estimation the estimation
      */
     private void invoice(Act estimation) {
+        rules = new EstimationRules();
         try {
-            IMObjectCopier copier = new IMObjectCopier(new InvoiceHandler());
-            List<IMObject> objects = copier.apply(estimation);
-            Act invoice = (Act) objects.get(0);
-            invoice.setStatus(IN_PROGRESS);
-            invoice.setActivityStartTime(new Date());
-            setPrintStatus(invoice, false);
-            calcAmount(invoice);
-            SaveHelper.save(objects);
-
-            if (!INVOICED.equals(estimation.getStatus())) {
-                estimation.setStatus(INVOICED);
-                SaveHelper.save(estimation);
-                setObject(estimation);
-                CRUDWindowListener<Act> listener = getListener();
-                if (listener != null) {
-                    listener.saved(estimation, false);
-                }
+            GlobalContext context = GlobalContext.getInstance();
+            rules.invoice(estimation, context.getClinician());
+            setObject(estimation);
+            CRUDWindowListener<Act> listener = getListener();
+            if (listener != null) {
+                listener.saved(estimation, false);
             }
         } catch (OpenVPMSException exception) {
             String title = Messages.get("customer.estimation.invoice.failed");
@@ -251,8 +199,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      * Determines if an act can be deleted.
      *
      * @param act the act
-     * @return <code>true</code> if the act can be deleted, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the act can be deleted, otherwise
+     *         <tt>false</tt>
      */
     @Override
     protected boolean canDelete(Act act) {
@@ -264,8 +212,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      * Determines if an act can be edited.
      *
      * @param act the act
-     * @return <code>true</code> if the act can be edited, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the act can be edited, otherwise
+     *         <tt>false</tt>
      */
     @Override
     protected boolean canEdit(Act act) {
@@ -275,112 +223,4 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     }
 
 
-    /**
-     * Determines if an act can be invoiced.
-     *
-     * @param act the act
-     * @return <code>true</code> if the act can be invoiced, otherwise
-     *         <code>false</code>
-     */
-
-    protected boolean canInvoice(Act act) {
-        String status = act.getStatus();
-        Boolean Result;
-        if (CANCELLED.equals(status) || INVOICED.equals(status)) {
-            showStatusError(act, "customer.estimation.noinvoice.title",
-                            "customer.estimation.noinvoice.message");
-            Result = false;
-        } else if (act.getActivityEndTime() != null) {
-            if (act.getActivityEndTime().before(new Date())) {
-                showStatusError(act, "customer.estimation.expired.title",
-                                "customer.estimation.expired.message");
-                Result = false;
-            } else
-                Result = true;
-        } else
-            Result = true;
-        return Result;
-    }
-
-    /**
-     * Calculate the act total.
-     *
-     * @param act the act
-     */
-    private void calcAmount(Act act) {
-        // todo - workaround for OVPMS-211
-        ArchetypeDescriptor invoiceDesc
-                = DescriptorHelper.getArchetypeDescriptor(INVOICE_TYPE);
-        NodeDescriptor totalDesc = invoiceDesc.getNodeDescriptor("amount");
-        BigDecimal total = ActHelper.sum(act, "total");
-        // @todo - workaround for OBF-55
-        totalDesc.setValue(act, new Money(total.toString()));
-    }
-
-    private static class InvoiceHandler extends AbstractIMObjectCopyHandler {
-
-        /**
-         * Map of invoice types to their corresponding credit types.
-         */
-        private static final String[][] TYPE_MAP = {
-                {ESTIMATION_TYPE, INVOICE_TYPE},
-                {ESTIMATION_ITEM_TYPE, INVOICE_ITEM_TYPE},
-                {ESTIMATION_ITEM_RELATIONSHIP_TYPE, INVOICE_ITEM_RELATIONSHIP_TYPE},
-        };
-
-        /**
-         * Returns a target node for a given source
-         *
-         * @param source the source node
-         * @param target the target archetype
-         */
-        @Override
-        protected NodeDescriptor getTargetNode(NodeDescriptor source,
-                                               ArchetypeDescriptor target) {
-            if (target.getShortName().equals(INVOICE_ITEM_TYPE)) {
-                String name = source.getName();
-                if (name.equals("highQty")) {
-                    return target.getNodeDescriptor("quantity");
-                } else if (name.equals("highUnitPrice")) {
-                    return target.getNodeDescriptor("unitPrice");
-                }
-            }
-            return super.getTargetNode(source, target);
-        }
-
-        /**
-         * Determines how {@link IMObjectCopier} should treat an object.
-         *
-         * @param object  the source object
-         * @param service the archetype service
-         * @return <code>object</code> if the object shouldn't be copied,
-         *         <code>null</code> if it should be replaced with
-         *         <code>null</code>, or a new instance if the object should be
-         *         copied
-         */
-        public IMObject getObject(IMObject object, IArchetypeService service) {
-            IMObject result;
-            if (object instanceof Act || object instanceof ActRelationship
-                    || object instanceof Participation) {
-                String shortName = object.getArchetypeId().getShortName();
-                for (String[] map : TYPE_MAP) {
-                    String estimationType = map[0];
-                    String invoiceType = map[1];
-                    if (estimationType.equals(shortName)) {
-                        shortName = invoiceType;
-                        break;
-                    }
-                }
-                result = service.create(shortName);
-                if (result == null) {
-                    throw new ArchetypeServiceException(
-                            ArchetypeServiceException.ErrorCode.FailedToCreateArchetype,
-                            shortName);
-                }
-            } else {
-                result = object;
-            }
-            return result;
-        }
-    }
 }
