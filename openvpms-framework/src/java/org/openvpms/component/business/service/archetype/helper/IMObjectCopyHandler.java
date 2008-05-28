@@ -18,9 +18,9 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
@@ -37,21 +37,23 @@ public interface IMObjectCopyHandler {
      *
      * @param object  the source object
      * @param service the archetype service
-     * @return <code>object</code> if the object shouldn't be copied,
-     *         <code>null</code> if it should be replaced with
-     *         <code>null</code>, or a new instance if the object should be
-     *         copied
+     * @return <tt>object</tt> if the object shouldn't be copied,
+     *         <tt>null</tt> if it should be replaced with
+     *         <tt>null</tt>, or a new instance if the object should be copied
      */
     IMObject getObject(IMObject object, IArchetypeService service);
 
     /**
      * Determines how a node should be copied.
      *
-     * @param source the source node
-     * @param target the target archetype
-     * @return a node to copy source to, or <code>null</code> if the node
+     * @param source     the source archetype
+     * @param sourceNode the source node
+     * @param target     the target archetype
+     * @return a node to copy sourceNode to, or <tt>null</tt> if the node
      *         shouldn't be copied
      */
-    NodeDescriptor getNode(NodeDescriptor source, ArchetypeDescriptor target);
+    NodeDescriptor getNode(ArchetypeDescriptor source,
+                           NodeDescriptor sourceNode,
+                           ArchetypeDescriptor target);
 
 }

@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.StringUtilities;
@@ -112,6 +113,45 @@ public class TypeHelper {
                 if (matches(id, shortName)) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if an archetype descriptor matches one of a set of
+     * archetype short names.
+     *
+     * @param descriptor the descriptor. May be <tt>null</tt>
+     * @param shortNames the archetype short names. May contain wildcards
+     * @return <tt>true</tt> if the descriptor short name matches one of
+     *         <tt>shortNames</tt>
+     */
+    public static boolean isA(ArchetypeDescriptor descriptor,
+                              String ... shortNames) {
+        if (descriptor != null) {
+            for (String shortName : shortNames) {
+                if (matches(descriptor.getShortName(), shortName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if an archetype descriptor matches a short name.
+     *
+     * @param descriptor the descriptor. May be <tt>null</tt>
+     * @param shortName  the archetype short name. May contain wildcards
+     * @return <tt>true</tt> if the descriptor short name matches
+     *         <tt>shortName</tt>
+     */
+    public static boolean isA(ArchetypeDescriptor descriptor,
+                              String shortName) {
+        if (descriptor != null) {
+            if (matches(descriptor.getShortName(), shortName)) {
+                return true;
             }
         }
         return false;

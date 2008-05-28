@@ -153,7 +153,7 @@ public class IMObjectCopier {
 
         // copy the nodes
         for (NodeDescriptor sourceDesc : sourceType.getAllNodeDescriptors()) {
-            NodeDescriptor targetDesc = handler.getNode(sourceDesc,
+            NodeDescriptor targetDesc = handler.getNode(sourceType, sourceDesc,
                                                         targetType);
             if (targetDesc != null) {
                 if (sourceDesc.isObjectReference()) {
