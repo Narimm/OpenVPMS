@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.workflow.payment;
 
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
@@ -104,7 +104,7 @@ public class PaymentWorkflow extends WorkflowImpl {
     public void start(TaskContext context) {
         String payTitle = Messages.get("workflow.payment.payaccount.title");
         String payMsg = Messages.get("workflow.payment.payaccount.message");
-        Task edit = new EditAccountActTask(CustomerAccountActTypes.PAYMENT,
+        Task edit = new EditAccountActTask(CustomerAccountArchetypes.PAYMENT,
                                            true);
         boolean displayNo = !isRequired();
         addTask(new ConditionalTask(

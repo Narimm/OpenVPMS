@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.workflow.otc;
 
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -40,7 +40,7 @@ class OTCPaymentTask extends EditAccountActTask {
      * Constructs a new <tt>OTCPaymentTask</tt>.
      */
     public OTCPaymentTask() {
-        super(CustomerAccountActTypes.PAYMENT, true);
+        super(CustomerAccountArchetypes.PAYMENT, true);
     }
 
     /**
@@ -55,7 +55,7 @@ class OTCPaymentTask extends EditAccountActTask {
                                           TaskContext context) {
         IMObjectEditor editor = super.createEditor(object, context);
         FinancialAct charge = (FinancialAct) context.getObject(
-                CustomerAccountActTypes.CHARGES_COUNTER);
+                CustomerAccountArchetypes.COUNTER);
         if (editor instanceof CustomerPaymentEditor && charge != null) {
             CustomerPaymentEditor payment = (CustomerPaymentEditor) editor;
             payment.setExpectedAmount(charge.getTotal());

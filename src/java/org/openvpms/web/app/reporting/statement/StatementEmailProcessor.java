@@ -22,7 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.*;
@@ -113,7 +113,7 @@ public class StatementEmailProcessor
         handlers = ServiceHelper.getDocumentHandlers();
         TemplateHelper helper = new TemplateHelper();
         Entity entity = helper.getTemplateForArchetype(
-                CustomerAccountActTypes.OPENING_BALANCE);
+                CustomerAccountArchetypes.OPENING_BALANCE);
         if (entity == null) {
             throw new StatementProcessorException(
                     InvalidConfiguration, "No document template configured");

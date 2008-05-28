@@ -20,7 +20,7 @@ package org.openvpms.web.app.reporting.statement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -105,7 +105,7 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      */
     public void process(final Statement statement) {
         IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(
-                statement.getActs(), CustomerAccountActTypes.OPENING_BALANCE);
+                statement.getActs(), CustomerAccountArchetypes.OPENING_BALANCE);
         printer.setParameters(getParameters(statement));
 
         String title = Messages.get("reporting.statements.print.customer");
