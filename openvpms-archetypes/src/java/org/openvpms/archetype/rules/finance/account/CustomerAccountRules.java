@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.*;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException.ErrorCode.MissingCustomer;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;

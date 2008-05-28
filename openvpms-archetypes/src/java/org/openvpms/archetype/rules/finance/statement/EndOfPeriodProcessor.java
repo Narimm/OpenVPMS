@@ -20,8 +20,8 @@ package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.Processor;
 import org.openvpms.archetype.rules.act.ActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.CLOSING_BALANCE;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.OPENING_BALANCE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CLOSING_BALANCE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.OPENING_BALANCE;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 import org.openvpms.component.business.domain.im.act.Act;

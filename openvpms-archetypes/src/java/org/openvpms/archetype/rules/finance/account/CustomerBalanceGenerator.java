@@ -28,8 +28,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_ALLOCATION_SHORTNAME;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.ACCOUNT_ALLOCATION_SHORTNAME;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.ACCOUNT_BALANCE_SHORTNAME;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -664,7 +664,7 @@ public class CustomerBalanceGenerator {
         private Iterator<FinancialAct> getActs(Party customer, boolean posted,
                                                boolean unposted) {
             String[] shortNames
-                    = CustomerAccountActTypes.DEBIT_CREDIT_SHORT_NAMES;
+                    = CustomerAccountArchetypes.DEBIT_CREDIT_SHORT_NAMES;
             ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
             if (!(posted && unposted)) {
                 RelationalOp op = (posted) ? RelationalOp.EQ : RelationalOp.NE;

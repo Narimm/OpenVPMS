@@ -18,12 +18,9 @@
 
 package org.openvpms.archetype.rules.party;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.archetype.rules.util.MappingCopyHandler;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
-import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 
 
@@ -35,25 +32,13 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHand
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ContactCopyHandler extends AbstractIMObjectCopyHandler {
+public class ContactCopyHandler extends MappingCopyHandler {
 
     /**
-     * Determines how {@link IMObjectCopier} should treat an object.
-     *
-     * @param object  the source object
-     * @param service the archetype service
-     * @return <tt>object</tt> if the object shouldn't be copied,
-     *         <tt>null</tt> if it should be replaced with <tt>null</tt>,
-     *         or a new instance if the object should be copied
+     * Creates a new <tt>ContactCopyHandler</tt>.
      */
-    @Override
-    public IMObject getObject(IMObject object, IArchetypeService service) {
-        IMObject result;
-        if (object instanceof Lookup) {
-            result = object;
-        } else {
-            result = super.getObject(object, service);
-        }
-        return result;
+    public ContactCopyHandler() {
+        setReference(Lookup.class);
     }
+
 }

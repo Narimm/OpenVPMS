@@ -18,12 +18,15 @@
 
 package org.openvpms.archetype.rules.product;
 
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -32,13 +35,48 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProductRulesTestCase extends ArchetypeServiceTest {
+public class ProductRulesTestCase extends AbstractProductTest {
 
     /**
      * The rules.
      */
     private ProductRules rules;
 
+
+    /**
+     * Tests the {@link ProductRules#copy(Product)} method.
+     */
+    public void testCopy() {
+        BigDecimal price = new BigDecimal("2.00");
+        Party supplier = TestHelper.createSupplier();
+        Product product = TestHelper.createProduct();
+        ProductPrice unitPrice = addUnitPrice(product, price);
+        ProductSupplier ps = rules.createProductSupplier(product, supplier);
+        save(Arrays.asList(product, supplier));
+
+        String name = "Copy";
+        Product copy = rules.copy(product, name);
+
+        // verify it is a copy
+        assertTrue(product.getUid() != copy.getUid());
+        assertEquals(product.getArchetypeId(), copy.getArchetypeId());
+        assertEquals(name, copy.getName());
+
+        // verify the product price has been copied
+        Set<ProductPrice> productPrices = copy.getProductPrices();
+        assertEquals(1, productPrices.size());
+        ProductPrice priceCopy = productPrices.toArray(new ProductPrice[0])[0];
+        assertTrue(unitPrice.getUid() != priceCopy.getUid());
+        assertEquals(unitPrice.getPrice(), priceCopy.getPrice());
+
+        // verify the product supplier relationship has been copied
+        ProductSupplier psCopy = rules.getProductSupplier(copy, supplier,
+                                                          ps.getPackageSize(),
+                                                          ps.getPackageUnits());
+        assertNotNull(psCopy);
+        assertTrue(psCopy.getRelationship().getUid()
+                != ps.getRelationship().getUid());
+    }
 
     /**
      * Tests the {@link ProductRules#getProductSuppliers} method.

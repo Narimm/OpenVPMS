@@ -18,7 +18,7 @@
 
 package org.openvpms.archetype.rules.party;
 
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
@@ -274,8 +274,8 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         // now verify that the only opening and closing balance acts for the
         // to customer are prior to the first act of the from customer
         ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
-                to, new String[]{CustomerAccountActTypes.OPENING_BALANCE,
-                                 CustomerAccountActTypes.CLOSING_BALANCE});
+                to, new String[]{CustomerAccountArchetypes.OPENING_BALANCE,
+                                 CustomerAccountArchetypes.CLOSING_BALANCE});
         IMObjectQueryIterator<Act> iter = new IMObjectQueryIterator<Act>(query);
         int count = 0;
         while (iter.hasNext()) {

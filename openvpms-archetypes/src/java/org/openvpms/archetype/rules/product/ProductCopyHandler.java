@@ -18,13 +18,10 @@
 
 package org.openvpms.archetype.rules.product;
 
+import org.openvpms.archetype.rules.util.MappingCopyHandler;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
-import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 
 
@@ -34,29 +31,35 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHand
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-12-12 04:10:40Z $
  */
-public class ProductCopyHandler extends AbstractIMObjectCopyHandler {
+public class ProductCopyHandler extends MappingCopyHandler {
 
     /**
-     * Determines how {@link IMObjectCopier} should treat an object.
+     * Creates a new <tt>ProductCopyHandler</tt>.
+     */
+    public ProductCopyHandler() {
+        setCopy(Product.class);
+        setReference(Entity.class); // reference all other entities
+    }
+
+    /**
+     * Determines how an object should be handled.
+     * <p/>
+     * This implementation changes the order of evaluation so that {@link #copy}
+     * is evaluated prior to {@link #reference}.
      *
-     * @param object  the source object
-     * @param service the archetype service
-     * @return <tt>object</tt> if the object shouldn't be copied,
-     *         <tt>null</tt> if it should be replaced with
-     *         <tt>null</tt>, or a new instance if the object should be
-     *         copied
+     * @param object the object
+     * @return the type of behaviour to apply to the object
      */
     @Override
-    public IMObject getObject(IMObject object, IArchetypeService service) {
-        IMObject result;
-        if ((object instanceof Entity && !(object instanceof Product))
-                || object instanceof Lookup) {
-            result = object;
-        } else {
-            result = super.getObject(object, service);
+    protected Treatment getTreatment(IMObject object) {
+        if (copy(object)) {
+            return Treatment.COPY;
+        } else if (reference(object)) {
+            return Treatment.REFERENCE;
+        } else if (exclude(object)) {
+            return Treatment.EXCLUDE;
         }
-        return result;
-
+        return getDefaultTreatment();
     }
 
 }

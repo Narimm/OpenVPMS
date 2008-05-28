@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.ACCOUNT_BALANCE_SHORTNAME;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -361,7 +361,7 @@ public class CustomerBalanceGeneratorTestCase
     private ActRelationship getAccountAllocationRelationship(FinancialAct act) {
         ActBean bean = new ActBean(act);
         List<ActRelationship> relationships = bean.getRelationships(
-                CustomerAccountActTypes.ACCOUNT_ALLOCATION_SHORTNAME);
+                CustomerAccountArchetypes.ACCOUNT_ALLOCATION_SHORTNAME);
         return (!relationships.isEmpty()) ? relationships.get(0) : null;
     }
 

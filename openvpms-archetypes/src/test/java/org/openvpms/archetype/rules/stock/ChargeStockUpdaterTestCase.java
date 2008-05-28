@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.stock;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
@@ -166,7 +166,7 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
         Product product2 = TestHelper.createProduct();
 
         boolean credit = TypeHelper.isA(
-                item, CustomerAccountActTypes.CHARGES_CREDIT_ITEM);
+                item, CustomerAccountArchetypes.CREDIT_ITEM);
         BigDecimal expected = getQuantity(initialQuantity, quantity, credit);
 
         item.setQuantity(quantity);
@@ -235,7 +235,7 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
         save(item);
 
         boolean credit = TypeHelper.isA(
-                item, CustomerAccountActTypes.CHARGES_CREDIT_ITEM);
+                item, CustomerAccountArchetypes.CREDIT_ITEM);
 
         BigDecimal expected = getQuantity(BigDecimal.ZERO, quantity, credit);
 
