@@ -51,16 +51,18 @@ public abstract class AbstractIMObjectCopyHandler
     /**
      * Determines how a node should be copied.
      *
-     * @param source the source node
-     * @param target the target archetype
-     * @return a node to copy source to, or <tt>null</tt> if the node
+     * @param source     the source archetype
+     * @param sourceNode the source node
+     * @param target     the target archetype
+     * @return a node to copy sourceNode to, or <tt>null</tt> if the node
      *         shouldn't be copied
      */
-    public NodeDescriptor getNode(NodeDescriptor source,
+    public NodeDescriptor getNode(ArchetypeDescriptor source,
+                                  NodeDescriptor sourceNode,
                                   ArchetypeDescriptor target) {
         NodeDescriptor result = null;
-        if (isCopyable(source, true)) {
-            result = getTargetNode(source, target);
+        if (isCopyable(source, sourceNode, true)) {
+            result = getTargetNode(source, sourceNode, target);
         }
         return result;
     }
@@ -68,16 +70,18 @@ public abstract class AbstractIMObjectCopyHandler
     /**
      * Returns a target node for a given source node.
      *
-     * @param source the source node
-     * @param target the target archetype
+     * @param source     the source archetype
+     * @param sourceNode the source node
+     * @param target     the target archetype
      * @return a node to copy source to, or <tt>null</tt> if the node
      *         shouldn't be copied
      */
-    protected NodeDescriptor getTargetNode(NodeDescriptor source,
+    protected NodeDescriptor getTargetNode(ArchetypeDescriptor source,
+                                           NodeDescriptor sourceNode,
                                            ArchetypeDescriptor target) {
         NodeDescriptor result = null;
-        NodeDescriptor desc = target.getNodeDescriptor(source.getName());
-        if (desc != null && isCopyable(desc, false)) {
+        NodeDescriptor desc = target.getNodeDescriptor(sourceNode.getName());
+        if (desc != null && isCopyable(target, desc, false)) {
             result = desc;
         }
         return result;
@@ -85,13 +89,18 @@ public abstract class AbstractIMObjectCopyHandler
 
     /**
      * Helper to determine if a node is copyable.
+     * </p>
+     * This implementation excludes <em>uid</em> nodes, and derived nodes
+     * where the node is the target.
      *
-     * @param node   the node descriptor
-     * @param source if <tt>true</tt> the node is the source; otherwise its
-     *               the target
+     * @param archetype the archetype descriptor
+     * @param node      the node descriptor
+     * @param source    if <tt>true</tt> the node is the source; otherwise its
+     *                  the target
      * @return <tt>true</tt> if the node is copyable; otherwise <tt>false</tt>
      */
-    protected boolean isCopyable(NodeDescriptor node, boolean source) {
+    protected boolean isCopyable(ArchetypeDescriptor archetype,
+                                 NodeDescriptor node, boolean source) {
         boolean result = !node.getName().equals("uid");  // NON-NLS
         if (result && !source) {
             // Removed readOnly check for temporary OBF-115 fix.

@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
@@ -147,6 +148,49 @@ public class TypeHelperTestCase
         String[] wildnomatch = {"act.customerEstimation*",
                                 "act.customerInvoice*"};
         assertFalse(TypeHelper.isA(id, wildnomatch));
+    }
+
+    /**
+     * Tests the {@link TypeHelper#isA(ArchetypeDescriptor, String)} method.
+     */
+    public void testIsADescriptor() {
+        ArchetypeDescriptor descriptor
+                = service.getArchetypeDescriptor("party.customerperson");
+        assertNotNull(descriptor);
+
+        assertTrue(TypeHelper.isA(descriptor, "party.customerperson"));
+        assertFalse(TypeHelper.isA(descriptor, "party.patientpet"));
+
+        // test wildcards
+        assertTrue(TypeHelper.isA(descriptor, "party.*"));
+        assertTrue(TypeHelper.isA(descriptor, "party.customer*"));
+        assertFalse(TypeHelper.isA(descriptor, "party.patient*"));
+    }
+
+    /**
+     * Tests the {@link TypeHelper#isA(ArchetypeDescriptor, String...)} method.
+     */
+    public void testIsADescriptorMultiple() {
+        ArchetypeDescriptor descriptor
+                = service.getArchetypeDescriptor("act.customerAccountPayment");
+        assertNotNull(descriptor);
+        String[] matches = {"act.customerAccountPaymentCash",
+                            "act.customerAccountPayment"};
+        assertTrue(TypeHelper.isA(descriptor, matches));
+
+        String[] nomatches = {"act.customerAccountPaymentCash",
+                              "act.customerAccountPaymentCredit",
+                              "act.customerAccountPaymentEFT"};
+        assertFalse(TypeHelper.isA(descriptor, nomatches));
+
+        // test wildcards
+        String[] wildmatch = {"act.customerEstimation*",
+                              "act.customerAccount*"};
+        assertTrue(TypeHelper.isA(descriptor, wildmatch));
+
+        String[] wildnomatch = {"act.customerEstimation*",
+                                "act.customerInvoice*"};
+        assertFalse(TypeHelper.isA(descriptor, wildnomatch));
     }
 
     /**
