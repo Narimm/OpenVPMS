@@ -109,7 +109,7 @@ class StatementActHelper {
     static {
         List<String> shortNames = new ArrayList<String>();
         shortNames.addAll(Arrays.asList(
-                CustomerAccountArchetypes.DEBIT_CREDIT_SHORT_NAMES));
+                CustomerAccountArchetypes.DEBITS_CREDITS));
         shortNames.add(CustomerAccountArchetypes.OPENING_BALANCE);
         shortNames.add(CustomerAccountArchetypes.CLOSING_BALANCE);
         SHORT_NAMES = shortNames.toArray(new String[0]);

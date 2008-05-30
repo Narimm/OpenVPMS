@@ -157,7 +157,7 @@ class CustomerMerger extends PartyMerger {
      */
     private Date getFirstTransactionStartTime(Party party) {
         ArchetypeQuery query = CustomerAccountQueryFactory.createObjectSetQuery(
-                party, CustomerAccountArchetypes.DEBIT_CREDIT_SHORT_NAMES, true);
+                party, CustomerAccountArchetypes.DEBITS_CREDITS, true);
         query.add(new NodeSelectConstraint("a.startTime"));
         query.setMaxResults(1);
         Date startTime = null;

@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.act;
 
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -141,6 +142,22 @@ public class ActCalculator {
             }
         }
 
+        return result;
+    }
+
+    /**
+     * Returns the act total, taking into account the credit flag.
+     *
+     * @param act the act
+     * @return the total, negated if it is a credit act
+     */
+    public BigDecimal getTotal(FinancialAct act) {
+        BigDecimal result = act.getTotal();
+        if (result == null) {
+            result = BigDecimal.ZERO;
+        } else if (act.isCredit()) {
+            result = result.negate();
+        }
         return result;
     }
 
