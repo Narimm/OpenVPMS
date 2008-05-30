@@ -16,23 +16,20 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer.charge;
+package org.openvpms.web.component.im.table.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
-import org.openvpms.web.component.im.table.act.DefaultActTableModel;
 
 
 /**
- * Table model for <em>actRelationship.customerAccount*</em>.
- * This displays all related acts in a {@link DefaultActTableModel}.
+ * Table model that displays all related acts in a {@link DefaultActTableModel}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerAccountActRelationshipTableModel
+public class BasicActRelationshipTableModel
         extends AbstractActRelationshipTableModel<Act> {
 
     /**
@@ -41,8 +38,8 @@ public class CustomerAccountActRelationshipTableModel
      * @param relationshipTypes the act relationship short names
      * @param context           the layout context. May be <tt>null</tt>
      */
-    public CustomerAccountActRelationshipTableModel(String[] relationshipTypes,
-                                                    LayoutContext context) {
+    public BasicActRelationshipTableModel(String[] relationshipTypes,
+                                          LayoutContext context) {
         String[] shortNames = ActHelper.getTargetShortNames(relationshipTypes);
         setModel(new DefaultActTableModel(shortNames, context));
     }
