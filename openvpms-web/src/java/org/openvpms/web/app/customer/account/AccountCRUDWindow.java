@@ -25,7 +25,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.finance.account.CustomerBalanceGenerator;
+import org.openvpms.archetype.tools.account.AccountBalanceTool;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -36,7 +36,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
-import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
@@ -241,22 +241,12 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                 String message = Messages.get(
                         "customer.account.balancecheck.error",
                         expected, actual);
-                final ConfirmationDialog dialog = new ConfirmationDialog(title,
-                                                                         message);
-                dialog.addWindowPaneListener(new WindowPaneListener() {
-                    public void windowPaneClosing(WindowPaneEvent e) {
-                        if (PopupDialog.OK_ID.equals(dialog.getAction())) {
-                            try {
-                                IArchetypeService service
-                                        = ServiceHelper.getArchetypeService(
-                                        false);
-                                CustomerBalanceGenerator gen = new CustomerBalanceGenerator(
-                                        service);
-                                gen.generate(customer);
-                            } catch (Throwable exception) {
-                                ErrorHelper.show(exception);
-                            }
-                        }
+                final ConfirmationDialog dialog
+                        = new ConfirmationDialog(title, message);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        regenerate(customer);
                     }
                 });
                 dialog.show();
@@ -306,5 +296,21 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         onRefresh(act);
     }
 
+    /**
+     * Regenerates the balance for a customer.
+     *
+     * @param customer the customer
+     */
+    private void regenerate(Party customer) {
+        try {
+            IArchetypeService service
+                    = ServiceHelper.getArchetypeService(false);
+            AccountBalanceTool tool = new AccountBalanceTool(service);
+            tool.generate(customer);
+            onRefresh(getObject());
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
+        }
+    }
 
 }

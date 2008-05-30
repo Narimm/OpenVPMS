@@ -201,7 +201,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     protected void doLayout(Component container) {
         Grid grid = GridFactory.create(6);
         accountType = LookupFieldFactory.create(
-                new ArchetypeLookupQuery("lookup"));
+                new ArchetypeLookupQuery("lookup.customerAccountType"));
         accountType.setCellRenderer(new LookupListCellRenderer());
 
         Label accountTypeLabel = LabelFactory.create(
