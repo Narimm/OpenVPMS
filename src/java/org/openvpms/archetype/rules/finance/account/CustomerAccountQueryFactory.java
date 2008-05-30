@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.ACCOUNT_BALANCE_SHORTNAME;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -189,7 +189,7 @@ public class CustomerAccountQueryFactory {
                 = new ShortNameConstraint("a", shortNames, false, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
-                "accountBalance", ACCOUNT_BALANCE_SHORTNAME, false, false);
+                "accountBalance", BALANCE_PARTICIPATION, false, false);
         constraint.add(new ObjectRefNodeConstraint(
                 "entity", customer.getObjectReference()));
         if (exclude != null) {

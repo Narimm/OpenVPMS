@@ -19,7 +19,8 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.ACCOUNT_BALANCE_SHORTNAME;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -33,7 +34,7 @@ import java.util.List;
 
 
 /**
- * Tests the {@link CustomerBalanceGenerator} tool.
+ * Tests the {@link CustomerBalanceGenerator} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -45,7 +46,6 @@ public class CustomerBalanceGeneratorTestCase
      * The account rules.
      */
     private CustomerAccountRules rules;
-
 
 
     /**
@@ -116,50 +116,6 @@ public class CustomerBalanceGeneratorTestCase
     }
 
     /**
-     * Tests generation given a customer id.
-     */
-    public void testGenerateForCustomerId() {
-        Party customer = getCustomer();
-        long id = customer.getUid();
-        Money amount = new Money(100);
-        FinancialAct debit = createInitialBalance(amount);
-        save(debit);
-
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
-
-        CustomerBalanceGenerator generator
-                = new CustomerBalanceGenerator(getArchetypeService());
-        generator.generate(id);
-        assertEquals(amount, rules.getBalance(customer));
-        FinancialAct credit = createBadDebt(amount);
-        save(credit);
-        generator.generate(id);
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
-    }
-
-    /**
-     * Tests generation given a customer name.
-     */
-    public void testGenerateForCustomerName() {
-        Party customer = getCustomer();
-        String name = customer.getName();
-        Money amount = new Money(100);
-        FinancialAct debit = createInitialBalance(amount);
-        save(debit);
-
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
-
-        CustomerBalanceGenerator generator
-                = new CustomerBalanceGenerator(getArchetypeService());
-        generator.generate(name);
-        assertEquals(amount, rules.getBalance(customer));
-        FinancialAct credit = createBadDebt(amount);
-        save(credit);
-        generator.generate(name);
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
-    }
-
-    /**
      * Verifies that an <em>participation.customerAccountBalance</tt> is
      * added for acts that don't have <tt>POSTED</tt> status.
      */
@@ -173,6 +129,40 @@ public class CustomerBalanceGeneratorTestCase
         FinancialAct invoice3 = createChargesInvoice(new Money(100));
         checkAddParticipationForNonPostedAct(invoice3,
                                              FinancialActStatus.COMPLETED);
+    }
+
+    /**
+     * Verifies that opening and closing balances are updated with correct
+     * amounts.
+     */
+    public void testChangeOpeningAndClosingBalances() {
+        Party customer = getCustomer();
+        FinancialAct invoice = createChargesInvoice(new  Money(10));
+        FinancialAct opening1 = createOpeningBalance(customer);
+        FinancialAct payment = createPayment(new Money(30));
+        FinancialAct closing1 = createClosingBalance(customer);
+        FinancialAct opening2 = createOpeningBalance(customer);
+
+        save(invoice, opening1, payment, closing1, opening2);
+
+        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        assertFalse(checkBalance(customer));
+        assertEquals(new BigDecimal(-20), generate(customer));
+
+        assertEquals(new BigDecimal(-20), rules.getBalance(customer));
+
+        opening1 = get(opening1);
+        closing1 = get(closing1);
+        opening2 = get(opening2);
+
+        assertEquals(new BigDecimal(10), opening1.getTotal());
+        assertFalse(opening1.isCredit());
+
+        assertEquals(new BigDecimal(20), closing1.getTotal());
+        assertFalse(closing1.isCredit());
+
+        assertEquals(new BigDecimal(20), opening2.getTotal());
+        assertTrue(opening2.isCredit());
     }
 
     /**
@@ -203,23 +193,22 @@ public class CustomerBalanceGeneratorTestCase
      */
     private void checkCalculateBalanceForSameAmount(FinancialAct debit,
                                                     FinancialAct credit) {
-        CustomerBalanceGenerator generator
-                = new CustomerBalanceGenerator(getArchetypeService());
         Party customer = getCustomer();
 
         // initial balance is zero
         assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
-        assertTrue(generator.check(customer));
+        assertTrue(checkBalance(customer));
 
         // save the debit act, and verify the balance is the same as the debit
         // total
         save(debit);
+
         // definitive balance out of sync with balance until generate invoked
-        assertFalse(generator.check(customer));
-        generator.generate(customer);
+        assertFalse(checkBalance(customer));
+        assertEquals(debit.getTotal(), generate(customer));
         assertEquals(debit.getTotal(), rules.getBalance(customer));
 
-        assertTrue(generator.check(customer)); // should now be in sync
+        assertTrue(checkBalance(customer)); // should now be in sync
 
         // verify an participation.customerAccountBalance has been added to
         // the debit act
@@ -230,8 +219,7 @@ public class CustomerBalanceGeneratorTestCase
 
         // regenerate the balance. This should remove the existing participation
         // and add a new one
-        generator.setRegenerate(true);
-        generator.generate(customer);
+        assertEquals(debit.getTotal(), generate(customer));
 
         // verify the participation has changed
         debit = get(debit);
@@ -242,8 +230,7 @@ public class CustomerBalanceGeneratorTestCase
 
         // save the credit act and update the balance. Balance should be zero
         save(credit);
-        generator.setRegenerate(false);
-        generator.generate(customer);
+        assertEquals(BigDecimal.ZERO, generate(customer));
         assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // verify there is an actRelationship.customerAccountAllocation
@@ -254,24 +241,20 @@ public class CustomerBalanceGeneratorTestCase
         ActRelationship creditAlloc = getAccountAllocationRelationship(credit);
         checkAllocation(debitAlloc, debit, credit, debit.getTotal());
         checkAllocation(creditAlloc, debit, credit, debit.getTotal());
-        assertTrue(generator.check(customer));
+        assertTrue(checkBalance(customer));
 
         // Now delete the credit. The balance will not be updated to reflect
         // the deletion.
         remove(credit);
         assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
-        generator.generate(customer);
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
-        assertEquals(debit.getTotal(), debit.getAllocatedAmount());
 
         // need to regenerate to get the correct balance
-        assertFalse(generator.check(customer));
-        generator.setRegenerate(true);
-        generator.generate(customer);
+        assertEquals(debit.getTotal(), generate(customer));
+        assertEquals(debit.getTotal(), debit.getAllocatedAmount());
         debit = get(debit);
         assertEquals(BigDecimal.ZERO, debit.getAllocatedAmount());
         assertEquals(debit.getTotal(), rules.getBalance(customer));
-        assertTrue(generator.check(customer));
+        assertTrue(checkBalance(customer));
 
         // participation.customerAccountBalance will have been recreated
         Participation balanceParticipation3
@@ -281,6 +264,21 @@ public class CustomerBalanceGeneratorTestCase
 
         // actRelationship.customerAccountAllocation will have been removed
         assertNull(getAccountAllocationRelationship(debit));
+    }
+
+    /**
+     * Determines if the balance as returned by
+     * {@link BalanceCalculator#getBalance} matches that returned by
+     * {@link BalanceCalculator#getDefinitiveBalance}.
+     *
+     * @param customer the customer
+     * @return <tt>true</tt> if the balances match, otherwise <tt>false</tt>
+     */
+    private boolean checkBalance(Party customer) {
+        BalanceCalculator calc = new BalanceCalculator(getArchetypeService());
+        BigDecimal expected = calc.getDefinitiveBalance(customer);
+        BigDecimal actual = calc.getBalance(customer);
+        return expected.compareTo(actual) == 0;
     }
 
     /**
@@ -313,15 +311,12 @@ public class CustomerBalanceGeneratorTestCase
     private void checkAddParticipationForNonPostedAct(FinancialAct act,
                                                       String status) {
         assertFalse(FinancialActStatus.POSTED.equals(status));
-        CustomerBalanceGenerator generator
-                = new CustomerBalanceGenerator(getArchetypeService(),
-                                               false, true);
         Party customer = getCustomer();
 
         act.setStatus(status);
         save(act);
 
-        generator.generate(customer);
+        assertEquals(BigDecimal.ZERO, generate(customer));
         act = get(act);
 
         // verify the act hasn't affected the balance
@@ -330,13 +325,25 @@ public class CustomerBalanceGeneratorTestCase
         // verify a participation.customerAccountBalance has been added,
         // linked to the customer
         ActBean bean = new ActBean(act);
-        assertEquals(customer, bean.getParticipant(ACCOUNT_BALANCE_SHORTNAME));
+        assertEquals(customer, bean.getParticipant(BALANCE_PARTICIPATION));
 
         // verify that there is no account allocation relationship
         assertNull(getAccountAllocationRelationship(act));
 
         // verify the allocated amount is zero
         assertEquals(BigDecimal.ZERO, act.getAllocatedAmount());
+    }
+
+    /**
+     * Generates the balance for a customer.
+     *
+     * @param customer the customer
+     * @return the balance
+     */
+    private BigDecimal generate(Party customer) {
+        CustomerBalanceGenerator generator
+                = new CustomerBalanceGenerator(customer, getArchetypeService());
+        return generator.generate();
     }
 
     /**
@@ -348,7 +355,7 @@ public class CustomerBalanceGeneratorTestCase
      */
     private Participation getAccountBalanceParticipation(FinancialAct act) {
         ActBean bean = new ActBean(act);
-        return bean.getParticipation(ACCOUNT_BALANCE_SHORTNAME);
+        return bean.getParticipation(BALANCE_PARTICIPATION);
     }
 
     /**
@@ -361,8 +368,38 @@ public class CustomerBalanceGeneratorTestCase
     private ActRelationship getAccountAllocationRelationship(FinancialAct act) {
         ActBean bean = new ActBean(act);
         List<ActRelationship> relationships = bean.getRelationships(
-                CustomerAccountArchetypes.ACCOUNT_ALLOCATION_SHORTNAME);
+                CustomerAccountArchetypes.ACCOUNT_ALLOCATION_RELATIONSHIP);
         return (!relationships.isEmpty()) ? relationships.get(0) : null;
+    }
+
+    /**
+     * Helper to create an opening balance.
+     *
+     * @param customer the customer
+     * @return the opening balance
+     */
+    private FinancialAct createOpeningBalance(Party customer) {
+        FinancialAct act = (FinancialAct) create(
+                CustomerAccountArchetypes.OPENING_BALANCE);
+        ActBean bean = new ActBean(act);
+        bean.addParticipation(CustomerArchetypes.CUSTOMER_PARTICIPATION,
+                              customer);
+        return act;
+    }
+
+    /**
+     * Helper to create a closing balance.
+     *
+     * @param customer the customer
+     * @return the closing balance
+     */
+    private FinancialAct createClosingBalance(Party customer) {
+        FinancialAct act = (FinancialAct) create(
+                CustomerAccountArchetypes.CLOSING_BALANCE);
+        ActBean bean = new ActBean(act);
+        bean.addParticipation(CustomerArchetypes.CUSTOMER_PARTICIPATION,
+                              customer);
+        return act;
     }
 
 }

@@ -42,7 +42,7 @@ import java.util.Iterator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class BalanceCalculator {
+public class BalanceCalculator {
 
     /**
      * The archetype service.
@@ -68,7 +68,7 @@ class BalanceCalculator {
     public BigDecimal getBalance(Party customer) {
         ArchetypeQuery query
                 = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
-                customer, DEBIT_CREDIT_SHORT_NAMES);
+                customer, DEBITS_CREDITS);
         Iterator<ObjectSet> iterator
                 = new ObjectSetQueryIterator(service, query);
         return calculateBalance(iterator);
@@ -86,7 +86,7 @@ class BalanceCalculator {
     public BigDecimal getBalance(Party customer, Date date) {
         ArchetypeQuery query
                 = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
-                customer, DEBIT_CREDIT_SHORT_NAMES);
+                customer, DEBITS_CREDITS);
         Iterator<ObjectSet> iterator
                 = new ObjectSetQueryIterator(service, query);
         query.add(new NodeConstraint("startTime", RelationalOp.LT, date));
@@ -107,9 +107,7 @@ class BalanceCalculator {
     public BigDecimal getBalance(Party customer, Date from, Date to,
                                  BigDecimal openingBalance) {
         ArchetypeQuery query = CustomerAccountQueryFactory.createObjectSetQuery(
-                customer, DEBIT_CREDIT_SHORT_NAMES, true);
-        Iterator<ObjectSet> iterator
-                = new ObjectSetQueryIterator(service, query);
+                customer, DEBITS_CREDITS, true);
         query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
         if (from != null) {
             query.add(new NodeConstraint("startTime", RelationalOp.GTE,
@@ -118,6 +116,8 @@ class BalanceCalculator {
         if (to != null) {
             query.add(new NodeConstraint("startTime", RelationalOp.LTE, to));
         }
+        Iterator<ObjectSet> iterator
+                = new ObjectSetQueryIterator(service, query);
         return calculateDefinitiveBalance(iterator, openingBalance);
     }
 
@@ -148,7 +148,7 @@ class BalanceCalculator {
         // query all overdue debit acts
         ArchetypeQuery query
                 = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
-                customer, DEBIT_SHORT_NAMES);
+                customer, DEBITS);
         query.add(new NodeConstraint("startTime", RelationalOp.LT, date));
         Iterator<ObjectSet> iterator
                 = new ObjectSetQueryIterator(service, query);
@@ -170,7 +170,7 @@ class BalanceCalculator {
     public BigDecimal getCreditBalance(Party customer) {
         ArchetypeQuery query
                 = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
-                customer, CREDIT_SHORT_NAMES);
+                customer, CREDITS);
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service,
                                                                   query);
         return calculateBalance(iterator);

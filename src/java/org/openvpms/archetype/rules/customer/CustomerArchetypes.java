@@ -38,6 +38,11 @@ public class CustomerArchetypes {
     public static final String ORGANISATION = "party.customerorganisation";
 
     /**
+     * 'Over the counter' short name.
+     */
+    public static final String OTC = "party.organisationOTC";
+
+    /**
      * Customer participation short name.
      */
     public static final String CUSTOMER_PARTICIPATION

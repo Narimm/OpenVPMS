@@ -192,21 +192,12 @@ public class CustomerAccountArchetypes {
     /**
      * Short names of the credit and debit acts the affect the balance.
      */
-    public static final String[] DEBIT_CREDIT_SHORT_NAMES = {
-            COUNTER,
-            CREDIT,
-            INVOICE,
-            CREDIT_ADJUST,
-            DEBIT_ADJUST,
-            PAYMENT,
-            REFUND,
-            INITIAL_BALANCE,
-            BAD_DEBT};
+    public static final String[] DEBITS_CREDITS;
 
     /**
      * All customer debit act short names.
      */
-    public static final String[] DEBIT_SHORT_NAMES = {
+    public static final String[] DEBITS = {
             COUNTER,
             INVOICE,
             DEBIT_ADJUST,
@@ -217,7 +208,7 @@ public class CustomerAccountArchetypes {
     /**
      * All customer credit act short names.
      */
-    public static final String[] CREDIT_SHORT_NAMES = {
+    public static final String[] CREDITS = {
             CREDIT,
             CREDIT_ADJUST,
             PAYMENT,
@@ -226,13 +217,13 @@ public class CustomerAccountArchetypes {
     /**
      * The customer account balance participation short name.
      */
-    public static final String ACCOUNT_BALANCE_SHORTNAME
+    public static final String BALANCE_PARTICIPATION
             = "participation.customerAccountBalance";
 
     /**
      * The customer account balance act relationship short name.
      */
-    public static final String ACCOUNT_ALLOCATION_SHORTNAME
+    public static final String ACCOUNT_ALLOCATION_RELATIONSHIP
             = "actRelationship.customerAccountAllocation";
 
     /**
@@ -246,4 +237,28 @@ public class CustomerAccountArchetypes {
      */
     public static final String CLOSING_BALANCE
             = "act.customerAccountClosingBalance";
+
+    /**
+     * All debit and credit acts, and the initial, opening and closing balance
+     * short names.
+     */
+    public static final String[] ACCOUNT_ACTS;
+
+    static {
+        // populate DEBITS_CREDITS
+        int dLength = DEBITS.length;
+        int cLength = CREDITS.length;
+        int dcLength = dLength + cLength;
+        DEBITS_CREDITS = new String[dcLength];
+        System.arraycopy(DEBITS, 0, DEBITS_CREDITS, 0, dLength);
+        System.arraycopy(CREDITS, 0, DEBITS_CREDITS, dLength, cLength);
+
+        // populate ACCOUNT_ACTS
+        ACCOUNT_ACTS = new String[dcLength + 3];
+        System.arraycopy(DEBITS_CREDITS, 0, ACCOUNT_ACTS, 0,
+                         dcLength);
+        ACCOUNT_ACTS[dcLength] = INITIAL_BALANCE;
+        ACCOUNT_ACTS[dcLength + 1] = OPENING_BALANCE;
+        ACCOUNT_ACTS[dcLength + 2] = CLOSING_BALANCE;
+    }
 }
