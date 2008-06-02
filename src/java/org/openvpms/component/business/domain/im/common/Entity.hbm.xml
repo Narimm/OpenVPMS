@@ -69,14 +69,14 @@
     <set name="sourceEntityRelationships" access="property" inverse="true"
          lazy="true" batch-size="50"
          cascade="all,delete-orphan">
-      <key column="source_linkId" property-ref="linkId" not-null="true" on-delete="cascade"/>
+      <key column="source_linkId" property-ref="linkId" not-null="true"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
     </set>
     <set name="targetEntityRelationships" access="property" inverse="true"
          lazy="true" batch-size="50"
          cascade="all,delete-orphan">
-      <key column="target_linkId" property-ref="linkId" not-null="true" on-delete="cascade"/>
+      <key column="target_linkId" property-ref="linkId" not-null="true"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
     </set>
