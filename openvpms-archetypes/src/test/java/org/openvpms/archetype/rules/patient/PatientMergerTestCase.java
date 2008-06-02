@@ -29,6 +29,10 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Date;
 
@@ -45,6 +49,11 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
      * Patient rules.
      */
     private PatientRules rules;
+
+    /**
+     * The transaction template.
+     */
+    private TransactionTemplate template;
 
 
     /**
@@ -171,18 +180,27 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         rules = new PatientRules();
+
+        PlatformTransactionManager mgr = (PlatformTransactionManager)
+                applicationContext.getBean("txnManager");
+        template = new TransactionTemplate(mgr);
     }
 
     /**
-     * Merges two patients, and verifies the 'from' patient has been
-     * deleted.
+     * Merges two patients in a transaction, and verifies the 'from' patient
+     * has been deleted.
      *
      * @param from the patient to merge from
      * @param to   the patient to merge to
      * @return the merged patient
      */
-    private Party checkMerge(Party from, Party to) {
-        rules.mergePatients(from, to);
+    private Party checkMerge(final Party from, final Party to) {
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                rules.mergePatients(from, to);
+                return null;
+            }
+        });
 
         // verify the from patient has been deleted
         assertNull(get(from));

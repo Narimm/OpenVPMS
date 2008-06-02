@@ -250,12 +250,17 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         acts = getActs(customer, statementDate);
         assertEquals(3, acts.size());
 
+        BigDecimal closingBalance = amount.add(feeAmount);
         checkAct(acts.get(0), CustomerAccountArchetypes.OPENING_BALANCE,
                  amount);
         checkAct(acts.get(1), CustomerAccountArchetypes.DEBIT_ADJUST,
                  feeAmount);
         checkAct(acts.get(2), CustomerAccountArchetypes.CLOSING_BALANCE,
-                 amount.add(feeAmount));
+                 closingBalance);
+
+        // verify the fee has been added to the balance
+        CustomerAccountRules rules = new CustomerAccountRules();
+        assertEquals(closingBalance, rules.getBalance(customer));
     }
 
     /**

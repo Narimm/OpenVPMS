@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DefaultIMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
@@ -36,8 +37,9 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -111,11 +113,34 @@ public abstract class PartyMerger {
 
         List<IMObject> participations = moveParticipations(from, to);
 
-        List<IMObject> merged = new ArrayList<IMObject>();
+        Set<IMObject> merged = new LinkedHashSet<IMObject>();
         merged.add(to);
         merged.addAll(participations);
+
+        for (EntityRelationship relationship : from.getEntityRelationships()) {
+            Party other = getRelated(from, to, relationship);
+            if (other != null) {
+                other.removeEntityRelationship(relationship);
+                merged.add(other);
+            }
+        }
         service.save(merged);
         service.remove(from);
+    }
+
+    private Party getRelated(Party from, Party to,
+                             EntityRelationship relationship) {
+        if (from.getObjectReference().equals(relationship.getSource())) {
+            if (to.equals(relationship.getTarget())) {
+                return to;
+            }
+            return getParty(relationship.getTarget());
+        } else {
+            if (to.equals(relationship.getSource())) {
+                return to;
+            }
+            return getParty(relationship.getSource());
+        }
     }
 
     /**
@@ -288,5 +313,10 @@ public abstract class PartyMerger {
             }
         }
         return result;
+    }
+
+    private Party getParty(IMObjectReference reference) {
+        return (reference != null) ? (Party) ArchetypeQueryHelper.getByObjectReference(
+                service, reference) : null;
     }
 }

@@ -38,6 +38,10 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -65,6 +69,11 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * The practice.
      */
     private Party practice;
+
+    /**
+     * The transaction template.
+     */
+    private TransactionTemplate template;
 
 
     /**
@@ -298,6 +307,10 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
+        PlatformTransactionManager mgr = (PlatformTransactionManager)
+                applicationContext.getBean("txnManager");
+        template = new TransactionTemplate(mgr);
+
         customerRules = new CustomerRules();
         patientRules = new PatientRules();
         practice = (Party) create("party.organisationPractice");
@@ -316,15 +329,20 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     }
 
     /**
-     * Merges two customers, and verifies the 'from' customer has been
-     * deleted.
+     * Merges two customers in a transaction, and verifies the 'from' customer
+     * has been deleted.
      *
      * @param from the customer to merge from
      * @param to   the customer to merge to
      * @return the merged customer
      */
-    private Party checkMerge(Party from, Party to) {
-        customerRules.mergeCustomers(from, to);
+    private Party checkMerge(final Party from, final Party to) {
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                customerRules.mergeCustomers(from, to);
+                return null;
+            }
+        });
 
         // verify the from customer has been deleted
         assertNull(get(from));

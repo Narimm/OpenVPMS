@@ -19,8 +19,12 @@
 package org.openvpms.archetype.rules.party;
 
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CLOSING_BALANCE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.OPENING_BALANCE;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -31,10 +35,12 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -87,10 +93,15 @@ class CustomerMerger extends PartyMerger {
      */
     @Override
     protected List<IMObject> moveParticipations(Party from, Party to) {
+        List<IMObject> result = new ArrayList<IMObject>();
+
+        // remove the opening and closing balance acts from the from customer
         ArchetypeQuery fromQuery = createOpeningClosingBalanceQuery(from);
         if (remove(fromQuery)) {
             Date startTime = getFirstTransactionStartTime(from);
             if (startTime != null) {
+                // remove opening and closing balance acts from the to customer
+                // that are timestamped on or after the first transaction date
                 ArchetypeQuery toQuery = createOpeningClosingBalanceQuery(to);
                 toQuery.add(new NodeConstraint("startTime", RelationalOp.GTE,
                                                startTime));
@@ -98,8 +109,27 @@ class CustomerMerger extends PartyMerger {
                 remove(toQuery);
             }
         }
+        IMObjectReference fromRef = from.getObjectReference();
+        IMObjectReference toRef = to.getObjectReference();
 
-        return super.moveParticipations(from, to);
+        // assign any participations over to the to customer,
+        // excluding any linked to opening and closing balance acts that
+        // have been deleted (but due to transaction, are still returned)
+        ArchetypeQuery query
+                = new ArchetypeQuery("participation.*", true, false);
+        query.add(new ObjectRefNodeConstraint("entity", fromRef));
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> participations = getArchetypeService().get(
+                query).getResults();
+        for (IMObject object : participations) {
+            Participation participation = (Participation) object;
+            if (!TypeHelper.isA(participation.getAct(),
+                                OPENING_BALANCE, CLOSING_BALANCE)) {
+                participation.setEntity(toRef);
+                result.add(participation);
+            }
+        }
+        return result;
     }
 
     /**
@@ -177,8 +207,8 @@ class CustomerMerger extends PartyMerger {
      * @return a new query
      */
     private ArchetypeQuery createOpeningClosingBalanceQuery(Party party) {
-        String[] shortNames = {CustomerAccountArchetypes.OPENING_BALANCE,
-                               CustomerAccountArchetypes.CLOSING_BALANCE};
+        String[] shortNames = {OPENING_BALANCE,
+                               CLOSING_BALANCE};
         ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
                 party, shortNames);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
