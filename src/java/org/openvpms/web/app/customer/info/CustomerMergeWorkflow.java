@@ -24,6 +24,10 @@ import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.system.ServiceHelper;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 
 /**
@@ -52,9 +56,25 @@ class CustomerMergeWorkflow extends MergeWorkflow<Party> {
         return new SynchronousTask() {
             public void execute(TaskContext context) {
                 Party from = context.getCustomer();
-                CustomerRules rules = new CustomerRules();
-                rules.mergeCustomers(from, getObject());
+                merge(from);
             }
         };
+    }
+
+    /**
+     * Merges from the specified customer.
+     *
+     * @param from the customer to merge from
+     */
+    private void merge(final Party from) {
+        TransactionTemplate template = new TransactionTemplate(
+                ServiceHelper.getTransactionManager());
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                CustomerRules rules = new CustomerRules();
+                rules.mergeCustomers(from, getObject());
+                return true;
+            }
+        });
     }
 }

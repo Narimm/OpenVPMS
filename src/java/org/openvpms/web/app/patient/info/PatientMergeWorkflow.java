@@ -30,6 +30,10 @@ import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.system.ServiceHelper;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 
 /**
@@ -39,7 +43,6 @@ import org.openvpms.web.component.workflow.TaskContext;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class PatientMergeWorkflow extends MergeWorkflow<Party> {
-
 
     /**
      * Constructs a new <tt>MergeWorkflow</tt>.
@@ -91,10 +94,26 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
         return new SynchronousTask() {
             public void execute(TaskContext context) {
                 Party from = context.getPatient();
-                PatientRules rules = new PatientRules();
-                rules.mergePatients(from, getObject());
+                merge(from);
             }
         };
+    }
+
+    /**
+     * Merges from the specified patient.
+     *
+     * @param from the patient to merge from
+     */
+    private void merge(final Party from) {
+        TransactionTemplate template = new TransactionTemplate(
+                ServiceHelper.getTransactionManager());
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                PatientRules rules = new PatientRules();
+                rules.mergePatients(from, getObject());
+                return true;
+            }
+        });
     }
 
 }
