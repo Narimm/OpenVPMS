@@ -125,6 +125,9 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public boolean equals(Object obj) {
+        if (!(obj instanceof IMObjectReference)) {
+            return false;
+        }
         IMObjectReference rhs = (IMObjectReference) obj;
         return new EqualsBuilder()
                 .append(linkId, rhs.linkId)
