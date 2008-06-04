@@ -18,10 +18,12 @@
 
 package org.openvpms.archetype.rules.practice;
 
+import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_LOCATION_RELATIONSHIP;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
@@ -37,6 +39,12 @@ import java.util.List;
 public class PracticeRulesTestCase extends ArchetypeServiceTest {
 
     /**
+     * The rules.
+     */
+    private PracticeRules rules;
+
+
+    /**
      * Tests the {@link PracticeRules#getLocations(Party)} method.
      */
     public void testGetLocations() {
@@ -45,8 +53,8 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
         Party location2 = TestHelper.createLocation();
         EntityBean bean = new EntityBean(practice);
 
-        bean.addRelationship("entityRelationship.practiceLocation", location1);
-        bean.addRelationship("entityRelationship.practiceLocation", location2);
+        bean.addRelationship(PRACTICE_LOCATION_RELATIONSHIP, location1);
+        bean.addRelationship(PRACTICE_LOCATION_RELATIONSHIP, location2);
 
         PracticeRules rules = new PracticeRules();
         List<Party> locations = rules.getLocations(practice);
@@ -61,16 +69,15 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
     public void testGetDefaultLocation() {
         Party practice = createPractice();
 
-        PracticeRules rules = new PracticeRules();
         assertNull(rules.getDefaultLocation(practice));
 
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
         EntityBean bean = new EntityBean(practice);
 
-        bean.addRelationship("entityRelationship.practiceLocation", location1);
+        bean.addRelationship(PRACTICE_LOCATION_RELATIONSHIP, location1);
         EntityRelationship rel2
-                = bean.addRelationship("entityRelationship.practiceLocation",
+                = bean.addRelationship(PRACTICE_LOCATION_RELATIONSHIP,
                                        location2);
 
         Party defaultLocation = rules.getDefaultLocation(practice);
@@ -88,11 +95,54 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PracticeRules#isActivePractice(Party)} method.
+     */
+    public void testIsActivePractice() {
+        Party practice = TestHelper.getPractice();
+
+        assertTrue(rules.isActivePractice(practice));
+        save(practice); // save should succeed
+
+        Party newPractice = createPractice();
+
+        // try and save the new practice. Should fail
+        try {
+            save(newPractice);
+            fail("Expected save of another active practice to fail");
+        } catch (Exception expected) {
+        }
+
+        // mark the new practice inactive and save again. Should succeed.
+        newPractice.setActive(false);
+        save(newPractice);
+
+        assertFalse(rules.isActivePractice(newPractice));
+
+        // verify original practice still active
+        assertTrue(rules.isActivePractice(practice));
+    }
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        rules = new PracticeRules();
+    }
+
+    /**
      * Helper to create a new practice.
      *
      * @return a new practice
      */
     private Party createPractice() {
-        return (Party) create("party.organisationPractice");
+        Party party = (Party) create(PracticeArchetypes.PRACTICE);
+        party.setName("XPractice2");
+        Contact contact = (Contact) create("contact.phoneNumber");
+        party.addContact(contact);
+        return party;
     }
 }
