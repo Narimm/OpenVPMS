@@ -20,6 +20,7 @@ package org.openvpms.archetype.test;
 
 import junit.framework.Assert;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -304,7 +305,8 @@ public class TestHelper extends Assert {
      */
     public static Party getPractice() {
         Party party;
-        ArchetypeQuery query = new ArchetypeQuery("party.organisationPractice", false, false);
+        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE,
+                                                  true, true);
         query.setMaxResults(1);
         QueryIterator<Party> iter = new IMObjectQueryIterator<Party>(query);
         if (iter.hasNext()) {
@@ -319,9 +321,8 @@ public class TestHelper extends Assert {
                 }
                 bean.save();
             }
-
         } else {
-            party = (Party) create("party.organisationPractice");
+            party = (Party) create(PracticeArchetypes.PRACTICE);
             party.setName("XPractice");
             Contact contact = (Contact) create("contact.phoneNumber");
             party.addContact(contact);
@@ -340,7 +341,7 @@ public class TestHelper extends Assert {
      * @return a new location
      */
     public static Party createLocation() {
-        Party party = (Party) create("party.organisationLocation");
+        Party party = (Party) create(PracticeArchetypes.LOCATION);
         party.setName("XLocation");
         Contact contact = (Contact) create("contact.phoneNumber");
         party.addContact(contact);

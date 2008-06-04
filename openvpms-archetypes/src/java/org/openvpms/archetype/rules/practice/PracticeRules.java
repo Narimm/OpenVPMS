@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.practice;
 
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -61,17 +62,41 @@ public class PracticeRules {
     }
 
     /**
+     * Determines if the specified practice is the only active practice.
+     *
+     * @param practice the practice
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public boolean isActivePractice(Party practice) {
+        if (practice.isActive()) {
+            ArchetypeQuery query = new ArchetypeQuery(
+                    PracticeArchetypes.PRACTICE, true, true);
+            IMObjectQueryIterator<Party> iter
+                    = new IMObjectQueryIterator<Party>(service, query);
+            IMObjectReference practiceRef = practice.getObjectReference();
+            while (iter.hasNext()) {
+                Party party = iter.next();
+                if (!party.getObjectReference().equals(practiceRef)) {
+                    return false; // there is another active practice
+                }
+            }
+            return true; // no other active practice
+        }
+        return false;    // practice is inactive
+    }
+
+    /**
      * Returns the practice.
      *
      * @return the practice, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getPractice() {
-        ArchetypeQuery query = new ArchetypeQuery("party.organisationPractice",
+        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE,
                                                   true, true);
         query.setMaxResults(1);
         IMObjectQueryIterator<Party> iter
-                = new IMObjectQueryIterator<Party>(query);
+                = new IMObjectQueryIterator<Party>(service, query);
         return (iter.hasNext()) ? iter.next() : null;
     }
 
