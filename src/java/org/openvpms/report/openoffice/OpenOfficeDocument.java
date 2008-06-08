@@ -324,7 +324,7 @@ public class OpenOfficeDocument {
      *
      * @return the text field supplier interface
      */
-    private XTextFieldsSupplier getTextFieldSupplier() {
+    protected XTextFieldsSupplier getTextFieldSupplier() {
         return (XTextFieldsSupplier) UnoRuntime.queryInterface(
                 XTextFieldsSupplier.class, document);
     }
@@ -334,7 +334,7 @@ public class OpenOfficeDocument {
      *
      * @return the text field masters
      */
-    private XNameAccess getTextFieldMasters() {
+    protected XNameAccess getTextFieldMasters() {
         return getTextFieldSupplier().getTextFieldMasters();
     }
 

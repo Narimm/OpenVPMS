@@ -18,18 +18,20 @@
 
 package org.openvpms.report;
 
+import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
+
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
-import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
 import org.openvpms.report.jasper.DynamicJasperReport;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.jasper.TemplatedJasperObjectSetReport;
+import org.openvpms.report.msword.MsWordIMReport;
 import org.openvpms.report.openoffice.OpenOfficeIMReport;
 
 
@@ -80,6 +82,8 @@ public class ReportFactory {
                                                        handlers);
         } else if (name.endsWith(DocFormats.ODT_EXT)) {
             report = new OpenOfficeIMReport<IMObject>(template, handlers);
+        } else if (name.endsWith(DocFormats.DOC_EXT)) {
+            report = new MsWordIMReport<IMObject>(template, handlers);
         } else {
             throw new ReportException(
                     FailedToCreateReport,
