@@ -51,12 +51,12 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     /**
      * The document template.
      */
-    private final Document template;
+    protected final Document template;
 
     /**
      * The document handlers.
      */
-    private final DocumentHandlers handlers;
+    protected final DocumentHandlers handlers;
 
 
     /**
@@ -207,7 +207,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private OpenOfficeDocument create(Iterator<T> objects,
+    protected OpenOfficeDocument create(Iterator<T> objects,
                                       OOConnection connection) {
         OpenOfficeDocument doc = null;
         T object = null;

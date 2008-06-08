@@ -49,6 +49,12 @@ public class DocFormats {
             = "application/vnd.oasis.opendocument.text";
 
     /**
+     * MS Word Document mime-type.
+     */
+    public static final String DOC_TYPE
+            = "application/msword";
+
+    /**
      * OpenDocument Text file extension.
      */
     public static final String ODT_EXT = "odt";
@@ -62,4 +68,10 @@ public class DocFormats {
      * Rich Text Format file extension.
      */
     public static final String RTF_EXT = "rtf";
+
+    /**
+     * MS Word Document file extension.
+     */
+    public static final String DOC_EXT = "doc";
+
 }
