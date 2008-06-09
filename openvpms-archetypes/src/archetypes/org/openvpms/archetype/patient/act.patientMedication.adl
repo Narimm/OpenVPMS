@@ -22,7 +22,7 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Medication'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-              derivedValue="concat(openvpms:get(.,'product.entity.name'), ' - ', /details/label, 'Qty : ',/details/quantity,' Expiry : ', date:formatDate(/activityEndTime))"/>
+              derivedValue="concat(openvpms:get(.,'product.entity.name'), ' - ','Qty : ',/details/quantity,' Expiry : ', date:formatDate(/activityEndTime))"/>
         <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node displayName="Expiry Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0"/>
         <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
