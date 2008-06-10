@@ -18,8 +18,9 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -29,6 +30,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -69,23 +71,40 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
     /**
      * Tests end of period.
+     * <p/>
+     * On completion, the following acts should be present:
+     * <ul>
+     * <li>1/1/2007 invoice 100.00
+     * <li>1/1/2007 closing balance -100.00
+     * <li>1/1/2007 opening balance 100.00
+     * <li>2/1/2007 invoice 100.00
+     * </ul>
      */
     public void testEndOfPeriod() {
         StatementRules rules = new StatementRules(getPractice());
         Party customer = getCustomer();
+
+        // 30 days account fee days i.e 30 days before overdue fees are
+        // generated
+        Lookup accountType = FinancialTestHelper.createAccountType(
+                30, DateUnits.DAYS, new BigDecimal("10.00"), 30);
+        customer.addClassification(accountType);
+        save(customer);
+
         Date statementDate = getDate("2007-01-01");
 
         assertFalse(rules.hasStatement(customer, statementDate));
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(0, acts.size());
 
+        Money amount = new Money(100);
         FinancialAct invoice1 = createChargesInvoice(
-                new Money(100), getDatetime("2007-01-01 10:00:00"));
+                amount, getDatetime("2007-01-01 10:00:00"));
         save(invoice1);
 
         acts = getActs(customer, statementDate);
         assertEquals(1, acts.size());
-        checkAct(acts.get(0), invoice1, FinancialActStatus.POSTED);
+        checkAct(acts.get(0), invoice1, POSTED);
 
         EndOfPeriodProcessor processor
                 = new EndOfPeriodProcessor(statementDate, true, getPractice());
@@ -94,9 +113,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertTrue(rules.hasStatement(customer, statementDate));
         acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
-        checkAct(acts.get(0), invoice1, FinancialActStatus.POSTED);
-        checkAct(acts.get(1), CustomerAccountArchetypes.CLOSING_BALANCE,
-                 new BigDecimal("100"));
+        checkAct(acts.get(0), invoice1, POSTED);
+        checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
 
         // verify more acts aren't generated for the same statement date
         processor.process(customer);
@@ -105,7 +123,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // save a new invoice after the statement date
         FinancialAct invoice2 = createChargesInvoice(
-                new Money(100), getDatetime("2007-01-02 10:00:00"));
+                amount, getDatetime("2007-01-02 10:00:00"));
         save(invoice2);
 
         // verify it doesn't appear in the statement
@@ -117,9 +135,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
-        checkAct(acts.get(0), CustomerAccountArchetypes.OPENING_BALANCE,
-                 new BigDecimal("100"));
-        checkAct(acts.get(1), invoice2, FinancialActStatus.POSTED);
+        checkOpeningBalance(acts.get(0), new BigDecimal("100"));
+        checkAct(acts.get(1), invoice2, POSTED);
     }
 
     /**
@@ -127,6 +144,13 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     public void testPostCompleted() {
         Party customer = getCustomer();
+
+        // 60 days account fee days i.e 60 days before overdue fees are
+        // generated
+        Lookup accountType = FinancialTestHelper.createAccountType(
+                60, DateUnits.DAYS, new BigDecimal("10.00"), 60);
+        customer.addClassification(accountType);
+        save(customer);
 
         final Money amount = new Money(100);
         FinancialAct invoice1 = createChargesInvoice(
@@ -156,10 +180,10 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // verify the acts for the period match that expected
         List<Act> acts = getPostedActs(customer, statementDate);
         assertEquals(3, acts.size());
-        checkAct(acts, invoice1, FinancialActStatus.POSTED); // first 2 acts
-        checkAct(acts, invoice4, FinancialActStatus.POSTED); // in any order
-        checkAct(acts.get(2), CustomerAccountArchetypes.CLOSING_BALANCE,
-                 new BigDecimal("200"));
+        checkAct(acts, invoice1, POSTED); // first 2 acts
+        checkAct(acts, invoice4, POSTED); // in any order
+        checkClosingBalance(acts.get(2), new BigDecimal("200"),
+                            BigDecimal.ZERO);
     }
 
     /**
@@ -197,9 +221,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // verify the acts for the period match that expected
         List<Act> acts = getPostedActs(customer, statementDate);
         assertEquals(2, acts.size());
-        checkAct(acts.get(0), invoice4, FinancialActStatus.POSTED);
-        checkAct(acts.get(1), CustomerAccountArchetypes.CLOSING_BALANCE,
-                 amount);
+        checkAct(acts.get(0), invoice4, POSTED);
+        checkClosingBalance(acts.get(1), amount, amount);
     }
 
     /**
@@ -235,7 +258,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         assertEquals(invoice, acts.get(0));
         FinancialAct closing = (FinancialAct) acts.get(1);
-        checkAct(closing, CustomerAccountArchetypes.CLOSING_BALANCE, amount);
+        checkClosingBalance(closing, amount, BigDecimal.ZERO);
         assertTrue(closing.isCredit());
 
         // run end of period 30 days from when the invoice was posted
@@ -251,12 +274,9 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(3, acts.size());
 
         BigDecimal closingBalance = amount.add(feeAmount);
-        checkAct(acts.get(0), CustomerAccountArchetypes.OPENING_BALANCE,
-                 amount);
-        checkAct(acts.get(1), CustomerAccountArchetypes.DEBIT_ADJUST,
-                 feeAmount);
-        checkAct(acts.get(2), CustomerAccountArchetypes.CLOSING_BALANCE,
-                 closingBalance);
+        checkOpeningBalance(acts.get(0), amount);
+        checkAct(acts.get(1), DEBIT_ADJUST, feeAmount);
+        checkClosingBalance(acts.get(2), closingBalance, amount);
 
         // verify the fee has been added to the balance
         CustomerAccountRules rules = new CustomerAccountRules();
@@ -275,11 +295,24 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         processor.process(customer);
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(0, acts.size());
+
+        // check there is no opening balance for the next statement date
+        Date statementDate2 = getDate("2007-06-30");
+        acts = getActs(customer, statementDate2);
+        assertEquals(0, acts.size());
     }
 
     /**
-     * Verifies that end of period is performed if there is a account activity
+     * Verifies that end of period is performed if there is account activity
      * with a zero account balance.
+     * <p/>
+     * On completion, the following acts should be present:
+     * <ul>
+     * <li>1/1/2007 invoice   100.00
+     * <li>1/1/2007 payment  -100.00
+     * <li>2/5/2007 closing balance 0.0
+     * <li>2/5/2007 opening balance 0.0
+     * </ul>
      */
     public void testEndOfPeriodForZeroBalance() {
         Party customer = getCustomer();
@@ -304,22 +337,34 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         processor.process(customer);
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(3, acts.size());
-        checkAct(acts.get(0), invoice, FinancialActStatus.POSTED);
-        checkAct(acts.get(1), payment, FinancialActStatus.POSTED);
+        checkAct(acts.get(0), invoice, POSTED);
+        checkAct(acts.get(1), payment, POSTED);
         FinancialAct closing = (FinancialAct) acts.get(2);
-        checkAct(closing, CustomerAccountArchetypes.CLOSING_BALANCE,
-                 BigDecimal.ZERO);
+        checkClosingBalance(closing, BigDecimal.ZERO, BigDecimal.ZERO);
         assertTrue(closing.isCredit());
-    }
 
+        // check there is an opening balance for the next statement date
+        Date statementDate2 = getDate("2007-06-30");
+        acts = getActs(customer, statementDate2);
+        assertEquals(1, acts.size());
+        checkOpeningBalance(acts.get(0), BigDecimal.ZERO);
+    }
 
     /**
      * Verifies that the credit flag is set true and the total is positive for
      * <em>act.customerAccountOpeningBalance</em>
-     * and <em>act.customerAccountClosingBalance</em>.
+     * and <em>act.customerAccountClosingBalance</em> when there is a credit
+     * balance.
      */
     public void testEndOfPeriodForCreditBalance() {
         Party customer = getCustomer();
+
+        // 30 days account fee days i.e 30 days before overdue fees are
+        // generated
+        Lookup accountType = FinancialTestHelper.createAccountType(
+                30, DateUnits.DAYS, new BigDecimal("10.00"), 30);
+        customer.addClassification(accountType);
+        save(customer);
 
         Money amount = new Money(100);
         FinancialAct payment = createPayment(
@@ -338,16 +383,16 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         processor.process(customer);
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
-        checkAct(acts.get(0), payment, FinancialActStatus.POSTED);
+        checkAct(acts.get(0), payment, POSTED);
         FinancialAct closing = (FinancialAct) acts.get(1);
-        checkAct(closing, CustomerAccountArchetypes.CLOSING_BALANCE, amount);
+        checkClosingBalance(closing, amount, BigDecimal.ZERO);
         assertFalse(closing.isCredit());
 
         Date nextStatementDate = getDate("2007-03-01");
         acts = getActs(customer, nextStatementDate);
         assertEquals(1, acts.size());
         FinancialAct opening = (FinancialAct) acts.get(0);
-        checkAct(opening, CustomerAccountArchetypes.OPENING_BALANCE, amount);
+        checkOpeningBalance(opening, amount);
         assertTrue(opening.isCredit());
         assertEquals(amount.negate(), rules.getBalance(customer));
 
@@ -359,8 +404,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(2, acts.size());
         opening = (FinancialAct) acts.get(0);
         closing = (FinancialAct) acts.get(1);
-        checkAct(opening, CustomerAccountArchetypes.OPENING_BALANCE, amount);
-        checkAct(closing, CustomerAccountArchetypes.CLOSING_BALANCE, amount);
+        checkOpeningBalance(opening, amount);
+        checkClosingBalance(closing, amount, BigDecimal.ZERO);
         assertTrue(opening.isCredit());
         assertFalse(closing.isCredit());
     }
@@ -403,20 +448,17 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(3, acts.size());
 
         BigDecimal balance = amount.add(feeAmount);
-        checkAct(acts.get(0), invoice1, FinancialActStatus.POSTED);
-        checkAct(acts.get(1), CustomerAccountArchetypes.DEBIT_ADJUST,
-                 feeAmount);
-        checkAct(acts.get(2), CustomerAccountArchetypes.CLOSING_BALANCE,
-                 balance);
+        checkAct(acts.get(0), invoice1, POSTED);
+        checkAct(acts.get(1), DEBIT_ADJUST, feeAmount);
+        checkClosingBalance(acts.get(2), balance, amount);
 
         // now check acts for the next statement period.
         Date statementDate2 = getDate("2007-03-01");
         acts = getActs(customer, statementDate2);
         assertEquals(2, acts.size());
 
-        checkAct(acts.get(0), CustomerAccountArchetypes.OPENING_BALANCE,
-                 balance);
-        checkAct(acts.get(1), invoice2, FinancialActStatus.POSTED);
+        checkOpeningBalance(acts.get(0), balance);
+        checkAct(acts.get(1), invoice2, POSTED);
 
         // run end of period for statemenDate2
         processor = new EndOfPeriodProcessor(statementDate2, true,
@@ -428,15 +470,352 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         acts = getActs(customer, statementDate2);
         assertEquals(4, acts.size());
 
-        checkAct(acts.get(0), CustomerAccountArchetypes.OPENING_BALANCE,
-                 balance);
-        checkAct(acts.get(1), invoice2, FinancialActStatus.POSTED);
-        checkAct(acts.get(2), CustomerAccountArchetypes.DEBIT_ADJUST,
-                 feeAmount);
+        checkOpeningBalance(acts.get(0), balance);
+        checkAct(acts.get(1), invoice2, POSTED);
+        checkAct(acts.get(2), DEBIT_ADJUST, feeAmount);
 
         balance = balance.multiply(BigDecimal.valueOf(2));
-        checkAct(acts.get(3), CustomerAccountArchetypes.CLOSING_BALANCE,
-                 balance);
+        checkClosingBalance(acts.get(3), balance, amount);
+
+        // check there is an opening balance for the next statement date
+        Date statementDate3 = getDate("2008-04-30");
+        acts = getActs(customer, statementDate3);
+        assertEquals(1, acts.size());
+        checkOpeningBalance(acts.get(0), balance);
+    }
+
+    /**
+     * Verifies that no account fees are generated if a payment is made
+     * late, but prior to the statement date.
+     * <p/>
+     * On completion, the following acts should be present:
+     * <ul>
+     * <li>15/4/2008 invoice 50.00
+     * <li>30/4/2008 closing balance -50.00
+     * <li>30/4/2008 opening balance  50.00
+     * <li>25/5/2008 payment -50.00
+     * <li>31/5/2008 closing balance  0.00
+     * <li>31/5/2008 opening balance  0.00
+     * </ul>
+     */
+    public void testLatePaymentForInvoiceInPriorStatementPeriod() {
+        Party customer = getCustomer();
+        BigDecimal feeAmount = new BigDecimal("10.00");
+
+        // 30 days account fee days i.e 30 days before overdue fees are
+        // generated
+        Lookup accountType = FinancialTestHelper.createAccountType(
+                30, DateUnits.DAYS, feeAmount, 30);
+        customer.addClassification(accountType);
+        save(customer);
+
+        final Money amount = new Money("50.00");
+        FinancialAct invoice1 = createChargesInvoice(amount, customer);
+        invoice1.setActivityStartTime(getDatetime("2008-04-15 10:00:00"));
+        save(invoice1);
+
+        // run end of period for the 30/04.
+        Date statementDate1 = getDate("2008-04-30");
+
+        EndOfPeriodProcessor processor
+                = new EndOfPeriodProcessor(statementDate1, true, getPractice());
+        processor.process(customer);
+
+        // verify there are 2 acts: invoice1, and a closing balance
+        List<Act> acts = getActs(customer, statementDate1);
+        assertEquals(2, acts.size());
+
+        checkAct(acts.get(0), invoice1, POSTED);
+        checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
+
+        // now save a payment
+        FinancialAct payment = createPayment(
+                amount, getDatetime("2008-05-25 11:00:00"));
+        save(payment);
+
+        // run end of period for the 31/05
+        Date statementDate2 = getDate("2008-05-31");
+        acts = getActs(customer, statementDate2);
+        assertEquals(2, acts.size());
+
+        // run end of period for statemenDate2
+        processor = new EndOfPeriodProcessor(statementDate2, true,
+                                             getPractice());
+        processor.process(customer);
+
+        // verify there are 3 acts: an opening balance, payment, and a closing
+        // balance
+        acts = getActs(customer, statementDate2);
+        assertEquals(3, acts.size());
+        checkOpeningBalance(acts.get(0), amount);
+        checkAct(acts.get(1), payment, POSTED);
+        checkClosingBalance(acts.get(2), BigDecimal.ZERO, BigDecimal.ZERO);
+
+        // check there is an opening balance for the next statement date
+        Date statementDate3 = getDate("2008-06-30");
+        acts = getActs(customer, statementDate3);
+        assertEquals(1, acts.size());
+        checkOpeningBalance(acts.get(0), BigDecimal.ZERO);
+    }
+
+    /**
+     * Verifies that no accounting fee is generated if the overdue amount
+     * is less than the fee balance amount.
+     * <p/>
+     * On completion, the following acts should be present:
+     * <ul>
+     * <li>30/4/08 opening balance 155.00
+     * <li>15/5/08 payment         -150.00
+     * <li>31/5/08 closing balance -5.00
+     * <li>31/5/08 opening balance 5.00
+     * </ul>
+     */
+    public void testNoFeeForOverdueLessThanFeeBalance() {
+        Party customer = getCustomer();
+        BigDecimal feeAmount = new BigDecimal("10.00");
+        BigDecimal feeBalance = new BigDecimal("10.00");
+
+        // create account type where 30 days must elapse before overdue fees are
+        // generated for amounts >= $10
+        Lookup accountType = FinancialTestHelper.createAccountType(
+                30, DateUnits.DAYS, feeAmount, 30, feeBalance);
+        customer.addClassification(accountType);
+        save(customer);
+
+        final Money amount = new Money("155.00");
+        FinancialAct invoice1 = createChargesInvoice(amount, customer);
+        invoice1.setActivityStartTime(getDatetime("2008-04-29 10:00:00"));
+        save(invoice1);
+
+        // run end of period for the 30/04.
+        Date statementDate1 = getDate("2008-04-30");
+
+        EndOfPeriodProcessor processor
+                = new EndOfPeriodProcessor(statementDate1, true, getPractice());
+        processor.process(customer);
+
+        // verify there are 2 acts: invoice1, and a closing balance
+        List<Act> acts = getActs(customer, statementDate1);
+        assertEquals(2, acts.size());
+
+        checkAct(acts.get(0), invoice1, POSTED);
+        checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
+
+        // now save a payment
+        final Money amount2 = new Money("150");
+        FinancialAct payment = createPayment(
+                amount2, getDatetime("2008-05-15 11:00:00"));
+        save(payment);
+
+        // run end of period for the 30/05
+        Date statementDate2 = getDate("2008-05-30");
+        processor = new EndOfPeriodProcessor(statementDate2, true,
+                                             getPractice());
+        processor.process(customer);
+
+        // verify there are 3 acts: an opening balance, payment, and a closing
+        // balance
+        acts = getActs(customer, statementDate2);
+        assertEquals(3, acts.size());
+        Money amount3 = new Money("5.00");
+        checkOpeningBalance(acts.get(0), amount);
+        checkAct(acts.get(1), payment, POSTED);
+        checkClosingBalance(acts.get(2), amount3, amount3);
+
+        // check there is an opening balance for the next statement date
+        Date statementDate3 = getDate("2008-06-30");
+        acts = getActs(customer, statementDate3);
+        assertEquals(1, acts.size());
+        checkOpeningBalance(acts.get(0), amount3);
+    }
+
+    /**
+     * Verifies that an accounting fee is generated if the overdue amount
+     * is equal to the fee balance amount.
+     * <p/>
+     * On completion, the following acts should be present:
+     * <ul>
+     * <li>15/4/08 invoice 160.00
+     * <li>30/4/08 closing balance -160.00
+     * <li>30/4/08 opening balance 160.00
+     * <li>25/5/08 payment         -150.00
+     * <li>31/5/08 debit adjust    10.00
+     * <li>31/5/08 closing balance -20.00
+     * <li>31/5/08 opening balance 20.00
+     * </ul>
+     */
+    public void testFeeForOverdueEqualFeeBalance() {
+        Party customer = getCustomer();
+        BigDecimal feeAmount = new BigDecimal("10.00");
+        BigDecimal feeBalance = new BigDecimal("10.00");
+
+        // create account type where 30 days must elapse before overdue fees are
+        // generated for amounts >= $10
+        Lookup accountType = FinancialTestHelper.createAccountType(
+                30, DateUnits.DAYS, feeAmount, 30, feeBalance);
+        customer.addClassification(accountType);
+        save(customer);
+
+        final Money amount = new Money("160.00");
+        FinancialAct invoice1 = createChargesInvoice(amount, customer);
+        invoice1.setActivityStartTime(getDatetime("2008-04-15 10:00:00"));
+        save(invoice1);
+
+        // run end of period for the 30/04.
+        Date statementDate1 = getDate("2008-04-30");
+
+        EndOfPeriodProcessor processor
+                = new EndOfPeriodProcessor(statementDate1, true, getPractice());
+        processor.process(customer);
+
+        // verify there are 2 acts: invoice1, and a closing balance
+        List<Act> acts = getActs(customer, statementDate1);
+        assertEquals(2, acts.size());
+
+        checkAct(acts.get(0), invoice1, POSTED);
+        checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
+
+        // now save a payment
+        final Money amount2 = new Money("150");
+        FinancialAct payment = createPayment(
+                amount2, getDatetime("2008-05-25 11:00:00"));
+        save(payment);
+
+        // run end of period for the 31/05
+        Date statementDate2 = getDate("2008-05-31");
+        processor = new EndOfPeriodProcessor(statementDate2, true,
+                                             getPractice());
+        processor.process(customer);
+
+        // verify there are 4 acts: an opening balance, payment, fee, and a
+        // closing balance
+        acts = getActs(customer, statementDate2);
+        assertEquals(4, acts.size());
+        Money amount3 = new Money("10.00");
+        BigDecimal closingBalance = amount3.add(feeAmount);
+        checkOpeningBalance(acts.get(0), amount);
+        checkAct(acts.get(1), payment, POSTED);
+        checkAct(acts.get(2), DEBIT_ADJUST, feeAmount);
+        checkClosingBalance(acts.get(3), closingBalance, amount3);
+
+        // verify the fee has been added to the balance
+        CustomerAccountRules rules = new CustomerAccountRules();
+        assertEquals(closingBalance, rules.getBalance(customer));
+
+        // check there is an opening balance for the next statement date
+        Date statementDate3 = getDate("2008-06-30");
+        acts = getActs(customer, statementDate3);
+        assertEquals(1, acts.size());
+        checkOpeningBalance(acts.get(0), closingBalance);
+    }
+
+    /**
+     * Verifies the behaviour of having different overdue and fee date terms.
+     * <p/>
+     * On completion, the following acts should be present:
+     * <ul>
+     * <li>15/4/07 invoice 160.00
+     * <li>30/4/07 closing balance -160.00
+     * <li>30/4/07 opening balance 160.00
+     * <li>31/5/07 closing balance -160.00
+     * <li>31/5/07 opening balance 160.00
+     * <li>30/6/07 fee             10.00
+     * <li>30/6/07 closing balance -170.00
+     * <li>30/6/07 opening balance 170.00
+     * </ul>
+     */
+    public void testDifferentOverdueDateAndFeeDate() {
+        Party customer = getCustomer();
+        BigDecimal feeAmount = new BigDecimal("10.00");
+        BigDecimal feeBalance = new BigDecimal("10.00");
+
+        // create account type where 60 days must elapse before fees are
+        // generated for amounts >= $10. Amounts are overdue after 30 days
+        Lookup accountType = FinancialTestHelper.createAccountType(
+                30, DateUnits.DAYS, feeAmount, 60, feeBalance);
+        customer.addClassification(accountType);
+        save(customer);
+
+        final Money amount = new Money("160.00");
+        FinancialAct invoice1 = createChargesInvoice(amount, customer);
+        invoice1.setActivityStartTime(getDatetime("2007-04-15 10:00:00"));
+        save(invoice1);
+
+        // run end of period for the 30/04.
+        Date statementDate1 = getDate("2007-04-30");
+
+        EndOfPeriodProcessor processor
+                = new EndOfPeriodProcessor(statementDate1, true, getPractice());
+        processor.process(customer);
+
+        // verify there are 2 acts: invoice1, and a closing balance
+        List<Act> acts = getActs(customer, statementDate1);
+        assertEquals(2, acts.size());
+
+        checkAct(acts.get(0), invoice1, POSTED);
+        checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
+
+        // run end of period for the 31/05
+        Date statementDate2 = getDate("2007-05-31");
+        processor = new EndOfPeriodProcessor(statementDate2, true,
+                                             getPractice());
+        processor.process(customer);
+
+        // verify there are 2 acts: an opening balance, and a closing balance.
+        // The amount should now be overdue
+        acts = getActs(customer, statementDate2);
+        assertEquals(2, acts.size());
+        checkOpeningBalance(acts.get(0), amount);
+        checkClosingBalance(acts.get(1), amount, amount);
+
+        // run end of period for the 30/6
+        Date statementDate3 = getDate("2007-06-30");
+        processor = new EndOfPeriodProcessor(statementDate3, true,
+                                             getPractice());
+        processor.process(customer);
+
+        // verify there are 3 acts: an opening balance, fee, and a closing
+        // balance
+        acts = getActs(customer, statementDate3);
+        assertEquals(3, acts.size());
+        BigDecimal closingBalance = amount.add(feeAmount);
+        checkOpeningBalance(acts.get(0), amount);
+        checkAct(acts.get(1), DEBIT_ADJUST, feeAmount);
+        checkClosingBalance(acts.get(2), closingBalance, amount);
+
+        // verify the fee has been added to the balance
+        CustomerAccountRules rules = new CustomerAccountRules();
+        assertEquals(closingBalance, rules.getBalance(customer));
+
+        // check there is an opening balance for the next statement date
+        Date statementDate4 = getDate("2007-07-31");
+        acts = getActs(customer, statementDate4);
+        assertEquals(1, acts.size());
+        checkOpeningBalance(acts.get(0), closingBalance);
+    }
+
+    /**
+     * Verifies that an opening balance matches that expected.
+     *
+     * @param act    the act to verify
+     * @param amount the expected amount
+     */
+    private void checkOpeningBalance(Act act, BigDecimal amount) {
+        checkAct(act, OPENING_BALANCE, amount, FinancialActStatus.POSTED);
+    }
+
+    /**
+     * Verifies that a closing balance matches that expected.
+     *
+     * @param act     the act to verify
+     * @param amount  the expected amount
+     * @param overdue the expected overdue amount
+     */
+    private void checkClosingBalance(Act act, BigDecimal amount,
+                                     BigDecimal overdue) {
+        checkAct(act, CLOSING_BALANCE, amount, FinancialActStatus.POSTED);
+        ActBean bean = new ActBean(act);
+        assertEquals(overdue, bean.getBigDecimal("overdueBalance"));
     }
 
 }

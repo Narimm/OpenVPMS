@@ -163,10 +163,14 @@ public class CustomerAccountRules {
     }
 
     /**
-     * Calculates the overdue balance for a customer.
+     * Calculates the current overdue balance for a customer.
      * This is the sum of unallocated amounts in associated debits that have a
      * date less than the specified date less the overdue days.
      * The overdue days are specified in the customer's type node.
+     * <p/>
+     * NOTE: this method may not be used to determine an historical overdue
+     * balance. For this, use {@link #getOverdueBalance(Party, Date, Date)
+     * getOverdueBalance(Party customer, Date date, Date overdueDate)}.
      *
      * @param customer the customer
      * @param date     the date
@@ -176,6 +180,22 @@ public class CustomerAccountRules {
     public BigDecimal getOverdueBalance(Party customer, Date date) {
         Date overdue = getOverdueDate(customer, date);
         return calculator.getOverdueBalance(customer, overdue);
+    }
+
+    /**
+     * Calculates the overdue balance for a customer as of a particular date.
+     * <p/>
+     * This sums any POSTED debits prior to <em>overdueDate</em> that had
+     * not been fully allocated by credits as of <em>date</em>.
+     *
+     * @param customer    the customer
+     * @param date        the date
+     * @param overdueDate the date when amounts became overdue
+     * @return the overdue balance
+     */
+    public BigDecimal getOverdueBalance(Party customer, Date date,
+                                        Date overdueDate) {
+        return calculator.getOverdueBalance(customer, date, overdueDate);
     }
 
     /**

@@ -91,17 +91,17 @@ public class CustomerBalanceSummaryQueryTestCase
         }
         assertNotNull(set);
 
-        BigDecimal balance = (BigDecimal) set.get(
+        BigDecimal balance = set.getBigDecimal(
                 CustomerBalanceSummaryQuery.BALANCE);
-        BigDecimal overdue = (BigDecimal) set.get(
+        BigDecimal overdue = set.getBigDecimal(
                 CustomerBalanceSummaryQuery.OVERDUE_BALANCE);
-        BigDecimal credit = (BigDecimal) set.get(
+        BigDecimal credit = set.getBigDecimal(
                 CustomerBalanceSummaryQuery.CREDIT_BALANCE);
-        Date paymentDate = (Date) set.get(
+        Date paymentDate = set.getDate(
                 CustomerBalanceSummaryQuery.LAST_PAYMENT_DATE);
-        BigDecimal paymentAmount = (BigDecimal)
-                set.get(CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT);
-        Date invoiceDate = (Date) set.get(
+        BigDecimal paymentAmount = set.getBigDecimal(
+                CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT);
+        Date invoiceDate = set.getDate(
                 CustomerBalanceSummaryQuery.LAST_INVOICE_DATE);
         BigDecimal invoiceAmount = (BigDecimal)
                 set.get(CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);

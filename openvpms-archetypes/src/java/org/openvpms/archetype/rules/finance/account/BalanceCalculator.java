@@ -26,12 +26,14 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -135,7 +137,7 @@ public class BalanceCalculator {
     }
 
     /**
-     * Calculates the overdue balance for a customer.
+     * Calculates the current overdue balance for a customer.
      * This is the sum of unallocated amounts in associated debits that have a
      * date less than the specified overdue date.
      *
@@ -158,6 +160,59 @@ public class BalanceCalculator {
             amount = BigDecimal.ZERO;
         }
         return amount;
+    }
+
+    /**
+     * Calculates the overdue balance for a customer as of a particular date.
+     * <p/>
+     * This sums any POSTED debits prior to <em>overdueDate</em> that had
+     * not been fully allocated by credits as of <em>date</em>.
+     *
+     * @param customer    the customer
+     * @param date        the date
+     * @param overdueDate the date when amounts became overdue
+     * @return the overdue balance
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getOverdueBalance(Party customer, Date date,
+                                        Date overdueDate) {
+
+        NamedQuery query = new NamedQuery("getOverdueAmounts", Arrays.asList(
+                "uid", "total", "allocatedTotal", "allocatedAmount",
+                "overdueAllocationTime"));
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        query.setParameter("customer", customer.getLinkId());
+        query.setParameter("date", date);
+        query.setParameter("overdueDate", overdueDate);
+
+        ObjectSetQueryIterator iter = new ObjectSetQueryIterator(service,
+                                                                 query);
+        long lastUID = -1;
+        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal allocatedTotal = BigDecimal.ZERO;
+        BigDecimal result = BigDecimal.ZERO;
+        while (iter.hasNext()) {
+            ObjectSet set = iter.next();
+            long uid = set.getLong("uid");
+            if (uid != lastUID) {
+                if (lastUID != -1) {
+                    result = result.add(total).subtract(allocatedTotal);
+                }
+                total = set.getBigDecimal("total", BigDecimal.ZERO);
+                allocatedTotal = set.getBigDecimal("allocatedTotal",
+                                                   BigDecimal.ZERO);
+                lastUID = uid;
+            }
+            BigDecimal allocatedAmount = set.getBigDecimal("allocatedAmount",
+                                                           BigDecimal.ZERO);
+            Date overdueAllocationTime = set.getDate("overdueAllocationTime");
+            if (overdueAllocationTime != null) {
+                // amount was allocated past date, so remove it
+                allocatedTotal = allocatedTotal.subtract(allocatedAmount);
+            }
+        }
+        result = result.add(total).subtract(allocatedTotal);
+        return result;
     }
 
     /**
@@ -242,9 +297,10 @@ public class BalanceCalculator {
         ActCalculator calculator = new ActCalculator(service);
         while (iterator.hasNext()) {
             ObjectSet set = iterator.next();
-            BigDecimal amount = (BigDecimal) set.get("a.amount");
-            BigDecimal allocated = (BigDecimal) set.get("a.allocatedAmount");
-            boolean credit = (Boolean) set.get("a.credit");
+            BigDecimal amount = set.getBigDecimal("a.amount", BigDecimal.ZERO);
+            BigDecimal allocated = set.getBigDecimal("a.allocatedAmount",
+                                                     BigDecimal.ZERO);
+            boolean credit = set.getBoolean("a.credit");
             BigDecimal unallocated = getAllocatable(amount, allocated);
             total = calculator.addAmount(total, unallocated, credit);
         }
@@ -275,8 +331,8 @@ public class BalanceCalculator {
         ActCalculator calculator = new ActCalculator(service);
         while (iterator.hasNext()) {
             ObjectSet set = iterator.next();
-            BigDecimal amount = (BigDecimal) set.get("a.amount");
-            boolean credit = (Boolean) set.get("a.credit");
+            BigDecimal amount = set.getBigDecimal("a.amount", BigDecimal.ZERO);
+            boolean credit = set.getBoolean("a.credit");
             total = calculator.addAmount(total, amount, credit);
         }
         return total;

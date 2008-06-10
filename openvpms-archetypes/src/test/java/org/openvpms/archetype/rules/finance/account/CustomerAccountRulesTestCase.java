@@ -298,11 +298,13 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(invoice);
 
         // check the balance for a payment
-        assertEquals(hundred, rules.getBalance(customer, BigDecimal.ZERO, true));
+        assertEquals(hundred,
+                     rules.getBalance(customer, BigDecimal.ZERO, true));
 
         // check the balance for a refund
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer, BigDecimal.ZERO,
-                                                       false));
+        assertEquals(BigDecimal.ZERO,
+                     rules.getBalance(customer, BigDecimal.ZERO,
+                                      false));
 
         // simulate payment of 60. Running balance should be 40
         assertEquals(forty, rules.getBalance(customer, sixty, true));
@@ -312,8 +314,9 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(payment1);
 
         // check the balance for a payment
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer, BigDecimal.ZERO,
-                                                       true));
+        assertEquals(BigDecimal.ZERO,
+                     rules.getBalance(customer, BigDecimal.ZERO,
+                                      true));
 
         // check the balance for a refund
         assertEquals(ten, rules.getBalance(customer, BigDecimal.ZERO, false));
@@ -325,7 +328,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     /**
      * Tests the {@link CustomerAccountRules#getOverdueBalance} method.
      */
-    public void testGetOverdueBalance() {
+    public void testGetCurrentOverdueBalance() {
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
         customer.addClassification(createAccountType(30, DateUnits.DAYS));
@@ -361,6 +364,54 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkBalance(new Money(-50));
         overdue = rules.getOverdueBalance(customer, now);
         assertEquals(BigDecimal.ZERO, overdue);
+    }
+
+    /**
+     * Tests the {@link CustomerAccountRules#getOverdueBalance(Party, Date,
+     * Date)} method.
+     */
+    public void testGetOverdueBalance() {
+        // add a 30 day payment term for accounts to the customer
+        Party customer = getCustomer();
+        customer.addClassification(createAccountType(30, DateUnits.DAYS));
+        save(customer);
+
+        // create and save a new invoice
+        final Money amount = new Money(100);
+        Date startTime = java.sql.Date.valueOf("2007-1-1");
+        FinancialAct invoice = createChargesInvoice(amount);
+        invoice.setActivityStartTime(startTime);
+        save(invoice);
+
+        // check the invoice is not overdue on the day it is saved
+        Date overdueDate = rules.getOverdueDate(customer, startTime);
+        BigDecimal overdue = rules.getOverdueBalance(customer, startTime,
+                                                     overdueDate);
+        assertEquals(BigDecimal.ZERO, overdue);
+
+        // 30 days from saved, amount shouldn't be overdue
+        Date now = DateRules.getDate(startTime, 30, DateUnits.DAYS);
+        overdueDate = rules.getOverdueDate(customer, now);
+        overdue = rules.getOverdueBalance(customer, now, overdueDate);
+        assertEquals(BigDecimal.ZERO, overdue);
+
+        // 31 days from saved, invoice should be overdue.
+        Date statementDate = DateRules.getDate(now, 1, DateUnits.DAYS);
+        overdueDate = rules.getOverdueDate(customer, statementDate);
+        overdue = rules.getOverdueBalance(customer, statementDate, overdueDate);
+        assertEquals(amount, overdue);
+
+        // now save a credit dated 32 days from saved.
+        // The current balance should = -50, but the overdue balance as
+        // of 31 days after saved should still be 100
+        now = DateRules.getDate(statementDate, 1, DateUnits.DAYS);
+        FinancialAct credit = createChargesCredit(new Money(150));
+        credit.setActivityStartTime(now);
+        save(credit);
+
+        checkBalance(new Money(-50));
+        overdue = rules.getOverdueBalance(customer, statementDate, overdueDate);
+        assertEquals(amount, overdue);
     }
 
     /**

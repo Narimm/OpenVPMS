@@ -193,23 +193,24 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      */
     public void createPeriodEnd(Party customer, StatementPeriod period,
                                 BigDecimal balance) {
-        Date overdueDate = account.getOverdueDate(customer, timestamp);
-        BigDecimal overdue = account.getBalance(
-                customer, period.getOpeningBalanceTimestamp(),
-                overdueDate, period.getOpeningBalance());
-
-        BigDecimal accountFee = statement.getAccountFee(
-                customer, period.getOpeningBalanceTimestamp(),
-                period.getClosingBalanceTimestamp(),
-                period.getOpeningBalance());
+        BigDecimal overdue = BigDecimal.ZERO;
         FinancialAct fee = null;
-        if (accountFee.compareTo(BigDecimal.ZERO) != 0) {
-            Date feeStartTime = period.getFeeTimestamp();
-            fee = statement.createAccountingFeeAdjustment(customer, accountFee,
-                                                          feeStartTime);
-            balance = balance.add(accountFee);
+        if (balance.compareTo(BigDecimal.ZERO) != 0) {
+            Date overdueDate = account.getOverdueDate(customer, timestamp);
+            overdue = account.getOverdueBalance(customer, timestamp,
+                                                overdueDate);
+            if (overdue.compareTo(BigDecimal.ZERO) != 0) {
+                BigDecimal accountFee = statement.getAccountFee(
+                        customer, timestamp);
+                if (accountFee.compareTo(BigDecimal.ZERO) != 0) {
+                    Date feeStartTime = period.getFeeTimestamp();
+                    fee = statement.createAccountingFeeAdjustment(customer,
+                                                                  accountFee,
+                                                                  feeStartTime);
+                    balance = balance.add(accountFee);
+                }
+            }
         }
-
         boolean reverseCredit = false;
         if (balance.signum() == -1) {
             balance = balance.negate();

@@ -120,7 +120,7 @@ public class StatementRules {
      * (<em>lookup.customerAccountType</em>);</li>
      * <li>there is a non-zero overdue balance for the account fee date
      * (derived from the specified date - <tt>accountFeeDays</tt>);</li>
-     * <li>the overdue balance is greater than <tt>accountFeeBalance</tt>; and
+     * <li>the overdue balance is &gt= <tt>accountFeeBalance</tt>; and
      * </li>
      * <li>the account fee is greater than <tt>accountFeeMinimum</tt>.
      * The account fee is calculated as:
@@ -133,23 +133,19 @@ public class StatementRules {
      * </ul>
      *
      * @param customer                the customer
-     * @param openingBalanceTimestamp the customer's opening balance timestamp
      * @param statementDate           the statement date
-     * @param openingBalance          the customer's opening balance
      * @return the account fee, or <tt>BigDecimal.ZERO</tt> if there is no fee
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal getAccountFee(Party customer,
-                                    Date openingBalanceTimestamp,
-                                    Date statementDate,
-                                    BigDecimal openingBalance) {
+    public BigDecimal getAccountFee(Party customer, Date statementDate) {
         BigDecimal result = BigDecimal.ZERO;
         AccountType accountType = getAccountType(customer);
         if (accountType != null) {
+            statementDate = acts.getStatementTimestamp(statementDate);
             Date feeDate = accountType.getAccountFeeDate(statementDate);
             feeDate = acts.getStatementTimestamp(feeDate);
-            BigDecimal overdue = account.getBalance(
-                    customer, openingBalanceTimestamp, feeDate, openingBalance);
+            BigDecimal overdue = account.getOverdueBalance(
+                    customer, statementDate, feeDate);
             BigDecimal feeBalance = accountType.getAccountFeeBalance();
             if (overdue.compareTo(BigDecimal.ZERO) != 0
                     && overdue.compareTo(feeBalance) >= 0) {

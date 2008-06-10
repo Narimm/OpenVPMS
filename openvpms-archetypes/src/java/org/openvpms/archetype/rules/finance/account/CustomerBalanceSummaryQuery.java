@@ -559,12 +559,12 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
 
         if (!exclude) {
             result = new BalanceObjectSet(current);
-            result.add(CUSTOMER_REFERENCE, current);
-            result.add(CUSTOMER_NAME, name);
-            result.add(BALANCE, balance);
-            result.add(OVERDUE_BALANCE, overdueBalance);
-            result.add(CREDIT_BALANCE, creditBalance);
-            result.add(UNBILLED_AMOUNT, unbilled);
+            result.set(CUSTOMER_REFERENCE, current);
+            result.set(CUSTOMER_NAME, name);
+            result.set(BALANCE, balance);
+            result.set(OVERDUE_BALANCE, overdueBalance);
+            result.set(CREDIT_BALANCE, creditBalance);
+            result.set(UNBILLED_AMOUNT, unbilled);
         }
         return result;
     }
@@ -655,8 +655,9 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
          */
         @Override
         public Object get(String name) {
-            Object object = super.get(name);
-            if (object == null) {
+            Object object = null;
+            if (!super.getNames().contains(name)) {
+                // derive the property value as required
                 if (LAST_PAYMENT_DATE.equals(name)) {
                     object = getLastPaymentDate();
                 } else if (LAST_PAYMENT_AMOUNT.equals(name)) {
@@ -666,6 +667,8 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
                 } else if (LAST_INVOICE_AMOUNT.equals(name)) {
                     object = getLastInvoiceAmount();
                 }
+            } else {
+                object = super.get(name);
             }
             return object;
         }
@@ -774,18 +777,6 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
             }
 
             return found;
-        }
-
-        /**
-         * Sets an object.
-         *
-         * @param name  the object name
-         * @param value the object value
-         * @return the object
-         */
-        private Object set(String name, Object value) {
-            add(name, value);
-            return value;
         }
 
     }

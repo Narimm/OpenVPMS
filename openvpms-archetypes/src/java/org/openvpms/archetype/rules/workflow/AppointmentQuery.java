@@ -237,34 +237,34 @@ public class AppointmentQuery {
                 }
                 currentAct = actRef;
                 current = new ObjectSet();
-                current.add(ACT_REFERENCE, actRef);
-                current.add(ACT_START_TIME, set.get(ACT_START_TIME));
-                current.add(ACT_END_TIME, set.get(ACT_END_TIME));
-                current.add(ACT_STATUS, set.get(ACT_STATUS));
-                current.add(ACT_REASON, set.get(ACT_REASON));
-                current.add(ACT_DESCRIPTION, set.get(ACT_DESCRIPTION));
+                current.set(ACT_REFERENCE, actRef);
+                current.set(ACT_START_TIME, set.get(ACT_START_TIME));
+                current.set(ACT_END_TIME, set.get(ACT_END_TIME));
+                current.set(ACT_STATUS, set.get(ACT_STATUS));
+                current.set(ACT_REASON, set.get(ACT_REASON));
+                current.set(ACT_DESCRIPTION, set.get(ACT_DESCRIPTION));
             }
             IMObjectReference entityRef
                     = (IMObjectReference) set.get("entity.objectReference");
             String entityName = (String) set.get("entity.name");
             if (TypeHelper.isA(entityRef, "party.customer*")) {
-                current.add(CUSTOMER_REFERENCE, entityRef);
-                current.add(CUSTOMER_NAME, entityName);
+                current.set(CUSTOMER_REFERENCE, entityRef);
+                current.set(CUSTOMER_NAME, entityName);
             } else if (TypeHelper.isA(entityRef, "party.patient*")) {
-                current.add(PATIENT_REFERENCE, entityRef);
-                current.add(PATIENT_NAME, entityName);
+                current.set(PATIENT_REFERENCE, entityRef);
+                current.set(PATIENT_NAME, entityName);
             } else if (TypeHelper.isA(entityRef, "entity.appointmentType")) {
-                current.add(APPOINTMENT_REFERENCE, entityRef);
-                current.add(APPOINTMENT_NAME, entityName);
+                current.set(APPOINTMENT_REFERENCE, entityRef);
+                current.set(APPOINTMENT_NAME, entityName);
             } else if (TypeHelper.isA(entityRef, "security.user")) {
-                current.add(CLINICIAN_REFERENCE, entityRef);
-                current.add(CLINICIAN_NAME, entityName);
+                current.set(CLINICIAN_REFERENCE, entityRef);
+                current.set(CLINICIAN_NAME, entityName);
             }
             String key = (String) set.get("act.details_Keys");
             TypedValue value = (TypedValue) set.get("act.details_Values");
             if (key != null && value != null) {
-                if (current.get(key) == null) {
-                    current.add(key, value.getObject());
+                if (!current.exists(key)) {
+                    current.set(key, value.getObject());
                 }
             }
         }
