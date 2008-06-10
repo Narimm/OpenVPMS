@@ -114,7 +114,8 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
         String mimeType = null;
         for (String type : mimeTypes) {
             if (DocFormats.ODT_TYPE.equals(type)
-                    || DocFormats.PDF_TYPE.equals(type)) {
+                    || DocFormats.PDF_TYPE.equals(type)
+                    || DocFormats.DOC_TYPE.equals(type)) {
                 mimeType = type;
                 break;
             }

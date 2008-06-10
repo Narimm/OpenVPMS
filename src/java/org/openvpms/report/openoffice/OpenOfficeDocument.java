@@ -247,7 +247,6 @@ public class OpenOfficeDocument {
      * @throws OpenOfficeException if the document cannot be exported
      */
     public byte[] export(String mimeType) {
-        boolean isPDF = mimeType.equals(DocFormats.PDF_TYPE);
         XTextDocument textDocument = (XTextDocument) UnoRuntime.queryInterface(
                 XTextDocument.class, document);
         XOutputStreamToByteArrayAdapter stream
@@ -259,8 +258,11 @@ public class OpenOfficeDocument {
         PropertyValue[] properties;
         PropertyValue outputStream = property("OutputStream", stream);
         PropertyValue overwrite = property("Overwrite", true);
-        if (isPDF) {
+        if (mimeType.equals(DocFormats.PDF_TYPE)) {
             PropertyValue filter = property("FilterName", "writer_pdf_Export");
+            properties = new PropertyValue[]{outputStream, overwrite, filter};
+        } else if (mimeType.equals(DocFormats.DOC_TYPE)) {
+            PropertyValue filter = property("FilterName", "MS Word 97");
             properties = new PropertyValue[]{outputStream, overwrite, filter};
         } else {
             properties = new PropertyValue[]{outputStream, overwrite};
@@ -288,11 +290,14 @@ public class OpenOfficeDocument {
      *                             created
      */
     public Document export(String mimeType, String name) {
-        boolean isPDF = mimeType.equals(DocFormats.PDF_TYPE);
         byte[] content = export(mimeType);
-        if (isPDF) {
+        if (mimeType.equals(DocFormats.PDF_TYPE)) {
             name = name + "." + DocFormats.PDF_EXT;
         }
+        else if (mimeType.equals(DocFormats.DOC_TYPE)) {
+            name = name + "." + DocFormats.DOC_EXT;
+        }
+        
         try {
             DocumentHandler handler = handlers.get(name, "document.other",
                                                    mimeType);

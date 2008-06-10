@@ -70,10 +70,10 @@ public class MsWordIMReport<T> extends OpenOfficeIMReport<T> {
         try {
             doc = new MsWordDocument(template, connection, handlers);
             List<String> fieldNames = doc.getUserFieldNames();
+            // Field names in OpenVPMS Word documents are the expressions we need to evaluate.
             for (String name : fieldNames) {
-                String value = doc.getUserField(name);
-                if (value != null) {
-                    value = eval.getFormattedValue(value);
+                if (name != null) {
+                    String value = eval.getFormattedValue(name);
                     doc.setUserField(name, value);
                 }
             }
