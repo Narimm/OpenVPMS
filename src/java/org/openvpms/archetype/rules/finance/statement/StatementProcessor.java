@@ -166,9 +166,7 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
         Iterable<Act> result = actHelper.getPostedAndCompletedActs(
                 customer, statementDate, openTimestamp);
 
-        BigDecimal fee = rules.getAccountFee(customer, openTimestamp,
-                                             statementDate,
-                                             period.getOpeningBalance());
+        BigDecimal fee = rules.getAccountFee(customer, statementDate);
         if (fee.compareTo(BigDecimal.ZERO) != 0) {
             Act feeAct = rules.createAccountingFeeAdjustment(
                     customer, fee, period.getFeeTimestamp());
