@@ -77,6 +77,21 @@ public class MsWordDocument extends OpenOfficeDocument {
      */
 	@Override
 	public String getUserField(String name) {
+        XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
+        XEnumeration en = fields.createEnumeration();
+        while (en.hasMoreElements()){
+        	try {
+	        	Object field = en.nextElement();
+	            XPropertySet xPropertySet = (XPropertySet)UnoRuntime.queryInterface(XPropertySet.class, field);
+	            String fieldCode = (String)xPropertySet.getPropertyValue("FieldCode");
+	            String fieldName = fieldCode.trim().substring(FIELD_CODE_PREFIX.length()).trim();
+	            if (fieldName.equalsIgnoreCase(name)) {
+	            	return (String)xPropertySet.getPropertyValue("Content");
+	            }
+        	} catch (Exception exception) { 
+        	}
+        }
+
 		return name;
 	}
 
