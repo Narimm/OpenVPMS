@@ -169,10 +169,9 @@ public class StatementEmailProcessor
                     template, ArchetypeServiceHelper.getArchetypeService(),
                     handlers);
             Iterable<IMObject> objects = getActs(statement);
-            final Document doc
-                    = report.generate(objects.iterator(),
-                                      getParameters(statement),
-                                      new String[]{DocFormats.PDF_TYPE});
+            final Document doc = report.generate(objects.iterator(),
+                                                 getParameters(statement),
+                                                 DocFormats.PDF_TYPE);
 
             final DocumentHandler handler = handlers.get(
                     doc.getName(),

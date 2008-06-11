@@ -31,7 +31,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
@@ -115,9 +114,10 @@ public class ReportGenerator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(IMObject object) {
-        String[] mimeTypes = {DocFormats.ODT_TYPE, DocFormats.PDF_TYPE};
         Map<String, Object> empty = Collections.emptyMap();
-        return generate(object, empty, mimeTypes);
+        IMReport<IMObject> report = createReport();
+        return report.generate(Arrays.asList(object).iterator(), empty,
+                               report.getDefaultMimeType());
     }
 
     /**
@@ -132,7 +132,7 @@ public class ReportGenerator {
      */
     public Document generate(IMObject object, String mimeType) {
         Map<String, Object> empty = Collections.emptyMap();
-        return generate(object, empty, new String[]{mimeType});
+        return generate(object, empty, mimeType);
     }
 
     /**
@@ -150,7 +150,8 @@ public class ReportGenerator {
     public Document generate(IMObject object,
                              Map<String, Object> parameters,
                              String mimeType) {
-        return generate(object, parameters, new String[]{mimeType});
+        return generate(Arrays.asList(object).iterator(), parameters,
+                        mimeType);
     }
 
     /**
@@ -165,7 +166,7 @@ public class ReportGenerator {
      */
     public Document generate(Iterator<IMObject> objects, String mimeType) {
         Map<String, Object> empty = Collections.emptyMap();
-        return generate(objects, empty, new String[]{mimeType});
+        return generate(objects, empty, mimeType);
     }
 
     /**
@@ -191,30 +192,10 @@ public class ReportGenerator {
     /**
      * Generates a report.
      *
-     * @param object     the object to generate the report for
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report
-     * @param mimeTypes  a list of mime-types, used to select the preferred
-     *                   output format of the report
-     * @return the generated report
-     * @throws DocumentException         if the template document can't be found
-     * @throws ReportException           for any report error
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    protected Document generate(IMObject object, Map<String, Object> parameters,
-                                String[] mimeTypes) {
-        return generate(Arrays.asList(object).iterator(), parameters,
-                        mimeTypes);
-    }
-
-    /**
-     * Generates a report.
-     *
      * @param objects    the objects to generate the report for
      * @param parameters a map of parameter names and their values, to pass to
      *                   the report
-     * @param mimeTypes  a list of mime-types, used to select the preferred
-     *                   output format of the report
+     * @param mimeType   the mime type of the report.
      * @return the generated report
      * @throws DocumentException         if the template document can't be found
      * @throws ReportException           for any report error
@@ -222,8 +203,8 @@ public class ReportGenerator {
      */
     protected Document generate(Iterator<IMObject> objects,
                                 Map<String, Object> parameters,
-                                String[] mimeTypes) {
+                                String mimeType) {
         IMReport<IMObject> report = createReport();
-        return report.generate(objects, parameters, mimeTypes);
+        return report.generate(objects, parameters, mimeType);
     }
 }

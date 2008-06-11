@@ -167,13 +167,12 @@ public class SQLReportPrinter extends AbstractPrinter {
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
-        String[] mimeTypes = {DocFormats.PDF_TYPE};
         Map<String, Object> params = new HashMap<String, Object>(parameters);
         Connection connection = null;
         try {
             connection = getConnection();
             params.put(connectionName, connection);
-            return report.generate(params, mimeTypes);
+            return report.generate(params, DocFormats.PDF_TYPE);
         } finally {
             closeConnection(connection);
         }
