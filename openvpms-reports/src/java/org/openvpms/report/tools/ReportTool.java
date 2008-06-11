@@ -34,7 +34,6 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportFactory;
 import org.springframework.context.ApplicationContext;
@@ -138,10 +137,8 @@ public class ReportTool {
      */
     public void save(IMObject object, String path) throws IOException {
         IMReport<IMObject> report = getReport(object);
-        String[] mimeTypes = {DocFormats.RTF_TYPE, DocFormats.ODT_TYPE,
-                              DocFormats.PDF_TYPE};
         List<IMObject> list = Arrays.asList(object);
-        Document doc = report.generate(list.iterator(), mimeTypes);
+        Document doc = report.generate(list.iterator());
         path = new File(path, doc.getName()).getPath();
         FileOutputStream output = new FileOutputStream(path);
         DocumentHandler handler = handlers.get(doc);
@@ -207,7 +204,7 @@ public class ReportTool {
     protected IMReport<IMObject> getReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
         return ReportFactory.createIMObjectReport(shortName, service,
-                                                    handlers);
+                                                  handlers);
     }
 
     /**

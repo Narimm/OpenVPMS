@@ -18,6 +18,7 @@
 
 package org.openvpms.report.jasper;
 
+import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
@@ -85,6 +86,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * Cached expression evaluator.
      */
     private JREvaluator evaluator;
+    private static final String[] MIME_TYPES = new String[]{DocFormats.PDF_TYPE, DocFormats.RTF_TYPE};
 
 
     /**
@@ -131,19 +133,54 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     }
 
     /**
+     * Returns the default mime type for report documents.
+     *
+     * @return the default mime type
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     */
+    public String getDefaultMimeType() {
+        return DocFormats.PDF_TYPE;
+    }
+
+    /**
+     * Returns the supported mime types for report documents.
+     *
+     * @return the supported mime types
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     */
+    public String[] getMimeTypes() {
+        return MIME_TYPES;
+    }
+
+    /**
+     * Generates a report.
+     * <p/>
+     * The default mime type will be used to select the output format.
+     *
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     */
+    public Document generate(Map<String, Object> parameters) {
+        return generate(parameters, getDefaultMimeType());
+    }
+
+    /**
      * Generates a report.
      *
      * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be <tt>null</tt>
-     * @param mimeTypes  a list of mime-types, used to select the preferred
-     *                   output format of the report
+     *                   the report
+     * @param mimeType   the output format of the report
      * @return a document containing the report
-     * @throws UnsupportedOperationException if this operation is not supported
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
      */
-    public Document generate(Map<String, Object> parameters,
-                             String[] mimeTypes) {
+    public Document generate(Map<String, Object> parameters, String mimeType) {
         Document document;
-        String mimeType = getMimeType(mimeTypes);
         Map<String, Object> properties = getDefaultParameters();
         if (parameters != null) {
             properties.putAll(parameters);
@@ -155,7 +192,92 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport,
                                       exception.getMessage());
+        }
+        return document;
+    }
 
+    /**
+     * Generates a report.
+     *
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @param mimeTypes  a list of mime-types, used to select the preferred
+     *                   output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     */
+    @Deprecated
+    public Document generate(Map<String, Object> parameters,
+                             String[] mimeTypes) {
+        return generate(parameters, getMimeType(mimeTypes));
+    }
+
+    /**
+     * Generates a report for a collection of objects.
+     * <p/>
+     * The default mime type will be used to select the output format.
+     *
+     * @param objects the objects to report on
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     */
+    public Document generate(Iterator<T> objects) {
+        return generate(objects, getDefaultMimeType());
+    }
+
+    /**
+     * Generates a report for a collection of objects.
+     *
+     * @param objects  the objects to report on
+     * @param mimeType the output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     */
+    public Document generate(Iterator<T> objects, String mimeType) {
+        Map<String, Object> empty = Collections.emptyMap();
+        return generate(objects, empty, mimeType);
+    }
+
+    /**
+     * Generates a report for a collection of objects.
+     * <p/>
+     * The default mime type will be used to select the output format.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     */
+    public Document generate(Iterator<T> objects,
+                             Map<String, Object> parameters) {
+        return generate(objects, parameters, getDefaultMimeType());
+    }
+
+    /**
+     * Generates a report for a collection of objects.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @param mimeType   the output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     */
+    public Document generate(Iterator<T> objects,
+                             Map<String, Object> parameters, String mimeType) {
+        Document document;
+        try {
+            JasperPrint print = report(objects, parameters);
+            document = convert(print, mimeType);
+        } catch (JRException exception) {
+            throw new ReportException(exception, FailedToGenerateReport,
+                                      exception.getMessage());
         }
         return document;
     }
@@ -170,9 +292,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Deprecated
     public Document generate(Iterator<T> objects, String[] mimeTypes) {
-        Map<String, Object> empty = Collections.emptyMap();
-        return generate(objects, empty, mimeTypes);
+        return generate(objects, getMimeType(mimeTypes));
     }
 
     /**
@@ -188,19 +310,11 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
+    @Deprecated
     public Document generate(Iterator<T> objects,
                              Map<String, Object> parameters,
                              String[] mimeTypes) {
-        Document document;
-        String mimeType = getMimeType(mimeTypes);
-        try {
-            JasperPrint print = report(objects, parameters);
-            document = convert(print, mimeType);
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport,
-                                      exception.getMessage());
-        }
-        return document;
+        return generate(objects, parameters, getMimeType(mimeTypes));
     }
 
     /**
@@ -349,9 +463,11 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             if (DocFormats.PDF_TYPE.equals(mimeType)) {
                 data = JasperExportManager.exportReportToPdf(report);
                 ext = DocFormats.PDF_EXT;
-            } else {
+            } else if (DocFormats.RTF_TYPE.equals(mimeType)) {
                 data = exportToRTF(report);
                 ext = DocFormats.RTF_EXT;
+            } else {
+                throw new ReportException(UnsupportedMimeType, mimeType);
             }
             String name = report.getName() + "." + ext;
             DocumentHandler handler = handlers.get(name, "document.other",
@@ -392,6 +508,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException if none of the mime types are supported
      */
     private String getMimeType(String[] mimeTypes) {
+        if (mimeTypes.length == 0) {
+            throw new ReportException(UnsupportedMimeType);
+        }
         String mimeType = null;
         for (String type : mimeTypes) {
             if (DocFormats.PDF_TYPE.equals(type)
@@ -401,7 +520,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             }
         }
         if (mimeType == null) {
-            throw new ReportException(UnsupportedMimeTypes);
+            throw new ReportException(UnsupportedMimeType, mimeTypes[0]);
         }
         return mimeType;
     }

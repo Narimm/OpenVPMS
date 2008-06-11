@@ -19,6 +19,7 @@
 package org.openvpms.report.openoffice;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -33,6 +34,7 @@ import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
 import static org.openvpms.report.ReportException.ErrorCode.*;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -82,13 +84,134 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     }
 
     /**
+     * Returns the default mime type for report documents.
+     *
+     * @return the default mime type
+     */
+    public String getDefaultMimeType() {
+        String mimeType = template.getMimeType();
+        if (!ArrayUtils.contains(getMimeTypes(), mimeType)) {
+            mimeType = DocFormats.PDF_TYPE;
+        }
+        return mimeType;
+    }
+
+    /**
+     * Returns the supported mime types for report documents.
+     *
+     * @return the supported mime types
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    public String[] getMimeTypes() {
+        return new String[]{DocFormats.ODT_TYPE, DocFormats.DOC_TYPE,
+                            DocFormats.PDF_TYPE};
+    }
+
+    /**
      * Not supported.
      *
      * @throws UnsupportedOperationException if invoked
      */
+    public Document generate(Map<String, Object> parameters) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Not supported.
+     *
+     * @throws UnsupportedOperationException if invoked
+     */
+    public Document generate(Map<String, Object> parameters, String mimeType) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Not supported.
+     *
+     * @throws UnsupportedOperationException if invoked
+     */
+    @Deprecated
     public Document generate(Map<String, Object> parameters,
                              String[] mimeTypes) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Generates a report for a collection of objects.
+     * <p/>
+     * The default mime type will be used to select the output format.
+     *
+     * @param objects the objects to report on
+     * @return a document containing the report
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Document generate(Iterator<T> objects) {
+        return generate(objects, getDefaultMimeType());
+    }
+
+    /**
+     * Generates a report for a collection of objects.
+     *
+     * @param objects  the objects to report on
+     * @param mimeType the output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    public Document generate(Iterator<T> objects, String mimeType) {
+        Map<String, Object> empty = Collections.emptyMap();
+        return generate(objects, empty, mimeType);
+    }
+
+    /**
+     * Generates a report for a collection of objects.
+     * <p/>
+     * The default mime type will be used to select the output format.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    public Document generate(Iterator<T> objects,
+                             Map<String, Object> parameters) {
+        return generate(objects, parameters, getDefaultMimeType());
+    }
+
+    /**
+     * Generates a report for a collection of objects.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @param mimeType   the output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    public Document generate(Iterator<T> objects,
+                             Map<String, Object> parameters, String mimeType) {
+        OpenOfficeDocument doc = null;
+        OOConnection connection = null;
+        try {
+            OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
+            connection = pool.getConnection();
+            doc = create(objects, connection);
+            return export(doc, mimeType);
+        } finally {
+            if (doc != null) {
+                doc.close();
+            }
+            OpenOfficeHelper.close(connection);
+        }
     }
 
     /**
@@ -110,7 +233,12 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @return a document containing the report
      * @throws ReportException for any report error
      */
+    @Deprecated
     public Document generate(Iterator<T> objects, String[] mimeTypes) {
+        if (mimeTypes.length == 0) {
+            throw new ReportException(UnsupportedMimeType);
+        }
+
         String mimeType = null;
         for (String type : mimeTypes) {
             if (DocFormats.ODT_TYPE.equals(type)
@@ -121,22 +249,10 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             }
         }
         if (mimeType == null) {
-            throw new ReportException(UnsupportedMimeTypes);
+            throw new ReportException(UnsupportedMimeType, mimeTypes[0]);
         }
 
-        OpenOfficeDocument doc = null;
-        OOConnection connection = null;
-        try {
-            OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
-            connection = pool.getConnection();
-            doc = create(objects, connection);
-            return export(doc, mimeType);
-        } finally {
-            if (doc != null) {
-                doc.close();
-            }
-            OpenOfficeHelper.close(connection);
-        }
+        return generate(objects, mimeType);
     }
 
     /**
@@ -152,6 +268,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
+    @Deprecated
     public Document generate(Iterator<T> objects,
                              Map<String, Object> parameters,
                              String[] mimeTypes) {
@@ -209,7 +326,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected OpenOfficeDocument create(Iterator<T> objects,
-                                      OOConnection connection) {
+                                        OOConnection connection) {
         OpenOfficeDocument doc = null;
         T object = null;
         if (objects.hasNext()) {

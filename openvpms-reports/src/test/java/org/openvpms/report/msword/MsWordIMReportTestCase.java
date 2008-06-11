@@ -18,18 +18,6 @@
 
 package org.openvpms.report.msword;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.io.IOUtils;
-import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -43,6 +31,14 @@ import org.openvpms.report.openoffice.OOBootstrapService;
 import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OOConnectionPool;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
+
+import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -77,16 +73,17 @@ public class MsWordIMReportTestCase extends ArchetypeServiceTest {
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
         // TODO:  Currently just do generate to make sure no exception.  result not used for merge
         // testing until we can figure out how to maintain fields in generated document.
-        Document result = report.generate(
-                objects.iterator(),
-                new String[]{DocFormats.DOC_TYPE});
+        Document result = report.generate(objects.iterator(),
+                                          DocFormats.DOC_TYPE);
         //TODO:  using pre merge document checks due to merge fields removed when 
         // merged document generated.
         Map<String, String> fields = getFields(doc);
         assertEquals("startTime", fields.get("startTime"));  // @todo localise
         assertEquals("lowTotal", fields.get("lowTotal"));
-        assertEquals("customer.entity.firstName", fields.get("customer.entity.firstName"));
-        assertEquals("customer.entity.lastName", fields.get("customer.entity.lastName"));
+        assertEquals("customer.entity.firstName",
+                     fields.get("customer.entity.firstName"));
+        assertEquals("customer.entity.lastName",
+                     fields.get("customer.entity.lastName"));
         assertEquals("invalid", fields.get("invalid"));
     }
 
@@ -104,9 +101,9 @@ public class MsWordIMReportTestCase extends ArchetypeServiceTest {
             MsWordDocument doc = new MsWordDocument(
                     document, connection, handlers);
             for (String name : doc.getUserFieldNames()) {
-            	// TODO changed as MsWord fields use fieldname as content and when
-            	// merged the field is removed and the content remains.  So just create a map
-            	// that contains name pairs to use in assertions.
+                // TODO changed as MsWord fields use fieldname as content and when
+                // merged the field is removed and the content remains.  So just create a map
+                // that contains name pairs to use in assertions.
                 fields.put(name, name);
             }
         } finally {

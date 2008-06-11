@@ -35,6 +35,31 @@ public interface IMReport<T> extends Report {
 
     /**
      * Generates a report for a collection of objects.
+     * <p/>
+     * The default mime type will be used to select the output format.
+     *
+     * @param objects the objects to report on
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    Document generate(Iterator<T> objects);
+
+    /**
+     * Generates a report for a collection of objects.
+     *
+     * @param objects  the objects to report on
+     * @param mimeType the output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    Document generate(Iterator<T> objects, String mimeType);
+
+    /**
+     * Generates a report for a collection of objects.
      *
      * @param objects   the objects to report on
      * @param mimeTypes a list of mime-types, used to select the preferred
@@ -43,8 +68,40 @@ public interface IMReport<T> extends Report {
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
+     * @deprecated use {@link #generate(Iterator, String)}
      */
+    @Deprecated
     Document generate(Iterator<T> objects, String[] mimeTypes);
+
+    /**
+     * Generates a report for a collection of objects.
+     * <p/>
+     * The default mime type will be used to select the output format.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    Document generate(Iterator<T> objects, Map<String, Object> parameters);
+
+    /**
+     * Generates a report for a collection of objects.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @param mimeType   the output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    Document generate(Iterator<T> objects, Map<String, Object> parameters,
+                      String mimeType);
 
     /**
      * Generates a report for a collection of objects.
@@ -58,7 +115,9 @@ public interface IMReport<T> extends Report {
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
+     * @deprecated use {@link #generate(Iterator<T>, java.util.Map<java.lang.String,java.lang.Object>, java.lang.String)}
      */
+    @Deprecated
     Document generate(Iterator<T> objects, Map<String, Object> parameters,
                       String[] mimeTypes);
 

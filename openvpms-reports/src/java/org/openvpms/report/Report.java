@@ -44,6 +44,53 @@ public interface Report {
     Set<ParameterType> getParameterTypes();
 
     /**
+     * Returns the default mime type for report documents.
+     *
+     * @return the default mime type
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    String getDefaultMimeType();
+
+    /**
+     * Returns the supported mime types for report documents.
+     *
+     * @return the supported mime types
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    String[] getMimeTypes();
+
+    /**
+     * Generates a report.
+     * <p/>
+     * The default mime type will be used to select the output format.
+     *
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    Document generate(Map<String, Object> parameters);
+
+    /**
+     * Generates a report.
+     *
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report
+     * @param mimeType   the output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    Document generate(Map<String, Object> parameters, String mimeType);
+
+    /**
      * Generates a report.
      *
      * @param parameters a map of parameter names and their values, to pass to
@@ -54,7 +101,9 @@ public interface Report {
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
+     * @deprecated use either of other generate() methods
      */
+    @Deprecated
     Document generate(Map<String, Object> parameters, String[] mimeTypes);
 
     /**
