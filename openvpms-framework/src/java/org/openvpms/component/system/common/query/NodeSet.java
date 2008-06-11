@@ -20,6 +20,10 @@ package org.openvpms.component.system.common.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.util.AbstractPropertySet;
+import org.openvpms.component.system.common.util.PropertySetException;
+import static org.openvpms.component.system.common.util.PropertySetException.ErrorCode.PropertyNotFound;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -33,7 +37,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NodeSet implements Serializable {
+public class NodeSet extends AbstractPropertySet implements Serializable {
 
     /**
      * Serial version identifier.
@@ -86,23 +90,29 @@ public class NodeSet implements Serializable {
     }
 
     /**
-     * Adds a node.
+     * Sets the value of a property.
      *
-     * @param name  the  node name
-     * @param value the node value
+     * @param name  the propery name
+     * @param value the property value
+     * @throws OpenVPMSException if the property cannot be set
      */
     public void set(String name, Object value) {
         nodes.put(name, value);
     }
 
     /**
-     * Returns the value of a node.
+     * Returns the value of a property.
      *
-     * @param name the node name
-     * @return the node value. May be <code>null</code>
+     * @param name the property name
+     * @return the value of the property
+     * @throws PropertySetException if the property doesn't exist
      */
     public Object get(String name) {
-        return nodes.get(name);
+        if (nodes.containsKey(name)) {
+            return nodes.get(name);
+        }
+        throw new PropertySetException(PropertyNotFound, name);
     }
+
 
 }
