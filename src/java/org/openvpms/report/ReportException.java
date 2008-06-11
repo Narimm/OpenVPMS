@@ -42,7 +42,8 @@ public class ReportException extends OpenVPMSException {
         FailedToCreateReport,
         FailedToGenerateReport,
         FailedToPrintReport,
-        UnsupportedMimeTypes,
+        @Deprecated UnsupportedMimeTypes,
+        UnsupportedMimeType,
         NoExpressionEvaluatorForType,
         FailedToGetParameters
     }

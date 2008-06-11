@@ -68,9 +68,8 @@ public class OpenOfficeIMReportTestCase extends ArchetypeServiceTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(
-                objects.iterator(),
-                new String[]{DocFormats.ODT_TYPE});
+        Document result = report.generate(objects.iterator(),
+                                          DocFormats.ODT_TYPE);
         Map<String, String> fields = getFields(result);
         assertEquals("4/08/2006", fields.get("startTime"));  // @todo localise
         assertEquals("$100.00", fields.get("lowTotal"));

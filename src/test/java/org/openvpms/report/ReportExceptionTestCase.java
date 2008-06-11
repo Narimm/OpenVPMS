@@ -21,6 +21,7 @@ package org.openvpms.report;
 import junit.framework.TestCase;
 import static org.openvpms.report.ReportException.ErrorCode.*;
 
+
 /**
  * {@link ReportException} test case.
  *
@@ -34,7 +35,7 @@ public class ReportExceptionTestCase extends TestCase {
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     6, ReportException.ErrorCode.values().length);
+                     7, ReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
         checkException(FailedToGenerateReport, "Failed to generate report: foo",
@@ -43,6 +44,8 @@ public class ReportExceptionTestCase extends TestCase {
                        "foo");
         checkException(UnsupportedMimeTypes,
                        "Mime types not supported by report");
+        checkException(UnsupportedMimeType,
+                       "foo is not a supported mime type", "foo");
         checkException(NoExpressionEvaluatorForType,
                        "No ExpressionEvalutor for type: foo", "foo");
         checkException(ReportException.ErrorCode.FailedToGetParameters,
