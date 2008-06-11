@@ -22,6 +22,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.util.AbstractPropertySet;
+import org.openvpms.component.system.common.util.PropertySetException;
+import static org.openvpms.component.system.common.util.PropertySetException.ErrorCode.PropertyNotFound;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -37,7 +40,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ObjectSet implements Serializable {
+public class ObjectSet extends AbstractPropertySet implements Serializable {
 
     /**
      * Serial version identifier.
@@ -76,23 +79,39 @@ public class ObjectSet implements Serializable {
     }
 
     /**
+     * Sets the value of a property.
+     *
+     * @param name  the propery name
+     * @param value the property value
+     */
+    public void set(String name, Object value) {
+        objects.put(name, value);
+    }
+
+    /**
      * Adds an object.
      *
      * @param name  the object name
      * @param value the object value
+     * @deprecated use {@link #set}
      */
+    @Deprecated
     public void add(String name, Object value) {
         objects.put(name, value);
     }
 
     /**
-     * Returns the value of a object.
+     * Returns the value of a property.
      *
-     * @param name the object name
-     * @return the object value. May be <code>null</code>
+     * @param name the property name
+     * @return the value of the property
+     * @throws PropertySetException if the property doesn't exist
      */
     public Object get(String name) {
-        return objects.get(name);
+        if (objects.containsKey(name)) {
+            return objects.get(name);
+        }
+        throw new PropertySetException(PropertyNotFound, name);
     }
 
     /**
