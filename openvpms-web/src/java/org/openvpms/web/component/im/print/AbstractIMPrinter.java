@@ -41,6 +41,7 @@ public abstract class AbstractIMPrinter<T>
      */
     private final Reporter<T> reporter;
 
+
     /**
      * Constructs a new <tt>AbstractIMPrinter</tt>.
      *

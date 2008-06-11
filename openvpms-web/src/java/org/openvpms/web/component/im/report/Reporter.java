@@ -61,9 +61,9 @@ public abstract class Reporter<T> {
     private Map<String, Object> parameters = new HashMap<String, Object>();
 
     /**
-     * The preferred mime types.
+     * The document mime type.
      */
-    private String[] mimeTypes = {DEFAULT_MIME_TYPE};
+    private String mimeType = DEFAULT_MIME_TYPE;
 
 
     /**
@@ -115,27 +115,30 @@ public abstract class Reporter<T> {
      */
     public Document getDocument() {
         IMReport<T> report = getReport();
-        return report.generate(getObjects().iterator(), getParameters(),
-                               getMimeTypes());
+        String type = mimeType;
+        if (type == null) {
+            type = report.getDefaultMimeType();
+        }
+        return report.generate(getObjects().iterator(), getParameters(), type);
     }
 
     /**
-     * Sets the document mime-types, to select the preferred output format
-     * of the document.
+     * Returns the document mime type.
      *
-     * @param mimeTypes a list of mime-types
+     * @return the mime type. May be <tt>null</tt>
      */
-    public void setMimeTypes(String[] mimeTypes) {
-        this.mimeTypes = mimeTypes;
+    public String getMimeType() {
+        return mimeType;
     }
 
     /**
-     * Returns the document mime types.
+     * Sets the document mime type.
      *
-     * @return the document mime types
+     * @param mimeType the mime type. If <tt>null</tt> the default mime type
+     *                 will be used
      */
-    public String[] getMimeTypes() {
-        return mimeTypes;
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 
     /**
