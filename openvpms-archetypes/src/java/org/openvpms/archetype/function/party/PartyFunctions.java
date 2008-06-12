@@ -634,6 +634,52 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the most recent weight in string format for a patient.
+     *
+     * @param context the expression context. Expected to reference a party or
+     *                act
+     * @return a formatted weight , or <tt>null</tt>
+     */
+
+    public String getPatientWeight(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        if (value instanceof Party) {
+            return getPatientWeight((Party) value);
+
+        } else if (value instanceof Act) {
+            return getPatientWeight((Act) value);
+        }
+        return null;
+    }
+
+    /**
+     * Returns a formatted weight for a patient.
+     *
+     * @param party the patient. May be <tt>null</tt>.
+     * @return a formatted weight for the party, or an empty string
+     */
+    public String getPatientWeight(Party party) {
+        if (party != null) {
+            return getPatientRules().getPatientWeight(party);
+        }
+        return "";
+    }
+
+    /**
+     * Returns a formatted weight for a patient given a act.
+     *
+     * @param act the act. May be <tt>null</tt>.
+     * @return a formatted weight for the party, or an empty string
+     */
+    public String getPatientWeight(Act act) {
+        if (act != null) {
+            return getPatientRules().getPatientWeight(act);
+        }
+        return "";
+    }
+
+    /**
      * Returns the Practice party object.
      *
      * @return the practice party object

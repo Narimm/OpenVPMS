@@ -356,6 +356,19 @@ public class PatientRules {
     }
 
     /**
+     * Returns the description node of the most recent
+     * <em>act.patientWeight</em> for a patient asscoaited with an Act.
+     *
+     * @param act the act linked to the patient
+     * @return the description node or <tt>null</tt> if no act can be found
+     */
+    public String getPatientWeight(Act act) {
+	    ActBean bean = new ActBean(act, service);
+	    Party patient = (Party) bean.getParticipant("participation.patient");
+	    return getPatientWeight(patient);
+    }   
+    
+    /**
      * Returns the most recent microchip number for a patient.
      *
      * @param patient the patient
