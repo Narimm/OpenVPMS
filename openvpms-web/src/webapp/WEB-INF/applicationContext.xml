@@ -192,6 +192,7 @@
             <!-- make currencies available to rules -->
             <list>
                 <ref bean="currencies"/>
+                <ref bean="lookupService"/>
             </list>
         </property>
     </bean>
