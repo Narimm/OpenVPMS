@@ -31,6 +31,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -70,7 +72,8 @@ public class StatementRules {
      * Creates a new <tt>StatementRules</tt>.
      */
     public StatementRules(Party practice) {
-        this(practice, ArchetypeServiceHelper.getArchetypeService());
+        this(practice, ArchetypeServiceHelper.getArchetypeService(),
+             LookupServiceHelper.getLookupService());
     }
 
     /**
@@ -78,11 +81,12 @@ public class StatementRules {
      *
      * @param service the archetype service
      */
-    public StatementRules(Party practice, IArchetypeService service) {
+    public StatementRules(Party practice, IArchetypeService service,
+                          ILookupService lookups) {
         this.service = service;
         account = new CustomerAccountRules(service);
         acts = new StatementActHelper(service);
-        tax = new CustomerTaxRules(practice, service);
+        tax = new CustomerTaxRules(practice, service, lookups);
     }
 
     /**
@@ -132,8 +136,8 @@ public class StatementRules {
      * </ul></li>
      * </ul>
      *
-     * @param customer                the customer
-     * @param statementDate           the statement date
+     * @param customer      the customer
+     * @param statementDate the statement date
      * @return the account fee, or <tt>BigDecimal.ZERO</tt> if there is no fee
      * @throws ArchetypeServiceException for any archetype service error
      */

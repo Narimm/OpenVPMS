@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -80,10 +81,11 @@ public class ProductPriceUpdater {
      * @param service    the archetype service
      */
     public ProductPriceUpdater(Currencies currencies,
-                               IArchetypeService service) {
+                               IArchetypeService service,
+                               ILookupService lookups) {
         this.currencies = currencies;
         this.service = service;
-        rules = new ProductPriceRules(service);
+        rules = new ProductPriceRules(service, lookups);
     }
 
     /**

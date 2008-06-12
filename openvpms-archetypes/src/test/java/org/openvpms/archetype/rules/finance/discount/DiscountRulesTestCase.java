@@ -167,7 +167,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         Entity productType = bean.getNodeSourceEntity("type");
         bean = new EntityBean(productType);
         EntityRelationship r = bean.getRelationship(discount10);
-        r.setActiveEndTime(new Date(now.getTime() - 1));
+        r.setActiveEndTime(new Date(now.getTime() - 1000));
         bean.save();
 
         checkCalculateDiscount(now, custNoDisc, patientNoDisc, product,

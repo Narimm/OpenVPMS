@@ -46,6 +46,7 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -128,13 +129,15 @@ public class DeliveryProcessor {
      * @param act        the delivery/return act
      * @param service    the archetype service
      * @param currencies the currency cache
+     * @param lookups    the lookup service
      */
     public DeliveryProcessor(Act act, IArchetypeService service,
-                             Currencies currencies) {
+                             Currencies currencies,
+                             ILookupService lookups) {
         this.act = act;
         this.service = service;
         this.rules = new ProductRules(service);
-        priceUpdater = new ProductPriceUpdater(currencies, service);
+        priceUpdater = new ProductPriceUpdater(currencies, service, lookups);
     }
 
     /**

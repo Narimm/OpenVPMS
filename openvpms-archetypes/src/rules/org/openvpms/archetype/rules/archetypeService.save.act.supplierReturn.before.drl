@@ -32,9 +32,12 @@
          <parameter identifier="currencies">
             <java:class>org.openvpms.archetype.rules.math.Currencies</java:class>
          </parameter>
+        <parameter identifier="lookups">
+        	<java:class>org.openvpms.component.business.service.lookup.ILookupService</java:class>
+        </parameter>
          <java:consequence>
              import org.openvpms.archetype.rules.supplier.DeliveryProcessor;
-             DeliveryProcessor processor = new DeliveryProcessor(act, service, currencies);
+             DeliveryProcessor processor = new DeliveryProcessor(act, service, currencies, lookups);
              processor.apply();
          </java:consequence>
     </rule>

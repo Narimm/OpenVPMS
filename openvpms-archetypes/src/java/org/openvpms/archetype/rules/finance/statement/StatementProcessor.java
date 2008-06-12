@@ -29,6 +29,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 
@@ -82,7 +84,8 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      */
     public StatementProcessor(Date statementDate, Party practice) {
         this(statementDate, practice,
-             ArchetypeServiceHelper.getArchetypeService());
+             ArchetypeServiceHelper.getArchetypeService(),
+             LookupServiceHelper.getLookupService());
     }
 
     /**
@@ -91,10 +94,12 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      * @param statementDate the statement date. Must be a date prior to today.
      * @param practice      the practice
      * @param service       the archetype service
+     * @param lookups       the lookup service
      * @throws StatementProcessorException if the statement date is invalid
      */
     public StatementProcessor(Date statementDate, Party practice,
-                              IArchetypeService service) {
+                              IArchetypeService service,
+                              ILookupService lookups) {
         this.service = service;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
@@ -102,7 +107,7 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
             throw new StatementProcessorException(InvalidStatementDate,
                                                   statementDate);
         }
-        rules = new StatementRules(practice, service);
+        rules = new StatementRules(practice, service, lookups);
         actHelper = new StatementActHelper(service);
         this.statementDate = actHelper.getStatementTimestamp(statementDate);
     }
