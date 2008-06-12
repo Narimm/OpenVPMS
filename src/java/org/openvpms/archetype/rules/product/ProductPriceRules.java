@@ -29,6 +29,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -50,12 +52,18 @@ public class ProductPriceRules {
      */
     private final IArchetypeService service;
 
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
 
     /**
      * Creates a new <tt>ProductPriceRules</tt>.
      */
     public ProductPriceRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
+        this(ArchetypeServiceHelper.getArchetypeService(),
+             LookupServiceHelper.getLookupService());
     }
 
     /**
@@ -63,8 +71,9 @@ public class ProductPriceRules {
      *
      * @param service the archetype service
      */
-    public ProductPriceRules(IArchetypeService service) {
+    public ProductPriceRules(IArchetypeService service, ILookupService lookups) {
         this.service = service;
+        this.lookups = lookups;
     }
 
     /**
@@ -201,7 +210,7 @@ public class ProductPriceRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private BigDecimal getTaxRate(Product product, Party practice) {
-        TaxRules rules = new TaxRules(practice, service);
+        TaxRules rules = new TaxRules(practice, service, lookups);
         return getRate(rules.getTaxRate(product));
     }
 

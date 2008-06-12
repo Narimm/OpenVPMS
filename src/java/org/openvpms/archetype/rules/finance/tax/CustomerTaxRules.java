@@ -25,10 +25,10 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class CustomerTaxRules extends TaxRules {
      * @param practice the practice, for default tax classifications
      */
     public CustomerTaxRules(Party practice) {
-        this(practice, ArchetypeServiceHelper.getArchetypeService());
+        super(practice);
     }
 
     /**
@@ -74,9 +74,11 @@ public class CustomerTaxRules extends TaxRules {
      *
      * @param practice the practice, for default tax classifications.
      * @param service  the archetype service
+     * @param lookups  the lookup service
      */
-    public CustomerTaxRules(Party practice, IArchetypeService service) {
-        super(practice, service);
+    public CustomerTaxRules(Party practice, IArchetypeService service,
+                            ILookupService lookups) {
+        super(practice, service, lookups);
     }
 
     /**

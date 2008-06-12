@@ -32,9 +32,12 @@
         <parameter identifier="currencies">
            <java:class>org.openvpms.archetype.rules.math.Currencies</java:class>
         </parameter>
+        <parameter identifier="lookups">
+        	<java:class>org.openvpms.component.business.service.lookup.ILookupService</java:class>
+        </parameter>
         <java:consequence>
             import org.openvpms.archetype.rules.product.ProductPriceUpdater;
-            ProductPriceUpdater updater = new ProductPriceUpdater(currencies, service);
+            ProductPriceUpdater updater = new ProductPriceUpdater(currencies, service, lookups);
             updater.update(supplier);
         </java:consequence>
     </rule>

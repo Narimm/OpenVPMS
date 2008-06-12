@@ -67,4 +67,9 @@ public class ProductArchetypes {
      */
     public static final String PRODUCT_SUPPLIER_RELATIONSHIP
             = "entityRelationship.productSupplier";
+
+    /**
+     * Product type short name.
+     */
+    public static final String PRODUCT_TYPE = "entity.productType";
 }

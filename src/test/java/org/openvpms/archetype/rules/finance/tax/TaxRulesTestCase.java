@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
@@ -69,8 +68,30 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link TaxRules#calculateTax(BigDecimal, Product)} 
+     * Tests the {@link TaxRules#calculateTax(BigDecimal, Product, boolean)}
+     * method.
      */
+    public void testCalculateTax() {
+        Product productNoTax = createProduct();
+
+        BigDecimal ten = new BigDecimal(10);
+        assertEquals(BigDecimal.ZERO,
+                     rules.calculateTax(ten, productNoTax, false));
+        assertEquals(BigDecimal.ZERO,
+                     rules.calculateTax(ten, productNoTax, true));
+
+        Product product10Tax = createProductWithTax();
+        assertEquals(BigDecimal.ONE,
+                     rules.calculateTax(ten, product10Tax, false));
+        assertEquals(new BigDecimal("0.909"),
+                     rules.calculateTax(ten, product10Tax, true));
+
+        Product productType10Tax = createProductWithProductTypeTax();
+        assertEquals(BigDecimal.ONE,
+                     rules.calculateTax(ten, productType10Tax, false));
+        assertEquals(new BigDecimal("0.909"),
+                     rules.calculateTax(ten, productType10Tax, true));
+    }
 
     /**
      * Sets up the test case.
@@ -82,8 +103,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         super.onSetUp();
         taxType = createTaxType();
         Party practice = (Party) create("party.organisationPractice");
-        rules = new TaxRules(practice,
-                             ArchetypeServiceHelper.getArchetypeService());
+        rules = new TaxRules(practice);
     }
 
     /**
@@ -123,7 +143,6 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         Entity type = (Entity) create("entity.productType");
         type.setName("TaxRulesTestCase-entity" + type.hashCode());
         type.addClassification(taxType);
-        save(type);
         EntityRelationship relationship
                 = (EntityRelationship) create(
                 "entityRelationship.productTypeProduct");
@@ -131,6 +150,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         relationship.setTarget(product.getObjectReference());
         product.addEntityRelationship(relationship);
         save(product);
+        save(type);
         return product;
     }
 

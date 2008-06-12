@@ -33,6 +33,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.math.BigDecimal;
@@ -110,7 +112,8 @@ public class EndOfPeriodProcessor implements Processor<Party> {
                                 boolean postCompletedCharges,
                                 Party practice) {
         this(statementDate, postCompletedCharges, practice,
-             ArchetypeServiceHelper.getArchetypeService());
+             ArchetypeServiceHelper.getArchetypeService(),
+             LookupServiceHelper.getLookupService());
     }
 
     /**
@@ -125,7 +128,8 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      */
     public EndOfPeriodProcessor(Date statementDate,
                                 boolean postCompletedCharges,
-                                Party practice, IArchetypeService service) {
+                                Party practice, IArchetypeService service,
+                                ILookupService lookups) {
         this.service = service;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
@@ -135,7 +139,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
         }
         acts = new StatementActHelper(service);
         account = new CustomerAccountRules(service);
-        statement = new StatementRules(practice, service);
+        statement = new StatementRules(practice, service, lookups);
         timestamp = acts.getStatementTimestamp(statementDate);
         this.postCompletedCharges = postCompletedCharges;
     }

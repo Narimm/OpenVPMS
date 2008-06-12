@@ -31,12 +31,18 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.component.system.common.query.OrConstraint;
+import static org.openvpms.component.system.common.query.RelationalOp.*;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -281,23 +287,47 @@ public class DiscountRules {
     }
 
     /**
-     * Returns discounts associated with an <em>entity.productType</em>.
+     * Returns discounts associated with an <em>entity.productType</em>,
+     * active for the specified date.
      *
-     * @param ref the product type reference
+     * @param ref  the product type reference
+     * @param date the date
      * @return the discounts associated with the reference
      * @throws ArchetypeServiceException for any archetype service error
      */
     private List<IMObjectReference> getProductTypeDiscounts(
             IMObjectReference ref, Date date) {
+        List<IMObjectReference> result;
+        ShortNameConstraint rel = new ShortNameConstraint(
+                "rel", "entityRelationship.discountProductType", true, true);
         ArchetypeQuery query = new ArchetypeQuery(
                 new ObjectRefConstraint(ref));
-        Iterator<Entity> iter = new IMObjectQueryIterator<Entity>(
-                query, Arrays.asList("discounts"));
+        query.add(new CollectionNodeConstraint("discounts", rel));
+        query.add(new NodeSelectConstraint("rel.target"));
+
+        OrConstraint startTime = new OrConstraint();
+        startTime.add(new NodeConstraint("activeStartTime", IsNULL));
+        startTime.add(new NodeConstraint("activeStartTime", LTE, date));
+
+        OrConstraint endTime = new OrConstraint();
+        endTime.add(new NodeConstraint("activeEndTime", IsNULL));
+        endTime.add(new NodeConstraint("activeEndTime", GTE, date));
+
+        rel.add(startTime);
+        rel.add(endTime);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+
+        Iterator<ObjectSet> iter = new ObjectSetQueryIterator(service, query);
         if (iter.hasNext()) {
-            EntityBean bean = new EntityBean(iter.next(), service);
-            return bean.getNodeTargetEntityRefs("discounts", date);
+            result = new ArrayList<IMObjectReference>();
+            while (iter.hasNext()) {
+                ObjectSet set = iter.next();
+                result.add(set.getReference("rel.target"));
+            }
+        } else {
+            result = Collections.emptyList();
         }
-        return Collections.emptyList();
+        return result;
     }
 
 }

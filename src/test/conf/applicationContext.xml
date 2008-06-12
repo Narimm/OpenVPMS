@@ -186,6 +186,7 @@
         <property name="facts">
             <list>
                 <ref bean="currencies"/>
+                <ref bean="lookupService"/>
             </list>
         </property>
     </bean>
