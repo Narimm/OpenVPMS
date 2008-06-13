@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
@@ -58,8 +59,10 @@ public class ProductEditor extends AbstractIMObjectEditor {
     public ProductEditor(Product object, IMObject parent,
                          LayoutContext layoutContext) {
         super(object, parent, layoutContext);
-        updater = new ProductPriceUpdater(ServiceHelper.getCurrencies(),
-                                          ServiceHelper.getArchetypeService());
+        updater = new ProductPriceUpdater(
+                ServiceHelper.getCurrencies(),
+                ServiceHelper.getArchetypeService(),
+                LookupServiceHelper.getLookupService());
     }
 
     /**
