@@ -110,7 +110,7 @@
 		<variableExpression><![CDATA[($V{isEFT}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
 	</variable>
 	<variable name="TOTAL_CASH_ROUNDING" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
-		<variableExpression><![CDATA[($V{isCash}.booleanValue())? (($F{item.roundedAmount}.abs()).subtract(($F{amount}).abs())) : new BigDecimal("0.00")]]></variableExpression>
+		<variableExpression><![CDATA[($V{isCash}.booleanValue())? (($F{item.roundedAmount}.compareTo(new BigDecimal("0.00")) == 0) ? new BigDecimal("0.00") : ($F{item.roundedAmount}.abs()).subtract($F{amount}.abs())):new BigDecimal("0.00")]]></variableExpression>
 	</variable>
 
 		<group  name="TillBalance" >

@@ -332,7 +332,7 @@
 						isPrintWhenDetailOverflows="true">
 							<printWhenExpression><![CDATA[new Boolean(!$F{printed}.booleanValue() && $F{shortName}.contains("customerAccountCharges"))]]></printWhenExpression>
 						</reportElement>
-					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
+					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.startTime"})]]></dataSourceExpression>
 					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["statementItems.jrxml"]]></subreportExpression>
 				</subreport>
 			</band>

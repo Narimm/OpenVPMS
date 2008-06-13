@@ -235,7 +235,7 @@
 						width="355"
 						height="47"
 						key="subreport-1"/>
-					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
+					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.startTime"})]]></dataSourceExpression>
 					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["invoiceItemsA5.jrxml"]]></subreportExpression>
 				</subreport>
 			</band>

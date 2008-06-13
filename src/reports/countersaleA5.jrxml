@@ -191,7 +191,7 @@
 						width="393"
 						height="50"
 						key="subreport-1"/>
-					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
+					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.startTime"})]]></dataSourceExpression>
 					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["countersaleItemsA5.jrxml"]]></subreportExpression>
 				</subreport>
 			</band>

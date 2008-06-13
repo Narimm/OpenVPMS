@@ -32,9 +32,15 @@
 	<field name="target.product.entity.name" class="java.lang.String"/>
 	<field name="target.product.entity.displayName" class="java.lang.String"/>
 	<field name="target.product.entity.printedName" class="java.lang.String"/>
+	<field name="target.discount" class="java.math.BigDecimal"/>
+
+	<sortField name="target.patient.entity.name" />
 
 	<variable name="SUM_target.total" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{target.total}]]></variableExpression>
+	</variable>
+	<variable name="SUM_target.discount" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{target.discount}]]></variableExpression>
 	</variable>
 
 		<group  name="patientGroup" >
