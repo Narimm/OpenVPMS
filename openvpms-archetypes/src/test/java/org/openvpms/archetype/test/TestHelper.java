@@ -300,6 +300,8 @@ public class TestHelper extends Assert {
      * creating one if it doesn't exist.
      * <p/>
      * If it exists, any tax rates will be removed.
+     * <p/>
+     * The practice currency is set to <em>AUD</em>. 
      *
      * @return the practice
      */
@@ -327,16 +329,20 @@ public class TestHelper extends Assert {
             Contact contact = (Contact) create("contact.phoneNumber");
             party.addContact(contact);
         }
-        IMObjectBean bean = new IMObjectBean(party);
+
         Lookup currency = getClassification("lookup.currency", "AUD");
+        IMObjectBean ccyBean = new IMObjectBean(currency);
+        ccyBean.setValue("minDenomination", new BigDecimal("0.05"));
+        ccyBean.save();
+
+        IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("currency", currency.getCode());
         bean.save();
         return party;
     }
 
     /**
-     * Creates a new <tt>party.organisationLocation</tt>, setting the currency
-     * to <em>AUD</em>.
+     * Creates a new <tt>party.organisationLocation</tt>.
      *
      * @return a new location
      */
@@ -345,15 +351,7 @@ public class TestHelper extends Assert {
         party.setName("XLocation");
         Contact contact = (Contact) create("contact.phoneNumber");
         party.addContact(contact);
-        Lookup currency = getClassification("lookup.currency", "AUD", false);
-        if (currency.isNew()) {
-            IMObjectBean bean = new IMObjectBean(currency);
-            bean.setValue("minDenomination", new BigDecimal("0.05"));
-            bean.save();
-        }
-        IMObjectBean bean = new IMObjectBean(party);
-        bean.setValue("currency", currency.getCode());
-        bean.save();
+        save(party);
         return party;
     }
 
