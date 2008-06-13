@@ -39,7 +39,10 @@
 	<field name="[party:getFullName(party:getPractice())]" class="java.lang.String"/>
 	<field name="[party:getBillingAddress(party:getPractice())]" class="java.lang.String"/>
 	<field name="allocatedAmount" class="java.math.BigDecimal"/>
+	<field name="customer.entity.type.generalMessage" class="java.lang.String"/>
 
+	<variable name="TOTAL_DISCOUNT" class="java.math.BigDecimal" resetType="Report" calculation="Nothing">
+	</variable>
 		<background>
 			<band height="0"  isSplitAllowed="true" >
 			</band>
@@ -195,7 +198,8 @@
 						width="355"
 						height="10"
 						key="subreport-1"/>
-					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
+					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.startTime"})]]></dataSourceExpression>
+					<returnValue subreportVariable="SUM_target.discount" toVariable="TOTAL_DISCOUNT" calculation="Sum"/>
 					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["invoiceItemsA5.jrxml"]]></subreportExpression>
 				</subreport>
 			</band>
@@ -209,22 +213,23 @@
 			</band>
 		</pageFooter>
 		<summary>
-			<band height="127"  isSplitAllowed="true" >
+			<band height="121"  isSplitAllowed="true" >
 				<rectangle>
 					<reportElement
 						x="3"
 						y="35"
 						width="352"
 						height="82"
-						key="rectangle-1"/>
-					<graphicElement stretchType="NoStretch"/>
+						key="rectangle-1"
+						stretchType="RelativeToTallestObject"/>
+					<graphicElement stretchType="RelativeToTallestObject"/>
 				</rectangle>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="13"
-						y="52"
+						y="67"
 						width="333"
-						height="58"
+						height="20"
 						key="textField-5"
 						isRemoveLineWhenBlank="true"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -336,6 +341,45 @@
 						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
 					</textElement>
 				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{allocatedAmount}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="15"
+						y="91"
+						width="333"
+						height="20"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{customer.entity.type.generalMessage}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="14"
+						y="51"
+						width="186"
+						height="17"
+						key="staticText-10"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+				<text><![CDATA[You have been given a discount of :]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="201"
+						y="51"
+						width="49"
+						height="16"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TOTAL_DISCOUNT}]]></textFieldExpression>
 				</textField>
 			</band>
 		</summary>
