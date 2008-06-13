@@ -28,6 +28,10 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -364,6 +368,55 @@ public class ArchetypeServiceDescriptorTestCase
 
         assertEquals(1, desc1.getVersion());
         assertEquals(1, desc2.getVersion());
+    }
+
+    /**
+     * Verifies that an archetype descriptor can be replaced with one of
+     * the same name in a transaction.
+     */
+    public void testReplace() {
+        String name = "archetype.dummy.1.0";
+        removeDescriptor(name);
+        final ArchetypeDescriptor desc1 = createArchetypeDescriptor(
+                name, "thisClass", "archetype.dummy", true);
+        NodeDescriptor ndesc1 = createNodeDescriptor("name", "/name",
+                                                     "java.lang.String", 1, 1);
+        desc1.addNodeDescriptor(ndesc1);
+        service.save(desc1);
+
+        final ArchetypeDescriptor desc2 = createArchetypeDescriptor(
+                name, "thisClass", "archetype.dummy", true);
+        NodeDescriptor ndesc2 = createNodeDescriptor("name2", "/name",
+                                                     "java.lang.String", 1, 1);
+        // try and save desc2. Should fail.
+        try {
+            service.save(desc2);
+            fail("Expected save with non-unique name to fail");
+        } catch (Exception expected) {
+        }
+
+        desc2.addNodeDescriptor(ndesc2);
+
+        // now remove desc1, and save desc2 in a transaction
+        PlatformTransactionManager txnManager = (PlatformTransactionManager)
+                applicationContext.getBean("txnManager");
+        TransactionTemplate template = new TransactionTemplate(txnManager);
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                service.remove(desc1);
+                service.save(desc2);
+                return null;
+            }
+        });
+
+        // verify the original descriptor can't be retrieved
+        assertNull(ArchetypeQueryHelper.getByObjectReference(
+                service, desc1.getObjectReference()));
+
+        ArchetypeDescriptor reloaded = (ArchetypeDescriptor)
+                ArchetypeQueryHelper.getByObjectReference(
+                        service, desc2.getObjectReference());
+        assertNotNull(reloaded.getNodeDescriptor("name2"));
     }
 
     /* (non-Javadoc)

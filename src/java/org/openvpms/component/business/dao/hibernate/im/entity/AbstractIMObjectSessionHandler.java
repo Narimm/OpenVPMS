@@ -90,6 +90,7 @@ abstract class AbstractIMObjectSessionHandler
      */
     public void delete(IMObject object, Session session) {
         deleteObject(object, session);
+        session.flush();
     }
 
     /**
