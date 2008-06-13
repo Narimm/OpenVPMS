@@ -144,7 +144,7 @@
     </property>
   </bean>
 
-  <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+  <bean id="txnManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
     <property name="sessionFactory" ref="sessionFactory" />
   </bean>
 
@@ -155,7 +155,7 @@
       <ref local="sessionFactory"/>
     </property>
     <property name="transactionManager">
-      <ref local="txManager"/>
+      <ref local="txnManager"/>
     </property>
   </bean>
 

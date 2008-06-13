@@ -48,6 +48,9 @@ import static org.openvpms.tools.archetype.loader.ArchetypeLoaderException.Error
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -286,23 +289,35 @@ public class ArchetypeLoader {
                     log.setLevel(Level.INFO);
                 }
 
-                if (clean) {
-                    loader.clean();
-                    ++processed;
-                }
-                if (mappingFile != null) {
-                    loader.loadAssertions(mappingFile);
-                    ++processed;
-                }
-                if (file != null) {
-                    loader.loadArchetypes(file);
-                    ++processed;
-                } else if (dir != null) {
-                    loader.loadArchetypes(dir, recurse);
-                    ++processed;
-                }
-                if (processed == 0) {
-                    displayUsage(parser, config);
+                PlatformTransactionManager mgr;
+                mgr = (PlatformTransactionManager) context.getBean(
+                        "txnManager");
+                TransactionStatus status = mgr.getTransaction(
+                        new DefaultTransactionDefinition());
+                try {
+                    if (clean) {
+                        loader.clean();
+                        ++processed;
+                    }
+                    if (mappingFile != null) {
+                        loader.loadAssertions(mappingFile);
+                        ++processed;
+                    }
+                    if (file != null) {
+                        loader.loadArchetypes(file);
+                        ++processed;
+                    } else if (dir != null) {
+                        loader.loadArchetypes(dir, recurse);
+                        ++processed;
+                    }
+                    mgr.commit(status);
+                    if (processed == 0) {
+                        displayUsage(parser, config);
+                    }
+                } catch (Throwable throwable) {
+                    log.error(throwable, throwable);
+                    log.error("Rolling back changes");
+                    mgr.rollback(status);
                 }
             }
         } catch (Throwable throwable) {
@@ -313,7 +328,7 @@ public class ArchetypeLoader {
     /**
      * Loads archetype descriptors from a file.
      *
-     * @param file     the file
+     * @param file the file
      * @throws ArchetypeLoaderException  if the file doesn't exist or a
      *                                   descriptor is invalid and failOnError
      *                                   is true

@@ -207,7 +207,7 @@ public abstract class AbstractPropertySet implements PropertySet {
      *                           fails
      */
     public Money getMoney(String name, Money defaultValue) {
-        return (Money) get(name, defaultValue, null);
+        return (Money) get(name, defaultValue, Money.class);
     }
 
     /**
