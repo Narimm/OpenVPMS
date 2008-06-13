@@ -18,11 +18,15 @@
 
 package org.openvpms.web.component.app;
 
+import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -127,6 +131,25 @@ public class ContextHelper {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the currency associated with the context's practice.
+     *
+     * @return the currency, or <tt>null</tt> if none is found.
+     */
+    public static Currency getPracticeCurrency(Context context) {
+        Currency result = null;
+        Party practice = context.getPractice();
+        if (practice != null) {
+            IMObjectBean bean = new IMObjectBean(practice);
+            String code = bean.getString("currency");
+            if (code != null) {
+                Currencies currencies = ServiceHelper.getCurrencies();
+                result = currencies.getCurrency(code);
+            }
+        }
+        return result;
     }
 
 }

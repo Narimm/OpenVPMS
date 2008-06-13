@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.product;
 
-import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -27,13 +26,13 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 
@@ -163,7 +162,8 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
         Product product = (Product) getParent();
         Context context = getLayoutContext().getContext();
         Party practice = context.getPractice();
-        Currency currency = getCurrency();
+        Currency currency = ContextHelper.getPracticeCurrency(context);
+
         if (product != null && practice != null && currency != null) {
             price = rules.getPrice(product, cost, markup, practice, currency);
         }
@@ -199,24 +199,6 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     private BigDecimal getValue(String name) {
         BigDecimal value = (BigDecimal) getProperty(name).getValue();
         return (value == null) ? BigDecimal.ZERO : value;
-    }
-
-    /**
-     * Returns the practice location currency.
-     *
-     * @return the practice location currency, or <tt>null</tt> if none can be found
-     */
-    private Currency getCurrency() {
-        Party location = getLayoutContext().getContext().getLocation();
-        if (location != null) {
-            IMObjectBean bean = new IMObjectBean(location);
-            String code = bean.getString("currency");
-            if (code != null) {
-                Currencies currencies = ServiceHelper.getCurrencies();
-                return currencies.getCurrency(code);
-            }
-        }
-        return null;
     }
 
 }

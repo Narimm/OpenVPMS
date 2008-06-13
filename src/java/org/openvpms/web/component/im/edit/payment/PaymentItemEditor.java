@@ -18,20 +18,17 @@
 
 package org.openvpms.web.component.im.edit.payment;
 
-import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 
@@ -83,15 +80,10 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
             BigDecimal amount = (BigDecimal) getProperty("amount").getValue();
             BigDecimal rounded = amount;
             Property roundedAmount = getProperty("roundedAmount");
-            Party location = getLayoutContext().getContext().getLocation();
-            if (location != null) {
-                IMObjectBean bean = new IMObjectBean(location);
-                String code = bean.getString("currency");
-                if (code != null) {
-                    Currencies currencies = ServiceHelper.getCurrencies();
-                    Currency currency = currencies.getCurrency(code);
-                    rounded = currency.roundCash(amount);
-                }
+            Currency currency = ContextHelper.getPracticeCurrency(
+                    getLayoutContext().getContext());
+            if (currency != null) {
+                rounded = currency.roundCash(amount);
             }
             roundedAmount.setValue(rounded);
         } catch (OpenVPMSException exception) {
