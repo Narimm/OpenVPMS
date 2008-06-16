@@ -1511,6 +1511,16 @@
         </properties>
     </style>
 
+    <style name="download.jrxml" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/jrxml.gif"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="download.default" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
