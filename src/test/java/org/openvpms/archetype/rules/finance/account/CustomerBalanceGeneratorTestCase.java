@@ -137,7 +137,7 @@ public class CustomerBalanceGeneratorTestCase
      */
     public void testChangeOpeningAndClosingBalances() {
         Party customer = getCustomer();
-        FinancialAct invoice = createChargesInvoice(new  Money(10));
+        FinancialAct invoice = createChargesInvoice(new Money(10));
         FinancialAct opening1 = createOpeningBalance(customer);
         FinancialAct payment = createPayment(new Money(30));
         FinancialAct closing1 = createClosingBalance(customer);
@@ -146,7 +146,15 @@ public class CustomerBalanceGeneratorTestCase
         save(invoice, opening1, payment, closing1, opening2);
 
         assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
-        assertFalse(checkBalance(customer));
+
+        try {
+           rules.getDefinitiveBalance(customer);
+            fail("Expected getDefinitiveBalance() to fail");
+        } catch (CustomerAccountRuleException expected) {
+            assertEquals(CustomerAccountRuleException.ErrorCode.InvalidBalance,
+                         expected.getErrorCode());
+        }
+
         assertEquals(new BigDecimal(-20), generate(customer));
 
         assertEquals(new BigDecimal(-20), rules.getBalance(customer));

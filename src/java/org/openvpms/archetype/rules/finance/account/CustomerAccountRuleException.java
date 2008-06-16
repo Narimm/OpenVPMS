@@ -35,6 +35,7 @@ public class CustomerAccountRuleException extends OpenVPMSException {
      */
     public enum ErrorCode {
         MissingCustomer,
+        InvalidBalance,
     }
 
     /**
@@ -48,7 +49,7 @@ public class CustomerAccountRuleException extends OpenVPMSException {
      */
     private static Messages MESSAGES
             = Messages.getMessages(
-            "org.openvpms.archetype.rules.financial.account."
+            "org.openvpms.archetype.rules.finance.account."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**

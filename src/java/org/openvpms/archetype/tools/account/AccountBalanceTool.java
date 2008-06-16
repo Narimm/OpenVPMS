@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.BalanceCalculator;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceGenerator;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -202,14 +203,22 @@ public class AccountBalanceTool {
         log.info("Checking account balance for " + customer.getName()
                 + ", ID=" + customer.getUid());
         BalanceCalculator calc = new BalanceCalculator(service);
-        BigDecimal expected = calc.getDefinitiveBalance(customer);
-        BigDecimal actual = calc.getBalance(customer);
-        boolean result = expected.compareTo(actual) == 0;
-        if (!result) {
+        boolean result = false;
+        try {
+            BigDecimal expected = calc.getDefinitiveBalance(customer);
+            BigDecimal actual = calc.getBalance(customer);
+            result = expected.compareTo(actual) == 0;
+            if (!result) {
+                log.error("Failed to check account balance for "
+                        + customer.getName() + ", ID=" + customer.getUid()
+                        + ": expected balance=" + expected
+                        + ", actual balance=" + actual);
+            }
+        } catch (CustomerAccountRuleException exception) {
+            // thrown when an opening or closing balance doesn't match
             log.error("Failed to check account balance for "
                     + customer.getName() + ", ID=" + customer.getUid()
-                    + ": expected balance=" + expected
-                    + ", actual balance=" + actual);
+                    + ": " + exception.getMessage());
         }
         return result;
     }
