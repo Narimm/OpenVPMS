@@ -21,13 +21,18 @@ package org.openvpms.archetype.rules.finance.account;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException.ErrorCode.InvalidBalance;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -112,8 +117,7 @@ public class BalanceCalculator {
                 customer, DEBITS_CREDITS, true);
         query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
         if (from != null) {
-            query.add(new NodeConstraint("startTime", RelationalOp.GTE,
-                                         from));
+            query.add(new NodeConstraint("startTime", RelationalOp.GTE, from));
         }
         if (to != null) {
             query.add(new NodeConstraint("startTime", RelationalOp.LTE, to));
@@ -130,10 +134,43 @@ public class BalanceCalculator {
      * to detect account balance errors.
      *
      * @param customer the customer
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws ArchetypeServiceException    for any archetype service error
+     * @throws CustomerAccountRuleException if an opening or closing balance
+     *                                      doesn't match the expected balance
      */
     public BigDecimal getDefinitiveBalance(Party customer) {
-        return getBalance(customer, null, null, BigDecimal.ZERO);
+        ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
+                customer, ACCOUNT_ACTS);
+        query.add(new NodeSortConstraint("startTime", true));
+        query.add(new NodeSortConstraint("uid", true));
+        query.add(new NodeSelectConstraint("a.amount"));
+        query.add(new NodeSelectConstraint("a.credit"));
+        query.add(new NodeSelectConstraint("p.act"));
+        query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
+        Iterator<ObjectSet> iterator
+                = new ObjectSetQueryIterator(service, query);
+        BigDecimal total = BigDecimal.ZERO;
+        ActCalculator calculator = new ActCalculator(service);
+        while (iterator.hasNext()) {
+            ObjectSet set = iterator.next();
+            BigDecimal amount = set.getBigDecimal("a.amount", BigDecimal.ZERO);
+            boolean credit = set.getBoolean("a.credit");
+            IMObjectReference act = set.getReference("p.act");
+            if (TypeHelper.isA(act, OPENING_BALANCE, CLOSING_BALANCE)) {
+                if (TypeHelper.isA(act, CLOSING_BALANCE)) {
+                    credit = !credit;
+                }
+                BigDecimal balance = (credit) ? amount.negate() : amount;
+                if (balance.compareTo(total) != 0) {
+                    throw new CustomerAccountRuleException(
+                            InvalidBalance, act.getArchetypeId().getShortName(),
+                            total, balance);
+                }
+            } else {
+                total = calculator.addAmount(total, amount, credit);
+            }
+        }
+        return total;
     }
 
     /**
