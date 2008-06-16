@@ -42,6 +42,22 @@ public class Converter {
      */
     private final DocumentHandlers handlers;
 
+    /**
+     * Supported conversions on source mime type -> target mime type.
+     */
+    private static final String[][] MIME_MAP = {{DocFormats.ODT_TYPE,
+                                                 DocFormats.PDF_TYPE},
+                                                {DocFormats.DOC_TYPE,
+                                                 DocFormats.PDF_TYPE}};
+
+    /**
+     * Supported conversions on extension -> target mime type.
+     */
+    private static final String[][] EXT_MAP = {{DocFormats.ODT_EXT,
+                                                DocFormats.PDF_TYPE},
+                                               {DocFormats.DOC_EXT,
+                                                DocFormats.PDF_TYPE}};
+
 
     /**
      * Constructs a new <code>Converter</code>.
@@ -78,13 +94,22 @@ public class Converter {
      */
     public static boolean canConvert(String fileName, String sourceMimeType,
                                      String targetMimeType) {
-        String ext = null;
-        if (fileName != null) {
-            ext = FilenameUtils.getExtension(fileName);
+        for (String[] map : MIME_MAP) {
+            if (map[0].equals(sourceMimeType)
+                    && map[1].equals(targetMimeType)) {
+                return true;
+            }
         }
-        return (DocFormats.ODT_EXT.equals(ext)
-                || DocFormats.ODT_TYPE.equals(sourceMimeType))
-                && DocFormats.PDF_TYPE.equals(targetMimeType);
+        if (fileName != null) {
+            String ext = FilenameUtils.getExtension(fileName);
+            for (String[] map : EXT_MAP) {
+                if (map[0].equals(ext)
+                        && map[1].equals(targetMimeType)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
