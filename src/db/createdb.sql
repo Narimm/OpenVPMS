@@ -10,3 +10,5 @@ GRANT ALL PRIVILEGES ON openvpms.* TO 'openvpms'@'localhost'
 
 GRANT ALL PRIVILEGES ON openvpms.* TO 'openvpms'@'%'
     IDENTIFIED BY 'openvpms' WITH GRANT OPTION;
+
+COMMIT;
