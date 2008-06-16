@@ -123,6 +123,7 @@
     </goal>
 
     <goal name="openvpms:createdb">
+        <attainGoal name="openvpms:initdb"/>
         <attainGoal name="hibernate:schema-export"/>
         <attainGoal name="archetype:load"/>
         <attainGoal name="report:load"/>
@@ -190,6 +191,35 @@
     <!-- ================================================================== -->
     <!-- Schema targets                                                     -->
     <!-- ================================================================== -->
+    <goal name="openvpms:initdb">
+        <input message="All data is going to be deleted from ${openvpms.db.admin.url}openvpms. Continue? "
+               validargs="y,n" addproperty="do.delete"/>
+        <condition property="do.abort">
+           <equals arg1="n" arg2="${do.delete}"/>
+        </condition>
+        <fail if="do.abort">Build aborted by user.</fail>
+
+        <sql driver="${hibernate.connection.driver_class}"
+             url="${openvpms.db.admin.url}"
+             userid="${openvpms.db.admin.username}"
+             password="${openvpms.db.admin.password}">
+           <ant:classpath>
+               <ant:path refid="maven.dependency.classpath"/>
+           </ant:classpath>
+           drop database if exists `openvpms';
+           commit;
+        </sql>
+        <sql driver="${hibernate.connection.driver_class}"
+             url="${openvpms.db.admin.url}"
+             userid="${openvpms.db.admin.username}"
+             password="${openvpms.db.admin.password}"
+             src="${basedir}/src/db/createdb.sql">
+            <ant:classpath>
+                <ant:path refid="maven.dependency.classpath"/>
+            </ant:classpath>
+        </sql>
+    </goal>
+
     <goal name="openvpms:dumpdb">
         <mkdir dir="${maven.build.dir}/db"/>
         <exec executable="mysqldump" output="${maven.build.dir}/db/db.sql"
