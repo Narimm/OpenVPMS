@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.util;
 
+import echopointng.LabelEx;
 import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
 
@@ -43,9 +44,46 @@ public final class LabelFactory extends ComponentFactory {
      * @return a new label
      */
     public static Label create() {
-        Label label = new FilteringLabel();
-        setDefaultStyle(label);
-        return label;
+        return create(false);
+    }
+
+    /**
+     * Creates a new label that may support multiple lines.
+     *
+     * @param multiline if <tt>true</tt>, iterprets new lines in the text
+     * @return a new label
+     */
+    public static Label create(boolean multiline) {
+        Label result;
+        if (multiline) {
+            LabelEx label = new LabelEx() {
+                @Override
+                public void setText(String newValue) {
+                    if (TextHelper.hasControlChars(newValue)) {
+                        // replace any control chars with spaces.
+                        newValue = TextHelper.replaceControlChars(newValue,
+                                                                  " ");
+                    }
+                    super.setText(newValue);
+                }
+            };
+            label.setIntepretNewlines(true);
+            result = label;
+        } else {
+            result = new Label() {
+                @Override
+                public void setText(String newValue) {
+                    if (TextHelper.hasControlChars(newValue)) {
+                        // replace any control chars with spaces.
+                        newValue = TextHelper.replaceControlChars(newValue,
+                                                                  " ");
+                    }
+                    super.setText(newValue);
+                }
+            };
+        }
+        setDefaultStyle(result);
+        return result;
     }
 
     /**
@@ -84,26 +122,6 @@ public final class LabelFactory extends ComponentFactory {
         Label label = create(key);
         setStyle(label, style);
         return label;
-    }
-
-    /**
-     * Label that replaces any control characters with spaces.
-     */
-    private static class FilteringLabel extends Label {
-        /**
-         * Sets the text to be displayed.
-         *
-         * @param newValue the text to be displayed
-         */
-        @Override
-        public void setText(String newValue) {
-            if (TextHelper.hasControlChars(newValue)) {
-                // replace any control chars with spaces.
-                newValue = TextHelper.replaceControlChars(newValue, " ");
-            }
-            super.setText(newValue);
-        }
-
     }
 
 }

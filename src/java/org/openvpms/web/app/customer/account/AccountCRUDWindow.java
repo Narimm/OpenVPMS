@@ -24,6 +24,7 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.tools.account.AccountBalanceTool;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -230,26 +231,26 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         final Party customer = GlobalContext.getInstance().getCustomer();
         if (customer != null) {
             CustomerAccountRules rules = new CustomerAccountRules();
-            BigDecimal expected = rules.getDefinitiveBalance(customer);
-            BigDecimal actual = rules.getBalance(customer);
-            String title = Messages.get("customer.account.balancecheck.title");
-            if (expected.compareTo(actual) == 0) {
+            try {
+                BigDecimal expected = rules.getDefinitiveBalance(customer);
+                BigDecimal actual = rules.getBalance(customer);
+                if (expected.compareTo(actual) == 0) {
+                    String title = Messages.get(
+                            "customer.account.balancecheck.title");
+                    String message = Messages.get(
+                            "customer.account.balancecheck.ok");
+                    InformationDialog.show(title, message);
+                } else {
+                    String message = Messages.get(
+                            "customer.account.balancecheck.error",
+                            expected, actual);
+                    confirmRegenerate(message, customer);
+                }
+            } catch (CustomerAccountRuleException exception) {
                 String message = Messages.get(
-                        "customer.account.balancecheck.ok");
-                InformationDialog.show(title, message);
-            } else {
-                String message = Messages.get(
-                        "customer.account.balancecheck.error",
-                        expected, actual);
-                final ConfirmationDialog dialog
-                        = new ConfirmationDialog(title, message);
-                dialog.addWindowPaneListener(new PopupDialogListener() {
-                    @Override
-                    public void onOK() {
-                        regenerate(customer);
-                    }
-                });
-                dialog.show();
+                        "customer.account.balancecheck.acterror",
+                        exception.getMessage());
+                confirmRegenerate(message, customer);
             }
         }
     }
@@ -294,6 +295,26 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
             ErrorHelper.show(title, exception);
         }
         onRefresh(act);
+    }
+
+    /**
+     * Confirms if regeneration of a customer account balance should proceed.
+     *
+     * @param message  the confirmation message
+     * @param customer the customer
+     */
+    private void confirmRegenerate(String message, final Party customer) {
+        String title = Messages.get(
+                "customer.account.balancecheck.title");
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                regenerate(customer);
+            }
+        });
+        dialog.show();
     }
 
     /**

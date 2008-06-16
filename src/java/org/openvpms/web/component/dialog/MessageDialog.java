@@ -74,7 +74,7 @@ public abstract class MessageDialog extends PopupDialog {
      */
     @Override
     protected void doLayout() {
-        Label content = LabelFactory.create();
+        Label content = LabelFactory.create(true);
         content.setText(message);
         Row row = RowFactory.create("Inset", content);
         getLayout().add(row);
