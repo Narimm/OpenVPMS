@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -61,7 +62,10 @@ public class DocumentParticipationLayoutStrategy
         final DocumentAct act = (DocumentAct) IMObjectHelper.getObject(ref);
         Component component;
         if (act != null) {
-            component = new DocumentActDownloader(act).getComponent();
+            DocumentActDownloader downloader = new DocumentActDownloader(act);
+
+            // wrap in a row to left justify
+            component = RowFactory.create(downloader.getComponent());
         } else {
             component = LabelFactory.create();
         }
