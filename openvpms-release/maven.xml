@@ -83,12 +83,6 @@
         <move file="${distDir}/lib/openvpms-etl-plugin-${pom.currentVersion}.zip"
               tofile="${distDir}/import/plugin/OpenVPMSLoader.zip"/>
 
-        <!--  copy the import templates -->
-        <mkdir dir="${distDir}/import/transforms"/>
-        <copy todir="${distDir}/import/transforms">
-            <fileset dir="${basedir}/src/import/transforms"/>
-        </copy>
-
         <!-- copy the database scripts -->
         <mkdir dir="${distDir}/db"/>
         <copy todir="${distDir}/db" file="${basedir}/src/db/createdb.sql"/>
