@@ -1,4 +1,4 @@
-OpenVPMS 1.1 Release
+OpenVPMS 1.2 Release
 ====================
 
 1. Installation Notes
@@ -16,7 +16,7 @@ OpenVPMS 1.1 Release
     See http://tomcat.apache.org/download-55.cgi
 
   - OpenOffice 2.2.1 or higher
-    See: http://download.openoffice.org/2.2.1/contribute.html?product=OpenOffice.org&os=win&lang=en-US&version=2.2.1
+    See: http://download.openoffice.org/
 
 - MySQL:
   - should be on the same host as Tomcat
@@ -34,8 +34,7 @@ OpenVPMS 1.1 Release
  - bin     contains a number of tool scripts used to load data into OpenVPMS
  - conf    contains configuration files for the tools in bin/
  - db      contains MySQL SQL scripts to create the initial database
- - import  contains data and tools for importing data into OpenVPMS from
-           legacy systems
+ - import  contains data to import into OpenVPMS
  - lib     contains jars used by the tools in bin/
  - reports contains document templates for reporting
  - update  contains data and scripts to migrate from earlier versions of
