@@ -1,9 +1,9 @@
 <archetype>
-	<data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Practice" >
+	<data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Practice" currency="AUD">
 		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777" />
 		<data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC" postcode="3088" />
 	</data>	
-	<data id="OL1" archetype="party.organisationLocation" name="Main Clinic" currency="AUD" >
+	<data id="OL1" archetype="party.organisationLocation" name="Main Clinic">
 		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777" />
 		<data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC" postcode="3088" />
 	</data>
