@@ -31,6 +31,8 @@ import be.ibridge.kettle.trans.step.StepMetaInterface;
 import be.ibridge.kettle.trans.step.StepStatus;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.etl.load.ETLLogDAO;
@@ -67,6 +69,11 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
      * The count of generated objects.
      */
     private int count;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(LoaderPlugin.class);
 
 
     /**
@@ -225,13 +232,17 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
                                        dao, service);
             loader.setErrorListener(new ErrorListener() {
                 public void error(String legacyId, Throwable exception) {
-                    logBasic(Messages.get("LoaderPlugin.FailedToProcessRow",
-                                          legacyId, exception));
+                    String msg = Messages.get("LoaderPlugin.FailedToProcessRow",
+                                              legacyId, exception);
+                    logBasic(msg);
+                    log.error(msg, exception);
                 }
 
                 public void error(Throwable exception) {
-                    logBasic(Messages.get("LoaderPlugin.FailedToProcess",
-                                          exception));
+                    String msg = Messages.get("LoaderPlugin.FailedToProcess",
+                                              exception);
+                    logBasic(msg);
+                    log.error(msg, exception);
                 }
             });
         }
