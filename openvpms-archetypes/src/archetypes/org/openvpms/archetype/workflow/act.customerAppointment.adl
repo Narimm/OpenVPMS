@@ -40,8 +40,8 @@
 		<node displayName="Notes" name="description" type="java.lang.String" path="/description" />
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.clinician" />
-		<node name="status" path="/status" type="java.lang.String" minCardinality="1" >
-			<assertion name="lookup.local" defaultValue="'PENDING'">
+		<node name="status" path="/status" type="java.lang.String" minCardinality="1"  defaultValue="'PENDING'" >
+			<assertion name="lookup.local">
 				<propertyList name="entries">
 					<property name="PENDING" value="Pending" />
 					<property name="CANCELLED" value="Cancelled" />
