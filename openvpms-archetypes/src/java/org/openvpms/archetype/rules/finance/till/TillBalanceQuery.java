@@ -125,19 +125,20 @@ public class TillBalanceQuery {
             ActBean tillBalanceItemBean = new ActBean(tillBalanceItem, service);
             if (tillBalanceItemBean.isA("act.tillBalanceAdjustment")) {
                 ObjectSet set = new ObjectSet();
-                set.add(TILL_BALANCE, tillBalance);
-                set.add(ACT, tillBalanceItem);
-                set.add(AMOUNT, getAmount(tillBalanceItem).negate());
+                set.set(TILL_BALANCE, tillBalance);
+                set.set(ACT, tillBalanceItem);
+                set.set(ACT_ITEM, null);
+                set.set(AMOUNT, getAmount(tillBalanceItem).negate());
                 result.add(set);
             } else {
                 for (Act item : tillBalanceItemBean.getActs()) {
                 	ActBean itemBean = new ActBean(item);
                 	if (!itemBean.isA("act.customerAccountPayment")) {
 	                    ObjectSet set = new ObjectSet();
-	                    set.add(TILL_BALANCE, tillBalance);
-	                    set.add(ACT, tillBalanceItem);
-	                    set.add(ACT_ITEM, item);
-	                    set.add(AMOUNT, getAmount(item).negate());
+	                    set.set(TILL_BALANCE, tillBalance);
+	                    set.set(ACT, tillBalanceItem);
+	                    set.set(ACT_ITEM, item);
+	                    set.set(AMOUNT, getAmount(item).negate());
 	                    result.add(set);
                 	}
                 }
