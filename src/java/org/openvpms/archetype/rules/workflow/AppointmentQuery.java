@@ -243,6 +243,14 @@ public class AppointmentQuery {
                 current.set(ACT_STATUS, set.get(ACT_STATUS));
                 current.set(ACT_REASON, set.get(ACT_REASON));
                 current.set(ACT_DESCRIPTION, set.get(ACT_DESCRIPTION));
+                current.set(CUSTOMER_REFERENCE, null);
+                current.set(CUSTOMER_NAME, null);
+                current.set(PATIENT_REFERENCE, null);
+                current.set(PATIENT_NAME, null);
+                current.set(APPOINTMENT_REFERENCE, null);
+                current.set(APPOINTMENT_NAME, null);
+                current.set(CLINICIAN_REFERENCE, null);
+                current.set(CLINICIAN_NAME, null);
             }
             IMObjectReference entityRef
                     = (IMObjectReference) set.get("entity.objectReference");
@@ -320,6 +328,5 @@ public class AppointmentQuery {
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
         return query;
     }
-
 
 }
