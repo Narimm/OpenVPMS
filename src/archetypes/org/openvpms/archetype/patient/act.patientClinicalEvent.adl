@@ -36,7 +36,7 @@
               minCardinality="0" maxCardinality="1"
               filter="participation.location" hidden="true"/>
 		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'">
-			<assertion name="lookup.local" defaultValue="'IN_PROGRESS'">
+			<assertion name="lookup.local">
 				<propertyList name="entries">
 					<property name="IN_PROGRESS" value="In Progress" />
 					<property name="COMPLETED" value="Completed" />
