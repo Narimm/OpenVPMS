@@ -144,7 +144,9 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
                 int index = parent.indexOf(current);
                 if (index != -1) {
                     parent.remove(index);
-                    parent.add(newWindow.getComponent(), index);
+                    if (newWindow != null) {
+                        parent.add(newWindow.getComponent(), index);
+                    }
                 }
             }
         }
