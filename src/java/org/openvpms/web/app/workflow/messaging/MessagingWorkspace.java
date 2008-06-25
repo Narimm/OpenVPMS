@@ -44,19 +44,6 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
     }
 
     /**
-     * Determines if the workspace supports an archetype.
-     *
-     * @param shortName the archetype's short name
-     * @return <tt>true</tt> if the workspace can handle the archetype;
-     *         otherwise <tt>false</tt>
-     */
-    public boolean canHandle(String shortName) {
-        // don't want this workspace participating in context changes, so
-        // return false
-        return false;
-    }
-
-    /**
      * Determines if the workspace should be refreshed.
      * This implementation always returns <tt>true</tt>.
      *
