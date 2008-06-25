@@ -316,6 +316,8 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
         } else if (getObject() == null && getBrowser() == null
                 && isParentOptional()) {
             setObject(null);
+        } else {
+            layoutWorkspace();
         }
     }
 
