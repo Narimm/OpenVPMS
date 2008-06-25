@@ -44,25 +44,21 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
     }
 
     /**
-     * Determines if the workspace should be refreshed.
-     * This implementation always returns <tt>true</tt>.
+     * Returns the latest version of the user, defaulting to the context user
+     * if there is no current user.
      *
-     * @return <tt>true</tt>
-     */
-    @Override
-    protected boolean refreshWorkspace() {
-        return true;
-    }
-
-    /**
-     * Returns the latest version of the current context object.
-     *
-     * @return the latest version of the context object, or {@link #getObject()}
+     * @return the latest version of the user, or {@link #getObject()}
      *         if they are the same
      */
     @Override
     protected User getLatest() {
-        return super.getLatest(GlobalContext.getInstance().getUser());
+        User result;
+        if (getObject() == null) {
+            result = getLatest(GlobalContext.getInstance().getUser());
+        } else {
+            result = super.getLatest();
+        }
+        return result;
     }
 
     /**
