@@ -29,6 +29,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.workflow.WorkflowQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
+import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 
 import java.util.Date;
@@ -43,20 +44,21 @@ import java.util.Date;
 public class TaskQuery extends WorkflowQuery<Act> {
 
     /**
-     * Construct a new <code>CustomerAppointmentQuery</code>.
+     * Construct a new <tt>TaskQuery</tt>.
      *
      * @param schedule the schedule
      */
     public TaskQuery(Party schedule) {
         super(schedule, "worklist", "participation.worklist",
               new String[]{"act.customerTask"}, Act.class);
+        QueryFactory.initialise(this);
     }
 
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <code>null</code>
-     * @return the query result set. May be <code>null</code>
+     * @param sort the sort constraint. May be <tt>null</tt>
+     * @return the query result set. May be <tt>null</tt>
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
@@ -86,7 +88,7 @@ public class TaskQuery extends WorkflowQuery<Act> {
     /**
      * Creates a new result set.
      *
-     * @param sort the sort constraint. May be <code>null</code>
+     * @param sort the sort constraint. May be <tt>null</tt>
      * @return a new result set
      */
     @Override

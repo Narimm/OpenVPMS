@@ -169,7 +169,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     @Override
     public void setObject(Parent object) {
         super.setObject(object);
-        layoutWorkspace();
+        layoutWorkspace(false);
     }
 
     /**
@@ -317,20 +317,32 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
                 && isParentOptional()) {
             setObject(null);
         } else {
-            layoutWorkspace();
+            layoutWorkspace(true);
         }
     }
 
-    protected void layoutWorkspace() {
+    /**
+     * Lays out the workspace.
+     *
+     * @param refresh if <tt>true</tt> and the workspace exists, refresh
+     *                the workspace, otherwise recreate it
+     */
+    protected void layoutWorkspace(boolean refresh) {
         Parent parent = getObject();
         if (parent != null || isParentOptional()) {
-            Query<Child> query = createQuery();
-            setQuery(query);
-            setBrowser(createBrowser(query));
-            setCRUDWindow(createCRUDWindow());
-            setWorkspace(createWorkspace());
-            if (query.isAuto()) {
-                onBrowserQuery();
+            if (refresh && getBrowser() != null) {
+                setCRUDWindow(getCRUDWindow()); // reregister
+                setWorkspace(getWorkspace());
+                browser.query();
+            } else {
+                Query<Child> query = createQuery();
+                setQuery(query);
+                setBrowser(createBrowser(query));
+                setCRUDWindow(createCRUDWindow());
+                setWorkspace(createWorkspace());
+                if (query.isAuto()) {
+                    onBrowserQuery();
+                }
             }
         } else {
             setQuery(null);
