@@ -91,9 +91,8 @@ public class WorkListWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Determines if the workspace should be refreshed.
-     * This implementation always returns <tt>true</tt>.
      *
-     * @return <code>true</code>
+     * @return <tt>true</tt>
      */
     @Override
     protected boolean refreshWorkspace() {

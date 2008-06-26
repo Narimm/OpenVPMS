@@ -44,6 +44,16 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
     }
 
     /**
+     * Determines if the workspace should be refreshed.
+     *
+     * @return <tt>true</tt>
+     */
+    @Override
+    protected boolean refreshWorkspace() {
+        return true;
+    }
+
+    /**
      * Returns the latest version of the user, defaulting to the context user
      * if there is no current user.
      *
