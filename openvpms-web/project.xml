@@ -724,7 +724,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>1.2-beta-1</version>
+            <version>1.2-beta-2-SNAPSHOT</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
