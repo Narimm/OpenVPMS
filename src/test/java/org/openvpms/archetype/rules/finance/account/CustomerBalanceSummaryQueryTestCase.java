@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.math.BigDecimal;
@@ -82,7 +83,7 @@ public class CustomerBalanceSummaryQueryTestCase
         ObjectSet set = null;
         while (query.hasNext()) {
             ObjectSet tmp = query.next();
-            IMObjectReference ref = (IMObjectReference) tmp.get(
+            IMObjectReference ref = tmp.getReference(
                     CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
             if (customer.getObjectReference().equals(ref)) {
                 set = tmp;
@@ -103,8 +104,8 @@ public class CustomerBalanceSummaryQueryTestCase
                 CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT);
         Date invoiceDate = set.getDate(
                 CustomerBalanceSummaryQuery.LAST_INVOICE_DATE);
-        BigDecimal invoiceAmount = (BigDecimal)
-                set.get(CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);
+        BigDecimal invoiceAmount = set.getBigDecimal(
+                CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);
 
         assertEquals(fifty, balance);
         assertEquals(fifty, overdue);
@@ -350,6 +351,59 @@ public class CustomerBalanceSummaryQueryTestCase
     }
 
     /**
+     * Verifies that customers with the same name have their balances correctly
+     * calculated.
+     */
+    public void testForSameName() {
+        Party customer1 = getCustomer();
+        long id = System.currentTimeMillis();
+        Party customer2 = TestHelper.createCustomer();
+        setName(customer1, id);
+        setName(customer2, id);
+
+        BigDecimal cust1Balance = BigDecimal.ZERO;
+        BigDecimal cust2Balance = BigDecimal.ZERO;
+
+        Date startTime = java.sql.Date.valueOf("2007-1-1");
+
+        // create and save invoices for customer1
+        final Money hundred = new Money(100);
+        for (int i = 0; i < 10; ++i) {
+            FinancialAct invoice1 = createChargesInvoice(hundred, customer1);
+            invoice1.setActivityStartTime(startTime);
+            save(invoice1);
+            cust1Balance = cust1Balance.add(hundred);
+        }
+        // create and save invoices for customer2
+        for (int i = 0; i < 12; ++i) {
+            FinancialAct invoice2 = createChargesInvoice(hundred, customer2);
+            invoice2.setActivityStartTime(startTime);
+            save(invoice2);
+            cust2Balance = cust2Balance.add(hundred);
+        }
+
+        Date now = new Date();
+
+        // verify the query returns two sets, one for each customer, with
+        // the correct balance
+        CustomerBalanceSummaryQuery query
+                = new CustomerBalanceSummaryQuery(now, null,
+                                                  customer1.getName(),
+                                                  customer1.getName());
+        Map<IMObjectReference, ObjectSet> sets = getSets(query);
+        assertEquals(2, sets.size());
+        ObjectSet cust1Set = sets.get(customer1.getObjectReference());
+        ObjectSet cust2Set = sets.get(customer2.getObjectReference());
+        assertNotNull(cust1Set);
+        assertNotNull(cust2Set);
+
+        assertEquals(cust1Balance, cust1Set.getBigDecimal(
+                CustomerBalanceSummaryQuery.BALANCE));
+        assertEquals(cust2Balance, cust2Set.getBigDecimal(
+                CustomerBalanceSummaryQuery.BALANCE));
+    }
+
+    /**
      * Checks the no. of summaries for a query.
      *
      * @param expected the expected count
@@ -382,7 +436,7 @@ public class CustomerBalanceSummaryQueryTestCase
                 date, from, to, null);
         while (query.hasNext()) {
             ObjectSet set = query.next();
-            IMObjectReference ref = (IMObjectReference) set.get(
+            IMObjectReference ref = set.getReference(
                     CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
             result.add(ref);
         }
@@ -418,17 +472,39 @@ public class CustomerBalanceSummaryQueryTestCase
         assertEquals(expected.length, found.size());
     }
 
+    /**
+     * Returns the sets from a query keyed on customer reference.
+     * Fails if the are multiple balances for the one customer.
+     *
+     * @param query the query
+     * @return the sets
+     */
     private Map<IMObjectReference, ObjectSet> getSets(
             CustomerBalanceSummaryQuery query) {
         Map<IMObjectReference, ObjectSet> result
                 = new HashMap<IMObjectReference, ObjectSet>();
         while (query.hasNext()) {
             ObjectSet set = query.next();
-            IMObjectReference ref = (IMObjectReference) set.get(
+            IMObjectReference ref = set.getReference(
                     CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+            if (result.containsKey(ref)) {
+                fail("Duplicate customer " + ref);
+            }
             result.put(ref, set);
         }
         return result;
     }
 
+    /**
+     * Helper to set the name for a customer.
+     *
+     * @param customer the customer
+     * @param id       the name id
+     */
+    private void setName(Party customer, long id) {
+        IMObjectBean bean = new IMObjectBean(customer);
+        bean.setValue("firstName", "Foo");
+        bean.setValue("lastName", "Bar-" + id);
+        bean.save();
+    }
 }
