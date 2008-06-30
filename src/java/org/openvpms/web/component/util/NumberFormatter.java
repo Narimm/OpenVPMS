@@ -90,7 +90,7 @@ public class NumberFormatter {
             if (edit) {
                 format = getFormat(DECIMAL_EDIT);
             } else {
-                format = NumberFormat.getCurrencyInstance(Messages.getLocale());
+                format = NumberFormat.getCurrencyInstance();
             }
         } else if (property.getType().isAssignableFrom(Float.class)
                 || property.getType().isAssignableFrom(Double.class)
