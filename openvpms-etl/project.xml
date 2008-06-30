@@ -10,7 +10,7 @@
     <inceptionYear>2007</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms-etl-app</artifactId>
-    <currentVersion>1.2-beta-1</currentVersion>
+    <currentVersion>1.2-beta-2-SNAPSHOT</currentVersion>
     <package>org.openvpms</package>
     <url>http://www.openvpms.org/${pom.artifactId}</url>
     <issueTrackingUrl>
@@ -250,6 +250,9 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
+            <properties>
+                <kettle.plugin>true</kettle.plugin>
+            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
