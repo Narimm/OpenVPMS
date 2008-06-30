@@ -316,10 +316,10 @@ public class LoaderPluginMeta extends BaseStepMeta
             // See if we have input streams leading to this step
             if (input.length > 0) {
                 addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
-                          "LoaderPlugin.StepReceiveInput");
+                          "LoaderPluginMeta.StepReceiveInput");
             } else {
                 addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
-                          "LoaderPlugin.StepReceiveNoInput");
+                          "LoaderPluginMeta.StepReceiveNoInput");
             }
         } finally {
             thread.setContextClassLoader(loader);
