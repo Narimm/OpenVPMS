@@ -127,6 +127,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         initial.setClinician(clinician);
 
         initial.setUser(global.getUser());
+        initial.setPractice(global.getPractice());
         initial.setLocation(global.getLocation());
 
         // get the latest invoice, or create one if none is available, and edit

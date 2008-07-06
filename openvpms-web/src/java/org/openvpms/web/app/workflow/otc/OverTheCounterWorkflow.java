@@ -98,6 +98,7 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         initial.setCustomer(otc);
         initial.setTill(global.getTill());
         initial.setLocation(global.getLocation());
+        initial.setPractice(global.getPractice());
 
         EditAccountActTask sale = new EditAccountActTask(CHARGES_COUNTER, true);
         sale.setDeleteOnCancelOrSkip(true);
