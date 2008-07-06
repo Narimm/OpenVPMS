@@ -86,6 +86,7 @@ public class ConsultWorkflow extends WorkflowImpl {
         initial.setPatient(patient);
         initial.setClinician(clinician);
         initial.setUser(global.getUser());
+        initial.setPractice(global.getPractice());
         initial.setLocation(global.getLocation());
 
         // get the latest clinical event, or create one if none is available

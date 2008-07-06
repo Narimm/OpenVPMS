@@ -78,6 +78,9 @@ public class PaymentWorkflow extends WorkflowImpl {
             initial.setTill(global.getTill());
         }
 
+        if (initial.getPractice() == null) {
+            initial.setPractice(global.getPractice());
+        }
         if (initial.getLocation() == null) {
             // need to set location for cash rounding purposes during payments
             initial.setLocation(global.getLocation());

@@ -133,6 +133,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         initial.setUser(global.getUser());
         initial.setWorkListDate(new Date());
         initial.setScheduleDate(global.getScheduleDate());
+        initial.setPractice(global.getPractice());
         initial.setLocation(global.getLocation());
 
         if (patient == null) {
