@@ -18,15 +18,13 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.DefaultIMObjectSessionHandler;
+import org.openvpms.component.business.dao.hibernate.im.act.ActSessionHandler;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 
 
 /**
@@ -35,42 +33,12 @@ import org.openvpms.component.business.domain.im.product.Product;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class IMObjectSessionHandlerFactory {
-
-    /**
-     * Handler for {@link ArchetypeDescriptor}s.
-     */
-    private final IMObjectSessionHandler archetype;
-
-    /**
-     * Handler for {@link NodeDescriptor}s.
-     */
-    private final IMObjectSessionHandler node;
+public class IMObjectSessionHandlerFactory {
 
     /**
      * Handler for {@link Act}s.
      */
     private final IMObjectSessionHandler act;
-
-    /**
-     * Handler for {@link Party} instances.
-     */
-    private final IMObjectSessionHandler party;
-
-    /**
-     * Handler for {@link Product} instances.
-     */
-    private final IMObjectSessionHandler product;
-
-    /**
-     * Handler for {@link Entity} instances.
-     */
-    private final IMObjectSessionHandler entity;
-
-    /**
-     * Handler for {@link Lookup} instances.
-     */
-    private final IMObjectSessionHandler lookup;
 
     /**
      * The default Handler.
@@ -82,15 +50,10 @@ class IMObjectSessionHandlerFactory {
      *
      * @param dao the DAO
      */
-    public IMObjectSessionHandlerFactory(IMObjectDAO dao) {
-        archetype = new ArchetypeDescriptorSessionHandler(dao);
-        node = new NodeDescriptorSessionHandler(dao);
-        act = new ActSessionHandler(dao);
-        party = new PartySessionHandler(dao);
-        product = new ProductSessionHandler(dao);
-        entity = new EntitySessionHandler(dao);
-        lookup = new LookupSessionHandler(dao);
-        defaultHandler = new DefaultIMObjectSessionHandler(dao);
+    public IMObjectSessionHandlerFactory(IMObjectDAO dao,
+                                         Assembler assembler) {
+        act = new ActSessionHandler(dao, assembler);
+        defaultHandler = new DefaultIMObjectSessionHandler(dao, assembler);
     }
 
     /**
@@ -102,20 +65,7 @@ class IMObjectSessionHandlerFactory {
     public IMObjectSessionHandler getHandler(IMObject object) {
         if (object instanceof Act) {
             return act;
-        } else if (object instanceof Party) {
-            return party;
-        } else if (object instanceof Product) {
-            return product;
-        } else if (object instanceof Entity) {
-            return entity;
-        } else if (object instanceof Lookup) {
-            return lookup;
-        } else if (object instanceof ArchetypeDescriptor) {
-            return archetype;
-        } else if (object instanceof NodeDescriptor) {
-            return node;
         }
         return defaultHandler;
-
     }
 }

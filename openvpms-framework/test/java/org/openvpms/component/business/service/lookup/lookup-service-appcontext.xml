@@ -1,161 +1,149 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
-  "http://www.springframework.org/dtd/spring-beans.dtd">
+        "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-  <!--  Property configuration -->
-  <bean id="props"
-    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-    <property name="locations">
-      <list>
-        <value>classpath:hibernate.properties</value>
-      </list>
-    </property>
-  </bean>
+    <!--  Property configuration -->
+    <bean id="props"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:hibernate.properties</value>
+            </list>
+        </property>
+    </bean>
 
-  <!--  The MySQL DataSource -->
-  <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
-    <property name="driverClassName"
-      value="${hibernate.connection.driver_class}" />
-    <property name="url" value="${hibernate.connection.url}" />
-    <property name="username" value="${hibernate.connection.username}" />
-    <property name="password" value="${hibernate.connection.password}" />
-  </bean>
+    <!--  The MySQL DataSource -->
+    <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName"
+                  value="${hibernate.connection.driver_class}"/>
+        <property name="url" value="${hibernate.connection.url}"/>
+        <property name="username" value="${hibernate.connection.username}"/>
+        <property name="password" value="${hibernate.connection.password}"/>
+    </bean>
 
-  <!--  Hibernate session factory -->
-  <bean id="sessionFactory"
-    class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-    <property name="dataSource">
-      <ref local="mySQLDataSource" />
-    </property>
-    <property name="hibernateProperties">
-      <props>
-        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-        <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
-        <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
-        <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
-        <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
-        <prop key="hibernate.c3p0.max_statements">
-          ${hibernate.c3p0.max_statements}
-        </prop>
-      </props>
-    </property>
-    <property name="mappingResources">
-      <list>
-        <value>
-          /org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/lookup/LookupRelationship.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/act/Act.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/document/Document.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/act/ActRelationship.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/common/Entity.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/common/EntityIdentity.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/common/EntityRelationship.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/common/Participation.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/party/Contact.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/product/ProductPrice.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/ArchetypeDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionTypeDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/NodeDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/ActionTypeDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/security/SecurityRole.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
-        </value>
-      </list>
-    </property>
-  </bean>
+    <!--  Hibernate session factory -->
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+        <property name="dataSource">
+            <ref local="mySQLDataSource"/>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.c3p0.min_size">
+                    ${hibernate.c3p0.min_size}</prop>
+                <prop key="hibernate.c3p0.max_size">
+                    ${hibernate.c3p0.max_size}</prop>
+                <prop key="hibernate.c3p0.timeout">
+                    ${hibernate.c3p0.timeout}</prop>
+                <prop key="hibernate.c3p0.max_statements">
+                    ${hibernate.c3p0.max_statements}
+                </prop>
+            </props>
+        </property>
+        <property name="mappingResources">
+            <list>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Act.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ActionTypeDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ActRelationship.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ArchetypeDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ArchetypeAwareGrantedAuthority.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/AssertionDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/AssertionTypeDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/AuditRecord.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Contact.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Document.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Entity.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/EntityIdentity.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/EntityRelationship.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Lookup.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/LookupRelationship.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/NodeDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Participation.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ProductPrice.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/SecurityRole.hbm.xml</value>
+            </list>
+        </property>
+    </bean>
 
-  <!--  Need this bean to support database style assertions (i.e. reference data -->
-  <bean id="dbAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.DatabaseAssertions">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
-  </bean>
+    <!--  Need this bean to support database style assertions (i.e. reference data -->
+    <bean id="dbAssertion"
+          class="org.openvpms.component.business.service.archetype.assertion.DatabaseAssertions">
+        <property name="sessionFactory">
+            <ref local="sessionFactory"/>
+        </property>
+    </bean>
 
-  <bean id="txnManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-    <property name="sessionFactory" ref="sessionFactory" />
-  </bean>
+    <bean id="txnManager"
+          class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
 
-  <!--  The IMObject DAO bean -->
-  <bean id="imObjectDao"
-        class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory"/>
-    </property>
-    <property name="transactionManager">
-      <ref local="txnManager"/>
-    </property>
-    <property name="archetypeDescriptorCache">
-      <ref local="archetypeDescriptorCache"/>
-    </property>
-  </bean>
+    <!--  The IMObject DAO bean -->
+    <bean id="imObjectDao"
+          class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
+        <property name="sessionFactory">
+            <ref local="sessionFactory"/>
+        </property>
+        <property name="transactionManager">
+            <ref local="txnManager"/>
+        </property>
+        <property name="archetypeDescriptorCache">
+            <ref local="archetypeDescriptorCache"/>
+        </property>
+    </bean>
 
-  <!--  The Archetype Descriptor Cache -->
-  <bean id="archetypeDescriptorCache"
-    class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
-    <constructor-arg index="0" value="org/openvpms/archetype" />
-    <constructor-arg index="1">
-      <list>
-        <value>adl</value>
-      </list>
-    </constructor-arg>
-    <constructor-arg index="2"
-      value="org/openvpms/archetype/assertionTypes.xml" />
-  </bean>
+    <!--  The Archetype Descriptor Cache -->
+    <bean id="archetypeDescriptorCache"
+          class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
+        <constructor-arg index="0" value="org/openvpms/archetype"/>
+        <constructor-arg index="1">
+            <list>
+                <value>adl</value>
+            </list>
+        </constructor-arg>
+        <constructor-arg index="2"
+                         value="org/openvpms/archetype/assertionTypes.xml"/>
+    </bean>
 
-  <!--  The Archetype Service -->
-  <bean id="archetypeService"
-    class="org.openvpms.component.business.service.archetype.ArchetypeService">
-    <constructor-arg index="0">
-      <ref local="archetypeDescriptorCache" />
-    </constructor-arg>
-    <property name="dao">
-      <ref local="imObjectDao" />
-    </property>
-  </bean>
-  
-  <!--  Instantiate the archetype service helper bean and inject their dependencies -->
-  <bean id="archetypeServiceHelper"
-    class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
-    <constructor-arg index="0">
-      <ref local="archetypeService" />
-    </constructor-arg>
-  </bean>
+    <!--  The Archetype Service -->
+    <bean id="archetypeService"
+          class="org.openvpms.component.business.service.archetype.ArchetypeService">
+        <constructor-arg index="0">
+            <ref local="archetypeDescriptorCache"/>
+        </constructor-arg>
+        <property name="dao">
+            <ref local="imObjectDao"/>
+        </property>
+    </bean>
+
+    <!--  Instantiate the archetype service helper bean and inject their dependencies -->
+    <bean id="archetypeServiceHelper"
+          class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+    </bean>
 
 </beans>

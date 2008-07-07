@@ -19,25 +19,20 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
-
 // openvpms-framework
+
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
  * All the descriptor classes inherit from this base class, which provides
  * support for identity, hibernate and serialization
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public abstract class Descriptor extends IMObject {
 
-    /**
-     * SUID.
-     */
-    private static final long serialVersionUID = 1L;
-
-    
     /**
      * An enumeration of different descriptor types
      */
@@ -48,7 +43,7 @@ public abstract class Descriptor extends IMObject {
         PropertyDescriptor,
         AssertionTypeDescriptor
     }
-    
+
     /**
      * An enumeration of the different validation errors
      */
@@ -56,7 +51,7 @@ public abstract class Descriptor extends IMObject {
         IsRequired,
         DuplicateNodeDescriptor
     }
-    
+
     /**
      * Default constructor
      */
@@ -69,8 +64,30 @@ public abstract class Descriptor extends IMObject {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        Descriptor copy = (Descriptor)super.clone();
-        
-        return copy;
+        return super.clone();
+    }
+
+    /**
+     * Returns the class for the specified class name.
+     *
+     * @param className may be null/empty
+     * @return the class, or <tt>null</tt> if <tt>className</tt> null/empty
+     * @throws DescriptorException if the class can't be loaded
+     */
+    protected Class getClass(String className) {
+        Class result;
+        if (StringUtils.isEmpty(className)) {
+            result = null;
+        } else {
+            try {
+                result = Thread.currentThread().getContextClassLoader()
+                        .loadClass(className);
+            } catch (Exception exception) {
+                throw new DescriptorException(
+                        DescriptorException.ErrorCode.InvalidType,
+                        exception, className);
+            }
+        }
+        return result;
     }
 }

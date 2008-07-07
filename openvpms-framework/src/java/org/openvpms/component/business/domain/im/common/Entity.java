@@ -20,11 +20,8 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -41,13 +38,7 @@ public class Entity extends IMObject {
     /**
      * Serialisation version identifier.
      */
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * A placeholder for all entity details, which denotes the dynamic and
-     * adaptive details of the entity.
-     */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
+    private static final long serialVersionUID = 2L;
 
     /**
      * The {@link Lookup} classifications this entity. An {@link Entity} can
@@ -106,15 +97,14 @@ public class Entity extends IMObject {
     public Entity(ArchetypeId archetypeId, String name,
                   String description, Map<String, Object> details) {
         super(archetypeId, name, description);
+        if (details != null) {
+            setDetails(details);
+        }
 
         // check that a name was specified
         if (StringUtils.isEmpty(name)) {
             throw new EntityException(
                     EntityException.ErrorCode.NoNameSpecified);
-        }
-
-        if (details != null) {
-            this.details = TypedValueMap.create(details);
         }
     }
 
@@ -308,34 +298,18 @@ public class Entity extends IMObject {
         return classifications;
     }
 
-    /**
-     * @return Returns the details.
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * @param details The details to set.
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
-    }
-
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
         Entity copy = (Entity) super.clone();
-        copy.classifications = new HashSet<Lookup>(this.classifications);
-        copy.details = (this.details == null) ? null
-                : new HashMap<String, TypedValue>(details);
-        copy.identities = new HashSet<EntityIdentity>(this.identities);
+        copy.classifications = new HashSet<Lookup>(classifications);
+        copy.identities = new HashSet<EntityIdentity>(identities);
         copy.sourceEntityRelationships = new HashSet<EntityRelationship>(
-                this.sourceEntityRelationships);
+                sourceEntityRelationships);
         copy.targetEntityRelationships = new HashSet<EntityRelationship>(
-                this.targetEntityRelationships);
+                targetEntityRelationships);
 
         return copy;
     }

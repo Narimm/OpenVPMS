@@ -1,0 +1,75 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
+package org.openvpms.component.business.dao.hibernate.im.entity;
+
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+
+/**
+ * Add description here.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
+public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
+        extends IMObjectAssembler<T, DO> {
+
+    private static final SetAssembler<EntityIdentity, EntityIdentityDO>
+            IDENT = SetAssembler.create(EntityIdentity.class,
+                                        EntityIdentityDO.class);
+
+    private static final SetAssembler<Lookup, LookupDO> LOOKUPS
+            = SetAssembler.create(Lookup.class, LookupDO.class);
+
+    private static final SetAssembler<EntityRelationship, EntityRelationshipDO>
+            RELATIONSHIP = SetAssembler.create(EntityRelationship.class,
+                                               EntityRelationshipDO.class);
+
+
+    public EntityAssembler(Class<T> type, Class<DO> typeDO) {
+        super(type, typeDO);
+    }
+
+    @Override
+    protected void assembleDO(DO result, T source, Context context) {
+        super.assembleDO(result, source, context);
+
+        IDENT.assemble(result.getIdentities(), source.getIdentities(),
+                       context);
+
+        LOOKUPS.assemble(result.getClassifications(),
+                         source.getClassifications(),
+                         context);
+
+        RELATIONSHIP.assemble(result.getSourceEntityRelationships(),
+                              source.getSourceEntityRelationships(),
+                              context);
+
+        RELATIONSHIP.assemble(result.getTargetEntityRelationships(),
+                              source.getTargetEntityRelationships(),
+                              context);
+    }
+
+}

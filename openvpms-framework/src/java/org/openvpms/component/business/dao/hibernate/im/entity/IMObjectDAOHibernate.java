@@ -28,6 +28,10 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
+import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
@@ -47,16 +51,12 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -84,6 +84,11 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     private final IMObjectSessionHandlerFactory handlerFactory;
 
     /**
+     * The assembler.
+     */
+    private final Assembler assembler;
+
+    /**
      * The archetype descriptor cache.
      * This is used to resolve {@link IMObjectReference}s.
      */
@@ -101,7 +106,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public IMObjectDAOHibernate() {
         collectorFactory = new HibernateResultCollectorFactory();
-        handlerFactory = new IMObjectSessionHandlerFactory(this);
+        assembler = new AssemblerImpl();
+        handlerFactory = new IMObjectSessionHandlerFactory(this, assembler);
     }
 
     /**
@@ -138,7 +144,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             });
         } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToSaveIMObject, exception,
-                                           object.getUid());
+                                           object.getId());
         }
     }
 
@@ -170,15 +176,16 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             update(new HibernateCallback() {
                 public Object doInHibernate(Session session)
                         throws HibernateException {
+                    Context context = Context.getContext(assembler, session);
                     IMObjectSessionHandler handler
                             = handlerFactory.getHandler(object);
-                    handler.delete(object, session);
+                    handler.delete(object, session, context);
                     return null;
                 }
             });
         } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToDeleteIMObject, exception,
-                                           object.getUid());
+                                           object.getId());
         }
     }
 
@@ -407,22 +414,32 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
     }
 
+    /**
+     * Returns an object with the specified reference.
+     *
+     * @param reference the object reference
+     * @return the corresponding object, or <tt>null</tt> if none exists
+     * @throws IMObjectDAOException for any error
+     */
+    public IMObject get(IMObjectReference reference) {
+        ArchetypeDescriptor desc = cache.getArchetypeDescriptor(
+                reference.getArchetypeId());
+        if (desc != null) {
+            return getById(desc.getClassName(), reference.getId());
+        }
+        return null;
+    }
+
     /*
      * (non-Javadoc)
      *
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getByLinkId(java.lang.String,
      *      java.lang.String)
+     * @deprecated no replacement
      */
+    @Deprecated
     public IMObject getByLinkId(String clazz, String linkId) {
-        if (StringUtils.isEmpty(clazz)) {
-            throw new IMObjectDAOException(ClassNameMustBeSpecified);
-        }
-        try {
-            return get(clazz, "linkId", linkId);
-        } catch (Exception exception) {
-            throw new IMObjectDAOException(FailedToFindIMObjectReference,
-                                           exception);
-        }
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -433,12 +450,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @throws IMObjectDAOException if the request cannot complete
      */
     public IMObject getByReference(IMObjectReference reference) {
-        ArchetypeDescriptor desc = cache.getArchetypeDescriptor(
-                reference.getArchetypeId());
-        if (desc != null) {
-            return getByLinkId(desc.getClassName(), reference.getLinkId());
-        }
-        return null;
+        return get(reference);
     }
 
     /**
@@ -737,13 +749,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param session the session to use
      */
     private void save(IMObject object, Session session) {
-        Set<IMObject> newObjects = new HashSet<IMObject>();
-        CommitSync sync = new CommitSync(newObjects);
+        Context context = Context.getContext(assembler, session);
         IMObjectSessionHandler handler = handlerFactory.getHandler(object);
-
-        IMObject source = handler.save(object, session, newObjects);
-        sync.add(handler, object, source);
-        TransactionSynchronizationManager.registerSynchronization(sync);
+        handler.save(object, session, context);
+        // context.syncronizeIds();
     }
 
     /**
@@ -753,15 +762,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param session the session to use
      */
     private void save(Collection<IMObject> objects, Session session) {
-        Set<IMObject> newObjects = new HashSet<IMObject>();
-        CommitSync sync = new CommitSync(newObjects);
-
+        Context context = Context.getContext(assembler, session);
         for (IMObject object : objects) {
             IMObjectSessionHandler handler = handlerFactory.getHandler(object);
-            IMObject source = handler.save(object, session, newObjects);
-            sync.add(handler, object, source);
+            handler.save(object, session, context);
         }
-        TransactionSynchronizationManager.registerSynchronization(sync);
+        // context.syncronizeIds();
     }
 
     /**
@@ -818,93 +824,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     private Object execute(HibernateCallback callback) {
         final HibernateTemplate template = getHibernateTemplate();
         return template.execute(callback);
-    }
-
-
-    /**
-     * Helper to update the ids and versions of a set of objects on
-     * transaction commit.
-     */
-    private static class CommitSync extends TransactionSynchronizationAdapter {
-
-        /**
-         * A list of objects to update the ids and versions of at transaction
-         * commit.
-         */
-        private List<Sync> list = new ArrayList<Sync>();
-
-        /**
-         * The set of new objects encountered during save.
-         */
-        private final Set<IMObject> newObjects;
-
-        /**
-         * Creates a new <tt>CommitSync</tt>.
-         */
-        public CommitSync(Set<IMObject> newObjects) {
-            this.newObjects = newObjects;
-        }
-
-        /**
-         * Register an object to update at commit.
-         *
-         * @param handler the handler to perform the update
-         * @param target  the object to update
-         * @param source  the object to update from
-         */
-        public void add(IMObjectSessionHandler handler, IMObject target,
-                        IMObject source) {
-            list.add(new Sync(handler, target, source));
-        }
-
-        /**
-         * Invoked after completion of the transaction.
-         * <p/>
-         * If the transaction committed, identifiers and versions of the
-         * committed objects are propagated to their targets.
-         * <p/>
-         * If the transaction rolled back, identifiers assigned to new objects
-         * are reset to -1.
-         *
-         * @param status the transaction status
-         */
-        @Override
-        public void afterCompletion(int status) {
-            if (status == STATUS_COMMITTED) {
-                for (Sync sync : list) {
-                    sync.sync();
-                }
-            } else {
-                // STATUS_ROLLBACK or STATUS_UNKOWN
-                for (IMObject object : newObjects) {
-                    object.setUid(-1);
-                }
-            }
-        }
-
-        private static class Sync {
-
-            private final IMObjectSessionHandler handler;
-            private final IMObject target;
-            private final IMObject source;
-
-            public Sync(IMObjectSessionHandler handler, IMObject target,
-                        IMObject source) {
-                this.handler = handler;
-                this.target = target;
-                this.source = source;
-            }
-
-            /**
-             * Updates the target object with the identifier and version of the
-             * source, including any direct children.
-             */
-            public void sync() {
-                handler.updateIds(target, source);
-            }
-
-        }
-
     }
 
 }

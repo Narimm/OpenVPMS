@@ -141,7 +141,7 @@ public class ArchetypeServiceDescriptorTestCase
 
         IMObject obj = ArchetypeQueryHelper.getByUid(service,
                                                      desc.getArchetypeId(),
-                                                     desc.getUid());
+                                                     desc.getId());
         assertTrue(obj != null);
         assertTrue(obj instanceof ArchetypeDescriptor);
         assertTrue(
@@ -181,7 +181,7 @@ public class ArchetypeServiceDescriptorTestCase
 
         IMObject obj = ArchetypeQueryHelper.getByUid(service,
                                                      desc.getArchetypeId(),
-                                                     desc.getUid());
+                                                     desc.getId());
         assertNotNull(obj);
         assertTrue(obj instanceof ArchetypeDescriptor);
         ArchetypeDescriptor desc2 = (ArchetypeDescriptor) obj;
@@ -231,7 +231,7 @@ public class ArchetypeServiceDescriptorTestCase
         // retrieve the cloned and saved object and ensure that the values
         // are correct
         ArchetypeDescriptor obj = (ArchetypeDescriptor) ArchetypeQueryHelper
-                .getByUid(service, copy.getArchetypeId(), copy.getUid());
+                .getByUid(service, copy.getArchetypeId(), copy.getId());
         assertNotNull(obj);
         assertEquals(1, obj.getNodeDescriptors().size());
         assertEquals(copy.getName(), obj.getName());
@@ -252,7 +252,7 @@ public class ArchetypeServiceDescriptorTestCase
         // retrieve the object again and check the info
         obj = (ArchetypeDescriptor) ArchetypeQueryHelper.getByUid(service,
                                                                   copy2.getArchetypeId(),
-                                                                  copy2.getUid());
+                                                                  copy2.getId());
         assertNotNull(obj);
         assertEquals(0, obj.getNodeDescriptors().size());
         assertTrue(copy2.getName().equals(obj.getName()));
@@ -349,16 +349,16 @@ public class ArchetypeServiceDescriptorTestCase
         desc2.addNodeDescriptor(ndesc2);
 
         // check the initial values of the ids
-        assertEquals(-1, desc1.getUid());
-        assertEquals(-1, desc2.getUid());
+        assertEquals(-1, desc1.getId());
+        assertEquals(-1, desc2.getId());
 
         // save the archetype descriptors
         Collection<IMObject> col = Arrays.asList((IMObject) desc1, desc2);
         service.save(col);
 
         // verify the ids have updated
-        assertFalse(desc1.getUid() == -1);
-        assertFalse(desc2.getUid() == -1);
+        assertFalse(desc1.getId() == -1);
+        assertFalse(desc2.getId() == -1);
 
         assertEquals(0, desc1.getVersion());
         assertEquals(0, desc2.getVersion());

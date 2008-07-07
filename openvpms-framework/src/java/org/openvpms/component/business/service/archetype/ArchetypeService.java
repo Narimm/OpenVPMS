@@ -225,7 +225,7 @@ public class ArchetypeService implements IArchetypeService {
             logger.debug(
                     "ArchetypeService.validateObject: Validating object of type "
                             + id.getShortName()
-                            + " with uid " + object.getUid()
+                            + " with id " + object.getId()
                             + " and version " + object.getVersion());
         }
 
@@ -275,7 +275,7 @@ public class ArchetypeService implements IArchetypeService {
             logger.debug(
                     "ArchetypeService.deriveValues: Deriving values for type"
                             + object.getArchetypeId().getShortName()
-                            + " with uid " + object.getUid()
+                            + " with id " + object.getId()
                             + " and version " + object.getVersion());
         }
 
@@ -459,7 +459,7 @@ public class ArchetypeService implements IArchetypeService {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.remove: Removing object of type "
                     + entity.getArchetypeId().getShortName()
-                    + " with uid " + entity.getUid()
+                    + " with id " + entity.getId()
                     + " and version " + entity.getVersion());
         }
 
@@ -474,7 +474,7 @@ public class ArchetypeService implements IArchetypeService {
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
-                    exception, entity.getUid());
+                    exception, entity.getId());
         }
     }
 
@@ -494,7 +494,7 @@ public class ArchetypeService implements IArchetypeService {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.save: Saving object of type "
                     + entity.getArchetypeId().getShortName()
-                    + " with uid " + entity.getUid()
+                    + " with id " + entity.getId()
                     + " and version " + entity.getVersion());
         }
 

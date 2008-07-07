@@ -73,10 +73,10 @@ public class ArchetypeServicePartyTestCase extends
                         + " as party inner join party.contacts as contact "
                         + "left outer join contact.classifications as "
                         + "classification "
-                        + "where party.uid = :uid and "
+                        + "where party.id = :id and "
                         + "contact.archetypeId.shortName = :shortName "
                         + "and classification.name = :classification");
-        query.setParameter("uid", person.getUid());
+        query.setParameter("id", person.getId());
         query.setParameter("shortName", "contact.location");
         query.setParameter("classification", classification.getName());
         assertEquals(1, query.list().size());
@@ -132,16 +132,16 @@ public class ArchetypeServicePartyTestCase extends
         person1.addContact(createContact(classification1));
 
         // check the initial values of the ids
-        assertEquals(-1, person1.getUid());
-        assertEquals(-1, person2.getUid());
+        assertEquals(-1, person1.getId());
+        assertEquals(-1, person2.getId());
 
         // save the collection
         Collection<IMObject> col = Arrays.asList((IMObject) person1, person2);
         service.save(col);
 
         // verify the ids have updated
-        assertFalse(person1.getUid() == -1);
-        assertFalse(person2.getUid() == -1);
+        assertFalse(person1.getId() == -1);
+        assertFalse(person2.getId() == -1);
         assertEquals(0, person1.getVersion());
         assertEquals(0, person2.getVersion());
 

@@ -57,7 +57,7 @@ public class PersonContactTestCase
         service.save(person);
 
         person = (Party)ArchetypeQueryHelper.getByUid(service,
-                                                      person.getArchetypeId(), person.getUid());
+                                                      person.getArchetypeId(), person.getId());
         assertTrue(person != null);
         assertTrue(person.getContacts().size() == 1);
     }
@@ -84,12 +84,12 @@ public class PersonContactTestCase
 
         // now attempt to retrieve the entities
         person1 = (Party)ArchetypeQueryHelper.getByUid(service,
-                                                       person1.getArchetypeId(), person1.getUid());
+                                                       person1.getArchetypeId(), person1.getId());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 1);
 
         person2 = (Party)ArchetypeQueryHelper.getByUid(service,
-                                                       person2.getArchetypeId(), person2.getUid());
+                                                       person2.getArchetypeId(), person2.getId());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
 
@@ -101,12 +101,12 @@ public class PersonContactTestCase
         // retrieve the entities again and check that the addresses are
         // still valid
         person1 = (Party)ArchetypeQueryHelper.getByUid(service,
-                                                       person1.getArchetypeId(), person1.getUid());
+                                                       person1.getArchetypeId(), person1.getId());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 0);
 
         person2 = (Party)ArchetypeQueryHelper.getByUid(service,
-                                                       person2.getArchetypeId(), person2.getUid());
+                                                       person2.getArchetypeId(), person2.getId());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
     }
@@ -125,7 +125,7 @@ public class PersonContactTestCase
 
         // retrieve and remove the first contact and update
         person = (Party)ArchetypeQueryHelper.getByUid(service,
-                                                      person.getArchetypeId(), person.getUid());
+                                                      person.getArchetypeId(), person.getId());
         assertTrue(person.getContacts().size() == 3);
         Contact contact = person.getContacts().iterator().next();
         person.getContacts().remove(contact);
@@ -134,7 +134,7 @@ public class PersonContactTestCase
 
         // retrieve and ensure thagt there are only 2 contacts
         person = (Party)ArchetypeQueryHelper.getByUid(service,
-                                                      person.getArchetypeId(), person.getUid());
+                                                      person.getArchetypeId(), person.getId());
         assertTrue(person.getContacts().size() == 2);
     }
 

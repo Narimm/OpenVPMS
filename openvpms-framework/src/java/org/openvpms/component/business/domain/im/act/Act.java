@@ -25,11 +25,8 @@ import org.openvpms.component.business.domain.im.common.EntityException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -39,16 +36,16 @@ import java.util.Set;
  * A class representing an activity that is being done, has been done,
  * can be done, or is intended or requested to be done.  An Act instance
  * is a record of an intentional business action.
-
- * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class Act extends IMObject {
 
     /**
      * The serialization version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * Represents the title of the act.
@@ -66,43 +63,37 @@ public class Act extends IMObject {
     private Date activityEndTime;
 
     /**
-     * Text representing the reason for the Act. Often this is beter 
+     * Text representing the reason for the Act. Often this is beter
      * represented by a realtionship to another Act of type "has reason".
      */
     private String reason;
 
     /**
-     * A String representing the status or state of the Act. (i.e  Normal, 
+     * A String representing the status or state of the Act. (i.e  Normal,
      * Aborted, Completed, Suspended, Cancelled etc
      */
     private String status;
 
     /**
-     * Describes the specific details of the act, whether it is clinical,
-     * financial or other.
-     */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
-
-    /**
      * The {@link Participation}s for this act.
      */
     private Set<Participation> participations =
-        new HashSet<Participation>();
+            new HashSet<Participation>();
 
     /**
      * Holds all the {@link ActRelationship}s that this act is a source off.
      */
     private Set<ActRelationship> sourceActRelationships =
-        new HashSet<ActRelationship>();
+            new HashSet<ActRelationship>();
 
     /**
      * Holds all the {@link ActRelationship}s that this act is a target off.
      */
     private Set<ActRelationship> targetActRelationships =
-        new HashSet<ActRelationship>();
+            new HashSet<ActRelationship>();
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public Act() {
         // do nothing
@@ -110,30 +101,16 @@ public class Act extends IMObject {
 
     /**
      * Constructs an instance of an act.
-     * 
-     * @param archetypeId
-     *            the archetype id constraining this object
-     * @param details
-     *            dynamic details of the act.
+     *
+     * @param archetypeId the archetype id constraining this object
+     * @param details     dynamic details of the act.
      */
+    @Deprecated
     public Act(ArchetypeId archetypeId, Map<String, Object> details) {
         super(archetypeId);
-        this.details = TypedValueMap.create(details);
+        setDetails(details);
     }
 
-    /**
-     * @return Returns the details.
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * @param details The details to set.
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
-    }
 
     /**
      * @return Returns the activityEndTime.
@@ -222,7 +199,7 @@ public class Act extends IMObject {
 
     /**
      * Add a source {@link ActRelationship}.
-     * 
+     *
      * @param source
      */
     public void addSourceActRelationship(ActRelationship source) {
@@ -231,7 +208,7 @@ public class Act extends IMObject {
 
     /**
      * Remove a source {@link ActRelationship}.
-     * 
+     *
      * @param source
      */
     public void removeSourceActRelationship(ActRelationship source) {
@@ -247,7 +224,7 @@ public class Act extends IMObject {
 
     /**
      * Set this act to be a targt of an {@link ActRelationship}.
-     * 
+     *
      * @param targetActRelationships The targetActRelationships to set.
      */
     public void setTargetActRelationships(
@@ -257,9 +234,8 @@ public class Act extends IMObject {
 
     /**
      * Add a target {@link ActRelationship}.
-     * 
-     * @param target
-     *            add a new target.
+     *
+     * @param target add a new target.
      */
     public void addTargetActRelationship(ActRelationship target) {
         this.targetActRelationships.add(target);
@@ -267,7 +243,7 @@ public class Act extends IMObject {
 
     /**
      * Remove a target {@link ActRelationship}.
-     * 
+     *
      * @param target
      */
     public void removeTargetActRelationship(ActRelationship target) {
@@ -275,70 +251,69 @@ public class Act extends IMObject {
     }
 
     /**
-     * Add a relationship to this act. It will determine whether it is a 
+     * Add a relationship to this act. It will determine whether it is a
      * source or target relationship before adding it.
-     * 
-     * @param actRel
-     *            the act relationship to add
-     * @throws EntityException
-     *            if this relationship cannot be added to this act            
+     *
+     * @param actRel the act relationship to add
+     * @throws EntityException if this relationship cannot be added to this act
      */
     public void addActRelationship(ActRelationship actRel) {
         if ((actRel.getSource().getLinkId().equals(this.getLinkId())) &&
-            (actRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+                (actRel.getSource().getArchetypeId().equals(
+                        this.getArchetypeId()))) {
             addSourceActRelationship(actRel);
         } else if ((actRel.getTarget().getLinkId().equals(this.getLinkId())) &&
-            (actRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+                (actRel.getTarget().getArchetypeId().equals(
+                        this.getArchetypeId()))) {
             addTargetActRelationship(actRel);
         } else {
             throw new EntityException(
                     EntityException.ErrorCode.FailedToAddActRelationship,
-                    new Object[] { actRel.getSource(), actRel.getTarget()});
+                    new Object[]{actRel.getSource(), actRel.getTarget()});
         }
     }
 
     /**
-     * Remove a relationship to this act. It will determine whether it is a 
+     * Remove a relationship to this act. It will determine whether it is a
      * source or target relationship before removing it.
-     * 
-     * @param actRel
-     *            the act relationship to remove
-     * @throws EntityException
-     *            if this relationship cannot be removed from this act            
+     *
+     * @param actRel the act relationship to remove
+     * @throws EntityException if this relationship cannot be removed from this act
      */
     public void removeActRelationship(ActRelationship actRel) {
         IMObjectReference source = actRel.getSource();
         IMObjectReference target = actRel.getTarget();
         if (source.getLinkId().equals(getLinkId())
-                && source.getArchetypeId().equals(getArchetypeId())){
+                && source.getArchetypeId().equals(getArchetypeId())) {
             removeSourceActRelationship(actRel);
         } else if (target.getLinkId().equals(getLinkId())
-                && target.getArchetypeId().equals(getArchetypeId())){
+                && target.getArchetypeId().equals(getArchetypeId())) {
             removeTargetActRelationship(actRel);
         } else {
             throw new EntityException(
                     EntityException.ErrorCode.FailedToRemoveActRelationship,
-                    new Object[] { source, target});
+                    new Object[]{source, target});
         }
     }
 
     /**
-     * Return all the act relationships. Do not use the returned set to 
+     * Return all the act relationships. Do not use the returned set to
      * add and remove act relationships. Instead use {@link #addActRelationship(ActRelationship)}
      * and {@link #removeActRelationship(ActRelationship)} repsectively.
-     * 
+     *
      * @return Set<ActRelationship>
      */
     public Set<ActRelationship> getActRelationships() {
         Set<ActRelationship> relationships =
-            new HashSet<ActRelationship>(sourceActRelationships);
+                new HashSet<ActRelationship>(sourceActRelationships);
         relationships.addAll(targetActRelationships);
 
         return relationships;
     }
+
     /**
      * Return the associated {@link Participation} instances.
-     * 
+     *
      * @return Participation
      */
     public Set<Participation> getParticipations() {
@@ -354,20 +329,20 @@ public class Act extends IMObject {
 
     /**
      * Add a {@link Participation}.
-     * 
+     *
      * @param participation
      */
     public void addParticipation(Participation participation) {
-        this.participations.add(participation);
+        participations.add(participation);
     }
 
     /**
      * Remove a {@link Participation}.
-     * 
+     *
      * @param participation
      */
     public void removeParticipation(Participation participation) {
-        this.participations.remove(participation);
+        participations.remove(participation);
     }
 
     /* (non-Javadoc)
@@ -375,21 +350,12 @@ public class Act extends IMObject {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        Act copy = (Act)super.clone();
-
-        copy.activityEndTime = (Date)(this.activityEndTime == null ?
-                null : this.activityEndTime.clone());
-        copy.activityStartTime = (Date)(this.activityStartTime == null ?
-                null : this.activityStartTime.clone());
-        copy.details = (details == null) ? null
-                : new HashMap<String, TypedValue>(details);
-        copy.participations = new HashSet<Participation>(this.participations);
-        copy.reason = this.reason;
-        copy.sourceActRelationships = new HashSet<ActRelationship>(this.sourceActRelationships);
-        copy.status = this.status;
-        copy.targetActRelationships = new HashSet<ActRelationship>(this.targetActRelationships);
-        copy.title = this.title;
-
+        Act copy = (Act) super.clone();
+        copy.participations = new HashSet<Participation>(participations);
+        copy.sourceActRelationships = new HashSet<ActRelationship>(
+                sourceActRelationships);
+        copy.targetActRelationships = new HashSet<ActRelationship>(
+                targetActRelationships);
         return copy;
     }
 
@@ -400,16 +366,16 @@ public class Act extends IMObject {
     @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(null)
-            .append("title", title)
-            .append("activityStartTime", activityStartTime)
-            .append("activityEndTime", activityEndTime)
-            .append("reason", reason)
-            .append("status", status)
-            .append("participations", participations)
-            .append("sourceActRelationships", sourceActRelationships)
-            .append("targetActRelationships", targetActRelationships)
-            .toString();
+                .appendSuper(super.toString())
+                .append("title", title)
+                .append("activityStartTime", activityStartTime)
+                .append("activityEndTime", activityEndTime)
+                .append("reason", reason)
+                .append("status", status)
+                .append("participations", participations)
+                .append("sourceActRelationships", sourceActRelationships)
+                .append("targetActRelationships", targetActRelationships)
+                .toString();
     }
 
 }

@@ -1,277 +1,263 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
-  "http://www.springframework.org/dtd/spring-beans.dtd">
+        "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-  <!--  Property configuration -->
-  <bean id="props"
-    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-    <property name="locations">
-      <list>
-        <value>classpath:hibernate.properties</value>
-      </list>
-    </property>
-  </bean>
+    <!--  Property configuration -->
+    <bean id="props"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:hibernate.properties</value>
+            </list>
+        </property>
+    </bean>
 
-  <!--  The MySQL DataSource -->
-  <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
-    <property name="driverClassName"
-      value="${hibernate.connection.driver_class}" />
-    <property name="url" value="${hibernate.connection.url}" />
-    <property name="username" value="${hibernate.connection.username}" />
-    <property name="password" value="${hibernate.connection.password}" />
-  </bean>
-
-
-  <!--  Hibernate session factory -->
-  <bean id="sessionFactory"
-    class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-    <property name="dataSource">
-      <ref local="mySQLDataSource" />
-    </property>
-    <property name="hibernateProperties">
-      <props>
-        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-        <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
-        <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
-        <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
-        <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
-        <prop key="hibernate.c3p0.max_statements">
-          ${hibernate.c3p0.max_statements}
-        </prop>
-      </props>
-    </property>
-    <property name="mappingResources">
-      <list>
-        <value>
-          /org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/lookup/LookupRelationship.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/act/Act.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/document/Document.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/act/ActRelationship.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/common/Entity.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/common/EntityIdentity.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/common/EntityRelationship.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/common/Participation.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/party/Contact.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/product/ProductPrice.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/ArchetypeDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionTypeDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/NodeDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/archetype/descriptor/ActionTypeDescriptor.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/audit/AuditRecord.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/security/SecurityRole.hbm.xml
-        </value>
-        <value>
-          /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
-        </value>
-      </list>
-    </property>
-  </bean>
-
-  <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-    <property name="sessionFactory" ref="sessionFactory" />
-  </bean>
-
-  <!--  The IMObject DAO bean -->
-  <bean id="imObjectDao"
-        class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory"/>
-    </property>
-    <property name="transactionManager">
-      <ref local="txManager"/>
-    </property>
-    <property name="archetypeDescriptorCache">
-      <ref local="archetypeDescriptorCache"/>
-    </property>
-  </bean>
-
-  <!--  The User DAO bean -->
-  <bean id="userDAO"
-        class="org.openvpms.component.business.dao.hibernate.im.security.UserDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
-  </bean>
-
-  <!--  The AuditRecord DAO bean -->
-  <bean id="auditDao"
-    class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
-  </bean>
-
-  <!--  The Archetype Descriptor Cache -->
-  <bean id="archetypeDescriptorCache"
-    class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
-    <constructor-arg index="0" value="org/openvpms/archetype" />
-    <constructor-arg index="1">
-      <list>
-        <value>adl</value>
-      </list>
-    </constructor-arg>
-    <constructor-arg index="2"
-      value="org/openvpms/archetype/assertionTypes.xml" />
-  </bean>
-
-  <!--  The Archetype Service -->
-  <bean id="archetypeService"
-    class="org.openvpms.component.business.service.archetype.ArchetypeService">
-    <constructor-arg index="0">
-      <ref local="archetypeDescriptorCache" />
-    </constructor-arg>
-    <property name="dao">
-      <ref local="imObjectDao" />
-    </property>
-  </bean>
-  
-  <!--  Instantiate the archetype service helper bean and inject their dependencies -->
-  <bean id="archetypeServiceHelper"
-    class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
-    <constructor-arg index="0">
-      <ref local="archetypeService" />
-    </constructor-arg>
-  </bean>
-
-  <!--  The Audit Service -->
-  <bean id="auditService"
-    class="org.openvpms.component.business.service.audit.AuditService">
-    <constructor-arg index="0">
-      <ref local="auditDao" />
-    </constructor-arg>
-  </bean>
-
-  <!--  The User Details Service -->
-  <bean id="userDetailsService"
-    class="org.openvpms.component.business.service.security.UserService">
-    <constructor-arg index="0">
-      <ref local="userDAO" />
-    </constructor-arg>
-  </bean>
+    <!--  The MySQL DataSource -->
+    <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName"
+                  value="${hibernate.connection.driver_class}"/>
+        <property name="url" value="${hibernate.connection.url}"/>
+        <property name="username" value="${hibernate.connection.username}"/>
+        <property name="password" value="${hibernate.connection.password}"/>
+    </bean>
 
 
-  <!--  Create a proxy for the Sudit Service bean -->
-  <bean id="auditServiceProxyCreator"
-    class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-    <property name="beanNames">
-      <list>
-        <value>archetypeService</value>
-      </list>
-    </property>
-    <property name="interceptorNames">
-      <list>
-        <value>auditServiceAdvisor</value>
-      </list>
-    </property>
-  </bean>
+    <!--  Hibernate session factory -->
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+        <property name="dataSource">
+            <ref local="mySQLDataSource"/>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.c3p0.min_size">
+                    ${hibernate.c3p0.min_size}</prop>
+                <prop key="hibernate.c3p0.max_size">
+                    ${hibernate.c3p0.max_size}</prop>
+                <prop key="hibernate.c3p0.timeout">
+                    ${hibernate.c3p0.timeout}</prop>
+                <prop key="hibernate.c3p0.max_statements">
+                    ${hibernate.c3p0.max_statements}
+                </prop>
+            </props>
+        </property>
+        <property name="mappingResources">
+            <list>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Act.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ActionTypeDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ActRelationship.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ArchetypeDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ArchetypeAwareGrantedAuthority.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/AssertionDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/AssertionTypeDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/AuditRecord.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Contact.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Document.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Entity.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/EntityIdentity.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/EntityRelationship.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Lookup.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/LookupRelationship.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/NodeDescriptor.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/Participation.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/ProductPrice.hbm.xml</value>
+                <value>
+                    org/openvpms/component/business/dao/hibernate/im/mapping/SecurityRole.hbm.xml</value>
+            </list>
+        </property>
+    </bean>
 
-  <!-- The audit service advisor -->
-  <bean id="auditServiceAdvisor"
-    class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
-    <property name="advice">
-      <ref local="auditService" />
-    </property>
-    <property name="patterns">
-      <list>
-        <value>.*ArchetypeService\.save</value>
-        <value>.*ArchetypeService\.remove</value>
-      </list>
-    </property>
-  </bean>
+    <bean id="txManager"
+          class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
 
-  <!--  Create a proxy for the Security Service bean -->
-  <bean id="securityserviceProxyCreator"
-    class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-    <property name="beanNames">
-      <list>
-        <value>archetypeService</value>
-      </list>
-    </property>
-    <property name="interceptorNames">
-      <list>
-        <value>securityAdvisor</value>
-      </list>
-    </property>
-  </bean>
+    <!--  The IMObject DAO bean -->
+    <bean id="imObjectDao"
+          class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
+        <property name="sessionFactory">
+            <ref local="sessionFactory"/>
+        </property>
+        <property name="transactionManager">
+            <ref local="txManager"/>
+        </property>
+        <property name="archetypeDescriptorCache">
+            <ref local="archetypeDescriptorCache"/>
+        </property>
+    </bean>
 
-  <!--  Configure the security advisor -->
-  <bean id='securityAdvisor'
-    class='org.openvpms.component.business.service.security.OpenVPMSMethodSecurityInterceptor'>
-    <property name='authenticationManager' ref='authenticationManager' />
-    <property name='accessDecisionManager' ref='accessDecisionManager' />
-    <property name='objectDefinitionSource'>
-      <value>
-        org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
-        org.openvpms.component.business.service.archetype.IArchetypeService.remove=archetypeService.remove
-      </value>
-    </property>
-  </bean>
+    <!--  The User DAO bean -->
+    <bean id="userDAO"
+          class="org.openvpms.component.business.dao.hibernate.im.security.UserDAOHibernate">
+        <property name="sessionFactory">
+            <ref local="sessionFactory"/>
+        </property>
+    </bean>
 
-  <!--  Define the Authentication Manager  -->
-  <bean id='authenticationManager'
-    class='org.acegisecurity.providers.ProviderManager'>
-    <property name='providers'>
-      <list>
-        <ref bean='daoAuthenticationProvider' />
-      </list>
-    </property>
-  </bean>
+    <!--  The AuditRecord DAO bean -->
+    <bean id="auditDao"
+          class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
+        <property name="sessionFactory">
+            <ref local="sessionFactory"/>
+        </property>
+    </bean>
 
-  <!--  Define the authentication provider -->
-  <bean id='daoAuthenticationProvider'
-    class='org.acegisecurity.providers.dao.DaoAuthenticationProvider'>
-    <property name="userDetailsService">
-      <ref bean="userDetailsService" />
-    </property>
-  </bean>
+    <!--  The Archetype Descriptor Cache -->
+    <bean id="archetypeDescriptorCache"
+          class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
+        <constructor-arg index="0" value="org/openvpms/archetype"/>
+        <constructor-arg index="1">
+            <list>
+                <value>adl</value>
+            </list>
+        </constructor-arg>
+        <constructor-arg index="2"
+                         value="org/openvpms/archetype/assertionTypes.xml"/>
+    </bean>
 
-  <!--  Define thew access decision manager for authorization -->
-  <bean id='accessDecisionManager'
-    class='org.acegisecurity.vote.AffirmativeBased'>
-    <property name='decisionVoters'>
-      <list>
-        <ref bean='archetypeAwareVoter' />
-      </list>
-    </property>
-  </bean>
+    <!--  The Archetype Service -->
+    <bean id="archetypeService"
+          class="org.openvpms.component.business.service.archetype.ArchetypeService">
+        <constructor-arg index="0">
+            <ref local="archetypeDescriptorCache"/>
+        </constructor-arg>
+        <property name="dao">
+            <ref local="imObjectDao"/>
+        </property>
+    </bean>
 
-  <!--  Use the standard role vote -->
-  <bean id='archetypeAwareVoter' class='org.openvpms.component.business.service.security.ArchetypeAwareVoter' />
+    <!--  Instantiate the archetype service helper bean and inject their dependencies -->
+    <bean id="archetypeServiceHelper"
+          class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+    </bean>
+
+    <!--  The Audit Service -->
+    <bean id="auditService"
+          class="org.openvpms.component.business.service.audit.AuditService">
+        <constructor-arg index="0">
+            <ref local="auditDao"/>
+        </constructor-arg>
+    </bean>
+
+    <!--  The User Details Service -->
+    <bean id="userDetailsService"
+          class="org.openvpms.component.business.service.security.UserService">
+        <constructor-arg index="0">
+            <ref local="userDAO"/>
+        </constructor-arg>
+    </bean>
+
+
+    <!--  Create a proxy for the Sudit Service bean -->
+    <bean id="auditServiceProxyCreator"
+          class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames">
+            <list>
+                <value>archetypeService</value>
+            </list>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>auditServiceAdvisor</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- The audit service advisor -->
+    <bean id="auditServiceAdvisor"
+          class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+        <property name="advice">
+            <ref local="auditService"/>
+        </property>
+        <property name="patterns">
+            <list>
+                <value>.*ArchetypeService\.save</value>
+                <value>.*ArchetypeService\.remove</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--  Create a proxy for the Security Service bean -->
+    <bean id="securityserviceProxyCreator"
+          class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames">
+            <list>
+                <value>archetypeService</value>
+            </list>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>securityAdvisor</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--  Configure the security advisor -->
+    <bean id='securityAdvisor'
+          class='org.openvpms.component.business.service.security.OpenVPMSMethodSecurityInterceptor'>
+        <property name='authenticationManager' ref='authenticationManager'/>
+        <property name='accessDecisionManager' ref='accessDecisionManager'/>
+        <property name='objectDefinitionSource'>
+            <value>
+                org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
+                org.openvpms.component.business.service.archetype.IArchetypeService.remove=archetypeService.remove
+            </value>
+        </property>
+    </bean>
+
+    <!--  Define the Authentication Manager  -->
+    <bean id='authenticationManager'
+          class='org.acegisecurity.providers.ProviderManager'>
+        <property name='providers'>
+            <list>
+                <ref bean='daoAuthenticationProvider'/>
+            </list>
+        </property>
+    </bean>
+
+    <!--  Define the authentication provider -->
+    <bean id='daoAuthenticationProvider'
+          class='org.acegisecurity.providers.dao.DaoAuthenticationProvider'>
+        <property name="userDetailsService">
+            <ref bean="userDetailsService"/>
+        </property>
+    </bean>
+
+    <!--  Define thew access decision manager for authorization -->
+    <bean id='accessDecisionManager'
+          class='org.acegisecurity.vote.AffirmativeBased'>
+        <property name='decisionVoters'>
+            <list>
+                <ref bean='archetypeAwareVoter'/>
+            </list>
+        </property>
+    </bean>
+
+    <!--  Use the standard role vote -->
+    <bean id='archetypeAwareVoter'
+          class='org.openvpms.component.business.service.security.ArchetypeAwareVoter'/>
 </beans>

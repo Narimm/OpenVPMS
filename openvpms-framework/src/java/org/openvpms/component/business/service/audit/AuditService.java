@@ -124,7 +124,7 @@ public class AuditService implements MethodInterceptor, IAuditService {
             try {
                 AuditRecord audit = new AuditRecord();
                 audit.setArchetypeId(imObject.getArchetypeIdAsString());
-                audit.setObjectId(imObject.getUid());
+                audit.setObjectId(imObject.getId());
                 audit.setOperation(invocation.getMethod().getName());
                 audit.setService(invocation.getThis().getClass().getName());
                 audit.setUser("unknown");

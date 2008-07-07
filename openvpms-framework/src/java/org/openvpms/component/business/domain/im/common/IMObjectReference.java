@@ -19,7 +19,7 @@
 
 package org.openvpms.component.business.domain.im.common;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
@@ -38,7 +38,7 @@ public class IMObjectReference implements Serializable, Cloneable {
     /**
      * Serialisation version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * The archetype identity.
@@ -46,7 +46,12 @@ public class IMObjectReference implements Serializable, Cloneable {
     private ArchetypeId archetypeId;
 
     /**
-     * The identity of the object.
+     * The persistent identity of the object.
+     */
+    private long id = -1;
+
+    /**
+     * The transient identity of the object.
      */
     private String linkId;
 
@@ -71,7 +76,31 @@ public class IMObjectReference implements Serializable, Cloneable {
         }
 
         this.archetypeId = object.getArchetypeId();
+        this.id = object.getId();
         this.linkId = object.getLinkId();
+    }
+
+    /**
+     * Construct an object reference using the specified archetype id and
+     * uid.
+     *
+     * @param archetypeId the archetype id of the object
+     * @param id          the persistent identity of the object
+     * @throws IMObjectException if the archetype id is null
+     */
+    public IMObjectReference(ArchetypeId archetypeId, long id) {
+        this(archetypeId, id, null);
+    }
+
+    public IMObjectReference(ArchetypeId archetypeId, long id, String linkId) {
+        if (archetypeId == null) {
+            throw new IMObjectException(
+                    IMObjectException.ErrorCode.FailedToCreateObjectReference);
+        }
+
+        this.archetypeId = archetypeId;
+        this.id = id;
+        this.linkId = linkId;
     }
 
     /**
@@ -112,9 +141,20 @@ public class IMObjectReference implements Serializable, Cloneable {
     }
 
     /**
-     * Returns the object identity.
+     * Returns the object's peristent identifier.
      *
-     * @return the object identity
+     * @return the object's peristent identifier, or <tt>-1</tt> if the object
+     *         is not persistent.
+     */
+    public long getId() {
+        return id;
+    }
+
+    /**
+     * Returns the object's transient identifier.
+     *
+     * @return the object's transient identifier. May be <tt>null</tt> if the
+     *         object is persistent.
      */
     public String getLinkId() {
         return linkId;
@@ -125,14 +165,19 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof IMObjectReference)) {
-            return false;
+        boolean equal = false;
+        if ((obj instanceof IMObjectReference)) {
+            IMObjectReference rhs = (IMObjectReference) obj;
+            if (id == -1 && rhs.id == -1) {
+                equal = ObjectUtils.equals(linkId, rhs.linkId);
+            } else {
+                equal = id == rhs.id;
+            }
+            if (equal) {
+                equal = ObjectUtils.equals(archetypeId, rhs.archetypeId);
+            }
         }
-        IMObjectReference rhs = (IMObjectReference) obj;
-        return new EqualsBuilder()
-                .append(linkId, rhs.linkId)
-                .append(archetypeId, rhs.archetypeId)
-                .isEquals();
+        return equal;
     }
 
     /* (non-Javadoc)
@@ -140,7 +185,10 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public int hashCode() {
-        return linkId.hashCode();
+        if (id == -1 && linkId != null) {
+            return linkId.hashCode();
+        }
+        return (int) (id ^ (id >>> 32));
     }
 
     /* (non-Javadoc)
@@ -149,6 +197,7 @@ public class IMObjectReference implements Serializable, Cloneable {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
+                .append("uid", id)
                 .append("linkId", linkId)
                 .append("archetypeId", archetypeId)
                 .toString();
@@ -159,12 +208,7 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        IMObjectReference copy = (IMObjectReference) super.clone();
-
-        copy.archetypeId = this.archetypeId;
-        copy.linkId = linkId;
-
-        return copy;
+        return super.clone();
     }
 
     /**
@@ -174,6 +218,15 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     protected void setArchetypeId(ArchetypeId archetypeId) {
         this.archetypeId = archetypeId;
+    }
+
+    /**
+     * Sets the object's persistent identifier.
+     *
+     * @param id the persistent identifier
+     */
+    protected void setId(long id) {
+        this.id = id;
     }
 
     /**

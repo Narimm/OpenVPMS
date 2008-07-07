@@ -289,14 +289,14 @@ public class LookupTestCase extends
 
         // verify the initial id
         for (IMObject object : objects) {
-            assertEquals(-1, object.getUid());
+            assertEquals(-1, object.getId());
         }
 
         service.save(objects);
 
         // verify the id's have updated
         for (IMObject object : objects) {
-            assertFalse(object.getUid() == -1);
+            assertFalse(object.getId() == -1);
         }
     }
 

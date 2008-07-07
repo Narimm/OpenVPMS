@@ -20,11 +20,6 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -38,7 +33,7 @@ public abstract class IMObjectRelationship extends IMObject {
     /**
      * Serialisation version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * The source object reference in the relationship.
@@ -49,12 +44,6 @@ public abstract class IMObjectRelationship extends IMObject {
      * The target object reference in the relationship.
      */
     private IMObjectReference target;
-
-    /**
-     * Dynamic details of the relationship between the objects.
-     */
-    private Map<String, TypedValue> details
-            = new HashMap<String, TypedValue>();
 
 
     /**
@@ -110,24 +99,6 @@ public abstract class IMObjectRelationship extends IMObject {
     }
 
     /**
-     * Returns the details.
-     *
-     * @return the details
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * Sets the details.
-     *
-     * @param details the details
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
-    }
-
-    /**
      * (non-Javadoc)
      *
      * @see Object#clone()
@@ -135,8 +106,6 @@ public abstract class IMObjectRelationship extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         IMObjectRelationship copy = (IMObjectRelationship) super.clone();
-        copy.details = (details == null) ? null
-                : new HashMap<String, TypedValue>(details);
         copy.source = (IMObjectReference) this.source.clone();
         copy.target = (IMObjectReference) this.target.clone();
         return copy;
@@ -151,7 +120,7 @@ public abstract class IMObjectRelationship extends IMObject {
     @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
-                .appendSuper(null)
+                .appendSuper(super.toString())
                 .append("source", source)
                 .append("target", target)
                 .toString();

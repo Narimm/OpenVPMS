@@ -96,13 +96,13 @@ class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet> {
                 if (value != null) {
                     loader.load(value);
                 }
-                set.add(names[i], value);
+                set.set(names[i], value);
             }
         } else if (names.length != 1) {
             throw new IllegalStateException("Mismatch args");
         } else {
             loader.load(object);
-            set.add(names[0], object);
+            set.set(names[0], object);
         }
         result.add(set);
     }

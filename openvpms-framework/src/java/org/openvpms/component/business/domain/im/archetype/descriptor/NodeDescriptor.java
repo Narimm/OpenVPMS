@@ -25,7 +25,8 @@ import org.apache.commons.jxpath.util.TypeConverter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.oro.text.perl.Perl5Util;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -53,6 +54,12 @@ import java.util.Map;
  * @version $LastChangedDate$
  */
 public class NodeDescriptor extends Descriptor {
+
+    /**
+     * Serialization version identifier.
+     */
+    private static final long serialVersionUID = 2L;
+
     /**
      * The default display length if one is not defined in the node definition
      */
@@ -66,21 +73,10 @@ public class NodeDescriptor extends Descriptor {
     /**
      * The name given to the object id node
      */
-    public static final String IDENTIFIER_NODE_NAME = "uid";
+    public static final String IDENTIFIER_NODE_NAME = "id";
 
     /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(NodeDescriptor.class);
-
-    /**
-     * Default SUID
-     */
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * This is used to identify a max cardinality that is unbounded
+     * This is used to identify a max cardinality that is unbounded.
      */
     public static final int UNBOUNDED = -1;
 
@@ -111,7 +107,7 @@ public class NodeDescriptor extends Descriptor {
      * Cache the clazz. Do not access this directly. Use the {@link #getClazz()}
      * method instead.
      */
-    private Class clazz;
+    private transient Class clazz;
 
     /**
      * The default value
@@ -209,12 +205,6 @@ public class NodeDescriptor extends Descriptor {
     private String filter;
     private String modFilter;
 
-    private static final ArchetypeId NODE = new ArchetypeId(
-            "descriptor.node.1.0");
-
-    private static final ArchetypeId COLLECTION_NODE = new ArchetypeId(
-            "descriptor.collectionNode");
-
     /**
      * The parent node descriptor. May be <code>null</code>.
      */
@@ -224,6 +214,17 @@ public class NodeDescriptor extends Descriptor {
      * The archetype that this descriptor belongs to. May be <code>null</code>.
      */
     private ArchetypeDescriptor archetype;
+
+    private static final ArchetypeId NODE = new ArchetypeId(
+            "descriptor.node.1.0");
+
+    private static final ArchetypeId COLLECTION_NODE = new ArchetypeId(
+            "descriptor.collectionNode");
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(NodeDescriptor.class);
 
 
     /**
@@ -531,13 +532,13 @@ public class NodeDescriptor extends Descriptor {
             } else if (obj instanceof Collection) {
                 result = new ArrayList<IMObject>((Collection) obj);
             } else {
-                logger.warn("getCandidateChildren for path " + path
+                log.warn("getCandidateChildren for path " + path
                         + " returned object of type "
                         + obj.getClass().getName());
             }
         } catch (Exception exception) {
-            logger.warn("Failed in getCandidateChildren for path " + path,
-                        exception);
+            log.warn("Failed in getCandidateChildren for path " + path,
+                     exception);
         }
 
         return result;
@@ -617,24 +618,16 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Returns the class for the specified type.
      *
-     * @return the class
+     * @return the class, or <tt>null</tt> if {@link #getType()} returns
+     *         empty/null
+     * @throws DescriptorException if the class can't be loaded
      */
     public Class getClazz() {
         if (clazz == null) {
-            if (StringUtils.isEmpty(type)) {
-                clazz = null;
-            } else {
-                try {
-                    clazz = Thread.currentThread().getContextClassLoader()
-                            .loadClass(type);
-                } catch (Exception exception) {
-                    throw new DescriptorException(
-                            DescriptorException.ErrorCode.InvalidType,
-                            exception, type);
-                }
+            synchronized (this) {
+                clazz = getClass(type);
             }
         }
-
         return clazz;
     }
 
@@ -1215,7 +1208,6 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * @param assertionDescriptors The assertionDescriptors to set.
-     *
      * @deprecated use {@link #addAssertionDescriptor} instead. Will be removed
      *             post 1.x.
      */
@@ -1333,7 +1325,6 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * @param nodeDescriptors The nodeDescriptors to set.
-     *
      * @deprecated use {@link #addNodeDescriptor} instead.
      */
     @Deprecated
