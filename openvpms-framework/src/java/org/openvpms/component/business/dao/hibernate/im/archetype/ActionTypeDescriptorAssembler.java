@@ -46,6 +46,15 @@ public class ActionTypeDescriptorAssembler
         result.setMethodName(source.getMethodName());
     }
 
+    @Override
+    protected void assembleObject(ActionTypeDescriptor result,
+                                  ActionTypeDescriptorDO source,
+                                  Context context) {
+        super.assembleObject(result, source, context);
+        result.setClassName(source.getClassName());
+        result.setMethodName(source.getMethodName());
+    }
+
     protected ActionTypeDescriptor create(ActionTypeDescriptorDO object) {
         return new ActionTypeDescriptor();
     }

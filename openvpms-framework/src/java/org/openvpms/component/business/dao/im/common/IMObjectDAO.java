@@ -22,6 +22,9 @@ import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.NodeSet;
 
 import java.util.Collection;
 import java.util.Map;
@@ -61,6 +64,51 @@ public interface IMObjectDAO {
     void delete(IMObject object);
 
     /**
+     * Retrieves the objects matching the query.
+     *
+     * @param query the archetype query
+     * @return a page of objects that match the query criteria
+     * @throws IMObjectDAOException for any error
+     */
+    public IPage<IMObject> get(IArchetypeQuery query);
+
+    /**
+     * Retrieves partially populated objects that match the query.
+     * This may be used to selectively load parts of object graphs to improve
+     * performance.
+     * <p/>
+     * All simple properties of the returned objects are populated - the
+     * <code>nodes</code> argument is used to specify which collection nodes to
+     * populate. If empty, no collections will be loaded, and the behaviour of
+     * accessing them is undefined.
+     *
+     * @param query the archetype query
+     * @param nodes the collection node names
+     * @return a page of objects that match the query criteria
+     * @throws IMObjectDAOException for any error
+     */
+    IPage<IMObject> get(IArchetypeQuery query, Collection<String> nodes);
+
+    /**
+     * Retrieves the objects matching the query.
+     *
+     * @param query the archetype query
+     * @return a page of objects that match the query criteria
+     * @throws IMObjectDAOException for any error
+     */
+    IPage<ObjectSet> getObjects(IArchetypeQuery query);
+
+    /**
+     * Retrieves the nodes from the objects that match the query criteria.
+     *
+     * @param query the archetype query
+     * @param nodes the node names
+     * @return the nodes for each object that matches the query criteria
+     * @throws IMObjectDAOException for any error
+     */
+    IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes);
+
+    /**
      * Execute a get using the specified query string, the query
      * parameters and the result collector. The first result and the number of
      * results is used to control the paging of the result set.
@@ -77,14 +125,6 @@ public interface IMObjectDAO {
     void get(String queryString, Map<String, Object> parameters,
              ResultCollector collector, int firstResult, int maxResults,
              boolean count);
-
-    /**
-     * Returns the result collector factory.
-     *
-     * @return the result collector factory
-     * @throws IMObjectDAOException for any error
-     */
-    ResultCollectorFactory getResultCollectorFactory();
 
     /**
      * Retrieves the objects that match the specified search criteria.

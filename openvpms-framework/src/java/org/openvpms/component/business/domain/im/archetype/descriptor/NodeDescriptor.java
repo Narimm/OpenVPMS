@@ -1500,7 +1500,7 @@ public class NodeDescriptor extends Descriptor {
      *
      * @param descriptor the archetype descriptor
      */
-    protected void setArchetypeDescriptor(ArchetypeDescriptor descriptor) {
+    public void setArchetypeDescriptor(ArchetypeDescriptor descriptor) {
         archetype = descriptor;
     }
 
@@ -1510,7 +1510,7 @@ public class NodeDescriptor extends Descriptor {
      * @param parent the parent node descriptor, or <code>null</code> if this
      *               node has no parent
      */
-    protected void setParent(NodeDescriptor parent) {
+    public void setParent(NodeDescriptor parent) {
         this.parent = parent;
     }
 

@@ -56,20 +56,39 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
     protected void assembleDO(DO result, T source, Context context) {
         super.assembleDO(result, source, context);
 
-        IDENT.assemble(result.getIdentities(), source.getIdentities(),
-                       context);
-
-        LOOKUPS.assemble(result.getClassifications(),
-                         source.getClassifications(),
+        IDENT.assembleDO(result.getIdentities(), source.getIdentities(),
                          context);
 
-        RELATIONSHIP.assemble(result.getSourceEntityRelationships(),
-                              source.getSourceEntityRelationships(),
-                              context);
+        LOOKUPS.assembleDO(result.getClassifications(),
+                           source.getClassifications(),
+                           context);
 
-        RELATIONSHIP.assemble(result.getTargetEntityRelationships(),
-                              source.getTargetEntityRelationships(),
-                              context);
+        RELATIONSHIP.assembleDO(result.getSourceEntityRelationships(),
+                                source.getSourceEntityRelationships(),
+                                context);
+
+        RELATIONSHIP.assembleDO(result.getTargetEntityRelationships(),
+                                source.getTargetEntityRelationships(),
+                                context);
+    }
+
+    @Override
+    protected void assembleObject(T result, DO source, Context context) {
+        super.assembleObject(result, source, context);
+        IDENT.assembleObject(result.getIdentities(), source.getIdentities(),
+                             context);
+
+        LOOKUPS.assembleObject(result.getClassifications(),
+                               source.getClassifications(),
+                               context);
+
+        RELATIONSHIP.assembleObject(result.getSourceEntityRelationships(),
+                                    source.getSourceEntityRelationships(),
+                                    context);
+
+        RELATIONSHIP.assembleObject(result.getTargetEntityRelationships(),
+                                    source.getTargetEntityRelationships(),
+                                    context);
     }
 
 }

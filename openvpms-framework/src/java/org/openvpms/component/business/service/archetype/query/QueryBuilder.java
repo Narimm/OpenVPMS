@@ -20,6 +20,7 @@
 package org.openvpms.component.business.service.archetype.query;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -58,9 +59,6 @@ import java.util.Set;
 /**
  * The builder is responsible for building the HQL from an
  * {@link ArchetypeQuery} instance.
- * <p/>
- * NOTE Ths archetype service is dependent on HQL. We need to make this
- * runtime configurable.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -71,6 +69,11 @@ public class QueryBuilder {
      * The archetype descriptor cache.
      */
     private final IArchetypeDescriptorCache cache;
+
+    /**
+     * The assembler.
+     */
+    private final CompoundAssembler assembler;
 
     /**
      * List of select constraints encountered while processing the query.
@@ -85,8 +88,10 @@ public class QueryBuilder {
      *
      * @param cache the archetype descriptor cache
      */
-    public QueryBuilder(IArchetypeDescriptorCache cache) {
+    public QueryBuilder(IArchetypeDescriptorCache cache,
+                        CompoundAssembler assembler) {
         this.cache = cache;
+        this.assembler = assembler;
     }
 
     /**
@@ -459,8 +464,8 @@ public class QueryBuilder {
                                                    context);
         if (constraint.getObjectReference() != null) {
             IMObjectReference ref = constraint.getObjectReference();
-            context.addWhereConstraint(property + ".linkId", op,
-                                       ref.getLinkId());
+            context.addWhereConstraint(property + ".id", op,
+                                       ref.getId());
         } else {
             ArchetypeId id = constraint.getArchetypeId();
             context.addWhereConstraint(property + ".archetypeId.shortName", op,
@@ -498,7 +503,7 @@ public class QueryBuilder {
         }
 
         ArchetypeId id = constraint.getArchetypeId();
-        TypeSet types = TypeSet.create(constraint, cache);
+        TypeSet types = TypeSet.create(constraint, cache, assembler);
 
         context.pushLogicalOperator(LogicalOperator.And);
         context.pushTypeSet(types);
@@ -506,8 +511,8 @@ public class QueryBuilder {
         String alias = constraint.getAlias();
         context.addWhereConstraint(alias, "archetypeId.shortName",
                                    RelationalOp.EQ, id.getShortName());
-        context.addWhereConstraint(alias, "linkId", RelationalOp.EQ,
-                                   constraint.getLinkId());
+        context.addWhereConstraint(alias, "id", RelationalOp.EQ,
+                                   constraint.getId());
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
@@ -542,7 +547,7 @@ public class QueryBuilder {
                 = constraint.getArchetypeConstraint();
         if (archetypeConstraint instanceof ArchetypeConstraint) {
             types = TypeSet.create((ArchetypeConstraint) archetypeConstraint,
-                                   ndesc, cache);
+                                   ndesc, cache, assembler);
         } else {
             types = getTypeSet(archetypeConstraint);
         }
@@ -674,11 +679,14 @@ public class QueryBuilder {
      */
     private TypeSet getTypeSet(BaseArchetypeConstraint constraint) {
         if (constraint instanceof ArchetypeIdConstraint) {
-            return TypeSet.create((ArchetypeIdConstraint) constraint, cache);
+            return TypeSet.create((ArchetypeIdConstraint) constraint, cache,
+                                  assembler);
         } else if (constraint instanceof ShortNameConstraint) {
-            return TypeSet.create((ShortNameConstraint) constraint, cache);
+            return TypeSet.create((ShortNameConstraint) constraint, cache,
+                                  assembler);
         } else if (constraint instanceof LongNameConstraint) {
-            return TypeSet.create((LongNameConstraint) constraint, cache);
+            return TypeSet.create((LongNameConstraint) constraint, cache,
+                                  assembler);
         }
 
         return null;

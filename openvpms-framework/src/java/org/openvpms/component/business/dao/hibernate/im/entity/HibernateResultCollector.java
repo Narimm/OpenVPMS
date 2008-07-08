@@ -20,7 +20,9 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.system.common.query.IPage;
+import org.hibernate.Session;
 
 import java.util.List;
 
@@ -32,7 +34,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-abstract class HibernateResultCollector<T> implements ResultCollector<T> {
+public abstract class HibernateResultCollector<T>
+        implements ResultCollector<T> {
 
     /**
      * The page.
@@ -43,6 +46,10 @@ abstract class HibernateResultCollector<T> implements ResultCollector<T> {
      * The loader.
      */
     private ObjectLoader loader;
+
+    private Session session;
+
+    private Context context;
 
     /**
      * Sets the loader.
@@ -98,6 +105,22 @@ abstract class HibernateResultCollector<T> implements ResultCollector<T> {
     public IPage<T> getPage() {
         page.setResults(getResults());
         return page;
+    }
+
+    public void setSession(Session session) {
+        this.session = session;
+    }
+
+    public Session getSession() {
+        return session;
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     /**

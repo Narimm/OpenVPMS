@@ -74,6 +74,8 @@ public abstract class AbstractIMObjectSessionHandler
     public void save(IMObject object, Session session, Context context) {
         IMObjectDO target = assembler.assemble(object, context);
         session.saveOrUpdate(target);
+        object.setId(target.getId());
+        object.setVersion(target.getVersion());
     }
 
     /**

@@ -50,15 +50,18 @@ public class SecurityRoleAssembler
     protected void assembleDO(SecurityRoleDO result, SecurityRole source,
                               Context context) {
         super.assembleDO(result, source, context);
-        AUTHS.assemble(result.getAuthorities(), source.getAuthorities(),
-                       context);
-        USERS.assemble(result.getUsers(), source.getUsers(), context);
+        AUTHS.assembleDO(result.getAuthorities(), source.getAuthorities(),
+                         context);
+        USERS.assembleDO(result.getUsers(), source.getUsers(), context);
     }
 
     @Override
     protected void assembleObject(SecurityRole result, SecurityRoleDO source,
                                   Context context) {
         super.assembleObject(result, source, context);
+        AUTHS.assembleObject(result.getAuthorities(), source.getAuthorities(),
+                         context);
+        USERS.assembleObject(result.getUsers(), source.getUsers(), context);
     }
 
     protected SecurityRole create(SecurityRoleDO object) {

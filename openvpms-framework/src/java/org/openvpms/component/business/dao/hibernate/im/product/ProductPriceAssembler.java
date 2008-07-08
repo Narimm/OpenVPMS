@@ -23,6 +23,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 
 /**
@@ -48,13 +49,29 @@ public class ProductPriceAssembler
         result.setFixed(source.isFixed());
         result.setFromDate(source.getFromDate());
         result.setPrice(source.getPrice());
-        result.setProduct(get(source.getProduct(), ProductDO.class, context
+        result.setProduct(getDO(source.getProduct(), ProductDO.class, context
         ));
         result.setThruDate(source.getThruDate());
 
-        LOOKUPS.assemble(result.getClassifications(),
-                         source.getClassifications(),
-                         context);
+        LOOKUPS.assembleDO(result.getClassifications(),
+                           source.getClassifications(),
+                           context);
+    }
+
+    @Override
+    protected void assembleObject(ProductPrice result, ProductPriceDO source,
+                                  Context context) {
+        super.assembleObject(result, source, context);
+        result.setFixed(source.isFixed());
+        result.setFromDate(source.getFromDate());
+        result.setPrice(source.getPrice());
+        result.setProduct(
+                getObject(source.getProduct(), Product.class, context));
+        result.setThruDate(source.getThruDate());
+
+        LOOKUPS.assembleObject(result.getClassifications(),
+                               source.getClassifications(),
+                               context);
     }
 
     protected ProductPrice create(ProductPriceDO object) {

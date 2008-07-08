@@ -43,9 +43,8 @@ public abstract class EntityRelationshipAssembler
                               EntityRelationship source,
                               Context context) {
         super.assembleDO(result, source, context);
-        EntityIdentityDO identity = get(source.getIdentity(),
-                                        EntityIdentityDO.class, context
-        );
+        EntityIdentityDO identity = getDO(source.getIdentity(),
+                                          EntityIdentityDO.class, context);
         result.setIdentity(identity);
     }
 

@@ -45,19 +45,27 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
                               Context context) {
         super.assembleDO(result, source, context);
         result.setCode(source.getCode());
-        RELATIONSHIPS.assemble(result.getSourceLookupRelationships(),
-                               source.getSourceLookupRelationships(),
-                               context);
+        RELATIONSHIPS.assembleDO(result.getSourceLookupRelationships(),
+                                 source.getSourceLookupRelationships(),
+                                 context);
 
-        RELATIONSHIPS.assemble(result.getTargetLookupRelationships(),
-                               source.getTargetLookupRelationships(),
-                               context);
+        RELATIONSHIPS.assembleDO(result.getTargetLookupRelationships(),
+                                 source.getTargetLookupRelationships(),
+                                 context);
     }
 
     @Override
     protected void assembleObject(Lookup result, LookupDO source,
                                   Context context) {
         super.assembleObject(result, source, context);
+        result.setCode(source.getCode());
+        RELATIONSHIPS.assembleObject(result.getSourceLookupRelationships(),
+                                     source.getSourceLookupRelationships(),
+                                     context);
+
+        RELATIONSHIPS.assembleObject(result.getTargetLookupRelationships(),
+                                     source.getTargetLookupRelationships(),
+                                     context);
     }
 
     protected Lookup create(LookupDO object) {

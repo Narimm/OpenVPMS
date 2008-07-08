@@ -86,7 +86,7 @@ public class ArchetypeServiceActTestCase
         service.save(act);
 
         Act act1 = (Act) ArchetypeQueryHelper.getByUid(
-                service, act.getArchetypeId(), act.getUid());
+                service, act.getArchetypeId(), act.getId());
         assertEquals(act1, act);
     }
 
@@ -97,6 +97,7 @@ public class ArchetypeServiceActTestCase
     public void testGetActs() throws Exception {
         // create an act which participates in 5 acts
         Party person = createPerson("MR", "Jim", "Alateras");
+        service.save(person);
         for (int index = 0; index < 5; index++) {
             Act act = createSimpleAct("study" + index, "inprogress");
             Participation participation = createSimpleParticipation(
@@ -105,8 +106,6 @@ public class ArchetypeServiceActTestCase
             act.addParticipation(participation);
             service.save(act);
         }
-
-        service.save(person);
 
         // now use the getActs request
         IPage<Act> acts = ArchetypeQueryHelper.getActs(
@@ -676,9 +675,9 @@ public class ArchetypeServiceActTestCase
                 = addRelationship(act1, act2, "act1->act2", true);
 
         // initial ids should be unset
-        assertEquals(-1, act1.getUid());
-        assertEquals(-1, act2.getUid());
-        assertEquals(-1, rel.getUid());
+        assertEquals(-1, act1.getId());
+        assertEquals(-1, act2.getId());
+        assertEquals(-1, rel.getId());
 
         // save objects in a transaction, and rollback. Within the transaction,
         // the objects should be assigned identifiers. After rollback, they
@@ -690,9 +689,9 @@ public class ArchetypeServiceActTestCase
                     service.save(act2);
 
                     // objects should have ids assigned now
-                    assertFalse(-1 == act1.getUid());
-                    assertFalse(-1 == act2.getUid());
-                    assertFalse(-1 == rel.getUid());
+                    assertFalse(-1 == act1.getId());
+                    assertFalse(-1 == act2.getId());
+                    assertFalse(-1 == rel.getId());
                     throw new RuntimeException("Trigger rollback");
                 }
             });
@@ -702,9 +701,9 @@ public class ArchetypeServiceActTestCase
         }
 
         // id changes should be reverted on rollback
-        assertEquals(-1, act1.getUid());
-        assertEquals(-1, act2.getUid());
-        assertEquals(-1, rel.getUid());
+        assertEquals(-1, act1.getId());
+        assertEquals(-1, act2.getId());
+        assertEquals(-1, rel.getId());
 
         // now verify the objects can be saved
         try {
@@ -720,9 +719,9 @@ public class ArchetypeServiceActTestCase
         }
 
         // objects should have ids assigned now
-        assertFalse(-1 == act1.getUid());
-        assertFalse(-1 == act2.getUid());
-        assertFalse(-1 == rel.getUid());
+        assertFalse(-1 == act1.getId());
+        assertFalse(-1 == act2.getId());
+        assertFalse(-1 == rel.getId());
 
         // now verfiy that a subsequent rollback of persistent objects
         // doesn't reset the ids
@@ -740,9 +739,9 @@ public class ArchetypeServiceActTestCase
         }
 
         // objects should have ids assigned still
-        assertFalse(-1 == act1.getUid());
-        assertFalse(-1 == act2.getUid());
-        assertFalse(-1 == rel.getUid());
+        assertFalse(-1 == act1.getId());
+        assertFalse(-1 == act2.getId());
+        assertFalse(-1 == rel.getId());
     }
 
     /**

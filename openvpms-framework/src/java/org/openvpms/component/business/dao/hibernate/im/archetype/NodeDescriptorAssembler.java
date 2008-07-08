@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.MapAssembler;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 
@@ -52,9 +53,9 @@ public class NodeDescriptorAssembler
                               Context context) {
         super.assembleDO(result, source, context);
 
-        result.setArchetypeDescriptor(get(source.getArchetypeDescriptor(),
-                                          ArchetypeDescriptorDO.class,
-                                          context));
+        result.setArchetypeDescriptor(getDO(source.getArchetypeDescriptor(),
+                                            ArchetypeDescriptorDO.class,
+                                            context));
         result.setBaseName(source.getBaseName());
         result.setDefaultValue(source.getDefaultValue());
         result.setDerived(source.isDerived());
@@ -67,20 +68,56 @@ public class NodeDescriptorAssembler
         result.setMaxLength(source.getMaxLength());
         result.setMinCardinality(source.getMinCardinality());
         result.setMinLength(source.getMinLength());
-        result.setParent(get(source.getParent(), NodeDescriptorDO.class,
-                             context));
+        result.setParent(getDO(source.getParent(), NodeDescriptorDO.class,
+                               context));
         result.setParentChild(source.isParentChild());
         result.setPath(source.getPath());
         result.setReadOnly(source.isReadOnly());
         result.setType(source.getType());
 
-        NODES.assemble(result.getNodeDescriptors(),
-                       source.getNodeDescriptors(),
-                       context);
+        NODES.assembleDO(result.getNodeDescriptors(),
+                         source.getNodeDescriptors(),
+                         context);
 
-        ASSERTION.assemble(result.getAssertionDescriptors(),
-                           source.getAssertionDescriptors(),
-                           context);
+        ASSERTION.assembleDO(result.getAssertionDescriptors(),
+                             source.getAssertionDescriptors(),
+                             context);
+    }
+
+    @Override
+    protected void assembleObject(NodeDescriptor result,
+                                  NodeDescriptorDO source, Context context) {
+        super.assembleObject(result, source, context);
+
+        result.setArchetypeDescriptor(getObject(source.getArchetypeDescriptor(),
+                                                ArchetypeDescriptor.class,
+                                                context));
+        result.setBaseName(source.getBaseName());
+        result.setDefaultValue(source.getDefaultValue());
+        result.setDerived(source.isDerived());
+        result.setDerivedValue(source.getDerivedValue());
+        result.setDisplayName(source.getDisplayName());
+        result.setFilter(source.getFilter());
+        result.setHidden(source.isHidden());
+        result.setIndex(source.getIndex());
+        result.setMaxCardinality(source.getMaxCardinality());
+        result.setMaxLength(source.getMaxLength());
+        result.setMinCardinality(source.getMinCardinality());
+        result.setMinLength(source.getMinLength());
+        result.setParent(getObject(source.getParent(), NodeDescriptor.class,
+                                   context));
+        result.setParentChild(source.isParentChild());
+        result.setPath(source.getPath());
+        result.setReadOnly(source.isReadOnly());
+        result.setType(source.getType());
+
+        NODES.assembleObject(result.getNodeDescriptors(),
+                             source.getNodeDescriptors(),
+                             context);
+
+        ASSERTION.assembleObject(result.getAssertionDescriptors(),
+                                 source.getAssertionDescriptors(),
+                                 context);
     }
 
     protected NodeDescriptor create(NodeDescriptorDO object) {

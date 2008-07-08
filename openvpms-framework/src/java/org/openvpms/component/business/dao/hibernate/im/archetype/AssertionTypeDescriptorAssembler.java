@@ -50,9 +50,20 @@ public class AssertionTypeDescriptorAssembler
                               Context context) {
         super.assembleDO(result, source, context);
         result.setPropertyArchetype(source.getPropertyArchetype());
-        TYPES.assemble(result.getActionTypes(),
-                       source.getActionTypes(),
-                       context);
+        TYPES.assembleDO(result.getActionTypes(),
+                         source.getActionTypes(),
+                         context);
+    }
+
+    @Override
+    protected void assembleObject(AssertionTypeDescriptor result,
+                                  AssertionTypeDescriptorDO source,
+                                  Context context) {
+        super.assembleObject(result, source, context);
+        result.setPropertyArchetype(source.getPropertyArchetype());
+        TYPES.assembleObject(result.getActionTypes(),
+                             source.getActionTypes(),
+                             context);
     }
 
     protected AssertionTypeDescriptor create(AssertionTypeDescriptorDO object) {

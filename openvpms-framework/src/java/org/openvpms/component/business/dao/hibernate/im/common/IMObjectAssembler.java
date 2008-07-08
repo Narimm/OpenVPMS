@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
-import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
@@ -34,6 +33,8 @@ public abstract class IMObjectAssembler<T extends IMObject,
 
     private final Class<DO> typeDO;
 
+    private static final DetailsMapConverter DETAILS = new DetailsMapConverter();
+
     public IMObjectAssembler(Class<T> type, Class<DO> typeDO) {
         this.type = type;
         this.typeDO = typeDO;
@@ -41,8 +42,14 @@ public abstract class IMObjectAssembler<T extends IMObject,
 
     public IMObject assemble(IMObjectDO source, Context context) {
         DO object = typeDO.cast(source);
-        T target = create(object);
-        assembleObject(target, object, context);
+        T target = type.cast(context.getCached(source));
+        if (target == null) {
+            target = create(object);
+            // pre-cache just in case the graph is cyclic
+            context.add(source, target);
+
+            assembleObject(target, object, context);
+        }
         return target;
     }
 
@@ -67,11 +74,10 @@ public abstract class IMObjectAssembler<T extends IMObject,
             if (target == null) {
                 // target not yet assembled from the source
                 target = get(source.getObjectReference(), typeDO, context);
-                if (target == null) {
-                    throw new IMObjectDAOException(
-                            IMObjectDAOException.ErrorCode.ObjectNotFound,
-                            source.getObjectReference());
-                }
+
+                // pre-cache just in case the graph is cyclic
+                context.add(source, target);
+                // now assemble
                 assembleDO(target, object, context);
             }
         }
@@ -88,9 +94,13 @@ public abstract class IMObjectAssembler<T extends IMObject,
         return type;
     }
 
-    protected void assembleDO(DO result, T source, Context context
-    ) {
+    public Class<? extends IMObjectDO> getDOType() {
+        return typeDO;
+    }
+
+    protected void assembleDO(DO result, T source, Context context) {
         result.setId(source.getId());
+        result.setLinkId(source.getLinkId());
         result.setArchetypeId(source.getArchetypeId());
         result.setVersion(source.getVersion());
 
@@ -99,11 +109,13 @@ public abstract class IMObjectAssembler<T extends IMObject,
         result.setLastModified(source.getLastModified());
         result.setName(source.getName());
 
-        result.setDetails(source.getDetails());
+        DETAILS.convert(result.getDetails(), source.getDetails());
     }
+
 
     protected void assembleObject(T result, DO source, Context context) {
         result.setId(source.getId());
+        result.setLinkId(source.getLinkId());
         result.setArchetypeId(source.getArchetypeId());
         result.setVersion(source.getVersion());
 

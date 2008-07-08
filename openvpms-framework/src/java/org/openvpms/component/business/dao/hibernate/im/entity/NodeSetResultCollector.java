@@ -22,7 +22,7 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.query.NodeSet;
 
 import java.util.ArrayList;
@@ -48,12 +48,12 @@ class NodeSetResultCollector extends AbstractNodeResultCollector<NodeSet> {
     /**
      * Creates a new <code>NodeSetResultCollector</code>.
      *
-     * @param service the archetype service
-     * @param nodes   the nodes to collect
+     * @param cache the archetype descriptor cache
+     * @param nodes the nodes to collect
      */
-    public NodeSetResultCollector(IArchetypeService service,
+    public NodeSetResultCollector(IArchetypeDescriptorCache cache,
                                   Collection<String> nodes) {
-        super(service, nodes);
+        super(cache, nodes);
     }
 
     /**

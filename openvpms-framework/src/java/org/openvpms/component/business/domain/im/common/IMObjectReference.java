@@ -20,7 +20,6 @@
 package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.io.Serializable;
@@ -54,6 +53,7 @@ public class IMObjectReference implements Serializable, Cloneable {
      * The transient identity of the object.
      */
     private String linkId;
+
 
     /**
      * Default constructor provided for serialization.
@@ -196,11 +196,8 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("uid", id)
-                .append("linkId", linkId)
-                .append("archetypeId", archetypeId)
-                .toString();
+        return new StringBuffer(archetypeId.toString())
+                .append(':').append(id).append(':').append(linkId).toString();
     }
 
     /* (non-Javadoc)

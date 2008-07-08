@@ -49,10 +49,10 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
         return new SetAssembler<T, DO>(type, typeDO);
     }
 
-    public void assemble(Set<DO> target, Set<T> source, Context context) {
+    public void assembleDO(Set<DO> target, Set<T> source, Context context) {
         if (target.isEmpty()) {
             for (T src : source) {
-                DO result = get(src, typeDO, context);
+                DO result = getDO(src, typeDO, context);
                 target.add(result);
             }
         } else if (source.isEmpty()) {
@@ -72,7 +72,19 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
                 assembler.assemble(result, src, context);
             }
             for (T added : getAdded(retained, sourceMap)) {
-                DO result = get(added, typeDO, context);
+                DO result = getDO(added, typeDO, context);
+                target.add(result);
+            }
+        }
+    }
+
+    public void assembleObject(Set<T> target, Set<DO> source, Context context) {
+        if (!target.isEmpty()) {
+            target.clear();
+        }
+        if (!source.isEmpty()) {
+            for (DO src : source) {
+                T result = getObject(src, type, context);
                 target.add(result);
             }
         }

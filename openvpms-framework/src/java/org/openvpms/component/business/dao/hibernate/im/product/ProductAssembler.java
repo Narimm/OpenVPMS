@@ -43,14 +43,17 @@ public class ProductAssembler extends EntityAssembler<Product, ProductDO> {
     protected void assembleDO(ProductDO result, Product source,
                               Context context) {
         super.assembleDO(result, source, context);
-        PRICES.assemble(result.getProductPrices(), source.getProductPrices(),
-                        context);
+        PRICES.assembleDO(result.getProductPrices(), source.getProductPrices(),
+                          context);
     }
 
     @Override
     protected void assembleObject(Product result, ProductDO source,
                                   Context context) {
         super.assembleObject(result, source, context);
+        PRICES.assembleObject(result.getProductPrices(),
+                              source.getProductPrices(),
+                              context);
     }
 
     protected Product create(ProductDO object) {

@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class ActRelationshipAssembler
+public class ActRelationshipAssembler
         extends PeriodRelationshipAssembler<ActRelationship,
         ActRelationshipDO> {
 
@@ -50,5 +50,13 @@ public abstract class ActRelationshipAssembler
                                   Context context) {
         super.assembleObject(result, source, context);
         result.setParentChildRelationship(source.isParentChildRelationship());
+    }
+
+    protected ActRelationship create(ActRelationshipDO object) {
+        return new ActRelationship();
+    }
+
+    protected ActRelationshipDO create(ActRelationship object) {
+        return new ActRelationshipDO();
     }
 }

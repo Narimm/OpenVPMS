@@ -47,43 +47,43 @@
         <property name="mappingResources">
             <list>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/Act.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/act/ActDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/ActionTypeDescriptor.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/ActRelationship.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/act/ParticipationDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/ArchetypeDescriptor.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/ArchetypeAwareGrantedAuthority.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/AssertionDescriptor.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/AssertionTypeDescriptor.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/AuditRecord.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/Contact.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/document/DocumentDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/Document.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/Entity.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/entity/EntityDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/EntityIdentity.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/EntityRelationship.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/Lookup.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/LookupRelationship.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/NodeDescriptor.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/party/ContactDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/Participation.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/ProductPrice.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDO.hbm.xml</value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/mapping/SecurityRole.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDO.hbm.xml</value>
             </list>
         </property>
     </bean>

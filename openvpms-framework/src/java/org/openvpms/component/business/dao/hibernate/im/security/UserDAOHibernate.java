@@ -21,12 +21,12 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.openvpms.component.business.dao.hibernate.im.entity.HibernateResultCollectorFactory;
-import org.openvpms.component.business.dao.im.common.ResultCollector;
-import org.openvpms.component.business.dao.im.common.ResultCollectorFactory;
+import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectResultCollector;
+import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
 import org.openvpms.component.business.dao.im.security.IUserDAO;
 import org.openvpms.component.business.dao.im.security.UserDAOException;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -43,15 +43,17 @@ import java.util.List;
 public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
 
     /**
-     * The result collector factory.
+     * The assembler.
      */
-    private ResultCollectorFactory factory
-            = new HibernateResultCollectorFactory();
+    private final CompoundAssembler assembler;
+    private static final String QUERY =
+            "from " + UserDO.class + " as user where user.username = :name";
 
     /**
      * Constructs a new <code>UserDAOHibernate</code>.
      */
     public UserDAOHibernate() {
+        assembler = new AssemblerImpl();
     }
 
     /**
@@ -65,10 +67,11 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
         Session session
                 = getHibernateTemplate().getSessionFactory().openSession();
         try {
-            Query query = session.getNamedQuery("user.getByUserName");
+            Query query = session.createQuery(QUERY);
             query.setString("name", name);
-            ResultCollector<IMObject> collector
-                    = factory.createIMObjectCollector();
+            Context context = Context.getContext(assembler, session);
+            IMObjectResultCollector collector = new IMObjectResultCollector();
+            collector.setContext(context);
             for (Object object : query.list()) {
                 collector.collect(object);
             }

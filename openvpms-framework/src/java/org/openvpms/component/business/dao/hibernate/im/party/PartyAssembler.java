@@ -43,13 +43,16 @@ public class PartyAssembler extends EntityAssembler<Party, PartyDO> {
     protected void assembleDO(PartyDO result, Party source,
                               Context context) {
         super.assembleDO(result, source, context);
-        CONTACTS.assemble(result.getContacts(), source.getContacts(), context);
+        CONTACTS.assembleDO(result.getContacts(), source.getContacts(),
+                            context);
     }
 
     @Override
     protected void assembleObject(Party result, PartyDO source,
                                   Context context) {
         super.assembleObject(result, source, context);
+        CONTACTS.assembleObject(result.getContacts(), source.getContacts(),
+                                context);
     }
 
     protected Party create(PartyDO object) {

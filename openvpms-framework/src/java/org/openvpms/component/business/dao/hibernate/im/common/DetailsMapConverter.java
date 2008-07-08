@@ -18,21 +18,15 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 /**
  * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface Assembler {
+public class DetailsMapConverter extends MapConverter<String, Object, Object> {
 
-    IMObjectDO assemble(IMObject source, Context context);
-
-    IMObject assemble(IMObjectDO source, Context context);
-
-    IMObject assemble(IMObject target, IMObjectDO source, Context context);
-
-    IMObjectDO assemble(IMObjectDO target, IMObject source, Context context);
+    protected Object convert(Object value) {
+        return value;
+    }
 }

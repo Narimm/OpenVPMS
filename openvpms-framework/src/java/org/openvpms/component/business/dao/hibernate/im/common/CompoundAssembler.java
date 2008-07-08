@@ -31,44 +31,76 @@ import java.util.Map;
  */
 public abstract class CompoundAssembler implements Assembler {
 
-    private Map<Class, Assembler> assemblers
-            = new HashMap<Class, Assembler>();
+    private Map<Class<? extends IMObject>, Assembler> doAssemblers
+            = new HashMap<Class<? extends IMObject>, Assembler>();
+
+    private Map<Class<? extends IMObjectDO>, Assembler> assemblers
+            = new HashMap<Class<? extends IMObjectDO>, Assembler>();
+
+
+    private Map<String, String> typeDOMap = new HashMap<String, String>();
+    private Map<String, String> doTypeMap = new HashMap<String, String>();
 
     public CompoundAssembler() {
     }
 
-    public void addAssembler(IMObjectAssembler<? extends IMObject,
-                             ? extends IMObjectDO> assembler) {
-        assemblers.put(assembler.getType(), assembler);
+    public String getDOClassName(String className) {
+        return typeDOMap.get(className);
     }
 
-    public IMObjectDO assemble(IMObject source, Context context
-    ) {
-        Assembler assembler = assemblers.get(source.getClass());
-        if (assembler == null) {
-            throw new IllegalArgumentException(
-                    "Unsupported type: " + source.getClass().getName());
-        }
+    public String getClassName(String doClassName) {
+        return doTypeMap.get(doClassName);
+    }
+
+    public void addAssembler(IMObjectAssembler<? extends IMObject,
+            ? extends IMObjectDO> assembler) {
+        doAssemblers.put(assembler.getType(), assembler);
+        assemblers.put(assembler.getDOType(), assembler);
+        String typeName = assembler.getType().getName();
+        String doTypeName = assembler.getDOType().getName();
+        typeDOMap.put(typeName, doTypeName);
+        doTypeMap.put(doTypeName, typeName);
+    }
+
+    public IMObjectDO assemble(IMObject source, Context context) {
+        Assembler assembler = getAssembler(source);
         return assembler.assemble(source, context);
     }
 
     public IMObject assemble(IMObjectDO source, Context context) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Assembler assembler = getAssembler(source);
+        return assembler.assemble(source, context);
     }
 
     public IMObjectDO assemble(IMObjectDO target, IMObject source,
                                Context context) {
-        Assembler assembler = assemblers.get(source.getClass());
-        if (assembler == null) {
-            throw new IllegalArgumentException(
-                    "Unsupported type: " + source.getClass().getName());
-        }
+        Assembler assembler = getAssembler(source);
         return assembler.assemble(target, source, context);
     }
 
     public IMObject assemble(IMObject target, IMObjectDO source,
                              Context context) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Assembler assembler = getAssembler(source);
+        return assembler.assemble(target, source, context);
     }
+
+    private Assembler getAssembler(IMObject source) {
+        Assembler assembler = doAssemblers.get(source.getClass());
+        if (assembler == null) {
+            throw new IllegalArgumentException(
+                    "Unsupported type: " + source.getClass().getName());
+        }
+        return assembler;
+    }
+
+    private Assembler getAssembler(IMObjectDO source) {
+        Assembler assembler = assemblers.get(source.getClass());
+        if (assembler == null) {
+            throw new IllegalArgumentException(
+                    "Unsupported type: " + source.getClass().getName());
+        }
+        return assembler;
+    }
+
 }
 

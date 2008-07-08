@@ -51,19 +51,19 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
     ) {
         super.assembleDO(result, source, context);
         result.setTitle(source.getTitle());
-        result.setStartTime(source.getActivityStartTime());
-        result.setEndTime(source.getActivityEndTime());
+        result.setActivityStartTime(source.getActivityStartTime());
+        result.setActivityEndTime(source.getActivityEndTime());
         result.setReason(source.getReason());
         result.setStatus(source.getStatus());
-        RELATIONSHIPS.assemble(result.getSourceActRelationships(),
-                               source.getSourceActRelationships(),
-                               context);
-        RELATIONSHIPS.assemble(result.getTargetActRelationships(),
-                               source.getTargetActRelationships(),
-                               context);
-        PARTICIPATIONS.assemble(result.getParticipations(),
-                                source.getParticipations(),
-                                context);
+        RELATIONSHIPS.assembleDO(result.getSourceActRelationships(),
+                                 source.getSourceActRelationships(),
+                                 context);
+        RELATIONSHIPS.assembleDO(result.getTargetActRelationships(),
+                                 source.getTargetActRelationships(),
+                                 context);
+        PARTICIPATIONS.assembleDO(result.getParticipations(),
+                                  source.getParticipations(),
+                                  context);
     }
 
 }

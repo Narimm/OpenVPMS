@@ -34,7 +34,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet> {
+public class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet> {
 
     /**
      * The object names.

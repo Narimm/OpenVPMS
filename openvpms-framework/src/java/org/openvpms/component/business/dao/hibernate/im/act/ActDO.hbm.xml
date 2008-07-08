@@ -40,9 +40,9 @@
         <property name="description" column="description" type="string"/>
         <property name="active" column="active" type="boolean"/>
         <property name="title" column="title" type="string"/>
-        <property name="startTime" column="activity_start_time" type="timestamp"
+        <property name="activityStartTime" column="activity_start_time" type="timestamp"
                   index="act_start_time_idx"/>
-        <property name="endTime" column="activity_end_time" type="timestamp"
+        <property name="activityEndTime" column="activity_end_time" type="timestamp"
                   index="act_end_time_idx"/>
         <property name="reason" column="reason" type="string"/>
         <property name="status" column="status" type="string"

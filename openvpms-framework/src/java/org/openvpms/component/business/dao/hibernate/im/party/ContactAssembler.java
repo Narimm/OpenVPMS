@@ -24,6 +24,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 
 /**
  * Add description here.
@@ -46,17 +47,24 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
         super.assembleDO(result, source, context);
         result.setActiveStartTime(source.getActiveStartTime());
         result.setActiveEndTime(source.getActiveEndTime());
-        result.setParty(get(source.getParty(), PartyDO.class, context));
+        result.setParty(getDO(source.getParty(), PartyDO.class, context));
 
-        LOOKUPS.assemble(result.getClassifications(),
-                         source.getClassifications(),
-                         context);
+        LOOKUPS.assembleDO(result.getClassifications(),
+                           source.getClassifications(),
+                           context);
     }
 
     @Override
     protected void assembleObject(Contact result, ContactDO source,
                                   Context context) {
         super.assembleObject(result, source, context);
+        result.setActiveStartTime(source.getActiveStartTime());
+        result.setActiveEndTime(source.getActiveEndTime());
+        result.setParty(getObject(source.getParty(), Party.class, context));
+
+        LOOKUPS.assembleObject(result.getClassifications(),
+                               source.getClassifications(),
+                               context);
     }
 
     protected Contact create(ContactDO object) {

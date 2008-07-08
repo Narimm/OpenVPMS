@@ -22,6 +22,7 @@ package org.openvpms.component.business.domain.im.audit;
 // java core
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 // commons-lang
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -48,8 +49,13 @@ public class AuditRecord implements Serializable {
      * Uniquely identifies an instance of this class. This is the identifier
      * that is used for persistence.
      */
-    private long uid = -1;
-    
+    private long id = -1;
+
+    /**
+     * A client assigned identifier that defaults to a random UUID if unset.
+     */
+    private String linkId;
+
     /**
      * The archetype id
      */
@@ -103,17 +109,62 @@ public class AuditRecord implements Serializable {
     }
 
     /**
-     * @return Returns the id.
+     * Returns the id.
+     *
+     * @return the id
      */
+    public long getId() {
+        return id;
+    }
+
+    /**
+     * Sets the id.
+     *
+     * @param id the id
+     */
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    /**
+     * Sets the link identifier.
+     *
+     * @param linkId the link identifier
+     */
+    public void setLinkId(String linkId) {
+        this.linkId = linkId;
+    }
+
+    /**
+     * Returns the link identifier.
+     *
+     * @return the link identifier
+     */
+    public String getLinkId() {
+        if (linkId == null && id == -1) {
+            linkId = UUID.randomUUID().toString();
+        }
+        return linkId;
+    }
+
+    /**
+     * Returns the id.
+     *
+     * @return the id
+     * @deprecated use {@link #getId()}
+     */
+    @Deprecated
     public long getUid() {
-        return this.uid;
+        return getId();
     }
 
     /**
      * @param id The id to set.
+     * @deprecated use {@link #setId(long)}
      */
+    @Deprecated
     public void setUid(long id) {
-        this.uid = id;
+        setId(id);
     }
 
     /**

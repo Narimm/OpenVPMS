@@ -28,7 +28,7 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
+import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
 import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
@@ -37,13 +37,18 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.*;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
-import org.openvpms.component.business.dao.im.common.ResultCollectorFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.business.service.archetype.query.QueryBuilder;
+import org.openvpms.component.business.service.archetype.query.QueryContext;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NamedQuery;
+import org.openvpms.component.system.common.query.NodeSet;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -69,11 +74,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         implements IMObjectDAO {
 
     /**
-     * The result collector factory.
-     */
-    private ResultCollectorFactory collectorFactory;
-
-    /**
      * Transaction helper.
      */
     private TransactionTemplate txnTemplate;
@@ -86,7 +86,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     /**
      * The assembler.
      */
-    private final Assembler assembler;
+    private final CompoundAssembler assembler;
 
     /**
      * The archetype descriptor cache.
@@ -105,7 +105,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * Default constructor.
      */
     public IMObjectDAOHibernate() {
-        collectorFactory = new HibernateResultCollectorFactory();
         assembler = new AssemblerImpl();
         handlerFactory = new IMObjectSessionHandlerFactory(this, assembler);
     }
@@ -190,6 +189,61 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     }
 
     /**
+     * Retrieves the objects matching the query.
+     *
+     * @param query the archetype query
+     * @return a page of objects that match the query criteria
+     * @throws IMObjectDAOException for any error
+     */
+    public IPage<IMObject> get(IArchetypeQuery query) {
+        return getQueryDelegator(query).get(query);
+    }
+
+    /**
+     * Retrieves partially populated objects that match the query.
+     * This may be used to selectively load parts of object graphs to improve
+     * performance.
+     * <p/>
+     * All simple properties of the returned objects are populated - the
+     * <code>nodes</code> argument is used to specify which collection nodes to
+     * populate. If empty, no collections will be loaded, and the behaviour of
+     * accessing them is undefined.
+     *
+     * @param query the archetype query
+     * @param nodes the collection node names
+     * @return a page of objects that match the query criteria
+     * @throws IMObjectDAOException for any error
+     */
+    public IPage<IMObject> get(IArchetypeQuery query,
+                               Collection<String> nodes) {
+        return getQueryDelegator(query).get(query, nodes);
+    }
+
+    /**
+     * Retrieves the objects matching the query.
+     *
+     * @param query the archetype query
+     * @return a page of objects that match the query criteria
+     * @throws IMObjectDAOException for any error
+     */
+    public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
+        return getQueryDelegator(query).getObjects(query);
+    }
+
+    /**
+     * Retrieves the nodes from the objects that match the query criteria.
+     *
+     * @param query the archetype query
+     * @param nodes the node names
+     * @return the nodes for each object that matches the query criteria
+     * @throws IMObjectDAOException for any error
+     */
+    public IPage<NodeSet> getNodes(IArchetypeQuery query,
+                                   Collection<String> nodes) {
+        return getQueryDelegator(query).getNodes(query, nodes);
+    }
+
+    /**
      * Execute a get using the specified query string, the query
      * parameters and the result collector. The first row and the number of rows
      * is used to control the paging of the result set.
@@ -210,29 +264,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 log.debug("query=" + queryString
                         + ", parameters=" + parameters);
             }
-            executeQuery(queryString, new Params(parameters), collector,
+            executeQuery(queryString, new Params(parameters),
+                         (HibernateResultCollector) collector,
                          firstResult, maxResults, count);
         } catch (Exception exception) {
             throw new IMObjectDAOException(FailedToExecuteQuery, exception);
         }
-    }
-
-    /**
-     * Returns the result collector factory.
-     *
-     * @return the result collector factory
-     */
-    public ResultCollectorFactory getResultCollectorFactory() {
-        return collectorFactory;
-    }
-
-    /**
-     * Sets the result collector factory.
-     *
-     * @param factory the result collector factory
-     */
-    public void setResultCollectorFactory(ResultCollectorFactory factory) {
-        collectorFactory = factory;
     }
 
     /**
@@ -318,7 +355,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     public IPage<IMObject> get(String shortName, String instanceName,
                                String clazz, boolean activeOnly,
                                int firstResult, int maxResults) {
-        if (StringUtils.isEmpty(clazz)) {
+        clazz = assembler.getDOClassName(clazz);
+        if (clazz == null) {
             throw new IMObjectDAOException(ClassNameMustBeSpecified);
         }
 
@@ -385,8 +423,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                         + names.toString() + " and params " + params.toString());
             }
 
-            ResultCollector<IMObject> collector
-                    = collectorFactory.createIMObjectCollector();
+            HibernateResultCollector<IMObject> collector
+                    = new IMObjectResultCollector();
             executeQuery(queryString.toString(), new Params(names, params),
                          collector, firstResult, maxResults, true);
             return collector.getPage();
@@ -404,9 +442,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      *      long)
      */
     public IMObject getById(String clazz, final long id) {
-        if (StringUtils.isEmpty(clazz)) {
-            throw new IMObjectDAOException(ClassNameMustBeSpecified);
-        }
         try {
             return get(clazz, "id", id);
         } catch (Exception exception) {
@@ -506,7 +541,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param count       if <code>true</code>
      */
     private void executeQuery(final String queryString, final Params params,
-                              final ResultCollector collector,
+                              final HibernateResultCollector collector,
                               final int firstResult,
                               final int maxResults, final boolean count)
             throws Exception {
@@ -517,6 +552,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 //             session.setFlushMode(FlushMode.MANUAL);
                 collector.setFirstResult(firstResult);
                 collector.setPageSize(maxResults);
+                collector.setSession(session);
+                collector.setContext(Context.getContext(assembler, session));
 
                 if (maxResults == 0 && count) {
                     // only want a count of the results matching the criteria
@@ -557,7 +594,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                         collector.collect(object);
                     }
                 }
-                return null;  //To change body of implemented methods use File | Settings | File Templates.
+                return null;
             }
         });
     }
@@ -718,6 +755,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @return the corresponding object, or <tt>null</tt> if none is found
      */
     private IMObject get(String clazz, final String name, final Object value) {
+        clazz = assembler.getDOClassName(clazz);
+        if (clazz == null) {
+            throw new IMObjectDAOException(ClassNameMustBeSpecified);
+        }
         final StringBuffer queryString = new StringBuffer();
 
         queryString.append("select entity from ");
@@ -752,7 +793,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         Context context = Context.getContext(assembler, session);
         IMObjectSessionHandler handler = handlerFactory.getHandler(object);
         handler.save(object, session, context);
-        // context.syncronizeIds();
     }
 
     /**
@@ -767,7 +807,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             IMObjectSessionHandler handler = handlerFactory.getHandler(object);
             handler.save(object, session, context);
         }
-        // context.syncronizeIds();
     }
 
     /**
@@ -824,6 +863,109 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     private Object execute(HibernateCallback callback) {
         final HibernateTemplate template = getHibernateTemplate();
         return template.execute(callback);
+    }
+
+    /**
+     * Returns a new query delegator for the specified query.
+     *
+     * @param query the query
+     * @return a new query delegator for the query
+     */
+    private QueryDelegator getQueryDelegator(IArchetypeQuery query) {
+        if (query instanceof ArchetypeQuery) {
+            return new DefaultQueryDelegator();
+        } else if (query instanceof NamedQuery) {
+            return new NamedQueryDelegator();
+        }
+        throw new IllegalArgumentException("Unsupported query: "
+                + query.getClass().getName());
+    }
+
+    abstract class QueryDelegator {
+
+        public IPage<IMObject> get(IArchetypeQuery query) {
+            HibernateResultCollector<IMObject> collector
+                    = new IMObjectResultCollector();
+            collector.setLoader(new DefaultObjectLoader());
+            get(query, collector);
+            return collector.getPage();
+        }
+
+        public IPage<IMObject> get(IArchetypeQuery query,
+                                   Collection<String> nodes) {
+            HibernateResultCollector<IMObject> collector
+                    = new IMObjectNodeResultCollector(cache, nodes);
+            collector.setLoader(new DefaultObjectLoader());
+            get(query, collector);
+            return collector.getPage();
+        }
+
+        public IPage<NodeSet> getNodes(IArchetypeQuery query,
+                                       Collection<String> nodes) {
+            HibernateResultCollector<NodeSet> collector
+                    = new NodeSetResultCollector(cache, nodes);
+            collector.setLoader(new DefaultObjectLoader());
+            get(query, collector);
+            return collector.getPage();
+        }
+
+        public abstract IPage<ObjectSet> getObjects(IArchetypeQuery query);
+
+        protected abstract void get(IArchetypeQuery query,
+                                    ResultCollector collector);
+    }
+
+    class DefaultQueryDelegator extends QueryDelegator {
+
+        public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
+            QueryBuilder builder = new QueryBuilder(cache, assembler);
+            QueryContext context = builder.build((ArchetypeQuery) query);
+            HibernateResultCollector<ObjectSet> collector
+                    = new ObjectSetResultCollector(context.getSelectNames(),
+                                                   context.getSelectTypes());
+            collector.setLoader(new DefaultObjectLoader());
+            get(context, query, collector);
+            return collector.getPage();
+        }
+
+        protected void get(IArchetypeQuery query, ResultCollector collector) {
+            QueryBuilder builder = new QueryBuilder(cache, assembler);
+            QueryContext context = builder.build((ArchetypeQuery) query);
+            get(context, query, collector);
+        }
+
+        private void get(QueryContext context, IArchetypeQuery query,
+                         ResultCollector collector) {
+            if (log.isDebugEnabled()) {
+                log.debug("ArchetypeService.get: query "
+                        + context.getQueryString());
+            }
+
+            IMObjectDAOHibernate.this.get(context.getQueryString(),
+                                          context.getParameters(),
+                                          collector, query.getFirstResult(),
+                                          query.getMaxResults(),
+                                          query.countResults());
+        }
+    }
+
+    class NamedQueryDelegator extends QueryDelegator {
+
+        public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
+            NamedQuery q = (NamedQuery) query;
+            HibernateResultCollector<ObjectSet> collector
+                    = new ObjectSetResultCollector(q.getNames(), null);
+            collector.setLoader(new DefaultObjectLoader());
+            get(query, collector);
+            return collector.getPage();
+        }
+
+        protected void get(IArchetypeQuery query, ResultCollector collector) {
+            NamedQuery q = (NamedQuery) query;
+            getByNamedQuery(q.getQuery(), q.getParameters(), collector,
+                            q.getFirstResult(), q.getMaxResults(),
+                            q.countResults());
+        }
     }
 
 }

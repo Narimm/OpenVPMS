@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype.query;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -61,10 +62,12 @@ class TypeSet {
      *
      * @param alias       the type alias. May be <code>null</code>.
      * @param descriptors the archetype descriptors in the set
+     * @param assembler   the assembler
      * @throws QueryBuilderException if the descriptors refer to more than one
      *                               type
      */
-    public TypeSet(String alias, Set<ArchetypeDescriptor> descriptors) {
+    public TypeSet(String alias, Set<ArchetypeDescriptor> descriptors,
+                   CompoundAssembler assembler) {
         this.alias = alias;
         String type = null;
         for (ArchetypeDescriptor descriptor : descriptors) {
@@ -77,7 +80,7 @@ class TypeSet {
             }
 
         }
-        this.className = type;
+        className = assembler.getDOClassName(type);
         this.descriptors = descriptors;
     }
 
@@ -140,7 +143,8 @@ class TypeSet {
      * @throws QueryBuilderException     if there are no archetypes for the id
      */
     public static TypeSet create(ArchetypeIdConstraint constraint,
-                                 IArchetypeDescriptorCache cache) {
+                                 IArchetypeDescriptorCache cache,
+                                 CompoundAssembler assembler) {
         ArchetypeId id = constraint.getArchetypeId();
         ArchetypeDescriptor descriptor = cache.getArchetypeDescriptor(id);
         if (descriptor == null) {
@@ -149,7 +153,7 @@ class TypeSet {
         Set<ArchetypeDescriptor> descriptors
                 = new HashSet<ArchetypeDescriptor>();
         descriptors.add(descriptor);
-        return new TypeSet(constraint.getAlias(), descriptors);
+        return new TypeSet(constraint.getAlias(), descriptors, assembler);
     }
 
     /**
@@ -158,7 +162,7 @@ class TypeSet {
      *
      * @param constraint the constraint
      * @param descriptor the node descriptor
-     * @param cache the archetype descriptor cache
+     * @param cache      the archetype descriptor cache
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no matching archetypes for
@@ -166,7 +170,8 @@ class TypeSet {
      */
     public static TypeSet create(ArchetypeConstraint constraint,
                                  NodeDescriptor descriptor,
-                                 IArchetypeDescriptorCache cache) {
+                                 IArchetypeDescriptorCache cache,
+                                 CompoundAssembler assembler) {
         String[] shortNames = descriptor.getArchetypeRange();
         if (shortNames == null || shortNames.length == 0) {
             if (descriptor.getFilter() == null) {
@@ -183,21 +188,23 @@ class TypeSet {
                     NoMatchingArchetypesForShortName,
                     ArrayUtils.toString(shortNames));
         }
-        return new TypeSet(constraint.getAlias(), descriptors);
+        return new TypeSet(constraint.getAlias(), descriptors,
+                           assembler);
     }
 
     /**
      * Creates a new type set from a {@link ShortNameConstraint}.
      *
      * @param constraint the constraint
-     * @param cache the archetype descriptor cache
+     * @param cache      the archetype descriptor cache
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no matching archetypes for
      *                                   the constraint
      */
     public static TypeSet create(ShortNameConstraint constraint,
-                                 IArchetypeDescriptorCache cache) {
+                                 IArchetypeDescriptorCache cache,
+                                 CompoundAssembler assembler) {
         Set<ArchetypeDescriptor> descriptors
                 = getDescriptors(constraint.getShortNames(),
                                  constraint.isPrimaryOnly(), cache);
@@ -207,14 +214,14 @@ class TypeSet {
                     NoMatchingArchetypesForShortName,
                     ArrayUtils.toString(constraint.getShortNames()));
         }
-        return new TypeSet(constraint.getAlias(), descriptors);
+        return new TypeSet(constraint.getAlias(), descriptors, assembler);
     }
 
     /**
      * Creates a new type set from a {@link LongNameConstraint}.
      *
      * @param constraint the constraint
-     * @param cache the archetype descriptor cache
+     * @param cache      the archetype descriptor cache
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no matching archetypes for
@@ -222,7 +229,8 @@ class TypeSet {
      */
     @Deprecated
     public static TypeSet create(LongNameConstraint constraint,
-                                 IArchetypeDescriptorCache cache) {
+                                 IArchetypeDescriptorCache cache,
+                                 CompoundAssembler assembler) {
         Set<ArchetypeDescriptor> descriptors
                 = getDescriptors(constraint.getEntityName(),
                                  constraint.getConceptName(),
@@ -235,7 +243,8 @@ class TypeSet {
                     NoMatchingArchetypesForLongName, constraint.getRmName(),
                     constraint.getEntityName(), constraint.getConceptName());
         }
-        return new TypeSet(constraint.getAlias(), descriptors);
+        return new TypeSet(constraint.getAlias(), descriptors,
+                           assembler);
     }
 
     /**

@@ -396,7 +396,7 @@ public class IMObject implements Serializable, Cloneable {
     /**
      * @param linkId The linkId to set.
      */
-    protected void setLinkId(String linkId) {
+    public void setLinkId(String linkId) {
         this.linkId = linkId;
     }
 

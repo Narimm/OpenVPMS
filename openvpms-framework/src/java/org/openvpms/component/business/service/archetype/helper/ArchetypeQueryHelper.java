@@ -54,13 +54,13 @@ public class ArchetypeQueryHelper {
      *
      * @param service the archetype service
      * @param archId  the archetype id of the object to retrieve
-     * @param uid     the uid of the object
+     * @param id     the id of the object
      * @return the object of null if one does not exist
      */
     public static IMObject getByUid(IArchetypeService service,
-                                    ArchetypeId archId, long uid) {
+                                    ArchetypeId archId, long id) {
         ArchetypeQuery query = new ArchetypeQuery(archId)
-                .add(new NodeConstraint("uid", RelationalOp.EQ, uid));
+                .add(new NodeConstraint("id", RelationalOp.EQ, id));
         List<IMObject> results = service.get(query).getResults();
         return (!results.isEmpty()) ? results.get(0) : null;
     }

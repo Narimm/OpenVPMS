@@ -18,6 +18,8 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ObjectNotFound;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
@@ -29,8 +31,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
  */
 public class AbstractAssembler {
 
-    protected <A extends IMObject, B extends IMObjectDO> B
-            get(A source, Class<B> type, Context context) {
+    protected <T extends IMObject, DO extends IMObjectDO> DO
+            getDO(T source, Class<DO> type, Context context) {
         if (source == null) {
             return null;
         }
@@ -42,8 +44,31 @@ public class AbstractAssembler {
         return type.cast(object);
     }
 
-    protected <A extends IMObjectDO> A get(IMObjectReference reference,
-                                           Class<A> type, Context context) {
+    protected <DO extends IMObjectDO, T extends IMObject> T
+            getObject(DO source, Class<T> type, Context context) {
+        if (source == null) {
+            return null;
+        }
+        IMObject object = context.getCached(source);
+        if (object == null) {
+            Assembler assembler = context.getAssembler();
+            object = assembler.assemble(source, context);
+        }
+        return type.cast(object);
+    }
+
+    /**
+     * Retrieves an object given its reference.
+     *
+     * @param reference the reference
+     * @param type      the object type
+     * @param context   the context
+     * @return the corresponding object, or <tt>null</tt> if the reference is
+     *         null
+     * @throws IMObjectDAOException if the object doesn't exist
+     */
+    protected <DO extends IMObjectDO> DO get(IMObjectReference reference,
+                                             Class<DO> type, Context context) {
         if (reference == null) {
             return null;
         }
@@ -51,6 +76,10 @@ public class AbstractAssembler {
         if (object != null) {
             return type.cast(object);
         }
-        return context.get(reference, type);
+        DO result = context.get(reference, type);
+        if (result == null) {
+            throw new IMObjectDAOException(ObjectNotFound, reference);
+        }
+        return result;
     }
 }

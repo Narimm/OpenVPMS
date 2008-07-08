@@ -39,8 +39,7 @@ public abstract class IMObjectRelationshipAssembler
     }
 
     @Override
-    protected void assembleDO(DO result, T source, Context context
-    ) {
+    protected void assembleDO(DO result, T source, Context context) {
         super.assembleDO(result, source, context);
         result.setSource(get(source.getSource(), endType, context));
         result.setTarget(get(source.getTarget(), endType, context));

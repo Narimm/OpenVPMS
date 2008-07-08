@@ -21,7 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,12 +52,12 @@ class IMObjectNodeResultCollector
     /**
      * Constructs a new <code>IMObjectNodeResultCollector</code>.
      *
-     * @param service the archetype service
-     * @param nodes   the nodes to collect
+     * @param cache the archetype descriptor cache
+     * @param nodes the nodes to collect
      */
-    public IMObjectNodeResultCollector(IArchetypeService service,
+    public IMObjectNodeResultCollector(IArchetypeDescriptorCache cache,
                                        Collection<String> nodes) {
-        super(service, nodes);
+        super(cache, nodes);
     }
 
     /**

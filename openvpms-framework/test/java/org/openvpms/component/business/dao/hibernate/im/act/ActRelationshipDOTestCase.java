@@ -227,8 +227,10 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         assertEquals(acts + 2, count(ActDO.class));
         assertEquals(relationships + 2, count(ActRelationshipDO.class));
 
-        // now delete the source act. There are a few issues here:
-        // 1. if the act and its relationships are already present in the
+        actRel1.setSource(null);
+        actRel2.setTarget(null);
+        // now delete the source act
+        // If the act and its relationships are already present in the
         // session, an ObjectDeletedException will be thrown with a message
         // like: "deleted object would be re-saved by cascade
         //        (remove deleted object from associations):
@@ -236,17 +238,11 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         // The correct solution for this is to remove the relationships
         // prior to removing the act itself.
 
-/*
-        session.clear();
         tx = session.beginTransaction();
-        source = (ActDO) session.load(ActDO.class, source.getId());
-        session.delete(source);
-        tx.commit();
-*/
-        tx = session.beginTransaction();
-        for (ActRelationshipDO relationship : source.getSourceActRelationships()) {
-            relationship.setSource(null);
-        }
+        source.removeSourceActRelationship(actRel1);
+        source.removeTargetActRelationship(actRel2);
+        target.removeSourceActRelationship(actRel2);
+        target.removeTargetActRelationship(actRel1);
         session.delete(source);
         tx.commit();
 

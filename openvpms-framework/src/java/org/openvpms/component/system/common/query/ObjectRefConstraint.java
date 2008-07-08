@@ -37,9 +37,9 @@ public class ObjectRefConstraint extends ArchetypeIdConstraint {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The link id.
+     * The id.
      */
-    private String linkId;
+    private long id;
 
 
     /**
@@ -60,15 +60,15 @@ public class ObjectRefConstraint extends ArchetypeIdConstraint {
     public ObjectRefConstraint(String alias,
                                IMObjectReference reference) {
         super(alias, reference.getArchetypeId(), false);
-        this.linkId = reference.getLinkId();
+        this.id = reference.getId();
     }
 
     /**
-     * Returns the link id.
+     * Returns the object id.
      *
-     * @return the link id
+     * @return the object id
      */
-    public String getLinkId() {
-        return linkId;
+    public long getId() {
+        return id;
     }
 }

@@ -54,9 +54,24 @@ public class ArchetypeDescriptorAssembler
         result.setLatest(source.isLatest());
         result.setPrimary(source.isPrimary());
 
-        NODES.assemble(result.getNodeDescriptors(),
-                       source.getNodeDescriptors(),
-                       context);
+        NODES.assembleDO(result.getNodeDescriptors(),
+                         source.getNodeDescriptors(),
+                         context);
+    }
+
+    @Override
+    protected void assembleObject(ArchetypeDescriptor result,
+                                  ArchetypeDescriptorDO source,
+                                  Context context) {
+        super.assembleObject(result, source, context);
+        result.setClassName(source.getClassName());
+        result.setDisplayName(source.getDisplayName());
+        result.setLatest(source.isLatest());
+        result.setPrimary(source.isPrimary());
+
+        NODES.assembleObject(result.getNodeDescriptors(),
+                             source.getNodeDescriptors(),
+                             context);
     }
 
     protected ArchetypeDescriptor create(ArchetypeDescriptorDO object) {

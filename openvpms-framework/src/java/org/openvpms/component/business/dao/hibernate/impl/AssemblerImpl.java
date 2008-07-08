@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.impl;
 import org.openvpms.component.business.dao.hibernate.im.act.ActAssembler;
 import org.openvpms.component.business.dao.hibernate.im.act.DocumentActAssembler;
 import org.openvpms.component.business.dao.hibernate.im.act.FinancialActAssembler;
+import org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipAssembler;
 import org.openvpms.component.business.dao.hibernate.im.archetype.ActionTypeDescriptorAssembler;
 import org.openvpms.component.business.dao.hibernate.im.archetype.ArchetypeDescriptorAssembler;
 import org.openvpms.component.business.dao.hibernate.im.archetype.AssertionDescriptorAssembler;
@@ -50,6 +51,7 @@ public class AssemblerImpl extends CompoundAssembler {
 
     public AssemblerImpl() {
         addAssembler(new ActAssembler());
+        addAssembler(new ActRelationshipAssembler());
         addAssembler(new DocumentActAssembler());
         addAssembler(new FinancialActAssembler());
 

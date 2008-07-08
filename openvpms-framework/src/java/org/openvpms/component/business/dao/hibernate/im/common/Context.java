@@ -45,6 +45,9 @@ public class Context {
     private Map<IMObject, IMObjectDO> objectToDOMap
             = new HashMap<IMObject, IMObjectDO>();
 
+    private Map<IMObjectDO, IMObject> doToObjectMap
+            = new HashMap<IMObjectDO, IMObject>();
+
     private Map<IMObjectReference, IMObjectDO> refToDOMap
             = new HashMap<IMObjectReference, IMObjectDO>();
 
@@ -60,15 +63,19 @@ public class Context {
     public static Context getContext(Assembler assembler, Session session) {
         Context context;
         ResourceKey key = new ResourceKey(session);
-        if (!TransactionSynchronizationManager.hasResource(key)) {
-            context = new Context(assembler, session);
-            TransactionSynchronizationManager.bindResource(
-                    context.getResourceKey(), context);
-            TransactionSynchronizationManager.registerSynchronization(
-                    new ContextSynchronization(context));
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            if (!TransactionSynchronizationManager.hasResource(key)) {
+                context = new Context(assembler, session);
+                TransactionSynchronizationManager.bindResource(
+                        context.getResourceKey(), context);
+                TransactionSynchronizationManager.registerSynchronization(
+                        new ContextSynchronization(context));
+            } else {
+                context = (Context) TransactionSynchronizationManager.getResource(
+                        key);
+            }
         } else {
-            context = (Context) TransactionSynchronizationManager.getResource(
-                    key);
+            context = new Context(assembler, session);
         }
         return context;
     }
@@ -83,6 +90,11 @@ public class Context {
         assembled.put(target, source);
     }
 
+    public void add(IMObjectDO source, IMObject target) {
+        doToObjectMap.put(source, target);
+        objectToDOMap.put(target, source);
+    }
+
     public Map<IMObjectDO, IMObject> getAssembled() {
         return assembled;
     }
@@ -93,6 +105,10 @@ public class Context {
 
     public IMObjectDO getCached(IMObject source) {
         return objectToDOMap.get(source);
+    }
+
+    public IMObject getCached(IMObjectDO source) {
+        return doToObjectMap.get(source);
     }
 
     public IMObjectDO getCached(IMObjectReference reference) {

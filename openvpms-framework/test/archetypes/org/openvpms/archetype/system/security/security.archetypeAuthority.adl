@@ -2,7 +2,7 @@
 	<archetype name="security.archetypeAuthority.1.0"
 		latest="true" primary="true"
 		type="org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority">
-		<node name="uid" path="/uid" displayName="id"
+		<node name="id" path="/id" displayName="id"
 			type="java.lang.Long" />
 		<node name="name" path="/name" type="java.lang.String" displayName="Authority Name"
 			minCardinality="1" />

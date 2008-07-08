@@ -47,7 +47,7 @@ public class IMObjectDO {
     private long id = -1;
 
     /**
-     * A client assigned identifier that.
+     * A client assigned identifier.
      */
     private String linkId;
 

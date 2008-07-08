@@ -42,12 +42,12 @@ public class ActDO extends IMObjectDO {
     /**
      * The start time of this act.
      */
-    private Date startTime;
+    private Date activityStartTime;
 
     /**
      * The end time of this act.
      */
-    private Date endTime;
+    private Date activityEndTime;
 
     /**
      * The reason for the act.
@@ -108,17 +108,17 @@ public class ActDO extends IMObjectDO {
      *
      * @return the act start time. May be <tt>null</tt>
      */
-    public Date getStartTime() {
-        return startTime;
+    public Date getActivityStartTime() {
+        return activityStartTime;
     }
 
     /**
      * Sets the act start time.
      *
-     * @param startTime the start time. May be <tt>null</tt>
+     * @param activityStartTime the start time. May be <tt>null</tt>
      */
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
+    public void setActivityStartTime(Date activityStartTime) {
+        this.activityStartTime = activityStartTime;
     }
 
     /**
@@ -126,17 +126,17 @@ public class ActDO extends IMObjectDO {
      *
      * @return the end time. May be <tt>null</tt>
      */
-    public Date getEndTime() {
-        return endTime;
+    public Date getActivityEndTime() {
+        return activityEndTime;
     }
 
     /**
      * Sets the act end time.
      *
-     * @param endTime the end time. May be <tt>null</tt>
+     * @param activityEndTime the end time. May be <tt>null</tt>
      */
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
+    public void setActivityEndTime(Date activityEndTime) {
+        this.activityEndTime = activityEndTime;
     }
 
     /**

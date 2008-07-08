@@ -47,11 +47,13 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
         return new MapAssembler<K, T, DO>(type, typeDO);
     }
 
-    public void assemble(Map<K, DO> target, Map<K, T> source, Context context
-    ) {
+    public void assembleDO(Map<K, DO> target, Map<K, T> source,
+                           Context context) {
+        DOMapConverter converter = new DOMapConverter(context);
+        converter.convert(target, source);
         if (target.isEmpty()) {
             for (Map.Entry<K, T> entry : source.entrySet()) {
-                DO result = get(entry.getValue(), typeDO, context);
+                DO result = getDO(entry.getValue(), typeDO, context);
                 target.put(entry.getKey(), result);
             }
         } else if (source.isEmpty()) {
@@ -70,7 +72,20 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
             }
             Map<K, T> added = getAdded(retained, source);
             for (Map.Entry<K, T> entry : added.entrySet()) {
-                DO result = get(entry.getValue(), typeDO, context);
+                DO result = getDO(entry.getValue(), typeDO, context);
+                target.put(entry.getKey(), result);
+            }
+        }
+    }
+
+    public void assembleObject(Map<K, T> target, Map<K, DO> source,
+                               Context context) {
+        if (!target.isEmpty()) {
+            target.clear();
+        }
+        if (!source.isEmpty()) {
+            for (Map.Entry<K, DO> entry : source.entrySet()) {
+                T result = getObject(entry.getValue(), type, context);
                 target.put(entry.getKey(), result);
             }
         }
@@ -92,6 +107,25 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
         Map<K, T> result = new HashMap<K, T>(source);
         result.keySet().removeAll(retained.keySet());
         return result;
+    }
+
+    private class DOMapConverter extends MapConverter<K, T, DO> {
+
+        private final Context context;
+
+        public DOMapConverter(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected void convert(Map<K, DO> map, K key, DO target, T source) {
+            Assembler assembler = context.getAssembler();
+            assembler.assemble(target, source, context);
+        }
+
+        protected DO convert(T value) {
+            return getDO(value, typeDO, context);
+        }
     }
 
 }

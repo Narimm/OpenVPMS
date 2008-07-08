@@ -46,6 +46,16 @@ public class AssertionDescriptorAssembler
         result.setPropertyMap(source.getPropertyMap());
     }
 
+    @Override
+    protected void assembleObject(AssertionDescriptor result,
+                                  AssertionDescriptorDO source,
+                                  Context context) {
+        super.assembleObject(result, source, context);
+        result.setErrorMessage(source.getErrorMessage());
+        result.setIndex(source.getIndex());
+        result.setPropertyMap(source.getPropertyMap());
+    }
+
     protected AssertionDescriptor create(AssertionDescriptorDO object) {
         return new AssertionDescriptor();
     }

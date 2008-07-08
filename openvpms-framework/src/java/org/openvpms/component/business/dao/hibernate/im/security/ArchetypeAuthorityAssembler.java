@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
+import org.openvpms.component.business.domain.im.security.SecurityRole;
 
 /**
  * Add description here.
@@ -42,11 +43,22 @@ public class ArchetypeAuthorityAssembler
                               Context context) {
         super.assembleDO(result, source, context);
         result.setMethod(source.getMethod());
-        result.setRole(get(source.getRole(), SecurityRoleDO.class, context
-        ));
+        result.setRole(getDO(source.getRole(), SecurityRoleDO.class, context));
         result.setServiceName(source.getServiceName());
         result.setMethod(source.getMethod());
         result.setShortName(source.getArchetypeShortName());
+    }
+
+    @Override
+    protected void assembleObject(ArchetypeAwareGrantedAuthority result,
+                                  ArchetypeAuthorityDO source,
+                                  Context context) {
+        super.assembleObject(result, source, context);
+        result.setMethod(source.getMethod());
+        result.setRole(getObject(source.getRole(), SecurityRole.class, context));
+        result.setServiceName(source.getServiceName());
+        result.setMethod(source.getMethod());
+        result.setArchetypeShortName(source.getShortName());
     }
 
     protected ArchetypeAwareGrantedAuthority create(
