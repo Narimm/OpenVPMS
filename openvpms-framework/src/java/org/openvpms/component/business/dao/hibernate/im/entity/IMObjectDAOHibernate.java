@@ -30,9 +30,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.ContextHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.ContextHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
 import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
@@ -471,29 +471,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getByLinkId(java.lang.String,
-     *      java.lang.String)
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public IMObject getByLinkId(String clazz, String linkId) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Returns an object with the specified object reference.
-     *
-     * @param reference the object reference
-     * @return the corresponding object, or <tt>null</tt> if none exists
-     * @throws IMObjectDAOException if the request cannot complete
-     */
-    public IMObject getByReference(IMObjectReference reference) {
-        return get(reference);
-    }
-
     /**
      * Execute a get using the specified named query, the query
      * parameters and the result collector. The first result and the number of
@@ -522,7 +499,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
     public void preCommit(Context context) {
         if (!context.getSaveDeferred().isEmpty()) {
-            saveDeferred(context);
+            saveDeferred(context, true);
         }
     }
 
@@ -530,21 +507,54 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         updateIds(context);
     }
 
+    public void rollback(Context context) {
+        for (DOState state : context.getSaved()) {
+            state.rollbackIds(context);
+        }
+    }
+
     private void updateIds(Context context) {
-        for (DOState state :context.getSaved()) {
+        for (DOState state : context.getSaved()) {
             state.updateIds(context);
         }
     }
 
+    private void saveDeferred(Context context, boolean failOnIncomplete) {
+        List<DOState> states = assembleDeferred(context);
+        for (DOState state : states) {
+            save(state, context);
+        }
+        Set<DOState> saveDeferred = context.getSaveDeferred();
+        if (!saveDeferred.isEmpty() && failOnIncomplete) {
+            DOState state = saveDeferred.iterator().next();
+            Set<DeferredAssembler> deferred = state.getDeferred();
+            IMObjectReference ref = null;
+            if (!deferred.isEmpty()) { // should never be empty
+                DeferredAssembler assembler = deferred.iterator().next();
+                ref = assembler.getReference();
+            }
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.ObjectNotFound, ref);
 
-    private void saveDeferred(Context context) {
-        DOState[] states = context.getSaveDeferred().toArray(new DOState[0]);
+        }
+    }
+
+    private List<DOState> assembleDeferred(Context context) {
+        List<DOState> result = new ArrayList<DOState>();
         boolean processed;
         do {
             processed = false;
+            DOState[] states = context.getSaveDeferred().toArray(
+                    new DOState[0]);
             Set<DeferredAssembler> deferred = new HashSet<DeferredAssembler>();
             for (DOState state : states) {
-                deferred.addAll(state.getDeferred());
+                Set<DeferredAssembler> set = state.getDeferred();
+                if (!set.isEmpty()) {
+                    deferred.addAll(set);
+                } else {
+                    context.removeSaveDeferred(state);
+                    result.add(state);
+                }
             }
             if (!deferred.isEmpty()) {
                 for (DeferredAssembler assembler : deferred) {
@@ -555,26 +565,14 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 }
             }
         } while (processed);
-        for (DOState state : states) {
-            if (state.isComplete()) {
-                save(state, context);
-            } else {
-                Set<DeferredAssembler> deferred = state.getDeferred();
-                IMObjectReference ref = null;
-                if (!deferred.isEmpty()) {
-                    DeferredAssembler assembler = deferred.iterator().next();
-                    ref = assembler.getReference();
-                }
-                throw new IMObjectDAOException(
-                        IMObjectDAOException.ErrorCode.ObjectNotFound, ref);
-            }
-        }
+        return result;
     }
 
     private void save(DOState state, Context context) {
         IMObjectDO target = state.getObject();
         Session session = context.getSession();
         session.saveOrUpdate(target);
+        state.updateIds(context);
         context.addSaved(state);
     }
 
@@ -588,8 +586,11 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             SessionFactory sessionFactory) {
         HibernateTemplate template
                 = super.createHibernateTemplate(sessionFactory);
-        template.setCacheQueries(true);
         template.setFlushMode(HibernateTemplate.FLUSH_COMMIT);
+
+        // note - need to expose the native session in order for
+        // Session.equals() to work in Context.getContext()
+        template.setExposeNativeSession(true);
 
         return template;
     }
@@ -613,7 +614,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
             public Object doInHibernate(Session session) throws
                                                          HibernateException {
-//             session.setFlushMode(FlushMode.MANUAL);
                 collector.setFirstResult(firstResult);
                 collector.setPageSize(maxResults);
                 collector.setSession(session);
@@ -856,8 +856,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     private void save(IMObject object, Session session) {
         Context context = getContext(session);
+        boolean deferred = !context.getSaveDeferred().isEmpty();
         save(object, context);
-        if (!context.isSynchronizationActive()) {
+        if (deferred) {
+            saveDeferred(context, false);
+        }
+        if (!context.isSynchronizationActive()) { // todo - required?
             preCommit(context);
         }
     }
@@ -885,8 +889,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     private void save(Collection<IMObject> objects, Session session) {
         Context context = getContext(session);
+        boolean deferred = !context.getSaveDeferred().isEmpty();
         for (IMObject object : objects) {
             save(object, context);
+        }
+        if (deferred) {
+            assembleDeferred(context);
         }
         if (!context.isSynchronizationActive()) {
             preCommit(context);
@@ -925,6 +933,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     private Object update(final HibernateCallback callback) {
         final HibernateTemplate template = getHibernateTemplate();
+        getHibernateTemplate().setExposeNativeSession(true);
         return txnTemplate.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 return template.execute(new HibernateCallback() {
@@ -943,6 +952,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         context.setContextHandler(this);
         return context;
     }
+
     /**
      * Executes an hibernate callback.
      *
@@ -951,6 +961,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     private Object execute(HibernateCallback callback) {
         final HibernateTemplate template = getHibernateTemplate();
+        template.setExposeNativeSession(true);
         return template.execute(callback);
     }
 

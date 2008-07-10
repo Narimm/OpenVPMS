@@ -172,12 +172,7 @@ public class IMObjectReference implements Serializable, Cloneable {
         boolean equal = false;
         if ((obj instanceof IMObjectReference)) {
             IMObjectReference rhs = (IMObjectReference) obj;
-            if (id == -1 && rhs.id == -1) {
-                equal = ObjectUtils.equals(linkId, rhs.linkId);
-            } else {
-                equal = id == rhs.id;
-            }
-            if (equal) {
+            if (ObjectUtils.equals(linkId, rhs.linkId)) {
                 equal = ObjectUtils.equals(archetypeId, rhs.archetypeId);
             }
         }
@@ -189,10 +184,7 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public int hashCode() {
-        if (id == -1 && linkId != null) {
-            return linkId.hashCode();
-        }
-        return (int) (id ^ (id >>> 32));
+        return linkId.hashCode();
     }
 
     /* (non-Javadoc)

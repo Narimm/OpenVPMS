@@ -36,7 +36,8 @@ public class DefaultIMObjectSessionHandler
      * @param dao       the DAO
      * @param assembler the assembler
      */
-    public DefaultIMObjectSessionHandler(IMObjectDAO dao, Assembler assembler) {
+    public DefaultIMObjectSessionHandler(IMObjectDAO dao,
+                                         CompoundAssembler assembler) {
         super(dao, assembler);
     }
 

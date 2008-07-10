@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
 /**
  * Add description here.
@@ -54,7 +55,7 @@ public class Context {
 
     private Set<DOState> saved = new HashSet<DOState>();
 
-    private Set<DOState> saveDeferred = new HashSet<DOState>();
+    private Set<DOState> saveDeferred = new LinkedHashSet<DOState>();
 
 
     private final boolean syncActive;
@@ -154,6 +155,10 @@ public class Context {
         return saveDeferred;
     }
 
+    public void removeSaveDeferred(DOState state) {
+        saveDeferred.remove(state);
+    }
+
     public void addSaved(DOState state) {
         saved.add(state);
     }
@@ -199,6 +204,8 @@ public class Context {
             if (handler != null) {
                 if (status == STATUS_COMMITTED) {
                     handler.commit(context);
+                } else {
+                    handler.rollback(context);
                 }
             }
 

@@ -34,7 +34,9 @@ import java.util.Set;
 public class DOState {
 
     private final IMObjectDO object;
-    private final IMObject source;
+    private IMObject source;
+    private final boolean isNew;
+    private long version;
 
     private List<DeferredAssembler> deferred;
     private List<DOState> states;
@@ -47,6 +49,8 @@ public class DOState {
     public DOState(IMObjectDO object, IMObject source) {
         this.object = object;
         this.source = source;
+        isNew = (source != null) && source.isNew();
+        version = (source != null) ? source.getVersion() : 0;
     }
 
     public IMObjectDO getObject() {
@@ -78,6 +82,12 @@ public class DOState {
         updaters.add(updater);
     }
 
+    public void removeReferenceUpdater(ReferenceUpdater updater) {
+        if (updaters != null) {
+            updaters.remove(updater);
+        }
+    }
+
     public Set<DeferredAssembler> getDeferred() {
         Set<DOState> visited = new HashSet<DOState>();
         return getDeferred(new HashSet<DeferredAssembler>(), visited);
@@ -95,6 +105,24 @@ public class DOState {
     public void updateIds(Context context) {
         Set<DOState> visited = new HashSet<DOState>();
         updateIds(context, visited);
+    }
+
+    public void rollbackIds(Context context) {
+        Set<DOState> visited = new HashSet<DOState>();
+        rollbackIds(visited);
+    }
+
+    public void update(IMObject source) {
+        this.source = source;
+        if (states != null) {
+            states.clear();
+        }
+        if (deferred != null) {
+            deferred.clear();
+        }
+        if (updaters != null) {
+            updaters.clear();
+        }
     }
 
     public void destroy() {
@@ -127,10 +155,10 @@ public class DOState {
             source.setVersion(object.getVersion());
         }
         if (updaters != null) {
-            for (ReferenceUpdater updater  : updaters) {
+            for (ReferenceUpdater updater : updaters) {
                 DOState state = context.getCached(updater.getReference());
                 if (state != null) {
-                    updater.update(state.getObject().getObjectReference());
+                    updater.doUpdate(state.getObject().getObjectReference());
                 }
             }
         }
@@ -157,6 +185,21 @@ public class DOState {
             }
         }
         return set;
+    }
+
+    private void rollbackIds(Set<DOState> visited) {
+        visited.add(this);
+        if (isNew) {
+            source.setId(-1);
+            source.setVersion(version);
+        }
+        if (states != null) {
+            for (DOState state : states) {
+                if (!visited.contains(state)) {
+                    state.rollbackIds(visited);
+                }
+            }
+        }
     }
 
     private void destroy(Set<DOState> visited) {

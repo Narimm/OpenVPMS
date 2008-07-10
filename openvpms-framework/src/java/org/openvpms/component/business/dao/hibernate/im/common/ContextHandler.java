@@ -30,4 +30,6 @@ public interface ContextHandler {
 
     void commit(Context context);
 
+    void rollback(Context context);
+
 }

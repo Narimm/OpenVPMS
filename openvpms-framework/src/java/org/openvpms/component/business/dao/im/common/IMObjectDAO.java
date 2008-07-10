@@ -206,18 +206,6 @@ public interface IMObjectDAO {
     public IMObject getById(String clazz, long id);
 
     /**
-     * Returns an object with the specified linkID for the nominated class.
-     *
-     * @param clazz  the clazz of objects to search for
-     * @param linkId the uid object linkId
-     * @return the corresponding object or <tt>null</tt> if none exists
-     * @throws IMObjectDAOException if the request cannot complete
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public IMObject getByLinkId(String clazz, String linkId);
-
-    /**
      * Returns an object with the specified reference.
      *
      * @param reference the object reference
@@ -225,17 +213,6 @@ public interface IMObjectDAO {
      * @throws IMObjectDAOException for any error
      */
     IMObject get(IMObjectReference reference);
-
-    /**
-     * Returns an object with the specified object reference.
-     *
-     * @param reference the object reference
-     * @return the corresponding object, or <tt>null</tt> if none exists
-     * @throws IMObjectDAOException if the request cannot complete
-     * @deprecated use {@link #get(IMObjectReference)}
-     */
-    @Deprecated
-    IMObject getByReference(IMObjectReference reference);
 
     /**
      * Executes a get using the specified named query, the query

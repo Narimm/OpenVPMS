@@ -515,7 +515,7 @@ public class ArchetypeServiceActTestCase
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 service.remove(act1);
-                assertNotNull(reload(act1));  // can reload till commit
+                assertNull(reload(act1));
 
                 // reload act2 and verify that it no longer has a relationship
                 // to act1, and can be saved again
@@ -545,7 +545,7 @@ public class ArchetypeServiceActTestCase
             public Object doInTransaction(TransactionStatus status) {
                 Act act3reloaded = reload(act3);
                 service.remove(act3reloaded);
-                assertNotNull(reload(act3reloaded));  // can reload till commit
+                assertNull(reload(act3reloaded));
 
                 // reload act2 and verify that it no longer has a relationship
                 // to act3
@@ -618,10 +618,7 @@ public class ArchetypeServiceActTestCase
                 = addRelationship(act2, act4, "act2->act4", false);
         final ActRelationship relAct3Act4
                 = addRelationship(act3, act4, "act3->act4", false);
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
-        service.save(act4);
+        service.save(Arrays.asList((IMObject) act1, act2, act3, act4));
 
         assertTrue(act4.getActRelationships().contains(relAct2Act4));
         assertTrue(act4.getActRelationships().contains(relAct3Act4));
@@ -661,10 +658,14 @@ public class ArchetypeServiceActTestCase
         final ActRelationship rel
                 = addRelationship(act1, act2, "act1->act2", true);
 
-        // initial ids should be unset
+        // initial ids and versions should be unset
         assertEquals(-1, act1.getId());
+        assertEquals(0, act1.getVersion());
         assertEquals(-1, act2.getId());
+        assertEquals(0, act2.getVersion());
         assertEquals(-1, rel.getId());
+        // TODO: act relationships unversioned.
+
 
         // save objects in a transaction, and rollback. Within the transaction,
         // the objects should be assigned identifiers. After rollback, they
@@ -674,10 +675,14 @@ public class ArchetypeServiceActTestCase
                 public Object doInTransaction(TransactionStatus status) {
                     service.save(act1);
                     service.save(act2);
+                    act1.setName("f0o");
+                    service.save(act1);
 
                     // objects should have ids assigned now
                     assertFalse(-1 == act1.getId());
+//                    assertEquals(1, act1.getVersion());
                     assertFalse(-1 == act2.getId());
+//                    assertEquals(1, act2.getVersion());
                     assertFalse(-1 == rel.getId());
                     throw new RuntimeException("Trigger rollback");
                 }

@@ -28,10 +28,12 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
  */
 public abstract class ReferenceUpdater {
 
+    private final DOState state;
     private final IMObjectReference reference;
 
     public ReferenceUpdater(DOState state, IMObjectReference reference) {
         state.addReferenceUpdater(this);
+        this.state = state;
         this.reference = reference;
     }
 
@@ -39,5 +41,10 @@ public abstract class ReferenceUpdater {
         return reference;
     }
 
-    public abstract void update(IMObjectReference updated);
+    public void update(IMObjectReference updated) {
+        doUpdate(updated);
+        state.removeReferenceUpdater(this);
+    }
+
+    protected abstract void doUpdate(IMObjectReference updated);
 }

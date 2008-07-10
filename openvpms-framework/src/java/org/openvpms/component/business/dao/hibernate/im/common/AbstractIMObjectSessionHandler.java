@@ -18,8 +18,12 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ObjectNotFound;
 import org.hibernate.Session;
+import org.hibernate.StaleObjectStateException;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
@@ -46,7 +50,7 @@ public abstract class AbstractIMObjectSessionHandler
     /**
      * The assembler.
      */
-    private final Assembler assembler;
+    private final CompoundAssembler assembler;
 
 
     /**
@@ -56,7 +60,7 @@ public abstract class AbstractIMObjectSessionHandler
      * @param assembler the assembler
      */
     public AbstractIMObjectSessionHandler(IMObjectDAO dao,
-                                          Assembler assembler) {
+                                          CompoundAssembler assembler) {
         this.dao = dao;
         this.assembler = assembler;
     }
@@ -97,8 +101,27 @@ public abstract class AbstractIMObjectSessionHandler
      */
     public void delete(IMObject object, Session session, Context context) {
         if (!object.isNew()) {
-            DOState state = assembler.assemble(object, context);
-            delete(state.getObject(), session);
+            IMObjectDO target;
+            IMObjectReference ref = object.getObjectReference();
+            DOState state = context.getCached(ref);
+            if (state != null) {
+                target = state.getObject();
+            } else {
+                Class<? extends IMObjectDO> type
+                        = assembler.getDOClass(object.getClass());
+                if (type == null) {
+                    throw new IMObjectDAOException(ClassNameMustBeSpecified);
+                }
+                target = context.get(ref, type);
+            }
+            if (target == null) {
+                throw new IMObjectDAOException(ObjectNotFound, ref);
+            }
+            if (target.getVersion() != object.getVersion()) {
+                throw new StaleObjectStateException(object.getClass().getName(),
+                                                    object.getId());
+            }
+            delete(target, session);
             session.flush();
         }
     }

@@ -18,10 +18,10 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
-import org.openvpms.component.business.dao.hibernate.im.common.DefaultIMObjectSessionHandler;
 import org.openvpms.component.business.dao.hibernate.im.act.ActSessionHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DefaultIMObjectSessionHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -51,7 +51,7 @@ public class IMObjectSessionHandlerFactory {
      * @param dao the DAO
      */
     public IMObjectSessionHandlerFactory(IMObjectDAO dao,
-                                         Assembler assembler) {
+                                         CompoundAssembler assembler) {
         act = new ActSessionHandler(dao, assembler);
         defaultHandler = new DefaultIMObjectSessionHandler(dao, assembler);
     }

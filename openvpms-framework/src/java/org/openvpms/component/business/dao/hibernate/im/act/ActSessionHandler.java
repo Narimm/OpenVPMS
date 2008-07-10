@@ -20,7 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.hibernate.Session;
 import org.openvpms.component.business.dao.hibernate.im.common.AbstractIMObjectSessionHandler;
-import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
+import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.DefaultIMObjectSessionHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
@@ -51,7 +51,7 @@ public class ActSessionHandler extends AbstractIMObjectSessionHandler {
      *
      * @param dao the DAO
      */
-    public ActSessionHandler(IMObjectDAO dao, Assembler assembler) {
+    public ActSessionHandler(IMObjectDAO dao, CompoundAssembler assembler) {
         super(dao, assembler);
         defaultHandler = new DefaultIMObjectSessionHandler(dao, assembler);
     }

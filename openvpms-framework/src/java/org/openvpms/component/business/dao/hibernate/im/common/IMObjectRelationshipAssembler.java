@@ -71,7 +71,7 @@ public abstract class IMObjectRelationshipAssembler
             }
             if (sourceRef.isNew()) {
                 new ReferenceUpdater(state, sourceRef) {
-                    public void update(IMObjectReference updated) {
+                    protected void doUpdate(IMObjectReference updated) {
                         source.setSource(updated);
                     }
                 };
@@ -98,7 +98,7 @@ public abstract class IMObjectRelationshipAssembler
             }
             if (targetRef.isNew()) {
                 new ReferenceUpdater(state, targetRef) {
-                    public void update(IMObjectReference updated) {
+                    protected void doUpdate(IMObjectReference updated) {
                         source.setTarget(updated);
                     }
                 };

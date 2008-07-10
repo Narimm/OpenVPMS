@@ -38,18 +38,28 @@ public abstract class CompoundAssembler implements Assembler {
             = new HashMap<Class<? extends IMObjectDO>, Assembler>();
 
 
-    private Map<String, String> typeDOMap = new HashMap<String, String>();
-    private Map<String, String> doTypeMap = new HashMap<String, String>();
+    private Map<Class<? extends IMObject>, Class<? extends IMObjectDO>>
+            typeDOMap = new HashMap<Class<? extends IMObject>,
+            Class<? extends IMObjectDO>>();
+
+    private Map<String, String> typeDONameMap = new HashMap<String, String>();
+    private Map<String, String> doTypeNameMap = new HashMap<String, String>();
 
     public CompoundAssembler() {
     }
 
+    public Class<? extends IMObjectDO> getDOClass(
+            Class<? extends IMObject> type) {
+        return typeDOMap.get(type);
+
+    }
+
     public String getDOClassName(String className) {
-        return typeDOMap.get(className);
+        return typeDONameMap.get(className);
     }
 
     public String getClassName(String doClassName) {
-        return doTypeMap.get(doClassName);
+        return doTypeNameMap.get(doClassName);
     }
 
     public void addAssembler(IMObjectAssembler<? extends IMObject,
@@ -58,8 +68,10 @@ public abstract class CompoundAssembler implements Assembler {
         assemblers.put(assembler.getDOType(), assembler);
         String typeName = assembler.getType().getName();
         String doTypeName = assembler.getDOType().getName();
-        typeDOMap.put(typeName, doTypeName);
-        doTypeMap.put(doTypeName, typeName);
+
+        typeDOMap.put(assembler.getType(), assembler.getDOType());
+        typeDONameMap.put(typeName, doTypeName);
+        doTypeNameMap.put(doTypeName, typeName);
     }
 
     public DOState assemble(IMObject source, Context context) {
@@ -98,7 +110,7 @@ public abstract class CompoundAssembler implements Assembler {
         if (assembler == null) {
             for (Map.Entry<Class<? extends IMObjectDO>, Assembler> entry
                     : assemblers.entrySet()) {
-                Class type = entry.getKey();
+                Class<? extends IMObjectDO> type = entry.getKey();
                 if (type.isAssignableFrom(source.getClass())) {
                     assembler = entry.getValue();
                     break;

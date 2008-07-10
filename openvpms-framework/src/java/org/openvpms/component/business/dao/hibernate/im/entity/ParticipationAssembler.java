@@ -85,7 +85,7 @@ public class ParticipationAssembler
             }
             if (entityRef.isNew()) {
                 new ReferenceUpdater(state, entityRef) {
-                    public void update(IMObjectReference updated) {
+                    protected void doUpdate(IMObjectReference updated) {
                         source.setEntity(updated);
                     }
                 };
@@ -113,7 +113,7 @@ public class ParticipationAssembler
             }
             if (actRef.isNew()) {
                 new ReferenceUpdater(state, actRef) {
-                    public void update(IMObjectReference updated) {
+                    protected void doUpdate(IMObjectReference updated) {
                         source.setAct(updated);
                     }
                 };
