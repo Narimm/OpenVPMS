@@ -150,6 +150,10 @@ public class IMObjectReference implements Serializable, Cloneable {
         return id;
     }
 
+    public boolean isNew() {
+        return id == -1;
+    }
+
     /**
      * Returns the object's transient identifier.
      *

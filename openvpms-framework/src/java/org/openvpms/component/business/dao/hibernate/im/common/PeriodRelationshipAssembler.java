@@ -36,18 +36,18 @@ public abstract class PeriodRelationshipAssembler<T extends PeriodRelationship,
     }
 
     @Override
-    protected void assembleDO(DO result, T source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setActiveStartTime(source.getActiveStartTime());
-        result.setActiveEndTime(source.getActiveEndTime());
+    protected void assembleDO(DO target, T source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setActiveStartTime(source.getActiveStartTime());
+        target.setActiveEndTime(source.getActiveEndTime());
     }
 
     @Override
-    protected void assembleObject(T result, DO source,
+    protected void assembleObject(T target, DO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setActiveStartTime(source.getActiveStartTime());
-        result.setActiveEndTime(source.getActiveEndTime());
+        super.assembleObject(target, source, context);
+        target.setActiveStartTime(source.getActiveStartTime());
+        target.setActiveEndTime(source.getActiveEndTime());
     }
 }

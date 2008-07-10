@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityAssembler;
 import org.openvpms.component.business.domain.im.security.User;
 
@@ -35,19 +36,19 @@ public class UserAssembler extends EntityAssembler<User, UserDO> {
     }
 
     @Override
-    protected void assembleDO(UserDO result, User source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setUsername(source.getUsername());
-        result.setPassword(source.getPassword());
+    protected void assembleDO(UserDO target, User source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setUsername(source.getUsername());
+        target.setPassword(source.getPassword());
     }
 
     @Override
-    protected void assembleObject(User result, UserDO source,
+    protected void assembleObject(User target, UserDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setUsername(source.getUsername());
-        result.setPassword(source.getPassword());
+        super.assembleObject(target, source, context);
+        target.setUsername(source.getUsername());
+        target.setPassword(source.getPassword());
     }
 
     protected User create(UserDO object) {

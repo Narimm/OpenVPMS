@@ -18,10 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
-import org.hibernate.HibernateException;
-import org.hibernate.NonUniqueObjectException;
 import org.hibernate.Session;
-import org.hibernate.StaleObjectStateException;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -72,10 +69,13 @@ public abstract class AbstractIMObjectSessionHandler
      * @param context the assembler context
      */
     public void save(IMObject object, Session session, Context context) {
-        IMObjectDO target = assembler.assemble(object, context);
-        session.saveOrUpdate(target);
-        object.setId(target.getId());
-        object.setVersion(target.getVersion());
+        DOState state = assembler.assemble(object, context);
+        if (state.isComplete()) {
+            IMObjectDO target = state.getObject();
+            session.saveOrUpdate(target);
+            object.setId(target.getId());
+            object.setVersion(target.getVersion());
+        }
     }
 
     /**
@@ -96,22 +96,15 @@ public abstract class AbstractIMObjectSessionHandler
      * @param context
      */
     public void delete(IMObject object, Session session, Context context) {
-        deleteObject(object, session, context);
-        session.flush();
+        if (!object.isNew()) {
+            DOState state = assembler.assemble(object, context);
+            delete(state.getObject(), session);
+            session.flush();
+        }
     }
 
-    /**
-     * Delete a collection of objects.
-     *
-     * @param objects the objects to delete
-     * @param session the session to use
-     * @param context
-     */
-    protected void delete(Collection<IMObject> objects, Session session,
-                          Context context) {
-        for (IMObject object : objects) {
-            deleteObject(object, session, context);
-        }
+    protected void delete(IMObjectDO object, Session session) {
+        session.delete(object);
     }
 
     /**
@@ -198,26 +191,6 @@ public abstract class AbstractIMObjectSessionHandler
         }
         if (target.getVersion() < source.getVersion()) {
             target.setVersion(source.getVersion());
-        }
-    }
-
-    /**
-     * Deletes an object. If the object is already persistent, it will be
-     * reloaded into the current session, in order to avoid
-     * {@link NonUniqueObjectException} should a detached instance be deleted
-     * in a session already containing it.
-     *
-     * @param object  the object to delete
-     * @param session the session
-     * @throws StaleObjectStateException if the object has subsequently been
-     *                                   deleted/changed
-     * @throws HibernateException        for any other error
-     */
-    protected void deleteObject(IMObject object, Session session,
-                                Context context) {
-        if (!object.isNew()) {
-            IMObjectDO target = assembler.assemble(object, context);
-            session.delete(target);
         }
     }
 

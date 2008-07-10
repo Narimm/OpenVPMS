@@ -18,7 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 /**
  * Add description here.
@@ -26,13 +26,29 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface Assembler {
+public abstract class DeferredAssembler extends AbstractAssembler {
 
-    DOState assemble(IMObject source, Context context);
+    private final DOState state;
+    private IMObjectReference reference;
 
-    IMObject assemble(IMObjectDO source, Context context);
+    public DeferredAssembler(DOState state, IMObjectReference reference) {
+        this.state = state;
+        this.reference = reference;
+        state.addDeferred(this);
+    }
 
-    IMObject assemble(IMObject target, IMObjectDO source, Context context);
+    public IMObjectDO getObject() {
+        return state.getObject();
+    }
 
-    DOState assemble(IMObjectDO target, IMObject source, Context context);
+    public IMObjectReference getReference() {
+        return reference;
+    }
+
+    public void assemble(Context context) {
+        doAssemble(context);
+        state.removeDeferred(this);
+    }
+
+    protected abstract void doAssemble(Context context);
 }

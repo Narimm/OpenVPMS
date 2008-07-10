@@ -350,9 +350,7 @@ public class ArchetypeServiceActTestCase
         // create a relationship from act2 -> act3
         addRelationship(act2, act3, "act2->act3");
 
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
+        service.save(Arrays.asList((IMObject) act1, act2, act3));
 
         service.remove(act1);
         assertNull(reload(act1));
@@ -374,7 +372,6 @@ public class ArchetypeServiceActTestCase
      */
     public void testParentChildRemoval() {
         Act estimation = (Act) service.create("act.customerEstimation");
-        service.remove(estimation);
         estimation.setStatus("IN_PROGRESS");
         Act item1 = (Act) service.create("act.customerEstimationItem");
         Act item2 = (Act) service.create("act.customerEstimationItem");
@@ -383,10 +380,7 @@ public class ArchetypeServiceActTestCase
         bean.addRelationship("actRelationship.customerEstimationItem", item1);
         bean.addRelationship("actRelationship.customerEstimationItem", item2);
         bean.addRelationship("actRelationship.customerEstimationItem", item3);
-        service.save(item1);
-        service.save(item2);
-        service.save(item3);
-        bean.save();
+        service.save(Arrays.asList((IMObject) estimation, item1, item2, item3));
 
         // remove an item, and verify it has been removed and that the other
         // acts aren't removed
@@ -448,9 +442,7 @@ public class ArchetypeServiceActTestCase
         addRelationship(act1, act2, "act1->act2", true);
         addRelationship(act1, act3, "act1->act3", false);
 
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
+        service.save(Arrays.asList((IMObject) act1, act2, act3));
 
         // remove act1, and verify that it and act2 are removed, and act3
         // remains.
@@ -473,9 +465,7 @@ public class ArchetypeServiceActTestCase
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
 
         addRelationship(act1, act2, "act1->act2", true);
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
+        service.save(Arrays.asList((IMObject) act1, act2, act3));
 
         Act stale = reload(act1);
 
@@ -520,9 +510,7 @@ public class ArchetypeServiceActTestCase
         final ActRelationship relAct1Act3 = addRelationship(act1, act3,
                                                             "act1->act3");
 
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
+        service.save(Arrays.asList((IMObject) act1, act2, act3));
 
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
@@ -586,8 +574,7 @@ public class ArchetypeServiceActTestCase
         final ActRelationship relAct1Act2 = addRelationship(act1, act2,
                                                             "act1->act2");
 
-        service.save(act1);
-        service.save(act2);
+        service.save(Arrays.asList((IMObject) act1, act2));
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 service.remove(act2);

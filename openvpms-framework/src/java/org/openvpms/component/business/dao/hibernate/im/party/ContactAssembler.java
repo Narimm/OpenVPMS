@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
@@ -42,27 +43,33 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
     }
 
     @Override
-    protected void assembleDO(ContactDO result, Contact source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setActiveStartTime(source.getActiveStartTime());
-        result.setActiveEndTime(source.getActiveEndTime());
-        result.setParty(getDO(source.getParty(), PartyDO.class, context));
+    protected void assembleDO(ContactDO target, Contact source,
+                              DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setActiveStartTime(source.getActiveStartTime());
+        target.setActiveEndTime(source.getActiveEndTime());
+        PartyDO party = null;
+        DOState partyState = getDO(source.getParty(), PartyDO.class, context);
+        if (partyState != null) {
+            party = (PartyDO) partyState.getObject();
+            state.addState(partyState);
+        }
+        target.setParty(party);
 
-        LOOKUPS.assembleDO(result.getClassifications(),
+        LOOKUPS.assembleDO(target.getClassifications(),
                            source.getClassifications(),
-                           context);
+                           state, context);
     }
 
     @Override
-    protected void assembleObject(Contact result, ContactDO source,
+    protected void assembleObject(Contact target, ContactDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setActiveStartTime(source.getActiveStartTime());
-        result.setActiveEndTime(source.getActiveEndTime());
-        result.setParty(getObject(source.getParty(), Party.class, context));
+        super.assembleObject(target, source, context);
+        target.setActiveStartTime(source.getActiveStartTime());
+        target.setActiveEndTime(source.getActiveEndTime());
+        target.setParty(getObject(source.getParty(), Party.class, context));
 
-        LOOKUPS.assembleObject(result.getClassifications(),
+        LOOKUPS.assembleObject(target.getClassifications(),
                                source.getClassifications(),
                                context);
     }

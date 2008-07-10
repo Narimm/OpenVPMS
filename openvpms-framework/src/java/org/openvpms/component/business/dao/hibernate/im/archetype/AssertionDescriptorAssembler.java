@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 
 /**
@@ -37,23 +38,23 @@ public class AssertionDescriptorAssembler
     }
 
     @Override
-    protected void assembleDO(AssertionDescriptorDO result,
-                              AssertionDescriptor source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setErrorMessage(source.getErrorMessage());
-        result.setIndex(source.getIndex());
-        result.setPropertyMap(source.getPropertyMap());
+    protected void assembleDO(AssertionDescriptorDO target,
+                                 AssertionDescriptor source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setErrorMessage(source.getErrorMessage());
+        target.setIndex(source.getIndex());
+        target.setPropertyMap(source.getPropertyMap());
     }
 
     @Override
-    protected void assembleObject(AssertionDescriptor result,
+    protected void assembleObject(AssertionDescriptor target,
                                   AssertionDescriptorDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setErrorMessage(source.getErrorMessage());
-        result.setIndex(source.getIndex());
-        result.setPropertyMap(source.getPropertyMap());
+        super.assembleObject(target, source, context);
+        target.setErrorMessage(source.getErrorMessage());
+        target.setIndex(source.getIndex());
+        target.setPropertyMap(source.getPropertyMap());
     }
 
     protected AssertionDescriptor create(AssertionDescriptorDO object) {

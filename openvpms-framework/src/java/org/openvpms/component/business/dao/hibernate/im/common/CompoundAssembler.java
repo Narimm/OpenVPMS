@@ -62,7 +62,7 @@ public abstract class CompoundAssembler implements Assembler {
         doTypeMap.put(doTypeName, typeName);
     }
 
-    public IMObjectDO assemble(IMObject source, Context context) {
+    public DOState assemble(IMObject source, Context context) {
         Assembler assembler = getAssembler(source);
         return assembler.assemble(source, context);
     }
@@ -72,8 +72,8 @@ public abstract class CompoundAssembler implements Assembler {
         return assembler.assemble(source, context);
     }
 
-    public IMObjectDO assemble(IMObjectDO target, IMObject source,
-                               Context context) {
+    public DOState assemble(IMObjectDO target, IMObject source,
+                            Context context) {
         Assembler assembler = getAssembler(source);
         return assembler.assemble(target, source, context);
     }
@@ -96,8 +96,19 @@ public abstract class CompoundAssembler implements Assembler {
     private Assembler getAssembler(IMObjectDO source) {
         Assembler assembler = assemblers.get(source.getClass());
         if (assembler == null) {
-            throw new IllegalArgumentException(
-                    "Unsupported type: " + source.getClass().getName());
+            for (Map.Entry<Class<? extends IMObjectDO>, Assembler> entry
+                    : assemblers.entrySet()) {
+                Class type = entry.getKey();
+                if (type.isAssignableFrom(source.getClass())) {
+                    assembler = entry.getValue();
+                    break;
+                }
+
+            }
+            if (assembler == null) {
+                throw new IllegalArgumentException(
+                        "Unsupported type: " + source.getClass().getName());
+            }
         }
         return assembler;
     }

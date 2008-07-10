@@ -25,8 +25,9 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Add description here.
@@ -42,21 +43,28 @@ public class Context {
 
     private final ResourceKey key;
 
-    private Map<IMObject, IMObjectDO> objectToDOMap
-            = new HashMap<IMObject, IMObjectDO>();
+    private Map<IMObject, DOState> objectToDOMap
+            = new HashMap<IMObject, DOState>();
 
     private Map<IMObjectDO, IMObject> doToObjectMap
             = new HashMap<IMObjectDO, IMObject>();
 
-    private Map<IMObjectReference, IMObjectDO> refToDOMap
-            = new HashMap<IMObjectReference, IMObjectDO>();
+    private Map<IMObjectReference, DOState> refToDOMap
+            = new HashMap<IMObjectReference, DOState>();
 
-    private Map<IMObjectDO, IMObject> assembled
-            = new LinkedHashMap<IMObjectDO, IMObject>();
+    private Set<DOState> saved = new HashSet<DOState>();
 
-    private Context(Assembler assembler, Session session) {
+    private Set<DOState> saveDeferred = new HashSet<DOState>();
+
+
+    private final boolean syncActive;
+
+    private ContextHandler handler;
+
+    private Context(Assembler assembler, Session session, boolean syncActive) {
         this.assembler = assembler;
         this.session = session;
+        this.syncActive = syncActive;
         key = new ResourceKey(session);
     }
 
@@ -65,7 +73,7 @@ public class Context {
         ResourceKey key = new ResourceKey(session);
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             if (!TransactionSynchronizationManager.hasResource(key)) {
-                context = new Context(assembler, session);
+                context = new Context(assembler, session, true);
                 TransactionSynchronizationManager.bindResource(
                         context.getResourceKey(), context);
                 TransactionSynchronizationManager.registerSynchronization(
@@ -75,35 +83,37 @@ public class Context {
                         key);
             }
         } else {
-            context = new Context(assembler, session);
+            context = new Context(assembler, session, false);
         }
         return context;
+    }
+
+    public void setContextHandler(ContextHandler handler) {
+        this.handler = handler;
     }
 
     public Assembler getAssembler() {
         return assembler;
     }
 
-    public void add(IMObject source, IMObjectDO target) {
+    public Session getSession() {
+        return session;
+    }
+
+    public boolean isSynchronizationActive() {
+        return syncActive;
+    }
+
+    public void add(IMObject source, DOState target) {
         objectToDOMap.put(source, target);
         refToDOMap.put(source.getObjectReference(), target);
-        assembled.put(target, source);
     }
 
     public void add(IMObjectDO source, IMObject target) {
         doToObjectMap.put(source, target);
-        objectToDOMap.put(target, source);
     }
 
-    public Map<IMObjectDO, IMObject> getAssembled() {
-        return assembled;
-    }
-
-    public void clearAssembled() {
-        assembled.clear();
-    }
-
-    public IMObjectDO getCached(IMObject source) {
+    public DOState getCached(IMObject source) {
         return objectToDOMap.get(source);
     }
 
@@ -111,7 +121,7 @@ public class Context {
         return doToObjectMap.get(source);
     }
 
-    public IMObjectDO getCached(IMObjectReference reference) {
+    public DOState getCached(IMObjectReference reference) {
         return refToDOMap.get(reference);
     }
 
@@ -121,8 +131,35 @@ public class Context {
         return type.cast(result);
     }
 
+    public void destroy() {
+        for (DOState state : objectToDOMap.values()) {
+            state.destroy();
+        }
+        objectToDOMap.clear();
+        doToObjectMap.clear();
+        refToDOMap.clear();
+        saved.clear();
+        saveDeferred.clear();
+    }
+
     private Object getResourceKey() {
         return key;
+    }
+
+    public void addSaveDeferred(DOState state) {
+        saveDeferred.add(state);
+    }
+
+    public Set<DOState> getSaveDeferred() {
+        return saveDeferred;
+    }
+
+    public void addSaved(DOState state) {
+        saved.add(state);
+    }
+
+    public Set<DOState> getSaved() {
+        return saved;
     }
 
     private static class ContextSynchronization
@@ -147,22 +184,25 @@ public class Context {
         }
 
         @Override
+        public void beforeCommit(boolean readOnly) {
+            ContextHandler handler = context.handler;
+            if (handler != null) {
+                handler.preCommit(context);
+            }
+        }
+
+        @Override
         public void afterCompletion(int status) {
             TransactionSynchronizationManager.unbindResource(
                     context.getResourceKey());
-/*
-            if (status == STATUS_COMMITTED) {
-                for (Sync sync : list) {
-                    sync.sync();
-                }
-            } else {
-                // STATUS_ROLLBACK or STATUS_UNKOWN
-                for (IMObjectDO object : newObjects) {
-                    object.setId(-1);
+            ContextHandler handler = context.handler;
+            if (handler != null) {
+                if (status == STATUS_COMMITTED) {
+                    handler.commit(context);
                 }
             }
-*/
 
+            context.destroy();
         }
 
     }

@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 
 /**
@@ -39,17 +40,72 @@ public abstract class IMObjectRelationshipAssembler
     }
 
     @Override
-    protected void assembleDO(DO result, T source, Context context) {
-        super.assembleDO(result, source, context);
-        result.setSource(get(source.getSource(), endType, context));
-        result.setTarget(get(source.getTarget(), endType, context));
+    protected void assembleDO(DO target, T source, DOState state,
+                              Context context) {
+        super.assembleDO(target, source, state, context);
+        assembleSource(target, source, state, context);
+        assembleTarget(target, source, state, context);
     }
 
     @Override
-    protected void assembleObject(T result, DO source, Context context) {
-        super.assembleObject(result, source, context);
-        result.setSource(source.getSource().getObjectReference());
-        result.setTarget(source.getTarget().getObjectReference());
+    protected void assembleObject(T target, DO source, Context context) {
+        super.assembleObject(target, source, context);
+        target.setSource(source.getSource().getObjectReference());
+        target.setTarget(source.getTarget().getObjectReference());
+    }
+
+    protected void assembleSource(final DO result, final T source,
+                                  DOState state, Context context) {
+        final IMObjectReference sourceRef = source.getSource();
+        if (sourceRef != null) {
+            DOState sourceDO = find(sourceRef, endType, context);
+            if (sourceDO != null) {
+                result.setSource(sourceDO.getObject());
+                state.addState(sourceDO);
+            } else {
+                new DeferredAssembler(state, sourceRef) {
+                    protected void doAssemble(Context context) {
+                        result.setSource(load(sourceRef, endType, context));
+                    }
+                };
+            }
+            if (sourceRef.isNew()) {
+                new ReferenceUpdater(state, sourceRef) {
+                    public void update(IMObjectReference updated) {
+                        source.setSource(updated);
+                    }
+                };
+            }
+        } else {
+            result.setSource(null);
+        }
+    }
+
+    private void assembleTarget(final DO result, final T source, DOState state,
+                                Context context) {
+        final IMObjectReference targetRef = source.getTarget();
+        if (targetRef != null) {
+            DOState targetDO = find(targetRef, endType, context);
+            if (targetDO != null) {
+                result.setTarget(targetDO.getObject());
+                state.addState(targetDO);
+            } else {
+                new DeferredAssembler(state, targetRef) {
+                    public void doAssemble(Context context) {
+                        result.setTarget(load(targetRef, endType, context));
+                    }
+                };
+            }
+            if (targetRef.isNew()) {
+                new ReferenceUpdater(state, targetRef) {
+                    public void update(IMObjectReference updated) {
+                        source.setTarget(updated);
+                    }
+                };
+            }
+        } else {
+            result.setTarget(null);
+        }
     }
 
 }

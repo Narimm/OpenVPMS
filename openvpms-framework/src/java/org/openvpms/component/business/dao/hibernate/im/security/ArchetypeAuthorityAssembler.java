@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 
@@ -38,27 +39,34 @@ public class ArchetypeAuthorityAssembler
     }
 
     @Override
-    protected void assembleDO(ArchetypeAuthorityDO result,
-                              ArchetypeAwareGrantedAuthority source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setMethod(source.getMethod());
-        result.setRole(getDO(source.getRole(), SecurityRoleDO.class, context));
-        result.setServiceName(source.getServiceName());
-        result.setMethod(source.getMethod());
-        result.setShortName(source.getArchetypeShortName());
+    protected void assembleDO(ArchetypeAuthorityDO target,
+                                 ArchetypeAwareGrantedAuthority source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setMethod(source.getMethod());
+        SecurityRoleDO role = null;
+        DOState roleState = getDO(source.getRole(), SecurityRoleDO.class,
+                                  context);
+        if (roleState != null) {
+            role = (SecurityRoleDO) roleState.getObject();
+            state.addState(roleState);
+        }
+        target.setRole(role);
+        target.setServiceName(source.getServiceName());
+        target.setMethod(source.getMethod());
+        target.setShortName(source.getArchetypeShortName());
     }
 
     @Override
-    protected void assembleObject(ArchetypeAwareGrantedAuthority result,
+    protected void assembleObject(ArchetypeAwareGrantedAuthority target,
                                   ArchetypeAuthorityDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setMethod(source.getMethod());
-        result.setRole(getObject(source.getRole(), SecurityRole.class, context));
-        result.setServiceName(source.getServiceName());
-        result.setMethod(source.getMethod());
-        result.setArchetypeShortName(source.getShortName());
+        super.assembleObject(target, source, context);
+        target.setMethod(source.getMethod());
+        target.setRole(getObject(source.getRole(), SecurityRole.class, context));
+        target.setServiceName(source.getServiceName());
+        target.setMethod(source.getMethod());
+        target.setArchetypeShortName(source.getShortName());
     }
 
     protected ArchetypeAwareGrantedAuthority create(

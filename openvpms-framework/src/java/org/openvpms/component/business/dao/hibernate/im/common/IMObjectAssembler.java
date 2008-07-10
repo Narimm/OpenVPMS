@@ -33,7 +33,8 @@ public abstract class IMObjectAssembler<T extends IMObject,
 
     private final Class<DO> typeDO;
 
-    private static final DetailsMapConverter DETAILS = new DetailsMapConverter();
+    private static final DetailsMapConverter DETAILS
+            = new DetailsMapConverter();
 
     public IMObjectAssembler(Class<T> type, Class<DO> typeDO) {
         this.type = type;
@@ -59,35 +60,39 @@ public abstract class IMObjectAssembler<T extends IMObject,
         return target;
     }
 
-    public IMObjectDO assemble(IMObject source, Context context) {
+    public DOState assemble(IMObject source, Context context) {
+        DOState result;
         DO target;
         T object = type.cast(source);
         if (source.isNew()) {
             target = create(object);
+            result = new DOState(target, source);
 
             // pre-cache just in case the graph is cyclic
-            context.add(source, target);
+            context.add(source, result);
             // now assemble
-            assembleDO(target, object, context);
+            assembleDO(target, object, result, context);
         } else {
-            target = typeDO.cast(context.getCached(source));
-            if (target == null) {
+            result = context.getCached(source);
+            if (result == null) {
                 // target not yet assembled from the source
-                target = get(source.getObjectReference(), typeDO, context);
+                target = load(source.getObjectReference(), typeDO, context);
+                result = new DOState(target, source);
 
                 // pre-cache just in case the graph is cyclic
-                context.add(source, target);
+                context.add(source, result);
                 // now assemble
-                assembleDO(target, object, context);
+                assembleDO(target, object, result, context);
             }
         }
-        return target;
+        return result;
     }
 
-    public IMObjectDO assemble(IMObjectDO target, IMObject source,
-                               Context context) {
-        assembleDO(typeDO.cast(target), type.cast(source), context);
-        return target;
+    public DOState assemble(IMObjectDO target, IMObject source,
+                            Context context) {
+        DOState result = new DOState(target, source);
+        assembleDO(typeDO.cast(target), type.cast(source), result, context);
+        return result;
     }
 
     public Class<? extends IMObject> getType() {
@@ -98,33 +103,33 @@ public abstract class IMObjectAssembler<T extends IMObject,
         return typeDO;
     }
 
-    protected void assembleDO(DO result, T source, Context context) {
-        result.setId(source.getId());
-        result.setLinkId(source.getLinkId());
-        result.setArchetypeId(source.getArchetypeId());
-        result.setVersion(source.getVersion());
+    protected void assembleDO(DO target, T source, DOState state,
+                                 Context context) {
+        target.setId(source.getId());
+        target.setLinkId(source.getLinkId());
+        target.setArchetypeId(source.getArchetypeId());
+        target.setVersion(source.getVersion());
 
-        result.setActive(source.isActive());
-        result.setDescription(source.getDescription());
-        result.setLastModified(source.getLastModified());
-        result.setName(source.getName());
+        target.setActive(source.isActive());
+        target.setDescription(source.getDescription());
+        target.setLastModified(source.getLastModified());
+        target.setName(source.getName());
 
-        DETAILS.convert(result.getDetails(), source.getDetails());
+        DETAILS.convert(target.getDetails(), source.getDetails());
     }
 
+    protected void assembleObject(T target, DO source, Context context) {
+        target.setId(source.getId());
+        target.setLinkId(source.getLinkId());
+        target.setArchetypeId(source.getArchetypeId());
+        target.setVersion(source.getVersion());
 
-    protected void assembleObject(T result, DO source, Context context) {
-        result.setId(source.getId());
-        result.setLinkId(source.getLinkId());
-        result.setArchetypeId(source.getArchetypeId());
-        result.setVersion(source.getVersion());
+        target.setActive(source.isActive());
+        target.setDescription(source.getDescription());
+        target.setLastModified(source.getLastModified());
+        target.setName(source.getName());
 
-        result.setActive(source.isActive());
-        result.setDescription(source.getDescription());
-        result.setLastModified(source.getLastModified());
-        result.setName(source.getName());
-
-        result.setDetails(source.getDetails());
+        DETAILS.convert(target.getDetails(), source.getDetails());
     }
 
     protected abstract T create(DO object);

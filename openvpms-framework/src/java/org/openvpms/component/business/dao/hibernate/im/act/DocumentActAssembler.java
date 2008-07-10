@@ -19,8 +19,10 @@
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 /**
  * Add description here.
@@ -37,15 +39,29 @@ public class DocumentActAssembler
     }
 
     @Override
-    protected void assembleDO(DocumentActDO result, DocumentAct source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setDocVersion(source.getDocVersion());
-        result.setFileName(source.getFileName());
-        result.setMimeType(source.getMimeType());
-        result.setPrinted(source.isPrinted());
-        result.setDocument(get(source.getDocReference(), DocumentDO.class,
-                               context));
+    protected void assembleDO(DocumentActDO target, DocumentAct source,
+                              DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setDocVersion(source.getDocVersion());
+        target.setFileName(source.getFileName());
+        target.setMimeType(source.getMimeType());
+        target.setPrinted(source.isPrinted());
+        target.setDocument(load(source.getDocReference(), DocumentDO.class,
+                                context));
+    }
+
+    @Override
+    protected void assembleObject(DocumentAct target, DocumentActDO source,
+                                  Context context) {
+        super.assembleObject(target, source, context);
+        target.setDocVersion(source.getDocVersion());
+        target.setFileName(source.getFileName());
+        target.setMimeType(source.getMimeType());
+        target.setPrinted(source.isPrinted());
+        DocumentDO document = source.getDocument();
+        IMObjectReference ref = (document != null)
+                ? document.getObjectReference() : null;
+        target.setDocReference(ref);
     }
 
     protected DocumentAct create(DocumentActDO object) {

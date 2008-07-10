@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipAssembler;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 
@@ -39,19 +40,24 @@ public abstract class EntityRelationshipAssembler
     }
 
     @Override
-    protected void assembleDO(EntityRelationshipDO result,
+    protected void assembleDO(EntityRelationshipDO target,
                               EntityRelationship source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        EntityIdentityDO identity = getDO(source.getIdentity(),
-                                          EntityIdentityDO.class, context);
-        result.setIdentity(identity);
+                              DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        EntityIdentityDO identity = null;
+        DOState identityState = getDO(source.getIdentity(),
+                                      EntityIdentityDO.class, context);
+        if (state != null) {
+            identity = (EntityIdentityDO) identityState.getObject();
+            state.addState(identityState);
+        }
+        target.setIdentity(identity);
     }
 
     @Override
-    protected void assembleObject(EntityRelationship result,
+    protected void assembleObject(EntityRelationship target,
                                   EntityRelationshipDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
+        super.assembleObject(target, source, context);
     }
 }

@@ -18,25 +18,17 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
-import org.hibernate.ObjectDeletedException;
 import org.hibernate.Session;
-import org.openvpms.component.business.dao.im.common.IMObjectDAO;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
-import org.openvpms.component.business.dao.hibernate.im.common.Context;
-import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.AbstractIMObjectSessionHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.DefaultIMObjectSessionHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -87,133 +79,34 @@ public class ActSessionHandler extends AbstractIMObjectSessionHandler {
      * This implementation deletes any target act where there is a parent-child
      * relationship, and deletes the relationships from related acts.
      *
-     * @param object  the object to delete
+     * @param object
      * @param session the session
-     * @param context
      */
     @Override
-    public void delete(IMObject object, Session session, Context context) {
-        Act parent = (Act) object;
-        List<IMObject> toDelete = getDependentChildren(parent);
-        toDelete.add(parent);
-        delete(toDelete, session, context);
-        updateRelatedActs(toDelete, session, context);
+    protected void delete(IMObjectDO object, Session session) {
+        ActDO parent = (ActDO) object;
+        Set<ActDO> visited = new HashSet<ActDO>();
+        delete(parent, visited, session);
     }
 
-    /**
-     * Returns all dependent children of the specified act. These are target
-     * acts in relationships whose
-     * {@link ActRelationship#isParentChildRelationship()} is <tt>true</tt>.
-     *
-     * @param act the act
-     * @return a list of the child acts
-     * @throws ArchetypeServiceException for any error
-     */
-    private List<IMObject> getDependentChildren(Act act) {
-        Set<IMObjectReference> references = new HashSet<IMObjectReference>();
-        List<IMObject> targets = new ArrayList<IMObject>();
-        references.add(act.getObjectReference());
-        getDependentChildren(act, references, targets);
-        return targets;
-    }
-
-    /**
-     * Recursively finds all dependent children of the specified act. These are
-     * target acts in relationships whose
-     * {@link ActRelationship#isParentChildRelationship()} is <tt>true</tt>.
-     *
-     * @param act        the act
-     * @param references references to acts that have been retrieved/attempted
-     *                   to be retrieved
-     * @param acts       the acts that have been retrieved
-     * @throws ArchetypeServiceException for any error
-     */
-    private void getDependentChildren(Act act,
-                                      Set<IMObjectReference> references,
-                                      List<IMObject> acts) {
-        Act target;
-        for (ActRelationship relationhip : act.getSourceActRelationships()) {
-            if (relationhip.isParentChildRelationship()) {
-                IMObjectReference targetRef = relationhip.getTarget();
-                if (targetRef != null && !references.contains(targetRef)) {
-                    references.add(targetRef);
-                    target = (Act) get(targetRef);
-                    if (target != null) {
-                        getDependentChildren(target, references, acts);
-                        acts.add(target);
+    private void delete(ActDO source, Set<ActDO> visited, Session session) {
+        visited.add(source);
+        ActRelationshipDO[] relationships
+                = source.getSourceActRelationships().toArray(
+                new ActRelationshipDO[0]);
+        for (ActRelationshipDO relationhip : relationships) {
+            source.removeSourceActRelationship(relationhip);
+            ActDO target = (ActDO) relationhip.getTarget();
+            if (target != null) {
+                target.removeTargetActRelationship(relationhip);
+                if (relationhip.isParentChildRelationship()) {
+                    if (!visited.contains(target)) {
+                        delete(target, visited, session);
                     }
                 }
             }
         }
-    }
-
-    /**
-     * Removes any relationships to deleted acts.
-     *
-     * @param deleted the delete acts
-     * @param session the session
-     */
-    private void updateRelatedActs(List<IMObject> deleted, Session session,
-                                   Context context) {
-        Map<IMObjectReference, Act> related
-                = new HashMap<IMObjectReference, Act>();
-        for (IMObject act : deleted) {
-            removeRelationships((Act) act, related);
-        }
-        for (IMObject object : related.values()) {
-            try {
-                save(object, session, context);
-            } catch (ObjectDeletedException ignore) {
-                // object has been deleted elsewhere in the transaction
-            }
-        }
-    }
-
-    /**
-     * Removes relationships to the specified act from related acts.
-     *
-     * @param act     the deleted act
-     * @param related a cache of the related acts. On completion, this will
-     *                contain all related acts
-     */
-    private void removeRelationships(Act act,
-                                     Map<IMObjectReference, Act> related) {
-        for (ActRelationship relationship : act.getSourceActRelationships()) {
-            if (!relationship.isParentChildRelationship()) {
-                removeRelationship(relationship.getTarget(), relationship,
-                                   related);
-            }
-        }
-        for (ActRelationship relationship : act.getTargetActRelationships()) {
-            removeRelationship(relationship.getSource(), relationship,
-                               related);
-        }
-    }
-
-    /**
-     * Removes the relationship from the act identified by <tt>ref</tt>,
-     * if the act exists. If the act is not present in the cache, it will be
-     * retrieved and added.
-     *
-     * @param ref          the reference to the act. May be <tt>null</tt>
-     * @param relationship the relationship to remove
-     * @param relatedCache the cache of related acts
-     */
-    private void removeRelationship(IMObjectReference ref,
-                                    ActRelationship relationship,
-                                    Map<IMObjectReference, Act> relatedCache) {
-        if (ref != null) {
-            Act related = relatedCache.get(ref);
-            if (related == null) {
-                related = (Act) get(ref);
-                if (related != null) {
-                    relatedCache.put(ref, related);
-                }
-            }
-            if (related != null) {
-                related.removeActRelationship(relationship);
-            }
-        }
+        session.delete(source);
     }
 
 }

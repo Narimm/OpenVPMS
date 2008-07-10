@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 
 /**
@@ -36,17 +37,31 @@ public class FinancialActAssembler
     }
 
     @Override
-    protected void assembleDO(FinancialActDO result, FinancialAct source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setAllocatedAmount(source.getAllocatedAmount());
-        result.setCredit(source.isCredit());
-        result.setFixedAmount(source.getFixedAmount());
-        result.setPrinted(source.isPrinted());
-        result.setQuantity(source.getQuantity());
-        result.setTaxAmount(source.getTaxAmount());
-        result.setTotal(source.getTotal());
-        result.setUnitAmount(source.getUnitAmount());
+    protected void assembleDO(FinancialActDO target, FinancialAct source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setAllocatedAmount(source.getAllocatedAmount());
+        target.setCredit(source.isCredit());
+        target.setFixedAmount(source.getFixedAmount());
+        target.setPrinted(source.isPrinted());
+        target.setQuantity(source.getQuantity());
+        target.setTaxAmount(source.getTaxAmount());
+        target.setTotal(source.getTotal());
+        target.setUnitAmount(source.getUnitAmount());
+    }
+
+    @Override
+    protected void assembleObject(FinancialAct target, FinancialActDO source,
+                                  Context context) {
+        super.assembleObject(target, source, context);
+        target.setAllocatedAmount(source.getAllocatedAmount());
+        target.setCredit(source.isCredit());
+        target.setFixedAmount(source.getFixedAmount());
+        target.setPrinted(source.isPrinted());
+        target.setQuantity(source.getQuantity());
+        target.setTaxAmount(source.getTaxAmount());
+        target.setTotal(source.getTotal());
+        target.setUnitAmount(source.getUnitAmount());
     }
 
     protected FinancialAct create(FinancialActDO object) {

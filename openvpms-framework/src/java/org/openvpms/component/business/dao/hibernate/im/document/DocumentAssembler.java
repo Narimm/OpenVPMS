@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.document;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.document.Document;
 
 /**
@@ -35,23 +36,23 @@ public class DocumentAssembler extends IMObjectAssembler<Document, DocumentDO> {
     }
 
     @Override
-    protected void assembleDO(DocumentDO result, Document source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setChecksum(source.getChecksum());
-        result.setContents(source.getContents());
-        result.setDocSize(source.getDocSize());
-        result.setMimeType(source.getMimeType());
+    protected void assembleDO(DocumentDO target, Document source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setChecksum(source.getChecksum());
+        target.setContents(source.getContents());
+        target.setDocSize(source.getDocSize());
+        target.setMimeType(source.getMimeType());
     }
 
     @Override
-    protected void assembleObject(Document result, DocumentDO source,
+    protected void assembleObject(Document target, DocumentDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setChecksum(source.getChecksum());
-        result.setContents(source.getContents());
-        result.setDocSize(source.getDocSize());
-        result.setMimeType(source.getMimeType());
+        super.assembleObject(target, source, context);
+        target.setChecksum(source.getChecksum());
+        target.setContents(source.getContents());
+        target.setDocSize(source.getDocSize());
+        target.setMimeType(source.getMimeType());
     }
 
     protected Document create(DocumentDO object) {

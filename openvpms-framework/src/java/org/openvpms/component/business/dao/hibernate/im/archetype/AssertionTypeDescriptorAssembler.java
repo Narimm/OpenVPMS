@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 
@@ -45,23 +46,23 @@ public class AssertionTypeDescriptorAssembler
     }
 
     @Override
-    protected void assembleDO(AssertionTypeDescriptorDO result,
-                              AssertionTypeDescriptor source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setPropertyArchetype(source.getPropertyArchetype());
-        TYPES.assembleDO(result.getActionTypes(),
+    protected void assembleDO(AssertionTypeDescriptorDO target,
+                                 AssertionTypeDescriptor source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setPropertyArchetype(source.getPropertyArchetype());
+        TYPES.assembleDO(target.getActionTypes(),
                          source.getActionTypes(),
-                         context);
+                         state, context);
     }
 
     @Override
-    protected void assembleObject(AssertionTypeDescriptor result,
+    protected void assembleObject(AssertionTypeDescriptor target,
                                   AssertionTypeDescriptorDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setPropertyArchetype(source.getPropertyArchetype());
-        TYPES.assembleObject(result.getActionTypes(),
+        super.assembleObject(target, source, context);
+        target.setPropertyArchetype(source.getPropertyArchetype());
+        TYPES.assembleObject(target.getActionTypes(),
                              source.getActionTypes(),
                              context);
     }

@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 
 /**
  * Add description here.
@@ -38,26 +39,26 @@ public class EntityIdentityAssembler
     }
 
     @Override
-    protected void assembleDO(EntityIdentityDO result,
-                              EntityIdentity source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setIdentity(source.getIdentity());
+    protected void assembleDO(EntityIdentityDO target, EntityIdentity source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setIdentity(source.getIdentity());
         Entity entity = source.getEntity();
-        EntityDO target = null;
+        EntityDO targetEntity = null;
         if (entity != null) {
             Assembler assembler = context.getAssembler();
-            target = (EntityDO) assembler.assemble(entity, context);
+            DOState entityState = assembler.assemble(entity, context);
+            targetEntity = (EntityDO) entityState.getObject();
         }
-        result.setEntity(target);
+        target.setEntity(targetEntity);
     }
 
     @Override
-    protected void assembleObject(EntityIdentity result,
+    protected void assembleObject(EntityIdentity target,
                                   EntityIdentityDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setIdentity(source.getIdentity());
+        super.assembleObject(target, source, context);
+        target.setIdentity(source.getIdentity());
     }
 
     protected EntityIdentity create(EntityIdentityDO object) {

@@ -11,24 +11,23 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-
-package org.openvpms.component.business.service.archetype.descriptor;
-
-
-// openvpms framework
-import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
+package org.openvpms.component.business.dao.hibernate.im.common;
 
 /**
- * This class provides some utility functions to manipulate persistent 
- * descriptor objects using hibernate.
+ * Add description here.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class HibernateDescriptorUtil extends HibernateUtil {
+public interface ContextHandler {
+
+    void preCommit(Context context);
+
+    void commit(Context context);
+
 }

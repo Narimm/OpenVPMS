@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 
 /**
@@ -37,19 +38,19 @@ public class ActRelationshipAssembler
     }
 
     @Override
-    protected void assembleDO(ActRelationshipDO result,
-                              ActRelationship source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setParentChildRelationship(source.isParentChildRelationship());
+    protected void assembleDO(ActRelationshipDO target,
+                                 ActRelationship source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setParentChildRelationship(source.isParentChildRelationship());
     }
 
     @Override
-    protected void assembleObject(ActRelationship result,
+    protected void assembleObject(ActRelationship target,
                                   ActRelationshipDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setParentChildRelationship(source.isParentChildRelationship());
+        super.assembleObject(target, source, context);
+        target.setParentChildRelationship(source.isParentChildRelationship());
     }
 
     protected ActRelationship create(ActRelationshipDO object) {

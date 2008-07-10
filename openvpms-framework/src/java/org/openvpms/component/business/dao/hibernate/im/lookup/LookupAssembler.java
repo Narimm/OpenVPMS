@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 
@@ -41,29 +42,29 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
     }
 
     @Override
-    protected void assembleDO(LookupDO result, Lookup source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setCode(source.getCode());
-        RELATIONSHIPS.assembleDO(result.getSourceLookupRelationships(),
+    protected void assembleDO(LookupDO target, Lookup source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setCode(source.getCode());
+        RELATIONSHIPS.assembleDO(target.getSourceLookupRelationships(),
                                  source.getSourceLookupRelationships(),
-                                 context);
+                                 state, context);
 
-        RELATIONSHIPS.assembleDO(result.getTargetLookupRelationships(),
+        RELATIONSHIPS.assembleDO(target.getTargetLookupRelationships(),
                                  source.getTargetLookupRelationships(),
-                                 context);
+                                 state, context);
     }
 
     @Override
-    protected void assembleObject(Lookup result, LookupDO source,
+    protected void assembleObject(Lookup target, LookupDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setCode(source.getCode());
-        RELATIONSHIPS.assembleObject(result.getSourceLookupRelationships(),
+        super.assembleObject(target, source, context);
+        target.setCode(source.getCode());
+        RELATIONSHIPS.assembleObject(target.getSourceLookupRelationships(),
                                      source.getSourceLookupRelationships(),
                                      context);
 
-        RELATIONSHIPS.assembleObject(result.getTargetLookupRelationships(),
+        RELATIONSHIPS.assembleObject(target.getTargetLookupRelationships(),
                                      source.getTargetLookupRelationships(),
                                      context);
     }

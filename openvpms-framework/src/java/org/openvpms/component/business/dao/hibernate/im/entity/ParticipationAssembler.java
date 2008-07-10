@@ -21,7 +21,11 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.openvpms.component.business.dao.hibernate.im.act.ActDO;
 import org.openvpms.component.business.dao.hibernate.im.act.ParticipationDO;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
+import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.ReferenceUpdater;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 
 
@@ -39,19 +43,19 @@ public class ParticipationAssembler
     }
 
     @Override
-    protected void assembleDO(ParticipationDO result, Participation source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setEntity(get(source.getEntity(), EntityDO.class, context));
-        result.setAct(get(source.getAct(), ActDO.class, context));
+    protected void assembleDO(ParticipationDO target, Participation source,
+                              DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        assembleEntity(target, source, state, context);
+        assembleAct(target, source, state, context);
     }
 
     @Override
-    protected void assembleObject(Participation result, ParticipationDO source,
+    protected void assembleObject(Participation target, ParticipationDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setEntity(source.getEntity().getObjectReference());
-        result.setAct(source.getAct().getObjectReference());
+        super.assembleObject(target, source, context);
+        target.setEntity(source.getEntity().getObjectReference());
+        target.setAct(source.getAct().getObjectReference());
     }
 
     protected Participation create(ParticipationDO object) {
@@ -60,5 +64,62 @@ public class ParticipationAssembler
 
     protected ParticipationDO create(Participation object) {
         return new ParticipationDO();
+    }
+
+    private void assembleEntity(final ParticipationDO target,
+                                final Participation source,
+                                DOState state, Context context) {
+        final IMObjectReference entityRef = source.getEntity();
+        if (entityRef != null) {
+            DOState entityDO = find(entityRef, EntityDO.class, context);
+            if (entityDO != null) {
+                target.setEntity((EntityDO) entityDO.getObject());
+                state.addState(entityDO);
+            } else {
+                new DeferredAssembler(state, entityRef) {
+                    public void doAssemble(Context context) {
+                        target.setEntity(load(entityRef, EntityDO.class,
+                                              context));
+                    }
+                };
+            }
+            if (entityRef.isNew()) {
+                new ReferenceUpdater(state, entityRef) {
+                    public void update(IMObjectReference updated) {
+                        source.setEntity(updated);
+                    }
+                };
+            }
+        } else {
+            target.setEntity(null);
+        }
+    }
+
+    private void assembleAct(final ParticipationDO target,
+                             final Participation source,
+                             DOState state, Context context) {
+        final IMObjectReference actRef = source.getAct();
+        if (actRef != null) {
+            DOState actDO = find(actRef, ActDO.class, context);
+            if (actDO != null) {
+                target.setAct((ActDO) actDO.getObject());
+                state.addState(actDO);
+            } else {
+                new DeferredAssembler(state, actRef) {
+                    public void doAssemble(Context context) {
+                        target.setAct(load(actRef, ActDO.class, context));
+                    }
+                };
+            }
+            if (actRef.isNew()) {
+                new ReferenceUpdater(state, actRef) {
+                    public void update(IMObjectReference updated) {
+                        source.setAct(updated);
+                    }
+                };
+            }
+        } else {
+            target.setAct(null);
+        }
     }
 }

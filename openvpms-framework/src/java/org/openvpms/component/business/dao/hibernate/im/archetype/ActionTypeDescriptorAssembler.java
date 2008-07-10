@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 
 /**
@@ -38,21 +39,21 @@ public class ActionTypeDescriptorAssembler
     }
 
     @Override
-    protected void assembleDO(ActionTypeDescriptorDO result,
-                              ActionTypeDescriptor source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setClassName(source.getClassName());
-        result.setMethodName(source.getMethodName());
+    protected void assembleDO(ActionTypeDescriptorDO target,
+                                 ActionTypeDescriptor source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setClassName(source.getClassName());
+        target.setMethodName(source.getMethodName());
     }
 
     @Override
-    protected void assembleObject(ActionTypeDescriptor result,
+    protected void assembleObject(ActionTypeDescriptor target,
                                   ActionTypeDescriptorDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setClassName(source.getClassName());
-        result.setMethodName(source.getMethodName());
+        super.assembleObject(target, source, context);
+        target.setClassName(source.getClassName());
+        target.setMethodName(source.getMethodName());
     }
 
     protected ActionTypeDescriptor create(ActionTypeDescriptorDO object) {

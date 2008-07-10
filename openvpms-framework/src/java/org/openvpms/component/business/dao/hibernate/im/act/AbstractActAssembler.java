@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -47,23 +48,42 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
     }
 
     @Override
-    protected void assembleDO(DO result, T source, Context context
-    ) {
-        super.assembleDO(result, source, context);
-        result.setTitle(source.getTitle());
-        result.setActivityStartTime(source.getActivityStartTime());
-        result.setActivityEndTime(source.getActivityEndTime());
-        result.setReason(source.getReason());
-        result.setStatus(source.getStatus());
-        RELATIONSHIPS.assembleDO(result.getSourceActRelationships(),
+    protected void assembleDO(DO target, T source, DOState state,
+                              Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setTitle(source.getTitle());
+        target.setActivityStartTime(source.getActivityStartTime());
+        target.setActivityEndTime(source.getActivityEndTime());
+        target.setReason(source.getReason());
+        target.setStatus(source.getStatus());
+        RELATIONSHIPS.assembleDO(target.getSourceActRelationships(),
                                  source.getSourceActRelationships(),
-                                 context);
-        RELATIONSHIPS.assembleDO(result.getTargetActRelationships(),
+                                 state, context);
+        RELATIONSHIPS.assembleDO(target.getTargetActRelationships(),
                                  source.getTargetActRelationships(),
-                                 context);
-        PARTICIPATIONS.assembleDO(result.getParticipations(),
+                                 state, context);
+        PARTICIPATIONS.assembleDO(target.getParticipations(),
                                   source.getParticipations(),
-                                  context);
+                                  state, context);
+    }
+
+    @Override
+    protected void assembleObject(T target, DO source, Context context) {
+        super.assembleObject(target, source, context);
+        target.setTitle(source.getTitle());
+        target.setActivityStartTime(source.getActivityStartTime());
+        target.setActivityEndTime(source.getActivityEndTime());
+        target.setReason(source.getReason());
+        target.setStatus(source.getStatus());
+        RELATIONSHIPS.assembleObject(target.getSourceActRelationships(),
+                                     source.getSourceActRelationships(),
+                                     context);
+        RELATIONSHIPS.assembleObject(target.getTargetActRelationships(),
+                                     source.getTargetActRelationships(),
+                                     context);
+        PARTICIPATIONS.assembleObject(target.getParticipations(),
+                                      source.getParticipations(),
+                                      context);
     }
 
 }

@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityAssembler;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -40,18 +41,18 @@ public class PartyAssembler extends EntityAssembler<Party, PartyDO> {
     }
 
     @Override
-    protected void assembleDO(PartyDO result, Party source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        CONTACTS.assembleDO(result.getContacts(), source.getContacts(),
-                            context);
+    protected void assembleDO(PartyDO target, Party source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        CONTACTS.assembleDO(target.getContacts(), source.getContacts(),
+                            state, context);
     }
 
     @Override
-    protected void assembleObject(Party result, PartyDO source,
+    protected void assembleObject(Party target, PartyDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        CONTACTS.assembleObject(result.getContacts(), source.getContacts(),
+        super.assembleObject(target, source, context);
+        CONTACTS.assembleObject(target.getContacts(), source.getContacts(),
                                 context);
     }
 

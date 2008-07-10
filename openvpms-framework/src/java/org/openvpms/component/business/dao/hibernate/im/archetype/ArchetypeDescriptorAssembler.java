@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.MapAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 
@@ -45,31 +46,31 @@ public class ArchetypeDescriptorAssembler
     }
 
     @Override
-    protected void assembleDO(ArchetypeDescriptorDO result,
-                              ArchetypeDescriptor source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setClassName(source.getClassName());
-        result.setDisplayName(source.getDisplayName());
-        result.setLatest(source.isLatest());
-        result.setPrimary(source.isPrimary());
+    protected void assembleDO(ArchetypeDescriptorDO target,
+                                 ArchetypeDescriptor source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setClassName(source.getClassName());
+        target.setDisplayName(source.getDisplayName());
+        target.setLatest(source.isLatest());
+        target.setPrimary(source.isPrimary());
 
-        NODES.assembleDO(result.getNodeDescriptors(),
+        NODES.assembleDO(target.getNodeDescriptors(),
                          source.getNodeDescriptors(),
-                         context);
+                         state, context);
     }
 
     @Override
-    protected void assembleObject(ArchetypeDescriptor result,
+    protected void assembleObject(ArchetypeDescriptor target,
                                   ArchetypeDescriptorDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setClassName(source.getClassName());
-        result.setDisplayName(source.getDisplayName());
-        result.setLatest(source.isLatest());
-        result.setPrimary(source.isPrimary());
+        super.assembleObject(target, source, context);
+        target.setClassName(source.getClassName());
+        target.setDisplayName(source.getDisplayName());
+        target.setLatest(source.isLatest());
+        target.setPrimary(source.isPrimary());
 
-        NODES.assembleObject(result.getNodeDescriptors(),
+        NODES.assembleObject(target.getNodeDescriptors(),
                              source.getNodeDescriptors(),
                              context);
     }

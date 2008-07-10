@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
@@ -47,21 +48,21 @@ public class SecurityRoleAssembler
     }
 
     @Override
-    protected void assembleDO(SecurityRoleDO result, SecurityRole source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        AUTHS.assembleDO(result.getAuthorities(), source.getAuthorities(),
-                         context);
-        USERS.assembleDO(result.getUsers(), source.getUsers(), context);
+    protected void assembleDO(SecurityRoleDO target, SecurityRole source,
+                                 DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        AUTHS.assembleDO(target.getAuthorities(), source.getAuthorities(),
+                         state, context);
+        USERS.assembleDO(target.getUsers(), source.getUsers(), state, context);
     }
 
     @Override
-    protected void assembleObject(SecurityRole result, SecurityRoleDO source,
+    protected void assembleObject(SecurityRole target, SecurityRoleDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        AUTHS.assembleObject(result.getAuthorities(), source.getAuthorities(),
+        super.assembleObject(target, source, context);
+        AUTHS.assembleObject(target.getAuthorities(), source.getAuthorities(),
                          context);
-        USERS.assembleObject(result.getUsers(), source.getUsers(), context);
+        USERS.assembleObject(target.getUsers(), source.getUsers(), context);
     }
 
     protected SecurityRole create(SecurityRoleDO object) {

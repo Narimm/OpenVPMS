@@ -31,17 +31,17 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
  */
 public class AbstractAssembler {
 
-    protected <T extends IMObject, DO extends IMObjectDO> DO
+    protected <T extends IMObject, DO extends IMObjectDO> DOState
             getDO(T source, Class<DO> type, Context context) {
         if (source == null) {
             return null;
         }
-        IMObjectDO object = context.getCached(source);
-        if (object == null) {
+        DOState state = context.getCached(source);
+        if (state == null) {
             Assembler assembler = context.getAssembler();
-            object = assembler.assemble(source, context);
+            state = assembler.assemble(source, context);
         }
-        return type.cast(object);
+        return state;
     }
 
     protected <DO extends IMObjectDO, T extends IMObject> T
@@ -57,29 +57,39 @@ public class AbstractAssembler {
         return type.cast(object);
     }
 
+    protected <DO extends IMObjectDO> DOState find(IMObjectReference reference,
+                                              Class<DO> type, Context context) {
+        if (reference == null) {
+            return null;
+        }
+        DOState state = context.getCached(reference);
+        if (state != null) {
+            return state;
+        }
+        if (reference.getId() != -1) {
+            DO result = context.get(reference, type);
+            if (result != null) {
+                return new DOState(result);
+            }
+        }
+        return null;
+    }
+
     /**
      * Retrieves an object given its reference.
      *
      * @param reference the reference
      * @param type      the object type
      * @param context   the context
-     * @return the corresponding object, or <tt>null</tt> if the reference is
-     *         null
+     * @return the corresponding object
      * @throws IMObjectDAOException if the object doesn't exist
      */
-    protected <DO extends IMObjectDO> DO get(IMObjectReference reference,
-                                             Class<DO> type, Context context) {
-        if (reference == null) {
-            return null;
-        }
-        IMObjectDO object = context.getCached(reference);
-        if (object != null) {
-            return type.cast(object);
-        }
-        DO result = context.get(reference, type);
+    protected <DO extends IMObjectDO> DO load(IMObjectReference reference,
+                                              Class<DO> type, Context context) {
+        DOState result = find(reference, type, context);
         if (result == null) {
             throw new IMObjectDAOException(ObjectNotFound, reference);
         }
-        return result;
+        return type.cast(result.getObject());
     }
 }

@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -53,40 +54,41 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
     }
 
     @Override
-    protected void assembleDO(DO result, T source, Context context) {
-        super.assembleDO(result, source, context);
+    protected void assembleDO(DO target, T source, DOState state,
+                                 Context context) {
+        super.assembleDO(target, source, state, context);
 
-        IDENT.assembleDO(result.getIdentities(), source.getIdentities(),
-                         context);
+        IDENT.assembleDO(target.getIdentities(), source.getIdentities(),
+                         state, context);
 
-        LOOKUPS.assembleDO(result.getClassifications(),
+        LOOKUPS.assembleDO(target.getClassifications(),
                            source.getClassifications(),
-                           context);
+                           state, context);
 
-        RELATIONSHIP.assembleDO(result.getSourceEntityRelationships(),
+        RELATIONSHIP.assembleDO(target.getSourceEntityRelationships(),
                                 source.getSourceEntityRelationships(),
-                                context);
+                                state, context);
 
-        RELATIONSHIP.assembleDO(result.getTargetEntityRelationships(),
+        RELATIONSHIP.assembleDO(target.getTargetEntityRelationships(),
                                 source.getTargetEntityRelationships(),
-                                context);
+                                state, context);
     }
 
     @Override
-    protected void assembleObject(T result, DO source, Context context) {
-        super.assembleObject(result, source, context);
-        IDENT.assembleObject(result.getIdentities(), source.getIdentities(),
+    protected void assembleObject(T target, DO source, Context context) {
+        super.assembleObject(target, source, context);
+        IDENT.assembleObject(target.getIdentities(), source.getIdentities(),
                              context);
 
-        LOOKUPS.assembleObject(result.getClassifications(),
+        LOOKUPS.assembleObject(target.getClassifications(),
                                source.getClassifications(),
                                context);
 
-        RELATIONSHIP.assembleObject(result.getSourceEntityRelationships(),
+        RELATIONSHIP.assembleObject(target.getSourceEntityRelationships(),
                                     source.getSourceEntityRelationships(),
                                     context);
 
-        RELATIONSHIP.assembleObject(result.getTargetEntityRelationships(),
+        RELATIONSHIP.assembleObject(target.getTargetEntityRelationships(),
                                     source.getTargetEntityRelationships(),
                                     context);
     }

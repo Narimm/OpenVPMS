@@ -48,13 +48,14 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
     }
 
     public void assembleDO(Map<K, DO> target, Map<K, T> source,
-                           Context context) {
+                           DOState state, Context context) {
         DOMapConverter converter = new DOMapConverter(context);
         converter.convert(target, source);
         if (target.isEmpty()) {
             for (Map.Entry<K, T> entry : source.entrySet()) {
-                DO result = getDO(entry.getValue(), typeDO, context);
-                target.put(entry.getKey(), result);
+                DOState result = getDO(entry.getValue(), typeDO, context);
+                target.put(entry.getKey(), typeDO.cast(result.getObject()));
+                state.addState(result);
             }
         } else if (source.isEmpty()) {
             target.clear();
@@ -72,8 +73,9 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
             }
             Map<K, T> added = getAdded(retained, source);
             for (Map.Entry<K, T> entry : added.entrySet()) {
-                DO result = getDO(entry.getValue(), typeDO, context);
-                target.put(entry.getKey(), result);
+                DOState result = getDO(entry.getValue(), typeDO, context);
+                target.put(entry.getKey(), typeDO.cast(result.getObject()));
+                state.addState(result);
             }
         }
     }
@@ -124,7 +126,8 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
         }
 
         protected DO convert(T value) {
-            return getDO(value, typeDO, context);
+            DOState state = getDO(value, typeDO, context);
+            return typeDO.cast(state.getObject());
         }
     }
 

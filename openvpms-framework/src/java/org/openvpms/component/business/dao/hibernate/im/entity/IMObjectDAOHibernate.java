@@ -30,6 +30,10 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
+import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.ContextHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
 import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
 import org.openvpms.component.business.dao.im.Page;
@@ -60,8 +64,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -71,7 +77,7 @@ import java.util.Map;
  * @version $LastChangedDate$
  */
 public class IMObjectDAOHibernate extends HibernateDaoSupport
-        implements IMObjectDAO {
+        implements IMObjectDAO, ContextHandler {
 
     /**
      * Transaction helper.
@@ -175,7 +181,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             update(new HibernateCallback() {
                 public Object doInHibernate(Session session)
                         throws HibernateException {
-                    Context context = Context.getContext(assembler, session);
+                    Context context = getContext(session);
                     IMObjectSessionHandler handler
                             = handlerFactory.getHandler(object);
                     handler.delete(object, session, context);
@@ -514,6 +520,64 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
     }
 
+    public void preCommit(Context context) {
+        if (!context.getSaveDeferred().isEmpty()) {
+            saveDeferred(context);
+        }
+    }
+
+    public void commit(Context context) {
+        updateIds(context);
+    }
+
+    private void updateIds(Context context) {
+        for (DOState state :context.getSaved()) {
+            state.updateIds(context);
+        }
+    }
+
+
+    private void saveDeferred(Context context) {
+        DOState[] states = context.getSaveDeferred().toArray(new DOState[0]);
+        boolean processed;
+        do {
+            processed = false;
+            Set<DeferredAssembler> deferred = new HashSet<DeferredAssembler>();
+            for (DOState state : states) {
+                deferred.addAll(state.getDeferred());
+            }
+            if (!deferred.isEmpty()) {
+                for (DeferredAssembler assembler : deferred) {
+                    if (context.getCached(assembler.getReference()) != null) {
+                        assembler.assemble(context);
+                        processed = true;
+                    }
+                }
+            }
+        } while (processed);
+        for (DOState state : states) {
+            if (state.isComplete()) {
+                save(state, context);
+            } else {
+                Set<DeferredAssembler> deferred = state.getDeferred();
+                IMObjectReference ref = null;
+                if (!deferred.isEmpty()) {
+                    DeferredAssembler assembler = deferred.iterator().next();
+                    ref = assembler.getReference();
+                }
+                throw new IMObjectDAOException(
+                        IMObjectDAOException.ErrorCode.ObjectNotFound, ref);
+            }
+        }
+    }
+
+    private void save(DOState state, Context context) {
+        IMObjectDO target = state.getObject();
+        Session session = context.getSession();
+        session.saveOrUpdate(target);
+        context.addSaved(state);
+    }
+
     /*
     * (non-Javadoc)
     *
@@ -553,7 +617,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 collector.setFirstResult(firstResult);
                 collector.setPageSize(maxResults);
                 collector.setSession(session);
-                collector.setContext(Context.getContext(assembler, session));
+                Context context = getContext(session);
+                collector.setContext(context);
 
                 if (maxResults == 0 && count) {
                     // only want a count of the results matching the criteria
@@ -790,9 +855,26 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param session the session to use
      */
     private void save(IMObject object, Session session) {
-        Context context = Context.getContext(assembler, session);
-        IMObjectSessionHandler handler = handlerFactory.getHandler(object);
-        handler.save(object, session, context);
+        Context context = getContext(session);
+        save(object, context);
+        if (!context.isSynchronizationActive()) {
+            preCommit(context);
+        }
+    }
+
+    /**
+     * Saves an object.
+     *
+     * @param object  the object to save
+     * @param context the context
+     */
+    private void save(IMObject object, Context context) {
+        DOState state = assembler.assemble(object, context);
+        if (state.isComplete()) {
+            save(state, context);
+        } else {
+            context.addSaveDeferred(state);
+        }
     }
 
     /**
@@ -802,10 +884,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param session the session to use
      */
     private void save(Collection<IMObject> objects, Session session) {
-        Context context = Context.getContext(assembler, session);
+        Context context = getContext(session);
         for (IMObject object : objects) {
-            IMObjectSessionHandler handler = handlerFactory.getHandler(object);
-            handler.save(object, session, context);
+            save(object, context);
+        }
+        if (!context.isSynchronizationActive()) {
+            preCommit(context);
         }
     }
 
@@ -854,6 +938,11 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         });
     }
 
+    private Context getContext(Session session) {
+        Context context = Context.getContext(assembler, session);
+        context.setContextHandler(this);
+        return context;
+    }
     /**
      * Executes an hibernate callback.
      *

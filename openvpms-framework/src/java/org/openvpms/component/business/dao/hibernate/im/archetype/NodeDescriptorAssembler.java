@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.MapAssembler;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -48,74 +49,87 @@ public class NodeDescriptorAssembler
     }
 
     @Override
-    protected void assembleDO(NodeDescriptorDO result,
+    protected void assembleDO(NodeDescriptorDO target,
                               NodeDescriptor source,
-                              Context context) {
-        super.assembleDO(result, source, context);
+                              DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
 
-        result.setArchetypeDescriptor(getDO(source.getArchetypeDescriptor(),
-                                            ArchetypeDescriptorDO.class,
-                                            context));
-        result.setBaseName(source.getBaseName());
-        result.setDefaultValue(source.getDefaultValue());
-        result.setDerived(source.isDerived());
-        result.setDerivedValue(source.getDerivedValue());
-        result.setDisplayName(source.getDisplayName());
-        result.setFilter(source.getFilter());
-        result.setHidden(source.isHidden());
-        result.setIndex(source.getIndex());
-        result.setMaxCardinality(source.getMaxCardinality());
-        result.setMaxLength(source.getMaxLength());
-        result.setMinCardinality(source.getMinCardinality());
-        result.setMinLength(source.getMinLength());
-        result.setParent(getDO(source.getParent(), NodeDescriptorDO.class,
-                               context));
-        result.setParentChild(source.isParentChild());
-        result.setPath(source.getPath());
-        result.setReadOnly(source.isReadOnly());
-        result.setType(source.getType());
+        ArchetypeDescriptorDO archetype = null;
+        DOState descState = getDO(source.getArchetypeDescriptor(),
+                                  ArchetypeDescriptorDO.class, context);
+        if (descState != null) {
+            archetype = (ArchetypeDescriptorDO) descState.getObject();
+            state.addState(descState);
+        }
+        target.setArchetypeDescriptor(archetype);
 
-        NODES.assembleDO(result.getNodeDescriptors(),
+        NodeDescriptorDO parent = null;
+        DOState parentState = getDO(source.getParent(), NodeDescriptorDO.class,
+                                    context);
+        if (parentState != null) {
+            parent = (NodeDescriptorDO) parentState.getObject();
+            state.addState(parentState);
+        }
+        target.setParent(parent);
+
+        target.setBaseName(source.getBaseName());
+        target.setDefaultValue(source.getDefaultValue());
+        target.setDerived(source.isDerived());
+        target.setDerivedValue(source.getDerivedValue());
+        target.setDisplayName(source.getDisplayName());
+        target.setFilter(source.getFilter());
+        target.setHidden(source.isHidden());
+        target.setIndex(source.getIndex());
+        target.setMaxCardinality(source.getMaxCardinality());
+        target.setMaxLength(source.getMaxLength());
+        target.setMinCardinality(source.getMinCardinality());
+        target.setMinLength(source.getMinLength());
+        target.setParentChild(source.isParentChild());
+        target.setPath(source.getPath());
+        target.setReadOnly(source.isReadOnly());
+        target.setType(source.getType());
+
+        NODES.assembleDO(target.getNodeDescriptors(),
                          source.getNodeDescriptors(),
-                         context);
+                         state, context);
 
-        ASSERTION.assembleDO(result.getAssertionDescriptors(),
+        ASSERTION.assembleDO(target.getAssertionDescriptors(),
                              source.getAssertionDescriptors(),
-                             context);
+                             state, context);
     }
 
     @Override
-    protected void assembleObject(NodeDescriptor result,
+    protected void assembleObject(NodeDescriptor target,
                                   NodeDescriptorDO source, Context context) {
-        super.assembleObject(result, source, context);
+        super.assembleObject(target, source, context);
 
-        result.setArchetypeDescriptor(getObject(source.getArchetypeDescriptor(),
+        target.setArchetypeDescriptor(getObject(source.getArchetypeDescriptor(),
                                                 ArchetypeDescriptor.class,
                                                 context));
-        result.setBaseName(source.getBaseName());
-        result.setDefaultValue(source.getDefaultValue());
-        result.setDerived(source.isDerived());
-        result.setDerivedValue(source.getDerivedValue());
-        result.setDisplayName(source.getDisplayName());
-        result.setFilter(source.getFilter());
-        result.setHidden(source.isHidden());
-        result.setIndex(source.getIndex());
-        result.setMaxCardinality(source.getMaxCardinality());
-        result.setMaxLength(source.getMaxLength());
-        result.setMinCardinality(source.getMinCardinality());
-        result.setMinLength(source.getMinLength());
-        result.setParent(getObject(source.getParent(), NodeDescriptor.class,
+        target.setBaseName(source.getBaseName());
+        target.setDefaultValue(source.getDefaultValue());
+        target.setDerived(source.isDerived());
+        target.setDerivedValue(source.getDerivedValue());
+        target.setDisplayName(source.getDisplayName());
+        target.setFilter(source.getFilter());
+        target.setHidden(source.isHidden());
+        target.setIndex(source.getIndex());
+        target.setMaxCardinality(source.getMaxCardinality());
+        target.setMaxLength(source.getMaxLength());
+        target.setMinCardinality(source.getMinCardinality());
+        target.setMinLength(source.getMinLength());
+        target.setParent(getObject(source.getParent(), NodeDescriptor.class,
                                    context));
-        result.setParentChild(source.isParentChild());
-        result.setPath(source.getPath());
-        result.setReadOnly(source.isReadOnly());
-        result.setType(source.getType());
+        target.setParentChild(source.isParentChild());
+        target.setPath(source.getPath());
+        target.setReadOnly(source.isReadOnly());
+        target.setType(source.getType());
 
-        NODES.assembleObject(result.getNodeDescriptors(),
+        NODES.assembleObject(target.getNodeDescriptors(),
                              source.getNodeDescriptors(),
                              context);
 
-        ASSERTION.assembleObject(result.getAssertionDescriptors(),
+        ASSERTION.assembleObject(target.getAssertionDescriptors(),
                                  source.getAssertionDescriptors(),
                                  context);
     }

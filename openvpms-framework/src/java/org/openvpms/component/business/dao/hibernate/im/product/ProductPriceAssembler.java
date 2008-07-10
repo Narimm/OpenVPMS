@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.product;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
@@ -43,33 +44,40 @@ public class ProductPriceAssembler
     }
 
     @Override
-    protected void assembleDO(ProductPriceDO result, ProductPrice source,
-                              Context context) {
-        super.assembleDO(result, source, context);
-        result.setFixed(source.isFixed());
-        result.setFromDate(source.getFromDate());
-        result.setPrice(source.getPrice());
-        result.setProduct(getDO(source.getProduct(), ProductDO.class, context
-        ));
-        result.setThruDate(source.getThruDate());
+    protected void assembleDO(ProductPriceDO target, ProductPrice source,
+                              DOState state, Context context) {
+        super.assembleDO(target, source, state, context);
+        target.setFixed(source.isFixed());
+        target.setFromDate(source.getFromDate());
+        target.setPrice(source.getPrice());
+        target.setThruDate(source.getThruDate());
 
-        LOOKUPS.assembleDO(result.getClassifications(),
+        ProductDO product = null;
+        DOState productState = getDO(source.getProduct(), ProductDO.class,
+                                     context);
+        if (productState != null) {
+            product = (ProductDO) productState.getObject();
+            state.addState(productState);
+        }
+        target.setProduct(product);
+
+        LOOKUPS.assembleDO(target.getClassifications(),
                            source.getClassifications(),
-                           context);
+                           state, context);
     }
 
     @Override
-    protected void assembleObject(ProductPrice result, ProductPriceDO source,
+    protected void assembleObject(ProductPrice target, ProductPriceDO source,
                                   Context context) {
-        super.assembleObject(result, source, context);
-        result.setFixed(source.isFixed());
-        result.setFromDate(source.getFromDate());
-        result.setPrice(source.getPrice());
-        result.setProduct(
+        super.assembleObject(target, source, context);
+        target.setFixed(source.isFixed());
+        target.setFromDate(source.getFromDate());
+        target.setPrice(source.getPrice());
+        target.setProduct(
                 getObject(source.getProduct(), Product.class, context));
-        result.setThruDate(source.getThruDate());
+        target.setThruDate(source.getThruDate());
 
-        LOOKUPS.assembleObject(result.getClassifications(),
+        LOOKUPS.assembleObject(target.getClassifications(),
                                source.getClassifications(),
                                context);
     }
