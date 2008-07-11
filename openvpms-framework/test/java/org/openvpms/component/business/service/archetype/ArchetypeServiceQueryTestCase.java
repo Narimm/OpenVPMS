@@ -56,8 +56,9 @@ import java.util.Set;
 @SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeServiceQueryTestCase
         extends AbstractDependencyInjectionSpringContextTests {
+
     /**
-     * Holds a reference to the entity service
+     * The archetype service.
      */
     private IArchetypeService service;
 
@@ -303,8 +304,7 @@ public class ArchetypeServiceQueryTestCase
         petBean.setValue("breed", "Australian Terrier");
         bean.addRelationship("entityRelationship.animalOwner", pet);
 
-        bean.save();
-        petBean.save();
+        service.save(Arrays.asList((IMObject) person, pet));
 
         ShortNameConstraint partyPerson
                 = new ShortNameConstraint("person", "party.person");

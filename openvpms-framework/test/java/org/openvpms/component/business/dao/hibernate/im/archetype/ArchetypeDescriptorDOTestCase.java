@@ -340,6 +340,7 @@ public class ArchetypeDescriptorDOTestCase
         ArchetypeDescriptorDO desc = new ArchetypeDescriptorDO();
         desc.setName(shortName + System.currentTimeMillis() + ".1.0");
         desc.setLatest(true);
+        desc.setClassName(this.getName());
 
         desc.addNodeDescriptor(
                 createNodeDescriptor("id", "/id", Long.class));

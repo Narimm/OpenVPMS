@@ -18,10 +18,14 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+import org.hibernate.StaleObjectStateException;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -51,6 +55,12 @@ public class DOState {
         this.source = source;
         isNew = (source != null) && source.isNew();
         version = (source != null) ? source.getVersion() : 0;
+        if (!isNew && source != null) {
+            if (source.getVersion() != object.getVersion()) {
+                throw new StaleObjectStateException(object.getClass().getName(),
+                                                    object.getId());
+            }
+        }
     }
 
     public IMObjectDO getObject() {
@@ -75,6 +85,12 @@ public class DOState {
         deferred.add(assembler);
     }
 
+    public Set<DeferredAssembler> getDeferred() {
+        DeferredCollector collector = new DeferredCollector();
+        visit(collector);
+        return collector.getAssemblers();
+    }
+
     public void addReferenceUpdater(ReferenceUpdater updater) {
         if (updaters == null) {
             updaters = new ArrayList<ReferenceUpdater>();
@@ -88,31 +104,27 @@ public class DOState {
         }
     }
 
-    public Set<DeferredAssembler> getDeferred() {
-        Set<DOState> visited = new HashSet<DOState>();
-        return getDeferred(new HashSet<DeferredAssembler>(), visited);
-    }
-
     public void removeDeferred(DeferredAssembler assembler) {
         deferred.remove(assembler);
     }
 
     public boolean isComplete() {
-        Set<DOState> visited = new HashSet<DOState>();
-        return isComplete(visited);
+        return visit(new CompleteVistor());
     }
 
     public void updateIds(Context context) {
-        Set<DOState> visited = new HashSet<DOState>();
-        updateIds(context, visited);
+        visit(new IdUpdater(context));
     }
 
-    public void rollbackIds(Context context) {
-        Set<DOState> visited = new HashSet<DOState>();
-        rollbackIds(visited);
+    public void rollbackIds() {
+        visit(new IdReverter());
     }
 
     public void update(IMObject source) {
+        if (source.getVersion() != object.getVersion()) {
+            throw new StaleObjectStateException(object.getClass().getName(),
+                                                object.getId());
+        }
         this.source = source;
         if (states != null) {
             states.clear();
@@ -126,96 +138,149 @@ public class DOState {
     }
 
     public void destroy() {
-        Set<DOState> visited = new HashSet<DOState>();
-        destroy(visited);
+        visit(new Cleaner());
     }
 
-    private boolean isComplete(Set<DOState> visited) {
-        boolean result = true;
-        visited.add(this);
-        if (deferred != null && !deferred.isEmpty()) {
-            result = false;
-        } else if (states != null) {
-            for (DOState state : states) {
-                if (!visited.contains(state)) {
-                    if (!state.isComplete(visited)) {
-                        result = false;
-                        break;
+    private boolean visit(Visitor visitor) {
+        return visitor.visit(this);
+    }
+
+    private static abstract class Visitor {
+
+        private Set<DOState> visited = new HashSet<DOState>();
+
+        public boolean visit(DOState state) {
+            addVisited(state);
+            boolean result = doVisit(state);
+            if (result) {
+                result = visitChildren(state);
+            }
+            return result;
+        }
+
+        protected boolean visitChildren(DOState state) {
+            boolean result = true;
+            List<DOState> states = state.states;
+            if (states != null) {
+                for (DOState child : states) {
+                    if (!visited.contains(child)) {
+                        if (!visit(child)) {
+                            result = false;
+                            break;
+                        }
                     }
                 }
             }
+            return result;
         }
-        return result;
+
+        protected void addVisited(DOState state) {
+            visited.add(state);
+        }
+
+        public abstract boolean doVisit(DOState state);
+
     }
 
-    private void updateIds(Context context, Set<DOState> visited) {
-        visited.add(this);
-        if (source != null) {
-            source.setId(object.getId());
-            source.setVersion(object.getVersion());
-        }
-        if (updaters != null) {
-            for (ReferenceUpdater updater : updaters) {
-                DOState state = context.getCached(updater.getReference());
-                if (state != null) {
-                    updater.doUpdate(state.getObject().getObjectReference());
-                }
-            }
-        }
-        if (states != null) {
-            for (DOState state : states) {
-                if (!visited.contains(state)) {
-                    state.updateIds(context, visited);
-                }
-            }
+    private static class CompleteVistor extends Visitor {
+
+        public boolean doVisit(DOState state) {
+            List<DeferredAssembler> deferred = state.deferred;
+            return !(deferred != null && !deferred.isEmpty());
         }
     }
 
-    private Set<DeferredAssembler> getDeferred(Set<DeferredAssembler> set,
-                                               Set<DOState> visited) {
-        visited.add(this);
-        if (deferred != null) {
-            set.addAll(deferred);
+    private static class IdUpdater extends Visitor {
+
+        private final Context context;
+
+        public IdUpdater(Context context) {
+            this.context = context;
         }
-        if (states != null) {
-            for (DOState state : states) {
-                if (!visited.contains(state)) {
-                    state.getDeferred(set, visited);
+
+        public boolean doVisit(DOState state) {
+            IMObjectDO object = state.getObject();
+            IMObject source = state.getSource();
+            if (source != null) {
+                source.setId(object.getId());
+                source.setVersion(object.getVersion());
+            }
+            List<ReferenceUpdater> updaters = state.updaters;
+            if (updaters != null) {
+                for (ReferenceUpdater updater : updaters) {
+                    DOState target = context.getCached(updater.getReference());
+                    if (target != null) {
+                        IMObjectReference ref
+                                = target.getObject().getObjectReference();
+                        updater.doUpdate(ref);
+                    }
                 }
             }
+            return true;
         }
-        return set;
     }
 
-    private void rollbackIds(Set<DOState> visited) {
-        visited.add(this);
-        if (isNew) {
-            source.setId(-1);
-            source.setVersion(version);
-        }
-        if (states != null) {
-            for (DOState state : states) {
-                if (!visited.contains(state)) {
-                    state.rollbackIds(visited);
+    private static class IdReverter extends Visitor {
+        public boolean doVisit(DOState state) {
+            if (state.isNew) {
+                IMObject source = state.source;
+                if (source != null) {
+                    source.setId(-1);
+                    source.setVersion(state.version);
                 }
             }
+            // todo - need to revert IMObjectReferences as well
+            return true;
         }
     }
 
-    private void destroy(Set<DOState> visited) {
-        visited.add(this);
-        if (deferred != null) {
-            deferred.clear();
-        }
-        if (updaters != null) {
-            updaters.clear();
-        }
-        if (states != null && !states.isEmpty()) {
-            for (DOState state : states) {
-                if (!visited.contains(state)) {
-                    state.destroy(visited);
+    private static class DeferredCollector extends Visitor {
+
+        private Set<DeferredAssembler> assemblers;
+
+        private static final Set<DeferredAssembler> EMPTY
+                = Collections.emptySet();
+
+        public boolean doVisit(DOState state) {
+            List<DeferredAssembler> deferred = state.deferred;
+            if (deferred != null && !state.deferred.isEmpty()) {
+                if (assemblers == null) {
+                    assemblers = new LinkedHashSet<DeferredAssembler>();
                 }
+                assemblers.addAll(deferred);
             }
+            return true;
+        }
+
+        public Set<DeferredAssembler> getAssemblers() {
+            return (assemblers != null) ? assemblers : EMPTY;
+        }
+    }
+
+    private static class Cleaner extends Visitor {
+
+        @Override
+        public boolean visit(DOState state) {
+            addVisited(state);
+            visitChildren(state);
+            doVisit(state);
+            return true;
+        }
+
+        public boolean doVisit(DOState state) {
+            List<DeferredAssembler> deferred = state.deferred;
+            if (deferred != null) {
+                deferred.clear();
+            }
+            List<ReferenceUpdater> updaters = state.updaters;
+            if (updaters != null) {
+                updaters.clear();
+            }
+            List<DOState> states = state.states;
+            if (states != null) {
+                states.clear();
+            }
+            return false;
         }
     }
 

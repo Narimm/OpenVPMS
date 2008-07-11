@@ -31,6 +31,8 @@ import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.DefaultEntityAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.ParticipationAssembler;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipAssembler;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipAssembler;
 import org.openvpms.component.business.dao.hibernate.im.party.ContactAssembler;
@@ -64,6 +66,8 @@ public class AssemblerImpl extends CompoundAssembler {
         addAssembler(new DocumentAssembler());
 
         addAssembler(new DefaultEntityAssembler());
+        addAssembler(new EntityRelationshipAssembler());
+        addAssembler(new EntityIdentityAssembler());
         addAssembler(new ParticipationAssembler());
 
         addAssembler(new LookupAssembler());

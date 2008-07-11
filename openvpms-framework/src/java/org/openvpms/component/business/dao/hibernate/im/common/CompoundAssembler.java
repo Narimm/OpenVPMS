@@ -108,14 +108,16 @@ public abstract class CompoundAssembler implements Assembler {
     private Assembler getAssembler(IMObjectDO source) {
         Assembler assembler = assemblers.get(source.getClass());
         if (assembler == null) {
+            Class<? extends IMObjectDO> bestMatch = null;
             for (Map.Entry<Class<? extends IMObjectDO>, Assembler> entry
                     : assemblers.entrySet()) {
                 Class<? extends IMObjectDO> type = entry.getKey();
                 if (type.isAssignableFrom(source.getClass())) {
-                    assembler = entry.getValue();
-                    break;
+                    if (bestMatch == null || bestMatch.isAssignableFrom(type)) {
+                        bestMatch = type;
+                        assembler = entry.getValue();
+                    }
                 }
-
             }
             if (assembler == null) {
                 throw new IllegalArgumentException(

@@ -461,32 +461,12 @@ public class ArchetypeDescriptor extends Descriptor {
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-
-        // is it of the correct type
-        if (!(obj instanceof ArchetypeDescriptor)) {
-            return false;
-        }
-
-        // are they the same object
-        if (this == obj) {
-            return true;
-        }
-
-        ArchetypeDescriptor desc = (ArchetypeDescriptor) obj;
-        return type.equals(desc.type);
-    }
-
-    /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("name", getName())
+        return new ToStringBuilder(this, STYLE)
+                .appendSuper(super.toString())
                 .append("type", type)
                 .append("displayName", displayName)
                 .append("className", className)
@@ -601,14 +581,10 @@ public class ArchetypeDescriptor extends Descriptor {
     @Override
     public Object clone() throws CloneNotSupportedException {
         ArchetypeDescriptor copy = (ArchetypeDescriptor) super.clone();
-        copy.className = this.className;
-        copy.displayName = this.displayName;
-        copy.isLatest = this.isLatest;
         copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(
                 this.nodeDescriptors);
         copy.primary = this.primary;
-        copy.type = (ArchetypeId) (this.type == null ?
-                null : this.type.clone());
+        copy.type = (ArchetypeId) (type == null ? null : this.type.clone());
 
         return copy;
     }

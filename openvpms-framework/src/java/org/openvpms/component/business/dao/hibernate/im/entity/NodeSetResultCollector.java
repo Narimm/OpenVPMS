@@ -20,6 +20,9 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
@@ -62,12 +65,14 @@ class NodeSetResultCollector extends AbstractNodeResultCollector<NodeSet> {
      * @param object the object. Must be an instance of <code>IMObject</code>
      */
     public void collect(Object object) {
-        if (!(object instanceof IMObject)) {
+        if (!(object instanceof IMObjectDO)) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.CannotCollectObject,
                     object.getClass().getName());
         }
-        IMObject obj = (IMObject) object;
+        Context context = getContext();
+        Assembler assembler = context.getAssembler();
+        IMObject obj = assembler.assemble((IMObjectDO) object, context);
         NodeSet nodes = new NodeSet(obj.getObjectReference());
         for (NodeDescriptor descriptor : getDescriptors(obj)) {
             Object value = loadValue(descriptor, obj);

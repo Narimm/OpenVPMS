@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.domain.im.common.Entity;
 
 /**
@@ -27,8 +26,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultEntityAssembler
-        extends IMObjectAssembler<Entity, EntityDO> {
+public class DefaultEntityAssembler extends EntityAssembler<Entity, EntityDO> {
 
     public DefaultEntityAssembler() {
         super(Entity.class, EntityDO.class);

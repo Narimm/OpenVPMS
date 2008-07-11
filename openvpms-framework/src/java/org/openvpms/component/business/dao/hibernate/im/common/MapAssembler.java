@@ -20,9 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Add description here.
@@ -49,35 +47,8 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
 
     public void assembleDO(Map<K, DO> target, Map<K, T> source,
                            DOState state, Context context) {
-        DOMapConverter converter = new DOMapConverter(context);
+        DOMapConverter converter = new DOMapConverter(state, context);
         converter.convert(target, source);
-        if (target.isEmpty()) {
-            for (Map.Entry<K, T> entry : source.entrySet()) {
-                DOState result = getDO(entry.getValue(), typeDO, context);
-                target.put(entry.getKey(), typeDO.cast(result.getObject()));
-                state.addState(result);
-            }
-        } else if (source.isEmpty()) {
-            target.clear();
-        } else {
-            Assembler assembler = context.getAssembler();
-            Map<K, DO> retained = getRetained(target, source);
-
-            Set<K> removed = getRemoved(target, retained);
-            target.keySet().removeAll(removed);
-
-            for (Map.Entry<K, DO> entry : retained.entrySet()) {
-                DO result = entry.getValue();
-                T src = source.get(entry.getKey());
-                assembler.assemble(result, src, context);
-            }
-            Map<K, T> added = getAdded(retained, source);
-            for (Map.Entry<K, T> entry : added.entrySet()) {
-                DOState result = getDO(entry.getValue(), typeDO, context);
-                target.put(entry.getKey(), typeDO.cast(result.getObject()));
-                state.addState(result);
-            }
-        }
     }
 
     public void assembleObject(Map<K, T> target, Map<K, DO> source,
@@ -93,41 +64,27 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
         }
     }
 
-    private Set<K> getRemoved(Map<K, DO> target, Map<K, DO> retained) {
-        Map<K, DO> result = new HashMap<K, DO>(target);
-        result.keySet().removeAll(retained.keySet());
-        return result.keySet();
-    }
-
-    private Map<K, DO> getRetained(Map<K, DO> target, Map<K, T> source) {
-        Map<K, DO> result = new HashMap<K, DO>(target);
-        result.keySet().retainAll(source.keySet());
-        return result;
-    }
-
-    private Map<K, T> getAdded(Map<K, DO> retained, Map<K, T> source) {
-        Map<K, T> result = new HashMap<K, T>(source);
-        result.keySet().removeAll(retained.keySet());
-        return result;
-    }
-
     private class DOMapConverter extends MapConverter<K, T, DO> {
 
+        private final DOState state;
         private final Context context;
 
-        public DOMapConverter(Context context) {
+        public DOMapConverter(DOState state, Context context) {
+            this.state = state;
             this.context = context;
         }
 
         @Override
         protected void convert(Map<K, DO> map, K key, DO target, T source) {
             Assembler assembler = context.getAssembler();
-            assembler.assemble(target, source, context);
+            DOState child = assembler.assemble(target, source, context);
+            state.addState(child);
         }
 
         protected DO convert(T value) {
-            DOState state = getDO(value, typeDO, context);
-            return typeDO.cast(state.getObject());
+            DOState child = getDO(value, typeDO, context);
+            state.addState(child);
+            return typeDO.cast(child.getObject());
         }
     }
 

@@ -19,9 +19,9 @@
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 
@@ -43,9 +43,11 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
 
     @Override
     protected void assembleDO(LookupDO target, Lookup source,
-                                 DOState state, Context context) {
+                              DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setCode(source.getCode());
+        target.setDefaultLookup(source.isDefaultLookup());
+
         RELATIONSHIPS.assembleDO(target.getSourceLookupRelationships(),
                                  source.getSourceLookupRelationships(),
                                  state, context);
@@ -60,6 +62,8 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
                                   Context context) {
         super.assembleObject(target, source, context);
         target.setCode(source.getCode());
+        target.setDefaultLookup(source.isDefaultLookup());
+
         RELATIONSHIPS.assembleObject(target.getSourceLookupRelationships(),
                                      source.getSourceLookupRelationships(),
                                      context);

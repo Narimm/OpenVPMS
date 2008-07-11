@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class EntityRelationshipAssembler
+public class EntityRelationshipAssembler
         extends PeriodRelationshipAssembler<EntityRelationship,
         EntityRelationshipDO> {
 
@@ -47,7 +47,7 @@ public abstract class EntityRelationshipAssembler
         EntityIdentityDO identity = null;
         DOState identityState = getDO(source.getIdentity(),
                                       EntityIdentityDO.class, context);
-        if (state != null) {
+        if (identityState != null) {
             identity = (EntityIdentityDO) identityState.getObject();
             state.addState(identityState);
         }
@@ -59,5 +59,13 @@ public abstract class EntityRelationshipAssembler
                                   EntityRelationshipDO source,
                                   Context context) {
         super.assembleObject(target, source, context);
+    }
+
+    protected EntityRelationship create(EntityRelationshipDO object) {
+        return new EntityRelationship();
+    }
+
+    protected EntityRelationshipDO create(EntityRelationship object) {
+        return new EntityRelationshipDO();
     }
 }

@@ -19,58 +19,31 @@
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.hibernate.Session;
-import org.openvpms.component.business.dao.hibernate.im.common.AbstractIMObjectSessionHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.AbstractDeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.DefaultIMObjectSessionHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
-import org.openvpms.component.business.dao.im.common.IMObjectDAO;
+import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.HashSet;
 import java.util.Set;
 
 
 /**
- * Implementation of {@link IMObjectSessionHandler} for {@link Act}s.
+ * Implementation of {@link DeleteHandler} for {@link Act}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActSessionHandler extends AbstractIMObjectSessionHandler {
+public class ActDeleteHandler extends AbstractDeleteHandler {
 
     /**
-     * Default session handler for updating child objects.
-     */
-    private final IMObjectSessionHandler defaultHandler;
-
-
-    /**
-     * Creates a new <tt>ActSessionHandler<tt>.
+     * Creates a new <tt>ActDeleteHandler<tt>.
      *
-     * @param dao the DAO
+     * @param assembler the assembler
      */
-    public ActSessionHandler(IMObjectDAO dao, CompoundAssembler assembler) {
-        super(dao, assembler);
-        defaultHandler = new DefaultIMObjectSessionHandler(dao, assembler);
-    }
-
-    /**
-     * Updates the target object with the identifier and version of the source.
-     *
-     * @param target the object to update
-     * @param source the object to update from
-     */
-    @Override
-    public void updateIds(IMObject target, IMObject source) {
-        Act targetAct = (Act) target;
-        Act sourceAct = (Act) source;
-        update(targetAct.getActRelationships(), sourceAct.getActRelationships(),
-               defaultHandler);
-        update(targetAct.getParticipations(), sourceAct.getParticipations(),
-               defaultHandler);
-        super.updateIds(target, source);
+    public ActDeleteHandler(CompoundAssembler assembler) {
+        super(assembler);
     }
 
     /**

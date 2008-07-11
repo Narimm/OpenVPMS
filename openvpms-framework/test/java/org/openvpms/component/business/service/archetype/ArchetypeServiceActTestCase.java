@@ -666,7 +666,6 @@ public class ArchetypeServiceActTestCase
         assertEquals(-1, rel.getId());
         // TODO: act relationships unversioned.
 
-
         // save objects in a transaction, and rollback. Within the transaction,
         // the objects should be assigned identifiers. After rollback, they
         // should be reset to -1.
@@ -680,10 +679,13 @@ public class ArchetypeServiceActTestCase
 
                     // objects should have ids assigned now
                     assertFalse(-1 == act1.getId());
-//                    assertEquals(1, act1.getVersion());
                     assertFalse(-1 == act2.getId());
-//                    assertEquals(1, act2.getVersion());
                     assertFalse(-1 == rel.getId());
+
+                    // versions don't get updated until commit
+                    assertEquals(0, act1.getVersion());
+                    assertEquals(0, act2.getVersion());
+
                     throw new RuntimeException("Trigger rollback");
                 }
             });
@@ -697,23 +699,31 @@ public class ArchetypeServiceActTestCase
         assertEquals(-1, act2.getId());
         assertEquals(-1, rel.getId());
 
-        // now verify the objects can be saved
-        try {
-            template.execute(new TransactionCallback() {
-                public Object doInTransaction(TransactionStatus status) {
-                    service.save(act1);
-                    service.save(act2);
-                    return null;
-                }
-            });
-        } catch (Exception error) {
-            fail("Expected transaction to succeed");
+        assertEquals(0, act1.getVersion());
+        assertEquals(0, act2.getVersion());
+
+        // now verify the objects can be saved. Save twice to inc version.
+        for (int i = 0; i < 2; ++i) {
+            try {
+                template.execute(new TransactionCallback() {
+                    public Object doInTransaction(TransactionStatus status) {
+                        service.save(act1);
+                        service.save(act2);
+                        return null;
+                    }
+                });
+            } catch (Exception error) {
+                fail("Expected transaction to succeed");
+            }
         }
 
         // objects should have ids assigned now
         assertFalse(-1 == act1.getId());
         assertFalse(-1 == act2.getId());
         assertFalse(-1 == rel.getId());
+
+        assertEquals(1, act1.getVersion());
+        assertEquals(1, act2.getVersion());
 
         // now verfiy that a subsequent rollback of persistent objects
         // doesn't reset the ids
@@ -730,10 +740,13 @@ public class ArchetypeServiceActTestCase
             // expected behaviour
         }
 
-        // objects should have ids assigned still
+        // objects should have ids and versions assigned still
         assertFalse(-1 == act1.getId());
         assertFalse(-1 == act2.getId());
         assertFalse(-1 == rel.getId());
+
+        assertEquals(1, act1.getVersion());
+        assertEquals(1, act2.getVersion());
     }
 
     /**
@@ -742,12 +755,12 @@ public class ArchetypeServiceActTestCase
     public void testOBF190() {
         // Create 2 acts with the following relationship:
         // act1 -- (parent/child) --> act2
-        final Act act1 = createSimpleAct("act1", "IN_POGRESS");
+        final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
         final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
 
         String name = "act1->act2";
         final ActRelationship rel = addRelationship(act1, act2, name, true);
-        service.save(act2);
+        service.save(Arrays.asList((IMObject) act1, act2));
 
         final String newName = "act1->act2 changed";
 

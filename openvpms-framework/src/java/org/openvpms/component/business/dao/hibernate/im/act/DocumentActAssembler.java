@@ -20,6 +20,8 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
+import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.ReferenceUpdater;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -46,8 +48,7 @@ public class DocumentActAssembler
         target.setFileName(source.getFileName());
         target.setMimeType(source.getMimeType());
         target.setPrinted(source.isPrinted());
-        target.setDocument(load(source.getDocReference(), DocumentDO.class,
-                                context));
+        assembleDoc(target, source, state, context);
     }
 
     @Override
@@ -70,5 +71,34 @@ public class DocumentActAssembler
 
     protected DocumentActDO create(DocumentAct object) {
         return new DocumentActDO();
+    }
+
+    private void assembleDoc(final DocumentActDO target,
+                             final DocumentAct source, 
+                             DOState state, Context context) {
+        final IMObjectReference ref = source.getDocReference();
+        if (ref != null) {
+            DOState docDO = find(ref, DocumentDO.class, context);
+            if (docDO != null) {
+                target.setDocument((DocumentDO) docDO.getObject());
+                state.addState(docDO);
+            } else {
+                new DeferredAssembler(state, ref) {
+                    protected void doAssemble(Context context) {
+                        target.setDocument(
+                                load(ref, DocumentDO.class, context));
+                    }
+                };
+            }
+            if (ref.isNew()) {
+                new ReferenceUpdater(state, ref) {
+                    protected void doUpdate(IMObjectReference updated) {
+                        source.setDocReference(updated);
+                    }
+                };
+            }
+        } else {
+            target.setDocument(null);
+        }
     }
 }

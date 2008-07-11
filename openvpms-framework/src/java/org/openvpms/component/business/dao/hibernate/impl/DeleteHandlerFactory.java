@@ -16,44 +16,42 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.hibernate.im.entity;
+package org.openvpms.component.business.dao.hibernate.impl;
 
-import org.openvpms.component.business.dao.hibernate.im.act.ActSessionHandler;
+import org.openvpms.component.business.dao.hibernate.im.act.ActDeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.DefaultIMObjectSessionHandler;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
-import org.openvpms.component.business.dao.im.common.IMObjectDAO;
+import org.openvpms.component.business.dao.hibernate.im.common.DefaultDeleteHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Factory for {@link IMObjectSessionHandler}s.
+ * Factory for {@link DeleteHandler}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectSessionHandlerFactory {
+public class DeleteHandlerFactory {
 
     /**
      * Handler for {@link Act}s.
      */
-    private final IMObjectSessionHandler act;
+    private final DeleteHandler act;
 
     /**
      * The default Handler.
      */
-    private final IMObjectSessionHandler defaultHandler;
+    private final DeleteHandler defaultHandler;
 
     /**
-     * Creates a new <tt>IMObjectSessionHandlerFactory</tt>.
+     * Creates a new <tt>DeleteHandlerFactory</tt>.
      *
-     * @param dao the DAO
+     * @param assembler the assembler
      */
-    public IMObjectSessionHandlerFactory(IMObjectDAO dao,
-                                         CompoundAssembler assembler) {
-        act = new ActSessionHandler(dao, assembler);
-        defaultHandler = new DefaultIMObjectSessionHandler(dao, assembler);
+    public DeleteHandlerFactory(CompoundAssembler assembler) {
+        act = new ActDeleteHandler(assembler);
+        defaultHandler = new DefaultDeleteHandler(assembler);
     }
 
     /**
@@ -62,7 +60,7 @@ public class IMObjectSessionHandlerFactory {
      * @param object the object
      * @return a handler for <tt>object</tt>
      */
-    public IMObjectSessionHandler getHandler(IMObject object) {
+    public DeleteHandler getHandler(IMObject object) {
         if (object instanceof Act) {
             return act;
         }

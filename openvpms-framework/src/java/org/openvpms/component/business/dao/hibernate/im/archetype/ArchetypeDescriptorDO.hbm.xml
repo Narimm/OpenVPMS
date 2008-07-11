@@ -39,7 +39,8 @@
                       type="string" length="100" not-null="true"/>
         </component>
         <property name="active" column="active" type="boolean"/>
-        <property name="className" column="class_name" type="string"/>
+        <property name="className" column="class_name" not-null="true"
+                  type="string"/>
         <property name="displayName" access="property" column="display_name"
                   type="string"/>
         <property name="latest" column="is_latest" type="boolean"/>

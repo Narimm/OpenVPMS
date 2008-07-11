@@ -18,8 +18,6 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import org.hibernate.Query;
-import org.hibernate.SessionFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -39,18 +37,13 @@ import java.util.Collection;
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServicePartyTestCase extends
-                                           AbstractDependencyInjectionSpringContextTests {
+public class ArchetypeServicePartyTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
      * Holds a reference to the entity service
      */
     private ArchetypeService service;
-
-    /**
-     * A reference to the hibernate session factory
-     */
-    private SessionFactory sessionFactory;
 
 
     /**
@@ -67,19 +60,9 @@ public class ArchetypeServicePartyTestCase extends
         person.addContact(createContact(classification1));
         service.save(person);
 
-        // try the hql query
-        Query query = sessionFactory.openSession().createQuery(
-                "select party from " + Party.class.getName()
-                        + " as party inner join party.contacts as contact "
-                        + "left outer join contact.classifications as "
-                        + "classification "
-                        + "where party.id = :id and "
-                        + "contact.archetypeId.shortName = :shortName "
-                        + "and classification.name = :classification");
-        query.setParameter("id", person.getId());
-        query.setParameter("shortName", "contact.location");
-        query.setParameter("classification", classification.getName());
-        assertEquals(1, query.list().size());
+        Party person2 = (Party) get(person.getObjectReference());
+        assertNotNull(person2);
+        assertEquals(2, person.getContacts().size());
     }
 
     /**
@@ -170,10 +153,8 @@ public class ArchetypeServicePartyTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        this.service = (ArchetypeService) applicationContext.getBean(
+        service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
-        this.sessionFactory = (SessionFactory) applicationContext.getBean(
-                "sessionFactory");
     }
 
     /**

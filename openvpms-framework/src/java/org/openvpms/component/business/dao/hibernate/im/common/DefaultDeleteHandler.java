@@ -18,27 +18,21 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
-import org.openvpms.component.business.dao.im.common.IMObjectDAO;
-
-
 /**
- * Default implementation of {@link IMObjectSessionHandler}.
+ * Default implementation of {@link DeleteHandler}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultIMObjectSessionHandler
-        extends AbstractIMObjectSessionHandler {
+public class DefaultDeleteHandler extends AbstractDeleteHandler {
 
     /**
-     * Creates a new <tt>DefaultIMObjectSessionHandler<tt>.
+     * Creates a new <tt>DefaultDeleteHandler<tt>.
      *
-     * @param dao       the DAO
      * @param assembler the assembler
      */
-    public DefaultIMObjectSessionHandler(IMObjectDAO dao,
-                                         CompoundAssembler assembler) {
-        super(dao, assembler);
+    public DefaultDeleteHandler(CompoundAssembler assembler) {
+        super(assembler);
     }
 
 }

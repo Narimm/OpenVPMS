@@ -23,34 +23,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Handles hibernate <tt>Session</tt> operations on {@link IMObject}s.
- * <p/>
- * In particular, it handles saving detached instances of {@link IMObject}
- * object graphs, using <tt>Session.merge()</tt>, propagating the identifiers
- * and versions of the merged objects to their originals after commit.
+ * Handles deletion of {@link IMObject}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectSessionHandler {
-
-    /**
-     * Saves an object.
-     *
-     * @param object  the object to save
-     * @param session the session to use
-     * @param context the assembler context
-     */
-    void save(IMObject object, Session session, Context context);
-
-    /**
-     * Updates the target object with the identifier and version of the source,
-     * including any direct children.
-     *
-     * @param target the object to update
-     * @param source the object to update from
-     */
-    void updateIds(IMObject target, IMObject source);
+public interface DeleteHandler {
 
     /**
      * Deletes an object.

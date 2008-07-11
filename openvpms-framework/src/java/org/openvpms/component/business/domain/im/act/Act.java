@@ -365,7 +365,7 @@ public class Act extends IMObject {
     @Override
     @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, STYLE)
                 .appendSuper(super.toString())
                 .append("title", title)
                 .append("activityStartTime", activityStartTime)

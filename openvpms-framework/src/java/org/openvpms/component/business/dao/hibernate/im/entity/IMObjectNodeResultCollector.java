@@ -18,6 +18,10 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,6 +41,9 @@ import java.util.List;
  * <code>nodes</code> argument is used to specify which collection nodes to
  * populate. If empty, no collections will be loaded, and the behaviour of
  * accessing them is undefined.
+ * <p/>
+ * TODO - currently this implementation loads everything as the assembly
+ * from IMObjectDO -> IMObject is complete
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -66,13 +73,18 @@ class IMObjectNodeResultCollector
      * @param object the object to collect
      */
     public void collect(Object object) {
-        if (object instanceof IMObject) {
-            IMObject obj = (IMObject) object;
-            for (NodeDescriptor descriptor : getDescriptors(obj)) {
-                loadValue(descriptor, obj);
-            }
-            result.add(obj);
+        if (!(object instanceof IMObjectDO)) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.CannotCollectObject,
+                    object.getClass().getName());
         }
+        Context context = getContext();
+        Assembler assembler = context.getAssembler();
+        IMObject obj = assembler.assemble((IMObjectDO) object, context);
+        for (NodeDescriptor descriptor : getDescriptors(obj)) {
+            loadValue(descriptor, obj);
+        }
+        result.add(obj);
     }
 
     /**

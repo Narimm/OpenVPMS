@@ -66,13 +66,13 @@
         </set>
         <set name="sourceEntityRelationships" inverse="true"
              lazy="true" batch-size="50" cascade="all,delete-orphan">
-            <key column="source_id" not-null="true"/>
+            <key column="source_id" on-delete="cascade"/>
             <one-to-many
                     class="org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDO"/>
         </set>
         <set name="targetEntityRelationships" inverse="true"
              lazy="true" batch-size="50" cascade="all,delete-orphan">
-            <key column="target_id" not-null="true"/>
+            <key column="target_id" on-delete="cascade"/>
             <one-to-many
                     class="org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDO"/>
         </set>

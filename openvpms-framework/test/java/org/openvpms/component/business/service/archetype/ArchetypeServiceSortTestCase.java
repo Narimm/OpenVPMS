@@ -18,8 +18,7 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// spring-context
-import org.apache.log4j.Logger;
+import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToExecuteQuery;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -28,52 +27,23 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
  * Test that sorting part of the api works on the IArchetypeService
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeServiceSortTestCase extends
-                                          AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServiceSortTestCase.class);
+public class ArchetypeServiceSortTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Holds a reference to the entity service
+     * The archetype service.
      */
     private ArchetypeService service;
 
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeServiceSortTestCase.class);
-    }
-
     /**
-     * Default constructor
+     * Test sort on a non-sortable property.
      */
-    public ArchetypeServiceSortTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[] {
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-                };
-    }
-
-    /**
-     * Test sort on a non-sortable property
-     */
-    public void testSortOnNonExistentProperty()
-    throws Exception {
+    public void testSortOnNonExistentProperty() {
         try {
             ArchetypeQuery query = new ArchetypeQuery("act", null, false, false)
                     .setFirstResult(0)
@@ -83,8 +53,8 @@ public class ArchetypeServiceSortTestCase extends
             service.get(query);
             fail("This request should have thrown an exception");
         } catch (ArchetypeServiceException exception) {
-            if (exception.getErrorCode() != ArchetypeServiceException.ErrorCode.FailedToExecuteQuery) {
-                fail (exception.getErrorCode() + " is not a valid exception");
+            if (exception.getErrorCode() != FailedToExecuteQuery) {
+                fail(exception.getErrorCode() + " is not a valid exception");
             }
         }
     }
@@ -92,8 +62,7 @@ public class ArchetypeServiceSortTestCase extends
     /**
      * Test sort on name in ascending order
      */
-    public void testSortOnNameInAscendingOrder()
-    throws Exception {
+    public void testSortOnNameInAscendingOrder() {
         ArchetypeQuery query = new ArchetypeQuery("act", null, false, false);
         query.add(new NodeSortConstraint("name"));
         IPage<IMObject> objects = service.get(query);
@@ -120,8 +89,7 @@ public class ArchetypeServiceSortTestCase extends
     /**
      * Test sort on name in ascending order
      */
-    public void testSortOnNameInDescendingOrder()
-    throws Exception {
+    public void testSortOnNameInDescendingOrder() {
         ArchetypeQuery query = new ArchetypeQuery("act", null, false, false)
                 .setFirstResult(0)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
@@ -155,8 +123,20 @@ public class ArchetypeServiceSortTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        this.service = (ArchetypeService)applicationContext.getBean(
+        this.service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
+        };
     }
 
 

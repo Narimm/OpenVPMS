@@ -18,51 +18,46 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// java-core
-import java.util.Hashtable;
-
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
-import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
-
-// openvpms-test-component
 import org.openvpms.component.system.common.test.BaseTestCase;
+
+import java.util.Hashtable;
 
 /**
  * Test the management of assertions through the archetype service
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeServiceWithAssertionDescriptorTestCase extends BaseTestCase {
+public class ArchetypeServiceAssertionDescriptorTestCase extends BaseTestCase {
 
     /**
      * Reference to the archetype service
      */
     private ArchetypeService service;
-    
+
     /**
      * @param args
      */
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeServiceWithAssertionDescriptorTestCase.class);
+        junit.textui.TestRunner.run(
+                ArchetypeServiceAssertionDescriptorTestCase.class);
     }
 
     /**
      * Constructor for ArchetypeServiceTestCase.
-     * 
+     *
      * @param name
      */
-    public ArchetypeServiceWithAssertionDescriptorTestCase(String name) {
-        super(name); 
+    public ArchetypeServiceAssertionDescriptorTestCase(String name) {
+        super(name);
     }
 
     /**
@@ -81,47 +76,47 @@ public class ArchetypeServiceWithAssertionDescriptorTestCase extends BaseTestCas
      * Test the creation of an archetypeRange assertion
      */
     public void testCreateArchetypeRange()
-    throws Exception {
-        AssertionDescriptor adesc = (AssertionDescriptor)service.create(
+            throws Exception {
+        AssertionDescriptor adesc = (AssertionDescriptor) service.create(
                 "assertion.archetypeRange");
         assertTrue(adesc != null);
-        PropertyMap pdesc = (PropertyMap)service.create(
+        PropertyMap pdesc = (PropertyMap) service.create(
                 "assertion.archetypeRangeProperties");
-        assertTrue(adesc != null);
         assertTrue(pdesc.getProperties().size() == 3);
         assertTrue(pdesc.getProperties().get("shortName") != null);
-        
+
         ArchetypeDescriptor desc = service.getArchetypeDescriptor(
                 adesc.getArchetypeId());
         assertTrue(desc != null);
-        
+
         NodeDescriptor ndesc = desc.getNodeDescriptor("archetypes");
-        assertTrue(ndesc != null); 
-        
+        assertTrue(ndesc != null);
+
         ndesc.addChildToCollection(adesc, pdesc);
         assertTrue(adesc.getProperty("archetypes") != null);
         assertTrue(adesc.getProperty("archetypes") instanceof PropertyList);
 
 
-        PropertyList archetypes = (PropertyList)adesc.getProperty("archetypes");
+        PropertyList archetypes = (PropertyList) adesc.getProperty(
+                "archetypes");
         assertTrue(archetypes.getProperties().size() == 1);
         for (NamedProperty archetype : archetypes.getProperties()) {
             assertTrue(archetype instanceof PropertyMap);
-            PropertyMap map = (PropertyMap)archetype;
+            PropertyMap map = (PropertyMap) archetype;
             assertTrue(map.getProperties().size() == 3);
             assertTrue(map.getProperties().get("shortName") != null);
             assertTrue(map.getProperties().get("minCardinality") != null);
             assertTrue(map.getProperties().get("maxCardinality") != null);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
-     */
+    * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
+    */
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         Hashtable params = getTestData().getGlobalParams();
         String assertionFile = (String) params.get("assertionFile");
         String archFile = (String) params.get("archetypeFile");

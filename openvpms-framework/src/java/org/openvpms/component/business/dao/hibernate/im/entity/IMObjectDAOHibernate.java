@@ -34,8 +34,9 @@ import org.openvpms.component.business.dao.hibernate.im.common.ContextHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectSessionHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
+import org.openvpms.component.business.dao.hibernate.impl.DeleteHandlerFactory;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
@@ -87,7 +88,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     /**
      * The handler factory.
      */
-    private final IMObjectSessionHandlerFactory handlerFactory;
+    private final DeleteHandlerFactory handlerFactory;
 
     /**
      * The assembler.
@@ -112,7 +113,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public IMObjectDAOHibernate() {
         assembler = new AssemblerImpl();
-        handlerFactory = new IMObjectSessionHandlerFactory(this, assembler);
+        handlerFactory = new DeleteHandlerFactory(assembler);
     }
 
     /**
@@ -182,7 +183,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 public Object doInHibernate(Session session)
                         throws HibernateException {
                     Context context = getContext(session);
-                    IMObjectSessionHandler handler
+                    DeleteHandler handler
                             = handlerFactory.getHandler(object);
                     handler.delete(object, session, context);
                     return null;
@@ -509,7 +510,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
     public void rollback(Context context) {
         for (DOState state : context.getSaved()) {
-            state.rollbackIds(context);
+            state.rollbackIds();
         }
     }
 

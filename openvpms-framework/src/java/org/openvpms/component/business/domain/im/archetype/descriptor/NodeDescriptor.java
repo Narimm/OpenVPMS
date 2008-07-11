@@ -23,7 +23,6 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathTypeConversionException;
 import org.apache.commons.jxpath.util.TypeConverter;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -340,24 +339,8 @@ public class NodeDescriptor extends Descriptor {
         NodeDescriptor copy = (NodeDescriptor) super.clone();
         copy.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>(
                 this.assertionDescriptors);
-        copy.baseName = this.baseName;
-        copy.clazz = this.clazz;
-        copy.defaultValue = this.defaultValue;
-        copy.derivedValue = this.derivedValue;
-        copy.index = this.index;
-        copy.isDerived = this.isDerived;
-        copy.isHidden = this.isHidden;
-        copy.isArray = this.isArray;
-        copy.isParentChild = this.isParentChild;
-        copy.maxCardinality = this.maxCardinality;
-        copy.maxLength = this.maxLength;
-        copy.minCardinality = this.minCardinality;
-        copy.minLength = this.minLength;
         copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(
                 this.nodeDescriptors);
-        copy.path = this.path;
-        copy.type = this.type;
-
         return copy;
     }
 
@@ -1419,33 +1402,6 @@ public class NodeDescriptor extends Descriptor {
                     DescriptorException.ErrorCode.FailedToSetValue,
                     exception, getName());
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
-     */
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this).append("name", getName()).append(
-                "displayName", displayName).append("isHidden", isHidden)
-                .append("isArray", isArray)
-                .append("isDerived", isDerived).append("derivedValue",
-                                                       derivedValue).append(
-                "path", path).append("type", type)
-                .append("defaultValue", defaultValue).append("minCardinality",
-                                                             minCardinality)
-                .append("maxCardinality", maxCardinality).append("minLength",
-                                                                 minLength).append(
-                "maxLength", maxLength).append(
-                "baseName", baseName).append("isParentChild",
-                                             isParentChild).append("clazz",
-                                                                   clazz).append(
-                "index",
-                index).append("assertionDescriptors",
-                              assertionDescriptors).append("nodeDescriptors",
-                                                           nodeDescriptors).toString();
     }
 
     /**

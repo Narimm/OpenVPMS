@@ -20,6 +20,7 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.StandardToStringStyle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -101,6 +102,11 @@ public class IMObject implements Serializable, Cloneable {
             = new HashMap<String, Object>();
 
     /**
+     * toString() style.
+     */
+    protected static final StandardToStringStyle STYLE;
+
+    /**
      * An internal UUID generator.
      */
     private static final JUGGenerator generator = new JUGGenerator();
@@ -109,6 +115,13 @@ public class IMObject implements Serializable, Cloneable {
      * Define a logger for this class
      */
     private static final Log log = LogFactory.getLog(IMObject.class);
+
+
+    static {
+        STYLE = new StandardToStringStyle();
+        STYLE.setUseShortClassName(true);
+        STYLE.setUseIdentityHashCode(false);
+    }
 
 
     /**
@@ -183,7 +196,9 @@ public class IMObject implements Serializable, Cloneable {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        return super.clone();
+        IMObject copy = (IMObject) super.clone();
+        copy.linkId = getLinkId();
+        return copy;
     }
 
     /* (non-Javadoc)
@@ -419,9 +434,9 @@ public class IMObject implements Serializable, Cloneable {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, STYLE)
                 .append("id", id)
-                .append("archetypeId", archetypeId.getQualifiedName())
+                .append("archetypeId", archetypeId)
                 .append("linkId", getLinkId())
                 .append("version", version)
                 .append("name", name)

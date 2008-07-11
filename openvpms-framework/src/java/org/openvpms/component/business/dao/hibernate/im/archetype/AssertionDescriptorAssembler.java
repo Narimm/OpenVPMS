@@ -19,8 +19,8 @@
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 
 /**
@@ -39,8 +39,8 @@ public class AssertionDescriptorAssembler
 
     @Override
     protected void assembleDO(AssertionDescriptorDO target,
-                                 AssertionDescriptor source,
-                                 DOState state, Context context) {
+                              AssertionDescriptor source,
+                              DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setErrorMessage(source.getErrorMessage());
         target.setIndex(source.getIndex());
