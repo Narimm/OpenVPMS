@@ -28,7 +28,7 @@
               minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="mailHost" path="/details/mailHost" type="java.lang.String" minCardinality="0" maxCardinality="1"/>
 		<node name="contacts" path="/contacts"
-			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*">
+			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
