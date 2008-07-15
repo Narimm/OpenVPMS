@@ -38,10 +38,11 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
      */
     private int acts;
 
+
     /**
      * Test the creation of an act.
      */
-    public void testCreate() throws Exception {
+    public void testCreate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
         ActDO act1 = createAct("act1");
@@ -59,7 +60,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the modification of an act.
      */
-    public void testUpdate() throws Exception {
+    public void testUpdate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
         ActDO act1 = createAct("mact1");
@@ -89,7 +90,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Tests the deletion of an act.
      */
-    public void testDelete() throws Exception {
+    public void testDelete() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
         ActDO act1 = createAct("dact1");

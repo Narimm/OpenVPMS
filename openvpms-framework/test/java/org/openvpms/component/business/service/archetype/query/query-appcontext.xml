@@ -138,13 +138,5 @@
         </constructor-arg>
     </bean>
 
-    <!--  Instantiate the archetype service helper bean and inject their dependencies -->
-    <bean id="queryBuilder"
-          class="org.openvpms.component.business.service.archetype.query.QueryBuilder">
-        <constructor-arg>
-            <ref local="archetypeDescriptorCache"/>
-        </constructor-arg>
-    </bean>
-
 
 </beans>

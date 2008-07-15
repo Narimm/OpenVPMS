@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -121,9 +120,7 @@ public class ArchetypeServiceDescriptorTestCase
             throw ex;
         }
 
-        IMObject obj = ArchetypeQueryHelper.getByUid(service,
-                                                     desc.getArchetypeId(),
-                                                     desc.getId());
+        IMObject obj = service.get(desc.getObjectReference());
         assertTrue(obj != null);
         assertTrue(obj instanceof ArchetypeDescriptor);
         assertTrue(
@@ -159,9 +156,7 @@ public class ArchetypeServiceDescriptorTestCase
         service.save(ndesc);     // verify the node descriptor and assertion
         service.save(assertion); // descriptor can be re-saved
 
-        IMObject obj = ArchetypeQueryHelper.getByUid(service,
-                                                     desc.getArchetypeId(),
-                                                     desc.getId());
+        IMObject obj = service.get(desc.getObjectReference());
         assertNotNull(obj);
         assertTrue(obj instanceof ArchetypeDescriptor);
         ArchetypeDescriptor desc2 = (ArchetypeDescriptor) obj;
@@ -205,8 +200,8 @@ public class ArchetypeServiceDescriptorTestCase
 
         // retrieve the cloned and saved object and ensure that the values
         // are correct
-        ArchetypeDescriptor obj = (ArchetypeDescriptor) ArchetypeQueryHelper
-                .getByUid(service, copy.getArchetypeId(), copy.getId());
+        ArchetypeDescriptor obj
+                = (ArchetypeDescriptor) service.get(copy.getObjectReference());
         assertNotNull(obj);
         assertEquals(1, obj.getNodeDescriptors().size());
         assertEquals(copy.getName(), obj.getName());
@@ -217,9 +212,7 @@ public class ArchetypeServiceDescriptorTestCase
         service.save(copy2);
 
         // retrieve the object again and check the info
-        obj = (ArchetypeDescriptor) ArchetypeQueryHelper.getByUid(service,
-                                                                  copy2.getArchetypeId(),
-                                                                  copy2.getId());
+        obj = (ArchetypeDescriptor) service.get(copy2.getObjectReference());
         assertNotNull(obj);
         assertEquals(copy2.getName(), obj.getName());
         assertEquals(copy2.getClassName(), obj.getClassName());
@@ -348,12 +341,10 @@ public class ArchetypeServiceDescriptorTestCase
         });
 
         // verify the original descriptor can't be retrieved
-        assertNull(ArchetypeQueryHelper.getByObjectReference(
-                service, desc1.getObjectReference()));
+        assertNull(service.get(desc1.getObjectReference()));
 
-        ArchetypeDescriptor reloaded = (ArchetypeDescriptor)
-                ArchetypeQueryHelper.getByObjectReference(
-                        service, desc2.getObjectReference());
+        ArchetypeDescriptor reloaded
+                = (ArchetypeDescriptor) service.get(desc2.getObjectReference());
         assertNotNull(reloaded.getNodeDescriptor("name2"));
     }
 

@@ -304,7 +304,7 @@ public class ArchetypeServiceQueryTestCase
         petBean.setValue("breed", "Australian Terrier");
         bean.addRelationship("entityRelationship.animalOwner", pet);
 
-        service.save(Arrays.asList((IMObject) person, pet));
+        service.save(Arrays.asList( person, pet));
 
         ShortNameConstraint partyPerson
                 = new ShortNameConstraint("person", "party.person");

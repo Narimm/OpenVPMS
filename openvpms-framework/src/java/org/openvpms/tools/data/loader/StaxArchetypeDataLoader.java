@@ -18,7 +18,6 @@
 
 package org.openvpms.tools.data.loader;
 
-// java core
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
@@ -39,7 +38,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.springframework.context.ApplicationContext;
@@ -129,11 +127,6 @@ public class StaxArchetypeDataLoader {
      * A cache of unprocessed elements
      */
     private Cache unprocessedElementCache;
-
-    /**
-     * Indicates whether the directory search is recursive
-     */
-    private boolean subdir;
 
     /**
      * Specifies the file extension to filter. Defaults to adl
@@ -243,7 +236,7 @@ public class StaxArchetypeDataLoader {
     private void processDir(String dir) throws Exception {
         String[] extensions = { extension };
         Collection collection = FileUtils.listFiles(new File(dir), extensions,
-                                                    subdir);
+                                                    false);
         File[] files = FileUtils.convertFileCollectionToFileArray(collection);
         Arrays.sort(files);
         for (int i = 0, n = files.length; i < n; i++) {
@@ -331,7 +324,7 @@ public class StaxArchetypeDataLoader {
                                 // need to stick it in the unprocessed element
                                 // cache and process it in a second parse.
                                 unprocessedElementCache.put(
-                                        new Element(new Integer(sequenceId++),
+                                        new Element(sequenceId++,
                                                     elemData.toString()));
                                 if (verbose) {
                                     logger.info("\n[CACHED FOR SECOND PARSE SEQ:" +
@@ -380,9 +373,8 @@ public class StaxArchetypeDataLoader {
         Stack<IMObject> stack = new Stack<IMObject>();
         for (int index = 0; index < sequenceId; index++) {
             // remove the element from the cache
-            Integer key = new Integer(index);
-            Element elem = unprocessedElementCache.get(key);
-            unprocessedElementCache.remove(key);
+            Element elem = unprocessedElementCache.get(index);
+            unprocessedElementCache.remove(index);
             if (elem == null) {
                 continue;
             }
@@ -394,7 +386,7 @@ public class StaxArchetypeDataLoader {
             // process the stream
             for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT;
                  event = reader.next()) {
-                IMObject current = null;
+                IMObject current;
                 switch (event) {
                     case XMLStreamConstants.START_ELEMENT:
                         if (verbose) {
@@ -624,9 +616,9 @@ public class StaxArchetypeDataLoader {
         String shortName = current.getArchetypeId().getShortName();
         Long count = statistics.get(shortName);
         if (count == null) {
-            statistics.put(shortName, new Long(1));
+            statistics.put(shortName, 1L);
         } else {
-            statistics.put(shortName, new Long(count.longValue() + 1));
+            statistics.put(shortName, count + 1);
         }
 
         // process the linkid  and ids        
@@ -733,15 +725,14 @@ public class StaxArchetypeDataLoader {
         }
 
         IMObjectReference imref = (IMObjectReference)element.getValue();
-        Object imobj = null;
+        Object imobj;
         if (ndesc.isObjectReference()) {
             imobj = imref;
         } else {
             if (validateOnly) {
                 imobj = archetypeService.create(imref.getArchetypeId());
             } else {
-                imobj = ArchetypeQueryHelper.getByObjectReference(
-                        archetypeService, imref);
+                imobj = archetypeService.get(imref);
             }
         }
 
@@ -786,8 +777,7 @@ public class StaxArchetypeDataLoader {
                 imobj = archetypeService.create(imref.getArchetypeId());
             }
         } else {
-            imobj = ArchetypeQueryHelper.getByObjectReference(
-                    archetypeService, imref);
+            imobj = archetypeService.get(imref);
         }
 
         return imobj;
@@ -919,11 +909,7 @@ public class StaxArchetypeDataLoader {
      * @return boolean
      */
     private boolean isAttributeIdRef(String value) {
-        if (value.startsWith("id:")) {
-            return true;
-        }
-
-        return false;
+        return value.startsWith("id:");
     }
 
     /**
@@ -1021,8 +1007,8 @@ public class StaxArchetypeDataLoader {
      */
     private void createLogger() throws Exception {
         URL url = Thread.currentThread().getContextClassLoader().getResource("log4j.properties");
-        System.out.println("Using log4j property file: " + url.toString());
         if (url != null) {
+            System.out.println("Using log4j property file: " + url.toString());
             PropertyConfigurator.configure(url);
             logger = Logger.getLogger(StaxArchetypeDataLoader.class);
         } else {

@@ -19,9 +19,9 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -55,7 +55,7 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
 
     @Override
     protected void assembleDO(DO target, T source, DOState state,
-                                 Context context) {
+                              Context context) {
         super.assembleDO(target, source, state, context);
 
         IDENT.assembleDO(target.getIdentities(), source.getIdentities(),

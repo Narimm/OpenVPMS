@@ -46,6 +46,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.SelectConstraint;
@@ -145,9 +146,14 @@ public class QueryBuilder {
             // get the name of the attribute
             property = getProperty(ndesc);
         }
+        if (constraint instanceof ObjectRefSelectConstraint) {
+            context.addObjectRefSelectConstraint(types.getAlias());
+        } else {
+            context.addSelectConstraint(types.getAlias(),
+                                        constraint.getNodeName(),
+                                        property);
+        }
 
-        context.addSelectConstraint(types.getAlias(), constraint.getNodeName(),
-                                    property);
     }
 
     /**

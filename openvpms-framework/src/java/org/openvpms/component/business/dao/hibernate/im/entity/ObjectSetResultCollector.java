@@ -19,10 +19,11 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.dao.im.common.ResultCollector;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,12 +35,18 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet> {
+public class ObjectSetResultCollector
+        extends HibernateResultCollector<ObjectSet> {
 
     /**
      * The object names.
      */
     private String[] names;
+
+    /**
+     * Indicates which columns starts references.
+     */
+    private final String[] refColumnNames;
 
     /**
      * The results.
@@ -54,23 +61,26 @@ public class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet
 
 
     /**
-     * Constructs a new <code>ObjectSetResultCollector</code>.
-     */
-    public ObjectSetResultCollector() {
-        this(null, null);
-    }
-
-    /**
-     * Constructs a new <code>ObjectSetResultCollector</code>.
+     * Constructs a new <tt>ObjectSetResultCollector</tt>.
      *
-     * @param names the object names. May be <code>null</code>
-     * @param types a map of type aliases to their corresponding archetype short
-     *              names. May be <code>null</code>
+     * @param names    the object names
+     * @param refNames the names of the references being selected.
+     * @param types    a map of type aliases to their corresponding archetype
+     *                 short names. May be <tt>null</tt>
      */
-    public ObjectSetResultCollector(Collection<String> names,
+    public ObjectSetResultCollector(List<String> names,
+                                    List<String> refNames,
                                     Map<String, Set<String>> types) {
-        if (names != null) {
-            this.names = names.toArray(new String[0]);
+        this.names = names.toArray(new String[0]);
+        refColumnNames = new String[this.names.length];
+
+        for (String refName : refNames) {
+            int index = names.indexOf(refName + ".archetypeId");
+            if (index == -1 || index + 2 >= refColumnNames.length) {
+                throw new IllegalArgumentException(
+                        "Argument 'refNames' contains an invalid reference");
+            }
+            refColumnNames[index] = refName + ".reference";
         }
         this.types = types;
     }
@@ -83,20 +93,32 @@ public class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet
     public void collect(Object object) {
         ObjectSet set = createObjectSet();
         ObjectLoader loader = getLoader();
-        if (names == null) {
-            getNames(object);
-        }
         if (object instanceof Object[]) {
             Object[] values = (Object[]) object;
             if (values.length != names.length) {
                 throw new IllegalStateException("Mismatch args");
             }
-            for (int i = 0; i < names.length; ++i) {
-                Object value = values[i];
-                if (value != null) {
-                    loader.load(value);
+            for (int i = 0; i < names.length;) {
+                if (refColumnNames[i] != null) {
+                    ArchetypeId archetypeId = (ArchetypeId) values[i];
+                    Long id = (Long) values[i + 1];
+                    if (id == null) {
+                        id = -1L; // should never happen
+                    }
+                    String linkId = (String) values[i + 2];
+
+                    IMObjectReference ref = new IMObjectReference(
+                            archetypeId, id, linkId);
+                    set.set(refColumnNames[i], ref);
+                    i += 3;
+                } else {
+                    Object value = values[i];
+                    if (value != null) {
+                        loader.load(value);
+                    }
+                    set.set(names[i], value);
+                    i++;
                 }
-                set.set(names[i], value);
             }
         } else if (names.length != 1) {
             throw new IllegalStateException("Mismatch args");
@@ -131,22 +153,4 @@ public class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet
         return result;
     }
 
-    /**
-     * Creates the names to associate with each object in the set.
-     *
-     * @param object the object set
-     */
-    private void getNames(Object object) {
-        if (object instanceof Object[]) {
-            Object[] values = (Object[]) object;
-            names = new String[values.length];
-            for (int i = 0; i < names.length; ++i) {
-                names[i] = "" + i;
-            }
-
-        } else {
-            names = new String[1];
-            names[0] = "0";
-        }
-    }
 }

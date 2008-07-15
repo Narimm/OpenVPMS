@@ -42,6 +42,11 @@ public class QueryContext {
     private List<String> selectNames = new ArrayList<String>();
 
     /**
+     * The names of the object reference being selected.
+     */
+    private List<String> refSelectNames = new ArrayList<String>();
+
+    /**
      * The from clause part of the hql query
      */
     private StringBuffer fromClause = new StringBuffer("from ");
@@ -158,6 +163,15 @@ public class QueryContext {
      */
     public List<String> getSelectNames() {
         return selectNames;
+    }
+
+    /**
+     * Returns the names of the object reference being selected.
+     *
+     * @return the object reference names
+     */
+    public List<String> getRefSelectNames() {
+        return refSelectNames;
     }
 
     /**
@@ -375,6 +389,32 @@ public class QueryContext {
     }
 
     /**
+     * Adds an object reference select constraint.
+     *
+     * @param alias the type alias. May be <code>null</code>
+     */
+    void addObjectRefSelectConstraint(String alias) {
+        if (alias == null) {
+            alias = varStack.peek();
+        }
+        if (selectClause.length() != initSelectClauseLen) {
+            selectClause.append(", ");
+        }
+
+        selectClause.append(alias);
+        selectClause.append(".archetypeId, ");
+        selectClause.append(alias);
+        selectClause.append(".id, ");
+        selectClause.append(alias);
+        selectClause.append(".linkId");
+
+        selectNames.add(alias + ".archetypeId");
+        selectNames.add(alias + ".id");
+        selectNames.add(alias + ".linkId");
+        refSelectNames.add(alias);
+    }
+
+    /**
      * Adds a where constraint.
      *
      * @param alias    the type alias. May be <code>null</code>
@@ -535,7 +575,7 @@ public class QueryContext {
 
                 for (int i = 0; i < parameters.length; ++i) {
                     if (i > 0) {
-                       whereClause.append(", ");
+                        whereClause.append(", ");
                     }
                     varName = paramNames.getName(property);
                     whereClause.append(":").append(varName);
@@ -773,6 +813,11 @@ public class QueryContext {
             int index = name.lastIndexOf(".");
             if (index != -1) {
                 name = name.substring(index + 1);
+            }
+            if (name.endsWith("DO")) {
+                // strip off the DO suffix to make generated HQL a little
+                // easier to read
+                name = name.substring(0, name.length() - 2);
             }
             name = WordUtils.uncapitalize(name);
             int i = 0;

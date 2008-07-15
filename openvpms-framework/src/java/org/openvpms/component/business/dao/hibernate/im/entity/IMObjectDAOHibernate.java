@@ -69,6 +69,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 
 
 /**
@@ -157,7 +158,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     /* (non-Javadoc)
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(java.util.Collection)
      */
-    public void save(final Collection<IMObject> objects) {
+    public void save(final Collection<? extends IMObject> objects) {
         try {
             update(new HibernateCallback() {
                 public Object doInHibernate(Session session)
@@ -275,7 +276,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                          (HibernateResultCollector) collector,
                          firstResult, maxResults, count);
         } catch (Exception exception) {
-            throw new IMObjectDAOException(FailedToExecuteQuery, exception);
+            throw new IMObjectDAOException(FailedToExecuteQuery, exception,
+                                           queryString);
         }
     }
 
@@ -442,20 +444,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getById(org.openvpms.component.business.domain.archetype.ArchetypeId,
-     *      long)
-     */
-    public IMObject getById(String clazz, final long id) {
-        try {
-            return get(clazz, "id", id);
-        } catch (Exception exception) {
-            throw new IMObjectDAOException(FailedToFindIMObject, exception);
-        }
-    }
-
     /**
      * Returns an object with the specified reference.
      *
@@ -467,7 +455,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         ArchetypeDescriptor desc = cache.getArchetypeDescriptor(
                 reference.getArchetypeId());
         if (desc != null) {
-            return getById(desc.getClassName(), reference.getId());
+            return get(desc.getClassName(), "id", reference.getId());
         }
         return null;
     }
@@ -843,7 +831,9 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 if (result.size() == 0) {
                     return null;
                 } else {
-                    return (IMObject) result.get(0);
+                    Context context = getContext(session);
+                    IMObjectDO object = (IMObjectDO) result.get(0);
+                    return assembler.assemble(object, context);
                 }
             }
         });
@@ -888,13 +878,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param objects the objects to save
      * @param session the session to use
      */
-    private void save(Collection<IMObject> objects, Session session) {
+    private void save(Collection<? extends IMObject> objects, Session session) {
         Context context = getContext(session);
-        boolean deferred = !context.getSaveDeferred().isEmpty();
         for (IMObject object : objects) {
             save(object, context);
         }
-        if (deferred) {
+        if (context.getSaveDeferred().size() > 1) {
             assembleDeferred(context);
         }
         if (!context.isSynchronizationActive()) {
@@ -1023,6 +1012,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             QueryContext context = builder.build((ArchetypeQuery) query);
             HibernateResultCollector<ObjectSet> collector
                     = new ObjectSetResultCollector(context.getSelectNames(),
+                                                   context.getRefSelectNames(),
                                                    context.getSelectTypes());
             collector.setLoader(new DefaultObjectLoader());
             get(context, query, collector);
@@ -1054,8 +1044,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
         public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
             NamedQuery q = (NamedQuery) query;
+            List<String> names = new ArrayList<String>(q.getNames());
+            List<String> refNames = Collections.emptyList();
             HibernateResultCollector<ObjectSet> collector
-                    = new ObjectSetResultCollector(q.getNames(), null);
+                    = new ObjectSetResultCollector(names, refNames, null);
             collector.setLoader(new DefaultObjectLoader());
             get(query, collector);
             return collector.getPage();

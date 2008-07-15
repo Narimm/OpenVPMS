@@ -44,32 +44,14 @@ import java.util.List;
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class LookupTestCase extends
-                            AbstractDependencyInjectionSpringContextTests {
+public class LookupTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Holds a reference to the archetype service
+     * The archetype service.
      */
     private ArchetypeService service;
 
-
-    /**
-     * Default constructor
-     */
-    public LookupTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/lookup/lookup-service-appcontext.xml"
-        };
-    }
 
     /**
      * Test that we can create an object through this service.
@@ -205,8 +187,7 @@ public class LookupTestCase extends
         Lookup state = createStateLookup("VIC");
         cty.addLookupRelationship(createLookupRelationship(
                 "lookupRelationship.countryState", cty, state));
-        service.save(state);
-        service.save(cty);
+        service.save(Arrays.asList(state, cty));
 
         ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(
                 "contact.location");
@@ -307,8 +288,20 @@ public class LookupTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        this.service = (ArchetypeService) applicationContext.getBean(
+        service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/lookup/lookup-service-appcontext.xml"
+        };
     }
 
     /**

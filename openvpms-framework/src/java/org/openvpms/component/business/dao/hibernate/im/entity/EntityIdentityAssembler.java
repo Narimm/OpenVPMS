@@ -18,12 +18,10 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
-import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 
 /**
  * Add description here.
@@ -40,17 +38,18 @@ public class EntityIdentityAssembler
 
     @Override
     protected void assembleDO(EntityIdentityDO target, EntityIdentity source,
-                                 DOState state, Context context) {
+                              DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setIdentity(source.getIdentity());
-        Entity entity = source.getEntity();
-        EntityDO targetEntity = null;
-        if (entity != null) {
-            Assembler assembler = context.getAssembler();
-            DOState entityState = assembler.assemble(entity, context);
-            targetEntity = (EntityDO) entityState.getObject();
+
+        EntityDO entity = null;
+        DOState entityState = getDO(source.getEntity(), EntityDO.class,
+                                    context);
+        if (entityState != null) {
+            entity = (EntityDO) entityState.getObject();
+            state.addState(entityState);
         }
-        target.setEntity(targetEntity);
+        target.setEntity(entity);
     }
 
     @Override

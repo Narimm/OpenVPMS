@@ -1,5 +1,6 @@
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+import org.apache.commons.lang.builder.StandardToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -61,6 +62,18 @@ public class IMObjectDO {
      */
     private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
     private IMObjectReference reference;
+
+
+    /**
+     * toString() style.
+     */
+    protected static final StandardToStringStyle STYLE;
+
+    static {
+        STYLE = new StandardToStringStyle();
+        STYLE.setUseShortClassName(true);
+        STYLE.setUseIdentityHashCode(false);
+    }
 
 
     /**
@@ -255,10 +268,10 @@ public class IMObjectDO {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, STYLE)
                 .append("id", id)
                 .append("linkId", linkId)
-                .append("archetypeId", archetypeId.getQualifiedName())
+                .append("archetypeId", archetypeId)
                 .append("version", version)
                 .toString();
     }

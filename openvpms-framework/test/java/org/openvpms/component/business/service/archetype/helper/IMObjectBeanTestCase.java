@@ -331,9 +331,9 @@ public class IMObjectBeanTestCase
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         Act act = (Act) service.create("act.simple");
-        bean.setValue("source", act.getObjectReference());
-
         service.save(act);
+
+        bean.setValue("source", act.getObjectReference());
         assertEquals(act, bean.getObject("source"));
     }
 
@@ -362,8 +362,7 @@ public class IMObjectBeanTestCase
         assertEquals(name, bean.getObject().getName());
 
         // verify that the object saved
-        IMObject object = ArchetypeQueryHelper.getByObjectReference(
-                service, bean.getObject().getObjectReference());
+        IMObject object = service.get(bean.getObject().getObjectReference());
         assertEquals(bean.getObject(), object);
 
         // verify that the name node was saved

@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.business.service.ruleengine.IRuleEngine;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
@@ -354,6 +355,23 @@ public class ArchetypeService implements IArchetypeService {
         return Collections.emptyList();
     }
 
+    /**
+     * Retrieves an object given its reference.
+     *
+     * @param reference the object reference
+     * @return the corresponding object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException if the query fails
+     */
+    public IMObject get(IMObjectReference reference) {
+        try {
+            return dao.get(reference);
+        } catch (Exception exception) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
+                    exception);
+        }
+    }
+
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(org.openvpms.component.system.common.query.ArchetypeQuery)
      */
@@ -520,7 +538,7 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    public void save(Collection<IMObject> objects) {
+    public void save(Collection<? extends IMObject> objects) {
         save(objects, true);
     }
 
@@ -532,7 +550,7 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    public void save(Collection<IMObject> objects, boolean validate) {
+    public void save(Collection<? extends IMObject> objects, boolean validate) {
         if (dao == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoDaoConfigured,

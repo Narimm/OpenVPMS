@@ -53,7 +53,7 @@ public interface IMObjectDAO {
      * @param objects the objects to save
      * @throws IMObjectDAOException if the request cannot complete
      */
-    void save(Collection<IMObject> objects);
+    void save(Collection<? extends IMObject> objects);
 
     /**
      * Deletes an {@link IMObject}.
@@ -191,19 +191,6 @@ public interface IMObjectDAO {
      */
     IPage<IMObject> get(String shortName, String instanceName, String clazz,
                         boolean activeOnly, int firstResult, int maxResults);
-
-    /**
-     * Return an object with the specified uid for the nominated clazz and null
-     * if it does not exists
-     *
-     * @param clazz the clazz of objects to search for
-     * @param id    the uid of the object
-     * @return IMObject
-     * @throws IMObjectDAOException if the request cannot complete
-     * @deprecated use {@link #get(IMObjectReference)}
-     */
-    @Deprecated
-    public IMObject getById(String clazz, long id);
 
     /**
      * Returns an object with the specified reference.

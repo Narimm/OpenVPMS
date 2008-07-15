@@ -23,12 +23,12 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.Arrays;
 import java.util.Collection;
+
 
 /**
  * Test that ability to create and query on parties.
@@ -211,6 +211,6 @@ public class ArchetypeServicePartyTestCase
      * @return the object or <tt>null</tt> if its not found
      */
     private IMObject get(IMObjectReference ref) {
-        return ArchetypeQueryHelper.getByObjectReference(service, ref);
+        return service.get(ref);
     }
 }

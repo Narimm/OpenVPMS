@@ -85,8 +85,7 @@ public class ArchetypeServiceActTestCase
         act.addParticipation(participation);
         service.save(act);
 
-        Act act1 = (Act) ArchetypeQueryHelper.getByUid(
-                service, act.getArchetypeId(), act.getId());
+        Act act1 = (Act) service.get(act.getObjectReference());
         assertEquals(act1, act);
     }
 
@@ -261,7 +260,7 @@ public class ArchetypeServiceActTestCase
         estimation.addActRelationship(relationship);
         item.addActRelationship(relationship);
 
-        List<IMObject> acts = Arrays.asList((IMObject) estimation, item);
+        List<Act> acts = Arrays.asList(estimation, item);
         checkSaveCollection(acts, 0);
 
         // reload the estimation and item. Each will have a separate copy of
@@ -271,7 +270,7 @@ public class ArchetypeServiceActTestCase
         assertNotNull(estimation);
         assertNotNull(item);
 
-        acts = Arrays.asList((IMObject) estimation, item);
+        acts = Arrays.asList(estimation, item);
 
         // save the collection, and verify they have saved by checking the
         // versions.
@@ -309,11 +308,11 @@ public class ArchetypeServiceActTestCase
 
         service.save(act1);
         act1.setStatus("POSTED");
-        Collection<IMObject> objects = Arrays.asList((IMObject) act1);
+        Collection<Act> objects = Arrays.asList(act1);
         service.save(objects);
 
         act1.removeParticipation(p1);
-        objects = Arrays.asList((IMObject) act1);
+        objects = Arrays.asList(act1);
         service.save(objects);
 
         service.save(act1);
@@ -350,7 +349,7 @@ public class ArchetypeServiceActTestCase
         // create a relationship from act2 -> act3
         addRelationship(act2, act3, "act2->act3");
 
-        service.save(Arrays.asList((IMObject) act1, act2, act3));
+        service.save(Arrays.asList(act1, act2, act3));
 
         service.remove(act1);
         assertNull(reload(act1));
@@ -380,7 +379,7 @@ public class ArchetypeServiceActTestCase
         bean.addRelationship("actRelationship.customerEstimationItem", item1);
         bean.addRelationship("actRelationship.customerEstimationItem", item2);
         bean.addRelationship("actRelationship.customerEstimationItem", item3);
-        service.save(Arrays.asList((IMObject) estimation, item1, item2, item3));
+        service.save(Arrays.asList(estimation, item1, item2, item3));
 
         // remove an item, and verify it has been removed and that the other
         // acts aren't removed
@@ -442,7 +441,7 @@ public class ArchetypeServiceActTestCase
         addRelationship(act1, act2, "act1->act2", true);
         addRelationship(act1, act3, "act1->act3", false);
 
-        service.save(Arrays.asList((IMObject) act1, act2, act3));
+        service.save(Arrays.asList( act1, act2, act3));
 
         // remove act1, and verify that it and act2 are removed, and act3
         // remains.
@@ -465,7 +464,7 @@ public class ArchetypeServiceActTestCase
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
 
         addRelationship(act1, act2, "act1->act2", true);
-        service.save(Arrays.asList((IMObject) act1, act2, act3));
+        service.save(Arrays.asList( act1, act2, act3));
 
         Act stale = reload(act1);
 
@@ -510,7 +509,7 @@ public class ArchetypeServiceActTestCase
         final ActRelationship relAct1Act3 = addRelationship(act1, act3,
                                                             "act1->act3");
 
-        service.save(Arrays.asList((IMObject) act1, act2, act3));
+        service.save(Arrays.asList(act1, act2, act3));
 
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
@@ -574,7 +573,7 @@ public class ArchetypeServiceActTestCase
         final ActRelationship relAct1Act2 = addRelationship(act1, act2,
                                                             "act1->act2");
 
-        service.save(Arrays.asList((IMObject) act1, act2));
+        service.save(Arrays.asList(act1, act2));
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 service.remove(act2);
@@ -618,7 +617,7 @@ public class ArchetypeServiceActTestCase
                 = addRelationship(act2, act4, "act2->act4", false);
         final ActRelationship relAct3Act4
                 = addRelationship(act3, act4, "act3->act4", false);
-        service.save(Arrays.asList((IMObject) act1, act2, act3, act4));
+        service.save(Arrays.asList( act1, act2, act3, act4));
 
         assertTrue(act4.getActRelationships().contains(relAct2Act4));
         assertTrue(act4.getActRelationships().contains(relAct3Act4));
@@ -760,7 +759,7 @@ public class ArchetypeServiceActTestCase
 
         String name = "act1->act2";
         final ActRelationship rel = addRelationship(act1, act2, name, true);
-        service.save(Arrays.asList((IMObject) act1, act2));
+        service.save(Arrays.asList(act1, act2));
 
         final String newName = "act1->act2 changed";
 
@@ -830,7 +829,7 @@ public class ArchetypeServiceActTestCase
      * @param objects the objects to save
      * @param version the expected version
      */
-    private void checkSaveCollection(List<IMObject> objects, long version) {
+    private void checkSaveCollection(List<? extends IMObject> objects, long version) {
         service.save(objects);
         for (IMObject object : objects) {
             assertEquals(version, object.getVersion());
@@ -849,8 +848,7 @@ public class ArchetypeServiceActTestCase
      */
     @SuppressWarnings("unchecked")
     private <T extends IMObject> T reload(T object) {
-        return (T) ArchetypeQueryHelper.getByObjectReference(
-                service, object.getObjectReference());
+        return (T) service.get(object.getObjectReference());
     }
 
     /**

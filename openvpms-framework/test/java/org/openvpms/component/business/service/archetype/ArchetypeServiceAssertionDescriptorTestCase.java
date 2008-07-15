@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.service.archetype;
 
+import junit.framework.TestCase;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -26,30 +27,20 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyList
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
-import org.openvpms.component.system.common.test.BaseTestCase;
 
-import java.util.Hashtable;
 
 /**
- * Test the management of assertions through the archetype service
+ * Test the management of assertions through the archetype service.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeServiceAssertionDescriptorTestCase extends BaseTestCase {
+public class ArchetypeServiceAssertionDescriptorTestCase extends TestCase {
 
     /**
      * Reference to the archetype service
      */
     private ArchetypeService service;
-
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(
-                ArchetypeServiceAssertionDescriptorTestCase.class);
-    }
 
     /**
      * Constructor for ArchetypeServiceTestCase.
@@ -117,9 +108,8 @@ public class ArchetypeServiceAssertionDescriptorTestCase extends BaseTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        Hashtable params = getTestData().getGlobalParams();
-        String assertionFile = (String) params.get("assertionFile");
-        String archFile = (String) params.get("archetypeFile");
+        String assertionFile = "org/openvpms/component/business/service/archetype/assertionTypes.xml";
+        String archFile = "org/openvpms/archetype/system/assertion/assertion.archetypeRange.adl";
 
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
                 archFile, assertionFile);

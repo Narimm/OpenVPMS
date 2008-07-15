@@ -120,9 +120,7 @@ public class ArchetypeServicePersistenceTestCase
         assertTrue(person.getContacts().size() == 1);
         service.save(person);
 
-        person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                       person.getArchetypeId(),
-                                                       person.getUid());
+        person = (Party) service.get(person.getObjectReference());
         assertTrue(person.getContacts().size() == 1);
         person.getDetails().put("firstName", "Grace");
         service.save(person);
@@ -143,9 +141,7 @@ public class ArchetypeServicePersistenceTestCase
         // create and insert a new lookup
         Lookup lookup = createCountryLookup("South Africa");
         service.save(lookup);
-        assertTrue(ArchetypeQueryHelper.getByUid(service,
-                                                 lookup.getArchetypeId(),
-                                                 lookup.getUid()) != null);
+        assertTrue(service.get(lookup.getObjectReference()) != null);
     }
 
     /**
@@ -505,9 +501,7 @@ public class ArchetypeServicePersistenceTestCase
         retrievePet.setActive(false);
         service.save(retrievePet);
 
-        retrievePet = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                            retrievePet.getArchetypeId(),
-                                                            retrievePet.getUid());
+        retrievePet = (Party) service.get(retrievePet.getObjectReference());
         assertNotNull(retrievePet);
         assertFalse(retrievePet.isActive());
     }
@@ -531,9 +525,7 @@ public class ArchetypeServicePersistenceTestCase
         }
 
         service.save(party);
-        party = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                      party.getArchetypeId(),
-                                                      party.getUid());
+        party = (Party) service.get(party.getObjectReference());
         assertTrue(party != null);
         assertTrue(party.getDetails() != null);
         assertTrue(party.getDetails().get("title").equals("MR"));
@@ -555,9 +547,7 @@ public class ArchetypeServicePersistenceTestCase
         service.save(role);
 
         // retrieve by id
-        role = (SecurityRole) ArchetypeQueryHelper.getByUid(service,
-                                                            role.getArchetypeId(),
-                                                            role.getUid());
+        role = (SecurityRole) service.get(role.getObjectReference());
         assertNotNull(role);
         assertEquals("administrator", role.getName());
 
@@ -584,9 +574,7 @@ public class ArchetypeServicePersistenceTestCase
         assertTrue(ndesc.getValue(object) != null);
         service.save(object);
 
-        object = (Lookup) ArchetypeQueryHelper.getByUid(service,
-                                                        object.getArchetypeId(),
-                                                        object.getUid());
+        object = (Lookup) service.get(object.getObjectReference());
         assertTrue(object != null);
         assertTrue(ndesc.getValue(object) != null);
         assertTrue(ndesc.getValue(object).equals("jimmya"));
@@ -607,8 +595,7 @@ public class ArchetypeServicePersistenceTestCase
         service.save(person);
 
         IMObjectReference ref = person.getObjectReference();
-        person = (Party) ArchetypeQueryHelper.getByObjectReference(service,
-                                                                   ref);
+        person = (Party) service.get(ref);
         assertTrue(person.getLinkId().equals(ref.getLinkId()));
         assertTrue(person.getDetails().get("lastName").equals("Alateras"));
     }

@@ -119,7 +119,7 @@ public abstract class IMObjectRelationship extends IMObject {
     @Override
     @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, STYLE)
                 .appendSuper(super.toString())
                 .append("source", source)
                 .append("target", target)

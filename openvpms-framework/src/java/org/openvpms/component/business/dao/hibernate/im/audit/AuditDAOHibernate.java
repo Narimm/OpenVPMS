@@ -19,30 +19,34 @@
 
 package org.openvpms.component.business.dao.hibernate.im.audit;
 
-// java core
-import java.util.List;
-
-//spring-framework
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
-
-//openvpms-framework
 import org.openvpms.component.business.dao.im.audit.AuditDAOException;
 import org.openvpms.component.business.dao.im.audit.IAuditDAO;
 import org.openvpms.component.business.domain.im.audit.AuditRecord;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+
+import java.util.List;
 
 
 /**
  * This is an implementation of the IAuditDAO DAO for hibernate. It uses the
  * Spring Framework's template classes.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
-public class AuditDAOHibernate extends HibernateDaoSupport implements
-        IAuditDAO {
+public class AuditDAOHibernate extends HibernateDaoSupport
+        implements IAuditDAO {
 
     /**
-     *  Default constructor
+     * Query by object identifier and archetype identifier.
+     */
+    private static final String AUDIT_QUERY = "from  "
+            + AuditRecord.class.getName()
+            + " as auditRecord where auditRecord.archetypeId = ? and "
+            + "auditRecord.objectId = ?";
+
+    /**
+     * Default constructor
      */
     public AuditDAOHibernate() {
         super();
@@ -53,19 +57,16 @@ public class AuditDAOHibernate extends HibernateDaoSupport implements
      */
     @SuppressWarnings("unchecked")
     public List<AuditRecord> getByObjectId(String archetypeId, long objectId) {
-        List<AuditRecord> results = null;
+        List<AuditRecord> results;
         try {
-            String[] paramNames = new String[] {"archetypeId", "objectId"};
-            Object[] paramValues = new Object[] {archetypeId, objectId};
-            
-            results = getHibernateTemplate().findByNamedQueryAndNamedParam(
-                    "audit.getByObjectId", paramNames, paramValues);
+            Object[] values = new Object[]{archetypeId, objectId};
+            results = getHibernateTemplate().find(AUDIT_QUERY, values);
         } catch (Exception exception) {
             throw new AuditDAOException(
                     AuditDAOException.ErrorCode.FailedToFindAuditRecords,
                     new Object[]{archetypeId, objectId}, exception);
         }
-        
+
         return results;
     }
 
@@ -74,7 +75,8 @@ public class AuditDAOHibernate extends HibernateDaoSupport implements
      */
     public AuditRecord getById(long id) {
         try {
-            return (AuditRecord)getHibernateTemplate().load(AuditRecord.class, id);
+            return (AuditRecord) getHibernateTemplate().load(AuditRecord.class,
+                                                             id);
         } catch (Exception exception) {
             throw new AuditDAOException(
                     AuditDAOException.ErrorCode.FailedToFindAuditRecordById,
@@ -87,11 +89,11 @@ public class AuditDAOHibernate extends HibernateDaoSupport implements
      */
     public void insert(AuditRecord audit) {
         try {
-            getHibernateTemplate().save(audit); 
+            getHibernateTemplate().save(audit);
         } catch (Exception exception) {
             throw new AuditDAOException(
                     AuditDAOException.ErrorCode.FailedToInsertAuditRecord,
-                    new Object[]{audit.getArchetypeId(), audit.getObjectId()}, 
+                    new Object[]{audit.getArchetypeId(), audit.getObjectId()},
                     exception);
         }
     }

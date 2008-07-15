@@ -101,10 +101,12 @@ public abstract class IMObjectRelationshipDO extends IMObjectDO {
     @Override
     @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, STYLE)
                 .appendSuper(super.toString())
-                .append("source", source.getObjectReference())
-                .append("target", target.getObjectReference())
+                .append("source",
+                        (source != null) ? source.getObjectReference() : null)
+                .append("target",
+                        (target != null) ? target.getObjectReference() : null)
                 .toString();
     }
 }

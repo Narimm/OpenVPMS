@@ -60,7 +60,7 @@
         </set>
         <set name="identities" inverse="true" lazy="true" batch-size="50"
              cascade="all,delete-orphan">
-            <key column="entity_id" not-null="true" on-delete="cascade"/>
+            <key column="entity_id" on-delete="cascade"/>
             <one-to-many
                     class="org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDO"/>
         </set>
