@@ -22,6 +22,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -49,27 +50,35 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         final int count = 10;
         Party schedule = AppointmentTestHelper.createSchedule();
         Date from = new Date();
+        Act[] appointments = new Act[count];
         Date[] startTimes = new Date[count];
         Date[] endTimes = new Date[count];
         Date[] arrivalTimes = new Date[count];
         Party[] customers = new Party[count];
         Party[] patients = new Party[count];
+        User[] clinicians = new User[count];
+        Entity[] appointmentTypes = new Entity[count];
         for (int i = 0; i < count; ++i) {
             Date startTime = new Date();
-            Date arrivalTime = new Date();
+            Date arrivalTime = (i % 2 == 0) ? new Date() : null;
             Date endTime = new Date();
             Party customer = TestHelper.createCustomer();
             Party patient = TestHelper.createPatient();
+            User clinician = TestHelper.createClinician();
             Act appointment = AppointmentTestHelper.createAppointment(
                     startTime, endTime, schedule, customer, patient);
             ActBean bean = new ActBean(appointment);
+            bean.addParticipation("participation.clinician", clinician);
             bean.setValue("arrivalTime", arrivalTime);
+            appointments[i] = appointment;
             startTimes[i] = getTimestamp(startTime);
             arrivalTimes[i] = arrivalTime;
             endTimes[i] = getTimestamp(endTime);
+            appointmentTypes[i] = bean.getNodeParticipant("appointmentType");
             customers[i] = customer;
             patients[i] = patient;
-            save(appointment);
+            clinicians[i] = clinician;
+            bean.save();
         }
         Date to = new Date();
 
@@ -82,9 +91,17 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
             ObjectSet set = results.get(i);
+            assertEquals(appointments[i].getObjectReference(),
+                         set.get(AppointmentQuery.ACT_REFERENCE));
             assertEquals(startTimes[i],
                          set.get(AppointmentQuery.ACT_START_TIME));
             assertEquals(endTimes[i], set.get(AppointmentQuery.ACT_END_TIME));
+            assertEquals(appointments[i].getStatus() ,
+                         set.get(AppointmentQuery.ACT_STATUS));
+            assertEquals(appointments[i].getReason() ,
+                         set.get(AppointmentQuery.ACT_REASON));
+            assertEquals(appointments[i].getDescription() ,
+                         set.get(AppointmentQuery.ACT_DESCRIPTION));
             assertEquals(customers[i].getObjectReference(),
                          set.get(AppointmentQuery.CUSTOMER_REFERENCE));
             assertEquals(customers[i].getName(),
@@ -93,6 +110,14 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
                          set.get(AppointmentQuery.PATIENT_REFERENCE));
             assertEquals(patients[i].getName(),
                          set.get(AppointmentQuery.PATIENT_NAME));
+            assertEquals(clinicians[i].getObjectReference(),
+                         set.get(AppointmentQuery.CLINICIAN_REFERENCE));
+            assertEquals(clinicians[i].getName(),
+                         set.get(AppointmentQuery.CLINICIAN_NAME));
+            assertEquals(appointmentTypes[i].getObjectReference(),
+                         set.get(AppointmentQuery.APPOINTMENT_REFERENCE));
+            assertEquals(appointmentTypes[i].getName(),
+                         set.get(AppointmentQuery.APPOINTMENT_NAME));
             assertEquals(arrivalTimes[i],
                          set.get(AppointmentQuery.ARRIVAL_TIME));
         }
