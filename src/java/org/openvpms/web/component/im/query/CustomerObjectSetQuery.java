@@ -93,8 +93,8 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * @return a new result set
      */
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        String patientWildcard = getWildcardedText(patientName);
-        String contactWildcard = getWildcardedText(contact, true);
+        String patientWildcard = getWildcardedText(getPatientName());
+        String contactWildcard = getWildcardedText(getContact(), true);
 
         return new CustomerResultSet(getArchetypeConstraint(), getName(),
                                      isIdentitySearch(), patientWildcard,
@@ -137,15 +137,10 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * @param container the container
      */
     protected void addPatientName(Component container) {
-        patientName = TextComponentFactory.create();
-        patientName.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onQuery();
-            }
-        });
+        TextField field = getPatientName();
         container.add(LabelFactory.create("customerquery.patient"));
-        container.add(patientName);
-        getFocusGroup().add(patientName);
+        container.add(field);
+        getFocusGroup().add(field);
     }
 
     /**
@@ -154,14 +149,43 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * @param container the container
      */
     protected void addContact(Component container) {
-        contact = TextComponentFactory.create();
-        contact.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onQuery();
-            }
-        });
+        TextField field = getContact();
         container.add(LabelFactory.create("customerquery.contact"));
-        container.add(contact);
-        getFocusGroup().add(contact);
+        container.add(field);
+        getFocusGroup().add(field);
+    }
+
+    /**
+     * Returns the patient name field.
+     *
+     * @return the patient name field
+     */
+    private TextField getPatientName() {
+        if (patientName == null) {
+            patientName = TextComponentFactory.create();
+            patientName.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onQuery();
+                }
+            });
+        }
+        return patientName;
+    }
+
+    /**
+     * Returns the contact field.
+     *
+     * @return the contact field
+     */
+    private TextField getContact() {
+        if (contact == null) {
+            contact = TextComponentFactory.create();
+            contact.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onQuery();
+                }
+            });
+        }
+        return contact;
     }
 }
