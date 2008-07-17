@@ -251,6 +251,7 @@ public class AppointmentQuery {
                 current.set(APPOINTMENT_NAME, null);
                 current.set(CLINICIAN_REFERENCE, null);
                 current.set(CLINICIAN_NAME, null);
+                current.set(ARRIVAL_TIME, null);
             }
             IMObjectReference entityRef
                     = (IMObjectReference) set.get("entity.objectReference");
@@ -270,10 +271,9 @@ public class AppointmentQuery {
             }
             String key = (String) set.get("act.details_Keys");
             TypedValue value = (TypedValue) set.get("act.details_Values");
-            if (key != null && value != null) {
-                if (!current.exists(key)) {
-                    current.set(key, value.getObject());
-                }
+            if (key != null) {
+                Object object = (value != null) ? value.getObject() : null;
+                current.set(key, object);
             }
         }
         if (current != null) {
