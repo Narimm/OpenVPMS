@@ -62,13 +62,16 @@ public class ActDeleteHandler extends AbstractDeleteHandler {
         delete(parent, visited, session);
     }
 
-    private void delete(ActDO source, Set<ActDO> visited, Session session) {
-        visited.add(source);
+    private void delete(ActDO act, Set<ActDO> visited, Session session) {
+        visited.add(act);
+
+        // remove relationships where the act is the source. If a relationship
+        // is a parent-child relationship, also remove the target act
         ActRelationshipDO[] relationships
-                = source.getSourceActRelationships().toArray(
+                = act.getSourceActRelationships().toArray(
                 new ActRelationshipDO[0]);
         for (ActRelationshipDO relationhip : relationships) {
-            source.removeSourceActRelationship(relationhip);
+            act.removeSourceActRelationship(relationhip);
             ActDO target = (ActDO) relationhip.getTarget();
             if (target != null) {
                 target.removeTargetActRelationship(relationhip);
@@ -79,7 +82,18 @@ public class ActDeleteHandler extends AbstractDeleteHandler {
                 }
             }
         }
-        session.delete(source);
+
+        // now remove relationships where the act is the target
+        relationships = act.getTargetActRelationships().toArray(
+                new ActRelationshipDO[0]);
+        for (ActRelationshipDO relationship: relationships) {
+            act.removeTargetActRelationship(relationship);
+            ActDO source = (ActDO) relationship.getSource();
+            if (source != null) {
+                source.removeSourceActRelationship(relationship);
+            }
+        }
+        session.delete(act);
     }
 
 }

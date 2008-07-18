@@ -93,6 +93,7 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
             for (K key : removed) {
                 DO object = target.get(key);
                 state.removeState(object);
+                context.remove(object);
             }
             super.remove(target, removed);
         }

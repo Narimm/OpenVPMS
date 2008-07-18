@@ -68,6 +68,7 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
             for (DO removed : getRemoved(targetMap, retained)) {
                 target.remove(removed);
                 state.removeState(removed);
+                context.remove(removed);
             }
             for (Map.Entry<IMObjectReference, DO> entry : retained.entrySet()) {
                 DO current = entry.getValue();

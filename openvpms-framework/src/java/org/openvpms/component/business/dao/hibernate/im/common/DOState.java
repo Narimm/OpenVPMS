@@ -162,9 +162,6 @@ public class DOState {
                                                 object.getId());
         }
         this.source = source;
-        if (states != null) {
-            states.clear();
-        }
         if (deferred != null) {
             deferred.clear();
         }

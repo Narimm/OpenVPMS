@@ -19,12 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.hibernate.Session;
-import org.hibernate.StaleObjectStateException;
-import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ObjectNotFound;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 
 /**
@@ -59,27 +54,8 @@ public abstract class AbstractDeleteHandler implements DeleteHandler {
      */
     public void delete(IMObject object, Session session, Context context) {
         if (!object.isNew()) {
-            IMObjectDO target;
-            IMObjectReference ref = object.getObjectReference();
-            DOState state = context.getCached(ref);
-            if (state != null) {
-                target = state.getObject();
-            } else {
-                Class<? extends IMObjectDO> type
-                        = assembler.getDOClass(object.getClass());
-                if (type == null) {
-                    throw new IMObjectDAOException(ClassNameMustBeSpecified);
-                }
-                target = context.get(ref, type);
-            }
-            if (target == null) {
-                throw new IMObjectDAOException(ObjectNotFound, ref);
-            }
-            if (target.getVersion() != object.getVersion()) {
-                throw new StaleObjectStateException(object.getClass().getName(),
-                                                    object.getId());
-            }
-            delete(target, session);
+            DOState state = assembler.assemble(object, context);
+            delete(state.getObject(), session);
             session.flush();
         }
     }

@@ -107,11 +107,26 @@ public class Context {
 
     public void add(IMObject source, DOState target) {
         objectToDOMap.put(source, target);
+        doToObjectMap.put(target.getObject(), source);
         refToDOMap.put(source.getObjectReference(), target);
     }
 
     public void add(IMObjectDO source, IMObject target) {
         doToObjectMap.put(source, target);
+    }
+
+    public void remove(IMObjectDO target) {
+        IMObject source = doToObjectMap.get(target);
+        session.delete(target);
+        doToObjectMap.remove(target);
+        if (source != null) {
+            DOState state = objectToDOMap.get(source);
+            objectToDOMap.remove(source);
+            refToDOMap.remove(source.getObjectReference());
+            if (state != null) {
+                saveDeferred.remove(state);
+            }
+        }
     }
 
     public DOState getCached(IMObject source) {

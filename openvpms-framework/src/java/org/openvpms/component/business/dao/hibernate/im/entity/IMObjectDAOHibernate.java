@@ -187,6 +187,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                     DeleteHandler handler
                             = handlerFactory.getHandler(object);
                     handler.delete(object, session, context);
+                    updateIds(context);
                     return null;
                 }
             });
