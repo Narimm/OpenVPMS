@@ -45,10 +45,7 @@ public class IMObjectDAOException extends OpenVPMSException {
         FailedToFindIMObjects,
         ClassNameMustBeSpecified,
         FailedToExecuteNamedQuery,
-        FailedToFindParticipations,
-        FailedToFindActs,
         ObjectNotFound,
-        FailedToFindObjectsWithArchetypes,
         InvalidQueryString,
         FailedToExecuteQuery,
         CannotCollectObject

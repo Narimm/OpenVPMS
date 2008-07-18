@@ -28,12 +28,22 @@ package org.openvpms.component.system.common.query;
 public class ObjectRefSelectConstraint extends SelectConstraint {
 
     /**
-     * Constructs a new <tt>ObjectRefSelectConstraint</tt>.
+     * Creates a new <tt>ObjectRefSelectConstraint</tt>.
      *
-     * @param alias the type alias
+     * @param name the name. May be an alias or a qualified name
      */
-    public ObjectRefSelectConstraint(String alias) {
-        super(alias, null);
+    public ObjectRefSelectConstraint(String name) {
+        this(getAlias(name), getNodeName(name));
+    }
+
+    /**
+     * Creates a new <tt>ObjectRefSelectConstraint</tt>.
+     *
+     * @param alias    the type alias
+     * @param nodeName the node name. May be <tt>null</tt>
+     */
+    public ObjectRefSelectConstraint(String alias, String nodeName) {
+        super(alias, nodeName);
     }
 
     /**
@@ -42,7 +52,32 @@ public class ObjectRefSelectConstraint extends SelectConstraint {
      * @return the qualified name
      */
     public String getName() {
-        return getAlias();
+        String alias = getAlias();
+        String nodeName = getNodeName();
+        return nodeName != null ? alias + "." + nodeName : nodeName;
+    }
+
+    /**
+     * Helper to return the alias from a (potentially) qualified name.
+     *
+     * @param name the name. May be qualified
+     * @return the alias from the name, or <code>null</code> if the name is
+     *         unqualified
+     */
+    private static String getAlias(String name) {
+        int index = name.indexOf('.');
+        return (index == -1) ? name : name.substring(0, index);
+    }
+
+    /**
+     * Helper to return the node name from a (potentially) qualified name.
+     *
+     * @param name the name. May be qualified
+     * @return the node name
+     */
+    private static String getNodeName(String name) {
+        int index = name.indexOf('.');
+        return (index == -1) ? null : name.substring(index + 1);
     }
 
 }

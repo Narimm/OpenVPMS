@@ -43,7 +43,7 @@ public abstract class MapConverter<K, VS, VT> {
             Map<K, VT> retained = getRetained(target, source);
 
             Set<K> removed = getRemoved(target, retained);
-            target.keySet().removeAll(removed);
+            remove(target, removed);
 
             for (Map.Entry<K, VT> entry : retained.entrySet()) {
                 VT value = entry.getValue();
@@ -64,19 +64,24 @@ public abstract class MapConverter<K, VS, VT> {
 
     protected abstract VT convert(VS value);
 
-    public Set<K> getRemoved(Map<K, VT> target, Map<K, VT> retained) {
+    protected void remove(Map<K, VT> target, Set<K> removed) {
+        target.keySet().removeAll(removed);
+    }
+
+
+    protected Set<K> getRemoved(Map<K, VT> target, Map<K, VT> retained) {
         Map<K, VT> result = new HashMap<K, VT>(target);
         result.keySet().removeAll(retained.keySet());
         return result.keySet();
     }
 
-    public Map<K, VT> getRetained(Map<K, VT> target, Map<K, VS> source) {
+    protected Map<K, VT> getRetained(Map<K, VT> target, Map<K, VS> source) {
         Map<K, VT> result = new HashMap<K, VT>(target);
         result.keySet().retainAll(source.keySet());
         return result;
     }
 
-    public Map<K, VS> getAdded(Map<K, VT> retained, Map<K, VS> source) {
+    protected Map<K, VS> getAdded(Map<K, VT> retained, Map<K, VS> source) {
         Map<K, VS> result = new HashMap<K, VS>(source);
         result.keySet().removeAll(retained.keySet());
         return result;

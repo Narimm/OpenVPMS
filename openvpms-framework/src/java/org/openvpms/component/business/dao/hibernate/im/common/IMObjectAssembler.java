@@ -64,31 +64,25 @@ public abstract class IMObjectAssembler<T extends IMObject,
         DOState state;
         DO target;
         T object = type.cast(source);
-        if (source.isNew()) {
-            target = create(object);
-            state = new DOState(target, source);
-
-            // pre-cache just in case the graph is cyclic
-            context.add(source, state);
-            // now assemble
-            assembleDO(target, object, state, context);
-        } else {
-            state = context.getCached(source);
-            if (state == null) {
-                // target not yet assembled from the source
-                target = load(source.getObjectReference(), typeDO, context);
-                state = new DOState(target, source);
+        state = context.getCached(source);
+        if (state == null) {
+            // target not yet assembled from the source
+            if (source.isNew()) {
+                target = create(object);
             } else {
-                // updating assembled object
-                target = typeDO.cast(state.getObject());
-                state.update(source);
+                target = load(source.getObjectReference(), typeDO, context);
             }
-
-            // pre-cache just in case the graph is cyclic
-            context.add(source, state);
-            // now assemble
-            assembleDO(target, object, state, context);
+            state = new DOState(target, source);
+        } else {
+            // updating assembled object
+            target = typeDO.cast(state.getObject());
+            state.update(source);
         }
+
+        // pre-cache just in case the graph is cyclic
+        context.add(source, state);
+        // now assemble
+        assembleDO(target, object, state, context);
         return state;
     }
 

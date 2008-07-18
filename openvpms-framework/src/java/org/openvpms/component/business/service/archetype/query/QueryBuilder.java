@@ -147,7 +147,8 @@ public class QueryBuilder {
             property = getProperty(ndesc);
         }
         if (constraint instanceof ObjectRefSelectConstraint) {
-            context.addObjectRefSelectConstraint(types.getAlias());
+            context.addObjectRefSelectConstraint(types.getAlias(),
+                                                 constraint.getNodeName());
         } else {
             context.addSelectConstraint(types.getAlias(),
                                         constraint.getNodeName(),

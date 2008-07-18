@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * Add description here.
@@ -43,7 +45,7 @@ public class DOState {
     private long version;
 
     private List<DeferredAssembler> deferred;
-    private List<DOState> states;
+    private Map<IMObjectDO, DOState> states;
     private List<ReferenceUpdater> updaters;
 
     public DOState(IMObjectDO object) {
@@ -71,11 +73,45 @@ public class DOState {
         return source;
     }
 
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param other the reference object with which to compare.
+     * @return <tt>true</tt> if this object is the same as the obj
+     *         argument; <tt>false</tt> otherwise.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other instanceof DOState) {
+            return object.equals(((DOState) other).object);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object
+     */
+    @Override
+    public int hashCode() {
+        return object.hashCode();
+    }
+
     public void addState(DOState state) {
         if (states == null) {
-            states = new ArrayList<DOState>();
+            states = new LinkedHashMap<IMObjectDO, DOState>();
         }
-        states.add(state);
+        states.put(state.getObject(), state);
+    }
+
+    public void removeState(IMObjectDO object) {
+        if (states != null) {
+            states.remove(object);
+        }
     }
 
     public void addDeferred(DeferredAssembler assembler) {
@@ -160,9 +196,9 @@ public class DOState {
 
         protected boolean visitChildren(DOState state) {
             boolean result = true;
-            List<DOState> states = state.states;
+            Map<IMObjectDO, DOState> states = state.states;
             if (states != null) {
-                for (DOState child : states) {
+                for (DOState child : states.values()) {
                     if (!visited.contains(child)) {
                         if (!visit(child)) {
                             result = false;
@@ -276,7 +312,7 @@ public class DOState {
             if (updaters != null) {
                 updaters.clear();
             }
-            List<DOState> states = state.states;
+            Map<IMObjectDO, DOState> states = state.states;
             if (states != null) {
                 states.clear();
             }

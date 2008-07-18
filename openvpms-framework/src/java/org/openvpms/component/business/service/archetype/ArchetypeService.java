@@ -486,7 +486,7 @@ public class ArchetypeService implements IArchetypeService {
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
-                    exception, entity.getId());
+                    exception, entity.getObjectReference());
         }
     }
 

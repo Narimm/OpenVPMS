@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Add description here.
@@ -85,6 +86,15 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
             DOState child = getDO(value, typeDO, context);
             state.addState(child);
             return typeDO.cast(child.getObject());
+        }
+
+        @Override
+        protected void remove(Map<K, DO> target, Set<K> removed) {
+            for (K key : removed) {
+                DO object = target.get(key);
+                state.removeState(object);
+            }
+            super.remove(target, removed);
         }
     }
 

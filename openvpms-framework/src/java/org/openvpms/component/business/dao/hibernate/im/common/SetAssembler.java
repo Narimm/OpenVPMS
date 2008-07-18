@@ -67,11 +67,13 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
                                                               sourceMap);
             for (DO removed : getRemoved(targetMap, retained)) {
                 target.remove(removed);
+                state.removeState(removed);
             }
             for (Map.Entry<IMObjectReference, DO> entry : retained.entrySet()) {
-                DO result = entry.getValue();
+                DO current = entry.getValue();
                 T src = sourceMap.get(entry.getKey());
-                assembler.assemble(result, src, context);
+                DOState result = assembler.assemble(current, src, context);
+                state.addState(result);
             }
             for (T added : getAdded(retained, sourceMap)) {
                 DOState result = getDO(added, typeDO, context);

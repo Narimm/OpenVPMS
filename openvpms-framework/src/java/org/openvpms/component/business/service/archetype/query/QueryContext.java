@@ -391,9 +391,10 @@ public class QueryContext {
     /**
      * Adds an object reference select constraint.
      *
-     * @param alias the type alias. May be <code>null</code>
+     * @param alias the type alias. May be <tt>null</tt>
+     * @param nodeName the node name. May ve <tt>null</tt>
      */
-    void addObjectRefSelectConstraint(String alias) {
+    void addObjectRefSelectConstraint(String alias, String nodeName) {
         if (alias == null) {
             alias = varStack.peek();
         }
@@ -401,17 +402,18 @@ public class QueryContext {
             selectClause.append(", ");
         }
 
-        selectClause.append(alias);
+        String prefix = (nodeName != null) ? alias + "." + nodeName : alias;
+        selectClause.append(prefix);
         selectClause.append(".archetypeId, ");
-        selectClause.append(alias);
+        selectClause.append(prefix);
         selectClause.append(".id, ");
-        selectClause.append(alias);
+        selectClause.append(prefix);
         selectClause.append(".linkId");
 
-        selectNames.add(alias + ".archetypeId");
-        selectNames.add(alias + ".id");
-        selectNames.add(alias + ".linkId");
-        refSelectNames.add(alias);
+        selectNames.add(prefix + ".archetypeId");
+        selectNames.add(prefix + ".id");
+        selectNames.add(prefix + ".linkId");
+        refSelectNames.add(prefix);
     }
 
     /**

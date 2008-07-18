@@ -33,8 +33,8 @@ import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.ContextHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
 import org.openvpms.component.business.dao.hibernate.impl.DeleteHandlerFactory;
 import org.openvpms.component.business.dao.im.Page;
@@ -65,11 +65,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collections;
 
 
 /**
@@ -192,7 +192,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             });
         } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToDeleteIMObject, exception,
-                                           object.getId());
+                                           object.getObjectReference());
         }
     }
 
@@ -880,11 +880,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     private void save(Collection<? extends IMObject> objects, Session session) {
         Context context = getContext(session);
+        boolean deferred = !context.getSaveDeferred().isEmpty();
         for (IMObject object : objects) {
             save(object, context);
         }
-        if (context.getSaveDeferred().size() > 1) {
-            assembleDeferred(context);
+        if (deferred || context.getSaveDeferred().size() > 1) {
+            saveDeferred(context, false);
         }
         if (!context.isSynchronizationActive()) {
             preCommit(context);
