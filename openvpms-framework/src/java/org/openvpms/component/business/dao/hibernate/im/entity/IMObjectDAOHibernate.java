@@ -480,7 +480,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                                 int maxResults, boolean count) {
         try {
             executeNamedQuery(query, parameters, firstResult, maxResults,
-                              collector, count);
+                              (HibernateResultCollector) collector, count);
         } catch (Exception exception) {
             throw new IMObjectDAOException(FailedToExecuteNamedQuery,
                                            exception);
@@ -668,7 +668,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     private void executeNamedQuery(final String name,
                                    final Map<String, Object> params,
                                    final int firstRow, final int numOfRows,
-                                   final ResultCollector collector,
+                                   final HibernateResultCollector collector,
                                    final boolean count) throws Exception {
         execute(new HibernateCallback() {
             @SuppressWarnings("unchecked")
@@ -693,6 +693,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 List<Object> rows = query.list();
                 collector.setFirstResult(firstRow);
                 collector.setPageSize(numOfRows);
+                collector.setSession(session);
+                Context context = getContext(session);
+                collector.setContext(context);
+
                 if (numOfRows == ArchetypeQuery.ALL_RESULTS) {
                     collector.setTotalResults(rows.size());
                 } else if (count) {
@@ -1046,7 +1050,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
         public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
             NamedQuery q = (NamedQuery) query;
-            List<String> names = new ArrayList<String>(q.getNames());
+            List<String> names = (q.getNames() != null) ?
+                    new ArrayList<String>(q.getNames()) : null;
             List<String> refNames = Collections.emptyList();
             HibernateResultCollector<ObjectSet> collector
                     = new ObjectSetResultCollector(names, refNames, null);

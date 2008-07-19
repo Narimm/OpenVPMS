@@ -55,7 +55,7 @@ public class ObjectSetResultCollector
 
     /**
      * A map of type aliases to their corresponding sbort names.
-     * May be <code>null</code>
+     * May be <tt>null</tt>
      */
     private final Map<String, Set<String>> types;
 
@@ -63,24 +63,29 @@ public class ObjectSetResultCollector
     /**
      * Constructs a new <tt>ObjectSetResultCollector</tt>.
      *
-     * @param names    the object names
+     * @param names    the object names. May be <tt>null</tt>
      * @param refNames the names of the references being selected.
+     *                 May be <tt>null</tt>
      * @param types    a map of type aliases to their corresponding archetype
      *                 short names. May be <tt>null</tt>
      */
     public ObjectSetResultCollector(List<String> names,
                                     List<String> refNames,
                                     Map<String, Set<String>> types) {
-        this.names = names.toArray(new String[0]);
-        refColumnNames = new String[this.names.length];
+        if (names != null) {
+            this.names = names.toArray(new String[0]);
+            refColumnNames = new String[this.names.length];
 
-        for (String refName : refNames) {
-            int index = names.indexOf(refName + ".archetypeId");
-            if (index == -1 || index + 2 >= refColumnNames.length) {
-                throw new IllegalArgumentException(
-                        "Argument 'refNames' contains an invalid reference");
+            for (String refName : refNames) {
+                int index = names.indexOf(refName + ".archetypeId");
+                if (index == -1 || index + 2 >= refColumnNames.length) {
+                    throw new IllegalArgumentException(
+                            "Argument 'refNames' contains an invalid reference");
+                }
+                refColumnNames[index] = refName + ".reference";
             }
-            refColumnNames[index] = refName + ".reference";
+        } else {
+            refColumnNames = null;
         }
         this.types = types;
     }
@@ -93,13 +98,16 @@ public class ObjectSetResultCollector
     public void collect(Object object) {
         ObjectSet set = createObjectSet();
         ObjectLoader loader = getLoader();
+        if (names == null) {
+            getNames(object);
+        }
         if (object instanceof Object[]) {
             Object[] values = (Object[]) object;
             if (values.length != names.length) {
                 throw new IllegalStateException("Mismatch args");
             }
             for (int i = 0; i < names.length;) {
-                if (refColumnNames[i] != null) {
+                if (refColumnNames != null && refColumnNames[i] != null) {
                     ArchetypeId archetypeId = (ArchetypeId) values[i];
                     Long id = (Long) values[i + 1];
                     if (id == null) {
@@ -153,4 +161,22 @@ public class ObjectSetResultCollector
         return result;
     }
 
+    /**
+     * Creates the names to associate with each object in the set.
+     *
+     * @param object the object set
+     */
+    private void getNames(Object object) {
+        if (object instanceof Object[]) {
+            Object[] values = (Object[]) object;
+            names = new String[values.length];
+            for (int i = 0; i < names.length; ++i) {
+                names[i] = "" + i;
+            }
+
+        } else {
+            names = new String[1];
+            names[0] = "0";
+        }
+    }
 }

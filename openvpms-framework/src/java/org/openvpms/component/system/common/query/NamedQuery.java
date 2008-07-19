@@ -106,7 +106,7 @@ public class NamedQuery extends AbstractArchetypeQuery {
     /**
      * Returns the object names.
      *
-     * @return the object names
+     * @return the object names. May be <tt>null</tt>
      */
     public Collection<String> getNames() {
         return names;
