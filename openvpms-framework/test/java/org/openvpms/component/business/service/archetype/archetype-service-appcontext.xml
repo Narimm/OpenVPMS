@@ -150,6 +150,9 @@
                 <prop key="openvpms">
                     org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions
                 </prop>
+                <prop key="date">
+                    org.openvpms.component.system.common.jxpath.DateFunctions
+                </prop>
             </props>
         </constructor-arg>
     </bean>

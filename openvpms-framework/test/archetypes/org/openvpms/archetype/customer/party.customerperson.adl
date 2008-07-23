@@ -56,7 +56,7 @@
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="lookup.accountType" />
+							value="lookup.customerAccountType" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"

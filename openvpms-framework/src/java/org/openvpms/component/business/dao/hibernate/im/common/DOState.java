@@ -134,12 +134,6 @@ public class DOState {
         updaters.add(updater);
     }
 
-    public void removeReferenceUpdater(ReferenceUpdater updater) {
-        if (updaters != null) {
-            updaters.remove(updater);
-        }
-    }
-
     public void removeDeferred(DeferredAssembler assembler) {
         deferred.remove(assembler);
     }
@@ -262,7 +256,11 @@ public class DOState {
                     source.setVersion(state.version);
                 }
             }
-            // todo - need to revert IMObjectReferences as well
+            if (state.updaters != null) {
+                for (ReferenceUpdater updater : state.updaters) {
+                    updater.revert();
+                }
+            }
             return true;
         }
     }

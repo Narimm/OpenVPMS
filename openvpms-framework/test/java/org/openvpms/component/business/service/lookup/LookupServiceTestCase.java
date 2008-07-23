@@ -31,8 +31,8 @@ import java.util.Collection;
  * @version $LastChangedDate: 2006-11-27 05:03:46Z $
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class LookupServiceTestCase extends
-                                   AbstractDependencyInjectionSpringContextTests {
+public class LookupServiceTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
      * The archetype service

@@ -22,9 +22,6 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
-import com.thoughtworks.xstream.converters.basic.DateConverter;
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Element;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.ConsoleAppender;
@@ -32,43 +29,32 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.PropertyConfigurator;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
+
 
 /**
  * This tool will reads the specified XML document and process all of the
  * elements. It creates a spring application context to load the appropriate
  * services.
- * <p>
+ * <p/>
  * It will process the all data items using two passes. The first pass will
  * process and store data elements that do not reference other data elements.
  * The second pass will process and store data elements that make reference to
  * other elements.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -83,50 +69,23 @@ public class StaxArchetypeDataLoader {
      */
     private Logger logger;
 
-    /**
-     * A reference to the application context
-     */
-    private ApplicationContext context;
 
     /**
      * a reference to the archetype service
      */
-    private IArchetypeService archetypeService;
+    private IArchetypeService service;
 
     /**
      * Indicates whether it should only validate the data
      */
     private boolean validateOnly;
 
-    /**
-     * A sequence id generator
-     */
-    private int sequenceId;
+    private final IdRefCache cache = new IdRefCache();
 
     /**
-     * A reference to the idCache
+     * The batch size for saving objects.
      */
-    private Cache idCache;
-
-    /**
-     * The batch size that we should use for saving objects
-     */
-    private int batchSaveSize = 0;
-
-    /**
-     * The cache for batching saved objects
-     */
-    private ArrayList batchSaveCache = new ArrayList();
-
-    /**
-     * A linkId to id cache
-     */
-    private Cache linkIdCache;
-
-    /**
-     * A cache of unprocessed elements
-     */
-    private Cache unprocessedElementCache;
+    private int batchSize = 0;
 
     /**
      * Specifies the file extension to filter. Defaults to adl
@@ -140,15 +99,10 @@ public class StaxArchetypeDataLoader {
     private boolean verbose;
 
     /**
-     * Maintains a list of archetypes and count to indicate the number of 
+     * Maintains a list of archetypes and count to indicate the number of
      * each saved or validated
      */
     private Map<String, Long> statistics = new HashMap<String, Long>();
-
-    /**
-     * The total no. of created objects.
-     */
-    private int total = 0;
 
     /**
      * Used to process the command line
@@ -160,11 +114,11 @@ public class StaxArchetypeDataLoader {
      */
     private JSAPResult config;
 
+
     /**
      * Process the records in the specified XML document
-     * 
-     * @param args
-     *            the command line
+     *
+     * @param args the command line
      */
     public StaxArchetypeDataLoader(String[] args) throws Exception {
         // set up the command line options and the logger 
@@ -178,15 +132,13 @@ public class StaxArchetypeDataLoader {
         }
         // init
         init();
-
     }
 
     /**
      * The main line
-     * 
-     * @param args
-     *            the file where the data is stored is passed in as the first
-     *            argument
+     *
+     * @param args the file where the data is stored is passed in as the first
+     *             argument
      */
     public static void main(String[] args) throws Exception {
         StaxArchetypeDataLoader loader = new StaxArchetypeDataLoader(args);
@@ -195,27 +147,20 @@ public class StaxArchetypeDataLoader {
 
     /**
      * Load all the elements
-     * 
+     *
      * @throws Exception
      */
     private void load() throws Exception {
         // set some of the configuration options
         verbose = config.getBoolean("verbose");
         validateOnly = config.getBoolean("validateOnly");
-        batchSaveSize = config.getInt("batchSaveSize");
+        batchSize = config.getInt("batchSaveSize");
 
         Date start = new Date();
         if (config.getString("file") != null) {
-            // first parse
             processFile(config.getString("file"));
 
-            // second parse
-            processUnprocessedElementCache();
-
-            // force a flush on the cache
-            flushBatchSaveCache();
-
-                // dump the statistics
+            // dump the statistics
             dumpStatistics(start);
         } else if (config.getString("dir") != null) {
             // process the files
@@ -230,11 +175,11 @@ public class StaxArchetypeDataLoader {
 
     /**
      * Process all the files in the directory
-     * 
+     *
      * @param dir the directory
      */
     private void processDir(String dir) throws Exception {
-        String[] extensions = { extension };
+        String[] extensions = {extension};
         Collection collection = FileUtils.listFiles(new File(dir), extensions,
                                                     false);
         File[] files = FileUtils.convertFileCollectionToFileArray(collection);
@@ -243,583 +188,23 @@ public class StaxArchetypeDataLoader {
             File file = files[i];
             processFile(file.getAbsolutePath());
         }
-        processUnprocessedElementCache();
-
-        // force a flush on the cache
-        flushBatchSaveCache();
     }
 
     /**
      * Process the data elements.
-     * 
-     * @param file
-     *            the file to process
-     *            if this is the first parse for this file
-     * @throws Exception
-     *             propagate all exceptions to client
+     *
+     * @param file the file to process
+     *             if this is the first parse for this file
+     * @throws Exception propagate all exceptions to client
      */
     private void processFile(String file) throws Exception {
         logger.info("\n[PROCESSING FILE : " + file + "]\n");
 
         XMLStreamReader reader = getReader(file);
-        StringBuffer elemData = new StringBuffer("<archetype>");
-        Stack<IMObject> stack = new Stack<IMObject>();
-        boolean hasReference = false;
-        for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader
-                .next()) {
-            IMObject current = null;
-            switch (event) {
-            case XMLStreamConstants.START_DOCUMENT:
-                break;
-
-            case XMLStreamConstants.START_ELEMENT:
-                buildElementData(event, reader, elemData);
-                if (verbose) {
-                    logger.info("\n[START PROCESSING element="
-                            + reader.getLocalName()
-                            + " parent=" + (stack.size() == 0
-                            ? "none" : (stack.peek() == null) ? "unknown" :
-                                stack.peek().getArchetypeIdAsString())
-                            + "]\n" + formatElement(reader));
-                }
-
-                if (reader.getLocalName().equals("data")) {
-                    try {
-                        hasReference |= attributesContainReferences(reader);
-                        if (!hasReference) {
-                            // process the element
-                            if (stack.size() > 0) {
-                                if (stack.peek() != null) {
-                                    current = processElement(stack.peek(), reader);
-                                }
-                            } else {
-                                current = processElement(null, reader);
-                            }
-                        }
-
-                        stack.push(current);
-                    } catch (Exception exception) {
-                        Location location = reader.getLocation();
-                        logger.error("Error in start element, line "
-                                + location.getLineNumber()
-                                + ", column " + location.getColumnNumber() +
-                                "\n" +
-                                formatElement(reader) + "\n", exception);
-                    }
-                }
-                break;
-
-            case XMLStreamConstants.END_DOCUMENT:
-                break;
-
-            case XMLStreamConstants.END_ELEMENT:
-                buildElementData(event, reader, elemData);
-                if (stack.size() > 0) {
-                    current = stack.pop();
-                    try {
-                        if (stack.size() == 0) {
-                            elemData.append("</archetype>");
-                            if (hasReference) {
-                                // if this element has a reference then we 
-                                // need to stick it in the unprocessed element
-                                // cache and process it in a second parse.
-                                unprocessedElementCache.put(
-                                        new Element(sequenceId++,
-                                                    elemData.toString()));
-                                if (verbose) {
-                                    logger.info("\n[CACHED FOR SECOND PARSE SEQ:" +
-                                        sequenceId + "]\n" + elemData.toString());
-                                }
-                            } else {
-                                validateOrSave(current);
-                            }
-                            elemData = new StringBuffer("<archetype>");
-                            hasReference = false;
-                        }
-                    } catch (ValidationException validation) {
-                        logger.error("Failed to validate object\n" +
-                                current.toString(), validation);
-                    } catch (Exception exception) {
-                        logger.error("Failed to save object\n" +
-                                current.toString(), exception);
-                    }
-                }
-
-                if (verbose) {
-                    logger.info("\n[END PROCESSING element="
-                            + reader.getLocalName() + "]\n");
-                }
-
-
-                break;
-
-            default:
-                break;
-            }
-        }
-        // At end of file flush Batch Save cache
-        flushBatchSaveCache();
-    }
-
-    /**
-     * This will process all elements in unprocessed element cache
-     * @throws Exception
-     *             propagate all exceptions to client
-     */
-    private void processUnprocessedElementCache() throws Exception {
-        logger.info("\n[PROCESSING " + sequenceId + " ELEMENTS WITH REFERENCES]\n");
-
-        XMLInputFactory factory = XMLInputFactory.newInstance();
-        Stack<IMObject> stack = new Stack<IMObject>();
-        for (int index = 0; index < sequenceId; index++) {
-            // remove the element from the cache
-            Element elem = unprocessedElementCache.get(index);
-            unprocessedElementCache.remove(index);
-            if (elem == null) {
-                continue;
-            }
-
-            // create an xml stream reader form the string
-            XMLStreamReader reader = factory.createXMLStreamReader(
-                    new ByteArrayInputStream(((String)elem.getValue()).getBytes()));
-
-            // process the stream
-            for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT;
-                 event = reader.next()) {
-                IMObject current;
-                switch (event) {
-                    case XMLStreamConstants.START_ELEMENT:
-                        if (verbose) {
-                            logger.info("\n[START PROCESSING element="
-                                    + reader.getLocalName()
-                                    + " parent=" + (stack.size() == 0
-                                    ? "none" : stack.peek().getArchetypeIdAsString())
-                                    + "]\n" + formatElement(reader));
-                        }
-
-                        if (reader.getLocalName().equals("data")) {
-                            try {
-                                if (stack.size() > 0) {
-                                    current = processElement(stack.peek(), reader);
-                                } else {
-                                    current = processElement(null, reader);
-                                }
-                                stack.push(current);
-                            } catch (Exception exception) {
-                                logger.error("Error in start element\n" +
-                                        formatElement(reader) + "\n", exception);
-                            }
-                        }
-                        break;
-
-                    case XMLStreamConstants.END_ELEMENT:
-                        if (stack.size() > 0) {
-                            current = stack.pop();
-                            try {
-                                if (stack.size() == 0) {
-                                    validateOrSave(current);
-                                }
-                            } catch (ValidationException validation) {
-                                logger.error("Failed to validate object\n" +
-                                        current.toString(), validation);
-                            } catch (Exception exception) {
-                                logger.error("Failed to save object\n" +
-                                        current.toString(), exception);
-                            }
-                        }
-
-                        if (verbose) {
-                            logger.info("\n[END PROCESSING element="
-                                    + reader.getLocalName() + "]\n");
-                        }
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Process the specified element and all nested elements. If the parent
-     * object is specified then then the specified element is in a parent child
-     * relationship.
-     * <p>
-     * The archetype attribute determines the archetype we need to us to create
-     * from the element. Iterate through all the element attributes and attempt
-     * to set the specified value using the archetype's node descriptors. The
-     * attribute name must correspond to a valid node descriptor
-     * <p>
-     * 
-     * @param parent
-     *            the parent of this element if it exists
-     * @param reader
-     *            the xml stream element
-     * @return IMObject the associated IMObject
-     */
-    private IMObject processElement(IMObject parent, XMLStreamReader reader)
-        throws Exception {
-        IMObject object = null;
-        if (reader.getLocalName().equals("data")) {
-            // extract the optional id element
-            String id = reader.getAttributeValue(null, "id");
-
-            // ensure that the archetype attribute is defined. If not
-            // display an error.
-            String shortName = reader.getAttributeValue(null, "archetype");
-            if (StringUtils.isEmpty(shortName)) {
-                throw new ArchetypeDataLoaderException(
-                        ArchetypeDataLoaderException.ErrorCode.NoArchetypeDefined,
-                        new Object[] {shortName, formatElement(reader)});
-            }
-
-            ArchetypeDescriptor adesc = archetypeService
-                    .getArchetypeDescriptor(shortName);
-            if (adesc == null) {
-                throw new ArchetypeDataLoaderException(
-                        ArchetypeDataLoaderException.ErrorCode.NoArchetypeDefined,
-                        new Object[] {shortName, formatElement(reader)});
-            }
-
-            // if a childId node is defined then we can skip the create object
-            // process since the object already exists
-            boolean valid = true;
-            if (StringUtils.isEmpty(reader.getAttributeValue(null, "childId"))) {
-                object = archetypeService.create(adesc.getType());
-                ++total;
-                for (int index = 0; index < reader.getAttributeCount(); index++) {
-                    String attName = reader.getAttributeLocalName(index);
-                    String attValue = reader.getAttributeValue(index);
-
-                    if ((StringUtils.equals(attName, "archetype"))
-                            || (StringUtils.equals(attName, "id"))
-                            || (StringUtils.equals(attName, "collection"))) {
-                        // no need to process the archetype, id or collection
-                        // element
-                        continue;
-                    }
-
-                    // if the attribute value is empty then just continue;
-                    if (StringUtils.isEmpty(attValue)) {
-                        continue;
-                    }
-
-                    NodeDescriptor ndesc = adesc.getNodeDescriptor(attName);
-                    if (ndesc == null) {
-                        throw new ArchetypeDataLoaderException(
-                                ArchetypeDataLoaderException.ErrorCode.InvalidAttribute,
-                                new Object[] {attName, formatElement(reader)});
-                    }
-
-                    try {
-                        if (isAttributeIdRef(attValue)) {
-                            processIdReference(object, attValue, ndesc, validateOnly);
-                        } else if (ndesc.isDate()) {
-                            ndesc.setValue(object, getDate(attValue));
-                        } else {
-                            ndesc.setValue(object, attValue);
-                        }
-                    } catch (Exception exception) {
-                        throw new ArchetypeDataLoaderException(
-                                ArchetypeDataLoaderException.ErrorCode.FailedToSetAtribute,
-                                new Object[] {attName, attValue, formatElement(reader)},
-                                exception);
-                    }
-                }
-            } else {
-                // childId is defined then we need to retrieve that object. We 
-                // need to force a flush first though
-                // Removed flush as was causing speed issues.  Don't need to flush if childId's are 
-                // in separate files and already flushed.  Need to assume so get performance.
-                //TODO This is a kludge to get users loaded using batch process.  Needs investigation as to why get
-                // Staleobject exception.
-                if(parent.getArchetypeId().getShortName().equalsIgnoreCase("security.user"))
-                    flushBatchSaveCache();
-                object = getObjectForId(reader.getAttributeValue(null, "childId"), validateOnly);
-                if (object == null) {
-                    // If failed first time may be due to object still being in cache so flush
-                    // and try again.
-                    flushBatchSaveCache();
-                    object = getObjectForId(reader.getAttributeValue(null, "childId"), validateOnly);
-                }
-            }
-
-            // check whether there is a collection attribute specified. If it is
-            // then we may need to set up a parent child relationship.
-            String collectionNode = reader.getAttributeValue(null, "collection");
-            if ((parent != null) && (StringUtils.isEmpty(collectionNode))) {
-                throw new ArchetypeDataLoaderException(
-                        ArchetypeDataLoaderException.ErrorCode.NoCollectionAttribute,
-                        new Object[] {formatElement(reader)});
-            }
-
-            if ((valid) && (!StringUtils.isEmpty(collectionNode))) {
-                if (parent == null) {
-                    throw new ArchetypeDataLoaderException(
-                            ArchetypeDataLoaderException.ErrorCode.NoParentForChild,
-                            new Object[] {formatElement(reader)});
-                } else {
-                    ArchetypeDescriptor padesc= archetypeService
-                        .getArchetypeDescriptor(parent.getArchetypeId());
-                    if (padesc == null) {
-                        throw new ArchetypeDataLoaderException(
-                                ArchetypeDataLoaderException.ErrorCode.NoArchetypeId,
-                                new Object[] {parent.toString()});
-                    } else {
-                        NodeDescriptor ndesc = padesc.getNodeDescriptor(collectionNode);
-                        if (ndesc.isCollection()) {
-                            ndesc.addChildToCollection(parent, object);
-                        } else {
-                            throw new ArchetypeDataLoaderException(
-                                    ArchetypeDataLoaderException.ErrorCode.ParentNotACollection,
-                                    new Object[] {formatElement(reader)});
-                        }
-                    }
-                }
-            }
-
-            if (valid) {
-                if (!StringUtils.isEmpty(id)) {
-                    linkIdCache.put(new Element(object.getLinkId(), id));
-                }
-            } else {
-                object = null;
-            }
-        }
-
-        return object;
-    }
-
-    /**
-     * Validate or save the specified object
-     * 
-     * @param current
-     *            the object to validate or save
-     * @throws Exception
-     *            propagate the exception to caller            
-     * 
-     */
-    private void validateOrSave(IMObject current)
-    throws Exception {
-        if (validateOnly) {
-            archetypeService.validateObject(current);
-        } else {
-            if (batchSaveSize > 0) {
-                batchSaveEntity(current, false);
-            } else {
-                archetypeService.save(current);
-            }
-        }
-
-        // update the stats
-        String shortName = current.getArchetypeId().getShortName();
-        Long count = statistics.get(shortName);
-        if (count == null) {
-            statistics.put(shortName, 1L);
-        } else {
-            statistics.put(shortName, count + 1);
-        }
-
-        // process the linkid  and ids        
-        Element element = linkIdCache.get(current.getLinkId());
-        String id = null;
-        if (element != null) {
-            id = (String)element.getValue();
-            linkIdCache.remove(current.getLinkId());
-        }
-
-        if (id != null) {
-            idCache.put(new Element(id, current.getObjectReference()));
-        }
-
-        if (verbose) {
-            logger.info("\n[CREATED]\n"
-                    + current.toString());
-        }
-
-    }
-    /**
-     * This method will cache the entity and save it only when the size of 
-     * the cache reaches the configured batch size.
-     * 
-     * @param current
-     *            the entity to save
-     * @param forceFlush
-     *            if true always flush the cache            
-     */
-    @SuppressWarnings("unchecked")
-    private void batchSaveEntity(IMObject current, boolean forceFlush) {
-        if (current != null) {
-            // Lets validate before adding to batch so whole batch doesn't fail later
-            // TODO:  Temporay fix for problem with participations and act relationships that have a mincardinality
-            // of 1 and fail validation during data load. see OBF-116
-            if (TypeHelper.isA(current,"actRelationship.*"))
-                archetypeService.validateObject(current);
-            else if (TypeHelper.isA(current,"act.*"))
-                archetypeService.deriveValues(current);
-            else
-                archetypeService.validateObject(current);
-            batchSaveCache.add(current);
-        }
-
-        // determine whether we need to flush
-        if (((forceFlush) ||(batchSaveCache.size() >= batchSaveSize)) && (batchSaveCache.size() > 0)) {
-            try {
-                archetypeService.save(batchSaveCache, false);
-            } catch (OpenVPMSException exception) {
-                // Ok one of the batch failed so nothing saved.  Try again one by one logging each error.
-                for (Object object : batchSaveCache) {
-                    try {
-                        // Jump through some extra hoops for act participation
-                        // TODO Temporay fix for problem with participations and act relationships that have a mincardinality
-                        // of 1 and fail validation during data load. see OBF-116
-                        if (TypeHelper.isA((IMObject)object,"act.*"))
-                            archetypeService.save((IMObject)object, false);
-                        else
-                            archetypeService.save((IMObject)object);
-                    } catch (OpenVPMSException e) {
-                        logger.error("Failed to save object\n" +
-                                object.toString(), e);
-                    }
-                }
-            }
-            batchSaveCache.clear();
-        }
-    }
-
-    /**
-     * For a flush on the batchSaveCache
-     */
-    private void flushBatchSaveCache() {
-        batchSaveEntity(null, true);
-    }
-
-    /**
-     * Process the id reference attribute value and set it accordingly.
-     * 
-     * @param object
-     *            the context object
-     * @param attValue
-     *            the attribute vlaue that has an id reference
-     * @param ndesc
-     *            the corresponding node descriptor
-     * @param validateOnly
-     *            are we only validating            
-     * @throws Exception
-     *            propagate exception to caller            
-     */
-    private void processIdReference(IMObject object, String attValue,
-                                    NodeDescriptor ndesc, boolean validateOnly)
-        throws Exception {
-        String ref = attValue.substring("id:".length());
-        if (StringUtils.isEmpty(ref)) {
-            throw new ArchetypeDataLoaderException(
-                    ArchetypeDataLoaderException.ErrorCode.NullReference);
-        }
-        Element element = idCache.get(ref);
-        if (element == null) {
-            throw new ArchetypeDataLoaderException(
-                    ArchetypeDataLoaderException.ErrorCode.ReferenceNotFound,
-                    new Object[] {ref});
-        }
-
-        IMObjectReference imref = (IMObjectReference)element.getValue();
-        Object imobj;
-        if (ndesc.isObjectReference()) {
-            imobj = imref;
-        } else {
-            if (validateOnly) {
-                imobj = archetypeService.create(imref.getArchetypeId());
-            } else {
-                imobj = archetypeService.get(imref);
-            }
-        }
-
-        if (ndesc.isCollection()) {
-            ndesc.addChildToCollection(object, imobj);
-        } else {
-            ndesc.setValue(object, imobj);
-        }
-    }
-
-    /**
-     * Retrieve thr object given the specified reference
-     * 
-     * @param id
-     *            the id in the link cache
-     * @param validateOnly
-     *            whether we are doing a validate only            
-     * @return IMObject
-     *            the returned object
-     * @throws Exception
-     */
-    private IMObject getObjectForId(String id, boolean validateOnly)
-    throws Exception {
-        String ref = id.substring("id:".length());
-        if (StringUtils.isEmpty(ref)) {
-            throw new ArchetypeDataLoaderException(
-                    ArchetypeDataLoaderException.ErrorCode.NullReference);
-        }
-
-        Element element = idCache.get(ref);
-        if (element == null) {
-            throw new ArchetypeDataLoaderException(
-                    ArchetypeDataLoaderException.ErrorCode.ReferenceNotFound,
-                    new Object[] {ref});
-        }
-
-        IMObjectReference imref = (IMObjectReference)element.getValue();
-        IMObject imobj = null;
-
-        if (validateOnly) {
-            if (imref != null) {
-                imobj = archetypeService.create(imref.getArchetypeId());
-            }
-        } else {
-            imobj = archetypeService.get(imref);
-        }
-
-        return imobj;
-    }
-
-    /**
-     * This will build the element data
-     * 
-     * @param event
-     *            the current event  
-     * @param reader
-     *            the stream
-     * @param elemData
-     *            append to this buffer
-     */
-    private void buildElementData(int event, XMLStreamReader reader, StringBuffer elemData) {
-        switch (event) {
-        case XMLStreamConstants.START_DOCUMENT:
-            break;
-
-        case XMLStreamConstants.START_ELEMENT:
-            elemData.append("<");
-            elemData.append(reader.getLocalName());
-            elemData.append(" ");
-            for (int index = 0; index < reader.getAttributeCount(); index++) {
-                elemData.append(reader.getAttributeLocalName(index));
-                elemData.append("=\"");
-                elemData.append(reader.getAttributeValue(index));
-                elemData.append("\" ");
-            }
-            elemData.append(">");
-            break;
-
-        case XMLStreamConstants.END_ELEMENT:
-            elemData.append("</");
-            elemData.append(reader.getLocalName());
-            elemData.append(">");
-            break;
-
-        case XMLStreamConstants.END_DOCUMENT:
-            break;
-        }
+        DataLoader loader = new DataLoader(reader, cache, service,
+                                           verbose, validateOnly, batchSize,
+                                           statistics);
+        loader.load();
     }
 
     /**
@@ -829,8 +214,10 @@ public class StaxArchetypeDataLoader {
         Date end = new Date();
         double elapsed = (end.getTime() - start.getTime()) / 1000;
         logger.info("\n\n\n[STATISTICS]\n");
+        int total = 0;
         for (String shortName : statistics.keySet()) {
             Long count = statistics.get(shortName);
+            total += count;
             logger.info(String.format("%42s %6d", shortName, count));
         }
         double rate = (elapsed != 0) ? total / elapsed : 0;
@@ -840,160 +227,56 @@ public class StaxArchetypeDataLoader {
     }
 
     /**
-     * @param reader
-     * @return the formatted element
-     */
-    private String formatElement(XMLStreamReader reader) {
-        StringBuffer buf = new StringBuffer("<");
-        buf.append(reader.getLocalName());
-        buf.append(" ");
-        for (int index = 0; index < reader.getAttributeCount(); index++) {
-            buf.append(reader.getAttributeLocalName(index));
-            buf.append("=\"");
-            buf.append(reader.getAttributeValue(index));
-            buf.append("\" ");
-        }
-        buf.append(">");
-
-        return buf.toString();
-    }
-
-    /**
-     * Iterate through the the attributes and determine whether the an id
-     * attribute is defined
-     * 
-     * @param reader
-     * @return boolean
-     */
-    private boolean attributesContainReferences(XMLStreamReader reader) {
-         for (int index = 0; index < reader.getAttributeCount(); index++) {
-            if (isAttributeIdNotCached(reader.getAttributeValue(index))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine if the attribute value is for a reference and not in cache.
-     * 
-     * @param value
-     *            the attribute value to evaluate
-     * @return boolean
-     */
-    private boolean isAttributeIdNotCached(String value) {
-        if (value.startsWith("id:")) {
-            try {
-                String ref = value.substring("id:".length());
-                if (StringUtils.isEmpty(ref))
-                    return true;
-                Element element = idCache.get(ref);
-                if (element == null) {
-                    return true;
-                }
-            } catch (Exception exception) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine if the attribute value is for a reference. All reference values
-     * start with id:
-     * 
-     * @param value
-     *            the attribute value to evaluate
-     * @return boolean
-     */
-    private boolean isAttributeIdRef(String value) {
-        return value.startsWith("id:");
-    }
-
-    /**
      * Initialise and start the spring container
      */
     private void init() throws Exception {
         String contextFile = StringUtils.isEmpty(config.getString("context")) ?
                 DEFAULT_APP_CONTEXT_FNAME : config.getString("context");
 
-        logger.info("Using  application context [" + contextFile + "]");
-        context = new ClassPathXmlApplicationContext(contextFile);
-        archetypeService = (IArchetypeService) context
-                .getBean("archetypeService");
-
-        linkIdCache = (Cache)context.getBean("linkIdCache");
-        idCache = (Cache)context.getBean("idCache");
-        unprocessedElementCache = (Cache)context.getBean("unprocessedElementCache");
+        logger.info("Using application context [" + contextFile + "]");
+        ApplicationContext context = new ClassPathXmlApplicationContext(
+                contextFile);
+        service = (IArchetypeService) context.getBean(
+                "archetypeService");
     }
 
     /**
      * Return the XMLReader for the specified file
-     * 
-     * @param file
-     *            the file
+     *
+     * @param file the file
      * @return XMLStreamReader
-     * @throws Exception
-     *             propagate to the caller
+     * @throws Exception propagate to the caller
      */
     private XMLStreamReader getReader(String file) throws Exception {
-        FileInputStream fis = new FileInputStream(file);
+        FileInputStream stream = new FileInputStream(file);
         XMLInputFactory factory = XMLInputFactory.newInstance();
 
-        return factory.createXMLStreamReader(fis);
-    }
-
-    /**
-     * Helper to convert a string to a date.
-     *
-     * @param value the value to convert. May be <tt>null</tt>
-     * @return the converted value, or <tt>null</tt>
-     */
-    @SuppressWarnings("HardCodedStringLiteral")
-    private Date getDate(String value) {
-        if (StringUtils.isEmpty(value)) {
-            return null;
-        }
-        String defaultFormat = "yyyy-MM-dd HH:mm:ss.S z";
-        String[] acceptableFormats = new String[]{
-                "yyyy-MM-dd HH:mm:ss.S a",
-                "yyyy-MM-dd HH:mm:ssz", "yyyy-MM-dd HH:mm:ss z",
-                "yyyy-MM-dd HH:mm:ssa",
-                "dd/MM/yyyy HH:mm:ss", "dd/MM/yyyy"};
-        // the yyyy-mm-dd* formats are the DateConverter defaults.
-        // Add dd/MM/yyyy formats for backwards compatibility with existing
-        // data
-        DateConverter converter = new DateConverter(defaultFormat,
-                                                    acceptableFormats);
-        return (Date) converter.fromString(value);
+        return factory.createXMLStreamReader(stream);
     }
 
     /**
      * Configure the options for this applications
-     * 
-     * @throws Exception
-     *             let the caller handle the error
+     *
+     * @throws Exception let the caller handle the error
      */
     private void createOptions() throws Exception {
         jsap.registerParameter(new FlaggedOption("context").setShortFlag('c')
-                .setLongFlag("context").setHelp(
-                        "Application context for the data loader. Defaults to archetype-data-loader-appcontext.xml in classpath"));
+                .setLongFlag("context").setDefault(DEFAULT_APP_CONTEXT_FNAME)
+                .setHelp("Application context for the data loader"));
         jsap.registerParameter(new FlaggedOption("dir").setShortFlag('d')
                 .setLongFlag("dir").setHelp(
-                        "Directory where data files reside."));
+                "Directory where data files reside."));
         jsap.registerParameter(new Switch("subdir").setShortFlag('s')
                 .setLongFlag("subdir").setDefault("false").setHelp(
-                        "Search the subdirectories as well."));
+                "Search the subdirectories as well."));
         jsap.registerParameter(new FlaggedOption("file").setShortFlag('f')
                 .setLongFlag("file").setHelp("Name of file containing data"));
         jsap.registerParameter(new Switch("verbose").setShortFlag('v')
                 .setLongFlag("verbose").setDefault("false").setHelp(
-                        "Displays verbose info to the console."));
+                "Displays verbose info to the console."));
         jsap.registerParameter(new Switch("validateOnly")
                 .setLongFlag("validateOnly").setDefault("false").setHelp(
-                        "Only validate the data file. Do not process."));
+                "Only validate the data file. Do not process."));
         jsap.registerParameter(new FlaggedOption("batchSaveSize")
                 .setStringParser(JSAP.INTEGER_PARSER).setDefault("0")
                 .setShortFlag('b').setLongFlag("batchSaveSize")
@@ -1002,11 +285,12 @@ public class StaxArchetypeDataLoader {
 
     /**
      * Creater the logger
-     * 
+     *
      * @throws Exception
      */
     private void createLogger() throws Exception {
-        URL url = Thread.currentThread().getContextClassLoader().getResource("log4j.properties");
+        URL url = Thread.currentThread().getContextClassLoader().getResource(
+                "log4j.properties");
         if (url != null) {
             System.out.println("Using log4j property file: " + url.toString());
             PropertyConfigurator.configure(url);
@@ -1027,13 +311,12 @@ public class StaxArchetypeDataLoader {
      */
     private void displayUsage() {
         System.err.println();
-        System.err
-                .println("Usage: java " + StaxArchetypeDataLoader.class.getName());
+        System.err.println("Usage: java "
+                + StaxArchetypeDataLoader.class.getName());
         System.err.println("                " + jsap.getUsage());
         System.err.println();
         System.err.println(jsap.getHelp());
         System.exit(1);
-
     }
 
 }

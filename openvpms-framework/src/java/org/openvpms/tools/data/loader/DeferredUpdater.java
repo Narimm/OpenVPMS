@@ -16,8 +16,9 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.hibernate.im.common;
+package org.openvpms.tools.data.loader;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 /**
@@ -26,27 +27,28 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class ReferenceUpdater {
+class DeferredUpdater {
 
-    private final IMObjectReference reference;
+    private final IMObjectState state;
 
-    public ReferenceUpdater(DOState state, IMObjectReference reference) {
-        state.addReferenceUpdater(this);
-        this.reference = reference;
+    private final NodeDescriptor descriptor;
+
+    private final String id;
+
+    public DeferredUpdater(IMObjectState state, NodeDescriptor descriptor,
+                           String id) {
+        this.state = state;
+        this.descriptor = descriptor;
+        this.id = id;
     }
 
-    public IMObjectReference getReference() {
-        return reference;
+    public String getId() {
+        return id;
     }
 
-    public void update(IMObjectReference updated) {
-        doUpdate(updated);
+    public void update(IMObjectReference reference, LoadContext context) {
+        state.setReference(descriptor, reference, context);
+        state.removeDeferred(this);
+
     }
-
-    public void revert() {
-        doUpdate(reference);
-    }
-
-    protected abstract void doUpdate(IMObjectReference updated);
-
 }

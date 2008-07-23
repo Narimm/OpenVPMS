@@ -16,9 +16,10 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.hibernate.im.common;
+package org.openvpms.tools.data.loader;
 
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 /**
  * Add description here.
@@ -26,27 +27,30 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class ReferenceUpdater {
+class LoadContext {
 
-    private final IMObjectReference reference;
 
-    public ReferenceUpdater(DOState state, IMObjectReference reference) {
-        state.addReferenceUpdater(this);
-        this.reference = reference;
+    private final IArchetypeService service;
+    private final IdRefCache cache;
+    private final boolean validateOnly;
+
+    public LoadContext(IArchetypeService service,
+                       IdRefCache cache, boolean validateOnly) {
+        this.service = service;
+        this.cache = cache;
+        this.validateOnly = validateOnly;
     }
 
-    public IMObjectReference getReference() {
-        return reference;
+    public IArchetypeService getService() {
+        return service;
     }
 
-    public void update(IMObjectReference updated) {
-        doUpdate(updated);
+    public IMObjectReference getReference(String id) {
+        return cache.getReference(id);
     }
 
-    public void revert() {
-        doUpdate(reference);
+    public boolean validateOnly() {
+        return validateOnly;
     }
-
-    protected abstract void doUpdate(IMObjectReference updated);
 
 }
