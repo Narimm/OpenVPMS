@@ -23,6 +23,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -37,10 +38,11 @@ public class ProductPriceAssembler
         extends IMObjectAssembler<ProductPrice, ProductPriceDO> {
 
     private SetAssembler<Lookup, LookupDO> LOOKUPS
-            = SetAssembler.create(Lookup.class, LookupDO.class);
+            = SetAssembler.create(Lookup.class, LookupDOImpl.class);
 
     public ProductPriceAssembler() {
-        super(ProductPrice.class, ProductPriceDO.class);
+        super(ProductPrice.class, ProductPriceDO.class,
+              ProductPriceDOImpl.class);
     }
 
     @Override
@@ -53,7 +55,7 @@ public class ProductPriceAssembler
         target.setThruDate(source.getThruDate());
 
         ProductDO product = null;
-        DOState productState = getDO(source.getProduct(), ProductDO.class,
+        DOState productState = getDO(source.getProduct(), ProductDOImpl.class,
                                      context);
         if (productState != null) {
             product = (ProductDO) productState.getObject();
@@ -87,6 +89,6 @@ public class ProductPriceAssembler
     }
 
     protected ProductPriceDO create(ProductPrice object) {
-        return new ProductPriceDO();
+        return new ProductPriceDOImpl();
     }
 }

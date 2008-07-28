@@ -19,124 +19,62 @@
 package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This class represents the user details and the list of associated
- * authorities.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class UserDO extends EntityDO {
-
-    /**
-     * The login name.
-     */
-    private String userName;
-
-    /**
-     * The password.
-     */
-    private String password;
-
-    /**
-     * The list of security roles that the user is a member of
-     */
-    private Set<SecurityRoleDO> roles = new HashSet<SecurityRoleDO>();
-
-
-    /**
-     * Default constructor.
-     */
-    public UserDO() {
-        // no op
-    }
-
-    /**
-     * Creates a new <tt>UserDO</tt>.
-     *
-     * @param archetypeId the archetype id
-     */
-    public UserDO(ArchetypeId archetypeId) {
-        super(archetypeId);
-    }
-
+public interface UserDO extends EntityDO {
     /**
      * Returns the login name.
      *
      * @return the login name
      */
-    public String getUsername() {
-        return userName;
-    }
+    String getUsername();
 
     /**
      * Sets the login name.
      *
      * @param name the login name
      */
-    public void setUsername(String name) {
-        userName = name;
-    }
+    void setUsername(String name);
 
     /**
      * Returns the password.
      *
      * @return the password
      */
-    public String getPassword() {
-        return password;
-    }
+    String getPassword();
 
     /**
      * Sets the password.
      *
      * @param password the password
      */
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    void setPassword(String password);
 
     /**
      * Returns the security roles that the user is a member of.
      *
      * @return the roles
      */
-    public Set<SecurityRoleDO> getRoles() {
-        return roles;
-    }
+    Set<SecurityRoleDO> getRoles();
 
     /**
      * Makes the user a member of a security role.
      *
      * @param role the role
      */
-    public void addRole(SecurityRoleDO role) {
-        role.addUser(this);
-        roles.add(role);
-    }
+    void addRole(SecurityRoleDO role);
 
     /**
      * Delete user's membership from the specified security role.
      *
      * @param role the role
      */
-    public void removeRole(SecurityRoleDO role) {
-        role.removeUser(this);
-        roles.remove(role);
-    }
-
-    /**
-     * Sets the security roles.
-     *
-     * @param roles the roles
-     */
-    protected void setRoles(Set<SecurityRoleDO> roles) {
-        this.roles = roles;
-    }
-
+    void removeRole(SecurityRoleDO role);
 }

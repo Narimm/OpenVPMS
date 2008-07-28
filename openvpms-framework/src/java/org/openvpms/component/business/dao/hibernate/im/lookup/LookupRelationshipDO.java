@@ -19,21 +19,12 @@
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectRelationshipDO;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-
 
 /**
- * Describes a relationship between two {@link Lookup}s.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-04-01 14:58:48 +1100 (Tue, 01 Apr 2008) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class LookupRelationshipDO extends IMObjectRelationshipDO {
-
-    /**
-     * Default constructor.
-     */
-    public LookupRelationshipDO() {
-    }
-
+public interface LookupRelationshipDO extends IMObjectRelationshipDO {
 }

@@ -1,200 +1,87 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
 package org.openvpms.component.business.dao.hibernate.im.common;
 
-import org.apache.commons.lang.builder.StandardToStringStyle;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 
-public class IMObjectDO {
-
-    /**
-     * Indicates whether this object is active
-     */
-    private boolean active = true;
-
-    /**
-     * The archetype that is attached to this object. which defines
-     */
-    private ArchetypeId archetypeId;
-
-    /**
-     * Description of this entity
-     */
-    private String description;
-
-    /**
-     * This is the date and time that this object was last modified
-     */
-    private Date lastModified;
-
-    /**
-     * This is the name that this entity is known by. Each concrete instance
-     * must supply this.
-     */
-    private String name;
-
-    /**
-     * The identifier assigned by the persistence layer when the object is
-     * saved.
-     */
-    private long id = -1;
-
-    /**
-     * A client assigned identifier.
-     */
-    private String linkId;
-
-    /**
-     * Indicates the version of this object
-     */
-    private long version;
-
-    /**
-     * Holds details about the entity identity.
-     */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
-    private IMObjectReference reference;
-
-
-    /**
-     * toString() style.
-     */
-    protected static final StandardToStringStyle STYLE;
-
-    static {
-        STYLE = new StandardToStringStyle();
-        STYLE.setUseShortClassName(true);
-        STYLE.setUseIdentityHashCode(false);
-    }
-
-
-    /**
-     * Default constructor.
-     */
-    public IMObjectDO() {
-    }
-
-    /**
-     * Creates a new <tt>IMObjectDO</tt>.
-     *
-     * @param archetypeId the archetype id
-     */
-    public IMObjectDO(ArchetypeId archetypeId) {
-        setArchetypeId(archetypeId);
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof IMObjectDO)) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        IMObjectDO rhs = (IMObjectDO) obj;
-        return getObjectReference().equals(rhs.getObjectReference());
-    }
-
+/**
+ * Add description here.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
+public interface IMObjectDO {
     /**
      * @return Returns the archetypeId.
      */
-    public ArchetypeId getArchetypeId() {
-        return archetypeId;
-    }
+    ArchetypeId getArchetypeId();
 
     /**
      * Create and return an {@link IMObjectReference} for this object
      *
      * @return IMObjectReference
      */
-    public IMObjectReference getObjectReference() {
-        if (reference == null) {
-            reference = new IMObjectReference(getArchetypeId(), getId(),
-                                              getLinkId());
-        }
-        return reference;
-    }
+    IMObjectReference getObjectReference();
 
     /**
      * @return Returns the description.
      */
-    public String getDescription() {
-        return description;
-    }
+    String getDescription();
 
     /**
      * @return Returns the lastModified.
      */
-    public Date getLastModified() {
-        return lastModified;
-    }
+    Date getLastModified();
 
     /**
      * @return Returns the name.
      */
-    public String getName() {
-        return name;
-    }
+    String getName();
 
     /**
      * @return Returns the id.
      */
-    public long getId() {
-        return id;
-    }
+    long getId();
 
     /**
      * @param id The id to set.
      */
-    public void setId(long id) {
-        this.id = id;
-        reference = null;
-    }
+    void setId(long id);
 
-    public void setLinkId(String linkId) {
-        this.linkId = linkId;
-        reference = null;
-    }
+    void setLinkId(String linkId);
 
-    public String getLinkId() {
-        if (linkId == null && id == -1) {
-            linkId = UUID.randomUUID().toString();
-        }
-        return linkId;
-    }
+    String getLinkId();
 
     /**
      * @return Returns the version.
      */
-    public long getVersion() {
-        return version;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        return getLinkId().hashCode();
-    }
+    long getVersion();
 
     /**
      * @return Returns the active.
      */
-    public boolean isActive() {
-        return active;
-    }
+    boolean isActive();
 
     /**
      * Return true if this is a new object and false otherwise. A new object
@@ -202,78 +89,45 @@ public class IMObjectDO {
      *
      * @return boolean
      */
-    public boolean isNew() {
-        return id == -1;
-    }
+    boolean isNew();
 
     /**
      * @param active The active to set.
      */
-    public void setActive(boolean active) {
-        this.active = active;
-    }
+    void setActive(boolean active);
 
     /**
      * @param archetypeId The archetypeId to set.
      */
-    public void setArchetypeId(ArchetypeId archetypeId) {
-        this.archetypeId = archetypeId;
-        reference = null;
-    }
+    void setArchetypeId(ArchetypeId archetypeId);
 
     /**
      * @param description The description to set.
      */
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    void setDescription(String description);
 
     /**
      * @param lastModified The lastModified to set.
      */
-    public void setLastModified(Date lastModified) {
-        this.lastModified = lastModified;
-    }
+    void setLastModified(Date lastModified);
 
     /**
      * @param name The name to set.
      */
-    public void setName(String name) {
-        this.name = name;
-    }
+    void setName(String name);
 
     /**
      * @return Returns the details.
      */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
+    Map<String, Object> getDetails();
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
-    }
+    void setDetails(Map<String, Object> details);
 
     /**
      * @param version The version to set.
      */
-    public void setVersion(long version) {
-        this.version = version;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this, STYLE)
-                .append("id", id)
-                .append("linkId", linkId)
-                .append("archetypeId", archetypeId)
-                .append("version", version)
-                .toString();
-    }
+    void setVersion(long version);
 }
-

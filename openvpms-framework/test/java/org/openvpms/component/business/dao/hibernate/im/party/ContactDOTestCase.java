@@ -22,10 +22,8 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
 import org.openvpms.component.business.domain.im.party.Contact;
-
-import java.util.HashSet;
-import java.util.Set;
 
 
 /**
@@ -63,7 +61,7 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // ensure that the correct rows have been inserted
-        assertEquals(contacts + 1, count(ContactDO.class));
+        assertEquals(contacts + 1, count(ContactDOImpl.class));
     }
 
     /**
@@ -80,7 +78,7 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // Retrieve the person and add a contact purpose to the contact
-        person = (PartyDO) session.get(PartyDO.class, person.getId());
+        person = (PartyDO) session.get(PartyDOImpl.class, person.getId());
 
         tx = session.beginTransaction();
         LookupDO purpose = createClassification("now");
@@ -91,10 +89,10 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // Retrieve the contact check that  there is one contact purpose
-        contact = (ContactDO) session.get(ContactDO.class, contact.getId());
+        contact = (ContactDO) session.get(ContactDOImpl.class, contact.getId());
         assertEquals(1, contact.getClassifications().size());
-        assertEquals(contacts + 1, count(ContactDO.class));
-        assertEquals(lookups + 1, count(LookupDO.class));
+        assertEquals(contacts + 1, count(ContactDOImpl.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
 
         // add another contract purpose
         tx = session.beginTransaction();
@@ -105,15 +103,15 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // check that there is only one contact added to the database
-        assertEquals(contacts + 1, count(ContactDO.class));
-        assertEquals(lookups + 2, count(LookupDO.class));
+        assertEquals(contacts + 1, count(ContactDOImpl.class));
+        assertEquals(lookups + 2, count(LookupDOImpl.class));
 
         // retrieve the contact and make sure there are 2 purposes
-        contact = (ContactDO) session.get(ContactDO.class, contact.getId());
+        contact = (ContactDO) session.get(ContactDOImpl.class, contact.getId());
         assertEquals(2, contact.getClassifications().size());
 
         // retrieve the person and ensure that there is only one address
-        person = (PartyDO) session.get(PartyDO.class, person.getId());
+        person = (PartyDO) session.get(PartyDOImpl.class, person.getId());
         assertEquals(1, person.getContacts().size());
     }
 
@@ -134,12 +132,12 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // check the row counts
-        assertEquals(contacts + 1, count(ContactDO.class));
-        assertEquals(lookups + 1, count(LookupDO.class));
+        assertEquals(contacts + 1, count(ContactDOImpl.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
 
         // retrieve the person and delete a contact purpose from the contact
         tx = session.beginTransaction();
-        person = (PartyDO) session.get(PartyDO.class, person.getId());
+        person = (PartyDO) session.get(PartyDOImpl.class, person.getId());
         assertNotNull(person);
         assertEquals(1, person.getContacts().size());
 
@@ -150,13 +148,13 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         session.save(person);
 
         // retrieve the contact and check the contact purposes
-        contact = (ContactDO) session.get(ContactDO.class, contact.getId());
+        contact = (ContactDO) session.get(ContactDOImpl.class, contact.getId());
         assertEquals(0, contact.getClassifications().size());
         tx.commit();
 
         // check the row counts
-        assertEquals(contacts + 1, count(ContactDO.class));
-        assertEquals(lookups + 1, count(LookupDO.class));
+        assertEquals(contacts + 1, count(ContactDOImpl.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
     }
 
     /**
@@ -176,12 +174,12 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // check row counts
-        assertEquals(contacts + 1, count(ContactDO.class));
-        assertEquals(lookups + 1, count(LookupDO.class));
+        assertEquals(contacts + 1, count(ContactDOImpl.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
 
         // retrieve the person and delete a contact purpose from the contact
         tx = session.beginTransaction();
-        person = (PartyDO) session.get(PartyDO.class, person.getId());
+        person = (PartyDO) session.get(PartyDOImpl.class, person.getId());
         assertNotNull(person);
         assertEquals(1, person.getContacts().size());
         contact = person.getContacts().iterator().next();
@@ -193,40 +191,21 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // retrieve the contact and check the contact purposes
-        contact = (ContactDO) session.get(ContactDO.class, contact.getId());
+        contact = (ContactDO) session.get(ContactDOImpl.class, contact.getId());
         assertEquals(1, contact.getClassifications().size());
         classification = contact.getClassifications().iterator().next();
         assertEquals("later", classification.getName());
 
         // check row counts
-        assertEquals(contacts + 1, count(ContactDO.class));
-        assertEquals(lookups + 1, count(LookupDO.class));
-    }
-
-    /**
-     * Tests the {@link PartyDO#setContacts} method.
-     */
-    public void testSetContacts() {
-        Session session = getSession();
-
-        Transaction txn = session.beginTransaction();
-        PartyDO person = createPerson();
-        Set<ContactDO> contacts = new HashSet<ContactDO>();
-        contacts.add(createContact());
-        contacts.add(createContact());
-        person.setContacts(contacts);
-        session.save(person);
-        txn.commit();
-        person = reload(person);
-        assertNotNull(person);
-        assertEquals(2, person.getContacts().size());
+        assertEquals(contacts + 1, count(ContactDOImpl.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
     }
 
     /**
      * Test deletion of Contact and associated classifications and details.
      */
     public void testContactDeletion() {
-        int details = countDetails(ContactDO.class);
+        int details = countDetails(ContactDOImpl.class);
 
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -244,13 +223,13 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // check row counts
-        assertEquals(contacts + 1, count(ContactDO.class));
-        assertEquals(lookups + 2, count(LookupDO.class));
-        assertEquals(details + 2, countDetails(ContactDO.class));
+        assertEquals(contacts + 1, count(ContactDOImpl.class));
+        assertEquals(lookups + 2, count(LookupDOImpl.class));
+        assertEquals(details + 2, countDetails(ContactDOImpl.class));
 
         // retrieve the person and delete all contacts
         tx = session.beginTransaction();
-        person = (PartyDO) session.get(PartyDO.class, person.getId());
+        person = (PartyDO) session.get(PartyDOImpl.class, person.getId());
         assertNotNull(person);
         assertEquals(1, person.getContacts().size());
         contact = person.getContacts().iterator().next();
@@ -261,14 +240,14 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // retrieve and check the contacts
-        person = (PartyDO) session.get(PartyDO.class, person.getId());
+        person = (PartyDO) session.get(PartyDOImpl.class, person.getId());
         assertNotNull(person);
         assertEquals(0, person.getContacts().size());
 
         // check row counts
-        assertEquals(contacts, count(ContactDO.class));
-        assertEquals(lookups + 2, count(LookupDO.class));
-        assertEquals(details, countDetails(ContactDO.class));
+        assertEquals(contacts, count(ContactDOImpl.class));
+        assertEquals(lookups + 2, count(LookupDOImpl.class));
+        assertEquals(details, countDetails(ContactDOImpl.class));
     }
 
     /**
@@ -279,8 +258,8 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        contacts = count(ContactDO.class);
-        lookups = count(LookupDO.class);
+        contacts = count(ContactDOImpl.class);
+        lookups = count(LookupDOImpl.class);
     }
 
 }

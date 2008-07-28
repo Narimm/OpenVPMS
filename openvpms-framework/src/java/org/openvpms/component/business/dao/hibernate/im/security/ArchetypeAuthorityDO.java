@@ -19,125 +19,67 @@
 package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
 
 /**
- * Represents permission for a service, method and associated archetype short
- * name.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ArchetypeAuthorityDO extends IMObjectDO {
-
-    /**
-     * The service name, which is an alias to the actual service interface.
-     */
-    private String serviceName;
-
-    /**
-     * The method, which can be a regular expression
-     */
-    private String method;
-
-    /**
-     * The archetype short name, which can also be a regular expression
-     */
-    private String shortName;
-
-    /**
-     * The role that this authhority belongs too
-     */
-    private SecurityRoleDO role;
-
-
-    /**
-     * Default constructor.
-     */
-    public ArchetypeAuthorityDO() {
-        // no op
-    }
-
-    /**
-     * Creates a new <tt>ArchetypeAuthorityDO</tt>.
-     *
-     * @param archetypeId the archetype id
-     */
-    public ArchetypeAuthorityDO(ArchetypeId archetypeId) {
-        super(archetypeId);
-    }
-
+public interface ArchetypeAuthorityDO extends IMObjectDO {
     /**
      * Returns the archetype short name.
      *
      * @return the archetype short name
      */
-    public String getShortName() {
-        return shortName;
-    }
+    String getShortName();
 
     /**
      * Sets the archetype short name.
      *
      * @param shortName the archetype short name
      */
-    public void setShortName(String shortName) {
-        this.shortName = shortName;
-    }
+    void setShortName(String shortName);
 
     /**
      * Returns the method.
      *
      * @return the method
      */
-    public String getMethod() {
-        return method;
-    }
+    String getMethod();
 
     /**
      * Sets the method.
      *
      * @param method the method
      */
-    public void setMethod(String method) {
-        this.method = method;
-    }
+    void setMethod(String method);
 
     /**
      * Returns the service name.
      *
      * @return the service name
      */
-    public String getServiceName() {
-        return serviceName;
-    }
+    String getServiceName();
 
     /**
      * Sets the service name.
      *
      * @param name the service name
      */
-    public void setServiceName(String name) {
-        serviceName = name;
-    }
+    void setServiceName(String name);
 
     /**
      * Returns the role.
      *
      * @return the role
      */
-    public SecurityRoleDO getRole() {
-        return role;
-    }
+    SecurityRoleDO getRole();
 
     /**
      * Sets the role.
      *
      * @param role the role
      */
-    public void setRole(SecurityRoleDO role) {
-        this.role = role;
-    }
-
+    void setRole(SecurityRoleDO role);
 }

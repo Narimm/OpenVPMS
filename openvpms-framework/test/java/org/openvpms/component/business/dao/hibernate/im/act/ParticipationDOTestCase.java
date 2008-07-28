@@ -22,12 +22,13 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * Tests the {@link ParticipationDO} class.
+ * Tests the {@link ParticipationDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -56,7 +57,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the no. of participations
-        assertEquals(participations + 1, count(ParticipationDO.class));
+        assertEquals(participations + 1, count(ParticipationDOImpl.class));
 
         // clear the session otherwise it does not go back to the database
         // and retrieve the right act.
@@ -82,7 +83,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // ensure that there is still one more add participation
-        assertEquals(participations + 1, count(ParticipationDO.class));
+        assertEquals(participations + 1, count(ParticipationDOImpl.class));
 
         session.clear();
         tx = session.beginTransaction();
@@ -95,7 +96,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // ensure that the participation has been removed
-        assertEquals(participations, count(ParticipationDO.class));
+        assertEquals(participations, count(ParticipationDOImpl.class));
         act = reload(act);
         assertNotNull(act);
         assertEquals(0, act.getParticipations().size());
@@ -124,7 +125,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the no. of participations
-        assertEquals(participations + pcount, count(ParticipationDO.class));
+        assertEquals(participations + pcount, count(ParticipationDOImpl.class));
     }
 
     /**
@@ -149,7 +150,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the no. of rows
-        assertEquals(participations + pcount, count(ParticipationDO.class));
+        assertEquals(participations + pcount, count(ParticipationDOImpl.class));
     }
 
     /**
@@ -162,7 +163,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
     private ParticipationDO createParticipation(EntityDO entity, ActDO act) {
         ArchetypeId archetypeId
                 = new ArchetypeId("participation.participation.1.0");
-        ParticipationDO result = new ParticipationDO();
+        ParticipationDO result = new ParticipationDOImpl();
         result.setArchetypeId(archetypeId);
         result.setEntity(entity);
         result.setAct(act);
@@ -177,7 +178,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
      */
     private EntityDO createEntity(String name) {
         ArchetypeId archetypeId = new ArchetypeId("role.role.1.0");
-        EntityDO result = new EntityDO();
+        EntityDO result = new EntityDOImpl();
         result.setArchetypeId(archetypeId);
         result.setName(name);
         return result;
@@ -190,7 +191,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
      * @return a new act
      */
     private ActDO createAct(String name) {
-        ActDO act = new ActDO();
+        ActDO act = new ActDOImpl();
         act.setArchetypeId(new ArchetypeId("act.simple.1.0"));
         act.setName(name);
 
@@ -204,7 +205,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-        participations = count(ParticipationDO.class);
+        participations = count(ParticipationDOImpl.class);
     }
 
 }

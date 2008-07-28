@@ -61,8 +61,8 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row counts
-        assertEquals(acts + 2, count(ActDO.class));
-        assertEquals(relationships + 2, count(ActRelationshipDO.class));
+        assertEquals(acts + 2, count(ActDOImpl.class));
+        assertEquals(relationships + 2, count(ActRelationshipDOImpl.class));
 
         // verify the relationships
         checkSource(source, actRel1);
@@ -89,8 +89,8 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row counts
-        assertEquals(acts + 2, count(ActDO.class));
-        assertEquals(relationships + 2, count(ActRelationshipDO.class));
+        assertEquals(acts + 2, count(ActDOImpl.class));
+        assertEquals(relationships + 2, count(ActRelationshipDOImpl.class));
 
         // remove actRel1
         tx = session.beginTransaction();
@@ -99,8 +99,8 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row counts
-        assertEquals(acts + 2, count(ActDO.class));
-        assertEquals(relationships + 1, count(ActRelationshipDO.class));
+        assertEquals(acts + 2, count(ActDOImpl.class));
+        assertEquals(relationships + 1, count(ActRelationshipDOImpl.class));
 
         // verify the relationships
         checkSource(target, actRel2);
@@ -143,8 +143,8 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         assertEquals(description, actRel.getDescription());
 
         // check the counts
-        assertEquals(acts + 2, count(ActDO.class));
-        assertEquals(relationships + 1, count(ActRelationshipDO.class));
+        assertEquals(acts + 2, count(ActDOImpl.class));
+        assertEquals(relationships + 1, count(ActRelationshipDOImpl.class));
     }
 
     /**
@@ -164,8 +164,8 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // test the counts
-        assertEquals(acts + 2, count(ActDO.class));
-        assertEquals(relationships + 1, count(ActRelationshipDO.class));
+        assertEquals(acts + 2, count(ActDOImpl.class));
+        assertEquals(relationships + 1, count(ActRelationshipDOImpl.class));
     }
 
     /**
@@ -224,8 +224,8 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // test the counts
-        assertEquals(acts + 2, count(ActDO.class));
-        assertEquals(relationships + 2, count(ActRelationshipDO.class));
+        assertEquals(acts + 2, count(ActDOImpl.class));
+        assertEquals(relationships + 2, count(ActRelationshipDOImpl.class));
 
         actRel1.setSource(null);
         actRel2.setTarget(null);
@@ -247,8 +247,8 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // retest the counts
-        assertEquals(acts + 1, count(ActDO.class));
-        assertEquals(relationships, count(ActRelationshipDO.class));
+        assertEquals(acts + 1, count(ActDOImpl.class));
+        assertEquals(relationships, count(ActRelationshipDOImpl.class));
     }
 
     /**
@@ -259,11 +259,12 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        acts = count(ActDO.class);
-        relationships = count(ActRelationshipDO.class);
+        acts = count(ActDOImpl.class);
+        relationships = count(ActRelationshipDOImpl.class);
     }
 
-    private void checkSource(ActDO source, ActRelationshipDO... relationships) {
+    private void checkSource(ActDO source,
+                             ActRelationshipDO ... relationships) {
         source = reload(source);
         assertNotNull(source);
         Set<ActRelationshipDO> sources = source.getSourceActRelationships();
@@ -275,7 +276,8 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
         }
     }
 
-    private void checkTarget(ActDO target, ActRelationshipDO... relationships) {
+    private void checkTarget(ActDO target,
+                             ActRelationshipDO ... relationships) {
         target = reload(target);
         assertNotNull(target);
         Set<ActRelationshipDO> sources = target.getSourceActRelationships();
@@ -294,7 +296,7 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
      * @return a new act
      */
     private ActDO createAct(String name) {
-        ActDO act = new ActDO();
+        ActDO act = new ActDOImpl();
         act.setArchetypeId(new ArchetypeId("act.simple.1.0"));
         act.setName(name);
         return act;
@@ -309,7 +311,7 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
      */
     private ActRelationshipDO createActRelationship(ActDO source,
                                                     ActDO target) {
-        ActRelationshipDO rel = new ActRelationshipDO();
+        ActRelationshipDO rel = new ActRelationshipDOImpl();
         rel.setArchetypeId(new ArchetypeId("act.simpleRel.1.0"));
         source.addSourceActRelationship(rel);
         target.addTargetActRelationship(rel);

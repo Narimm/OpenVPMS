@@ -22,6 +22,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -39,18 +40,19 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
 
     private static final SetAssembler<EntityIdentity, EntityIdentityDO>
             IDENT = SetAssembler.create(EntityIdentity.class,
-                                        EntityIdentityDO.class);
+                                        EntityIdentityDOImpl.class);
 
     private static final SetAssembler<Lookup, LookupDO> LOOKUPS
             = SetAssembler.create(Lookup.class, LookupDO.class);
 
     private static final SetAssembler<EntityRelationship, EntityRelationshipDO>
             RELATIONSHIP = SetAssembler.create(EntityRelationship.class,
-                                               EntityRelationshipDO.class);
+                                               EntityRelationshipDOImpl.class);
 
 
-    public EntityAssembler(Class<T> type, Class<DO> typeDO) {
-        super(type, typeDO);
+    public EntityAssembler(Class<T> type, Class<DO> typeDO,
+                           Class<? extends IMObjectDOImpl> impl) {
+        super(type, typeDO, impl);
     }
 
     @Override

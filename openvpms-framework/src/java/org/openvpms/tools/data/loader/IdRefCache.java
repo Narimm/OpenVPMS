@@ -18,7 +18,7 @@
 
 package org.openvpms.tools.data.loader;
 
-import static org.openvpms.tools.data.loader.IMObjectState.ID_PREFIX;
+import static org.openvpms.tools.data.loader.LoadState.ID_PREFIX;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.NullReference;

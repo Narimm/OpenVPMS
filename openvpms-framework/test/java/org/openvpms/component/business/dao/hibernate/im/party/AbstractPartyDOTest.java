@@ -57,7 +57,7 @@ public abstract class AbstractPartyDOTest extends HibernateInfoModelTestCase {
      * @return a new contact
      */
     protected ContactDO createContact() {
-        ContactDO contact = new ContactDO();
+        ContactDO contact = new ContactDOImpl();
         contact.setArchetypeId(CONTACT);
         contact.setDetails(createSimpleAttributeMap());
         return contact;
@@ -79,7 +79,7 @@ public abstract class AbstractPartyDOTest extends HibernateInfoModelTestCase {
      * @return a new person
      */
     protected PartyDO createPerson() {
-        PartyDO party = new PartyDO(PERSON);
+        PartyDO party = new PartyDOImpl(PERSON);
         party.setName("Foo Bar");
         party.setDescription("A person");
         party.setDetails(createSimpleAttributeMap());
@@ -92,7 +92,7 @@ public abstract class AbstractPartyDOTest extends HibernateInfoModelTestCase {
      * @return a new patient
      */
     protected PartyDO createPatient() {
-        PartyDO party = new PartyDO(PATIENT);
+        PartyDO party = new PartyDOImpl(PATIENT);
         party.setName("Spot");
         party.setDescription("A patient");
         party.setDetails(createSimpleAttributeMap());

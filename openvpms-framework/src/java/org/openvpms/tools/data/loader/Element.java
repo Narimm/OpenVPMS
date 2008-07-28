@@ -49,7 +49,8 @@ class Element {
         if (StringUtils.isEmpty(shortName)) {
             throw new ArchetypeDataLoaderException(InvalidArchetype,
                                                    location.getLineNumber(),
-                                                   location.getColumnNumber());
+                                                   location.getColumnNumber(),
+                                                   "<null>");
         }
 
         if (!"data".equals(reader.getLocalName())) {
@@ -125,7 +126,7 @@ class Element {
 
     public boolean isComplete(IdRefCache cache) {
         for (String value : attributes.values()) {
-            if (value.startsWith(IMObjectState.ID_PREFIX)) {
+            if (value.startsWith(LoadState.ID_PREFIX)) {
                 if (cache.getReference(value) == null) {
                     return false;
                 }

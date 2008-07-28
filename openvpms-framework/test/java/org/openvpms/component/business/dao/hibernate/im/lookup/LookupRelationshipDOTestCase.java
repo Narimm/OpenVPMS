@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * Tests the {@link LookupRelationshipDO} class.
+ * Tests the {@link LookupRelationshipDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -75,8 +75,8 @@ public class LookupRelationshipDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // ensure that the correct number of rows have been inserted
-        assertEquals(lookups + 5, count(LookupDO.class));
-        assertEquals(relationships + 4, count(LookupRelationshipDO.class));
+        assertEquals(lookups + 5, count(LookupDOImpl.class));
+        assertEquals(relationships + 4, count(LookupRelationshipDOImpl.class));
     }
 
     /**
@@ -101,17 +101,17 @@ public class LookupRelationshipDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // ensure that the correct number of rows have been inserted
-        assertEquals(lookups + 4, count(LookupDO.class));
-        assertEquals(relationships + 3, count(LookupRelationshipDO.class));
+        assertEquals(lookups + 4, count(LookupDOImpl.class));
+        assertEquals(relationships + 3, count(LookupRelationshipDOImpl.class));
 
         // now delete the entity and all its relationships
         tx = session.beginTransaction();
-        LookupDO lookup = (LookupDO) session.load(LookupDO.class,
+        LookupDO lookup = (LookupDO) session.load(LookupDOImpl.class,
                                                   country.getId());
 
         // iterate through all the relationships and remove them
         LookupRelationshipDO[] rels = lookup.getSourceLookupRelationships()
-                .toArray(new LookupRelationshipDO[0]);
+                .toArray(new LookupRelationshipDOImpl[0]);
         for (LookupRelationshipDO rel : rels) {
             lookup.removeSourceLookupRelationship(rel);
         }
@@ -119,8 +119,8 @@ public class LookupRelationshipDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // ensure that the correct number of rows have been deleted
-        assertEquals(lookups + 4, count(LookupDO.class));
-        assertEquals(relationships, count(LookupRelationshipDO.class));
+        assertEquals(lookups + 4, count(LookupDOImpl.class));
+        assertEquals(relationships, count(LookupRelationshipDOImpl.class));
     }
 
     /**
@@ -131,8 +131,8 @@ public class LookupRelationshipDOTestCase extends HibernateInfoModelTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        lookups = count(LookupDO.class);
-        relationships = count(LookupRelationshipDO.class);
+        lookups = count(LookupDOImpl.class);
+        relationships = count(LookupRelationshipDOImpl.class);
     }
 
     /**
@@ -145,7 +145,7 @@ public class LookupRelationshipDOTestCase extends HibernateInfoModelTestCase {
     private LookupRelationshipDO createRelationship(LookupDO country,
                                                     LookupDO state) {
 
-        LookupRelationshipDO result = new LookupRelationshipDO();
+        LookupRelationshipDO result = new LookupRelationshipDOImpl();
         ArchetypeId type = new ArchetypeId(
                 "lookupRelationship.countryState.1.0");
         result.setArchetypeId(type);

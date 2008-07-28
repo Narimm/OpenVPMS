@@ -20,174 +20,86 @@ package org.openvpms.component.business.dao.hibernate.im.product;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
-import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents the price of a {@link Product}
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-05-02 14:28:50 +1000 (Wed, 02 May 2007) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProductPriceDO extends IMObjectDO {
-
-    /**
-     * The product that it refers to.
-     */
-    private ProductDO product;
-
-    /**
-     * The price of the product.
-     */
-    private BigDecimal price;
-
-    /**
-     * The product is valid from this date.
-     */
-    private Date fromDate;
-
-    /**
-     * The product is valid through to this date.
-     */
-    private Date thruDate;
-
-    /**
-     * Indicates whether this is a fixed or variable price (i.e.
-     * do we multiple by the quantity sold.
-     */
-    private boolean fixed;
-
-    /**
-     * The classifications for the product price.
-     */
-    private Set<LookupDO> classifications = new HashSet<LookupDO>();
-
-
-    /**
-     * Default constructor
-     */
-    public ProductPriceDO() {
-        // do nothing
-    }
-
-    /**
-     * Creates a new <tt>ProductPriceDO</tt>.
-     *
-     * @param archetypeId the archetype id.
-     */
-    public ProductPriceDO(ArchetypeId archetypeId) {
-        super(archetypeId);
-    }
-
+public interface ProductPriceDO extends IMObjectDO {
     /**
      * @return Returns the product.
      */
-    public ProductDO getProduct() {
-        return product;
-    }
+    ProductDO getProduct();
 
     /**
      * @param product The product to set.
      */
-    public void setProduct(ProductDO product) {
-        this.product = product;
-    }
+    void setProduct(ProductDO product);
 
     /**
      * @return Returns the fixed.
      */
-    public boolean isFixed() {
-        return fixed;
-    }
+    boolean isFixed();
 
     /**
      * @param fixed The fixed to set.
      */
-    public void setFixed(boolean fixed) {
-        this.fixed = fixed;
-    }
+    void setFixed(boolean fixed);
 
     /**
      * @return Returns the fromDate.
      */
-    public Date getFromDate() {
-        return fromDate;
-    }
+    Date getFromDate();
 
     /**
      * @param fromDate The fromDate to set.
      */
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
+    void setFromDate(Date fromDate);
 
     /**
      * @return Returns the price.
      */
-    public BigDecimal getPrice() {
-        return price;
-    }
+    BigDecimal getPrice();
 
     /**
      * @param price The price to set.
      */
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
+    void setPrice(BigDecimal price);
 
     /**
      * @return Returns the thruDate.
      */
-    public Date getThruDate() {
-        return thruDate;
-    }
+    Date getThruDate();
 
     /**
      * @param thruDate The thruDate to set.
      */
-    public void setThruDate(Date thruDate) {
-        this.thruDate = thruDate;
-    }
+    void setThruDate(Date thruDate);
 
     /**
      * Returns the classifications for this price.
      *
      * @return the clasifications
      */
-    public Set<LookupDO> getClassifications() {
-        return classifications;
-    }
+    Set<LookupDO> getClassifications();
 
     /**
      * Add a classification.
      *
      * @param classification the classification to add
      */
-    public void addClassification(LookupDO classification) {
-        classifications.add(classification);
-    }
+    void addClassification(LookupDO classification);
 
     /**
      * Removes a classification.
      *
      * @param classification the classification to remove
      */
-    public void removeClassification(LookupDO classification) {
-        classifications.remove(classification);
-    }
-
-    /**
-     * Sets the classifications for this price.
-     *
-     * @param classifications the classifications to set
-     */
-    protected void setClassifications(Set<LookupDO> classifications) {
-        this.classifications = classifications;
-    }
-
+    void removeClassification(LookupDO classification);
 }

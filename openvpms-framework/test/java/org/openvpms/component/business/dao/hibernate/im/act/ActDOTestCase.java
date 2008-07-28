@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * Tests the {@link ActDO} class.
+ * Tests the {@link ActDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -54,7 +54,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(acts + 3, count(ActDO.class));
+        assertEquals(acts + 3, count(ActDOImpl.class));
     }
 
     /**
@@ -70,11 +70,11 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(acts + 2, count(ActDO.class));
+        assertEquals(acts + 2, count(ActDOImpl.class));
 
         // modify the act
         tx = session.beginTransaction();
-        act1 = (ActDO) session.get(ActDO.class, act1.getId());
+        act1 = (ActDO) session.get(ActDOImpl.class, act1.getId());
         assertNotNull(act1);
         String description = "my first act";
         act1.setDescription(description);
@@ -84,7 +84,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
         act1 = reload(act1);
         assertEquals(description, act1.getDescription());
 
-        assertEquals(acts + 2, count(ActDO.class));
+        assertEquals(acts + 2, count(ActDOImpl.class));
     }
 
     /**
@@ -102,7 +102,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(acts + 3, count(ActDO.class));
+        assertEquals(acts + 3, count(ActDOImpl.class));
 
         // delete a couple of acts
         tx = session.beginTransaction();
@@ -113,7 +113,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
         assertNull(reload(act1));
         assertNull(reload(act2));
 
-        assertEquals(acts + 1, count(ActDO.class));
+        assertEquals(acts + 1, count(ActDOImpl.class));
     }
 
     /**
@@ -124,7 +124,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        acts = count(ActDO.class);
+        acts = count(ActDOImpl.class);
     }
 
     /**
@@ -134,7 +134,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
      * @return Act
      */
     private ActDO createAct(String name) {
-        ActDO act = new ActDO();
+        ActDO act = new ActDOImpl();
         act.setArchetypeId(new ArchetypeId("act.simple.1.0"));
         act.setName(name);
 

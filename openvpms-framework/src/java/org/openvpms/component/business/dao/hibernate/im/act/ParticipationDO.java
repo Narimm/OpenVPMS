@@ -20,61 +20,31 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 
 /**
- * A class representing an {@link Entity}'s participantion in an {@link Act}.
+ * Add description here.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-11-12 14:15:48 +1100 (Mon, 12 Nov 2007) $
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ParticipationDO extends IMObjectDO {
-
-    /**
-     * The entity.
-     */
-    private EntityDO entity;
-
-    /**
-     * The act.
-     */
-    private ActDO act;
-
-
-    /**
-     * Default constructor.
-     */
-    public ParticipationDO() {
-        // do nothing
-    }
-
+public interface ParticipationDO extends IMObjectDO {
     /**
      * @return Returns the entity.
      */
-    public EntityDO getEntity() {
-        return entity;
-    }
+    EntityDO getEntity();
 
     /**
      * @param entity The entity to set.
      */
-    public void setEntity(EntityDO entity) {
-        this.entity = entity;
-    }
+    void setEntity(EntityDO entity);
 
     /**
      * @return Returns the act.
      */
-    public ActDO getAct() {
-        return act;
-    }
+    ActDO getAct();
 
     /**
      * @param act The act to set.
      */
-    public void setAct(ActDO act) {
-        this.act = act;
-    }
-
+    void setAct(ActDO act);
 }

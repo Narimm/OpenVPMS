@@ -18,65 +18,29 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
 import java.util.Date;
 
-
 /**
- * Describes a relationship between two {@link IMObjectDO}s that is active for
- * a period of time.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class PeriodRelationshipDO extends IMObjectRelationshipDO {
-
-    /**
-     * The active end time for the relationship. May be <tt>null</tt>.
-     */
-    private Date activeEndTime;
-
-    /**
-     * The active start time for the relationship. May be <tt>null</tt>.
-     */
-    private Date activeStartTime;
-
-
-    /**
-     * Default constructor.
-     */
-    public PeriodRelationshipDO() {
-        // do nothing
-    }
-
-    /**
-     * Creates a new <tt>PeriodRelationshipDO</tt>.
-     *
-     * @param archetypeId the archetype identifier
-     */
-    public PeriodRelationshipDO(ArchetypeId archetypeId) {
-        super(archetypeId);
-    }
-
+public interface PeriodRelationshipDO extends IMObjectRelationshipDO {
     /**
      * Returns the active start time.
      *
      * @return the active start time. If <tt>null</tt>, indicates that the start
      *         time is unbounded
      */
-    public Date getActiveStartTime() {
-        return activeStartTime;
-    }
+    Date getActiveStartTime();
 
     /**
      * Sets the active start time.
      *
      * @param time the active start time. May be <tt>null</tt>
      */
-    public void setActiveStartTime(Date time) {
-        activeStartTime = time;
-    }
+    void setActiveStartTime(Date time);
 
     /**
      * Returns the active end time.
@@ -84,18 +48,14 @@ public abstract class PeriodRelationshipDO extends IMObjectRelationshipDO {
      * @return the active end time. If <tt>null</tt>, indicates that the end
      *         time is unbounded
      */
-    public Date getActiveEndTime() {
-        return activeEndTime;
-    }
+    Date getActiveEndTime();
 
     /**
      * Sets the active end time.
      *
      * @param time the active end time. May be <tt>null</tt>
      */
-    public void setActiveEndTime(Date time) {
-        activeEndTime = time;
-    }
+    void setActiveEndTime(Date time);
 
     /**
      * Determines if the relationship is active as of the current time.
@@ -109,10 +69,7 @@ public abstract class PeriodRelationshipDO extends IMObjectRelationshipDO {
      * @return <tt>true</tt> if the relationship is active,
      *         otherwise <tt>false</tt>
      */
-    @Override
-    public boolean isActive() {
-        return isActive(System.currentTimeMillis());
-    }
+    boolean isActive();
 
     /**
      * Determines if the relationship is active as of the specified time.
@@ -127,9 +84,7 @@ public abstract class PeriodRelationshipDO extends IMObjectRelationshipDO {
      * @return <tt>true</tt> if the relationship is active, otherwise
      *         <tt>false</tt>
      */
-    public boolean isActive(Date time) {
-        return isActive(time.getTime());
-    }
+    boolean isActive(Date time);
 
     /**
      * Determines if the relationship is active as of the specified time.
@@ -144,10 +99,7 @@ public abstract class PeriodRelationshipDO extends IMObjectRelationshipDO {
      * @return <tt>true</tt> if the relationship is active, otherwise
      *         <tt>false</tt>
      */
-    public boolean isActive(long time) {
-        return compare(activeStartTime, time) <= 0
-                && compare(activeEndTime, time) >= 0;
-    }
+    boolean isActive(long time);
 
     /**
      * Determines if the relationship is active.
@@ -155,29 +107,5 @@ public abstract class PeriodRelationshipDO extends IMObjectRelationshipDO {
      * @param active if <tt>true</tt>, sets the end time to <tt>null</tt>,
      *               otherwise sets to it the current time
      */
-    @Override
-    public void setActive(boolean active) {
-        if (active) {
-            activeEndTime = null;
-        } else {
-            activeEndTime = new Date();
-        }
-    }
-
-    /**
-     * Helper to compare a date with a timestamp.
-     *
-     * @param date the date. May be <tt>null</tt>, indicating an unbounded date
-     * @param time the timestamp
-     * @return -1 if date &lt; time, 0, if date == time or is <tt>null<tt>,
-     *         otherwise 1
-     */
-    private int compare(Date date, long time) {
-        if (date == null) {
-            return 0;
-        }
-        long other = date.getTime();
-        return (other < time ? -1 : (other == time ? 0 : 1));
-    }
-
+    void setActive(boolean active);
 }

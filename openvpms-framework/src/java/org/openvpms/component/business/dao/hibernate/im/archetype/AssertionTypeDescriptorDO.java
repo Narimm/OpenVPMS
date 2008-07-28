@@ -18,60 +18,26 @@
 
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This is used to define the assertion type. It is used to map an assertion to
- * its type information.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-04-16 16:01:53 +1000 (Wed, 16 Apr 2008) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AssertionTypeDescriptorDO extends DescriptorDO {
-
-    /**
-     * A list of well known actions which may be supported by assertions
-     */
-    public enum Actions {
-        create, validate
-    }
-
-    /**
-     * This is the fully qualified archetype of the object used to collect
-     * property information for this assertion type.
-     */
-    private String propertyArchetype;
-
-    /**
-     * A list of actions associated with this assertion type
-     */
-    private Set<ActionTypeDescriptorDO> actionTypes = new HashSet<ActionTypeDescriptorDO>();
-
-    /**
-     * Default constructor
-     */
-    public AssertionTypeDescriptorDO() {
-        setArchetypeId(new ArchetypeId("descriptor.assertionType.1.0"));
-    }
-
+public interface AssertionTypeDescriptorDO extends DescriptorDO {
     /**
      * @return Returns the actionTypes.
      */
-    public Set<ActionTypeDescriptorDO> getActionTypes() {
-        return actionTypes;
-    }
+    Set<ActionTypeDescriptorDO> getActionTypes();
 
     /**
      * Add an action type.
      *
      * @param actionType the action type to add
      */
-    public void addActionType(ActionTypeDescriptorDO actionType) {
-        actionTypes.add(actionType);
-    }
+    void addActionType(ActionTypeDescriptorDO actionType);
 
     /**
      * Retrieves the named action type.
@@ -79,43 +45,22 @@ public class AssertionTypeDescriptorDO extends DescriptorDO {
      * @param name the action name
      * @return the corresponding action type, or <tt>null</tt> if none is found
      */
-    public ActionTypeDescriptorDO getActionType(String name) {
-        for (ActionTypeDescriptorDO actionType : actionTypes) {
-            if (actionType.getName().equals(name)) {
-                return actionType;
-            }
-        }
-        return null;
-    }
+    ActionTypeDescriptorDO getActionType(String name);
 
     /**
      * Remove the specified action type.
      *
      * @param actionType the action type to remove
      */
-    public void removeActionType(ActionTypeDescriptorDO actionType) {
-        actionTypes.remove(actionType);
-    }
+    void removeActionType(ActionTypeDescriptorDO actionType);
 
     /**
      * @return Returns the propertyArchetype.
      */
-    public String getPropertyArchetype() {
-        return propertyArchetype;
-    }
+    String getPropertyArchetype();
 
     /**
      * @param propertyArchetype The propertyArchetypeQName to set.
      */
-    public void setPropertyArchetype(String propertyArchetype) {
-        this.propertyArchetype = propertyArchetype;
-    }
-
-    /**
-     * @param actionTypes The actionTypes to set.
-     */
-    protected void setActionTypes(Set<ActionTypeDescriptorDO> actionTypes) {
-        this.actionTypes = actionTypes;
-    }
-
+    void setPropertyArchetype(String propertyArchetype);
 }

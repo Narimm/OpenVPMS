@@ -29,7 +29,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 public class DefaultEntityAssembler extends EntityAssembler<Entity, EntityDO> {
 
     public DefaultEntityAssembler() {
-        super(Entity.class, EntityDO.class);
+        super(Entity.class, EntityDO.class, EntityDOImpl.class);
     }
 
     protected Entity create(EntityDO object) {
@@ -37,6 +37,6 @@ public class DefaultEntityAssembler extends EntityAssembler<Entity, EntityDO> {
     }
 
     protected EntityDO create(Entity object) {
-        return new EntityDO();
+        return new EntityDOImpl();
     }
 }

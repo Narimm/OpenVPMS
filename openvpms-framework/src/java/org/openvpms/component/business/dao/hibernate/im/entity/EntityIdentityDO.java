@@ -19,77 +19,39 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
- * An identity for an {@link EntityDO}.
+ * Add description here.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-01-18 23:41:49 +1100 (Fri, 18 Jan 2008) $
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityIdentityDO extends IMObjectDO {
-
-    /**
-     * The identity.
-     */
-    private String identity;
-
-    /**
-     * The entity that has the identity.
-     */
-    private EntityDO entity;
-
-
-    /**
-     * Default constructor.
-     */
-    public EntityIdentityDO() {
-        // do nothing
-    }
-
-    /**
-     * Creates a new <tt>EntityIdentity</tt>.
-     *
-     * @param archetypeId the archetype id
-     */
-    public EntityIdentityDO(ArchetypeId archetypeId) {
-        super(archetypeId);
-    }
-
+public interface EntityIdentityDO extends IMObjectDO {
     /**
      * Returns the identity.
      *
      * @return the identity
      */
-    public String getIdentity() {
-        return identity;
-    }
+    String getIdentity();
 
     /**
      * Sets the identity.
      *
      * @param identity the identity
      */
-    public void setIdentity(String identity) {
-        this.identity = identity;
-    }
+    void setIdentity(String identity);
 
     /**
      * Returns the entity that has the identity.
      *
      * @return the entity
      */
-    public EntityDO getEntity() {
-        return entity;
-    }
+    EntityDO getEntity();
 
     /**
      * Sets the entity that has the identity.
      *
      * @param entity the entity
      */
-    public void setEntity(EntityDO entity) {
-        this.entity = entity;
-    }
-
+    void setEntity(EntityDO entity);
 }

@@ -33,10 +33,16 @@ public abstract class IMObjectRelationshipAssembler
 
     private final Class<? extends IMObjectDO> endType;
 
-    public IMObjectRelationshipAssembler(Class<T> type, Class<DO> typeDO,
-                                         Class<? extends IMObjectDO> endType) {
-        super(type, typeDO);
+    private final Class<? extends IMObjectDOImpl> endTypeImpl;
+
+    public IMObjectRelationshipAssembler(
+            Class<T> type, Class<DO> typeDO,
+            Class<? extends IMObjectDOImpl> impl,
+            Class<? extends IMObjectDO> endType,
+            Class<? extends IMObjectDOImpl> endTypeImpl) {
+        super(type, typeDO, impl);
         this.endType = endType;
+        this.endTypeImpl = endTypeImpl;
     }
 
     @Override
@@ -58,14 +64,16 @@ public abstract class IMObjectRelationshipAssembler
                                   DOState state, Context context) {
         final IMObjectReference sourceRef = source.getSource();
         if (sourceRef != null) {
-            DOState sourceDO = find(sourceRef, endType, context);
+            DOState sourceDO = find(sourceRef, endType, endTypeImpl, context);
             if (sourceDO != null) {
                 result.setSource(sourceDO.getObject());
                 state.addState(sourceDO);
             } else {
                 new DeferredAssembler(state, sourceRef) {
                     protected void doAssemble(Context context) {
-                        result.setSource(load(sourceRef, endType, context));
+                        IMObjectDO source = load(sourceRef, endType,
+                                                 endTypeImpl, context);
+                        result.setSource(source);
                     }
                 };
             }
@@ -85,14 +93,16 @@ public abstract class IMObjectRelationshipAssembler
                                 Context context) {
         final IMObjectReference targetRef = source.getTarget();
         if (targetRef != null) {
-            DOState targetDO = find(targetRef, endType, context);
+            DOState targetDO = find(targetRef, endType, endTypeImpl, context);
             if (targetDO != null) {
                 result.setTarget(targetDO.getObject());
                 state.addState(targetDO);
             } else {
                 new DeferredAssembler(state, targetRef) {
                     public void doAssemble(Context context) {
-                        result.setTarget(load(targetRef, endType, context));
+                        IMObjectDO target = load(targetRef, endType,
+                                                 endTypeImpl, context);
+                        result.setTarget(target);
                     }
                 };
             }

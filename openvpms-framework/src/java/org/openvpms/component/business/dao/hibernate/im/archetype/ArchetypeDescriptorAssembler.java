@@ -38,11 +38,12 @@ public class ArchetypeDescriptorAssembler
 
     private static final MapAssembler<String, NodeDescriptor, NodeDescriptorDO>
             NODES = MapAssembler.create(NodeDescriptor.class,
-                                        NodeDescriptorDO.class);
+                                        NodeDescriptorDOImpl.class);
 
 
     public ArchetypeDescriptorAssembler() {
-        super(ArchetypeDescriptor.class, ArchetypeDescriptorDO.class);
+        super(ArchetypeDescriptor.class, ArchetypeDescriptorDO.class,
+              ArchetypeDescriptorDOImpl.class);
     }
 
     @Override
@@ -80,6 +81,6 @@ public class ArchetypeDescriptorAssembler
     }
 
     protected ArchetypeDescriptorDO create(ArchetypeDescriptor object) {
-        return new ArchetypeDescriptorDO();
+        return new ArchetypeDescriptorDOImpl();
     }
 }

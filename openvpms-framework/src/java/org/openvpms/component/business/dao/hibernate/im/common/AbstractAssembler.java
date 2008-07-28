@@ -57,8 +57,10 @@ public class AbstractAssembler {
         return type.cast(object);
     }
 
-    protected <DO extends IMObjectDO> DOState find(IMObjectReference reference,
-                                              Class<DO> type, Context context) {
+    protected <DO extends IMObjectDO, Impl extends IMObjectDOImpl> DOState
+            find(IMObjectReference reference, Class<DO> type,
+                 Class<Impl> impl,
+                 Context context) {
         if (reference == null) {
             return null;
         }
@@ -67,7 +69,7 @@ public class AbstractAssembler {
             return state;
         }
         if (reference.getId() != -1) {
-            DO result = context.get(reference, type);
+            DO result = context.get(reference, type, impl);
             if (result != null) {
                 return new DOState(result);
             }
@@ -80,13 +82,15 @@ public class AbstractAssembler {
      *
      * @param reference the reference
      * @param type      the object type
+     * @param impl      the implementation type
      * @param context   the context
      * @return the corresponding object
      * @throws IMObjectDAOException if the object doesn't exist
      */
-    protected <DO extends IMObjectDO> DO load(IMObjectReference reference,
-                                              Class<DO> type, Context context) {
-        DOState result = find(reference, type, context);
+    protected <DO extends IMObjectDO, Impl extends IMObjectDOImpl> DO
+            load(IMObjectReference reference, Class<DO> type, Class<Impl> impl,
+                 Context context) {
+        DOState result = find(reference, type, impl, context);
         if (result == null) {
             throw new IMObjectDAOException(ObjectNotFound, reference);
         }

@@ -23,6 +23,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -36,10 +37,10 @@ import org.openvpms.component.business.domain.im.party.Party;
 public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
 
     private static final SetAssembler<Lookup, LookupDO> LOOKUPS
-            = SetAssembler.create(Lookup.class, LookupDO.class);
+            = SetAssembler.create(Lookup.class, LookupDOImpl.class);
 
     public ContactAssembler() {
-        super(Contact.class, ContactDO.class);
+        super(Contact.class, ContactDO.class, ContactDOImpl.class);
     }
 
     @Override
@@ -49,7 +50,8 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
         target.setActiveStartTime(source.getActiveStartTime());
         target.setActiveEndTime(source.getActiveEndTime());
         PartyDO party = null;
-        DOState partyState = getDO(source.getParty(), PartyDO.class, context);
+        DOState partyState
+                = getDO(source.getParty(), PartyDOImpl.class, context);
         if (partyState != null) {
             party = (PartyDO) partyState.getObject();
             state.addState(partyState);
@@ -79,6 +81,6 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
     }
 
     protected ContactDO create(Contact object) {
-        return new ContactDO();
+        return new ContactDOImpl();
     }
 }

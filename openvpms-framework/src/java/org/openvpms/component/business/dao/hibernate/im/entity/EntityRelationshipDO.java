@@ -18,63 +18,22 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDO;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
- * Describes the relationship between two entities.
+ * Add description here.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-04-01 14:58:48 +1100 (Tue, 01 Apr 2008) $
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityRelationshipDO extends PeriodRelationshipDO {
-
-    /**
-     * A relationship may also have an associated entity identity.
-     */
-    private EntityIdentityDO identity;
-
-
-    /**
-     * Default constructor.
-     */
-    public EntityRelationshipDO() {
-        // do nothing
-    }
-
-    /**
-     * Creates a new <tt>EntityRelationshipDO</tt>.
-     *
-     * @param archetypeId the archetype id
-     */
-    public EntityRelationshipDO(ArchetypeId archetypeId) {
-        super(archetypeId);
-    }
-
+public interface EntityRelationshipDO extends PeriodRelationshipDO {
     /**
      * @return Returns the entityIdentity.
      */
-    public EntityIdentityDO getIdentity() {
-        return identity;
-    }
+    EntityIdentityDO getIdentity();
 
     /**
      * @param identity The identity to set.
      */
-    public void setIdentity(EntityIdentityDO identity) {
-        this.identity = identity;
-    }
-
-    /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
-    @Override
-    @SuppressWarnings("HardCodedStringLiteral")
-    public String toString() {
-        return new ToStringBuilder(this)
-                .appendSuper(null)
-                .append("identity", identity)
-                .toString();
-    }
+    void setIdentity(EntityIdentityDO identity);
 }

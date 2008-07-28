@@ -30,14 +30,17 @@ public abstract class PeriodRelationshipAssembler<T extends PeriodRelationship,
         DO extends PeriodRelationshipDO>
         extends IMObjectRelationshipAssembler<T, DO> {
 
-    public PeriodRelationshipAssembler(Class<T> type, Class<DO> typeDO,
-                                       Class<? extends IMObjectDO> endType) {
-        super(type, typeDO, endType);
+    public PeriodRelationshipAssembler(
+            Class<T> type, Class<DO> typeDO,
+            Class<? extends IMObjectDOImpl> impl,
+            Class<? extends IMObjectDO> endType,
+            Class<? extends IMObjectDOImpl> endTypeImpl) {
+        super(type, typeDO, impl, endType, endTypeImpl);
     }
 
     @Override
     protected void assembleDO(DO target, T source,
-                                 DOState state, Context context) {
+                              DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setActiveStartTime(source.getActiveStartTime());
         target.setActiveEndTime(source.getActiveEndTime());

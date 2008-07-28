@@ -11,7 +11,8 @@
 			type="java.util.Date" minCardinality="1"  displayName="From Date" />
 		<node name="thruDate" path="/thruDate"
 			type="java.util.Date" minCardinality="1"  displayName="Thru Date" />
-		<node name="fixed" path="/fixed"
+        <node name="price" path="/price" type="java.math.BigDecimal" minCardinality="1"/>
+        <node name="fixed" path="/fixed"
 			type="java.lang.Boolean" minCardinality="1"  displayName="Fixed Price" />
 	</archetype>
 </archetypes>

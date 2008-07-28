@@ -19,8 +19,8 @@
 package org.openvpms.component.business.dao.hibernate.im.product;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
-import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
+import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityAssembler;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -34,15 +34,15 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 public class ProductAssembler extends EntityAssembler<Product, ProductDO> {
 
     private SetAssembler<ProductPrice, ProductPriceDO> PRICES
-            = SetAssembler.create(ProductPrice.class, ProductPriceDO.class);
+            = SetAssembler.create(ProductPrice.class, ProductPriceDOImpl.class);
 
     public ProductAssembler() {
-        super(Product.class, ProductDO.class);
+        super(Product.class, ProductDO.class, ProductDOImpl.class);
     }
 
     @Override
     protected void assembleDO(ProductDO target, Product source,
-                                 DOState state, Context context) {
+                              DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         PRICES.assembleDO(target.getProductPrices(), source.getProductPrices(),
                           state, context);
@@ -62,6 +62,6 @@ public class ProductAssembler extends EntityAssembler<Product, ProductDO> {
     }
 
     protected ProductDO create(Product object) {
-        return new ProductDO();
+        return new ProductDOImpl();
     }
 }

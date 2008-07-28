@@ -30,7 +30,7 @@ import java.util.Map;
 
 
 /**
- * Tests the {@link ArchetypeDescriptorDO} class.
+ * Tests the {@link ArchetypeDescriptorDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -74,8 +74,8 @@ public class ArchetypeDescriptorDOTestCase
         assertEquals(name, desc.getName());
 
         // check row counts
-        assertEquals(archetypes + 1, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes + size, count(NodeDescriptorDO.class));
+        assertEquals(archetypes + 1, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes + size, count(NodeDescriptorDOImpl.class));
     }
 
     /**
@@ -92,8 +92,8 @@ public class ArchetypeDescriptorDOTestCase
         tx.commit();
 
         // check row counts
-        assertEquals(archetypes + 1, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes + size, count(NodeDescriptorDO.class));
+        assertEquals(archetypes + 1, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes + size, count(NodeDescriptorDOImpl.class));
 
         // now delete the object and check again
         tx = session.beginTransaction();
@@ -101,8 +101,8 @@ public class ArchetypeDescriptorDOTestCase
         tx.commit();
 
         // check row count
-        assertEquals(archetypes, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes, count(NodeDescriptorDO.class));
+        assertEquals(archetypes, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes, count(NodeDescriptorDOImpl.class));
     }
 
     /**
@@ -132,13 +132,13 @@ public class ArchetypeDescriptorDOTestCase
         tx.commit();
 
         // check row counts
-        assertEquals(archetypes + 1, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes + size, count(NodeDescriptorDO.class));
+        assertEquals(archetypes + 1, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes + size, count(NodeDescriptorDOImpl.class));
 
         // retrieve the object and ensure that the correct number of
         // node descriptors are present
         ArchetypeDescriptorDO adesc = (ArchetypeDescriptorDO) session.load(
-                ArchetypeDescriptorDO.class, desc.getId());
+                ArchetypeDescriptorDOImpl.class, desc.getId());
         assertEquals(size, adesc.getAllNodeDescriptors().size());
         assertNotNull(adesc.getNodeDescriptor("id"));
         assertNotNull(adesc.getNodeDescriptor("name"));
@@ -154,8 +154,8 @@ public class ArchetypeDescriptorDOTestCase
         session.delete(adesc);
         tx.commit();
         // check row counts
-        assertEquals(archetypes, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes, count(NodeDescriptorDO.class));
+        assertEquals(archetypes, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes, count(NodeDescriptorDOImpl.class));
     }
 
     /**
@@ -185,9 +185,9 @@ public class ArchetypeDescriptorDOTestCase
         session.save(desc);
         tx.commit();
 
-        assertEquals(archetypes + 1, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes + size, count(NodeDescriptorDO.class));
-        assertEquals(assertions + 2, count(AssertionDescriptorDO.class));
+        assertEquals(archetypes + 1, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes + size, count(NodeDescriptorDOImpl.class));
+        assertEquals(assertions + 2, count(AssertionDescriptorDOImpl.class));
     }
 
     /**
@@ -202,14 +202,15 @@ public class ArchetypeDescriptorDOTestCase
         session.save(desc);
         tx.commit();
 
-        assertEquals(archetypes + 1, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes + size, count(NodeDescriptorDO.class));
+        assertEquals(archetypes + 1, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes + size, count(NodeDescriptorDOImpl.class));
 
         // retrieve the object and ensure that the correct number of
         // node descriptors are present
         tx = session.beginTransaction();
-        desc = (ArchetypeDescriptorDO) session.load(ArchetypeDescriptorDO.class,
-                                                    desc.getId());
+        desc = (ArchetypeDescriptorDO) session.load(
+                ArchetypeDescriptorDOImpl.class,
+                desc.getId());
 
         NodeDescriptorDO description = desc.getNodeDescriptor("description");
         assertNotNull(description);
@@ -217,10 +218,11 @@ public class ArchetypeDescriptorDOTestCase
         session.save(desc);
         tx.commit();
 
-        assertEquals(archetypes + 1, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes + size - 1, count(NodeDescriptorDO.class));
-        desc = (ArchetypeDescriptorDO) session.load(ArchetypeDescriptorDO.class,
-                                                    desc.getId());
+        assertEquals(archetypes + 1, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes + size - 1, count(NodeDescriptorDOImpl.class));
+        desc = (ArchetypeDescriptorDO) session.load(
+                ArchetypeDescriptorDOImpl.class,
+                desc.getId());
         assertNull(desc.getNodeDescriptor("description"));
     }
 
@@ -259,14 +261,14 @@ public class ArchetypeDescriptorDOTestCase
         session.save(desc);
         tx.commit();
 
-        assertEquals(archetypes + 1, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes + size + 1, count(NodeDescriptorDO.class));
-        assertEquals(assertions + 3, count(AssertionDescriptorDO.class));
+        assertEquals(archetypes + 1, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes + size + 1, count(NodeDescriptorDOImpl.class));
+        assertEquals(assertions + 3, count(AssertionDescriptorDOImpl.class));
 
         // retrieve the object an delete 2 assertions and one property
         tx = session.beginTransaction();
-        desc = (ArchetypeDescriptorDO) session.load(ArchetypeDescriptorDO.class,
-                                                    desc.getId());
+        desc = (ArchetypeDescriptorDO) session.load(
+                ArchetypeDescriptorDOImpl.class, desc.getId());
         assertNotNull(desc);
         desc.removeNodeDescriptor(breed);
         description = desc.getNodeDescriptor("description");
@@ -276,12 +278,12 @@ public class ArchetypeDescriptorDOTestCase
         session.save(desc);
         tx.commit();
 
-        assertEquals(archetypes + 1, count(ArchetypeDescriptorDO.class));
-        assertEquals(nodes + 3, count(NodeDescriptorDO.class));
-        assertEquals(assertions + 2, count(AssertionDescriptorDO.class));
+        assertEquals(archetypes + 1, count(ArchetypeDescriptorDOImpl.class));
+        assertEquals(nodes + 3, count(NodeDescriptorDOImpl.class));
+        assertEquals(assertions + 2, count(AssertionDescriptorDOImpl.class));
 
-        desc = (ArchetypeDescriptorDO) session.load(ArchetypeDescriptorDO.class,
-                                                    desc.getId());
+        desc = (ArchetypeDescriptorDO) session.load(
+                ArchetypeDescriptorDOImpl.class, desc.getId());
         assertEquals(size, desc.getNodeDescriptors().size());
         description = desc.getNodeDescriptor("description");
         assertNotNull(description);
@@ -289,11 +291,11 @@ public class ArchetypeDescriptorDOTestCase
     }
 
     /**
-     * Verifies that an {@link AssertionDescriptorDO}'s ProperyMap is correctly
+     * Verifies that an {@link AssertionDescriptorDOImpl}'s ProperyMap is correctly
      * loaded when its other attributes are null.
      */
     public void testOBF112() {
-        AssertionDescriptorDO assertion = new AssertionDescriptorDO();
+        AssertionDescriptorDO assertion = new AssertionDescriptorDOImpl();
         assertion.setName("assertionOBF112");
         assertion.addProperty(createAssertionProperty("expression",
                                                       String.class,
@@ -304,13 +306,11 @@ public class ArchetypeDescriptorDOTestCase
         Transaction tx = session.beginTransaction();
         session.save(assertion);
         tx.commit();
-        session.evict(
-                assertion); // evict the assertion to force load from db
+        session.evict(assertion); // evict the assertion to force load from db
 
         // reload and verify the property map was loaded
         AssertionDescriptorDO loaded = (AssertionDescriptorDO) session.load(
-                AssertionDescriptorDO.class,
-                assertion.getId());
+                AssertionDescriptorDOImpl.class, assertion.getId());
         PropertyMap map = loaded.getPropertyMap();
         assertNotNull(map);
         assertNotNull(loaded.getProperty("expression"));
@@ -324,9 +324,9 @@ public class ArchetypeDescriptorDOTestCase
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        archetypes = count(ArchetypeDescriptorDO.class);
-        nodes = count(NodeDescriptorDO.class);
-        assertions = count(AssertionDescriptorDO.class);
+        archetypes = count(ArchetypeDescriptorDOImpl.class);
+        nodes = count(NodeDescriptorDOImpl.class);
+        assertions = count(AssertionDescriptorDOImpl.class);
     }
 
     /**
@@ -337,7 +337,7 @@ public class ArchetypeDescriptorDOTestCase
      * @return a new archetype descriptor
      */
     private ArchetypeDescriptorDO createArchetypeDescriptor(String shortName) {
-        ArchetypeDescriptorDO desc = new ArchetypeDescriptorDO();
+        ArchetypeDescriptorDO desc = new ArchetypeDescriptorDOImpl();
         desc.setName(shortName + System.currentTimeMillis() + ".1.0");
         desc.setLatest(true);
         desc.setClassName(this.getName());
@@ -362,7 +362,7 @@ public class ArchetypeDescriptorDOTestCase
      */
     private NodeDescriptorDO createNodeDescriptor(String name, String path,
                                                   Class type) {
-        NodeDescriptorDO desc = new NodeDescriptorDO();
+        NodeDescriptorDO desc = new NodeDescriptorDOImpl();
         desc.setName(name);
         desc.setPath(path);
         desc.setType(type.getName());
@@ -377,7 +377,7 @@ public class ArchetypeDescriptorDOTestCase
      * @return AssertionDescriptor
      */
     private AssertionDescriptorDO createAssertionDescriptor(String type) {
-        AssertionDescriptorDO desc = new AssertionDescriptorDO();
+        AssertionDescriptorDO desc = new AssertionDescriptorDOImpl();
         desc.setName(type);
         desc.setErrorMessage("An error message");
 

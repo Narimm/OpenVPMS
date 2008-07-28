@@ -33,7 +33,8 @@ public class EntityIdentityAssembler
         extends IMObjectAssembler<EntityIdentity, EntityIdentityDO> {
 
     public EntityIdentityAssembler() {
-        super(EntityIdentity.class, EntityIdentityDO.class);
+        super(EntityIdentity.class, EntityIdentityDO.class,
+              EntityIdentityDOImpl.class);
     }
 
     @Override
@@ -43,7 +44,7 @@ public class EntityIdentityAssembler
         target.setIdentity(source.getIdentity());
 
         EntityDO entity = null;
-        DOState entityState = getDO(source.getEntity(), EntityDO.class,
+        DOState entityState = getDO(source.getEntity(), EntityDOImpl.class,
                                     context);
         if (entityState != null) {
             entity = (EntityDO) entityState.getObject();
@@ -65,6 +66,6 @@ public class EntityIdentityAssembler
     }
 
     protected EntityIdentityDO create(EntityIdentity object) {
-        return new EntityIdentityDO();
+        return new EntityIdentityDOImpl();
     }
 }

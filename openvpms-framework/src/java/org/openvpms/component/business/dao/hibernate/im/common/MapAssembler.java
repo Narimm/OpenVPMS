@@ -34,15 +34,16 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
 
     private final Class<T> type;
 
-    private final Class<DO> typeDO;
+    private final Class<? extends IMObjectDOImpl> typeDO;
 
-    public MapAssembler(Class<T> type, Class<DO> typeDO) {
+    public MapAssembler(Class<T> type, Class<? extends IMObjectDOImpl> typeDO) {
         this.type = type;
         this.typeDO = typeDO;
     }
 
     public static <K, T extends IMObject, DO extends IMObjectDO>
-    MapAssembler<K, T, DO> create(Class<T> type, Class<DO> typeDO) {
+    MapAssembler<K, T, DO> create(Class<T> type,
+                                  Class<? extends IMObjectDOImpl> typeDO) {
         return new MapAssembler<K, T, DO>(type, typeDO);
     }
 
@@ -85,7 +86,7 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
         protected DO convert(T value) {
             DOState child = getDO(value, typeDO, context);
             state.addState(child);
-            return typeDO.cast(child.getObject());
+            return (DO) child.getObject();
         }
 
         @Override

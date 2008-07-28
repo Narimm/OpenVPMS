@@ -21,7 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
- * {@link LookupDO} helper methods for test purposes.
+ * {@link LookupDOImpl} helper methods for test purposes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -37,7 +37,7 @@ public class LookupDOHelper {
     public static LookupDO createLookup(String shortName, String code) {
         ArchetypeId id = new ArchetypeId(shortName + ".1.0");
         code = code + "-" + System.currentTimeMillis();
-        LookupDO result = new LookupDO();
+        LookupDO result = new LookupDOImpl();
         result.setArchetypeId(id);
         result.setCode(code);
         return result;

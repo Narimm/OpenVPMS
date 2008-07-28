@@ -21,271 +21,145 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A class representing an activity that is being done, has been done,
- * can be done, or is intended or requested to be done.  An Act instance
- * is a record of an intentional business action.
+ * Add description here.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-07-10 15:32:07 +1000 (Tue, 10 Jul 2007) $
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActDO extends IMObjectDO {
-
-    /**
-     * The act title.
-     */
-    private String title;
-
-    /**
-     * The start time of this act.
-     */
-    private Date activityStartTime;
-
-    /**
-     * The end time of this act.
-     */
-    private Date activityEndTime;
-
-    /**
-     * The reason for the act.
-     */
-    private String reason;
-
-    /**
-     * The status of the act.
-     */
-    private String status;
-
-    /**
-     * The relationships to other acts where this is the source.
-     */
-    private Set<ActRelationshipDO> sourceActRelationships =
-            new HashSet<ActRelationshipDO>();
-
-    /**
-     * The relationships to other acts where this is the target.
-     */
-    private Set<ActRelationshipDO> targetActRelationships =
-            new HashSet<ActRelationshipDO>();
-
-    /**
-     * The participations for this act.
-     */
-    private Set<ParticipationDO> participations =
-            new HashSet<ParticipationDO>();
-
-
-    /**
-     * Default constructor.
-     */
-    public ActDO() {
-        // do nothing
-    }
-
+public interface ActDO extends IMObjectDO {
     /**
      * Returns the title.
      *
      * @return the title. May be <tt>null</tt>
      */
-    public String getTitle() {
-        return title;
-    }
+    String getTitle();
 
     /**
      * Sets the title.
      *
      * @param title the title. May be <tt>null</tt>
      */
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    void setTitle(String title);
 
     /**
      * Returns the act start time.
      *
      * @return the act start time. May be <tt>null</tt>
      */
-    public Date getActivityStartTime() {
-        return activityStartTime;
-    }
+    Date getActivityStartTime();
 
     /**
      * Sets the act start time.
      *
      * @param activityStartTime the start time. May be <tt>null</tt>
      */
-    public void setActivityStartTime(Date activityStartTime) {
-        this.activityStartTime = activityStartTime;
-    }
+    void setActivityStartTime(Date activityStartTime);
 
     /**
      * Returns the act end time.
      *
      * @return the end time. May be <tt>null</tt>
      */
-    public Date getActivityEndTime() {
-        return activityEndTime;
-    }
+    Date getActivityEndTime();
 
     /**
      * Sets the act end time.
      *
      * @param activityEndTime the end time. May be <tt>null</tt>
      */
-    public void setActivityEndTime(Date activityEndTime) {
-        this.activityEndTime = activityEndTime;
-    }
+    void setActivityEndTime(Date activityEndTime);
 
     /**
      * Returns the reason for the act.
      *
      * @return the reason. May be <tt>null</tt>
      */
-    public String getReason() {
-        return reason;
-    }
+    String getReason();
 
     /**
      * Sets the reason for the act.
      *
      * @param reason the reason. May be <tt>null</tt>
      */
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
+    void setReason(String reason);
 
     /**
      * Returns the act status.
      *
      * @return the act status. May be <tt>null</tt>
      */
-    public String getStatus() {
-        return status;
-    }
+    String getStatus();
 
     /**
      * Sets the act status.
      *
      * @param status the act status. May be <tt>null</tt>
      */
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    void setStatus(String status);
 
     /**
      * Returns the relationships to other acts where this is the source.
      *
      * @return the source relationships
      */
-    public Set<ActRelationshipDO> getSourceActRelationships() {
-        return sourceActRelationships;
-    }
+    Set<ActRelationshipDO> getSourceActRelationships();
 
     /**
      * Adds a relationship where this is the source.
      *
      * @param source the relationship
      */
-    public void addSourceActRelationship(ActRelationshipDO source) {
-        sourceActRelationships.add(source);
-        source.setSource(this);
-    }
+    void addSourceActRelationship(ActRelationshipDO source);
 
     /**
      * Removes a source relationship.
      *
      * @param source the relationship to remove
      */
-    public void removeSourceActRelationship(ActRelationshipDO source) {
-        sourceActRelationships.remove(source);
-    }
+    void removeSourceActRelationship(ActRelationshipDO source);
 
     /**
      * Returns the relationships to other acts where this is the target.
      *
      * @return the target relationships
      */
-    public Set<ActRelationshipDO> getTargetActRelationships() {
-        return targetActRelationships;
-    }
+    Set<ActRelationshipDO> getTargetActRelationships();
 
     /**
      * Adds a relationship where this is the target.
      *
      * @param target the relationship
      */
-    public void addTargetActRelationship(ActRelationshipDO target) {
-        targetActRelationships.add(target);
-        target.setTarget(this);
-    }
+    void addTargetActRelationship(ActRelationshipDO target);
 
     /**
      * Removes a target relationship.
      *
      * @param target the relationship to remove
      */
-    public void removeTargetActRelationship(ActRelationshipDO target) {
-        targetActRelationships.remove(target);
-    }
+    void removeTargetActRelationship(ActRelationshipDO target);
 
     /**
      * Returns the act participations.
      *
      * @return the participations
      */
-    public Set<ParticipationDO> getParticipations() {
-        return participations;
-    }
+    Set<ParticipationDO> getParticipations();
 
     /**
      * Adds a participation.
      *
      * @param participation the participation to add
      */
-    public void addParticipation(ParticipationDO participation) {
-        participations.add(participation);
-        participation.setAct(this);
-    }
+    void addParticipation(ParticipationDO participation);
 
     /**
      * Removes a participation.
      *
      * @param participation the participation to remove
      */
-    public void removeParticipation(ParticipationDO participation) {
-        participations.remove(participation);
-    }
-
-    /**
-     * Sets the relationships where this is the source.
-     *
-     * @param relationships the relationships
-     */
-    protected void setSourceActRelationships(
-            Set<ActRelationshipDO> relationships) {
-        sourceActRelationships = relationships;
-    }
-
-    /**
-     * Sets the relationships where this is the target.
-     *
-     * @param relationships the relationships
-     */
-    protected void setTargetActRelationships(
-            Set<ActRelationshipDO> relationships) {
-        targetActRelationships = relationships;
-    }
-
-    /**
-     * Sets the act participations.
-     *
-     * @param participations the participations
-     */
-    protected void setParticipations(Set<ParticipationDO> participations) {
-        this.participations = participations;
-    }
-
+    void removeParticipation(ParticipationDO participation);
 }

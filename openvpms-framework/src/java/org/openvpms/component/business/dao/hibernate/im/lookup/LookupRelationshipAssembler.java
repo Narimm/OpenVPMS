@@ -33,7 +33,8 @@ public class LookupRelationshipAssembler
 
     public LookupRelationshipAssembler() {
         super(LookupRelationship.class, LookupRelationshipDO.class,
-              LookupDO.class);
+              LookupRelationshipDOImpl.class, LookupDO.class,
+              LookupDOImpl.class);
     }
 
     protected LookupRelationship create(LookupRelationshipDO object) {
@@ -41,6 +42,6 @@ public class LookupRelationshipAssembler
     }
 
     protected LookupRelationshipDO create(LookupRelationship object) {
-        return new LookupRelationshipDO();
+        return new LookupRelationshipDOImpl();
     }
 }

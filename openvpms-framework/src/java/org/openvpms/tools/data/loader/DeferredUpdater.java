@@ -18,7 +18,6 @@
 
 package org.openvpms.tools.data.loader;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 /**
@@ -27,28 +26,9 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class DeferredUpdater {
+public interface DeferredUpdater {
 
-    private final IMObjectState state;
+    String getId();
 
-    private final NodeDescriptor descriptor;
-
-    private final String id;
-
-    public DeferredUpdater(IMObjectState state, NodeDescriptor descriptor,
-                           String id) {
-        this.state = state;
-        this.descriptor = descriptor;
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void update(IMObjectReference reference, LoadContext context) {
-        state.setReference(descriptor, reference, context);
-        state.removeDeferred(this);
-
-    }
+    boolean update(IMObjectReference reference, LoadContext context);
 }

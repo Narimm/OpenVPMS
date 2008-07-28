@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 
 
 /**
- * Tests the {@link AssertionTypeDescriptorDO} class.
+ * Tests the {@link AssertionTypeDescriptorDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -74,7 +74,7 @@ public class AssertionTypeDescriptorDOTestCase
         session.save(adesc);
         tx.commit();
 
-        assertEquals(types + 5, count(AssertionTypeDescriptorDO.class));
+        assertEquals(types + 5, count(AssertionTypeDescriptorDOImpl.class));
     }
 
     /**
@@ -90,17 +90,17 @@ public class AssertionTypeDescriptorDOTestCase
         session.save(adesc);
         tx.commit();
 
-        assertEquals(types + 1, count(AssertionTypeDescriptorDO.class));
+        assertEquals(types + 1, count(AssertionTypeDescriptorDOImpl.class));
 
         adesc = (AssertionTypeDescriptorDO) session.load(
-                AssertionTypeDescriptorDO.class, adesc.getId());
+                AssertionTypeDescriptorDOImpl.class, adesc.getId());
         assertNotNull(adesc);
         assertEquals("maxLength", adesc.getName());
 
         tx = session.beginTransaction();
         session.delete(adesc);
         tx.commit();
-        assertEquals(types, count(AssertionTypeDescriptorDO.class));
+        assertEquals(types, count(AssertionTypeDescriptorDOImpl.class));
     }
 
     /**
@@ -117,11 +117,11 @@ public class AssertionTypeDescriptorDOTestCase
         session.save(adesc);
         tx.commit();
 
-        assertEquals(types + 1, count(AssertionTypeDescriptorDO.class));
+        assertEquals(types + 1, count(AssertionTypeDescriptorDOImpl.class));
 
         tx = session.beginTransaction();
         adesc = (AssertionTypeDescriptorDO) session.load(
-                AssertionTypeDescriptorDO.class, adesc.getId());
+                AssertionTypeDescriptorDOImpl.class, adesc.getId());
         assertNotNull(adesc);
 
         String className = "MinLengthFunctions";
@@ -129,10 +129,10 @@ public class AssertionTypeDescriptorDOTestCase
         session.saveOrUpdate(adesc);
         tx.commit();
 
-        assertEquals(types + 1, count(AssertionTypeDescriptorDO.class));
+        assertEquals(types + 1, count(AssertionTypeDescriptorDOImpl.class));
 
         adesc = (AssertionTypeDescriptorDO) session.load(
-                AssertionTypeDescriptorDO.class, adesc.getId());
+                AssertionTypeDescriptorDOImpl.class, adesc.getId());
         assertNotNull(adesc);
         assertEquals(className, adesc.getActionType("assert").getClassName());
     }
@@ -145,7 +145,7 @@ public class AssertionTypeDescriptorDOTestCase
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        types = count(AssertionTypeDescriptorDO.class);
+        types = count(AssertionTypeDescriptorDOImpl.class);
     }
 
     /**
@@ -155,7 +155,7 @@ public class AssertionTypeDescriptorDOTestCase
      */
     private AssertionTypeDescriptorDO createAssertionTypeDescriptor(
             String name) {
-        AssertionTypeDescriptorDO desc = new AssertionTypeDescriptorDO();
+        AssertionTypeDescriptorDO desc = new AssertionTypeDescriptorDOImpl();
         desc.setName(name);
         desc.setPropertyArchetype("openvpms-dum-dum");
         return desc;
@@ -172,7 +172,7 @@ public class AssertionTypeDescriptorDOTestCase
     private void addActionTypeToDescriptor(AssertionTypeDescriptorDO descriptor,
                                            String name, String clazz,
                                            String method) {
-        ActionTypeDescriptorDO action = new ActionTypeDescriptorDO();
+        ActionTypeDescriptorDO action = new ActionTypeDescriptorDOImpl();
         action.setName(name);
         action.setClassName(clazz);
         action.setMethodName(method);

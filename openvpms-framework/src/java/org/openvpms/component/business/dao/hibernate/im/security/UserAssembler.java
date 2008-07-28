@@ -32,12 +32,12 @@ import org.openvpms.component.business.domain.im.security.User;
 public class UserAssembler extends EntityAssembler<User, UserDO> {
 
     public UserAssembler() {
-        super(User.class, UserDO.class);
+        super(User.class, UserDO.class, UserDOImpl.class);
     }
 
     @Override
     protected void assembleDO(UserDO target, User source,
-                                 DOState state, Context context) {
+                              DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setUsername(source.getUsername());
         target.setPassword(source.getPassword());
@@ -56,6 +56,6 @@ public class UserAssembler extends EntityAssembler<User, UserDO> {
     }
 
     protected UserDO create(User object) {
-        return new UserDO();
+        return new UserDOImpl();
     }
 }

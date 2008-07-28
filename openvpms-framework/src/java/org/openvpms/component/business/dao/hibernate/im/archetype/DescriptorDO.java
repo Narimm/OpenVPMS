@@ -21,14 +21,12 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 
 /**
- * All the descriptor classes inherit from this base class, which provides
- * support for identity, hibernate and serialization
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-04-24 09:20:29 +1000 (Mon, 24 Apr 2006) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class DescriptorDO extends IMObjectDO {
-
+public interface DescriptorDO extends IMObjectDO {
 
     /**
      * An enumeration of different descriptor types
@@ -48,10 +46,5 @@ public abstract class DescriptorDO extends IMObjectDO {
         IsRequired,
         DuplicateNodeDescriptor
     }
-
-    /**
-     * Default constructor
-     */
-    public DescriptorDO() {
-    }
+    
 }

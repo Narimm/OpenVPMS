@@ -22,9 +22,12 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDO;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDO;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOHelper;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.util.Random;
@@ -62,7 +65,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
      */
 
     private static final ArchetypeId ENTITY_IDENTITY_ID = new ArchetypeId(
-            "EntityIdentityDO.dummy.1.0");
+            "entityIdentity.dummy.1.0");
 
     /**
      * Entity relationship archetype identifier.
@@ -92,21 +95,21 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         // reload
         session.evict(person);
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
         assertEquals(size, person.getDetails().size());
 
         // check row count
-        assertEquals(parties + 1, count(PartyDO.class));
-        assertEquals(details + size, countDetails(PartyDO.class));
+        assertEquals(parties + 1, count(PartyDOImpl.class));
+        assertEquals(details + size, countDetails(PartyDOImpl.class));
 
         // delete it and verify it no long exists
         tx = session.beginTransaction();
         session.delete(person);
         tx.commit();
 
-        assertNull(session.get(PartyDO.class, person.getId()));
-        assertEquals(parties, count(PartyDO.class));
-        assertEquals(details, countDetails(PartyDO.class));
+        assertNull(session.get(PartyDOImpl.class, person.getId()));
+        assertEquals(parties, count(PartyDOImpl.class));
+        assertEquals(details, countDetails(PartyDOImpl.class));
     }
 
     /**
@@ -118,21 +121,21 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         Session session = getSession();
 
         // get initial count of parties
-        int parties = count(PartyDO.class);
+        int parties = count(PartyDOImpl.class);
         Transaction tx = session.beginTransaction();
         PartyDO person = createPerson();
         session.saveOrUpdate(person);
         tx.commit();
 
-        assertEquals(parties + 1, count(PartyDO.class));
+        assertEquals(parties + 1, count(PartyDOImpl.class));
 
         // now retrieve the PartyDO and add an entity identity
         tx = session.beginTransaction();
-        int identities = count(EntityIdentityDO.class);
-        int details = countDetails(EntityIdentityDO.class);
+        int identities = count(EntityIdentityDOImpl.class);
+        int details = countDetails(EntityIdentityDOImpl.class);
 
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
-        EntityIdentityDO identity = createEntityIdentityDO();
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        EntityIdentityDO identity = createEntityIdentity();
         int size = identity.getDetails().size();
         assertTrue(size != 0);
 
@@ -141,19 +144,19 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // check that the row has been added
-        assertEquals(identities + 1, count(EntityIdentityDO.class));
-        assertEquals(details + size, countDetails(EntityIdentityDO.class));
+        assertEquals(identities + 1, count(EntityIdentityDOImpl.class));
+        assertEquals(details + size, countDetails(EntityIdentityDOImpl.class));
 
         // now delete the person, and verify the identity is also deleted
         tx = session.beginTransaction();
         session.delete(person);
         tx.commit();
 
-        assertNull(session.get(EntityIdentityDO.class, identity.getId()));
+        assertNull(session.get(EntityIdentityDOImpl.class, identity.getId()));
 
         // check that the rows have been removed
-        assertEquals(identities, count(EntityIdentityDO.class));
-        assertEquals(details, countDetails(EntityIdentityDO.class));
+        assertEquals(identities, count(EntityIdentityDOImpl.class));
+        assertEquals(details, countDetails(EntityIdentityDOImpl.class));
     }
 
     /**
@@ -163,24 +166,24 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         Session session = getSession();
 
         // get the initial row count in the role table
-        int initial = count(EntityIdentityDO.class);
+        int initial = count(EntityIdentityDOImpl.class);
         int toAdd = 10;
         Transaction tx = session.beginTransaction();
 
         PartyDO person = createPerson();
         for (int index = 0; index < toAdd; index++) {
-            EntityIdentityDO eid = createEntityIdentityDO();
+            EntityIdentityDO eid = createEntityIdentity();
             person.addIdentity(eid);
         }
         session.saveOrUpdate(person);
         tx.commit();
 
         // check the row count
-        assertEquals(initial + toAdd, count(EntityIdentityDO.class));
+        assertEquals(initial + toAdd, count(EntityIdentityDOImpl.class));
 
         // now retrieve the role and delete a single entity identity
         tx = session.beginTransaction();
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
         assertEquals(toAdd, person.getIdentities().size());
 
         // delete the first identity
@@ -190,10 +193,10 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // now check the number of rows in the EntityIdentityDO table
-        assertEquals(initial + toAdd - 1, count(EntityIdentityDO.class));
+        assertEquals(initial + toAdd - 1, count(EntityIdentityDOImpl.class));
 
         // retrieve the PartyDO and check the entity identity count
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
         assertEquals(toAdd - 1, person.getIdentities().size());
     }
 
@@ -205,7 +208,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         Transaction tx = session.beginTransaction();
 
         // get the initial count
-        int relationships = count(EntityRelationshipDO.class);
+        int relationships = count(EntityRelationshipDOImpl.class);
         PartyDO source = createPerson();
         PartyDO target = createPerson();
         session.saveOrUpdate(source);
@@ -214,15 +217,15 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         // now retrieve the source and add an entity relationship
         tx = session.beginTransaction();
-        source = (PartyDO) session.load(PartyDO.class, source.getId());
-        target = (PartyDO) session.load(PartyDO.class, target.getId());
+        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
+        target = (PartyDO) session.load(PartyDOImpl.class, target.getId());
 
         EntityRelationshipDO rel = createEntityRelationship(source, target);
         source.addSourceEntityRelationship(rel);
         session.saveOrUpdate(source);
         tx.commit();
 
-        assertEquals(relationships + 1, count(EntityRelationshipDO.class));
+        assertEquals(relationships + 1, count(EntityRelationshipDOImpl.class));
     }
 
     /**
@@ -248,7 +251,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // check the relationship count
-        assertEquals(relationships + 2, count(EntityRelationshipDO.class));
+        assertEquals(relationships + 2, count(EntityRelationshipDOImpl.class));
 
         // now remove the first relationship
         tx = session.beginTransaction();
@@ -261,7 +264,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // check the count
-        assertEquals(relationships + 1, count(EntityRelationshipDO.class));
+        assertEquals(relationships + 1, count(EntityRelationshipDOImpl.class));
         assertEquals(1, target.getTargetEntityRelationships().size());
 
         // now delete the target. The remaining entity relationship should
@@ -271,10 +274,10 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         session.delete(target);
         tx.commit();
 
-        assertNull(session.get(EntityRelationshipDO.class, rel2.getId()));
+        assertNull(session.get(EntityRelationshipDOImpl.class, rel2.getId()));
 
         // check the count
-        assertEquals(relationships, count(EntityRelationshipDO.class));
+        assertEquals(relationships, count(EntityRelationshipDOImpl.class));
     }
 
     /**
@@ -291,11 +294,11 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         session.save(rel);
         tx.commit();
 
-        assertEquals(relationships + 1, count(EntityRelationshipDO.class));
+        assertEquals(relationships + 1, count(EntityRelationshipDOImpl.class));
 
         // now retrieve the role and remove the relationship
         tx = session.beginTransaction();
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
         rel = person.getSourceEntityRelationships().iterator().next();
         person.removeSourceEntityRelationship(rel);
         person.removeTargetEntityRelationship(rel);
@@ -303,11 +306,11 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         // ensure that there is one less row
-        assertEquals(relationships, count(EntityRelationshipDO.class));
+        assertEquals(relationships, count(EntityRelationshipDOImpl.class));
 
         // check that the role now has zero entity relationships
         session.flush();
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
         assertEquals(0, person.getEntityRelationships().size());
     }
 
@@ -324,17 +327,17 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         session.save(person);
         session.save(patient);
 
-        EntityRelationshipDO rel = createEntityRelationship(person, patient);
+        createEntityRelationship(person, patient);
         LookupDO class1 = createClassification();
         session.save(class1);
         person.addClassification(class1);
         tx.commit();
 
-        assertEquals(relationships + 1, count(EntityRelationshipDO.class));
-        assertEquals(lookups + 1, count(LookupDO.class));
+        assertEquals(relationships + 1, count(EntityRelationshipDOImpl.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
 
         // check the party
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
         assertEquals(1, person.getClassifications().size());
         assertEquals(1, person.getEntityRelationships().size());
     }
@@ -353,7 +356,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         int count = 10; // no. of classifications to add
 
         tx = session.beginTransaction();
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
         for (int index = 0; index < count; index++) {
             LookupDO class1 = createClassification();
             person.addClassification(class1);
@@ -362,9 +365,9 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         session.save(person);
         tx.commit();
 
-        assertEquals(lookups + count, count(LookupDO.class));
+        assertEquals(lookups + count, count(LookupDOImpl.class));
 
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
         assertEquals(count, person.getClassifications().size());
 
         tx = session.beginTransaction();
@@ -373,8 +376,8 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         session.delete(class1);
         tx.commit();
 
-        assertEquals(lookups + count - 1, count(LookupDO.class));
-        person = (PartyDO) session.load(PartyDO.class, person.getId());
+        assertEquals(lookups + count - 1, count(LookupDOImpl.class));
+        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
         assertEquals(count - 1, person.getClassifications().size());
     }
 
@@ -386,10 +389,10 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        parties = count(PartyDO.class);
-        relationships = count(EntityRelationshipDO.class);
-        details = countDetails(PartyDO.class);
-        lookups = count(LookupDO.class);
+        parties = count(PartyDOImpl.class);
+        relationships = count(EntityRelationshipDOImpl.class);
+        details = countDetails(PartyDOImpl.class);
+        lookups = count(LookupDOImpl.class);
     }
 
     /**
@@ -397,9 +400,10 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
      *
      * @return the new identity
      */
-    private EntityIdentityDO createEntityIdentityDO() {
-        EntityIdentityDO identity = new EntityIdentityDO(ENTITY_IDENTITY_ID);
-        identity.setIdentity("isbn1203");
+    private EntityIdentityDO createEntityIdentity() {
+        EntityIdentityDO identity = new EntityIdentityDOImpl(
+                ENTITY_IDENTITY_ID);
+        identity.setIdentity("isbn1203-" + System.currentTimeMillis());
         identity.setDetails(createSimpleAttributeMap());
         return identity;
     }
@@ -413,7 +417,8 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
      */
     private EntityRelationshipDO createEntityRelationship(EntityDO source,
                                                           EntityDO target) {
-        EntityRelationshipDO result = new EntityRelationshipDO(RELATIONSHIP_ID);
+        EntityRelationshipDO result = new EntityRelationshipDOImpl(
+                RELATIONSHIP_ID);
         source.addSourceEntityRelationship(result);
         target.addTargetEntityRelationship(result);
         return result;

@@ -58,7 +58,7 @@ public class EntityDeleteHandler extends AbstractDeleteHandler {
         // remove relationships where the entity is the source.
         EntityRelationshipDO[] relationships
                 = entity.getSourceEntityRelationships().toArray(
-                new EntityRelationshipDO[0]);
+                new EntityRelationshipDOImpl[0]);
         for (EntityRelationshipDO relationhip : relationships) {
             entity.removeSourceEntityRelationship(relationhip);
             EntityDO target = (EntityDO) relationhip.getTarget();
@@ -69,7 +69,7 @@ public class EntityDeleteHandler extends AbstractDeleteHandler {
 
         // now remove relationships where the act is the target
         relationships = entity.getTargetEntityRelationships().toArray(
-                new EntityRelationshipDO[0]);
+                new EntityRelationshipDOImpl[0]);
         for (EntityRelationshipDO relationship : relationships) {
             entity.removeTargetEntityRelationship(relationship);
             EntityDO source = (EntityDO) relationship.getSource();

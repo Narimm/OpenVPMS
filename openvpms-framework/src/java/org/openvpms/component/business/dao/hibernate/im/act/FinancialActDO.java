@@ -18,79 +18,24 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 import java.math.BigDecimal;
 
 /**
- * The financial act is used to model charge, refunds and payment acts to
- * name a few. It extends the {@link Act} class and adds additional
- * attributes
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-04-26 17:47:12 +1000 (Thu, 26 Apr 2007) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class FinancialActDO extends ActDO {
-
-    /**
-     * Quantity of units being sold.
-     */
-    private BigDecimal quantity;
-
-    /**
-     * Fixed amount or fee.
-     */
-    private Money fixedAmount;
-
-    /**
-     * Unit amount or fee.
-     */
-    private Money unitAmount;
-
-    /**
-     * Tax amount.
-     */
-    private Money taxAmount;
-
-    /**
-     * The total for this act.
-     */
-    private Money total;
-
-    /**
-     * The allocated amount.
-     */
-    private Money allocatedAmount;
-
-    /**
-     * Determines if this financial transaction is a credit or debit.
-     */
-    private boolean credit;
-
-    /**
-     * Indicates whether it has been printed.
-     */
-    private boolean printed;
-
-
-    /**
-     * Default constructor.
-     */
-    public FinancialActDO() {
-        super();
-    }
-
+public interface FinancialActDO extends ActDO {
     /**
      * Determines if this is a credit or debit transaction.
      *
      * @return <code>true</code> if it's a credit, <code>false</code> if it's
      *         a debit
      */
-    public boolean isCredit() {
-        return credit;
-    }
+    boolean isCredit();
 
     /**
      * Determines if this is a credit or debit transaction.
@@ -98,117 +43,91 @@ public class FinancialActDO extends ActDO {
      * @param credit if <code>true</code> it's a credit. If <code>false</code>
      *               it's a debit
      */
-    public void setCredit(boolean credit) {
-        this.credit = credit;
-    }
+    void setCredit(boolean credit);
 
     /**
      * Returns the fixed amount.
      *
      * @return the fixed amount
      */
-    public Money getFixedAmount() {
-        return fixedAmount;
-    }
+    Money getFixedAmount();
 
     /**
      * Sets the fixed amount.
      *
      * @param fixedAmount the fixed amount
      */
-    public void setFixedAmount(Money fixedAmount) {
-        this.fixedAmount = fixedAmount;
-    }
+    void setFixedAmount(Money fixedAmount);
 
     /**
      * Determines if the act has been printed.
      *
      * @return <code>true</code> if the act has been printed
      */
-    public boolean isPrinted() {
-        return printed;
-    }
+    boolean isPrinted();
 
     /**
      * Determines if the act has been printed.
      *
      * @param printed if <code>true</code>, the act has been printed
      */
-    public void setPrinted(boolean printed) {
-        this.printed = printed;
-    }
+    void setPrinted(boolean printed);
 
     /**
      * Returns the quantity.
      *
      * @return the quantity
      */
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
+    BigDecimal getQuantity();
 
     /**
      * Sets the quantity.
      *
      * @param quantity the quantity
      */
-    public void setQuantity(BigDecimal quantity) {
-        this.quantity = quantity;
-    }
+    void setQuantity(BigDecimal quantity);
 
     /**
      * Returns the tax amount.
      *
      * @return the tax amount
      */
-    public Money getTaxAmount() {
-        return taxAmount;
-    }
+    Money getTaxAmount();
 
     /**
      * Sets the tax amount.
      *
      * @param taxAmount the tax amount
      */
-    public void setTaxAmount(Money taxAmount) {
-        this.taxAmount = taxAmount;
-    }
+    void setTaxAmount(Money taxAmount);
 
     /**
      * Returns the total.
      *
      * @return the total
      */
-    public Money getTotal() {
-        return total;
-    }
+    Money getTotal();
 
     /**
      * Sets the total.
      *
      * @param total the total
      */
-    public void setTotal(Money total) {
-        this.total = total;
-    }
+    void setTotal(Money total);
 
     /**
      * Returns the unit amount.
      *
      * @return the unit amount.
      */
-    public Money getUnitAmount() {
-        return unitAmount;
-    }
+    Money getUnitAmount();
 
     /**
      * Sets the unit amount.
      *
      * @param unitAmount the unit amount
      */
-    public void setUnitAmount(Money unitAmount) {
-        this.unitAmount = unitAmount;
-    }
+    void setUnitAmount(Money unitAmount);
 
     /**
      * Returns the allocated amount.
@@ -224,9 +143,7 @@ public class FinancialActDO extends ActDO {
      *
      * @return the allocated amount
      */
-    public Money getAllocatedAmount() {
-        return allocatedAmount;
-    }
+    Money getAllocatedAmount();
 
     /**
      * Sets the allocated amount.
@@ -234,26 +151,5 @@ public class FinancialActDO extends ActDO {
      * @param amount the allocated amount
      * @see #getAllocatedAmount
      */
-    public void setAllocatedAmount(Money amount) {
-        allocatedAmount = amount;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
-     */
-    @Override
-    @SuppressWarnings("HardCodedStringLiteral")
-    public String toString() {
-        return new ToStringBuilder(this)
-                .appendSuper(null)
-                .append("quantity", quantity)
-                .append("fixedAmount", fixedAmount)
-                .append("unitAmount", unitAmount)
-                .append("taxAmount", taxAmount)
-                .append("total", total)
-                .append("allocatedAmount", allocatedAmount)
-                .append("credit", credit)
-                .append("printed", printed)
-                .toString();
-    }
+    void setAllocatedAmount(Money amount);
 }

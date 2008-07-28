@@ -18,69 +18,37 @@
 
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
+import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 
 /**
+ * Add description here.
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-07-10 15:32:07 +1000 (Tue, 10 Jul 2007) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AssertionDescriptorDO extends DescriptorDO {
-
-    /**
-     * The associated error message. This is used when the assertion fails
-     */
-    private String errorMessage;
-
-    /**
-     * The index of this assertion descriptor
-     */
-    private int index;
-
-    /**
-     * Holds the properties that are required to evaluate the assertion. All
-     * properties are in the form of key value pairs but in some instances it
-     * may only be necessary to specify the value.
-     */
-    private PropertyMap propertyMap = new PropertyMap("root");
-
-    /**
-     * Default constructor
-     */
-    public AssertionDescriptorDO() {
-        setArchetypeId(new ArchetypeId("descriptor.assertion.1.0"));
-    }
-
+public interface AssertionDescriptorDO extends DescriptorDO {
     /**
      * @return Returns the errorMessage.
      */
-    public String getErrorMessage() {
-        return errorMessage;
-    }
+    String getErrorMessage();
 
     /**
      * @param errorMessage The errorMessage to set.
      */
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
+    void setErrorMessage(String errorMessage);
 
     /**
      * Return the properties as a map
      *
      * @return Returns the properties.
      */
-    public PropertyMap getPropertyMap() {
-        return propertyMap;
-    }
+    PropertyMap getPropertyMap();
 
     /**
      * @param propertyMap the properties to add
      */
-    public void setPropertyMap(PropertyMap propertyMap) {
-        this.propertyMap = propertyMap;
-    }
+    void setPropertyMap(PropertyMap propertyMap);
 
     /**
      * Add the property to the collection
@@ -88,27 +56,21 @@ public class AssertionDescriptorDO extends DescriptorDO {
      * param property
      * the property to add
      */
-    public void addProperty(NamedProperty property) {
-        propertyMap.getProperties().put(property.getName(), property);
-    }
+    void addProperty(NamedProperty property);
 
     /**
      * Remove the specified property
      *
      * @param property the property to remove
      */
-    public void removeProperty(NamedProperty property) {
-        propertyMap.getProperties().remove(property.getName());
-    }
+    void removeProperty(NamedProperty property);
 
     /**
      * Remove the property with the specified name
      *
      * @param name the property name
      */
-    public void removeProperty(String name) {
-        propertyMap.getProperties().remove(name);
-    }
+    void removeProperty(String name);
 
     /**
      * Retrieve the property descriptor with the specified name
@@ -118,41 +80,25 @@ public class AssertionDescriptorDO extends DescriptorDO {
      * @param, name
      * the property name
      */
-    public NamedProperty getProperty(String name) {
-        return propertyMap.getProperties().get(name);
-    }
+    NamedProperty getProperty(String name);
 
     /**
      * @return Returns the properties.
      */
-    public NamedProperty[] getPropertiesAsArray() {
-        return propertyMap.getProperties().values().toArray(
-                new NamedProperty[propertyMap.getProperties().size()]);
-    }
+    NamedProperty[] getPropertiesAsArray();
 
     /**
      * @param properties The properties to set.
      */
-    public void setPropertiesAsArray(NamedProperty[] properties) {
-        this.propertyMap = new PropertyMap("root");
-        for (NamedProperty property : properties) {
-            this.propertyMap.getProperties().put(property.getName(), property);
-        }
-    }
+    void setPropertiesAsArray(NamedProperty[] properties);
 
     /**
      * @return Returns the index.
      */
-    public int getIndex() {
-        return index;
-    }
+    int getIndex();
 
     /**
      * @param index The index to set.
      */
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
-
+    void setIndex(int index);
 }

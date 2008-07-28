@@ -1,5 +1,5 @@
 <archetype>
-    <data id="Normal" archetype="lookup.customerAccountType" code="NORMAL"/>
+    <data id="V1" archetype="lookup.staff" code="VET" description="Vet"/>
     <data id="C1" archetype="party.customerperson" title="MR" firstName="Foo"
           initials="F" lastName="Bar">
         <data collection="contacts" archetype="contact.phoneNumber"
@@ -8,7 +8,7 @@
               address="12 Station Road" suburb="Black Rock" state="VIC"
               postcode="3456"/>
         <data collection="classifications"
-              archetype="lookup.customerAccountType" childId="id:Normal"/>
+              archetype="lookup.staff" childId="id:V1"/>
     </data>
     <data id="P1" archetype="party.patientpet" name="Spot" species="CANINE"
           breed="GERMAN_SHEPHERD_DOG" colour="Black" sex="MALE"

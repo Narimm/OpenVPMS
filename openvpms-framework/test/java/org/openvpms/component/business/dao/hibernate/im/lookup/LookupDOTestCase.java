@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * Tests the {@link LookupDO} class.
+ * Tests the {@link LookupDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -68,7 +68,7 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
         checkLookup(donkey);
 
         // ensure that there are 6 more lookups
-        assertEquals(lookups + 6, count(LookupDO.class));
+        assertEquals(lookups + 6, count(LookupDOImpl.class));
     }
 
     /**
@@ -82,18 +82,18 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // ensure that there is one more lookup
-        assertEquals(lookups + 1, count(LookupDO.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
 
         // retrieve, update, and save
         tx = session.beginTransaction();
-        lookup = (LookupDO) session.load(LookupDO.class, lookup.getId());
+        lookup = (LookupDO) session.load(LookupDOImpl.class, lookup.getId());
         assertNotNull(lookup);
         lookup.setCode(lookup.getCode());
         session.update(lookup);
         tx.commit();
 
         // ensure that there is still one more lookup
-        assertEquals(lookups + 1, count(LookupDO.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
     }
 
     /**
@@ -107,11 +107,11 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // ensure that there is one more lookup
-        assertEquals(lookups + 1, count(LookupDO.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
 
         // retrieve and delete
         tx = session.beginTransaction();
-        lookup = (LookupDO) session.load(LookupDO.class, lookup.getId());
+        lookup = (LookupDO) session.load(LookupDOImpl.class, lookup.getId());
         assertNotNull(lookup);
         session.delete(lookup);
         tx.commit();
@@ -119,7 +119,7 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
         assertNull(reload(lookup));
 
         // check lookup count
-        assertEquals(lookups, count(LookupDO.class));
+        assertEquals(lookups, count(LookupDOImpl.class));
     }
 
     /**
@@ -129,10 +129,10 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
         ArchetypeId species = new ArchetypeId("lookup.species");
         ArchetypeId animal = new ArchetypeId("lookup.animal");
 
-        LookupDO canine1 = new LookupDO(species, "CANINE");
-        LookupDO canine2 = new LookupDO(species, "CANINE");
-        LookupDO speciesFeline = new LookupDO(species, "FELINE");
-        LookupDO animalFeline = new LookupDO(animal, "FELINE");
+        LookupDO canine1 = new LookupDOImpl(species, "CANINE");
+        LookupDO canine2 = new LookupDOImpl(species, "CANINE");
+        LookupDO speciesFeline = new LookupDOImpl(species, "FELINE");
+        LookupDO animalFeline = new LookupDOImpl(animal, "FELINE");
 
         assertTrue(canine1.equals(canine2));        // same archetype and code
         assertFalse(canine1.equals(speciesFeline)); // different code
@@ -152,8 +152,8 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // create a duplicate
-        LookupDO lookup2 = new LookupDO(lookup1.getArchetypeId(),
-                                        lookup1.getCode());
+        LookupDO lookup2 = new LookupDOImpl(lookup1.getArchetypeId(),
+                                                                                                    lookup1.getCode());
         try {
             tx = session.beginTransaction();
             session.save(lookup2);
@@ -172,7 +172,7 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        lookups = count(LookupDO.class);
+        lookups = count(LookupDOImpl.class);
     }
 
     /**

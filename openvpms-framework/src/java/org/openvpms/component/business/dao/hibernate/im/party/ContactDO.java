@@ -22,126 +22,67 @@ import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
-
 /**
- * Defines a contact for a {@link PartyDO}.
+ * Add description here.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-05-02 14:28:50 +1000 (Wed, 02 May 2007) $
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ContactDO extends IMObjectDO {
-
-    /**
-     * The time that this contact was activitated.
-     */
-    private Date startTime;
-
-    /**
-     * The time that this contact was inactivated.
-     */
-    private Date endTime;
-
-    /**
-     * The classification for the contact.
-     */
-    private Set<LookupDO> classifications = new HashSet<LookupDO>();
-
-    /**
-     * The owning {@link PartyDO}.
-     */
-    private PartyDO party;
-
-
-    /**
-     * Default constructor.
-     */
-    public ContactDO() {
-        // do nothing
-    }
-
+public interface ContactDO extends IMObjectDO {
     /**
      * Returns the party.
      *
      * @return returns the party
      */
-    public PartyDO getParty() {
-        return party;
-    }
+    PartyDO getParty();
 
     /**
      * Sets the party.
      *
      * @param party the entity to set.
      */
-    public void setParty(PartyDO party) {
-        this.party = party;
-    }
+    void setParty(PartyDO party);
 
     /**
      * @return Returns the activeStartTime.
      */
-    public Date getActiveStartTime() {
-        return startTime;
-    }
+    Date getActiveStartTime();
 
     /**
      * @param startTime The activeStartTime to set.
      */
-    public void setActiveStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
+    void setActiveStartTime(Date startTime);
 
     /**
      * @return Returns the activeEndTime.
      */
-    public Date getActiveEndTime() {
-        return endTime;
-    }
+    Date getActiveEndTime();
 
     /**
      * @param endTime The activeEndTime to set.
      */
-    public void setActiveEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
+    void setActiveEndTime(Date endTime);
 
     /**
      * Returns the classifications for this contact.
      *
      * @return the classifications
      */
-    public Set<LookupDO> getClassifications() {
-        return classifications;
-    }
+    Set<LookupDO> getClassifications();
 
     /**
      * Adds a classification.
      *
      * @param classification the classification to add
      */
-    public void addClassification(LookupDO classification) {
-        classifications.add(classification);
-    }
+    void addClassification(LookupDO classification);
 
     /**
      * Removes a classification.
      *
      * @param classification the classification to remove
      */
-    public void removeClassification(LookupDO classification) {
-        classifications.remove(classification);
-    }
-
-    /**
-     * Sets the classifications for this contact.
-     *
-     * @param classifications the classifications to set.
-     */
-    protected void setClassifications(Set<LookupDO> classifications) {
-        this.classifications = classifications;
-    }
-
+    void removeClassification(LookupDO classification);
 }

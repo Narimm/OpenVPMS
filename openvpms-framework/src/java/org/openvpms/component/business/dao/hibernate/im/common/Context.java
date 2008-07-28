@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.hibernate.Session;
+import org.hibernate.proxy.HibernateProxy;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -26,9 +27,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.LinkedHashSet;
 
 /**
  * Add description here.
@@ -141,9 +142,14 @@ public class Context {
         return refToDOMap.get(reference);
     }
 
-    public <T extends IMObjectDO> T get(IMObjectReference reference,
-                                        Class<T> type) {
-        Object result = session.get(type, reference.getId());
+    public <T extends IMObjectDO, Impl extends IMObjectDOImpl> T
+            get(IMObjectReference reference, Class<T> type, Class<Impl> impl) {
+        Object result = session.get(impl, reference.getId());
+        if (result instanceof HibernateProxy) {
+            HibernateProxy proxy = ((HibernateProxy) result);
+            result = proxy.getHibernateLazyInitializer().getImplementation();
+        }
+
         return type.cast(result);
     }
 

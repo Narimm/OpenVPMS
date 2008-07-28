@@ -34,7 +34,8 @@ public class AssertionDescriptorAssembler
         AssertionDescriptorDO> {
 
     public AssertionDescriptorAssembler() {
-        super(AssertionDescriptor.class, AssertionDescriptorDO.class);
+        super(AssertionDescriptor.class, AssertionDescriptorDO.class,
+              AssertionDescriptorDOImpl.class);
     }
 
     @Override
@@ -62,6 +63,6 @@ public class AssertionDescriptorAssembler
     }
 
     protected AssertionDescriptorDO create(AssertionDescriptor object) {
-        return new AssertionDescriptorDO();
+        return new AssertionDescriptorDOImpl();
     }
 }

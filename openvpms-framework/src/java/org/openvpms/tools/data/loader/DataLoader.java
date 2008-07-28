@@ -36,10 +36,12 @@ import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+
 
 /**
  * Add description here.
@@ -49,17 +51,16 @@ import java.util.Stack;
  */
 class DataLoader {
 
-    private final XMLStreamReader reader;
-
-    private final Log log = LogFactory.getLog(DataLoader.class);
-
     private LoadContext context;
     private final IdRefCache cache;
 
     private final IArchetypeService service;
 
     private int batchSize;
-    private List<IMObject> batch = new ArrayList<IMObject>();
+    private Map<IMObjectReference, LoadState> batch
+            = new LinkedHashMap<IMObjectReference, LoadState>();
+    private Map<IMObjectReference, IMObject> children
+            = new LinkedHashMap<IMObjectReference, IMObject>();
     private final boolean verbose;
 
     private final boolean validateOnly;
@@ -71,23 +72,20 @@ class DataLoader {
     private final Map<String, Long> statistics;
 
 
-    private List<IMObjectState> deferred = new ArrayList<IMObjectState>();
+    private List<LoadState> deferred = new ArrayList<LoadState>();
 
-    public DataLoader(XMLStreamReader reader) {
-        this(reader, 0);
-    }
+    private final Log log = LogFactory.getLog(DataLoader.class);
 
-    public DataLoader(XMLStreamReader reader, int batchSize) {
-        this(reader, new IdRefCache(),
-             ArchetypeServiceHelper.getArchetypeService(),
+
+    public DataLoader(int batchSize) {
+        this(new IdRefCache(), ArchetypeServiceHelper.getArchetypeService(),
              false, false, batchSize, new HashMap<String, Long>());
     }
 
-    public DataLoader(XMLStreamReader reader, IdRefCache cache,
+    public DataLoader(IdRefCache cache,
                       IArchetypeService service, boolean verbose,
                       boolean validateOnly, int batchSize,
                       Map<String, Long> statistics) {
-        this.reader = reader;
         this.cache = cache;
         this.service = service;
         this.verbose = verbose;
@@ -97,19 +95,21 @@ class DataLoader {
         this.statistics = statistics;
     }
 
-    public void load() throws XMLStreamException {
-        Stack<IMObjectState> stack = new Stack<IMObjectState>();
+    public void load(XMLStreamReader reader, String path)
+            throws XMLStreamException {
+
+        Stack<LoadState> stack = new Stack<LoadState>();
         for (int event = reader.next();
              event != XMLStreamConstants.END_DOCUMENT;
              event = reader.next()) {
-            IMObjectState current;
+            LoadState current;
             switch (event) {
                 case XMLStreamConstants.START_DOCUMENT:
                     break;
                 case XMLStreamConstants.START_ELEMENT:
                     String elementName = reader.getLocalName();
                     if ("data".equals(elementName)) {
-                        startData(stack);
+                        startData(reader, stack, path);
                     } else if (!"archetype".equals(elementName)) {
                         throw new ArchetypeDataLoaderException(
                                 ArchetypeDataLoaderException.ErrorCode.ErrorInStartElement);
@@ -122,8 +122,8 @@ class DataLoader {
                     }
 
                     if (verbose) {
-                        log.info("\n[END PROCESSING element="
-                                + reader.getLocalName() + "]\n");
+                        log.info("[END PROCESSING element="
+                                + reader.getLocalName() + "]");
                     }
                     break;
 
@@ -131,24 +131,49 @@ class DataLoader {
                     break;
             }
         }
+    }
+
+    public void flush() {
+        processDeferred();
+        for (LoadState state : batch.values()) {
+            Set<IMObjectReference> unsaved = state.getUnsaved();
+            if (!unsaved.isEmpty()) {
+                for (IMObjectReference ref : unsaved) {
+                    if (!batch.containsKey(ref) && !children.containsKey(ref)) {
+                        String id = cache.getId(ref);
+                        if (id == null) {
+                            id = "<unset>";
+                        }
+                        log.warn("Cannot save object, archetype="
+                                + state.getArchetypeId().getShortName()
+                                + " from path=" + state.getPath()
+                                + ", line=" + state.getLineNumber()
+                                + ": requires " + unsaved + ", id=" + id);
+                    }
+
+                }
+            }
+        }
         saveBatch();
     }
 
-    private void startData(Stack<IMObjectState> stack) {
-        IMObjectState current;
+
+    private void startData(XMLStreamReader reader, Stack<LoadState> stack,
+                           String path) {
+        LoadState current;
         Element element = new Element(reader);
         if (verbose) {
             String archetypeId = stack.isEmpty() ? "none"
                     : stack.peek().getArchetypeId().toString();
-            log.info("\n[START PROCESSING element, parent="
-                    + archetypeId + "]\n" + element);
+            log.info("[START PROCESSING element, parent="
+                    + archetypeId + "]" + element);
         }
 
         try {
             if (!stack.isEmpty()) {
-                current = processElement(stack.peek(), element);
+                current = processElement(stack.peek(), element, path);
             } else {
-                current = processElement(null, element);
+                current = processElement(null, element, path);
             }
             stack.push(current);
         } catch (Exception exception) {
@@ -156,7 +181,7 @@ class DataLoader {
             log.error("Error in start element, line "
                     + location.getLineNumber()
                     + ", column " + location.getColumnNumber() +
-                    "\n" + element + "\n", exception);
+                    "" + element + "", exception);
         }
     }
 
@@ -182,9 +207,10 @@ class DataLoader {
      * @param parent the parent of this element if it exists
      * @return IMObject the associated IMObject
      */
-    private IMObjectState processElement(IMObjectState parent,
-                                         Element element) {
-        IMObjectState result;
+    private LoadState processElement(LoadState parent,
+                                         Element element,
+                                         String path) {
+        LoadState result;
 
         Location location = element.getLocation();
         String collectionNode = element.getCollection();
@@ -193,7 +219,7 @@ class DataLoader {
         // process since the object already exists
         String childId = element.getChildId();
         if (StringUtils.isEmpty(childId)) {
-            result = create(element, parent);
+            result = create(element, parent, path);
             for (Map.Entry<String, String> attribute
                     : element.getAttributes().entrySet()) {
                 String name = attribute.getKey();
@@ -201,6 +227,11 @@ class DataLoader {
                 result.setValue(name, value, context);
             }
             if (collectionNode != null) {
+                if (parent == null) {
+                    throw new ArchetypeDataLoaderException(
+                            NoParentForChild, location.getLineNumber(),
+                            location.getColumnNumber());
+                }
                 parent.addChild(collectionNode, result);
             }
         } else {
@@ -222,7 +253,8 @@ class DataLoader {
         return result;
     }
 
-    private IMObjectState create(Element element, IMObjectState parent) {
+    private LoadState create(Element element, LoadState parent,
+                                 String path) {
         String shortName = element.getShortName();
         ArchetypeDescriptor descriptor
                 = service.getArchetypeDescriptor(shortName);
@@ -242,20 +274,24 @@ class DataLoader {
         if (element.getId() != null) {
             cache.add(element.getId(), object.getObjectReference());
         }
-        return new IMObjectState(parent, object, descriptor,
-                                 reader.getLocation());
+        return new LoadState(parent, object, descriptor, path,
+                             element.getLocation().getLineNumber());
     }
 
     /**
      * Load the specified object.
      */
-    private void load(IMObjectState state) {
+    private void load(LoadState state) {
         if (!state.isComplete()) {
             deferred.add(state);
         } else {
-            boolean hasDeferred = !deferred.isEmpty();
+            boolean updateDeferred = !deferred.isEmpty();
             IMObject object = state.getObject();
-            queue(state);
+            if (state.getParent() == null) {
+                queue(state);
+            } else {
+                children.put(object.getObjectReference(), object);
+            }
 
             // update the stats
             String shortName = state.getArchetypeId().getShortName();
@@ -267,36 +303,28 @@ class DataLoader {
             }
 
             if (verbose) {
-                log.info("\n[CREATED]\n" + object);
+                log.info("[CREATED]" + object);
             }
 
-            if (hasDeferred) {
-                if (!batch.isEmpty()) {
-                    saveBatch();
-                }
-                List<IMObjectState> deferred = processDeferred();
-                for (IMObjectState updated : deferred) {
-                    queue(updated);
-                }
+            if (updateDeferred) {
+                processDeferred();
             }
         }
     }
 
-    private List<IMObjectState> processDeferred() {
-        List<IMObjectState> result = new ArrayList<IMObjectState>();
+    private void processDeferred() {
         boolean processed;
         do {
             processed = false;
-            IMObjectState[] states = deferred.toArray(
-                    new IMObjectState[0]);
+            LoadState[] states = deferred.toArray(new LoadState[0]);
             Set<DeferredUpdater> updaters = new HashSet<DeferredUpdater>();
-            for (IMObjectState state : states) {
+            for (LoadState state : states) {
                 Set<DeferredUpdater> set = state.getDeferred();
                 if (!set.isEmpty()) {
                     updaters.addAll(set);
                 } else {
                     deferred.remove(state);
-                    result.add(state);
+                    queue(state);
                 }
             }
             if (!updaters.isEmpty()) {
@@ -304,13 +332,39 @@ class DataLoader {
                     IMObjectReference ref
                             = context.getReference(updater.getId());
                     if (ref != null) {
-                        updater.update(ref, context);
-                        processed = true;
+                        if (ref.isNew() && batch.containsKey(ref)) {
+                            ref = attemptSave(ref);
+                        }
+                        if (updater.update(ref, context)) {
+                            processed = true;
+                        }
                     }
                 }
             }
         } while (processed);
-        return result;
+    }
+
+    private IMObjectReference attemptSave(IMObjectReference ref) {
+
+        LoadState state = batch.get(ref);
+        if (state != null && state.isComplete()) {
+            try {
+                IMObject object = state.getObject();
+                service.save(object);
+                batch.remove(ref);
+                saved(object.getObjectReference());
+            } catch (OpenVPMSException exception) {
+                // ignore
+            }
+        }
+        return ref;
+    }
+
+    private void saved(IMObjectReference ref) {
+        cache.update(ref);
+        for (LoadState state : batch.values()) {
+            state.update(ref);
+        }
     }
 
     /**
@@ -319,39 +373,69 @@ class DataLoader {
      *
      * @param state the entity to save
      */
-    private void queue(IMObjectState state) {
+    private void queue(LoadState state) {
         IMObject object = state.getObject();
         service.deriveValues(object);
         if (validateOnly) {
             service.validateObject(object);
         } else {
-            if (state.getParent() == null) {
-                batch.add(object);
-                if (batch.size() >= batchSize) {
-                    saveBatch();
-                }
+            batch.put(object.getObjectReference(), state);
+            if (batch.size() >= batchSize && isComplete()) {
+                saveBatch();
             }
         }
     }
 
+    private boolean isComplete() {
+        Set<IMObjectReference> unsaved = new HashSet<IMObjectReference>();
+        for (LoadState state : batch.values()) {
+            unsaved.addAll(state.getUnsaved());
+        }
+        for (IMObjectReference ref : unsaved) {
+            if (!batch.containsKey(ref) && !children.containsKey(ref)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void saveBatch() {
+        List<IMObject> objects = new ArrayList<IMObject>();
+        for (LoadState state : batch.values()) {
+            objects.add(state.getObject());
+        }
         try {
-            service.save(batch);
+            service.save(objects);
         } catch (OpenVPMSException exception) {
             // One of the batch failed so nothing saved.
             // Try again one by one logging each error.
-            for (IMObject batched : batch) {
+            log.error("Failed to save batch. Attempting to save objects "
+                    + "individually", exception);
+            for (IMObject object : objects) {
                 try {
-                    service.save(batched);
+                    service.save(object);
                 } catch (OpenVPMSException e) {
-                    log.error("Failed to save object\n" +
-                            batched.toString(), e);
+                    LoadState state
+                            = batch.get(object.getObjectReference());
+                    log.error("Failed to save object, archetype="
+                            + object.getArchetypeId().getShortName()
+                            + " from path=" + state.getPath()
+                            + ", line=" + state.getLineNumber(), e);
                 }
             }
         }
-        for (IMObject saved : batch) {
-            cache.update(saved.getObjectReference());
+        for (IMObject object : objects) {
+            saved(object.getObjectReference());
         }
         batch.clear();
+        objects.clear();
+
+        for (IMObject child : children.values().toArray(new IMObject[0])) {
+            if (!child.isNew()) {
+                IMObjectReference ref = child.getObjectReference();
+                saved(ref);
+                children.remove(ref);
+            }
+        }
     }
 }

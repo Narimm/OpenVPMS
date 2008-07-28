@@ -19,44 +19,21 @@
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDO;
-import org.openvpms.component.business.domain.im.act.Act;
-
 
 /**
- * A class that represents the directed association between two {@link Act}s.
- * In parent/child act relationships, the source act is the parent, the target
- * act is the child.
+ * Add description here.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-04-01 14:58:48 +1100 (Tue, 01 Apr 2008) $
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActRelationshipDO extends PeriodRelationshipDO {
-
-    /**
-     * Indicates whether the relationship is one of parent-child. This means
-     * that the parent is the owner of the relationship and is responsible for
-     * managing its lifecycle. When the parent is deleted then it will also
-     * delete the child
-     */
-    private boolean parentChildRelationship;
-
-
-    /**
-     * Default constructor.
-     */
-    public ActRelationshipDO() {
-        // do nothing
-    }
-
+public interface ActRelationshipDO extends PeriodRelationshipDO {
     /**
      * Determines if this is a parent/child relationship between two acts.
      *
      * @param parentChildRelationship if <tt>true</true> it is a parent/child
      *                                relationship
      */
-    public void setParentChildRelationship(boolean parentChildRelationship) {
-        this.parentChildRelationship = parentChildRelationship;
-    }
+    void setParentChildRelationship(boolean parentChildRelationship);
 
     /**
      * Determines if this is a parent/child relationship between two acts.
@@ -66,8 +43,5 @@ public class ActRelationshipDO extends PeriodRelationshipDO {
      *
      * @return <tt>true</tt> if this is a parent/child relationship
      */
-    public boolean isParentChildRelationship() {
-        return parentChildRelationship;
-    }
-
+    boolean isParentChildRelationship();
 }

@@ -36,7 +36,8 @@ public class EntityRelationshipAssembler
 
     public EntityRelationshipAssembler() {
         super(EntityRelationship.class, EntityRelationshipDO.class,
-              EntityDO.class);
+              EntityRelationshipDOImpl.class, EntityDO.class,
+              EntityDOImpl.class);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class EntityRelationshipAssembler
         super.assembleDO(target, source, state, context);
         EntityIdentityDO identity = null;
         DOState identityState = getDO(source.getIdentity(),
-                                      EntityIdentityDO.class, context);
+                                      EntityIdentityDOImpl.class, context);
         if (identityState != null) {
             identity = (EntityIdentityDO) identityState.getObject();
             state.addState(identityState);
@@ -66,6 +67,6 @@ public class EntityRelationshipAssembler
     }
 
     protected EntityRelationshipDO create(EntityRelationship object) {
-        return new EntityRelationshipDO();
+        return new EntityRelationshipDOImpl();
     }
 }

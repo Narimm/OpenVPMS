@@ -35,7 +35,9 @@ public class ArchetypeAuthorityAssembler
         ArchetypeAuthorityDO> {
 
     public ArchetypeAuthorityAssembler() {
-        super(ArchetypeAwareGrantedAuthority.class, ArchetypeAuthorityDO.class);
+        super(ArchetypeAwareGrantedAuthority.class,
+              ArchetypeAuthorityDO.class,
+              ArchetypeAuthorityDOImpl.class);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class ArchetypeAuthorityAssembler
         super.assembleDO(target, source, state, context);
         target.setMethod(source.getMethod());
         SecurityRoleDO role = null;
-        DOState roleState = getDO(source.getRole(), SecurityRoleDO.class,
+        DOState roleState = getDO(source.getRole(), SecurityRoleDOImpl.class,
                                   context);
         if (roleState != null) {
             role = (SecurityRoleDO) roleState.getObject();
@@ -76,6 +78,6 @@ public class ArchetypeAuthorityAssembler
 
     protected ArchetypeAuthorityDO create(
             ArchetypeAwareGrantedAuthority object) {
-        return new ArchetypeAuthorityDO();
+        return new ArchetypeAuthorityDOImpl();
     }
 }

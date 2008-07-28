@@ -18,113 +18,52 @@
 
 package org.openvpms.component.business.dao.hibernate.im.document;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 
-
 /**
- * Models any type of resource, which has a mime type, a size and holds the
- * contents
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-04-26 17:47:12 +1000 (Thu, 26 Apr 2007) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentDO extends IMObjectDO {
-
-    /**
-     * The mime type
-     */
-    private String mimeType;
-
-    /**
-     * The size of the document
-     */
-    private int docSize;
-
-    /**
-     * The checksum of the contents
-     */
-    private long checksum;
-
-    /**
-     * The contents
-     */
-    private byte[] contents;
-
-
-    /**
-     * default constructor
-     */
-    public DocumentDO() {
-    }
-
+public interface DocumentDO extends IMObjectDO {
     /**
      * @return Returns the checksum.
      */
-    public long getChecksum() {
-        return checksum;
-    }
+    long getChecksum();
 
     /**
      * @param checksum The checksum to set.
      */
-    public void setChecksum(long checksum) {
-        this.checksum = checksum;
-    }
+    void setChecksum(long checksum);
 
     /**
      * @return Returns the contents.
      */
-    public byte[] getContents() {
-        return contents;
-    }
+    byte[] getContents();
 
     /**
      * @param contents The contents to set.
      */
-    public void setContents(byte[] contents) {
-        this.contents = contents;
-    }
+    void setContents(byte[] contents);
 
     /**
      * @return Returns the docSize.
      */
-    public int getDocSize() {
-        return docSize;
-    }
+    int getDocSize();
 
     /**
      * @param docSize The docSize to set.
      */
-    public void setDocSize(int docSize) {
-        this.docSize = docSize;
-    }
+    void setDocSize(int docSize);
 
     /**
      * @return Returns the mimeType.
      */
-    public String getMimeType() {
-        return mimeType;
-    }
+    String getMimeType();
 
     /**
      * @param mimeType The mimeType to set.
      */
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
-     */
-    @Override
-    @SuppressWarnings("HardCodedStringLiteral")
-    public String toString() {
-        return new ToStringBuilder(this)
-                .appendSuper(null)
-                .append("mimeType", mimeType)
-                .append("docSize", docSize)
-                .append("checksum", checksum)
-                .toString();
-    }
+    void setMimeType(String mimeType);
 }

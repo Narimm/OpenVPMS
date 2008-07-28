@@ -37,15 +37,16 @@ public class NodeDescriptorAssembler
 
     private static final MapAssembler<String, NodeDescriptor, NodeDescriptorDO>
             NODES = MapAssembler.create(NodeDescriptor.class,
-                                        NodeDescriptorDO.class);
+                                        NodeDescriptorDOImpl.class);
 
     private static final
     MapAssembler<String, AssertionDescriptor, AssertionDescriptorDO>
             ASSERTION = MapAssembler.create(AssertionDescriptor.class,
-                                            AssertionDescriptorDO.class);
+                                            AssertionDescriptorDOImpl.class);
 
     public NodeDescriptorAssembler() {
-        super(NodeDescriptor.class, NodeDescriptorDO.class);
+        super(NodeDescriptor.class, NodeDescriptorDO.class,
+              NodeDescriptorDOImpl.class);
     }
 
     @Override
@@ -56,7 +57,7 @@ public class NodeDescriptorAssembler
 
         ArchetypeDescriptorDO archetype = null;
         DOState descState = getDO(source.getArchetypeDescriptor(),
-                                  ArchetypeDescriptorDO.class, context);
+                                  ArchetypeDescriptorDOImpl.class, context);
         if (descState != null) {
             archetype = (ArchetypeDescriptorDO) descState.getObject();
             state.addState(descState);
@@ -64,8 +65,8 @@ public class NodeDescriptorAssembler
         target.setArchetypeDescriptor(archetype);
 
         NodeDescriptorDO parent = null;
-        DOState parentState = getDO(source.getParent(), NodeDescriptorDO.class,
-                                    context);
+        DOState parentState = getDO(source.getParent(),
+                                    NodeDescriptorDOImpl.class, context);
         if (parentState != null) {
             parent = (NodeDescriptorDO) parentState.getObject();
             state.addState(parentState);
@@ -139,6 +140,6 @@ public class NodeDescriptorAssembler
     }
 
     protected NodeDescriptorDO create(NodeDescriptor object) {
-        return new NodeDescriptorDO();
+        return new NodeDescriptorDOImpl();
     }
 }

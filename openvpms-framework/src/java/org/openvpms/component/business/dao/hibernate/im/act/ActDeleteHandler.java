@@ -21,8 +21,8 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 import org.hibernate.Session;
 import org.openvpms.component.business.dao.hibernate.im.common.AbstractDeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.domain.im.act.Act;
 
 import java.util.HashSet;

@@ -18,61 +18,30 @@
 
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
 /**
- * The action type descriptor defines an action that is associated
- * with an assertion. It is defined by a class and method name. An action
- * maybe something like 'assert' or 'get'.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-07-10 15:32:07 +1000 (Tue, 10 Jul 2007) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActionTypeDescriptorDO extends DescriptorDO {
-
-    /**
-     * The class name that is associatd with this action type
-     */
-    private String className;
-
-    /**
-     * The method name associated with this action type
-     */
-    private String methodName;
-
-    /**
-     * Default constructor
-     */
-    public ActionTypeDescriptorDO() {
-        setArchetypeId(new ArchetypeId("descriptor.actionType.1.0"));
-    }
-
+public interface ActionTypeDescriptorDO extends DescriptorDO {
     /**
      * @return Returns the className.
      */
-    public String getClassName() {
-        return className;
-    }
+    String getClassName();
 
     /**
      * @param className The className to set.
      */
-    public void setClassName(String className) {
-        this.className = className;
-    }
+    void setClassName(String className);
 
     /**
      * @return Returns the methodName.
      */
-    public String getMethodName() {
-        return methodName;
-    }
+    String getMethodName();
 
     /**
      * @param methodName The methodName to set.
      */
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
-
+    void setMethodName(String methodName);
 }

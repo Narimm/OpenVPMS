@@ -31,7 +31,7 @@ public class ActAssembler
 
 
     public ActAssembler() {
-        super(Act.class, ActDO.class);
+        super(Act.class, ActDO.class, ActDOImpl.class);
     }
 
     protected Act create(ActDO object) {
@@ -39,6 +39,6 @@ public class ActAssembler
     }
 
     protected ActDO create(Act object) {
-        return new ActDO();
+        return new ActDOImpl();
     }
 }

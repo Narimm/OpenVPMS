@@ -22,6 +22,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.ReferenceUpdater;
+import org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -37,7 +38,7 @@ public class DocumentActAssembler
 
 
     public DocumentActAssembler() {
-        super(DocumentAct.class, DocumentActDO.class);
+        super(DocumentAct.class, DocumentActDO.class, DocumentActDOImpl.class);
     }
 
     @Override
@@ -70,7 +71,7 @@ public class DocumentActAssembler
     }
 
     protected DocumentActDO create(DocumentAct object) {
-        return new DocumentActDO();
+        return new DocumentActDOImpl();
     }
 
     private void assembleDoc(final DocumentActDO target,
@@ -78,7 +79,8 @@ public class DocumentActAssembler
                              DOState state, Context context) {
         final IMObjectReference ref = source.getDocReference();
         if (ref != null) {
-            DOState docDO = find(ref, DocumentDO.class, context);
+            DOState docDO = find(ref, DocumentDO.class, DocumentDOImpl.class,
+                                 context);
             if (docDO != null) {
                 target.setDocument((DocumentDO) docDO.getObject());
                 state.addState(docDO);
@@ -86,7 +88,8 @@ public class DocumentActAssembler
                 new DeferredAssembler(state, ref) {
                     protected void doAssemble(Context context) {
                         target.setDocument(
-                                load(ref, DocumentDO.class, context));
+                                load(ref, DocumentDO.class,
+                                     DocumentDOImpl.class, context));
                     }
                 };
             }

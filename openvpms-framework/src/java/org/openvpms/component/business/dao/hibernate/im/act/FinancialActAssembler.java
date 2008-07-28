@@ -33,7 +33,8 @@ public class FinancialActAssembler
 
 
     public FinancialActAssembler() {
-        super(FinancialAct.class, FinancialActDO.class);
+        super(FinancialAct.class, FinancialActDO.class,
+              FinancialActDOImpl.class);
     }
 
     @Override
@@ -69,6 +70,6 @@ public class FinancialActAssembler
     }
 
     protected FinancialActDO create(FinancialAct object) {
-        return new FinancialActDO();
+        return new FinancialActDOImpl();
     }
 }

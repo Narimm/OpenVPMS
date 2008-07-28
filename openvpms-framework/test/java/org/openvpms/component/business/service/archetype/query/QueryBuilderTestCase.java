@@ -19,12 +19,12 @@
 package org.openvpms.component.business.service.archetype.query;
 
 import org.hibernate.HibernateException;
-import org.openvpms.component.business.dao.hibernate.im.act.ActDO;
-import org.openvpms.component.business.dao.hibernate.im.act.DocumentActDO;
-import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDO;
-import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
-import org.openvpms.component.business.dao.hibernate.im.party.PartyDO;
-import org.openvpms.component.business.dao.hibernate.im.product.ProductDO;
+import org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.act.DocumentActDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl;
 import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -68,7 +68,7 @@ public class QueryBuilderTestCase
      */
     public void testQueryByIdAndArchetypeId() {
         final String expected = "select party0 "
-                + "from " + PartyDO.class.getName() + " as party0 "
+                + "from " + PartyDOImpl.class.getName() + " as party0 "
                 + "where (party0.archetypeId.shortName = :shortName0 and "
                 + "party0.id = :id0)";
         ArchetypeQuery query = new ArchetypeQuery(
@@ -82,7 +82,7 @@ public class QueryBuilderTestCase
      */
     public void testQueryByIdAndArchetypeShortName() {
         final String expected = "select party0 "
-                + "from " + PartyDO.class.getName() + " as party0 "
+                + "from " + PartyDOImpl.class.getName() + " as party0 "
                 + "where (party0.archetypeId.shortName = :shortName0 and "
                 + "party0.id = :id0)";
         ArchetypeQuery query = new ArchetypeQuery("party.person", false, false)
@@ -96,7 +96,7 @@ public class QueryBuilderTestCase
     public void testQueryByArchetypeIdAndName()
             throws Exception {
         final String expected = "select party0 "
-                + "from " + PartyDO.class.getName() + " as party0 "
+                + "from " + PartyDOImpl.class.getName() + " as party0 "
                 + "where (party0.archetypeId.shortName = :shortName0 and "
                 + "party0.name like :name0)";
         ArchetypeQuery query = new ArchetypeQuery(
@@ -111,7 +111,7 @@ public class QueryBuilderTestCase
     public void testQueryByArchetypeIdAndNameAndSort()
             throws Exception {
         final String expected = "select party0 "
-                + "from " + PartyDO.class.getName() + " as party0 "
+                + "from " + PartyDOImpl.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
                 + "where (party0.archetypeId.shortName = :shortName0 and "
                 + "party0.name like :name0 and "
@@ -134,7 +134,7 @@ public class QueryBuilderTestCase
     public void testQueryByArchetypeShortNameAndNameAndSort()
             throws Exception {
         final String expected = "select party0 "
-                + "from " + PartyDO.class.getName() + " as party0 "
+                + "from " + PartyDOImpl.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
                 + "where ((party0.archetypeId.shortName = :shortName0 or "
                 + "party0.archetypeId.shortName = :shortName1) and "
@@ -162,7 +162,7 @@ public class QueryBuilderTestCase
     public void testCollectionNodeConstraintWithNodeNameOnly()
             throws Exception {
         final String expected = "select party0 "
-                + "from " + PartyDO.class.getName() + " as party0 "
+                + "from " + PartyDOImpl.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
                 + "where ((party0.archetypeId.shortName = :shortName0 or "
                 + "party0.archetypeId.shortName = :shortName1) and "
@@ -189,7 +189,7 @@ public class QueryBuilderTestCase
     public void testWithMultipleSortConstraints()
             throws Exception {
         String expected = "select party0 "
-                + "from " + PartyDO.class.getName() + " as party0 "
+                + "from " + PartyDOImpl.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
                 + "where ((party0.archetypeId.shortName = :shortName0 or "
                 + "party0.archetypeId.shortName = :shortName1) and "
@@ -219,7 +219,7 @@ public class QueryBuilderTestCase
      */
     public void testTargetLookups() throws Exception {
         final String expected = "select lookup0 "
-                + "from " + LookupDO.class.getName() + " as lookup0 "
+                + "from " + LookupDOImpl.class.getName() + " as lookup0 "
                 + "inner join lookup0.targetLookupRelationships "
                 + "as targetLookupRelationships0 "
                 + "where (lookup0.archetypeId.shortName like :shortName0 "
@@ -243,7 +243,7 @@ public class QueryBuilderTestCase
     public void testOVPMS240()
             throws Exception {
         final String expected = "select product0 "
-                + "from " + ProductDO.class.getName() + " "
+                + "from " + ProductDOImpl.class.getName() + " "
                 + "as product0 "
                 + "inner join product0.classifications as classifications0 "
                 + "where (product0.archetypeId.shortName = :shortName0 and "
@@ -270,7 +270,7 @@ public class QueryBuilderTestCase
     public void testOVPMS245()
             throws Exception {
         final String expected = "select product0 "
-                + "from " + ProductDO.class.getName() + " as product0 "
+                + "from " + ProductDOImpl.class.getName() + " as product0 "
                 + "left outer join product0.classifications as classifications0"
                 + " where (product0.archetypeId.shortName = :shortName0 and "
                 + "(classifications0.active = :active0 or "
@@ -303,11 +303,11 @@ public class QueryBuilderTestCase
      */
     public void testQueryAcrossMultipleTables() {
         final String expected = "select distinct act "
-                + "from " + ActDO.class.getName() + " as act "
+                + "from " + ActDOImpl.class.getName() + " as act "
                 + "inner join act.participations as participation, "
-                + EntityRelationshipDO.class.getName() + " as owner, "
-                + PartyDO.class.getName() + " as patient, "
-                + PartyDO.class.getName() + " as customer "
+                + EntityRelationshipDOImpl.class.getName() + " as owner, "
+                + PartyDOImpl.class.getName() + " as patient, "
+                + PartyDOImpl.class.getName() + " as customer "
                 + "where (act.archetypeId.shortName = :shortName0 and "
                 + "act.active = :active0 and "
                 + "act.status = :status0 and "
@@ -360,9 +360,9 @@ public class QueryBuilderTestCase
     public void testMultipleSelect() {
         final String expected = "select estimation.name, "
                 + "estimation.description, estimation.status, estimationItem "
-                + "from " + ActDO.class.getName() + " as estimation "
+                + "from " + ActDOImpl.class.getName() + " as estimation "
                 + "inner join estimation.sourceActRelationships as items, "
-                + ActDO.class.getName() + " as estimationItem "
+                + ActDOImpl.class.getName() + " as estimationItem "
                 + "where (estimation.archetypeId.shortName = :shortName0 and "
                 + "estimation.active = :active0 and "
                 + "items.archetypeId.shortName = :shortName1 and "
@@ -394,7 +394,7 @@ public class QueryBuilderTestCase
      */
     public void testObjectRefNodeConstraints() {
         final String expected = "select act0 from "
-                + ActDO.class.getName() + " as act0 "
+                + ActDOImpl.class.getName() + " as act0 "
                 + "inner join act0.participations as participations0 "
                 + "where (act0.archetypeId.shortName = :shortName0 and "
                 + "(participations0.entity.linkId = :linkId0 or "
@@ -423,7 +423,7 @@ public class QueryBuilderTestCase
      */
     public void testNullReference() {
         final String expected = "select documentAct0 from "
-                + DocumentActDO.class.getName() + " as documentAct0 "
+                + DocumentActDOImpl.class.getName() + " as documentAct0 "
                 + "where (documentAct0.archetypeId.shortName = :shortName0 and "
                 + "(documentAct0.docReference.archetypeId is NULL and "
                 + "documentAct0.docReference.linkId is NULL))";
@@ -438,7 +438,7 @@ public class QueryBuilderTestCase
      */
     public void testIn() {
         final String expected = "select documentAct0 from "
-                + DocumentActDO.class.getName() + " as documentAct0 "
+                + DocumentActDOImpl.class.getName() + " as documentAct0 "
                 + "where (documentAct0.archetypeId.shortName = :shortName0 and "
                 + "documentAct0.docReference.linkId "
                 + "in (:docReference0, :docReference1))";
@@ -459,7 +459,7 @@ public class QueryBuilderTestCase
      */
     public void testLeftJoin() {
         final String expected = "select product0 "
-                + "from " + ProductDO.class.getName() + " as product0 "
+                + "from " + ProductDOImpl.class.getName() + " as product0 "
                 + "left outer join product0.classifications as classifications0 "
                 + "where (product0.archetypeId.shortName = :shortName0 and "
                 + "(classifications0.archetypeId.shortName = :shortName1 or "

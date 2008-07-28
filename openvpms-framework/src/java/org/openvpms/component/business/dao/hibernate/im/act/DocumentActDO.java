@@ -18,131 +18,63 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
 
-
 /**
- * Document specific-act
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-04-26 17:47:12 +1000 (Thu, 26 Apr 2007) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentActDO extends ActDO {
-
-    /**
-     * The version of the document
-     */
-    private String docVersion;
-
-    /**
-     * The filename of the document
-     */
-    private String fileName;
-
-    /**
-     * The mimetype of the document
-     */
-    private String mimeType;
-
-    /**
-     * Indicates whether it has been printed
-     */
-    private boolean printed;
-
-    /**
-     * The document.
-     */
-    private DocumentDO document;
-
-    /**
-     * Default constructor
-     */
-    public DocumentActDO() {
-        super();
-    }
+public interface DocumentActDO extends ActDO {
 
     /**
      * @return Returns the document.
      */
-    public DocumentDO getDocument() {
-        return document;
-    }
+    DocumentDO getDocument();
 
     /**
      * @param document The document reference to set.
      */
-    public void setDocument(DocumentDO document) {
-        this.document = document;
-    }
+    void setDocument(DocumentDO document);
 
     /**
      * @return Returns the version.
      */
-    public String getDocVersion() {
-        return docVersion;
-    }
+    String getDocVersion();
 
     /**
      * @param version The version to set.
      */
-    public void setDocVersion(String version) {
-        docVersion = version;
-    }
+    void setDocVersion(String version);
 
     /**
      * @return Returns the fileName.
      */
-    public String getFileName() {
-        return fileName;
-    }
+    String getFileName();
 
     /**
      * @param fileName The fileName to set.
      */
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
+    void setFileName(String fileName);
 
     /**
      * @return Returns the mimeType.
      */
-    public String getMimeType() {
-        return mimeType;
-    }
+    String getMimeType();
 
     /**
      * @param mimeType The mimeType to set.
      */
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-    }
+    void setMimeType(String mimeType);
 
     /**
      * @return Returns the printed.
      */
-    public boolean isPrinted() {
-        return printed;
-    }
+    boolean isPrinted();
 
     /**
      * @param printed The printed to set.
      */
-    public void setPrinted(boolean printed) {
-        this.printed = printed;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.act.Act#toString()
-     */
-    @Override
-    @SuppressWarnings("HardCodedStringLiteral")
-    public String toString() {
-        return new ToStringBuilder(this)
-                .appendSuper(null)
-                .append("docVersion", docVersion)
-                .append("docReference", document)
-                .toString();
-    }
-
+    void setPrinted(boolean printed);
 }

@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -37,14 +38,15 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
 
     private static final SetAssembler<Participation, ParticipationDO>
             PARTICIPATIONS = SetAssembler.create(Participation.class,
-                                                 ParticipationDO.class);
+                                                 ParticipationDOImpl.class);
 
     private static final SetAssembler<ActRelationship, ActRelationshipDO>
             RELATIONSHIPS = SetAssembler.create(ActRelationship.class,
-                                                ActRelationshipDO.class);
+                                                ActRelationshipDOImpl.class);
 
-    public AbstractActAssembler(Class<T> type, Class<DO> typeDO) {
-        super(type, typeDO);
+    public AbstractActAssembler(Class<T> type, Class<DO> typeDO,
+                                Class<? extends IMObjectDOImpl> impl) {
+        super(type, typeDO, impl);
     }
 
     @Override

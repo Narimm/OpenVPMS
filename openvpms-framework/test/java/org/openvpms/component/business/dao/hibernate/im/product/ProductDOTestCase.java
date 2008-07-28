@@ -21,8 +21,9 @@ package org.openvpms.component.business.dao.hibernate.im.product;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOHelper;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.math.BigDecimal;
@@ -30,7 +31,7 @@ import java.util.Date;
 
 
 /**
- * Tests the {@link ProductDO} class.
+ * Tests the {@link ProductDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -82,8 +83,8 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
         }
 
         // check row counts
-        assertEquals(products + 1, count(ProductDO.class));
-        assertEquals(prices + 4, count(ProductPriceDO.class));
+        assertEquals(products + 1, count(ProductDOImpl.class));
+        assertEquals(prices + 4, count(ProductPriceDOImpl.class));
     }
 
     /**
@@ -105,7 +106,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
         assertTrue(product.getDetails().get("code").equals("1123"));
         assertEquals(true, product.getDetails().get("overpriced"));
 
-        assertEquals(products + 1, count(ProductDO.class));
+        assertEquals(products + 1, count(ProductDOImpl.class));
     }
 
     /**
@@ -121,18 +122,18 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check row counts
-        assertEquals(products + 1, count(ProductDO.class));
-        assertEquals(prices + 2, count(ProductPriceDO.class));
+        assertEquals(products + 1, count(ProductDOImpl.class));
+        assertEquals(prices + 2, count(ProductPriceDOImpl.class));
 
         tx = session.beginTransaction();
-        product = (ProductDO) session.load(ProductDO.class, product.getId());
+        product = (ProductDO) session.load(ProductDOImpl.class, product.getId());
         assertNotNull(product);
         session.delete(product);
         tx.commit();
 
         // check row counts
-        assertEquals(products, count(ProductDO.class));
-        assertEquals(prices, count(ProductPriceDO.class));
+        assertEquals(products, count(ProductDOImpl.class));
+        assertEquals(prices, count(ProductPriceDOImpl.class));
     }
 
     /**
@@ -151,8 +152,8 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // ensure that the appropriate rows have been added to the database
-        assertEquals(prices + 1, count(ProductPriceDO.class));
-        price = (ProductPriceDO) session.load(ProductPriceDO.class,
+        assertEquals(prices + 1, count(ProductPriceDOImpl.class));
+        price = (ProductPriceDO) session.load(ProductPriceDOImpl.class,
                                               price.getId());
         assertNotNull(price);
         assertEquals(name, price.getName());
@@ -174,10 +175,10 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check row counts
-        assertEquals(products + 1, count(ProductDO.class));
-        assertEquals(prices + 4, count(ProductPriceDO.class));
+        assertEquals(products + 1, count(ProductDOImpl.class));
+        assertEquals(prices + 4, count(ProductPriceDOImpl.class));
 
-        product = (ProductDO) session.load(ProductDO.class, product.getId());
+        product = (ProductDO) session.load(ProductDOImpl.class, product.getId());
         assertNotNull(product);
         assertEquals(4, product.getProductPrices().size());
 
@@ -190,7 +191,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // retrieve again and check
-        product = (ProductDO) session.load(ProductDO.class, product.getId());
+        product = (ProductDO) session.load(ProductDOImpl.class, product.getId());
         assertNotNull(product);
         assertEquals(3, product.getProductPrices().size());
     }
@@ -211,12 +212,12 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check row counts
-        assertEquals(products + 1, count(ProductDO.class));
-        assertEquals(prices + 1, count(ProductPriceDO.class));
-        assertEquals(lookups + 1, count(LookupDO.class));
+        assertEquals(products + 1, count(ProductDOImpl.class));
+        assertEquals(prices + 1, count(ProductPriceDOImpl.class));
+        assertEquals(lookups + 1, count(LookupDOImpl.class));
 
         // retrieve the product
-        product = (ProductDO) session.load(ProductDO.class,
+        product = (ProductDO) session.load(ProductDOImpl.class,
                                            product.getId());
         assertNotNull(product);
         assertEquals(1, product.getProductPrices().size());
@@ -231,11 +232,11 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check that there is only one productprice and 2 lookups
-        assertEquals(prices + 1, count(ProductPriceDO.class));
-        assertEquals(lookups + 2, count(LookupDO.class));
+        assertEquals(prices + 1, count(ProductPriceDOImpl.class));
+        assertEquals(lookups + 2, count(LookupDOImpl.class));
 
         // retrieve the price and make sure there are 2 lookups
-        price = (ProductPriceDO) session.get(ProductPriceDO.class,
+        price = (ProductPriceDO) session.get(ProductPriceDOImpl.class,
                                              price1.getId());
         assertEquals(2, price.getClassifications().size());
 
@@ -248,7 +249,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // retrieve the productprice and make sure there is 1 lookup
-        price1 = (ProductPriceDO) session.get(ProductPriceDO.class,
+        price1 = (ProductPriceDO) session.get(ProductPriceDOImpl.class,
                                               price.getId());
         assertEquals(1, price1.getClassifications().size());
     }
@@ -261,9 +262,9 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        products = count(ProductDO.class);
-        prices = count(ProductPriceDO.class);
-        lookups = count(LookupDO.class);
+        products = count(ProductDOImpl.class);
+        prices = count(ProductPriceDOImpl.class);
+        lookups = count(LookupDOImpl.class);
     }
 
     /**
@@ -273,7 +274,8 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
      * @return a new product
      */
     private ProductDO createProduct(String name) {
-        ProductDO product = new ProductDO(new ArchetypeId("product.basic.1.0"));
+        ProductDO product
+                = new ProductDOImpl(new ArchetypeId("product.basic.1.0"));
         product.setName(name);
         return product;
     }
@@ -286,7 +288,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
      * @return a new price
      */
     private ProductPriceDO createProductPrice(int price, boolean fixed) {
-        ProductPriceDO result = new ProductPriceDO(
+        ProductPriceDO result = new ProductPriceDOImpl(
                 new ArchetypeId("productPrice.basic.1.0"));
         result.setName("price");
         result.setFromDate(new Date());

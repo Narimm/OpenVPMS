@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
@@ -32,13 +33,16 @@ public abstract class IMObjectAssembler<T extends IMObject,
     private final Class<T> type;
 
     private final Class<DO> typeDO;
+    private final Class<? extends IMObjectDOImpl> impl;
 
     private static final DetailsMapConverter DETAILS
             = new DetailsMapConverter();
 
-    public IMObjectAssembler(Class<T> type, Class<DO> typeDO) {
+    public IMObjectAssembler(Class<T> type, Class<DO> typeDO,
+                             Class<? extends IMObjectDOImpl> impl) {
         this.type = type;
         this.typeDO = typeDO;
+        this.impl = impl;
     }
 
     public IMObject assemble(IMObjectDO source, Context context) {
@@ -70,7 +74,8 @@ public abstract class IMObjectAssembler<T extends IMObject,
             if (source.isNew()) {
                 target = create(object);
             } else {
-                target = load(source.getObjectReference(), typeDO, context);
+                target = load(source.getObjectReference(), typeDO, impl,
+                              context);
             }
             state = new DOState(target, source);
         } else {
@@ -113,15 +118,34 @@ public abstract class IMObjectAssembler<T extends IMObject,
 
     protected void assembleDO(DO target, T source, DOState state,
                               Context context) {
-        target.setId(source.getId());
-        target.setLinkId(source.getLinkId());
-        target.setArchetypeId(source.getArchetypeId());
-        target.setVersion(source.getVersion());
+        if (target.getId() != source.getId()) {
+            target.setId(source.getId());
+        }
+        if (!ObjectUtils.equals(target.getLinkId(), source.getLinkId())) {
+            target.setLinkId(source.getLinkId());
+        }
+        if (!ObjectUtils.equals(target.getArchetypeId(),
+                                source.getArchetypeId())) {
+            target.setArchetypeId(source.getArchetypeId());
+        }
+        if (target.getVersion() != source.getVersion()) {
+            target.setVersion(source.getVersion());
+        }
 
-        target.setActive(source.isActive());
-        target.setDescription(source.getDescription());
-        target.setLastModified(source.getLastModified());
-        target.setName(source.getName());
+        if (target.isActive() != source.isActive()) {
+            target.setActive(source.isActive());
+        }
+        if (!ObjectUtils.equals(target.getDescription(),
+                                source.getDescription())) {
+            target.setDescription(source.getDescription());
+        }
+        if (!ObjectUtils.equals(target.getLastModified(),
+                                source.getLastModified())) {
+            target.setLastModified(source.getLastModified());
+        }
+        if (!ObjectUtils.equals(target.getName(), source.getName())) {
+            target.setName(source.getName());
+        }
 
         DETAILS.convert(target.getDetails(), source.getDetails());
     }

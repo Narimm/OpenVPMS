@@ -18,11 +18,11 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
-import org.openvpms.component.business.dao.im.common.ResultCollector;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.ArrayList;

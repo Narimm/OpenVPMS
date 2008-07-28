@@ -35,7 +35,8 @@ public class ActionTypeDescriptorAssembler
 
 
     public ActionTypeDescriptorAssembler() {
-        super(ActionTypeDescriptor.class, ActionTypeDescriptorDO.class);
+        super(ActionTypeDescriptor.class, ActionTypeDescriptorDO.class,
+              ActionTypeDescriptorDOImpl.class);
     }
 
     @Override
@@ -61,6 +62,6 @@ public class ActionTypeDescriptorAssembler
     }
 
     protected ActionTypeDescriptorDO create(ActionTypeDescriptor object) {
-        return new ActionTypeDescriptorDO();
+        return new ActionTypeDescriptorDOImpl();
     }
 }

@@ -18,6 +18,8 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+import org.apache.commons.lang.ObjectUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +27,10 @@ import java.util.Set;
 
 /**
  * Add description here.
+ * <em>NOTE</em>. Need to be careful about calling Map methods that
+ * update the map. For maps backed by hibernate, hibernate marks
+ * them as dirty, even if no change is required, and triggers an update
+ * (e.g,  calling removeAll(set) when none of set are present in the map).  
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -38,7 +44,9 @@ public abstract class MapConverter<K, VS, VT> {
                 target.put(entry.getKey(), value);
             }
         } else if (source.isEmpty()) {
-            target.clear();
+            if (!target.isEmpty()) {
+                target.clear();
+            }
         } else {
             Map<K, VT> retained = getRetained(target, source);
 
@@ -59,15 +67,19 @@ public abstract class MapConverter<K, VS, VT> {
     }
 
     protected void convert(Map<K, VT> map, K key, VT target, VS source) {
-        map.put(key, convert(source));
+        VT newValue = convert(source);
+        if (!ObjectUtils.equals(map.get(key), newValue)) {
+            map.put(key, newValue);
+        }
     }
 
     protected abstract VT convert(VS value);
 
     protected void remove(Map<K, VT> target, Set<K> removed) {
-        target.keySet().removeAll(removed);
+        if (!removed.isEmpty()) {
+            target.keySet().removeAll(removed);
+        }
     }
-
 
     protected Set<K> getRemoved(Map<K, VT> target, Map<K, VT> retained) {
         Map<K, VT> result = new HashMap<K, VT>(target);

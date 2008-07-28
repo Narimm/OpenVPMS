@@ -39,10 +39,12 @@ public class AssertionTypeDescriptorAssembler
     private static final
     SetAssembler<ActionTypeDescriptor, ActionTypeDescriptorDO>
             TYPES = SetAssembler.create(ActionTypeDescriptor.class,
-                                        ActionTypeDescriptorDO.class);
+                                        ActionTypeDescriptorDOImpl.class);
 
     public AssertionTypeDescriptorAssembler() {
-        super(AssertionTypeDescriptor.class, AssertionTypeDescriptorDO.class);
+        super(AssertionTypeDescriptor.class,
+              AssertionTypeDescriptorDO.class,
+              AssertionTypeDescriptorDOImpl.class);
     }
 
     @Override
@@ -72,6 +74,6 @@ public class AssertionTypeDescriptorAssembler
     }
 
     protected AssertionTypeDescriptorDO create(AssertionTypeDescriptor object) {
-        return new AssertionTypeDescriptorDO();
+        return new AssertionTypeDescriptorDOImpl();
     }
 }

@@ -47,7 +47,7 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
      */
     private final CompoundAssembler assembler;
     private static final String QUERY =
-            "from " + UserDO.class + " as user where user.username = :name";
+            "from " + UserDOImpl.class + " as user where user.username = :name";
 
     /**
      * Constructs a new <code>UserDAOHibernate</code>.

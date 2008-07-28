@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,6 +81,7 @@ public abstract class CompoundAssembler implements Assembler {
     }
 
     public IMObject assemble(IMObjectDO source, Context context) {
+        source = deproxy(source);
         Assembler assembler = getAssembler(source);
         return assembler.assemble(source, context);
     }
@@ -126,6 +128,12 @@ public abstract class CompoundAssembler implements Assembler {
         }
         return assembler;
     }
+    private IMObjectDO deproxy(IMObjectDO source) {
+        if (source instanceof HibernateProxy) {
+            HibernateProxy proxy = ((HibernateProxy) source);
+            source = (IMObjectDO) proxy.getHibernateLazyInitializer().getImplementation();
+        }
+        return source;
+    }
 
 }
-

@@ -19,8 +19,8 @@
 package org.openvpms.component.business.dao.hibernate.im.document;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.domain.im.document.Document;
 
 /**
@@ -32,12 +32,12 @@ import org.openvpms.component.business.domain.im.document.Document;
 public class DocumentAssembler extends IMObjectAssembler<Document, DocumentDO> {
 
     public DocumentAssembler() {
-        super(Document.class, DocumentDO.class);
+        super(Document.class, DocumentDO.class, DocumentDOImpl.class);
     }
 
     @Override
     protected void assembleDO(DocumentDO target, Document source,
-                                 DOState state, Context context) {
+                              DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setChecksum(source.getChecksum());
         target.setContents(source.getContents());
@@ -60,6 +60,6 @@ public class DocumentAssembler extends IMObjectAssembler<Document, DocumentDO> {
     }
 
     protected DocumentDO create(Document object) {
-        return new DocumentDO();
+        return new DocumentDOImpl();
     }
 }

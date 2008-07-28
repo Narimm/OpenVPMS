@@ -30,7 +30,7 @@ import org.openvpms.component.business.dao.hibernate.im.archetype.NodeDescriptor
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.DefaultEntityAssembler;
-import org.openvpms.component.business.dao.hibernate.im.entity.ParticipationAssembler;
+import org.openvpms.component.business.dao.hibernate.im.act.ParticipationAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupAssembler;

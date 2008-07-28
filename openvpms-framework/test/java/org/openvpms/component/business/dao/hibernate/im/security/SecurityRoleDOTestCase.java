@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * Tests the {@link SecurityRoleDO} class.
+ * Tests the {@link SecurityRoleDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-06 12:05:11 +1100 (Tue, 06 Dec 2005) $
@@ -53,10 +53,10 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         session.save(role);
         tx.commit();
 
-        role = (SecurityRoleDO) session.load(SecurityRoleDO.class,
+        role = (SecurityRoleDO) session.load(SecurityRoleDOImpl.class,
                                              role.getId());
         assertNotNull(role);
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
     }
 
     /**
@@ -70,9 +70,9 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
 
-        role = (SecurityRoleDO) session.load(SecurityRoleDO.class,
+        role = (SecurityRoleDO) session.load(SecurityRoleDOImpl.class,
                                              role.getId());
         assertNotNull(role);
 
@@ -82,7 +82,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(roles, count(SecurityRoleDO.class));
+        assertEquals(roles, count(SecurityRoleDOImpl.class));
     }
 
     /**
@@ -96,9 +96,9 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
 
-        role = (SecurityRoleDO) session.load(SecurityRoleDO.class,
+        role = (SecurityRoleDO) session.load(SecurityRoleDOImpl.class,
                                              role.getId());
         assertNotNull(role);
 
@@ -109,7 +109,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
 
         // retrieve and check the role name
         role = reload(role);
@@ -139,10 +139,10 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row counts
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
-        assertEquals(authorities + 2, count(ArchetypeAuthorityDO.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
+        assertEquals(authorities + 2, count(ArchetypeAuthorityDOImpl.class));
 
-        role = (SecurityRoleDO) session.load(SecurityRoleDO.class,
+        role = (SecurityRoleDO) session.load(SecurityRoleDOImpl.class,
                                              role.getId());
         assertNotNull(role);
         assertEquals(2, role.getAuthorities().size());
@@ -168,25 +168,24 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row counts
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
-        assertEquals(authorities + count, count(ArchetypeAuthorityDO.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
+        assertEquals(authorities + count, count(ArchetypeAuthorityDOImpl.class));
 
         // retrieve and check the role
-        role = (SecurityRoleDO) session.load(SecurityRoleDO.class,
+        role = (SecurityRoleDO) session.load(SecurityRoleDOImpl.class,
                                              role.getId());
         assertNotNull(role);
         assertEquals(count, role.getAuthorities().size());
 
         // remove the first authority and resave
         tx = session.beginTransaction();
-        ArchetypeAuthorityDO authority
-                = role.getAuthorities().iterator().next();
+        ArchetypeAuthorityDO authority = role.getAuthorities().iterator().next();
         role.removeAuthority(authority);
         session.save(role);
         tx.commit();
 
         // retrieve and verify that the authority was removed from the role
-        role = (SecurityRoleDO) session.load(SecurityRoleDO.class,
+        role = (SecurityRoleDO) session.load(SecurityRoleDOImpl.class,
                                              role.getId());
         assertNotNull(role);
         assertEquals(count - 1, role.getAuthorities().size());
@@ -195,8 +194,8 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         assertNotNull(reload(authority));
 
         // check row count
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
-        assertEquals(authorities + count, count(ArchetypeAuthorityDO.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
+        assertEquals(authorities + count, count(ArchetypeAuthorityDOImpl.class));
     }
 
     /**
@@ -215,11 +214,11 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row counts
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
-        assertEquals(authorities + 1, count(ArchetypeAuthorityDO.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
+        assertEquals(authorities + 1, count(ArchetypeAuthorityDOImpl.class));
 
         // retrieve and check the role
-        role = (SecurityRoleDO) session.load(SecurityRoleDO.class,
+        role = (SecurityRoleDO) session.load(SecurityRoleDOImpl.class,
                                              role.getId());
         assertNotNull(role);
         assertEquals(1, role.getAuthorities().size());
@@ -232,7 +231,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // retrieve and check it
-        role = (SecurityRoleDO) session.load(SecurityRoleDO.class,
+        role = (SecurityRoleDO) session.load(SecurityRoleDOImpl.class,
                                              role.getId());
         assertNotNull(role);
         assertEquals(1, role.getAuthorities().size());
@@ -248,8 +247,8 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        roles = count(SecurityRoleDO.class);
-        authorities = count(ArchetypeAuthorityDO.class);
+        roles = count(SecurityRoleDOImpl.class);
+        authorities = count(ArchetypeAuthorityDOImpl.class);
     }
 
     /**
@@ -258,7 +257,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
      * @param name the name of the role
      */
     private SecurityRoleDO createSecurityRole(String name) {
-        SecurityRoleDO role = new SecurityRoleDO(
+        SecurityRoleDO role = new SecurityRoleDOImpl(
                 new ArchetypeId("openvpms-security-security.role.1.0"));
         role.setName(name);
         return role;
@@ -277,7 +276,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
                                                  String service,
                                                  String method,
                                                  String archetype) {
-        ArchetypeAuthorityDO authority = new ArchetypeAuthorityDO(
+        ArchetypeAuthorityDO authority = new ArchetypeAuthorityDOImpl(
                 new ArchetypeId("openvpms-security-security.authority.1.0"));
         authority.setName(name);
         authority.setServiceName(service);

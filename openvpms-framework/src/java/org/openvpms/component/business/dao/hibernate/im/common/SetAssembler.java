@@ -37,15 +37,15 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
 
     private final Class<T> type;
 
-    private final Class<DO> typeDO;
+    private final Class<? extends DO> typeDO;
 
-    public SetAssembler(Class<T> type, Class<DO> typeDO) {
+    public SetAssembler(Class<T> type, Class typeDO) {
         this.type = type;
         this.typeDO = typeDO;
     }
 
     public static <T extends IMObject, DO extends IMObjectDO>
-    SetAssembler<T, DO> create(Class<T> type, Class<DO> typeDO) {
+    SetAssembler<T, DO> create(Class<T> type, Class typeDO) {
         return new SetAssembler<T, DO>(type, typeDO);
     }
 

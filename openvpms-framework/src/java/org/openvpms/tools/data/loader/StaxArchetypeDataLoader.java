@@ -24,11 +24,8 @@ import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -37,7 +34,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -59,16 +55,12 @@ import java.util.Map;
  * @version $LastChangedDate$
  */
 public class StaxArchetypeDataLoader {
-    /**
-     * The default name of the application context file
-     */
-    private final static String DEFAULT_APP_CONTEXT_FNAME = "application-context.xml";
 
     /**
-     * Define a logger for this class
+     * The default name of the application context file.
      */
-    private Logger logger;
-
+    private final static String DEFAULT_APP_CONTEXT_FNAME
+            = "application-context.xml";
 
     /**
      * a reference to the archetype service
@@ -78,25 +70,12 @@ public class StaxArchetypeDataLoader {
     /**
      * Indicates whether it should only validate the data
      */
-    private boolean validateOnly;
-
     private final IdRefCache cache = new IdRefCache();
 
     /**
-     * The batch size for saving objects.
-     */
-    private int batchSize = 0;
-
-    /**
-     * Specifies the file extension to filter. Defaults to adl
+     * Specifies the file extension to filter. Defaults to xml.
      */
     private String extension = "xml";
-
-    /**
-     * Indicates whether to display verbose information while loading the
-     * archetypes
-     */
-    private boolean verbose;
 
     /**
      * Maintains a list of archetypes and count to indicate the number of
@@ -116,6 +95,13 @@ public class StaxArchetypeDataLoader {
 
 
     /**
+     * The logger.
+     */
+    private static final Log log
+            = LogFactory.getLog(StaxArchetypeDataLoader.class);
+
+
+    /**
      * Process the records in the specified XML document
      *
      * @param args the command line
@@ -123,7 +109,6 @@ public class StaxArchetypeDataLoader {
     public StaxArchetypeDataLoader(String[] args) throws Exception {
         // set up the command line options and the logger 
         createOptions();
-        createLogger();
 
         // process the configuration 
         config = jsap.parse(args);
@@ -152,21 +137,27 @@ public class StaxArchetypeDataLoader {
      */
     private void load() throws Exception {
         // set some of the configuration options
-        verbose = config.getBoolean("verbose");
-        validateOnly = config.getBoolean("validateOnly");
-        batchSize = config.getInt("batchSaveSize");
+        boolean verbose = config.getBoolean("verbose");
+        boolean validateOnly = config.getBoolean("validateOnly");
+        int batchSize = config.getInt("batchSaveSize");
 
         Date start = new Date();
-        if (config.getString("file") != null) {
-            processFile(config.getString("file"));
+        DataLoader loader = new DataLoader(cache, service,
+                                           verbose, validateOnly, batchSize,
+                                           statistics);
+
+        String file = config.getString("file");
+        String dir = config.getString("dir");
+        if (file != null || dir != null) {
+            if (file != null) {
+                processFile(file, loader);
+            } else {
+                // process the files
+                processDir(dir, loader);
+            }
+            loader.flush();
 
             // dump the statistics
-            dumpStatistics(start);
-        } else if (config.getString("dir") != null) {
-            // process the files
-            processDir(config.getString("dir"));
-
-            // dump the statistics;
             dumpStatistics(start);
         } else {
             displayUsage();
@@ -178,7 +169,7 @@ public class StaxArchetypeDataLoader {
      *
      * @param dir the directory
      */
-    private void processDir(String dir) throws Exception {
+    private void processDir(String dir, DataLoader loader) throws Exception {
         String[] extensions = {extension};
         Collection collection = FileUtils.listFiles(new File(dir), extensions,
                                                     false);
@@ -186,7 +177,7 @@ public class StaxArchetypeDataLoader {
         Arrays.sort(files);
         for (int i = 0, n = files.length; i < n; i++) {
             File file = files[i];
-            processFile(file.getAbsolutePath());
+            processFile(file.getAbsolutePath(), loader);
         }
     }
 
@@ -197,14 +188,11 @@ public class StaxArchetypeDataLoader {
      *             if this is the first parse for this file
      * @throws Exception propagate all exceptions to client
      */
-    private void processFile(String file) throws Exception {
-        logger.info("\n[PROCESSING FILE : " + file + "]\n");
+    private void processFile(String file, DataLoader loader) throws Exception {
+        log.info("\n[PROCESSING FILE : " + file + "]\n");
 
         XMLStreamReader reader = getReader(file);
-        DataLoader loader = new DataLoader(reader, cache, service,
-                                           verbose, validateOnly, batchSize,
-                                           statistics);
-        loader.load();
+        loader.load(reader, file);
     }
 
     /**
@@ -213,15 +201,15 @@ public class StaxArchetypeDataLoader {
     private void dumpStatistics(Date start) {
         Date end = new Date();
         double elapsed = (end.getTime() - start.getTime()) / 1000;
-        logger.info("\n\n\n[STATISTICS]\n");
+        log.info("\n\n\n[STATISTICS]\n");
         int total = 0;
         for (String shortName : statistics.keySet()) {
             Long count = statistics.get(shortName);
             total += count;
-            logger.info(String.format("%42s %6d", shortName, count));
+            log.info(String.format("%42s %6d", shortName, count));
         }
         double rate = (elapsed != 0) ? total / elapsed : 0;
-        logger.info(String.format(
+        log.info(String.format(
                 "Processed %d objects in %.2f seconds (%.2f objects/sec)",
                 total, elapsed, rate));
     }
@@ -233,7 +221,7 @@ public class StaxArchetypeDataLoader {
         String contextFile = StringUtils.isEmpty(config.getString("context")) ?
                 DEFAULT_APP_CONTEXT_FNAME : config.getString("context");
 
-        logger.info("Using application context [" + contextFile + "]");
+        log.info("Using application context [" + contextFile + "]");
         ApplicationContext context = new ClassPathXmlApplicationContext(
                 contextFile);
         service = (IArchetypeService) context.getBean(
@@ -281,29 +269,6 @@ public class StaxArchetypeDataLoader {
                 .setStringParser(JSAP.INTEGER_PARSER).setDefault("0")
                 .setShortFlag('b').setLongFlag("batchSaveSize")
                 .setHelp("The batch size for saving entities."));
-    }
-
-    /**
-     * Creater the logger
-     *
-     * @throws Exception
-     */
-    private void createLogger() throws Exception {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(
-                "log4j.properties");
-        if (url != null) {
-            System.out.println("Using log4j property file: " + url.toString());
-            PropertyConfigurator.configure(url);
-            logger = Logger.getLogger(StaxArchetypeDataLoader.class);
-        } else {
-            // set the root logger level to error
-            Logger.getRootLogger().setLevel(Level.ERROR);
-            Logger.getRootLogger().removeAllAppenders();
-
-            logger = Logger.getLogger(StaxArchetypeDataLoader.class);
-            logger.setLevel(Level.INFO);
-            logger.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
-        }
     }
 
     /**

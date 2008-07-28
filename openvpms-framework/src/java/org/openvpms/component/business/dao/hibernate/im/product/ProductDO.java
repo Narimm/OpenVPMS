@@ -19,76 +19,34 @@
 package org.openvpms.component.business.dao.hibernate.im.product;
 
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The persistent representation of a product.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-12-14 16:43:53 +1100 (Thu, 14 Dec 2006) $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProductDO extends EntityDO {
-
-    /**
-     * The prices for this product.
-     */
-    private Set<ProductPriceDO> prices = new HashSet<ProductPriceDO>();
-
-
-    /**
-     * Default constructor.
-     */
-    public ProductDO() {
-        // do nothing
-    }
-
-    /**
-     * Creates a new <tt>ProductDO</tt>.
-     *
-     * @param archetypeId the archetype id
-     */
-    public ProductDO(ArchetypeId archetypeId) {
-        super(archetypeId);
-    }
-
+public interface ProductDO extends EntityDO {
     /**
      * Returns the prices.
      *
      * @return the prices
      */
-    public Set<ProductPriceDO> getProductPrices() {
-        return prices;
-    }
+    Set<ProductPriceDO> getProductPrices();
 
     /**
      * Adds a product price.
      *
      * @param price the price to add
      */
-    public void addProductPrice(ProductPriceDO price) {
-        price.setProduct(this);
-        prices.add(price);
-    }
+    void addProductPrice(ProductPriceDO price);
 
     /**
      * Removes a product price.
      *
      * @param price the price to remove
      */
-    public void removeProductPrice(ProductPriceDO price) {
-        prices.remove(price);
-    }
-
-    /**
-     * Sets the prices.
-     *
-     * @param prices the prices
-     */
-    protected void setProductPrices(Set<ProductPriceDO> prices) {
-        this.prices = prices;
-    }
-
+    void removeProductPrice(ProductPriceDO price);
 }

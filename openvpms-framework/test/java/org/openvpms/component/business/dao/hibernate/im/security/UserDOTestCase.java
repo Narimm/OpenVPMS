@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * Tests the {@link UserDO} class.
+ * Tests the {@link UserDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-06 12:05:11 +1100 (Tue, 06 Dec 2005) $
@@ -58,7 +58,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
         assertNotNull(user);
         assertEquals(name, user.getUsername());
         assertEquals("password", user.getPassword());
-        assertEquals(users + 1, count(UserDO.class));
+        assertEquals(users + 1, count(UserDOImpl.class));
     }
 
     /**
@@ -72,9 +72,9 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(users + 1, count(UserDO.class));
+        assertEquals(users + 1, count(UserDOImpl.class));
 
-        user = (UserDO) session.load(UserDO.class, user.getId());
+        user = (UserDO) session.load(UserDOImpl.class, user.getId());
         assertNotNull(user);
 
         // delete the user
@@ -83,7 +83,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(users, count(UserDO.class));
+        assertEquals(users, count(UserDOImpl.class));
     }
 
     /**
@@ -97,9 +97,9 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(users + 1, count(UserDO.class));
+        assertEquals(users + 1, count(UserDOImpl.class));
 
-        user = (UserDO) session.load(UserDO.class, user.getId());
+        user = (UserDO) session.load(UserDOImpl.class, user.getId());
         assertNotNull(user);
 
         // modify the name and password
@@ -111,7 +111,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row count
-        assertEquals(users + 1, count(UserDO.class));
+        assertEquals(users + 1, count(UserDOImpl.class));
 
         // retrieve and check the attributes
         user = reload(user);
@@ -132,7 +132,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // create a new user with duplicate user name
-        UserDO user2 = new UserDO(user1.getArchetypeId());
+        UserDO user2 = new UserDOImpl(user1.getArchetypeId());
         user2.setUsername(user1.getUsername());
         user2.setPassword("secret");
         try {
@@ -158,8 +158,8 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row counts
-        assertEquals(users + 1, count(UserDO.class));
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
+        assertEquals(users + 1, count(UserDOImpl.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
 
         user = reload(user);
         assertEquals(1, user.getRoles().size());
@@ -179,10 +179,10 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check the row counts
-        assertEquals(users + 1, count(UserDO.class));
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
+        assertEquals(users + 1, count(UserDOImpl.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
 
-        user = (UserDO) session.load(UserDO.class, user.getId());
+        user = (UserDO) session.load(UserDOImpl.class, user.getId());
         assertNotNull(user);
         assertEquals(1, user.getRoles().size());
 
@@ -193,10 +193,10 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
 
         // check that the role still exists but the link between
         // user and security role does not exist
-        assertEquals(users + 1, count(UserDO.class));
-        assertEquals(roles + 1, count(SecurityRoleDO.class));
+        assertEquals(users + 1, count(UserDOImpl.class));
+        assertEquals(roles + 1, count(SecurityRoleDOImpl.class));
 
-        user = (UserDO) session.load(UserDO.class, user.getId());
+        user = (UserDO) session.load(UserDOImpl.class, user.getId());
         assertNotNull(user);
         assertEquals(0, user.getRoles().size());
 
@@ -204,8 +204,8 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
         tx = session.beginTransaction();
         session.delete(role);
         tx.commit();
-        assertEquals(users + 1, count(UserDO.class));
-        assertEquals(roles, count(SecurityRoleDO.class));
+        assertEquals(users + 1, count(UserDOImpl.class));
+        assertEquals(roles, count(SecurityRoleDOImpl.class));
     }
 
     /**
@@ -216,8 +216,8 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        users = count(UserDO.class);
-        roles = count(SecurityRoleDO.class);
+        users = count(UserDOImpl.class);
+        roles = count(SecurityRoleDOImpl.class);
     }
 
     /**
@@ -227,7 +227,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
      * @return a new role
      */
     private SecurityRoleDO createSecurityRole(String name) {
-        SecurityRoleDO role = new SecurityRoleDO(
+        SecurityRoleDO role = new SecurityRoleDOImpl(
                 new ArchetypeId("openvpms-security-security.role.1.0"));
         role.setName(name);
         return role;
@@ -241,7 +241,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
      * @return User
      */
     private UserDO createUser(String name, String password) {
-        UserDO user = new UserDO(
+        UserDO user = new UserDOImpl(
                 new ArchetypeId("openvpms-security-security.user.1.0"));
         user.setUsername(name + System.currentTimeMillis()); // ensure unique
         user.setName(name);
