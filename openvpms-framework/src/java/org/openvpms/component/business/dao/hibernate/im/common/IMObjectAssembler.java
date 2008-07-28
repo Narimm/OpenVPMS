@@ -53,20 +53,33 @@ public abstract class IMObjectAssembler<T extends IMObject,
             // pre-cache just in case the graph is cyclic
             context.add(source, target);
 
-            assembleObject(target, object, context);
+            try {
+                context.addAssembling(target);
+                assembleObject(target, object, context);
+            } finally {
+                context.removeAssembling(target);
+            }
         }
         return target;
     }
 
     public IMObject assemble(IMObject target, IMObjectDO source,
                              Context context) {
-        assembleObject(type.cast(target), typeDO.cast(source), context);
+        if (!context.isAssembling(target)) {
+            try {
+                context.addAssembling(target);
+                assembleObject(type.cast(target), typeDO.cast(source), context);
+            } finally {
+                context.removeAssembling(target);
+            }
+        }
         return target;
     }
 
     public DOState assemble(IMObject source, Context context) {
         DOState state;
-        DO target;
+        DO target = null;
+        boolean assembling;
         T object = type.cast(source);
         state = context.getCached(source);
         if (state == null) {
@@ -78,33 +91,55 @@ public abstract class IMObjectAssembler<T extends IMObject,
                               context);
             }
             state = new DOState(target, source);
+            assembling = false;
         } else {
-            // updating assembled object
-            target = typeDO.cast(state.getObject());
-            state.update(source);
+            assembling = context.isAssembling(state);
+            if (!assembling) {
+                // updating assembled object
+                target = typeDO.cast(state.getObject());
+                state.update(source);
+            }
         }
 
-        // pre-cache just in case the graph is cyclic
-        context.add(source, state);
-        // now assemble
-        assembleDO(target, object, state, context);
+        if (!assembling) {
+            // pre-cache just in case the graph is cyclic
+            context.add(source, state);
+
+            try {
+                context.addAssembling(state);
+                assembleDO(target, object, state, context);
+            } finally {
+                context.removeAssembling(state);
+            }
+        }
         return state;
     }
 
     public DOState assemble(IMObjectDO target, IMObject source,
                             Context context) {
         DOState state = context.getCached(source);
+        boolean assembling;
         if (state == null) {
             state = new DOState(target, source);
+            assembling = false;
         } else {
             // updating assembled object
+            assembling = context.isAssembling(state);
             target = typeDO.cast(state.getObject());
             state.update(source);
         }
-        // pre-cache just in case the graph is cyclic
-        context.add(source, state);
+        if (!assembling) {
+            // pre-cache just in case the graph is cyclic
+            context.add(source, state);
 
-        assembleDO(typeDO.cast(target), type.cast(source), state, context);
+            try {
+                context.addAssembling(state);
+                assembleDO(typeDO.cast(target), type.cast(source), state,
+                           context);
+            } finally {
+                context.removeAssembling(state);
+            }
+        }
         return state;
     }
 

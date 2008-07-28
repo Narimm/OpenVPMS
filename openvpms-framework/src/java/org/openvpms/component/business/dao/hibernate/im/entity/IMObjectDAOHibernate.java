@@ -559,9 +559,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     }
 
     private void save(DOState state, Context context) {
-        IMObjectDO target = state.getObject();
         Session session = context.getSession();
-        session.saveOrUpdate(target);
+        for (IMObjectDO object : state.getObjects()) {
+            session.saveOrUpdate(object);
+        }
         state.updateIds(context);
         context.addSaved(state);
     }

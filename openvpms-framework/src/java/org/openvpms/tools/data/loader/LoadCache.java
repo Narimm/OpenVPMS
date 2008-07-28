@@ -18,10 +18,12 @@
 
 package org.openvpms.tools.data.loader;
 
-import static org.openvpms.tools.data.loader.LoadState.ID_PREFIX;
+import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.NullReference;
+import static org.openvpms.tools.data.loader.LoadState.ID_PREFIX;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,12 +34,33 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class IdRefCache {
+class LoadCache {
 
     private Map<String, IMObjectReference> refs
             = new HashMap<String, IMObjectReference>();
     private Map<IMObjectReference, String> ids
             = new HashMap<IMObjectReference, String>();
+
+    private ReferenceMap objects = new ReferenceMap(ReferenceMap.HARD,
+                                                    ReferenceMap.WEAK);
+
+    public IMObject get(IMObjectReference reference) {
+        IMObject result = (IMObject) objects.get(reference);
+        if (result == null && objects.containsKey(reference)) {
+            objects.remove(reference); // value has been garbage collected
+        }
+        return result;
+    }
+
+    public void add(IMObject object, String id) {
+        IMObjectReference ref = object.getObjectReference();
+        if (id != null) {
+            id = stripPrefix(id);
+            ids.put(ref, id);
+            refs.put(id, ref);
+        }
+        objects.put(object.getObjectReference(), object);
+    }
 
     public void add(String id, IMObjectReference ref) {
         id = stripPrefix(id);

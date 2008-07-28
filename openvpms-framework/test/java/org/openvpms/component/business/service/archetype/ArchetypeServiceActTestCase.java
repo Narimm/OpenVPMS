@@ -274,6 +274,8 @@ public class ArchetypeServiceActTestCase
 
         // save the collection, and verify they have saved by checking the
         // versions.
+        estimation.setTitle("changed"); // make a change to each to ensure
+        item.setTitle("changed");       // they save
         checkSaveCollection(acts, 1);
 
         // now remove the relationship, and add a new one
@@ -441,7 +443,7 @@ public class ArchetypeServiceActTestCase
         addRelationship(act1, act2, "act1->act2", true);
         addRelationship(act1, act3, "act1->act3", false);
 
-        service.save(Arrays.asList( act1, act2, act3));
+        service.save(Arrays.asList(act1, act2, act3));
 
         // remove act1, and verify that it and act2 are removed, and act3
         // remains.
@@ -464,7 +466,7 @@ public class ArchetypeServiceActTestCase
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
 
         addRelationship(act1, act2, "act1->act2", true);
-        service.save(Arrays.asList( act1, act2, act3));
+        service.save(Arrays.asList(act1, act2, act3));
 
         Act stale = reload(act1);
 
@@ -617,7 +619,7 @@ public class ArchetypeServiceActTestCase
                 = addRelationship(act2, act4, "act2->act4", false);
         final ActRelationship relAct3Act4
                 = addRelationship(act3, act4, "act3->act4", false);
-        service.save(Arrays.asList( act1, act2, act3, act4));
+        service.save(Arrays.asList(act1, act2, act3, act4));
 
         assertTrue(act4.getActRelationships().contains(relAct2Act4));
         assertTrue(act4.getActRelationships().contains(relAct3Act4));
@@ -829,7 +831,8 @@ public class ArchetypeServiceActTestCase
      * @param objects the objects to save
      * @param version the expected version
      */
-    private void checkSaveCollection(List<? extends IMObject> objects, long version) {
+    private void checkSaveCollection(List<? extends IMObject> objects,
+                                     long version) {
         service.save(objects);
         for (IMObject object : objects) {
             assertEquals(version, object.getVersion());

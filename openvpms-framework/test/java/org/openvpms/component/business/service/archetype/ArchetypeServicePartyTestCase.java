@@ -119,7 +119,7 @@ public class ArchetypeServicePartyTestCase
         assertEquals(-1, person2.getId());
 
         // save the collection
-        Collection<IMObject> col = Arrays.asList((IMObject) person1, person2);
+        Collection<Party> col = Arrays.asList(person1, person2);
         service.save(col);
 
         // verify the ids have updated
@@ -128,10 +128,16 @@ public class ArchetypeServicePartyTestCase
         assertEquals(0, person1.getVersion());
         assertEquals(0, person2.getVersion());
 
-        // now check that versions update when the objects are saved again
+        // verify the versions don't update until a change is made
+        service.save(col);
+        assertEquals(0, person1.getVersion());
+        assertEquals(0, person2.getVersion());
+
+        // update person1 and recheck versions after save
+        person1.getDetails().put("lastName", "Foo");
         service.save(col);
         assertEquals(1, person1.getVersion());
-        assertEquals(1, person2.getVersion());
+        assertEquals(0, person2.getVersion());
     }
 
     /*

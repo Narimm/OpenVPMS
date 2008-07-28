@@ -70,7 +70,7 @@ public class StaxArchetypeDataLoader {
     /**
      * Indicates whether it should only validate the data
      */
-    private final IdRefCache cache = new IdRefCache();
+    private final LoadCache cache = new LoadCache();
 
     /**
      * Specifies the file extension to filter. Defaults to xml.

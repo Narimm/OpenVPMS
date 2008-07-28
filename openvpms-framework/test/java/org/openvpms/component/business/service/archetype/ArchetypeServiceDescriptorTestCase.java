@@ -285,7 +285,7 @@ public class ArchetypeServiceDescriptorTestCase
         assertEquals(-1, desc2.getId());
 
         // save the archetype descriptors
-        Collection<IMObject> col = Arrays.asList((IMObject) desc1, desc2);
+        Collection<ArchetypeDescriptor> col = Arrays.asList(desc1, desc2);
         service.save(col);
 
         // verify the ids have updated
@@ -295,9 +295,16 @@ public class ArchetypeServiceDescriptorTestCase
         assertEquals(0, desc1.getVersion());
         assertEquals(0, desc2.getVersion());
 
-        // verify the versions have updated
+        // verify the versions don't update until a change is made
         service.save(col);
+        assertEquals(0, desc1.getVersion());
+        assertEquals(0, desc2.getVersion());
 
+        // make a change to each and re-save
+        desc1.setDisplayName("changed");
+        desc2.setDisplayName("changed");
+
+        service.save(col);
         assertEquals(1, desc1.getVersion());
         assertEquals(1, desc2.getVersion());
     }

@@ -58,7 +58,9 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
                 state.addState(result);
             }
         } else if (source.isEmpty()) {
-            target.clear();
+            if (!target.isEmpty()) {
+                target.clear();
+            }
         } else {
             Assembler assembler = context.getAssembler();
             Map<IMObjectReference, DO> targetMap = getDO(target);

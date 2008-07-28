@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
 /**
  * Add description here.
@@ -47,7 +48,9 @@ class LoadState {
 
     public static final String ID_PREFIX = "id:";
 
-    private final List<LoadState> children = new ArrayList<LoadState>();
+    private final List<LoadState> childStates = new ArrayList<LoadState>();
+
+    private final Set<IMObject> childObjects = new HashSet<IMObject>();
 
     private final LoadState parent;
     private final IMObject object;
@@ -63,8 +66,7 @@ class LoadState {
     private final int lineNo;
 
     public LoadState(LoadState parent, IMObject object,
-                     ArchetypeDescriptor descriptor, String path,
-                     int lineNo) {
+                     ArchetypeDescriptor descriptor, String path, int lineNo) {
         this.parent = parent;
         this.object = object;
         this.descriptor = descriptor;
@@ -74,6 +76,15 @@ class LoadState {
 
     public LoadState getParent() {
         return parent;
+    }
+
+
+    public Set<IMObject> getObjects() {
+        ObjectCollector collector = new ObjectCollector();
+        collector.visit(this);
+        Set<IMObject> result = new LinkedHashSet<IMObject>(childObjects);
+        result.addAll(collector.getObjects());
+        return result;
     }
 
     public void setValue(String name, String value, LoadContext context) {
@@ -208,7 +219,7 @@ class LoadState {
         }
         if (child.isComplete()) {
             node.addChildToCollection(object, child.getObject());
-            children.add(child);
+            childStates.add(child);
         } else {
             DeferredUpdater updater = child.getDeferred().iterator().next();
             DeferredUpdater childUpdater
@@ -217,7 +228,7 @@ class LoadState {
                                       LoadContext context) {
                     if (child.isComplete()) {
                         node.addChildToCollection(object, child.getObject());
-                        children.add(child);
+                        childStates.add(child);
                         deferred.remove(getId());
                         return true;
                     }
@@ -245,6 +256,7 @@ class LoadState {
         IMObject child = getObject(id, context);
         if (child != null) {
             node.addChildToCollection(object, child);
+            childObjects.add(child);
             result = true;
 
         } else {
@@ -266,11 +278,14 @@ class LoadState {
         IMObjectReference ref = context.getReference(id);
         IMObject object = null;
         if (ref != null) {
-            IArchetypeService service = context.getService();
-            if (context.validateOnly()) {
-                object = service.create(ref.getArchetypeId());
-            } else if (!ref.isNew()) {
-                object = service.get(ref);
+            object = context.getCache().get(ref);
+            if (object == null) {
+                IArchetypeService service = context.getService();
+                if (context.validateOnly()) {
+                    object = service.create(ref.getArchetypeId());
+                } else if (!ref.isNew()) {
+                    object = service.get(ref);
+                }
             }
         }
         return object;
@@ -302,7 +317,7 @@ class LoadState {
 
         protected boolean visitChildren(LoadState state) {
             boolean result = true;
-            for (LoadState child : state.children) {
+            for (LoadState child : state.childStates) {
                 if (!visited.contains(child)) {
                     if (!visit(child)) {
                         result = false;
@@ -321,6 +336,26 @@ class LoadState {
 
     }
 
+    private static class ObjectCollector extends Visitor {
+
+        private Set<IMObject> objects = new LinkedHashSet<IMObject>();
+
+        public Set<IMObject> getObjects() {
+            return objects;
+        }
+
+        public boolean visit(LoadState state) {
+            addVisited(state);
+            visitChildren(state);
+            doVisit(state);
+            return true;
+        }
+
+        protected boolean doVisit(LoadState state) {
+            objects.add(state.getObject());
+            return true;
+        }
+    }
 
     private static class CompleteVistor extends Visitor {
 

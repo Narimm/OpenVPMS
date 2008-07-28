@@ -129,6 +129,9 @@ public class SecurityRoleDOImpl extends IMObjectDOImpl
     protected void setAuthorities(
             Set<ArchetypeAuthorityDO> authorities) {
         this.authorities = authorities;
+        for (ArchetypeAuthorityDO authority : authorities) {
+            authority.setRole(this);
+        }
     }
 
 }

@@ -52,7 +52,7 @@ import java.util.Stack;
 class DataLoader {
 
     private LoadContext context;
-    private final IdRefCache cache;
+    private final LoadCache cache;
 
     private final IArchetypeService service;
 
@@ -78,11 +78,11 @@ class DataLoader {
 
 
     public DataLoader(int batchSize) {
-        this(new IdRefCache(), ArchetypeServiceHelper.getArchetypeService(),
+        this(new LoadCache(), ArchetypeServiceHelper.getArchetypeService(),
              false, false, batchSize, new HashMap<String, Long>());
     }
 
-    public DataLoader(IdRefCache cache,
+    public DataLoader(LoadCache cache,
                       IArchetypeService service, boolean verbose,
                       boolean validateOnly, int batchSize,
                       Map<String, Long> statistics) {
@@ -189,7 +189,7 @@ class DataLoader {
         return statistics;
     }
 
-    public IdRefCache getRefCache() {
+    public LoadCache getRefCache() {
         return cache;
     }
 
@@ -208,8 +208,8 @@ class DataLoader {
      * @return IMObject the associated IMObject
      */
     private LoadState processElement(LoadState parent,
-                                         Element element,
-                                         String path) {
+                                     Element element,
+                                     String path) {
         LoadState result;
 
         Location location = element.getLocation();
@@ -254,7 +254,7 @@ class DataLoader {
     }
 
     private LoadState create(Element element, LoadState parent,
-                                 String path) {
+                             String path) {
         String shortName = element.getShortName();
         ArchetypeDescriptor descriptor
                 = service.getArchetypeDescriptor(shortName);
@@ -271,9 +271,7 @@ class DataLoader {
                     InvalidArchetype, location.getLineNumber(),
                     location.getColumnNumber(), shortName);
         }
-        if (element.getId() != null) {
-            cache.add(element.getId(), object.getObjectReference());
-        }
+        cache.add(object, element.getId());
         return new LoadState(parent, object, descriptor, path,
                              element.getLocation().getLineNumber());
     }
@@ -350,10 +348,11 @@ class DataLoader {
         if (state != null && state.isComplete()) {
             try {
                 IMObject object = state.getObject();
-                service.save(object);
+                service.save(state.getObjects());
                 batch.remove(ref);
-                saved(object.getObjectReference());
+                saved(object.getObjectReference()); // ref now contains id
             } catch (OpenVPMSException exception) {
+                exception.printStackTrace();
                 // ignore
             }
         }

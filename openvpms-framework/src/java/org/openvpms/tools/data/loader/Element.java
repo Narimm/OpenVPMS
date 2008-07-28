@@ -124,7 +124,7 @@ class Element {
         return result.toString();
     }
 
-    public boolean isComplete(IdRefCache cache) {
+    public boolean isComplete(LoadCache cache) {
         for (String value : attributes.values()) {
             if (value.startsWith(LoadState.ID_PREFIX)) {
                 if (cache.getReference(value) == null) {

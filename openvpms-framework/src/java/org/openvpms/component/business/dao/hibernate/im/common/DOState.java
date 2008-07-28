@@ -150,6 +150,12 @@ public class DOState {
         visit(new IdReverter());
     }
 
+    public Set<IMObjectDO> getObjects() {
+        ObjectCollector collector = new ObjectCollector();
+        visit(collector);
+        return collector.getObjects();
+    }
+
     public void update(IMObject source) {
         if (source.getVersion() != object.getVersion()) {
             throw new StaleObjectStateException(object.getClass().getName(),
@@ -312,6 +318,27 @@ public class DOState {
                 states.clear();
             }
             return false;
+        }
+    }
+
+    private static class ObjectCollector extends Visitor {
+        Set<IMObjectDO> objects = new LinkedHashSet<IMObjectDO>();
+
+        public Set<IMObjectDO> getObjects() {
+            return objects;
+        }
+
+        @Override
+        public boolean visit(DOState state) {
+            addVisited(state);
+            visitChildren(state);
+            doVisit(state);
+            return true;
+        }
+
+        public boolean doVisit(DOState state) {
+            objects.add(state.getObject());
+            return true;
         }
     }
 

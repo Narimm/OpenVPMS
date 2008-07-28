@@ -18,8 +18,12 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ObjectSet;
 
@@ -121,7 +125,9 @@ public class ObjectSetResultCollector
                     i += 3;
                 } else {
                     Object value = values[i];
-                    if (value != null) {
+                    if (value instanceof IMObjectDO) {
+                        value = assemble((IMObjectDO) value);
+                    } else if (value != null) {
                         loader.load(value);
                     }
                     set.set(names[i], value);
@@ -131,10 +137,26 @@ public class ObjectSetResultCollector
         } else if (names.length != 1) {
             throw new IllegalStateException("Mismatch args");
         } else {
-            loader.load(object);
+            if (object instanceof IMObjectDO) {
+                object = assemble((IMObjectDO) object);
+            } else {
+                loader.load(object);
+            }
             set.set(names[0], object);
         }
         result.add(set);
+    }
+
+    /**
+     * Assembles an {@link IMObject} from an {@link IMObjectDO}.
+     *
+     * @param object the source object
+     * @return the assembled object
+     */
+    private IMObject assemble(IMObjectDO object) {
+        Context context = getContext();
+        Assembler assembler = context.getAssembler();
+        return assembler.assemble(object, context);
     }
 
     /**

@@ -20,7 +20,9 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
+import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityAssembler;
+import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
 
 /**
@@ -30,6 +32,10 @@ import org.openvpms.component.business.domain.im.security.User;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class UserAssembler extends EntityAssembler<User, UserDO> {
+
+    private static final SetAssembler<SecurityRole, SecurityRoleDO> ROLES
+            = new SetAssembler<SecurityRole, SecurityRoleDO>(
+            SecurityRole.class, SecurityRoleDO.class);
 
     public UserAssembler() {
         super(User.class, UserDO.class, UserDOImpl.class);
@@ -41,6 +47,8 @@ public class UserAssembler extends EntityAssembler<User, UserDO> {
         super.assembleDO(target, source, state, context);
         target.setUsername(source.getUsername());
         target.setPassword(source.getPassword());
+        ROLES.assembleDO(target.getRoles(), source.getRoles(),
+                         state, context);
     }
 
     @Override
@@ -49,6 +57,7 @@ public class UserAssembler extends EntityAssembler<User, UserDO> {
         super.assembleObject(target, source, context);
         target.setUsername(source.getUsername());
         target.setPassword(source.getPassword());
+        ROLES.assembleObject(target.getRoles(), source.getRoles(), context);
     }
 
     protected User create(UserDO object) {

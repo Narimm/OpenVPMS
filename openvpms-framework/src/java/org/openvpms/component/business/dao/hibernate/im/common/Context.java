@@ -58,6 +58,7 @@ public class Context {
 
     private Set<DOState> saveDeferred = new LinkedHashSet<DOState>();
 
+    private Set<Object> assembling = new HashSet<Object>();
 
     private final boolean syncActive;
 
@@ -96,6 +97,29 @@ public class Context {
 
     public Assembler getAssembler() {
         return assembler;
+    }
+
+    public void addAssembling(DOState object) {
+        assembling.add(object);
+    }
+
+    public void removeAssembling(DOState object) {
+        assembling.remove(object);
+    }
+
+    public boolean isAssembling(DOState object) {
+        return assembling.contains(object);
+    }
+
+    public void addAssembling(IMObject object) {
+        assembling.add(object);
+    }
+
+    public void removeAssembling(IMObject object) {
+        assembling.remove(object);
+    }
+    public boolean isAssembling(IMObject object) {
+        return assembling.contains(object);
     }
 
     public Session getSession() {

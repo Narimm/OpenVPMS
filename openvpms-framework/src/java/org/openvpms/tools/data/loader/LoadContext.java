@@ -31,11 +31,11 @@ class LoadContext {
 
 
     private final IArchetypeService service;
-    private final IdRefCache cache;
+    private final LoadCache cache;
     private final boolean validateOnly;
 
     public LoadContext(IArchetypeService service,
-                       IdRefCache cache, boolean validateOnly) {
+                       LoadCache cache, boolean validateOnly) {
         this.service = service;
         this.cache = cache;
         this.validateOnly = validateOnly;
@@ -47,6 +47,10 @@ class LoadContext {
 
     public IMObjectReference getReference(String id) {
         return cache.getReference(id);
+    }
+
+    public LoadCache getCache() {
+        return cache;
     }
 
     public boolean validateOnly() {
