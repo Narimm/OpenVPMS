@@ -106,6 +106,9 @@
             <fileset dir="${basedir}">
                 <include name="License.txt"/>
             </fileset>
+            <filterset>
+                <filter token="VERSION" value="${pom.currentVersion}"/>
+            </filterset>
         </copy>
 
         <!-- copy the images -->
