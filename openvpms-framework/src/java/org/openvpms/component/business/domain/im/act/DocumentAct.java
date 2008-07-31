@@ -20,6 +20,7 @@
 package org.openvpms.component.business.domain.im.act;
 
 // commons-lang
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -27,8 +28,8 @@ import org.openvpms.component.business.domain.im.document.Document;
 /**
  * Document specific-act
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class DocumentAct extends Act {
     /**
@@ -68,18 +69,28 @@ public class DocumentAct extends Act {
         super();
     }
 
+    public IMObjectReference getDocument() {
+        return docReference;
+    }
+
+    public void setDocument(IMObjectReference reference) {
+        this.docReference = reference;
+    }
+
     /**
      * @return Returns the document.
      */
+    @Deprecated
     public IMObjectReference getDocReference() {
-        return docReference;
+        return getDocument();
     }
 
     /**
      * @param reference The document reference to set.
      */
+    @Deprecated
     public void setDocReference(IMObjectReference reference) {
-        this.docReference = reference;
+        setDocument(reference);
     }
 
     /**
@@ -143,10 +154,10 @@ public class DocumentAct extends Act {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        DocumentAct copy = (DocumentAct)super.clone();
+        DocumentAct copy = (DocumentAct) super.clone();
 
         copy.docVersion = this.docVersion;
-        copy.docReference = (IMObjectReference)this.docReference.clone();
+        copy.docReference = (IMObjectReference) this.docReference.clone();
 
         return copy;
     }
@@ -158,10 +169,10 @@ public class DocumentAct extends Act {
     @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(null)
-            .append("docVersion", docVersion)
-            .append("docReference", docReference)
-            .toString();
+                .appendSuper(null)
+                .append("docVersion", docVersion)
+                .append("docReference", docReference)
+                .toString();
     }
 
 
