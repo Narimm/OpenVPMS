@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -222,10 +223,14 @@ public class StaxArchetypeDataLoader {
                 DEFAULT_APP_CONTEXT_FNAME : config.getString("context");
 
         log.info("Using application context [" + contextFile + "]");
-        ApplicationContext context = new ClassPathXmlApplicationContext(
-                contextFile);
-        service = (IArchetypeService) context.getBean(
-                "archetypeService");
+        ApplicationContext context;
+        if (!new File(contextFile).exists()) {
+            context = new ClassPathXmlApplicationContext(contextFile);
+        } else {
+            context = new FileSystemXmlApplicationContext(contextFile);
+        }
+
+        service = (IArchetypeService) context.getBean("archetypeService");
     }
 
     /**

@@ -150,7 +150,7 @@ public class ArchetypeServiceDocumentTestCase extends
 
         docAct = (DocumentAct) page.getResults().iterator().next();
         assertTrue(
-                docAct.getDocReference().equals(document.getObjectReference()));
+                docAct.getDocument().equals(document.getObjectReference()));
     }
 
     /**
@@ -170,20 +170,20 @@ public class ArchetypeServiceDocumentTestCase extends
         assertEquals(1, page.getTotalResults());
 
         docAct = (DocumentAct) page.getResults().iterator().next();
-        assertEquals(document.getObjectReference(), docAct.getDocReference());
+        assertEquals(document.getObjectReference(), docAct.getDocument());
 
         // create a new document reference
         document = createDocument("tima.doc", "text/plain", 234, 12343,
                                   "Tim Anderson".getBytes());
         service.save(document);
-        docAct.setDocReference(document.getObjectReference());
+        docAct.setDocument(document.getObjectReference());
         service.save(docAct);
 
         // retrieve and check again
         page = service.get(query);
         assertEquals(1, page.getTotalResults());
         docAct = (DocumentAct) page.getResults().iterator().next();
-        assertEquals(document.getObjectReference(), docAct.getDocReference());
+        assertEquals(document.getObjectReference(), docAct.getDocument());
     }
 
     /**
@@ -247,7 +247,7 @@ public class ArchetypeServiceDocumentTestCase extends
         act.setName("documentAct1");
         act.setDescription("This is the first document act");
         act.setDocVersion("ver1");
-        act.setDocReference(document.getObjectReference());
+        act.setDocument(document.getObjectReference());
 
         return act;
     }
