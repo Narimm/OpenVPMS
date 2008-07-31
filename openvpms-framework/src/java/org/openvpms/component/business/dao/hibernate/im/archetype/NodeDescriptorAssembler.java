@@ -57,7 +57,7 @@ public class NodeDescriptorAssembler
 
         ArchetypeDescriptorDO archetype = null;
         DOState descState = getDO(source.getArchetypeDescriptor(),
-                                  ArchetypeDescriptorDOImpl.class, context);
+                                  context);
         if (descState != null) {
             archetype = (ArchetypeDescriptorDO) descState.getObject();
             state.addState(descState);
@@ -66,7 +66,7 @@ public class NodeDescriptorAssembler
 
         NodeDescriptorDO parent = null;
         DOState parentState = getDO(source.getParent(),
-                                    NodeDescriptorDOImpl.class, context);
+                                    context);
         if (parentState != null) {
             parent = (NodeDescriptorDO) parentState.getObject();
             state.addState(parentState);

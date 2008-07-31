@@ -18,18 +18,34 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+
 /**
- * Add description here.
+ * Handler for {@link Context} events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ContextHandler {
 
+    /**
+     * Invoked prior to commit.
+     *
+     * @param context the assembly context
+     */
     void preCommit(Context context);
 
+    /**
+     * Invoked after commit.
+     *
+     * @param context the assembly context
+     */
     void commit(Context context);
 
+    /**
+     * Invoked after rollback.
+     *
+     * @param context the assembly context
+     */
     void rollback(Context context);
 
 }

@@ -24,8 +24,8 @@ import java.util.Date;
 
 
 /**
- * Describes a relationship between two {@link IMObjectDOImpl}s that is active
- * for a period of time.
+ * Implementation of the {@link PeriodRelationshipDO} interface.
+ * *
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -53,7 +53,7 @@ public abstract class PeriodRelationshipDOImpl
     }
 
     /**
-     * Creates a new <tt>PeriodRelationshipDO</tt>.
+     * Creates a new <tt>PeriodRelationshipDOImpl</tt>.
      *
      * @param archetypeId the archetype identifier
      */

@@ -46,8 +46,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
-import org.openvpms.component.business.service.archetype.query.QueryBuilder;
-import org.openvpms.component.business.service.archetype.query.QueryContext;
+import org.openvpms.component.business.dao.hibernate.im.query.QueryBuilder;
+import org.openvpms.component.business.dao.hibernate.im.query.QueryContext;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;

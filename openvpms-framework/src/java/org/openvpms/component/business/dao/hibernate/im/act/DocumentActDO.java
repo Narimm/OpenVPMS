@@ -19,9 +19,11 @@
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
+
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link DocumentAct} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -29,52 +31,73 @@ import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
 public interface DocumentActDO extends ActDO {
 
     /**
-     * @return Returns the document.
+     * Returns the document.
+     *
+     * @return the document. May be <tt>null</tt>
      */
     DocumentDO getDocument();
 
     /**
-     * @param document The document reference to set.
+     * Sets the document.
+     *
+     * @param document the document. May be <tt>null</tt>
      */
     void setDocument(DocumentDO document);
 
     /**
-     * @return Returns the version.
+     * Returns the document version.
+     *
+     * @return the document version. May be <tt>null</tt>
      */
     String getDocVersion();
 
     /**
-     * @param version The version to set.
+     * Sets the document version.
+     *
+     * @param version the version to set. May be <tt>null</tt>
      */
     void setDocVersion(String version);
 
     /**
-     * @return Returns the fileName.
+     * Returns the document file name.
+     *
+     * @return the file name. May be <tt>null</tt>
      */
     String getFileName();
 
     /**
-     * @param fileName The fileName to set.
+     * Sets the document file name.
+     *
+     * @param fileName the file name. May be <tt>null</tt>
      */
     void setFileName(String fileName);
 
     /**
-     * @return Returns the mimeType.
+     * Returns the document mime type.
+     *
+     * @return the mime type. May be <tt>null</tt>
      */
     String getMimeType();
 
     /**
-     * @param mimeType The mimeType to set.
+     * Sets the document mime type.
+     *
+     * @param mimeType the mime type. May be <tt>null</tt>
      */
     void setMimeType(String mimeType);
 
     /**
-     * @return Returns the printed.
+     * Determines if the document has been printed.
+     *
+     * @return <tt>true</tt> if the document has been printed, otherwise
+     *         <tt>false</tt>
      */
     boolean isPrinted();
 
     /**
-     * @param printed The printed to set.
+     * Determines if the document has been printed.
+     *
+     * @param printed if <tt>true</tt>, the document has been printed
      */
     void setPrinted(boolean printed);
 }

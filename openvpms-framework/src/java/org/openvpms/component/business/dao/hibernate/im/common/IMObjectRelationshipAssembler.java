@@ -21,8 +21,10 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 
+
 /**
- * Add description here.
+ * Assembles {@link IMObjectRelationship} from {@link IMObjectRelationshipDO}s
+ * and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -31,10 +33,28 @@ public abstract class IMObjectRelationshipAssembler
         <T extends IMObjectRelationship, DO extends IMObjectRelationshipDO>
         extends IMObjectAssembler<T, DO> {
 
+    /**
+     * The relationship source/target data object interface type.
+     */
     private final Class<? extends IMObjectDO> endType;
 
+    /**
+     * The relationship source/target data object implementation type.
+     */
     private final Class<? extends IMObjectDOImpl> endTypeImpl;
 
+
+    /**
+     * Creates a new <tt>IMObjectRelationshipAssembler</tt>.
+     *
+     * @param type        the relationship type
+     * @param typeDO      the relationship data object interface type
+     * @param impl        the relationship data object implementation type
+     * @param endType     the relationship source/target data object interface
+     *                    type
+     * @param endTypeImpl relationship source/target data object implementation
+     *                    type
+     */
     public IMObjectRelationshipAssembler(
             Class<T> type, Class<DO> typeDO,
             Class<? extends IMObjectDOImpl> impl,
@@ -45,6 +65,14 @@ public abstract class IMObjectRelationshipAssembler
         this.endTypeImpl = endTypeImpl;
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(DO target, T source, DOState state,
                               Context context) {
@@ -53,6 +81,13 @@ public abstract class IMObjectRelationshipAssembler
         assembleTarget(target, source, state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(T target, DO source, Context context) {
         super.assembleObject(target, source, context);
@@ -60,11 +95,19 @@ public abstract class IMObjectRelationshipAssembler
         target.setTarget(source.getTarget().getObjectReference());
     }
 
+    /**
+     * Assembles the source of the relationship.
+     *
+     * @param result  the relationship being assembled
+     * @param source  the relationship to assemble from
+     * @param state   the relationship state
+     * @param context the assembly context
+     */
     protected void assembleSource(final DO result, final T source,
                                   DOState state, Context context) {
         final IMObjectReference sourceRef = source.getSource();
         if (sourceRef != null) {
-            DOState sourceDO = find(sourceRef, endType, endTypeImpl, context);
+            DOState sourceDO = get(sourceRef, endType, endTypeImpl, context);
             if (sourceDO != null) {
                 result.setSource(sourceDO.getObject());
                 state.addState(sourceDO);
@@ -89,11 +132,19 @@ public abstract class IMObjectRelationshipAssembler
         }
     }
 
+    /**
+     * Assembles the target of the relationship.
+     *
+     * @param result  the relationship being assembled
+     * @param source  the relationship to assemble from
+     * @param state   the relationship state
+     * @param context the assembly context
+     */
     private void assembleTarget(final DO result, final T source, DOState state,
                                 Context context) {
         final IMObjectReference targetRef = source.getTarget();
         if (targetRef != null) {
-            DOState targetDO = find(targetRef, endType, endTypeImpl, context);
+            DOState targetDO = get(targetRef, endType, endTypeImpl, context);
             if (targetDO != null) {
                 result.setTarget(targetDO.getObject());
                 state.addState(targetDO);

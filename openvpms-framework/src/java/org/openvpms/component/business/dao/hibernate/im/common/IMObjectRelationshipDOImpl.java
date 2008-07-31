@@ -20,10 +20,10 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.IMObject;
+
 
 /**
- * Describes a relationship between two {@link IMObject}s.
+ * Implementation of the {@link IMObjectRelationshipDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -50,9 +50,9 @@ public abstract class IMObjectRelationshipDOImpl extends IMObjectDOImpl
     }
 
     /**
-     * Creates a new <tt>IMObjectRelationshipDO</tt>
+     * Creates a new <tt>IMObjectRelationshipDOImpl</tt>
      *
-     * @param archetypeId the archetype id
+     * @param archetypeId the archetype identifier
      */
     public IMObjectRelationshipDOImpl(ArchetypeId archetypeId) {
         super(archetypeId);

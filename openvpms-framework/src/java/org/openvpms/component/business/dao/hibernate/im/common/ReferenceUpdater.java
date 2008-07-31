@@ -20,33 +20,62 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
+
 /**
- * Add description here.
+ * A <tt>ReferenceAssembler</tt> is used to update new
+ * {@link IMObjectReference}s with their persistent versions.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class ReferenceUpdater {
 
+    /**
+     * The reference to update.
+     */
     private final IMObjectReference reference;
 
+    /**
+     * Creates a new <tt>ReferenceUpdater</tt>.
+     *
+     * @param state     the state to update
+     * @param reference the reference to update
+     */
     public ReferenceUpdater(DOState state, IMObjectReference reference) {
         state.addReferenceUpdater(this);
         this.reference = reference;
     }
 
+    /**
+     * Returns the reference that needs to be updated.
+     *
+     * @return the reference
+     */
     public IMObjectReference getReference() {
         return reference;
     }
 
+    /**
+     * Updates the reference.
+     *
+     * @param updated the updated value
+     */
     public void update(IMObjectReference updated) {
         doUpdate(updated);
     }
 
+    /**
+     * Reverts the reference to its prior value.
+     */
     public void revert() {
         doUpdate(reference);
     }
 
+    /**
+     * Updates the reference.
+     *
+     * @param updated the updated value
+     */
     protected abstract void doUpdate(IMObjectReference updated);
 
 }

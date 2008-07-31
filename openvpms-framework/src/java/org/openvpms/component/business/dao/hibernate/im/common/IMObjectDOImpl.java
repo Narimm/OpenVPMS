@@ -13,55 +13,67 @@ import java.util.Map;
 import java.util.UUID;
 
 
+/**
+ * Implementation of the {@link IMObjectDO} interface.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
 public class IMObjectDOImpl implements IMObjectDO {
 
     /**
-     * Indicates whether this object is active
-     */
-    private boolean active = true;
-
-    /**
-     * The archetype that is attached to this object. which defines
+     * The archetype identifier.
      */
     private ArchetypeId archetypeId;
 
     /**
-     * Description of this entity
-     */
-    private String description;
-
-    /**
-     * This is the date and time that this object was last modified
-     */
-    private Date lastModified;
-
-    /**
-     * This is the name that this entity is known by. Each concrete instance
-     * must supply this.
-     */
-    private String name;
-
-    /**
-     * The identifier assigned by the persistence layer when the object is
-     * saved.
+     * The object identifier assigned by the persistence layer when the
+     * object is saved. If <tt>-1</tt>, indicates that the object is not
+     * persistent.
      */
     private long id = -1;
 
     /**
-     * A client assigned identifier.
+     * The object link identifier, a UUID used to link objects until they can
+     * be made persistent, and to provide support for object equality.
      */
     private String linkId;
 
     /**
-     * Indicates the version of this object
+     * The object reference.
+     */
+    private IMObjectReference reference;
+
+    /**
+     * The persistent version of the object.
      */
     private long version;
 
     /**
-     * Holds details about the entity identity.
+     * The object name.
+     */
+    private String name;
+
+    /**
+     * The object description.
+     */
+    private String description;
+
+    /**
+     * The timestamp when the object was last modified.
+     */
+    private Date lastModified;
+
+    /**
+     * Indicates whether the object is active or not.
+     */
+    private boolean active = true;
+
+
+    /**
+     * Name value pairs representing the dynamic object details.
      */
     private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
-    private IMObjectReference reference;
 
 
     /**
@@ -83,16 +95,227 @@ public class IMObjectDOImpl implements IMObjectDO {
     }
 
     /**
-     * Creates a new <tt>IMObjectDO</tt>.
+     * Creates a new <tt>IMObjectDOImpl</tt>.
      *
-     * @param archetypeId the archetype id
+     * @param archetypeId the archetype identifier
      */
     public IMObjectDOImpl(ArchetypeId archetypeId) {
         setArchetypeId(archetypeId);
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
+    /**
+     * Returns the archetype identifier.
+     *
+     * @return the archetype identifier
+     */
+    public ArchetypeId getArchetypeId() {
+        return archetypeId;
+    }
+
+    /**
+     * Sets the archetype identifier.
+     *
+     * @param archetypeId the archetype identifier
+     */
+    public void setArchetypeId(ArchetypeId archetypeId) {
+        this.archetypeId = archetypeId;
+        reference = null;
+    }
+
+    /**
+     * Returns the object identifier.
+     * <p/>
+     * This is assigned when the object is made persistent.
+     *
+     * @return the object identifer, or <tt>-1</tt> if the object is not
+     *         persistent
+     */
+    public long getId() {
+        return id;
+    }
+
+    /**
+     * Sets the object identifier.
+     *
+     * @param id the object identifier. If <tt>-1</tt>, indicates that the
+     *           object is not persistent
+     */
+    public void setId(long id) {
+        this.id = id;
+        reference = null;
+    }
+
+    /**
+     * Returns the object link identifier.
+     * <p/>
+     * This is a UUID that is used to link objects until they can be made
+     * persistent, and to provide support for object equality.
+     *
+     * @return the link identifier
+     */
+    public String getLinkId() {
+        if (linkId == null && id == -1) {
+            linkId = UUID.randomUUID().toString();
+        }
+        return linkId;
+    }
+
+    /**
+     * Sets the object link identifier.
+     *
+     * @param linkId the link identifier
+     */
+    public void setLinkId(String linkId) {
+        this.linkId = linkId;
+        reference = null;
+    }
+
+    /**
+     * Returns an object reference for this object.
+     *
+     * @return the object reference
+     */
+    public IMObjectReference getObjectReference() {
+        if (reference == null) {
+            reference = new IMObjectReference(getArchetypeId(), getId(),
+                                              getLinkId());
+        }
+        return reference;
+    }
+
+    /**
+     * Returns the object version.
+     * <p/>
+     * This is the persistent version of the object in the database, and is
+     * incremented each time the object is committed. It is used to prevent
+     * concurrent modification.
+     *
+     * @return returns the version
+     */
+    public long getVersion() {
+        return version;
+    }
+
+    /**
+     * Sets the object version.
+     *
+     * @param version the version
+     */
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
+    /**
+     * Returns the object name.
+     *
+     * @return the name. May be <tt>null</tt>
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Sets the object name.
+     *
+     * @param name the object name. May be <tt>null</tt>
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Returns the object description.
+     *
+     * @return the description. May be <tt>null</tt>
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the object description.
+     *
+     * @param description The description. May be <tt>null</tt>
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * Returns the timestamp when the object was last modified.
+     *
+     * @return the last modified timestamp. May be <tt>null</tt>
+     */
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    /**
+     * Sets the timestamp when the object was last modified.
+     *
+     * @param lastModified the last modified timestamp
+     */
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    /**
+     * Determines if the object is active.
+     *
+     * @return <tt>true</tt> if the object is active, <tt>false</tt> if it
+     *         is inactive
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    /**
+     * Determines if the object is active.
+     *
+     * @param active if <tt>true</tt>, the object is active, otherwise it is
+     *               inactive
+     */
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    /**
+     * Determines if the object is new. A new object is one that has not
+     * been made persistent.
+     *
+     * @return <tt>true</tt> if the object is new, <tt>false</tt> if it has
+     *         been made persistent
+     */
+    public boolean isNew() {
+        return id == -1;
+    }
+
+    /**
+     * Returns a map of named objects, used to represent the dynamic details
+     * of this.
+     *
+     * @return the details
+     */
+    public Map<String, Object> getDetails() {
+        return new TypedValueMap(details);
+    }
+
+    /**
+     * Sets a map of named objects, used to represent the dynamic details
+     * of the this.
+     *
+     * @param details the details to set
+     */
+    public void setDetails(Map<String, Object> details) {
+        this.details = TypedValueMap.create(details);
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return <tt>true</tt> if this object is the same as the obj
+     *         argument; <tt>false</tt> otherwise
      */
     @Override
     public boolean equals(Object obj) {
@@ -107,82 +330,9 @@ public class IMObjectDOImpl implements IMObjectDO {
     }
 
     /**
-     * @return Returns the archetypeId.
-     */
-    public ArchetypeId getArchetypeId() {
-        return archetypeId;
-    }
-
-    /**
-     * Create and return an {@link IMObjectReference} for this object
+     * Returns a hash code value for the object.
      *
-     * @return IMObjectReference
-     */
-    public IMObjectReference getObjectReference() {
-        if (reference == null) {
-            reference = new IMObjectReference(getArchetypeId(), getId(),
-                                              getLinkId());
-        }
-        return reference;
-    }
-
-    /**
-     * @return Returns the description.
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * @return Returns the lastModified.
-     */
-    public Date getLastModified() {
-        return lastModified;
-    }
-
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @return Returns the id.
-     */
-    public long getId() {
-        return id;
-    }
-
-    /**
-     * @param id The id to set.
-     */
-    public void setId(long id) {
-        this.id = id;
-        reference = null;
-    }
-
-    public void setLinkId(String linkId) {
-        this.linkId = linkId;
-        reference = null;
-    }
-
-    public String getLinkId() {
-        if (linkId == null && id == -1) {
-            linkId = UUID.randomUUID().toString();
-        }
-        return linkId;
-    }
-
-    /**
-     * @return Returns the version.
-     */
-    public long getVersion() {
-        return version;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
+     * @return a hash code value for this object
      */
     @Override
     public int hashCode() {
@@ -190,81 +340,9 @@ public class IMObjectDOImpl implements IMObjectDO {
     }
 
     /**
-     * @return Returns the active.
-     */
-    public boolean isActive() {
-        return active;
-    }
-
-    /**
-     * Return true if this is a new object and false otherwise. A new object
-     * is one that has been created but not yet persisted
+     * Returns a string representation of the object.
      *
-     * @return boolean
-     */
-    public boolean isNew() {
-        return id == -1;
-    }
-
-    /**
-     * @param active The active to set.
-     */
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    /**
-     * @param archetypeId The archetypeId to set.
-     */
-    public void setArchetypeId(ArchetypeId archetypeId) {
-        this.archetypeId = archetypeId;
-        reference = null;
-    }
-
-    /**
-     * @param description The description to set.
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    /**
-     * @param lastModified The lastModified to set.
-     */
-    public void setLastModified(Date lastModified) {
-        this.lastModified = lastModified;
-    }
-
-    /**
-     * @param name The name to set.
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @return Returns the details.
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * @param details The details to set.
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
-    }
-
-    /**
-     * @param version The version to set.
-     */
-    public void setVersion(long version) {
-        this.version = version;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+     * @return a string representation of the object.
      */
     @Override
     public String toString() {

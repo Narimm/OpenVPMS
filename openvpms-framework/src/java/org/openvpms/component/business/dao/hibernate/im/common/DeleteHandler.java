@@ -34,8 +34,8 @@ public interface DeleteHandler {
      * Deletes an object.
      *
      * @param object  the object to delete
-     * @param session
-     * @param context
+     * @param session the hibernate session
+     * @param context the assembly context
      */
     void delete(IMObject object, Session session, Context context);
 }

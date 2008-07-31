@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 
+
 /**
  * Add description here.
  *

@@ -44,12 +44,10 @@
                   type="timestamp"/>
         <many-to-one name="source"
                      class="org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl"
-                     column="source_id"
-                     index="entity_relationship_source_id_idx"/>
+                     column="source_id"/>
         <many-to-one name="target"
                      class="org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl"
-                     column="target_id"
-                     index="entity_relationship_target_id_idx"/>
+                     column="target_id"/>
         <many-to-one name="identity" column="identity_id" cascade="none"
                      class="org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl"/>
         <map name="details" access="field" table="entity_relationship_details"

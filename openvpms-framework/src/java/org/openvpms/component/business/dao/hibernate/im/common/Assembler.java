@@ -20,19 +20,52 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 
+
 /**
- * Add description here.
+ * An {@link Assembler} is responsible for assembling {@link IMObjectDO}
+ * instances from {@link IMObject} and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface Assembler {
 
+    /**
+     * Assembles an {@link IMObjectDO} from an {@link IMObject}.
+     *
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     * @return the assembled object
+     */
     DOState assemble(IMObject source, Context context);
 
+    /**
+     * Assembles an {@link IMObjectDO} from an {@link IMObject}.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     * @return the assembled object
+     */
+    DOState assemble(IMObjectDO target, IMObject source, Context context);
+
+    /**
+     * Assembles an {@link IMObject} from an {@link IMObjectDO}.
+     *
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     * @return the assembled object
+     */
     IMObject assemble(IMObjectDO source, Context context);
 
+    /**
+     * Assembles an {@link IMObject} from an {@link IMObjectDO}.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     * @return the assembled object
+     */
     IMObject assemble(IMObject target, IMObjectDO source, Context context);
 
-    DOState assemble(IMObjectDO target, IMObject source, Context context);
 }

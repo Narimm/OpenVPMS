@@ -50,7 +50,7 @@ public abstract class AbstractDeleteHandler implements DeleteHandler {
      *
      * @param object  the object to delete
      * @param session the session
-     * @param context
+     * @param context the assembly context
      */
     public void delete(IMObject object, Session session, Context context) {
         if (!object.isNew()) {
@@ -60,6 +60,12 @@ public abstract class AbstractDeleteHandler implements DeleteHandler {
         }
     }
 
+    /**
+     * Deletes an object.
+     *
+     * @param object  the object to delete
+     * @param session the hibernate session
+     */
     protected void delete(IMObjectDO object, Session session) {
         session.delete(object);
     }

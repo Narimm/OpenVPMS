@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+
 /**
  * Default implementation of {@link DeleteHandler}.
  *

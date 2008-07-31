@@ -63,7 +63,7 @@ public class DocumentActAssembler
         DocumentDO document = source.getDocument();
         IMObjectReference ref = (document != null)
                 ? document.getObjectReference() : null;
-        target.setDocReference(ref);
+        target.setDocument(ref);
     }
 
     protected DocumentAct create(DocumentActDO object) {
@@ -77,10 +77,10 @@ public class DocumentActAssembler
     private void assembleDoc(final DocumentActDO target,
                              final DocumentAct source, 
                              DOState state, Context context) {
-        final IMObjectReference ref = source.getDocReference();
+        final IMObjectReference ref = source.getDocument();
         if (ref != null) {
-            DOState docDO = find(ref, DocumentDO.class, DocumentDOImpl.class,
-                                 context);
+            DOState docDO = get(ref, DocumentDO.class, DocumentDOImpl.class,
+                                context);
             if (docDO != null) {
                 target.setDocument((DocumentDO) docDO.getObject());
                 state.addState(docDO);
@@ -96,7 +96,7 @@ public class DocumentActAssembler
             if (ref.isNew()) {
                 new ReferenceUpdater(state, ref) {
                     protected void doUpdate(IMObjectReference updated) {
-                        source.setDocReference(updated);
+                        source.setDocument(updated);
                     }
                 };
             }

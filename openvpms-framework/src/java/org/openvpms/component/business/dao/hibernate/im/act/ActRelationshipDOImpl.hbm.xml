@@ -43,12 +43,10 @@
                   column="parent_child_relationship"/>
         <many-to-one name="source"
                      class="org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl"
-                     column="source_id"
-                     index="act_relationship_source_id_idx"/>
+                     column="source_id"/>
         <many-to-one name="target"
                      class="org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl"
-                     column="target_id"
-                     index="act_relationship_target_id_idx"/>
+                     column="target_id"/>
         <map name="details" access="field" table="act_relationship_details"
              lazy="false" cascade="all,delete-orphan">
             <key column="act_relationship_id"/>

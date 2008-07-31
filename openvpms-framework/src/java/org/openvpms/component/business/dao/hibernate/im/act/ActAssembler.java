@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 
+
 /**
  * Add description here.
  *

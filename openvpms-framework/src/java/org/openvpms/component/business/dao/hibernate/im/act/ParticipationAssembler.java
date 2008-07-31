@@ -72,8 +72,8 @@ public class ParticipationAssembler
                                 DOState state, Context context) {
         final IMObjectReference entityRef = source.getEntity();
         if (entityRef != null) {
-            DOState entityDO = find(entityRef, EntityDO.class,
-                                    EntityDOImpl.class, context);
+            DOState entityDO = get(entityRef, EntityDO.class,
+                                   EntityDOImpl.class, context);
             if (entityDO != null) {
                 target.setEntity((EntityDO) entityDO.getObject());
                 state.addState(entityDO);
@@ -102,7 +102,7 @@ public class ParticipationAssembler
                              DOState state, Context context) {
         final IMObjectReference actRef = source.getAct();
         if (actRef != null) {
-            DOState actDO = find(actRef, ActDO.class, ActDOImpl.class, context);
+            DOState actDO = get(actRef, ActDO.class, ActDOImpl.class, context);
             if (actDO != null) {
                 target.setAct((ActDO) actDO.getObject());
                 state.addState(actDO);

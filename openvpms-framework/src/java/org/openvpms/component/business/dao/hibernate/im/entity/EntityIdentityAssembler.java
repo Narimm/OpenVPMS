@@ -44,7 +44,7 @@ public class EntityIdentityAssembler
         target.setIdentity(source.getIdentity());
 
         EntityDO entity = null;
-        DOState entityState = getDO(source.getEntity(), EntityDOImpl.class,
+        DOState entityState = getDO(source.getEntity(),
                                     context);
         if (entityState != null) {
             entity = (EntityDO) entityState.getObject();

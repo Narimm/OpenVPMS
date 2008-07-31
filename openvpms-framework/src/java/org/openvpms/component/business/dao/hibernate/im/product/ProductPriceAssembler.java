@@ -55,7 +55,7 @@ public class ProductPriceAssembler
         target.setThruDate(source.getThruDate());
 
         ProductDO product = null;
-        DOState productState = getDO(source.getProduct(), ProductDOImpl.class,
+        DOState productState = getDO(source.getProduct(),
                                      context);
         if (productState != null) {
             product = (ProductDO) productState.getObject();

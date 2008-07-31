@@ -23,16 +23,24 @@ import static org.openvpms.component.business.dao.im.common.IMObjectDAOException
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
+
 /**
- * Add description here.
+ * Base class for assemblers.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class AbstractAssembler {
 
-    protected <T extends IMObject, DO extends IMObjectDO> DOState
-            getDO(T source, Class<DO> type, Context context) {
+    /**
+     * Returns the data object for the specified source.
+     * If the object isn't already cached in the context, it will be assembled.
+     *
+     * @param source  the object to assemble from. May be <tt>null</tt>
+     * @param context the assembly context
+     * @return the assembled object, or <tt>null</tt> if <tt>source</tt> is null
+     */
+    protected <T extends IMObject> DOState getDO(T source, Context context) {
         if (source == null) {
             return null;
         }
@@ -44,6 +52,15 @@ public class AbstractAssembler {
         return state;
     }
 
+    /**
+     * Returns the object for the specified data object.
+     * If the object isn't already cached in the context, it will be assembled.
+     *
+     * @param source  the object to assemble from. May be <tt>null</tt>
+     * @param type    the object type
+     * @param context the assembly context
+     * @return the assembled object, or <tt>null</tt> if <tt>source</tt> is null
+     */
     protected <DO extends IMObjectDO, T extends IMObject> T
             getObject(DO source, Class<T> type, Context context) {
         if (source == null) {
@@ -57,10 +74,19 @@ public class AbstractAssembler {
         return type.cast(object);
     }
 
+    /**
+     * Retrieves a data object given its reference.
+     *
+     * @param reference the object reference. May be <tt>null</tt>
+     * @param type      the data object interface type
+     * @param impl      the data object implementation type
+     * @param context   the assembly context
+     * @return the data object, or <tt>null</tt> if it doesn't exist or
+     *         <tt>reference</tt> is null
+     */
     protected <DO extends IMObjectDO, Impl extends IMObjectDOImpl> DOState
-            find(IMObjectReference reference, Class<DO> type,
-                 Class<Impl> impl,
-                 Context context) {
+            get(IMObjectReference reference, Class<DO> type, Class<Impl> impl,
+                Context context) {
         if (reference == null) {
             return null;
         }
@@ -78,19 +104,20 @@ public class AbstractAssembler {
     }
 
     /**
-     * Retrieves an object given its reference.
+     * Retrieves a data object given its reference.
+     * If the object doesn't exist, an exception will be thrown.
      *
-     * @param reference the reference
-     * @param type      the object type
-     * @param impl      the implementation type
-     * @param context   the context
-     * @return the corresponding object
+     * @param reference the object reference
+     * @param type      the data object interface type
+     * @param impl      the data object implementation type
+     * @param context   the assembly context
+     * @return the corresponding data object
      * @throws IMObjectDAOException if the object doesn't exist
      */
     protected <DO extends IMObjectDO, Impl extends IMObjectDOImpl> DO
             load(IMObjectReference reference, Class<DO> type, Class<Impl> impl,
                  Context context) {
-        DOState result = find(reference, type, impl, context);
+        DOState result = get(reference, type, impl, context);
         if (result == null) {
             throw new IMObjectDAOException(ObjectNotFound, reference);
         }

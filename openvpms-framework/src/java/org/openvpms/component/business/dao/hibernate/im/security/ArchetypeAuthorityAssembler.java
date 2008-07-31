@@ -47,7 +47,7 @@ public class ArchetypeAuthorityAssembler
         super.assembleDO(target, source, state, context);
         target.setMethod(source.getMethod());
         SecurityRoleDO role = null;
-        DOState roleState = getDO(source.getRole(), SecurityRoleDOImpl.class,
+        DOState roleState = getDO(source.getRole(),
                                   context);
         if (roleState != null) {
             role = (SecurityRoleDO) roleState.getObject();

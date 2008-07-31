@@ -51,7 +51,7 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
         target.setActiveEndTime(source.getActiveEndTime());
         PartyDO party = null;
         DOState partyState
-                = getDO(source.getParty(), PartyDOImpl.class, context);
+                = getDO(source.getParty(), context);
         if (partyState != null) {
             party = (PartyDO) partyState.getObject();
             state.addState(partyState);

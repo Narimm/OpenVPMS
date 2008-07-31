@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.Date;
@@ -26,108 +27,168 @@ import java.util.Map;
 
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link IMObject} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface IMObjectDO {
+
     /**
-     * @return Returns the archetypeId.
+     * Returns the archetype identifier.
+     *
+     * @return the archetype identifier
      */
     ArchetypeId getArchetypeId();
 
     /**
-     * Create and return an {@link IMObjectReference} for this object
+     * Sets the archetype identifier.
      *
-     * @return IMObjectReference
-     */
-    IMObjectReference getObjectReference();
-
-    /**
-     * @return Returns the description.
-     */
-    String getDescription();
-
-    /**
-     * @return Returns the lastModified.
-     */
-    Date getLastModified();
-
-    /**
-     * @return Returns the name.
-     */
-    String getName();
-
-    /**
-     * @return Returns the id.
-     */
-    long getId();
-
-    /**
-     * @param id The id to set.
-     */
-    void setId(long id);
-
-    void setLinkId(String linkId);
-
-    String getLinkId();
-
-    /**
-     * @return Returns the version.
-     */
-    long getVersion();
-
-    /**
-     * @return Returns the active.
-     */
-    boolean isActive();
-
-    /**
-     * Return true if this is a new object and false otherwise. A new object
-     * is one that has been created but not yet persisted
-     *
-     * @return boolean
-     */
-    boolean isNew();
-
-    /**
-     * @param active The active to set.
-     */
-    void setActive(boolean active);
-
-    /**
-     * @param archetypeId The archetypeId to set.
+     * @param archetypeId the archetype identifier
      */
     void setArchetypeId(ArchetypeId archetypeId);
 
     /**
-     * @param description The description to set.
+     * Returns the object identifier.
+     * <p/>
+     * This is assigned when the object is made persistent.
+     *
+     * @return the object identifer, or <tt>-1</tt> if the object is not
+     *         persistent
      */
-    void setDescription(String description);
+    long getId();
 
     /**
-     * @param lastModified The lastModified to set.
+     * Sets the object identifier.
+     *
+     * @param id the object identifier. If <tt>-1</tt>, indicates that the
+     *           object is not persistent
      */
-    void setLastModified(Date lastModified);
+    void setId(long id);
 
     /**
-     * @param name The name to set.
+     * Returns the object link identifier.
+     * <p/>
+     * This is a UUID that is used to link objects until they can be made
+     * persistent, and to provide support for object equality.
+     *
+     * @return the link identifier
+     */
+    String getLinkId();
+
+    /**
+     * Sets the object link identifier.
+     *
+     * @param linkId the link identifier
+     */
+    void setLinkId(String linkId);
+
+    /**
+     * Returns an object reference for this object.
+     *
+     * @return the object reference
+     */
+    IMObjectReference getObjectReference();
+
+    /**
+     * Returns the object version.
+     * <p/>
+     * This is the persistent version of the object in the database, and is
+     * incremented each time the object is committed. It is used to prevent
+     * concurrent modification.
+     *
+     * @return returns the version
+     */
+    long getVersion();
+
+    /**
+     * Sets the object version.
+     *
+     * @param version the version
+     */
+    void setVersion(long version);
+
+    /**
+     * Returns the object name.
+     *
+     * @return the name. May be <tt>null</tt>
+     */
+    String getName();
+
+    /**
+     * Sets the object name.
+     *
+     * @param name the object name. May be <tt>null</tt>
      */
     void setName(String name);
 
     /**
-     * @return Returns the details.
+     * Returns the object description.
+     *
+     * @return the description. May be <tt>null</tt>
+     */
+    String getDescription();
+
+    /**
+     * Sets the object description.
+     *
+     * @param description The description. May be <tt>null</tt>
+     */
+    void setDescription(String description);
+
+    /**
+     * Returns the timestamp when the object was last modified.
+     *
+     * @return the last modified timestamp. May be <tt>null</tt>
+     */
+    Date getLastModified();
+
+    /**
+     * Sets the timestamp when the object was last modified.
+     *
+     * @param lastModified the last modified timestamp
+     */
+    void setLastModified(Date lastModified);
+
+    /**
+     * Determines if the object is active.
+     *
+     * @return <tt>true</tt> if the object is active, <tt>false</tt> if it
+     *         is inactive
+     */
+    boolean isActive();
+
+    /**
+     * Determines if the object is active.
+     *
+     * @param active if <tt>true</tt>, the object is active, otherwise it is
+     *               inactive
+     */
+    void setActive(boolean active);
+
+    /**
+     * Determines if the object is new. A new object is one that has not
+     * been made persistent.
+     *
+     * @return <tt>true</tt> if the object is new, <tt>false</tt> if it has
+     *         been made persistent
+     */
+    boolean isNew();
+
+    /**
+     * Returns a map of named objects, used to represent the dynamic details
+     * of this.
+     *
+     * @return the details
      */
     Map<String, Object> getDetails();
 
     /**
-     * @param details The details to set.
+     * Sets a map of named objects, used to represent the dynamic details
+     * of the this.
+     *
+     * @param details the details to set
      */
     void setDetails(Map<String, Object> details);
 
-    /**
-     * @param version The version to set.
-     */
-    void setVersion(long version);
 }

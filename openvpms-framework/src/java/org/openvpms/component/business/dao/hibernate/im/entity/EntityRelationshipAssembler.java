@@ -47,7 +47,7 @@ public class EntityRelationshipAssembler
         super.assembleDO(target, source, state, context);
         EntityIdentityDO identity = null;
         DOState identityState = getDO(source.getIdentity(),
-                                      EntityIdentityDOImpl.class, context);
+                                      context);
         if (identityState != null) {
             identity = (EntityIdentityDO) identityState.getObject();
             state.addState(identityState);

@@ -31,39 +31,81 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Maintains information to be shared between {@link Assembler}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class Context {
 
+    /**
+     * The assembler.
+     */
     private final Assembler assembler;
 
+    /**
+     * The current hibernate session.
+     */
     private final Session session;
 
+    /**
+     * Key used to bind the context with
+     * <tt>TransactionSynchronizationManager.bindResource()</tt>
+     */
     private final ResourceKey key;
 
+    /**
+     * A map of objects to their corresponding data object states.
+     */
     private Map<IMObject, DOState> objectToDOMap
             = new HashMap<IMObject, DOState>();
 
+    /**
+     * A map of data objects to their corresponding objects.
+     */
     private Map<IMObjectDO, IMObject> doToObjectMap
             = new HashMap<IMObjectDO, IMObject>();
 
+    /**
+     * A map of references to their corresponding data object states.
+     */
     private Map<IMObjectReference, DOState> refToDOMap
             = new HashMap<IMObjectReference, DOState>();
 
+    /**
+     * The set of data objects that have been saved in the session.
+     */
     private Set<DOState> saved = new HashSet<DOState>();
 
+    /**
+     * The set of data objects that are yet to be saved.
+     */
     private Set<DOState> saveDeferred = new LinkedHashSet<DOState>();
 
+    /**
+     * The set of objects currently being assembled.
+     */
     private Set<Object> assembling = new HashSet<Object>();
 
+    /**
+     * Determines if transaction synchronization is active.
+     */
     private final boolean syncActive;
 
+    /**
+     * The context handler. May be <tt>null</tt>
+     */
     private ContextHandler handler;
 
+    /**
+     * Creates a new <tt>Context</tt>.
+     *
+     * @param assembler  the assembler
+     * @param session    the hibernate session
+     * @param syncActive determines if transaction synchronization is active
+     */
     private Context(Assembler assembler, Session session, boolean syncActive) {
         this.assembler = assembler;
         this.session = session;
@@ -71,6 +113,16 @@ public class Context {
         key = new ResourceKey(session);
     }
 
+    /**
+     * Returns the context for the given assembler and session and current
+     * thread.
+     * <p/>
+     * If one does not exist, it will be created.
+     *
+     * @param assembler the assembler
+     * @param session   the hibernate session
+     * @return the context
+     */
     public static Context getContext(Assembler assembler, Session session) {
         Context context;
         ResourceKey key = new ResourceKey(session);
@@ -91,55 +143,127 @@ public class Context {
         return context;
     }
 
+    /**
+     * Registers the context handler.
+     *
+     * @param handler the handler. May be <tt>null</tt>
+     */
     public void setContextHandler(ContextHandler handler) {
         this.handler = handler;
     }
 
+    /**
+     * Returns the assembler.
+     *
+     * @return the assembler
+     */
     public Assembler getAssembler() {
         return assembler;
     }
 
-    public void addAssembling(DOState object) {
-        assembling.add(object);
+    /**
+     * Registers a data object as being assembled.
+     *
+     * @param state the data object state to register
+     */
+    public void addAssembling(DOState state) {
+        assembling.add(state);
     }
 
-    public void removeAssembling(DOState object) {
-        assembling.remove(object);
+    /**
+     * Deregisters a data object as being assembled.
+     *
+     * @param state the data object state to deregister
+     */
+    public void removeAssembling(DOState state) {
+        assembling.remove(state);
     }
 
-    public boolean isAssembling(DOState object) {
-        return assembling.contains(object);
+    /**
+     * Determines if a data object is being assembled.
+     *
+     * @param state the data object state
+     * @return <tt>true</tt> if the object is being assembled; otherwise
+     *         <tt>false</tt>
+     */
+    public boolean isAssembling(DOState state) {
+        return assembling.contains(state);
     }
 
+    /**
+     * Registers an object as being assembled.
+     *
+     * @param object the object to register
+     */
     public void addAssembling(IMObject object) {
         assembling.add(object);
     }
 
+    /**
+     * Deregisters an object as being assembled.
+     *
+     * @param object the object to deregister
+     */
     public void removeAssembling(IMObject object) {
         assembling.remove(object);
     }
+
+    /**
+     * Determines if a data object is being assembled.
+     *
+     * @param object the object
+     * @return <tt>true</tt> if the object is being assembled; otherwise
+     *         <tt>false</tt>
+     */
     public boolean isAssembling(IMObject object) {
         return assembling.contains(object);
     }
 
+    /**
+     * Returns the hibernate session.
+     *
+     * @return the hibernate session
+     */
     public Session getSession() {
         return session;
     }
 
+    /**
+     * Determines if transaction synchronization is active.
+     *
+     * @return <tt>true</tt> if synchronization is active, otherwise
+     *         <tt>false</tt>
+     */
     public boolean isSynchronizationActive() {
         return syncActive;
     }
 
-    public void add(IMObject source, DOState target) {
+    /**
+     * Registers a data object as being assembled.
+     *
+     * @param target the object being assembled
+     * @param source the object being assembled from
+     */
+    public void add(DOState target, IMObject source) {
         objectToDOMap.put(source, target);
         doToObjectMap.put(target.getObject(), source);
         refToDOMap.put(source.getObjectReference(), target);
     }
 
-    public void add(IMObjectDO source, IMObject target) {
+    /**
+     * Registers an object as being assembled.
+     *
+     * @param target the object being assembled
+     * @param source the object being assembled from
+     */
+    public void add(IMObject target, IMObjectDO source) {
         doToObjectMap.put(source, target);
     }
 
+    /**
+     *
+     * @param target
+     */
     public void remove(IMObjectDO target) {
         IMObject source = doToObjectMap.get(target);
         session.delete(target);

@@ -52,7 +52,7 @@ public class ActDeleteHandler extends AbstractDeleteHandler {
      * This implementation deletes any target act where there is a parent-child
      * relationship, and deletes the relationships from related acts.
      *
-     * @param object
+     * @param object the object to delete
      * @param session the session
      */
     @Override
@@ -62,6 +62,13 @@ public class ActDeleteHandler extends AbstractDeleteHandler {
         delete(parent, visited, session);
     }
 
+    /**
+     * Recursively removes acts where there is a parent-child relationship.
+     *
+     * @param act     the act to remove
+     * @param visited the acts that have been visited
+     * @param session the hibernate session
+     */
     private void delete(ActDO act, Set<ActDO> visited, Session session) {
         visited.add(act);
 
@@ -86,7 +93,7 @@ public class ActDeleteHandler extends AbstractDeleteHandler {
         // now remove relationships where the act is the target
         relationships = act.getTargetActRelationships().toArray(
                 new ActRelationshipDO[0]);
-        for (ActRelationshipDO relationship: relationships) {
+        for (ActRelationshipDO relationship : relationships) {
             act.removeTargetActRelationship(relationship);
             ActDO source = (ActDO) relationship.getSource();
             if (source != null) {

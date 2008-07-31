@@ -23,8 +23,10 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Provides support to asemble maps of {@link IMObject}s from maps of
+ * {@link IMObjectDO}s, and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -32,10 +34,22 @@ import java.util.Set;
 public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
         extends AbstractAssembler {
 
+    /**
+     * The object type.
+     */
     private final Class<T> type;
 
+    /**
+     * The data object implementation type.
+     */
     private final Class<? extends IMObjectDOImpl> typeDO;
 
+    /**
+     * Creates a new <tt>MapAssembler</tt>.
+     *
+     * @param type the object type
+     * @param typeDO the data object implementation type
+     */
     public MapAssembler(Class<T> type, Class<? extends IMObjectDOImpl> typeDO) {
         this.type = type;
         this.typeDO = typeDO;
@@ -84,7 +98,7 @@ public class MapAssembler<K, T extends IMObject, DO extends IMObjectDO>
         }
 
         protected DO convert(T value) {
-            DOState child = getDO(value, typeDO, context);
+            DOState child = getDO(value, context);
             state.addState(child);
             return (DO) child.getObject();
         }

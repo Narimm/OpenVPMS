@@ -20,35 +20,73 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
+
 /**
- * Add description here.
+ * A <tt>DeferredAssembler</tt> is used to delay assembly of an
+ * {@link IMObjectDO} until an {@link IMObjectReference} can be resolved.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class DeferredAssembler extends AbstractAssembler {
 
+    /**
+     * The data object state.
+     */
     private final DOState state;
+
+    /**
+     * The reference that the data object is dependent on.
+     */
     private IMObjectReference reference;
 
+    /**
+     * Creates a new <tt>DeferredAssembler</tt>.
+     *
+     * @param state     the data object state
+     * @param reference the reference that the data object is dependent on
+     */
     public DeferredAssembler(DOState state, IMObjectReference reference) {
         this.state = state;
         this.reference = reference;
         state.addDeferred(this);
     }
 
+    /**
+     * Returns the data object.
+     *
+     * @return the data object
+     */
     public IMObjectDO getObject() {
         return state.getObject();
     }
 
+    /**
+     * Returns the reference that the data object is dependent on.
+     *
+     * @return the reference
+     */
     public IMObjectReference getReference() {
         return reference;
     }
 
+    /**
+     * Assembles the object.
+     * <p/>
+     * This is invoked when the reference can be resolved via the
+     * {@link Context}.
+     *
+     * @param context the assembly context
+     */
     public void assemble(Context context) {
         doAssemble(context);
         state.removeDeferred(this);
     }
 
+    /**
+     * Assembles the object.
+     *
+     * @param context the assembly context
+     */
     protected abstract void doAssemble(Context context);
 }

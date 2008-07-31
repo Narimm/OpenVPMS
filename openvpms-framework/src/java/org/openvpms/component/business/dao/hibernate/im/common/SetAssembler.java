@@ -53,7 +53,7 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
                            Context context) {
         if (target.isEmpty()) {
             for (T src : source) {
-                DOState result = getDO(src, typeDO, context);
+                DOState result = getDO(src, context);
                 target.add(typeDO.cast(result.getObject()));
                 state.addState(result);
             }
@@ -79,7 +79,7 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
                 state.addState(result);
             }
             for (T added : getAdded(retained, sourceMap)) {
-                DOState result = getDO(added, typeDO, context);
+                DOState result = getDO(added, context);
                 target.add(typeDO.cast(result.getObject()));
                 state.addState(result);
             }

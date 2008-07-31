@@ -24,10 +24,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+
 /**
- * A class representing an activity that is being done, has been done,
- * can be done, or is intended or requested to be done.  An Act instance
- * is a record of an intentional business action.
+ * Implementation of the {@link ActDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-07-10 15:32:07 +1000 (Tue, 10 Jul 2007) $

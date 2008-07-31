@@ -41,12 +41,10 @@
                   type="boolean"/>
         <many-to-one name="source"
                      class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl"
-                     column="source_id"
-                     index="lookup_relationship_source_id_idx"/>
+                     column="source_id"/>
         <many-to-one name="target"
                      class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl"
-                     column="target_id"
-                     index="lookup_relationship_target_id_idx"/>
+                     column="target_id"/>
         <map name="details" access="field" table="lookup_relationship_details"
              lazy="false" cascade="all,delete-orphan">
             <key column="lookup_relationship_id"/>

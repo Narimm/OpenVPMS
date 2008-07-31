@@ -23,7 +23,7 @@ import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
 
 
 /**
- * Document specific-act
+ * Implementation of the {@link DocumentActDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-04-26 17:47:12 +1000 (Thu, 26 Apr 2007) $
@@ -63,77 +63,100 @@ public class DocumentActDOImpl extends ActDOImpl implements DocumentActDO {
     }
 
     /**
-     * @return Returns the document.
+     * Returns the document.
+     *
+     * @return the document. May be <tt>null</tt>
      */
     public DocumentDO getDocument() {
         return document;
     }
 
     /**
-     * @param document The document reference to set.
+     * Sets the document.
+     *
+     * @param document the document. May be <tt>null</tt>
      */
     public void setDocument(DocumentDO document) {
         this.document = document;
     }
 
     /**
-     * @return Returns the version.
+     * Returns the document version.
+     *
+     * @return the document version. May be <tt>null</tt>
      */
     public String getDocVersion() {
         return docVersion;
     }
 
     /**
-     * @param version The version to set.
+     * Sets the document version.
+     *
+     * @param version the version to set. May be <tt>null</tt>
      */
     public void setDocVersion(String version) {
         docVersion = version;
     }
 
     /**
-     * @return Returns the fileName.
+     * Returns the document file name.
+     *
+     * @return the file name. May be <tt>null</tt>
      */
     public String getFileName() {
         return fileName;
     }
 
     /**
-     * @param fileName The fileName to set.
+     * Sets the document file name.
+     *
+     * @param fileName the file name. May be <tt>null</tt>
      */
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
 
     /**
-     * @return Returns the mimeType.
+     * Returns the document mime type.
+     *
+     * @return the mime type. May be <tt>null</tt>
      */
     public String getMimeType() {
         return mimeType;
     }
 
     /**
-     * @param mimeType The mimeType to set.
+     * Sets the document mime type.
+     *
+     * @param mimeType the mime type. May be <tt>null</tt>
      */
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
     }
 
     /**
-     * @return Returns the printed.
+     * Determines if the document has been printed.
+     *
+     * @return <tt>true</tt> if the document has been printed, otherwise
+     *         <tt>false</tt>
      */
     public boolean isPrinted() {
         return printed;
     }
 
     /**
-     * @param printed The printed to set.
+     * Determines if the document has been printed.
+     *
+     * @param printed if <tt>true</tt>, the document has been printed
      */
     public void setPrinted(boolean printed) {
         this.printed = printed;
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.act.Act#toString()
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
      */
     @Override
     @SuppressWarnings("HardCodedStringLiteral")
