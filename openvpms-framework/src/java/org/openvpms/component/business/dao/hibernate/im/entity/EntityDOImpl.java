@@ -21,16 +21,13 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.util.HashSet;
 import java.util.Set;
 
 
 /**
- * A class representing all named things in the business.
+ * Implementation of the {@link EntityDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-05-22 15:14:34 +1000 (Thu, 22 May 2008) $
@@ -38,30 +35,26 @@ import java.util.Set;
 public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
 
     /**
-     * The {@link Lookup} classifications this entity. An {@link EntityDOImpl} can
-     * have to zero, one or more {@link Lookup} clasification.
+     * The identities of the entity.
      */
-    private Set<LookupDO> classifications = new HashSet<LookupDO>();
+    private Set<EntityIdentityDO> identities = new HashSet<EntityIdentityDO>();
 
     /**
-     * Return the set of {@link EntityIdentity} instance for this entity
-     */
-    private Set<EntityIdentityDO> identities =
-            new HashSet<EntityIdentityDO>();
-
-    /**
-     * Return a set of source {@link EntityRelationship}s that this entity
-     * participates in.
+     * The relationships where the entity is the source.
      */
     private Set<EntityRelationshipDO> sourceEntityRelationships =
             new HashSet<EntityRelationshipDO>();
 
     /**
-     * Return a set of target {@link EntityRelationship}s that this entity
-     * participates in.
+     * The relationships where the entity is the target.
      */
     private Set<EntityRelationshipDO> targetEntityRelationships =
             new HashSet<EntityRelationshipDO>();
+
+    /**
+     * The entity classifications.
+     */
+    private Set<LookupDO> classifications = new HashSet<LookupDO>();
 
 
     /**
@@ -72,7 +65,7 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
     }
 
     /**
-     * Creates a new <tt>EntityDO</tt>.
+     * Creates a new <tt>EntityDOImpl</tt>.
      *
      * @param archetypeId the archetype id
      */
@@ -81,7 +74,16 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
     }
 
     /**
-     * Add a new {@link EntityIdentity}
+     * Returns the entity identities.
+     *
+     * @return the entity identities
+     */
+    public Set<EntityIdentityDO> getIdentities() {
+        return identities;
+    }
+
+    /**
+     * Adds an identity.
      *
      * @param identity the entity identity to add
      */
@@ -91,23 +93,14 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
     }
 
     /**
-     * Remove the specified {@link EntityIdentity}
+     * Removes the identity.
      *
      * @param identity the identity to remove
-     * @return boolean
+     * @return <tt>true</tt> if the identity existed
      */
     public boolean removeIdentity(EntityIdentityDO identity) {
         identity.setEntity(null);
-        return (identities.remove(identity));
-    }
-
-    /**
-     * Return the {@link EntityIdentity} as an array
-     *
-     * @return EntityIdentity[]
-     */
-    public Set<EntityIdentityDO> getIdentities() {
-        return identities;
+        return identities.remove(identity);
     }
 
     /**
@@ -167,7 +160,7 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
     }
 
     /**
-     * Returns all the entity relationships. Do not use the returned set to
+     * Returns all the entity relationships.
      *
      * @return the relationships
      */
@@ -176,6 +169,15 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
                 new HashSet<EntityRelationshipDO>(sourceEntityRelationships);
         relationships.addAll(targetEntityRelationships);
         return relationships;
+    }
+
+    /**
+     * Returns the classifications for this entity.
+     *
+     * @return the classifications
+     */
+    public Set<LookupDO> getClassifications() {
+        return classifications;
     }
 
     /**
@@ -194,15 +196,6 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
      */
     public void removeClassification(LookupDO classification) {
         classifications.remove(classification);
-    }
-
-    /**
-     * Returns the classifications for this entity.
-     *
-     * @return the classifications
-     */
-    public Set<LookupDO> getClassifications() {
-        return classifications;
     }
 
     /**
@@ -235,7 +228,7 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
     }
 
     /**
-     * Sets the identifies for this entity.
+     * Sets the identities for this entity.
      *
      * @param identities the identities to set
      */

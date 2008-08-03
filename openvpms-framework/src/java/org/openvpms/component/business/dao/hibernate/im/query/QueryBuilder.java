@@ -481,9 +481,9 @@ public class QueryBuilder {
     }
 
     /**
-     * Process a link constraint.
+     * Process an id constraint.
      *
-     * @param constraint the link constraint
+     * @param constraint the id constraint
      * @param context    the query context
      */
     private void process(IdConstraint constraint, QueryContext context) {
@@ -491,9 +491,9 @@ public class QueryBuilder {
                                                 context);
         String target = getAliasOrQualifiedName(constraint.getTargetName(),
                                                 context);
-        context.addPropertyWhereConstraint(source + ".linkId",
+        context.addPropertyWhereConstraint(source + ".id",
                                            constraint.getOperator(),
-                                           target + ".linkId");
+                                           target + ".id");
     }
 
     /**

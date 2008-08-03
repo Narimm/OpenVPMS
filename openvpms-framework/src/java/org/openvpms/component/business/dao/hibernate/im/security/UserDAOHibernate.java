@@ -24,7 +24,7 @@ import org.hibernate.Session;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectResultCollector;
-import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
+import org.openvpms.component.business.dao.hibernate.im.AssemblerImpl;
 import org.openvpms.component.business.dao.im.security.IUserDAO;
 import org.openvpms.component.business.dao.im.security.UserDAOException;
 import org.openvpms.component.business.domain.im.security.User;

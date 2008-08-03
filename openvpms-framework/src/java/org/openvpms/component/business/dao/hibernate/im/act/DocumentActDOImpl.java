@@ -31,35 +31,35 @@ import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
 public class DocumentActDOImpl extends ActDOImpl implements DocumentActDO {
 
     /**
-     * The version of the document
-     */
-    private String docVersion;
-
-    /**
-     * The filename of the document
-     */
-    private String fileName;
-
-    /**
-     * The mimetype of the document
-     */
-    private String mimeType;
-
-    /**
-     * Indicates whether it has been printed
-     */
-    private boolean printed;
-
-    /**
      * The document.
      */
     private DocumentDO document;
 
     /**
-     * Default constructor
+     * The document version.
+     */
+    private String docVersion;
+
+    /**
+     * The document file name.
+     */
+    private String fileName;
+
+    /**
+     * The document mime type.
+     */
+    private String mimeType;
+
+    /**
+     * Indicates if the document has been printed.
+     */
+    private boolean printed;
+
+
+    /**
+     * Default constructor.
      */
     public DocumentActDOImpl() {
-        super();
     }
 
     /**
@@ -163,8 +163,7 @@ public class DocumentActDOImpl extends ActDOImpl implements DocumentActDO {
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(null)
-                .append("docVersion", docVersion)
-                .append("docReference", document)
+                .append("document", document)
                 .toString();
     }
 

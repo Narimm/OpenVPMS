@@ -42,10 +42,17 @@
         <property name="active" column="active" type="boolean"/>
         <many-to-one name="entity"
                      class="org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl"
-                     column="entity_id"/>
+                     column="entity_id"
+                index="participation_entity_start_time_idx,participation_entity_end_time_idx"/>
         <many-to-one name="act"
                      class="org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl"
                      column="act_id"/>
+        <property name="activityStartTime" column="activity_start_time"
+                  type="timestamp"
+                  index="participation_entity_start_time_idx"/>
+        <property name="activityEndTime" column="activity_end_time"
+                  type="timestamp"
+                  index="participation_entity_end_time_idx"/>
         <map name="details" access="field" table="participation_details"
              lazy="false" batch-size="50" cascade="all,delete-orphan">
             <key column="participation_id"/>

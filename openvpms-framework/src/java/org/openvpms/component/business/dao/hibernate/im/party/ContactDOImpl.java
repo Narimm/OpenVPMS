@@ -27,7 +27,7 @@ import java.util.Set;
 
 
 /**
- * Defines a contact for a {@link PartyDOImpl}.
+ * Implementation of the {@link ContactDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-05-02 14:28:50 +1000 (Wed, 02 May 2007) $
@@ -50,7 +50,7 @@ public class ContactDOImpl extends IMObjectDOImpl implements ContactDO {
     private Set<LookupDO> classifications = new HashSet<LookupDO>();
 
     /**
-     * The owning {@link PartyDO}.
+     * The owning party.
      */
     private PartyDO party;
 
@@ -63,9 +63,9 @@ public class ContactDOImpl extends IMObjectDOImpl implements ContactDO {
     }
 
     /**
-     * Returns the party.
+     * Returns the party that has this contact.
      *
-     * @return returns the party
+     * @return returns the party. May be <tt>null</tt>
      */
     public PartyDO getParty() {
         return party;
@@ -74,35 +74,43 @@ public class ContactDOImpl extends IMObjectDOImpl implements ContactDO {
     /**
      * Sets the party.
      *
-     * @param party the entity to set.
+     * @param party the party to set. May be <tt>null</tt>
      */
     public void setParty(PartyDO party) {
         this.party = party;
     }
 
     /**
-     * @return Returns the activeStartTime.
+     * Returns the time when the contact became active.
+     *
+     * @return the active start time
      */
     public Date getActiveStartTime() {
         return startTime;
     }
 
     /**
-     * @param startTime The activeStartTime to set.
+     * Sets the active start time.
+     *
+     * @param startTime the active start time.
      */
     public void setActiveStartTime(Date startTime) {
         this.startTime = startTime;
     }
 
     /**
-     * @return Returns the activeEndTime.
+     * Returns the time when the contact becomes inactive.
+     *
+     * @return the active end time
      */
     public Date getActiveEndTime() {
         return endTime;
     }
 
     /**
-     * @param endTime The activeEndTime to set.
+     * Sets the active end time.
+     *
+     * @param endTime the active end time
      */
     public void setActiveEndTime(Date endTime) {
         this.endTime = endTime;

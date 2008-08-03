@@ -62,7 +62,7 @@ public abstract class IMObjectAssembler<T extends IMObject,
      *
      * @param type   the object type
      * @param typeDO the data object interface type
-     * @param impl
+     * @param impl the data object implementation type
      */
     public IMObjectAssembler(Class<T> type, Class<DO> typeDO,
                              Class<? extends IMObjectDOImpl> impl) {

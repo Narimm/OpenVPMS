@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.*;
 
 import java.util.ArrayList;
@@ -33,38 +32,82 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.LinkedHashSet;
+
 
 /**
- * Add description here.
+ * Manages the state of an {@link IMObject} being loaded by the
+ * {@link DataLoader}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class LoadState {
 
+    /**
+     * The id prefix.
+     */
     public static final String ID_PREFIX = "id:";
 
-    private final List<LoadState> childStates = new ArrayList<LoadState>();
-
-    private final Set<IMObject> childObjects = new HashSet<IMObject>();
-
-    private final LoadState parent;
+    /**
+     * The object.
+     */
     private final IMObject object;
 
+    /**
+     * Child states of this state.
+     */
+    private final List<LoadState> childStates = new ArrayList<LoadState>();
+
+    /**
+     * Child objects of this state.
+     */
+    private final Set<IMObject> childObjects = new HashSet<IMObject>();
+
+    /**
+     * The parent state. If <tt>null</tt> indicates there is no parent.
+     */
+    private final LoadState parent;
+
+    /**
+     * The object's archetype descriptor.
+     */
     private final ArchetypeDescriptor descriptor;
 
+    /**
+     * A map of object identifiers to their corresponding deferred updaters.
+     */
     private Map<String, DeferredUpdater> deferred
             = new HashMap<String, DeferredUpdater>();
 
+    /**
+     * A map of unsaved references to their corresponding updaters.
+     */
     private Map<IMObjectReference, UnsavedRefUpdater> unsaved;
 
+    /**
+     * The path that the object came from.
+     */
     private final String path;
+
+    /**
+     * The line no. that the object came from.
+     */
     private final int lineNo;
 
+
+    /**
+     * Creates a new <tt>LoadState</tt>.
+     *
+     * @param parent     the parent state. May be <tt>null</tt>
+     * @param object     the object
+     * @param descriptor the object's archetype descriptor
+     * @param path       the path that the object came from
+     * @param lineNo     the line number that the object came from
+     */
     public LoadState(LoadState parent, IMObject object,
                      ArchetypeDescriptor descriptor, String path, int lineNo) {
         this.parent = parent;
@@ -74,11 +117,38 @@ class LoadState {
         this.lineNo = lineNo;
     }
 
+    /**
+     * Returns the parent state.
+     *
+     * @return the parent state, or <tt>null</tt> if there is no parent
+     */
     public LoadState getParent() {
         return parent;
     }
 
+    /**
+     * Returns the object.
+     *
+     * @return the object
+     */
+    public IMObject getObject() {
+        return object;
+    }
 
+    /**
+     * Returns the archetype identifier.
+     *
+     * @return the archetype identifier
+     */
+    public ArchetypeId getArchetypeId() {
+        return object.getArchetypeId();
+    }
+
+    /**
+     * Returns the objects to save.
+     *
+     * @return the objects to save
+     */
     public Set<IMObject> getObjects() {
         ObjectCollector collector = new ObjectCollector();
         collector.visit(this);
@@ -87,6 +157,13 @@ class LoadState {
         return result;
     }
 
+    /**
+     * Sets a node value.
+     *
+     * @param name    the node name
+     * @param value   the node value
+     * @param context the load context
+     */
     public void setValue(String name, String value, LoadContext context) {
         NodeDescriptor node = getNode(name);
 
@@ -108,47 +185,151 @@ class LoadState {
         }
     }
 
+    /**
+     * Returns the set of deferred updaters associated with this state and
+     * any child state.
+     *
+     * @return the set of deferred updaters
+     */
     public Set<DeferredUpdater> getDeferred() {
         DeferredCollector collector = new DeferredCollector();
         collector.visit(this);
         return collector.getUpdaters();
     }
 
-    public void removeDeferred(DeferredUpdater updater) {
-        deferred.remove(updater.getId());
-    }
-
-    public IMObject getObject() {
-        return object;
-    }
-
-    public ArchetypeId getArchetypeId() {
-        return object.getArchetypeId();
-    }
-
+    /**
+     * Returns the object's archetype descriptor.
+     *
+     * @return the archetype descriptor
+     */
     public ArchetypeDescriptor getDescriptor() {
         return descriptor;
     }
 
+    /**
+     * Determines if this state is complete.
+     *
+     * @return <tt>true</tt> if this state and its related states don't have
+     *         any deferred updaters
+     */
     public boolean isComplete() {
         return new CompleteVistor().visit(this);
     }
 
+    public void addChild(String collection, final LoadState child) {
+        final NodeDescriptor node = getNode(collection);
+        if (!node.isCollection()) {
+            throw new ArchetypeDataLoaderException(
+                    ParentNotACollection, lineNo);
+        }
+        if (child.isComplete()) {
+            node.addChildToCollection(object, child.getObject());
+            childStates.add(child);
+        } else {
+            DeferredUpdater updater = child.getDeferred().iterator().next();
+            DeferredUpdater childUpdater
+                    = new DeferredUpdater(updater.getId()) {
+                public boolean update(IMObjectReference reference,
+                                      LoadContext context) {
+                    if (child.isComplete()) {
+                        node.addChildToCollection(object, child.getObject());
+                        childStates.add(child);
+                        deferred.remove(getId());
+                        return true;
+                    }
+                    return false;
+                }
+            };
+            deferred.put(childUpdater.getId(), childUpdater);
+        }
+    }
+
+    /**
+     * Adds a child object to the specified collection.
+     *
+     * @param collection the collection node name
+     * @param id         the child object identifier
+     * @param context    the load context
+     */
+    public void addChild(String collection, String id,
+                         LoadContext context) {
+        NodeDescriptor node = getNode(collection);
+        if (!node.isCollection()) {
+            throw new ArchetypeDataLoaderException(
+                    ParentNotACollection, lineNo);
+        }
+
+        addChild(node, id, context);
+    }
+
+    /**
+     * Returns the set of unsaved object references reachable from this state.
+     *
+     * @return the set of unsaved object references
+     */
+    public Set<IMObjectReference> getUnsaved() {
+        UnsavedCollector collector = new UnsavedCollector();
+        collector.visit(this);
+        return collector.getUnsaved();
+    }
+
+    /**
+     * Update any unsaved references matching that supplied.
+     *
+     * @param reference the saved reference
+     */
+    public void update(IMObjectReference reference) {
+        UnsavedUpdaterVisitor visitor = new UnsavedUpdaterVisitor(reference);
+        visitor.visit(this);
+    }
+
+    /**
+     * Removes an {@link UnsavedRefUpdater} for the specified reference.
+     *
+     * @param reference the reference
+     */
+    public void removeUnsaved(IMObjectReference reference) {
+        unsaved.remove(reference);
+    }
+
+    /**
+     * Returns the path that this state was read from.
+     *
+     * @return the path
+     */
     public String getPath() {
         return path;
     }
 
+    /**
+     * Returns the line number that this state was read from.
+     *
+     * @return the line number
+     */
     public int getLineNumber() {
         return lineNo;
     }
 
+    /**
+     * Sets a reference from an object identifier.
+     * <p/>
+     * If the reference can't be resolved, a {@link DeferredUpdater} is
+     * registered for it.
+     * <p/>
+     * If the reference is unsaved, an {@link UnsavedRefUpdater} is registered.
+     *
+     * @param descriptor the node descriptor
+     * @param id         the object identifier
+     * @param context    the load context
+     * @return <tt>true</tt> if the reference was set
+     */
     private boolean setReference(final NodeDescriptor descriptor,
                                  final String id, LoadContext context) {
         boolean result = false;
         final IMObjectReference ref = context.getReference(id);
         if (ref == null) {
             if (!deferred.containsKey(id)) {
-                deferred.put(id, new AbstractDeferredUpdater(id) {
+                deferred.put(id, new DeferredUpdater(id) {
                     public boolean update(IMObjectReference reference,
                                           LoadContext context) {
                         if (setReference(descriptor, id, context)) {
@@ -173,10 +354,44 @@ class LoadState {
         return result;
     }
 
-    public void removeUnsaved(IMObjectReference reference) {
-        unsaved.remove(reference);
+    /**
+     * Adds a child object to the specified collection.
+     *
+     * @param node    the collection node descriptor
+     * @param id      the object identifier
+     * @param context the load context
+     * @return <tt>true</tt> if the object was added
+     */
+    private boolean addChild(final NodeDescriptor node, final String id,
+                             LoadContext context) {
+        boolean result = false;
+        IMObject child = context.getObject(id);
+        if (child != null) {
+            node.addChildToCollection(object, child);
+            childObjects.add(child);
+            result = true;
+
+        } else {
+            deferred.put(id, new DeferredUpdater(id) {
+                public boolean update(IMObjectReference reference,
+                                      LoadContext context) {
+                    if (addChild(node, id, context)) {
+                        deferred.remove(id);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+        return result;
     }
 
+    /**
+     * Returns the node descriptor with the specified name.
+     *
+     * @param name the node name
+     * @return the corresponding node descriptor
+     */
     private NodeDescriptor getNode(String name) {
         NodeDescriptor ndesc = descriptor.getNodeDescriptor(name);
         if (ndesc == null) {
@@ -211,101 +426,34 @@ class LoadState {
         return (Date) converter.fromString(value);
     }
 
-    public void addChild(String collection, final LoadState child) {
-        final NodeDescriptor node = getNode(collection);
-        if (!node.isCollection()) {
-            throw new ArchetypeDataLoaderException(
-                    ParentNotACollection, lineNo);
-        }
-        if (child.isComplete()) {
-            node.addChildToCollection(object, child.getObject());
-            childStates.add(child);
-        } else {
-            DeferredUpdater updater = child.getDeferred().iterator().next();
-            DeferredUpdater childUpdater
-                    = new AbstractDeferredUpdater(updater.getId()) {
-                public boolean update(IMObjectReference reference,
-                                      LoadContext context) {
-                    if (child.isComplete()) {
-                        node.addChildToCollection(object, child.getObject());
-                        childStates.add(child);
-                        deferred.remove(getId());
-                        return true;
-                    }
-                    return false;
-                }
-            };
-            deferred.put(childUpdater.getId(), childUpdater);
-        }
-    }
-
-    public void addChild(String collection, String id,
-                         LoadContext context) {
-        NodeDescriptor node = getNode(collection);
-        if (!node.isCollection()) {
-            throw new ArchetypeDataLoaderException(
-                    ParentNotACollection, lineNo);
-        }
-
-        addChild(node, id, context);
-    }
-
-    private boolean addChild(final NodeDescriptor node, final String id,
-                             LoadContext context) {
-        boolean result = false;
-        IMObject child = getObject(id, context);
-        if (child != null) {
-            node.addChildToCollection(object, child);
-            childObjects.add(child);
-            result = true;
-
-        } else {
-            deferred.put(id, new AbstractDeferredUpdater(id) {
-                public boolean update(IMObjectReference reference,
-                                      LoadContext context) {
-                    if (addChild(node, id, context)) {
-                        deferred.remove(id);
-                        return true;
-                    }
-                    return false;
-                }
-            });
-        }
-        return result;
-    }
-
-    private IMObject getObject(String id, LoadContext context) {
-        IMObjectReference ref = context.getReference(id);
-        IMObject object = null;
-        if (ref != null) {
-            object = context.getCache().get(ref);
-            if (object == null) {
-                IArchetypeService service = context.getService();
-                if (context.validateOnly()) {
-                    object = service.create(ref.getArchetypeId());
-                } else if (!ref.isNew()) {
-                    object = service.get(ref);
-                }
-            }
-        }
-        return object;
-    }
-
-    public Set<IMObjectReference> getUnsaved() {
-        UnsavedCollector collector = new UnsavedCollector();
-        collector.visit(this);
-        return collector.getUnsaved();
-    }
-
-    public void update(IMObjectReference ref) {
-        UnsavedUpdaterVisitor visitor = new UnsavedUpdaterVisitor(ref);
-        visitor.visit(this);
-    }
-
+    /**
+     * Helper class to visit each reachable state once and only once.
+     */
     private static abstract class Visitor {
 
+        /**
+         * The visited states.
+         */
         private Set<LoadState> visited = new HashSet<LoadState>();
 
+
+        /**
+         * Visits the specified state.
+         *
+         * @param state the state to visit
+         * @return <tt>true</tt> to visit any other state, <tt>false</tt> to
+         *         terminate
+         */
+        protected abstract boolean doVisit(LoadState state);
+
+        /**
+         * Visits each state reachable from the specified state, invoking
+         * {@link #doVisit(LoadState)}. If the method returns <tt>false</tt>,
+         * iteration terminates.
+         *
+         * @param state the starting state
+         * @return the result of {@link #doVisit(LoadState)}.
+         */
         public boolean visit(LoadState state) {
             addVisited(state);
             boolean result = doVisit(state);
@@ -315,6 +463,13 @@ class LoadState {
             return result;
         }
 
+        /**
+         * Invokes {@link #visit(LoadState)} for each child of the specified
+         * state. If the method returns <tt>false</tt>, iteration terminates.
+         *
+         * @param state the state
+         * @return the result of {@link #visit(LoadState)}
+         */
         protected boolean visitChildren(LoadState state) {
             boolean result = true;
             for (LoadState child : state.childStates) {
@@ -328,22 +483,43 @@ class LoadState {
             return result;
         }
 
+        /**
+         * Registers a state as being visited.
+         *
+         * @param state the state
+         */
         protected void addVisited(LoadState state) {
             visited.add(state);
         }
 
-        protected abstract boolean doVisit(LoadState state);
-
     }
 
+    /**
+     * Visitor that collects the IMObject from each state.
+     */
     private static class ObjectCollector extends Visitor {
 
+        /**
+         * The collected objects.
+         */
         private Set<IMObject> objects = new LinkedHashSet<IMObject>();
 
+        /**
+         * Returns the collected objects.
+         *
+         * @return the collected object
+         */
         public Set<IMObject> getObjects() {
             return objects;
         }
 
+        /**
+         * Visits each state reachable from the specified state
+         *
+         * @param state the starting state
+         * @return <tt>true</tt>
+         */
+        @Override
         public boolean visit(LoadState state) {
             addVisited(state);
             visitChildren(state);
@@ -351,26 +527,67 @@ class LoadState {
             return true;
         }
 
+        /**
+         * Visits the specified state.
+         *
+         * @param state the state to visit
+         * @return <tt>true</tt> to visit any other state, <tt>false</tt> to
+         *         terminate
+         */
         protected boolean doVisit(LoadState state) {
             objects.add(state.getObject());
             return true;
         }
     }
 
+    /**
+     * Visitor that determines if the state is complete.
+     */
     private static class CompleteVistor extends Visitor {
 
+        /**
+         * Determines if the state is complete.
+         *
+         * @param state the state
+         * @return <tt>true</tt> if there are no deferred updaters, otherwise
+         *         <tt>false</tt>
+         */
         public boolean doVisit(LoadState state) {
             return state.deferred.isEmpty();
         }
     }
 
+    /**
+     * Visitor that collects deferred updaters from each state.
+     */
     private static class DeferredCollector extends Visitor {
 
+        /**
+         * The collected updaters.
+         */
         private Set<DeferredUpdater> updaters;
 
+        /**
+         * Helper empty set.
+         */
         private static final Set<DeferredUpdater> EMPTY
                 = Collections.emptySet();
 
+        /**
+         * Returns the collected deferred updaters.
+         *
+         * @return the deferred updaters.
+         */
+        public Set<DeferredUpdater> getUpdaters() {
+            return (updaters != null) ? updaters : EMPTY;
+        }
+
+        /**
+         * Collects deferred updaters from the state.
+         *
+         * @param state the state
+         * @return <tt>true</tt>
+         */
         protected boolean doVisit(LoadState state) {
             Map<String, DeferredUpdater> deferred = state.deferred;
             if (deferred != null && !state.deferred.isEmpty()) {
@@ -382,35 +599,58 @@ class LoadState {
             return true;
         }
 
-        public Set<DeferredUpdater> getUpdaters() {
-            return (updaters != null) ? updaters : EMPTY;
-        }
     }
 
+    /**
+     * Visitor that collects unsaved references from each state.
+     */
     private static class UnsavedCollector extends Visitor {
 
+        /**
+         * The collected references.
+         */
         private Set<IMObjectReference> refs;
 
+        /**
+         * Helper empty set.
+         */
         private static final Set<IMObjectReference> EMPTY
                 = Collections.emptySet();
 
+        /**
+         * Returns the unsaved object references.
+         *
+         * @return the unsaved references
+         */
         public Set<IMObjectReference> getUnsaved() {
             return (refs != null) ? refs : EMPTY;
         }
 
+        /**
+         * Collects unsaved references from the specified state.
+         *
+         * @param state the state
+         * @return <tt>true</tt>
+         */
         @Override
         public boolean visit(LoadState state) {
             LoadState parent = state.parent;
             if (parent != null && parent.getObject().isNew()) {
-                addUnsaved(parent.getObject());
+                addUnsaved(parent.getObject().getObjectReference());
             }
             return super.visit(state);
         }
 
+        /**
+         * Collects unsaved references.
+         *
+         * @param state the state
+         * @return <tt>true</tt>
+         */
         protected boolean doVisit(LoadState state) {
             IMObject object = state.getObject();
             if (object.isNew()) {
-                addUnsaved(object);
+                addUnsaved(object.getObjectReference());
             }
             if (state.unsaved != null) {
                 for (IMObjectReference ref : state.unsaved.keySet()) {
@@ -420,10 +660,11 @@ class LoadState {
             return true;
         }
 
-        private void addUnsaved(IMObject object) {
-            addUnsaved(object.getObjectReference());
-        }
-
+        /**
+         * Adds an unsaved reference.
+         *
+         * @param ref the reference
+         */
         private void addUnsaved(IMObjectReference ref) {
             if (refs == null) {
                 refs = new HashSet<IMObjectReference>();
@@ -432,20 +673,38 @@ class LoadState {
         }
     }
 
+    /**
+     * Visitor that updates unsaved references with their saved version.
+     */
     private static class UnsavedUpdaterVisitor extends Visitor {
 
-        private final IMObjectReference ref;
+        /**
+         * The saved reference.
+         */
+        private final IMObjectReference reference;
 
-        public UnsavedUpdaterVisitor(IMObjectReference ref) {
-            this.ref = ref;
+
+        /**
+         * Creates a new <tt>UnsavedUpdaterVisitor</tt>.
+         *
+         * @param reference the saved reference
+         */
+        public UnsavedUpdaterVisitor(IMObjectReference reference) {
+            this.reference = reference;
         }
 
+        /**
+         * Updates each unsaved reference that matches the saved one.
+         *
+         * @param state the state to check
+         * @return <tt>true</tt>
+         */
         protected boolean doVisit(LoadState state) {
             Map<IMObjectReference, UnsavedRefUpdater> unsaved = state.unsaved;
             if (unsaved != null) {
-                UnsavedRefUpdater updater = unsaved.get(ref);
+                UnsavedRefUpdater updater = unsaved.get(reference);
                 if (updater != null) {
-                    updater.update(ref);
+                    updater.update(reference);
                 }
             }
             return true;

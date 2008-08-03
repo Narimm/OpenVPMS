@@ -19,16 +19,19 @@
 package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
+import org.openvpms.component.business.domain.im.security.User;
 
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link User} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface UserDO extends EntityDO {
+
     /**
      * Returns the login name.
      *
@@ -72,7 +75,7 @@ public interface UserDO extends EntityDO {
     void addRole(SecurityRoleDO role);
 
     /**
-     * Delete user's membership from the specified security role.
+     * Removes a user's membership from the specified security role.
      *
      * @param role the role
      */

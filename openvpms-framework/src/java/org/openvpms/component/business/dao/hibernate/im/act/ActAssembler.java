@@ -18,27 +18,42 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.domain.im.act.Act;
 
 
 /**
- * Add description here.
+ * An {@link Assembler} responsible for assembling {@link ActDO} instances from
+ * {@link Act}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActAssembler
-        extends AbstractActAssembler<Act, ActDO> {
+public class ActAssembler extends AbstractActAssembler<Act, ActDO> {
 
-
+    /**
+     * Creates a new <tt>ActAssembler</tt>.
+     */
     public ActAssembler() {
         super(Act.class, ActDO.class, ActDOImpl.class);
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected Act create(ActDO object) {
         return new Act();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected ActDO create(Act object) {
         return new ActDOImpl();
     }

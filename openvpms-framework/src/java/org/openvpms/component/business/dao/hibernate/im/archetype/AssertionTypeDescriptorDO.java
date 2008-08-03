@@ -18,26 +18,33 @@
 
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
+
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link AssertionTypeDescriptor}
+ * class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface AssertionTypeDescriptorDO extends DescriptorDO {
+
     /**
-     * @return Returns the actionTypes.
+     * Returns the action types.
+     *
+     * @return the action types
      */
     Set<ActionTypeDescriptorDO> getActionTypes();
 
     /**
      * Add an action type.
      *
-     * @param actionType the action type to add
+     * @param type the action type to add
      */
-    void addActionType(ActionTypeDescriptorDO actionType);
+    void addActionType(ActionTypeDescriptorDO type);
 
     /**
      * Retrieves the named action type.
@@ -48,19 +55,23 @@ public interface AssertionTypeDescriptorDO extends DescriptorDO {
     ActionTypeDescriptorDO getActionType(String name);
 
     /**
-     * Remove the specified action type.
+     * Removes the specified action type.
      *
-     * @param actionType the action type to remove
+     * @param type the action type to remove
      */
-    void removeActionType(ActionTypeDescriptorDO actionType);
+    void removeActionType(ActionTypeDescriptorDO type);
 
     /**
-     * @return Returns the propertyArchetype.
+     * Returns the property archetype.
+     *
+     * @return the property archetype
      */
     String getPropertyArchetype();
 
     /**
-     * @param propertyArchetype The propertyArchetypeQName to set.
+     * Returns the property archetype.
+     *
+     * @param propertyArchetype the property archetype
      */
     void setPropertyArchetype(String propertyArchetype);
 }

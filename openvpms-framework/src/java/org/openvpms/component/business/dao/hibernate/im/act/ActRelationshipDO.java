@@ -20,13 +20,15 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDO;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link ActRelationshipDO} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ActRelationshipDO extends PeriodRelationshipDO {
+    
     /**
      * Determines if this is a parent/child relationship between two acts.
      *

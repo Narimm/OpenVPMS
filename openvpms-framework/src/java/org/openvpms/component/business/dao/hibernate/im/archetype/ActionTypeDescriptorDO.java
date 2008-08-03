@@ -18,30 +18,44 @@
 
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
+
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link ActionTypeDescriptor}
+ * class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ActionTypeDescriptorDO extends DescriptorDO {
+
     /**
-     * @return Returns the className.
+     * Returns the class name.
+     *
+     * @return the class name
      */
     String getClassName();
 
     /**
-     * @param className The className to set.
+     * Sets the class name.
+     *
+     * @param className the class name
      */
     void setClassName(String className);
 
+
     /**
-     * @return Returns the methodName.
+     * Returns the method name.
+     *
+     * @return the method name
      */
     String getMethodName();
 
     /**
-     * @param methodName The methodName to set.
+     * Sets the method name.
+     *
+     * @param methodName the method name
      */
     void setMethodName(String methodName);
 }

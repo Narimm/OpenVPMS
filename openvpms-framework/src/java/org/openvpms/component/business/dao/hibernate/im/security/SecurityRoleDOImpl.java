@@ -20,15 +20,13 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
-import org.openvpms.component.business.domain.im.security.User;
 
 import java.util.HashSet;
 import java.util.Set;
 
+
 /**
- * A role is associated with a user and has one or more
- * {@link ArchetypeAwareGrantedAuthority}
+ * Implementation of the {@link SecurityRoleDO} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -37,13 +35,13 @@ public class SecurityRoleDOImpl extends IMObjectDOImpl
         implements SecurityRoleDO {
 
     /**
-     * The set of granted authorities for this role
+     * The set of granted authorities for this role.
      */
     private Set<ArchetypeAuthorityDO> authorities =
             new HashSet<ArchetypeAuthorityDO>();
 
     /**
-     * The set of {@link User}s that are members of this role.
+     * The set of users that are members of this role.
      */
     private Set<UserDO> users = new HashSet<UserDO>();
 
@@ -56,7 +54,7 @@ public class SecurityRoleDOImpl extends IMObjectDOImpl
     }
 
     /**
-     * Creates a new <tt>SecurityRoleDO</tt>.
+     * Creates a new <tt>SecurityRoleDOImpl</tt>.
      *
      * @param archetypeId the archetype id
      */
@@ -65,14 +63,16 @@ public class SecurityRoleDOImpl extends IMObjectDOImpl
     }
 
     /**
-     * @return Returns the authorities.
+     * Returns the archetype authorities.
+     *
+     * @return the authorities
      */
     public Set<ArchetypeAuthorityDO> getAuthorities() {
         return authorities;
     }
 
     /**
-     * Add the specified authority
+     * Adds an authority.
      *
      * @param authority the authority to add
      */
@@ -82,7 +82,7 @@ public class SecurityRoleDOImpl extends IMObjectDOImpl
     }
 
     /**
-     * Remove the specified authority
+     * Removes an authority.
      *
      * @param authority the authhority to remove
      */
@@ -92,42 +92,47 @@ public class SecurityRoleDOImpl extends IMObjectDOImpl
     }
 
     /**
-     * @return Returns the users.
+     * Returns the users.
+     *
+     * @return the users
      */
     public Set<UserDO> getUsers() {
         return users;
     }
 
     /**
-     * Make the specified {@link UserDOImpl} a member of this role.
+     * Adds a user.
      *
-     * @param user
+     * @param user the user to add
      */
     public void addUser(UserDO user) {
         users.add(user);
     }
 
     /**
-     * Remove the specified user so it is no longer a member of this role.
+     * Removes a user.
      *
-     * @param user
+     * @param user the user to remove
      */
     public void removeUser(UserDO user) {
         users.remove(user);
     }
 
     /**
-     * @param users The users to set.
+     * Sets the users.
+     *
+     * @param users the users to set
      */
     protected void setUsers(Set<UserDO> users) {
         this.users = users;
     }
 
     /**
-     * @param authorities The authorities to set.
+     * Sets the authorities.
+     *
+     * @param authorities the authorities to set
      */
-    protected void setAuthorities(
-            Set<ArchetypeAuthorityDO> authorities) {
+    protected void setAuthorities(Set<ArchetypeAuthorityDO> authorities) {
         this.authorities = authorities;
         for (ArchetypeAuthorityDO authority : authorities) {
             authority.setRole(this);

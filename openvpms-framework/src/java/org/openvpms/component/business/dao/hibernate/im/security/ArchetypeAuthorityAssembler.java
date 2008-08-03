@@ -24,8 +24,10 @@ import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 
+
 /**
- * Add description here.
+ * Assembles {@link ArchetypeAwareGrantedAuthority}s from
+ * {@link ArchetypeAuthorityDO}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -34,12 +36,23 @@ public class ArchetypeAuthorityAssembler
         extends IMObjectAssembler<ArchetypeAwareGrantedAuthority,
         ArchetypeAuthorityDO> {
 
+    /**
+     * Creates a new <tt>ArchetypeAuthorityAssembler</tt>.
+     */
     public ArchetypeAuthorityAssembler() {
         super(ArchetypeAwareGrantedAuthority.class,
               ArchetypeAuthorityDO.class,
               ArchetypeAuthorityDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(ArchetypeAuthorityDO target,
                               ArchetypeAwareGrantedAuthority source,
@@ -59,6 +72,13 @@ public class ArchetypeAuthorityAssembler
         target.setShortName(source.getArchetypeShortName());
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(ArchetypeAwareGrantedAuthority target,
                                   ArchetypeAuthorityDO source,
@@ -72,11 +92,23 @@ public class ArchetypeAuthorityAssembler
         target.setArchetypeShortName(source.getShortName());
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected ArchetypeAwareGrantedAuthority create(
             ArchetypeAuthorityDO object) {
         return new ArchetypeAwareGrantedAuthority();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected ArchetypeAuthorityDO create(
             ArchetypeAwareGrantedAuthority object) {
         return new ArchetypeAuthorityDOImpl();

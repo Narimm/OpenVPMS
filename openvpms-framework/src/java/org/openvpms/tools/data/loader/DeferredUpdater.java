@@ -20,15 +20,77 @@ package org.openvpms.tools.data.loader;
 
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
+
 /**
- * Add description here.
+ * Helper to defer update of an object until the object references that it
+ * depends on can be resolved.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface DeferredUpdater {
+public abstract class DeferredUpdater {
 
-    String getId();
+    /**
+     * The identifier of the object that is required.
+     */
+    private final String id;
 
-    boolean update(IMObjectReference reference, LoadContext context);
+
+    /**
+     * Creates a new <tt>DeferredUpdater</tt>.
+     *
+     * @param id the object identifier
+     */
+    public DeferredUpdater(String id) {
+        this.id = id;
+    }
+
+    /**
+     * Returns the object identifier.
+     *
+     * @return the object identifier.
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Updates the object.
+     *
+     * @param reference the reference of the required object
+     * @param context the load context
+     * @return <tt>true</tt> if the update was successful
+     */
+    public abstract boolean update(IMObjectReference reference,
+                                   LoadContext context);
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return <tt>true</tt> if this object is the same as the obj
+     *         argument; <tt>false</tt> otherwise.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof DeferredUpdater) {
+            return ((DeferredUpdater) obj).getId().equals(id);
+
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
 }

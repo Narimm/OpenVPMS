@@ -23,41 +23,71 @@ import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipAssembler;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 
+
 /**
- * Add description here.
+ * Assembles {@link ActRelationship} from {@link ActRelationshipDO}s
+ * and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ActRelationshipAssembler
-        extends PeriodRelationshipAssembler<ActRelationship, 
+        extends PeriodRelationshipAssembler<ActRelationship,
         ActRelationshipDO> {
 
+    /**
+     * Creates a new <tt>ActRelationshipAssembler</tt>.
+     */
     public ActRelationshipAssembler() {
         super(ActRelationship.class, ActRelationshipDO.class,
               ActRelationshipDOImpl.class, ActDO.class, ActDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
-    protected void assembleDO(ActRelationshipDO target,
-                              ActRelationship source,
+    protected void assembleDO(ActRelationshipDO target, ActRelationship source,
                               DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setParentChildRelationship(source.isParentChildRelationship());
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(ActRelationship target,
-                                  ActRelationshipDO source,
-                                  Context context) {
+                                  ActRelationshipDO source, Context context) {
         super.assembleObject(target, source, context);
         target.setParentChildRelationship(source.isParentChildRelationship());
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected ActRelationship create(ActRelationshipDO object) {
         return new ActRelationship();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected ActRelationshipDO create(ActRelationship object) {
         return new ActRelationshipDOImpl();
     }

@@ -25,25 +25,41 @@ import org.openvpms.component.business.dao.hibernate.im.entity.EntityAssembler;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
 
+
 /**
- * Add description here.
+ * Assembles {@link User}s from {@link UserDO}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class UserAssembler extends EntityAssembler<User, UserDO> {
 
+    /**
+     * Assembles sets of roles.
+     */
     private static final SetAssembler<SecurityRole, SecurityRoleDO> ROLES
             = new SetAssembler<SecurityRole, SecurityRoleDO>(
             SecurityRole.class, SecurityRoleDO.class);
 
+
+    /**
+     * Creates a new <tt>UserAssembler</tt>.
+     */
     public UserAssembler() {
         super(User.class, UserDO.class, UserDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
-    protected void assembleDO(UserDO target, User source,
-                              DOState state, Context context) {
+    protected void assembleDO(UserDO target, User source, DOState state,
+                              Context context) {
         super.assembleDO(target, source, state, context);
         target.setUsername(source.getUsername());
         target.setPassword(source.getPassword());
@@ -51,19 +67,37 @@ public class UserAssembler extends EntityAssembler<User, UserDO> {
                          state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
-    protected void assembleObject(User target, UserDO source,
-                                  Context context) {
+    protected void assembleObject(User target, UserDO source, Context context) {
         super.assembleObject(target, source, context);
         target.setUsername(source.getUsername());
         target.setPassword(source.getPassword());
         ROLES.assembleObject(target.getRoles(), source.getRoles(), context);
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected User create(UserDO object) {
         return new User();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected UserDO create(User object) {
         return new UserDOImpl();
     }

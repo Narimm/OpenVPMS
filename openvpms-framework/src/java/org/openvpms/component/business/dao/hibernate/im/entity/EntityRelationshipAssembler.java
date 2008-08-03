@@ -25,7 +25,8 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 
 
 /**
- * Add description here.
+ * Assembles {@link EntityRelationship}s from {@link EntityRelationshipDO}s
+ * and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -34,16 +35,27 @@ public class EntityRelationshipAssembler
         extends PeriodRelationshipAssembler<EntityRelationship,
         EntityRelationshipDO> {
 
+    /**
+     * Creates a new <tt>EntityRelationshipAssembler</tt>.
+     */
     public EntityRelationshipAssembler() {
         super(EntityRelationship.class, EntityRelationshipDO.class,
               EntityRelationshipDOImpl.class, EntityDO.class,
               EntityDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(EntityRelationshipDO target,
-                              EntityRelationship source,
-                              DOState state, Context context) {
+                              EntityRelationship source, DOState state,
+                              Context context) {
         super.assembleDO(target, source, state, context);
         EntityIdentityDO identity = null;
         DOState identityState = getDO(source.getIdentity(),
@@ -55,17 +67,22 @@ public class EntityRelationshipAssembler
         target.setIdentity(identity);
     }
 
-    @Override
-    protected void assembleObject(EntityRelationship target,
-                                  EntityRelationshipDO source,
-                                  Context context) {
-        super.assembleObject(target, source, context);
-    }
-
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected EntityRelationship create(EntityRelationshipDO object) {
         return new EntityRelationship();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected EntityRelationshipDO create(EntityRelationship object) {
         return new EntityRelationshipDOImpl();
     }

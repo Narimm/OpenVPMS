@@ -227,7 +227,7 @@ public class ArchetypeDescriptorDOTestCase
     }
 
     /**
-     * Test archetype with the updsting of assertion descriptors
+     * Test archetype with the updsting of assertion descriptors.
      */
     public void testUpdateAssertionDescriptors() {
         ArchetypeDescriptorDO desc = createArchetypeDescriptor("animal.pet");
@@ -265,7 +265,7 @@ public class ArchetypeDescriptorDOTestCase
         assertEquals(nodes + size + 1, count(NodeDescriptorDOImpl.class));
         assertEquals(assertions + 3, count(AssertionDescriptorDOImpl.class));
 
-        // retrieve the object an delete 2 assertions and one property
+        // retrieve the object and delete an assertion and a property
         tx = session.beginTransaction();
         desc = (ArchetypeDescriptorDO) session.load(
                 ArchetypeDescriptorDOImpl.class, desc.getId());

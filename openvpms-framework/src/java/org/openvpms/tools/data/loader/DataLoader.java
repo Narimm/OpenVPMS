@@ -44,47 +44,95 @@ import java.util.Stack;
 
 
 /**
- * Add description here.
+ * Loads data from an XML stream.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class DataLoader {
 
+    /**
+     * The load context.
+     */
     private LoadContext context;
+
+    /**
+     * The load cache.
+     */
     private final LoadCache cache;
 
+    /**
+     * The archetype service.
+     */
     private final IArchetypeService service;
 
+    /**
+     * The batch size.
+     */
     private int batchSize;
+
+    /**
+     * The current batch of unsaved objects, keyed on their references.
+     */
     private Map<IMObjectReference, LoadState> batch
             = new LinkedHashMap<IMObjectReference, LoadState>();
+
+    /**
+     * The child objects of objects in the batch, keyed on their references.
+     */
     private Map<IMObjectReference, IMObject> children
             = new LinkedHashMap<IMObjectReference, IMObject>();
+
+    /**
+     * If <tt>true</tt> perform verbose logging.
+     */
     private final boolean verbose;
 
+    /**
+     * Determines if only validation should be performed, i.e no saving of data
+     */
     private final boolean validateOnly;
 
     /**
-     * Maintains a list of archetypes and count to indicate the number of
-     * each saved or validated
+     * Maintains a map of archetypes and object count to indicate the number of
+     * each saved or validated.
      */
     private final Map<String, Long> statistics;
 
-
+    /**
+     * Object's whose save has been deferred as they aren't complete.
+     */
     private List<LoadState> deferred = new ArrayList<LoadState>();
 
+
+    /**
+     * The logger.
+     */
     private final Log log = LogFactory.getLog(DataLoader.class);
 
 
+    /**
+     * Creates a new <tt>DataLoader</tt>.
+     *
+     * @param batchSize the batch size
+     */
     public DataLoader(int batchSize) {
         this(new LoadCache(), ArchetypeServiceHelper.getArchetypeService(),
              false, false, batchSize, new HashMap<String, Long>());
     }
 
-    public DataLoader(LoadCache cache,
-                      IArchetypeService service, boolean verbose,
-                      boolean validateOnly, int batchSize,
+    /**
+     * Creates a new <tt>DataLoader</tt>.
+     *
+     * @param cache        the load cache
+     * @param service      the archetype service
+     * @param verbose      if <tt>true</tt> perform verbose logging
+     * @param validateOnly if <tt>true</tt> only validate, don't save
+     * @param batchSize    the batch size
+     * @param statistics   the statistucs
+     */
+    public DataLoader(LoadCache cache, IArchetypeService service,
+                      boolean verbose, boolean validateOnly, int batchSize,
                       Map<String, Long> statistics) {
         this.cache = cache;
         this.service = service;
@@ -95,6 +143,13 @@ class DataLoader {
         this.statistics = statistics;
     }
 
+    /**
+     * Loads data from a stream.
+     *
+     * @param reader the stream reader
+     * @param path   a path representing the stream source, for logging purposes
+     * @throws XMLStreamException for any stream error
+     */
     public void load(XMLStreamReader reader, String path)
             throws XMLStreamException {
 
@@ -112,7 +167,7 @@ class DataLoader {
                         startData(reader, stack, path);
                     } else if (!"archetype".equals(elementName)) {
                         throw new ArchetypeDataLoaderException(
-                                ArchetypeDataLoaderException.ErrorCode.ErrorInStartElement);
+                                ErrorInStartElement);
                     }
                     break;
                 case XMLStreamConstants.END_ELEMENT:
@@ -133,6 +188,9 @@ class DataLoader {
         }
     }
 
+    /**
+     * Attempts to save any unsaved objects.
+     */
     public void flush() {
         processDeferred();
         for (LoadState state : batch.values()) {
@@ -157,23 +215,50 @@ class DataLoader {
         saveBatch();
     }
 
+    /**
+     * Returns the statistics.
+     * <p/>
+     * This is a map of archetypes to their object count. to indicate the number
+     * of each saved or validated.
+     *
+     * @return the statistics
+     */
+    public Map<String, Long> getStatistics() {
+        return statistics;
+    }
 
+    /**
+     * Returns the load cache.
+     *
+     * @return the load cache
+     */
+    public LoadCache getLoadCache() {
+        return cache;
+    }
+
+    /**
+     * Starts a data element, pushing it on the stack.
+     *
+     * @param reader the reader
+     * @param stack  the stack of load states
+     * @param path   a path representing the stream source, for logging purposes
+     */
     private void startData(XMLStreamReader reader, Stack<LoadState> stack,
                            String path) {
         LoadState current;
-        Element element = new Element(reader);
+        Data data = new Data(reader);
         if (verbose) {
             String archetypeId = stack.isEmpty() ? "none"
                     : stack.peek().getArchetypeId().toString();
             log.info("[START PROCESSING element, parent="
-                    + archetypeId + "]" + element);
+                    + archetypeId + "]" + data);
         }
 
         try {
             if (!stack.isEmpty()) {
-                current = processElement(stack.peek(), element, path);
+                current = processData(stack.peek(), data, path);
             } else {
-                current = processElement(null, element, path);
+                current = processData(null, data, path);
             }
             stack.push(current);
         } catch (Exception exception) {
@@ -181,47 +266,32 @@ class DataLoader {
             log.error("Error in start element, line "
                     + location.getLineNumber()
                     + ", column " + location.getColumnNumber() +
-                    "" + element + "", exception);
+                    "" + data + "", exception);
         }
     }
 
-    public Map<String, Long> getStatistics() {
-        return statistics;
-    }
-
-    public LoadCache getRefCache() {
-        return cache;
-    }
-
     /**
-     * Process the specified element and all nested elements. If the parent
-     * object is specified then then the specified element is in a parent child
-     * relationship.
-     * <p/>
-     * The archetype attribute determines the archetype we need to us to create
-     * from the element. Iterate through all the element attributes and attempt
-     * to set the specified value using the archetype's node descriptors. The
-     * attribute name must correspond to a valid node descriptor
-     * <p/>
+     * Process the specified data. If the parent object is specified then the
+     * specified element is in a parent-child relationship.
      *
-     * @param parent the parent of this element if it exists
-     * @return IMObject the associated IMObject
+     * @param parent the parent object. May be <tt>null</tt>
+     * @param data   the data to process
+     * @param path   a path representing the data source, for logging purposes
+     * @return the load state corresponding to the data
      */
-    private LoadState processElement(LoadState parent,
-                                     Element element,
-                                     String path) {
+    private LoadState processData(LoadState parent, Data data, String path) {
         LoadState result;
 
-        Location location = element.getLocation();
-        String collectionNode = element.getCollection();
+        Location location = data.getLocation();
+        String collectionNode = data.getCollection();
 
         // if a childId node is defined then we can skip the create object
         // process since the object already exists
-        String childId = element.getChildId();
+        String childId = data.getChildId();
         if (StringUtils.isEmpty(childId)) {
-            result = create(element, parent, path);
+            result = create(data, parent, path);
             for (Map.Entry<String, String> attribute
-                    : element.getAttributes().entrySet()) {
+                    : data.getAttributes().entrySet()) {
                 String name = attribute.getKey();
                 String value = attribute.getValue();
                 result.setValue(name, value, context);
@@ -253,12 +323,20 @@ class DataLoader {
         return result;
     }
 
-    private LoadState create(Element element, LoadState parent,
+    /**
+     * Creates a new load state for the specified data.
+     *
+     * @param data   the data
+     * @param parent the parent state. May be <tt>null</tt>
+     * @param path   a path representing the data source, for logging purposes
+     * @return a new load state
+     */
+    private LoadState create(Data data, LoadState parent,
                              String path) {
-        String shortName = element.getShortName();
+        String shortName = data.getShortName();
         ArchetypeDescriptor descriptor
                 = service.getArchetypeDescriptor(shortName);
-        Location location = element.getLocation();
+        Location location = data.getLocation();
         if (descriptor == null) {
             throw new ArchetypeDataLoaderException(
                     InvalidArchetype, location.getLineNumber(),
@@ -271,13 +349,15 @@ class DataLoader {
                     InvalidArchetype, location.getLineNumber(),
                     location.getColumnNumber(), shortName);
         }
-        cache.add(object, element.getId());
+        cache.add(object, data.getId());
         return new LoadState(parent, object, descriptor, path,
-                             element.getLocation().getLineNumber());
+                             data.getLocation().getLineNumber());
     }
 
     /**
      * Load the specified object.
+     *
+     * @param state the state to load
      */
     private void load(LoadState state) {
         if (!state.isComplete()) {
@@ -310,6 +390,9 @@ class DataLoader {
         }
     }
 
+    /**
+     * Processes any deferred objects.
+     */
     private void processDeferred() {
         boolean processed;
         do {
@@ -342,35 +425,47 @@ class DataLoader {
         } while (processed);
     }
 
-    private IMObjectReference attemptSave(IMObjectReference ref) {
+    /**
+     * Attempts to save the object associated with the specified reference.
+     *
+     * @param reference the object reference
+     * @return the updated reference, if the object saved successfully, or
+     *         <tt>reference</tt> if the save failed
+     */
+    private IMObjectReference attemptSave(IMObjectReference reference) {
 
-        LoadState state = batch.get(ref);
+        LoadState state = batch.get(reference);
         if (state != null && state.isComplete()) {
             try {
                 IMObject object = state.getObject();
                 service.save(state.getObjects());
-                batch.remove(ref);
+                batch.remove(reference);
                 saved(object.getObjectReference()); // ref now contains id
-            } catch (OpenVPMSException exception) {
-                exception.printStackTrace();
+            } catch (OpenVPMSException ignore) {
                 // ignore
             }
         }
-        return ref;
+        return reference;
     }
 
-    private void saved(IMObjectReference ref) {
-        cache.update(ref);
+    /**
+     * Invoked when an object is saved. Updates the references of any batched
+     * states that depend on the reference.
+     *
+     * @param reference the saved reference
+     */
+    private void saved(IMObjectReference reference) {
+        cache.update(reference);
         for (LoadState state : batch.values()) {
-            state.update(ref);
+            state.update(reference);
         }
     }
 
     /**
-     * This method will cache the entity and save it only when the size of
-     * the cache reaches the configured batch size.
+     * This method will queue the state and save it only when the size of
+     * the queue reaches the batch size.
      *
-     * @param state the entity to save
+     * @param state the object to save
      */
     private void queue(LoadState state) {
         IMObject object = state.getObject();
@@ -385,6 +480,11 @@ class DataLoader {
         }
     }
 
+    /**
+     * Determines if the batch can be saved.
+     *
+     * @return <tt>true</tt> if the batch can be saved
+     */
     private boolean isComplete() {
         Set<IMObjectReference> unsaved = new HashSet<IMObjectReference>();
         for (LoadState state : batch.values()) {
@@ -398,6 +498,9 @@ class DataLoader {
         return true;
     }
 
+    /**
+     * Saves the batch.
+     */
     private void saveBatch() {
         List<IMObject> objects = new ArrayList<IMObject>();
         for (LoadState state : batch.values()) {

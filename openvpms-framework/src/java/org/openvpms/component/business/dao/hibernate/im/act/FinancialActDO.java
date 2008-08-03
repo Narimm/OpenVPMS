@@ -18,29 +18,31 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 import java.math.BigDecimal;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link FinancialAct} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface FinancialActDO extends ActDO {
+
     /**
      * Determines if this is a credit or debit transaction.
      *
-     * @return <code>true</code> if it's a credit, <code>false</code> if it's
-     *         a debit
+     * @return <tt>true</tt> if it's a credit, <tt>false</tt> if it's a debit
      */
     boolean isCredit();
 
     /**
      * Determines if this is a credit or debit transaction.
      *
-     * @param credit if <code>true</code> it's a credit. If <code>false</code>
+     * @param credit if <tt>true</tt> it's a credit. If <tt>false</tt>
      *               it's a debit
      */
     void setCredit(boolean credit);
@@ -62,14 +64,14 @@ public interface FinancialActDO extends ActDO {
     /**
      * Determines if the act has been printed.
      *
-     * @return <code>true</code> if the act has been printed
+     * @return <tt>true</tt> if the act has been printed
      */
     boolean isPrinted();
 
     /**
      * Determines if the act has been printed.
      *
-     * @param printed if <code>true</code>, the act has been printed
+     * @param printed if <tt>true</tt>, the act has been printed
      */
     void setPrinted(boolean printed);
 
@@ -139,7 +141,6 @@ public interface FinancialActDO extends ActDO {
      * For credits, it is the amount of the credit that has been allocated
      * against a debit. If allocated = total then credit has been fully
      * allocated.
-     * </p>
      *
      * @return the allocated amount
      */

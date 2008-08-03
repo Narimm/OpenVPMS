@@ -230,6 +230,7 @@ public class Context {
 
     /**
      * Determines if transaction synchronization is active.
+     * TODO - still required?
      *
      * @return <tt>true</tt> if synchronization is active, otherwise
      *         <tt>false</tt>
@@ -261,8 +262,9 @@ public class Context {
     }
 
     /**
+     * Removes a data object from the context and deletes it from the session.
      *
-     * @param target
+     * @param target the object to remove
      */
     public void remove(IMObjectDO target) {
         IMObject source = doToObjectMap.get(target);
@@ -278,18 +280,46 @@ public class Context {
         }
     }
 
+    /**
+     * Returns the assembled data object for the specified <tt>IMObject</tt>.
+     *
+     * @param source the source object
+     * @return the assembled state, or <tt>null</tt> if none is found
+     */
     public DOState getCached(IMObject source) {
         return objectToDOMap.get(source);
     }
 
+    /**
+     * Returns the assembled <tt>IMObject</tt> for the specified data object.
+     *
+     * @param source the data object
+     * @return the corresponding <tt>IMObject</tt> or <tt>null<tt> if none is
+     *         found
+     */
     public IMObject getCached(IMObjectDO source) {
         return doToObjectMap.get(source);
     }
 
+    /**
+     * Returns the assembled data object state for the specified object
+     * reference.
+     *
+     * @param reference the reference
+     * @return the corresponding state, or <tt>null</tt> if none is found
+     */
     public DOState getCached(IMObjectReference reference) {
         return refToDOMap.get(reference);
     }
 
+    /**
+     * Retrieves a data object given its reference.
+     *
+     * @param reference the reference
+     * @param type      the data object type
+     * @param impl      the data object implementation type
+     * @return the corresponding object, or <tt>null</tt> if none is found
+     */
     public <T extends IMObjectDO, Impl extends IMObjectDOImpl> T
             get(IMObjectReference reference, Class<T> type, Class<Impl> impl) {
         Object result = session.get(impl, reference.getId());
@@ -301,6 +331,9 @@ public class Context {
         return type.cast(result);
     }
 
+    /**
+     * Destroys the context, releasing resources.
+     */
     public void destroy() {
         for (DOState state : objectToDOMap.values()) {
             state.destroy();
@@ -312,30 +345,63 @@ public class Context {
         saveDeferred.clear();
     }
 
-    private Object getResourceKey() {
-        return key;
-    }
-
+    /**
+     * Register a state whose save is deferred.
+     *
+     * @param state the state to register
+     */
     public void addSaveDeferred(DOState state) {
         saveDeferred.add(state);
     }
 
+    /**
+     * Returns the set of states whose save is deferred.
+     *
+     * @return the states
+     */
     public Set<DOState> getSaveDeferred() {
         return saveDeferred;
     }
 
+    /**
+     * Removes state from the set of save deferred states.
+     *
+     * @param state the state to remove
+     */
     public void removeSaveDeferred(DOState state) {
         saveDeferred.remove(state);
     }
 
+    /**
+     * Registers a state as being saved.
+     *
+     * @param state the state to register
+     */
     public void addSaved(DOState state) {
         saved.add(state);
     }
 
+    /**
+     * Returns the set of saved states.
+     *
+     * @return the saved states
+     */
     public Set<DOState> getSaved() {
         return saved;
     }
 
+    /**
+     * Returns the resource key.
+     *
+     * @return the resource key
+     */
+    private Object getResourceKey() {
+        return key;
+    }
+
+    /**
+     * Helper class to trigger {@link ContextHandler} events.
+     */
     private static class ContextSynchronization
             extends TransactionSynchronizationAdapter {
 
@@ -383,10 +449,23 @@ public class Context {
 
     }
 
+    /**
+     * Helper class for binding the context with
+     * <tt>TransactionSynchronizationManager</tt>.
+     */
     private static class ResourceKey {
 
+        /**
+         * The session.
+         */
         private final Session session;
 
+
+        /**
+         * Creates a new <tt>ResourceKey</tt>.
+         *
+         * @param session the session
+         */
         public ResourceKey(Session session) {
             this.session = session;
         }
@@ -406,7 +485,7 @@ public class Context {
          *
          * @param obj the reference object with which to compare.
          * @return <tt>true</tt> if this object is the same as the obj
-         *         argument; <tt>false</tt> otherwise.
+         *         argument; <tt>false</tt> otherwise.                               
          */
         @Override
         public boolean equals(Object obj) {

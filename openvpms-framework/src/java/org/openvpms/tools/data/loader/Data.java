@@ -27,23 +27,49 @@ import javax.xml.stream.XMLStreamReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+
 /**
- * Add description here.
+ * Helper to read a &lt;data/&gt; element from a stream.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class Element {
+class Data {
 
-    private final String shortName;
-    private Map<String, String> attributes = new LinkedHashMap<String, String>();
-
-    private final String collection;
+    /**
+     * The object identifier. May be <tt>null</tt>
+     */
     private final String id;
 
+    /**
+     * The archetype short name.
+     */
+    private final String shortName;
+
+    /**
+     * The collection node name, or <tt>null</tt> if it is not a collection
+     * element
+     */
+    private final String collection;
+
+    /**
+     * The element attributes.
+     */
+    private Map<String, String> attributes
+            = new LinkedHashMap<String, String>();
+
+    /**
+     * The location of the element.
+     */
     private final Location location;
 
-    public Element(XMLStreamReader reader) {
+
+    /**
+     * Creates a new <tt>Data</tt>.
+     *
+     * @param reader the stream to read from
+     */
+    public Data(XMLStreamReader reader) {
         shortName = reader.getAttributeValue(null, "archetype");
         location = reader.getLocation();
         if (StringUtils.isEmpty(shortName)) {
@@ -100,18 +126,59 @@ class Element {
         return shortName;
     }
 
+    /**
+     * Returns the collection node name.
+     *
+     * @return the collection node name, or <tt>null</tt> if it is not a
+     *         collection element
+     */
     public String getCollection() {
         return collection;
     }
 
+    /**
+     * Returns the element attributes.
+     *
+     * @return the attributes, keyed on name.
+     */
     public Map<String, String> getAttributes() {
         return attributes;
     }
 
+    /**
+     * (
+     * Returns the element location.
+     *
+     * @return the element location
+     */
     public Location getLocation() {
         return location;
     }
 
+    /**
+     * Determines if the element is complete.
+     * <p/>
+     * An element is complete if all of its references can be resolved.
+     *
+     * @param cache the load cache
+     * @return <tt>true</tt> if the element is complete
+     */
+    public boolean isComplete(LoadCache cache) {
+        for (String value : attributes.values()) {
+            if (value.startsWith(LoadState.ID_PREFIX)) {
+                if (cache.getReference(value) == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return a string representation of this object
+     */
     public String toString() {
         StringBuffer result = new StringBuffer("<data ");
         for (Map.Entry<String, String> attribute : attributes.entrySet()) {
@@ -124,14 +191,4 @@ class Element {
         return result.toString();
     }
 
-    public boolean isComplete(LoadCache cache) {
-        for (String value : attributes.values()) {
-            if (value.startsWith(LoadState.ID_PREFIX)) {
-                if (cache.getReference(value) == null) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 }

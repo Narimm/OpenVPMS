@@ -19,7 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate;
+import org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;

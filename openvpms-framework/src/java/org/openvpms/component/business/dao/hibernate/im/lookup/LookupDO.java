@@ -19,16 +19,19 @@
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link Lookup} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface LookupDO extends IMObjectDO {
+
     /**
      * Returns the lookup code.
      *
@@ -46,34 +49,34 @@ public interface LookupDO extends IMObjectDO {
     /**
      * Determines if this is the default lookup.
      *
-     * @return <code>true</code> if this is the default lookup, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if this is the default lookup, otherwise
+     *         <tt>false</tt>
      */
     boolean isDefaultLookup();
 
     /**
      * Determines if this is the default lookup.
      *
-     * @param defaultLookup if <code>true</code> this is the default lookup
+     * @param defaultLookup if <tt>true</tt> this is the default lookup
      */
     void setDefaultLookup(boolean defaultLookup);
 
     /**
-     * Returns the the source lookup relationships.
+     * Returns the source lookup relationships.
      *
      * @return the source lookup relationships
      */
     Set<LookupRelationshipDO> getSourceLookupRelationships();
 
     /**
-     * Add a source {@link LookupRelationshipDOImpl}.
+     * Adds a relationship where this is the source.
      *
      * @param source the relationship to add
      */
     void addSourceLookupRelationship(LookupRelationshipDO source);
 
     /**
-     * Remove a source {@link LookupRelationshipDOImpl}.
+     * Removes a source relationship.
      *
      * @param source the relationship to remove
      */
@@ -87,14 +90,14 @@ public interface LookupDO extends IMObjectDO {
     Set<LookupRelationshipDO> getTargetLookupRelationships();
 
     /**
-     * Adds a target {@link LookupRelationshipDOImpl}.
+     * Adds a relationship where this is the target.
      *
      * @param target the relationship to add
      */
     void addTargetLookupRelationship(LookupRelationshipDO target);
 
     /**
-     * Removes a target {@link LookupRelationshipDOImpl}.
+     * Removes a target relationship.
      *
      * @param target the relationship to remove
      */

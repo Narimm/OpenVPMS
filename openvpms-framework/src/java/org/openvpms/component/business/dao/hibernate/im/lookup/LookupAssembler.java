@@ -26,25 +26,40 @@ import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 
+
 /**
- * Add description here.
+ * Assembles {@link Lookup}s from {@link LookupDO}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
 
+    /**
+     * Assembles sets of lookup relationships.
+     */
     private static final SetAssembler<LookupRelationship, LookupRelationshipDO>
             RELATIONSHIPS = SetAssembler.create(LookupRelationship.class,
                                                 LookupRelationshipDOImpl.class);
 
+    /**
+     * Creates a new <tt>LookupAssembler</tt>.
+     */
     public LookupAssembler() {
         super(Lookup.class, LookupDO.class, LookupDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
-    protected void assembleDO(LookupDO target, Lookup source,
-                              DOState state, Context context) {
+    protected void assembleDO(LookupDO target, Lookup source, DOState state,
+                              Context context) {
         super.assembleDO(target, source, state, context);
 
         if (!ObjectUtils.equals(target.getCode(), source.getCode())) {
@@ -63,6 +78,13 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
                                  state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(Lookup target, LookupDO source,
                                   Context context) {
@@ -79,10 +101,22 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
                                      context);
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected Lookup create(LookupDO object) {
         return new Lookup();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected LookupDO create(Lookup object) {
         return new LookupDOImpl();
     }

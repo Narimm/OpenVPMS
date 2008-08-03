@@ -95,12 +95,11 @@ public abstract class IMObjectRelationshipDOImpl extends IMObjectDOImpl
     }
 
     /**
-     * (non-Javadoc)
+     * Returns a string representation of the object.
      *
-     * @see Object#toString()
+     * @return a string representation of the object.
      */
     @Override
-    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this, STYLE)
                 .appendSuper(super.toString())

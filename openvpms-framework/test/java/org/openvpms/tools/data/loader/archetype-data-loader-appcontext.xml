@@ -108,7 +108,7 @@
 
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
-          class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
+          class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
         <property name="sessionFactory">
             <ref local="sessionFactory"/>
         </property>

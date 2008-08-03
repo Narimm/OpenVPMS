@@ -25,8 +25,8 @@ import java.util.Set;
 
 
 /**
- * This is used to define the assertion type. It is used to map an assertion to
- * its type information.
+ * Data object interface corresponding to the {@link AssertionTypeDescriptorDO}
+ * class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-04-16 16:01:53 +1000 (Wed, 16 Apr 2008) $
@@ -35,33 +35,36 @@ public class AssertionTypeDescriptorDOImpl extends DescriptorDOImpl
         implements AssertionTypeDescriptorDO {
 
     /**
-     * A list of well known actions which may be supported by assertions
+     * A list of well known actions which may be supported by assertions.
      */
     public enum Actions {
         create, validate
     }
 
     /**
-     * This is the fully qualified archetype of the object used to collect
-     * property information for this assertion type.
+     * The fully qualified archetype of the object used to collect property
+     * information for this assertion type.
      */
     private String propertyArchetype;
 
     /**
-     * A list of actions associated with this assertion type
+     * A list of actions associated with this assertion type.
      */
     private Set<ActionTypeDescriptorDO> actionTypes
             = new HashSet<ActionTypeDescriptorDO>();
 
+
     /**
-     * Default constructor
+     * Default constructor.
      */
     public AssertionTypeDescriptorDOImpl() {
         setArchetypeId(new ArchetypeId("descriptor.assertionType.1.0"));
     }
 
     /**
-     * @return Returns the actionTypes.
+     * Returns the action types.
+     *
+     * @return the action types
      */
     public Set<ActionTypeDescriptorDO> getActionTypes() {
         return actionTypes;
@@ -70,10 +73,10 @@ public class AssertionTypeDescriptorDOImpl extends DescriptorDOImpl
     /**
      * Add an action type.
      *
-     * @param actionType the action type to add
+     * @param type the action type to add
      */
-    public void addActionType(ActionTypeDescriptorDO actionType) {
-        actionTypes.add(actionType);
+    public void addActionType(ActionTypeDescriptorDO type) {
+        actionTypes.add(type);
     }
 
     /**
@@ -92,33 +95,39 @@ public class AssertionTypeDescriptorDOImpl extends DescriptorDOImpl
     }
 
     /**
-     * Remove the specified action type.
+     * Removes the specified action type.
      *
-     * @param actionType the action type to remove
+     * @param type the action type to remove
      */
-    public void removeActionType(ActionTypeDescriptorDO actionType) {
-        actionTypes.remove(actionType);
+    public void removeActionType(ActionTypeDescriptorDO type) {
+        actionTypes.remove(type);
     }
 
     /**
-     * @return Returns the propertyArchetype.
+     * Returns the property archetype.
+     *
+     * @return the property archetype
      */
     public String getPropertyArchetype() {
         return propertyArchetype;
     }
 
     /**
-     * @param propertyArchetype The propertyArchetypeQName to set.
+     * Returns the property archetype.
+     *
+     * @param propertyArchetype the property archetype
      */
     public void setPropertyArchetype(String propertyArchetype) {
         this.propertyArchetype = propertyArchetype;
     }
 
     /**
-     * @param actionTypes The actionTypes to set.
+     * Sets the action types.
+     *
+     * @param types the action types to set.
      */
-    protected void setActionTypes(Set<ActionTypeDescriptorDO> actionTypes) {
-        this.actionTypes = actionTypes;
+    protected void setActionTypes(Set<ActionTypeDescriptorDO> types) {
+        this.actionTypes = types;
     }
 
 }

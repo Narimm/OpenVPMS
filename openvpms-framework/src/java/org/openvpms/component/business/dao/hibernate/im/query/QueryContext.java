@@ -555,10 +555,7 @@ public class QueryContext {
                 appendLogicalOperator();
                 String isNull = " " + getOperator(op, null);
                 if (isReference(property)) {
-                    whereClause.append("(").append(qname).append(".archetypeId")
-                            .append(isNull).append(" and ")
-                            .append(qname).append(".linkId")
-                            .append(isNull).append(")");
+                    whereClause.append(qname).append(".id").append(isNull);
                 } else {
                     whereClause.append(qname).append(isNull);
                 }
@@ -569,7 +566,7 @@ public class QueryContext {
                 boolean ref = isReference(property);
                 whereClause.append(qname);
                 if (ref) {
-                    whereClause.append(".linkId");
+                    whereClause.append(".id");
                 }
                 whereClause.append(" ")
                         .append(getOperator(op, null))
@@ -677,7 +674,7 @@ public class QueryContext {
 
             default:
                 if (param instanceof IMObjectReference) {
-                    return ((IMObjectReference) param).getLinkId();
+                    return ((IMObjectReference) param).getId();
                 }
                 return param;
         }

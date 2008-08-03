@@ -19,51 +19,71 @@
 package org.openvpms.component.business.dao.hibernate.im.document;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.domain.im.document.Document;
+
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link Document} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface DocumentDO extends IMObjectDO {
-    /**
-     * @return Returns the checksum.
-     */
-    long getChecksum();
 
     /**
-     * @param checksum The checksum to set.
-     */
-    void setChecksum(long checksum);
-
-    /**
-     * @return Returns the contents.
+     * Returns the document contents.
+     *
+     * @return the document contents
      */
     byte[] getContents();
 
     /**
-     * @param contents The contents to set.
+     * Sets the document contents.
+     *
+     * @param contents the contents
      */
     void setContents(byte[] contents);
 
     /**
-     * @return Returns the docSize.
+     * Returns the document size.
+     *
+     * @return the document size
      */
     int getDocSize();
 
     /**
-     * @param docSize The docSize to set.
+     * Sets the document size.
+     *
+     * @param size the document size
      */
-    void setDocSize(int docSize);
+    void setDocSize(int size);
 
     /**
-     * @return Returns the mimeType.
+     * Returns the document mime type.
+     *
+     * @return the mime type
      */
     String getMimeType();
 
     /**
-     * @param mimeType The mimeType to set.
+     * Sets the document mime type.
+     *
+     * @param mimeType the mime type
      */
     void setMimeType(String mimeType);
+
+    /**
+     * Returns the document checksum.
+     *
+     * @return the checksum
+     */
+    long getChecksum();
+
+    /**
+     * Sets the document checksum.
+     *
+     * @param checksum the checksum
+     */
+    void setChecksum(long checksum);
+
 }

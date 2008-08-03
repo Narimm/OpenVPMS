@@ -43,14 +43,9 @@ import java.util.Map;
 
 
 /**
- * This tool will reads the specified XML document and process all of the
+ * This tool reads the specified XML document and process all of the
  * elements. It creates a spring application context to load the appropriate
  * services.
- * <p/>
- * It will process the all data items using two passes. The first pass will
- * process and store data elements that do not reference other data elements.
- * The second pass will process and store data elements that make reference to
- * other elements.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -64,12 +59,12 @@ public class StaxArchetypeDataLoader {
             = "application-context.xml";
 
     /**
-     * a reference to the archetype service
+     * The archetype service.
      */
     private IArchetypeService service;
 
     /**
-     * Indicates whether it should only validate the data
+     * Caches loaded objects.
      */
     private final LoadCache cache = new LoadCache();
 

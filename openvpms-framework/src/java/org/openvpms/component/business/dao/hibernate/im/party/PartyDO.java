@@ -19,17 +19,19 @@
 package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
-import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link Party} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface PartyDO extends EntityDO {
+
     /**
      * Returns the contacts.
      *
@@ -38,14 +40,14 @@ public interface PartyDO extends EntityDO {
     Set<ContactDO> getContacts();
 
     /**
-     * Add the {@link ContactDOImpl} to this party.
+     * Adds a contact.
      *
      * @param contact contact to add
      */
     void addContact(ContactDO contact);
 
     /**
-     * Remove the {@link Contact} from this party.
+     * Removes a contact.
      *
      * @param contact the contact to remove
      */

@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
@@ -30,7 +31,8 @@ import org.openvpms.component.business.domain.im.common.Participation;
 
 
 /**
- * Add description here.
+ * An {@link Assembler} responsible for assembling {@link ParticipationDO}
+ * instances from {@link Participation}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -38,11 +40,22 @@ import org.openvpms.component.business.domain.im.common.Participation;
 public class ParticipationAssembler
         extends IMObjectAssembler<Participation, ParticipationDO> {
 
+    /**
+     * Creates a new <tt>ParticipationAssembler</tt>.
+     */
     public ParticipationAssembler() {
         super(Participation.class, ParticipationDO.class,
               ParticipationDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(ParticipationDO target, Participation source,
                               DOState state, Context context) {
@@ -51,6 +64,13 @@ public class ParticipationAssembler
         assembleAct(target, source, state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(Participation target, ParticipationDO source,
                                   Context context) {
@@ -59,14 +79,34 @@ public class ParticipationAssembler
         target.setAct(source.getAct().getObjectReference());
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected Participation create(ParticipationDO object) {
         return new Participation();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected ParticipationDO create(Participation object) {
         return new ParticipationDOImpl();
     }
 
+    /**
+     * Assembles the entity of a participation.
+     *
+     * @param target  the target participation
+     * @param source  the source participation
+     * @param state   the target state
+     * @param context the assembly context
+     */
     private void assembleEntity(final ParticipationDO target,
                                 final Participation source,
                                 DOState state, Context context) {
@@ -97,6 +137,14 @@ public class ParticipationAssembler
         }
     }
 
+    /**
+     * Assembles the act of a participation.
+     *
+     * @param target  the target participation
+     * @param source  the source participation
+     * @param state   the target state
+     * @param context the assembly context
+     */
     private void assembleAct(final ParticipationDO target,
                              final Participation source,
                              DOState state, Context context) {

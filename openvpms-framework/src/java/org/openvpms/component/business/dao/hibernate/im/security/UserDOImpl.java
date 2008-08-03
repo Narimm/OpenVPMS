@@ -24,9 +24,9 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import java.util.HashSet;
 import java.util.Set;
 
+
 /**
- * This class represents the user details and the list of associated
- * authorities.
+ * Implementation of the {@link UserDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -44,7 +44,7 @@ public class UserDOImpl extends EntityDOImpl implements UserDO {
     private String password;
 
     /**
-     * The list of security roles that the user is a member of
+     * The list of security roles that the user is a member of.
      */
     private Set<SecurityRoleDO> roles = new HashSet<SecurityRoleDO>();
 
@@ -57,7 +57,7 @@ public class UserDOImpl extends EntityDOImpl implements UserDO {
     }
 
     /**
-     * Creates a new <tt>UserDO</tt>.
+     * Creates a new <tt>UserDOImpl</tt>.
      *
      * @param archetypeId the archetype id
      */

@@ -18,12 +18,15 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 
+
 /**
- * Add description here.
+ * An {@link Assembler} responsible for assembling {@link FinancialActDO}
+ * instances from {@link FinancialAct}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -31,15 +34,25 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 public class FinancialActAssembler
         extends AbstractActAssembler<FinancialAct, FinancialActDO> {
 
-
+    /**
+     * Creates a new <tt>FinancialActAssembler</tt>.
+     */
     public FinancialActAssembler() {
         super(FinancialAct.class, FinancialActDO.class,
               FinancialActDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(FinancialActDO target, FinancialAct source,
-                                 DOState state, Context context) {
+                              DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setAllocatedAmount(source.getAllocatedAmount());
         target.setCredit(source.isCredit());
@@ -51,6 +64,13 @@ public class FinancialActAssembler
         target.setUnitAmount(source.getUnitAmount());
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(FinancialAct target, FinancialActDO source,
                                   Context context) {
@@ -65,10 +85,22 @@ public class FinancialActAssembler
         target.setUnitAmount(source.getUnitAmount());
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected FinancialAct create(FinancialActDO object) {
         return new FinancialAct();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected FinancialActDO create(FinancialAct object) {
         return new FinancialActDOImpl();
     }

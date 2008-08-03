@@ -20,9 +20,9 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 
+
 /**
- * All the descriptor classes inherit from this base class, which provides
- * support for identity, hibernate and serialization
+ * Implementation of the {@link DescriptorDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-04-24 09:20:29 +1000 (Mon, 24 Apr 2006) $

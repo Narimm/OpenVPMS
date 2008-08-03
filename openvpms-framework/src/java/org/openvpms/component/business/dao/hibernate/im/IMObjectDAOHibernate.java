@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.hibernate.im.entity;
+package org.openvpms.component.business.dao.hibernate.im;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -35,8 +35,14 @@ import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
-import org.openvpms.component.business.dao.hibernate.impl.AssemblerImpl;
-import org.openvpms.component.business.dao.hibernate.impl.DeleteHandlerFactory;
+import org.openvpms.component.business.dao.hibernate.im.entity.DefaultObjectLoader;
+import org.openvpms.component.business.dao.hibernate.im.entity.HibernateResultCollector;
+import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectNodeResultCollector;
+import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectResultCollector;
+import org.openvpms.component.business.dao.hibernate.im.entity.NodeSetResultCollector;
+import org.openvpms.component.business.dao.hibernate.im.entity.ObjectSetResultCollector;
+import org.openvpms.component.business.dao.hibernate.im.query.QueryBuilder;
+import org.openvpms.component.business.dao.hibernate.im.query.QueryContext;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
@@ -46,8 +52,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
-import org.openvpms.component.business.dao.hibernate.im.query.QueryBuilder;
-import org.openvpms.component.business.dao.hibernate.im.query.QueryContext;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -135,10 +139,11 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         this.cache = cache;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Saves an object.
      *
-     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(org.openvpms.component.business.domain.im.common.IMObject)
+     * @param object the object to save
+     * @throws IMObjectDAOException if the request cannot complete
      */
     public void save(final IMObject object) {
         try {
@@ -155,8 +160,11 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(java.util.Collection)
+    /**
+     * Saves a collection of objects in a single transaction.
+     *
+     * @param objects the objects to save
+     * @throws IMObjectDAOException if the request cannot complete
      */
     public void save(final Collection<? extends IMObject> objects) {
         try {
@@ -173,10 +181,11 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Deletes an {@link IMObject}.
      *
-     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#delete(org.openvpms.component.business.domain.im.common.IMObject)
+     * @param object the object to delete
+     * @throws IMObjectDAOException if the request cannot complete
      */
     public void delete(final IMObject object) {
         try {
@@ -487,84 +496,42 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
     }
 
+    /**
+     * Invoked just prior to commit.
+     * </p>
+     * Attempts to save any deferred objects.
+     *
+     * @param context the assembly context
+     */
     public void preCommit(Context context) {
         if (!context.getSaveDeferred().isEmpty()) {
             saveDeferred(context, true);
         }
     }
 
+    /**
+     * Invoked after successful commit.
+     * <p/>
+     * This propagates identifier and version changes from the committed
+     * <tt>IMObjectDO</tt>s to their corresponding <tt>IMObject</tt>s.
+     *
+     * @param context the assembly context
+     */
     public void commit(Context context) {
         updateIds(context);
     }
 
+    /**
+     * Invoked on transaction rollback.
+     * <p/>
+     * This reverts identifier and version changes
+     *
+     * @param context the assembly context
+     */
     public void rollback(Context context) {
         for (DOState state : context.getSaved()) {
             state.rollbackIds();
         }
-    }
-
-    private void updateIds(Context context) {
-        for (DOState state : context.getSaved()) {
-            state.updateIds(context);
-        }
-    }
-
-    private void saveDeferred(Context context, boolean failOnIncomplete) {
-        List<DOState> states = assembleDeferred(context);
-        for (DOState state : states) {
-            save(state, context);
-        }
-        Set<DOState> saveDeferred = context.getSaveDeferred();
-        if (!saveDeferred.isEmpty() && failOnIncomplete) {
-            DOState state = saveDeferred.iterator().next();
-            Set<DeferredAssembler> deferred = state.getDeferred();
-            IMObjectReference ref = null;
-            if (!deferred.isEmpty()) { // should never be empty
-                DeferredAssembler assembler = deferred.iterator().next();
-                ref = assembler.getReference();
-            }
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.ObjectNotFound, ref);
-
-        }
-    }
-
-    private List<DOState> assembleDeferred(Context context) {
-        List<DOState> result = new ArrayList<DOState>();
-        boolean processed;
-        do {
-            processed = false;
-            DOState[] states = context.getSaveDeferred().toArray(
-                    new DOState[0]);
-            Set<DeferredAssembler> deferred = new HashSet<DeferredAssembler>();
-            for (DOState state : states) {
-                Set<DeferredAssembler> set = state.getDeferred();
-                if (!set.isEmpty()) {
-                    deferred.addAll(set);
-                } else {
-                    context.removeSaveDeferred(state);
-                    result.add(state);
-                }
-            }
-            if (!deferred.isEmpty()) {
-                for (DeferredAssembler assembler : deferred) {
-                    if (context.getCached(assembler.getReference()) != null) {
-                        assembler.assemble(context);
-                        processed = true;
-                    }
-                }
-            }
-        } while (processed);
-        return result;
-    }
-
-    private void save(DOState state, Context context) {
-        Session session = context.getSession();
-        for (IMObjectDO object : state.getObjects()) {
-            session.saveOrUpdate(object);
-        }
-        state.updateIds(context);
-        context.addSaved(state);
     }
 
     /*
@@ -899,6 +866,96 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     }
 
     /**
+     * Propagates identifier and version changes from the committed
+     * <tt>IMObjectDO</tt>s to their corresponding <tt>IMObject</tt>s.
+     *
+     * @param context the assembly context
+     */
+    private void updateIds(Context context) {
+        for (DOState state : context.getSaved()) {
+            state.updateIds(context);
+        }
+    }
+
+    /**
+     * Attempts to assemble and save deferred objects.
+     *
+     * @param context          the assembly context
+     * @param failOnIncomplete if <tt>true</tt> and an object cannot be saved,
+     *                         raises an exception
+     * @throws IMObjectDAOException if an object cannot be saved
+     */
+    private void saveDeferred(Context context, boolean failOnIncomplete) {
+        List<DOState> states = assembleDeferred(context);
+        for (DOState state : states) {
+            save(state, context);
+        }
+        Set<DOState> saveDeferred = context.getSaveDeferred();
+        if (!saveDeferred.isEmpty() && failOnIncomplete) {
+            DOState state = saveDeferred.iterator().next();
+            Set<DeferredAssembler> deferred = state.getDeferred();
+            IMObjectReference ref = null;
+            if (!deferred.isEmpty()) { // should never be empty
+                DeferredAssembler assembler = deferred.iterator().next();
+                ref = assembler.getReference();
+            }
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.ObjectNotFound, ref);
+
+        }
+    }
+
+    /**
+     * Attempts to assemble deferred objects.
+     *
+     * @param context the assembly context
+     * @return the assembled objects
+     */
+    private List<DOState> assembleDeferred(Context context) {
+        List<DOState> result = new ArrayList<DOState>();
+        boolean processed;
+        do {
+            processed = false;
+            DOState[] states = context.getSaveDeferred().toArray(
+                    new DOState[0]);
+            Set<DeferredAssembler> deferred = new HashSet<DeferredAssembler>();
+            for (DOState state : states) {
+                Set<DeferredAssembler> set = state.getDeferred();
+                if (!set.isEmpty()) {
+                    deferred.addAll(set);
+                } else {
+                    context.removeSaveDeferred(state);
+                    result.add(state);
+                }
+            }
+            if (!deferred.isEmpty()) {
+                for (DeferredAssembler assembler : deferred) {
+                    if (context.getCached(assembler.getReference()) != null) {
+                        assembler.assemble(context);
+                        processed = true;
+                    }
+                }
+            }
+        } while (processed);
+        return result;
+    }
+
+    /**
+     * Saves a data object.
+     *
+     * @param state   the data object state
+     * @param context the assembly context
+     */
+    private void save(DOState state, Context context) {
+        Session session = context.getSession();
+        for (IMObjectDO object : state.getObjects()) {
+            session.saveOrUpdate(object);
+        }
+        state.updateIds(context);
+        context.addSaved(state);
+    }
+
+    /**
      * Check whether write operations are allowed on the given Session.
      * <p>Default implementation throws an InvalidDataAccessApiUsageException
      * in case of FlushMode.NEVER. Can be overridden in subclasses.
@@ -944,6 +1001,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         });
     }
 
+    /**
+     * Returns the assembly context for the specifie session,
+     * creating one if it doesn't exist.
+     *
+     * @param session the session
+     * @return the corresponding assembly context
+     */
     private Context getContext(Session session) {
         Context context = Context.getContext(assembler, session);
         context.setContextHandler(this);

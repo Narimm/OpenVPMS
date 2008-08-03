@@ -28,22 +28,42 @@ import static org.openvpms.tools.data.loader.LoadState.ID_PREFIX;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
- * Add description here.
+ * A cache of loaded objects.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class LoadCache {
 
+    /**
+     * A map of identifiers to their corresponding object references.
+     */
     private Map<String, IMObjectReference> refs
             = new HashMap<String, IMObjectReference>();
+
+    /**
+     * A map of references to their corresponding identifiers.
+     */
     private Map<IMObjectReference, String> ids
             = new HashMap<IMObjectReference, String>();
 
+    /**
+     * A map of {@link IMObject}s, keyed on {@link IMObjectReference}.
+     * This uses weak references so objects may be garbage collected as
+     * required.
+     */
     private ReferenceMap objects = new ReferenceMap(ReferenceMap.HARD,
                                                     ReferenceMap.WEAK);
 
+
+    /**
+     * Returns an object given its reference.
+     *
+     * @param reference the object reference
+     * @return the corresponding object, or <tt>null</tt> if none is found
+     */
     public IMObject get(IMObjectReference reference) {
         IMObject result = (IMObject) objects.get(reference);
         if (result == null && objects.containsKey(reference)) {
@@ -52,6 +72,12 @@ class LoadCache {
         return result;
     }
 
+    /**
+     * Adds an object.
+     *
+     * @param object the object to add
+     * @param id     the object identifier. May be <tt>null</tt>
+     */
     public void add(IMObject object, String id) {
         IMObjectReference ref = object.getObjectReference();
         if (id != null) {
@@ -62,16 +88,21 @@ class LoadCache {
         objects.put(object.getObjectReference(), object);
     }
 
-    public void add(String id, IMObjectReference ref) {
-        id = stripPrefix(id);
-        ids.put(ref, id);
-        refs.put(id, ref);
-    }
-
+    /**
+     * Returns the object references, keyed on identifier.
+     *
+     * @return the object references
+     */
     public Map<String, IMObjectReference> getReferences() {
         return refs;
     }
 
+    /**
+     * Updates a reference. This is used to update a transient reference with
+     * its saved version.
+     *
+     * @param reference the updated reference
+     */
     public void update(IMObjectReference reference) {
         String id = ids.get(reference);
         if (id != null) {
@@ -80,15 +111,33 @@ class LoadCache {
         }
     }
 
+    /**
+     * Returns a reference given its identifier.
+     *
+     * @param id the identifier
+     * @return the corresponding reference, or <tt>null</tt> if none is found
+     */
     public IMObjectReference getReference(String id) {
         return refs.get(stripPrefix(id));
     }
 
-    public String getId(IMObjectReference ref) {
-        return ids.get(ref);
+    /**
+     * Returns an identifier given its object reference.
+     *
+     * @param reference the object reference
+     * @return the corresponding identifier, or <tt>null</tt> if none is found
+     */
+    public String getId(IMObjectReference reference) {
+        return ids.get(reference);
     }
 
-
+    /**
+     * Helper to strip any prefix from an identifier.
+     *
+     * @param id the identifier
+     * @return the id with any prefix removed
+     * @throws ArchetypeDataLoaderException if the id is invalid
+     */
     private String stripPrefix(String id) {
         if (id.startsWith(ID_PREFIX)) {
             id = id.substring(ID_PREFIX.length());

@@ -23,8 +23,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * Represents permission for a service, method and associated archetype short
- * name.
+ * Implementation of the {@link ArchetypeAuthorityDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -38,17 +37,17 @@ public class ArchetypeAuthorityDOImpl extends IMObjectDOImpl
     private String serviceName;
 
     /**
-     * The method, which can be a regular expression
+     * The method, which can be a regular expression.
      */
     private String method;
 
     /**
-     * The archetype short name, which can also be a regular expression
+     * The archetype short name, which can also be a regular expression.
      */
     private String shortName;
 
     /**
-     * The role that this authhority belongs too
+     * The role that the authority belongs to.
      */
     private SecurityRoleDO role;
 
@@ -61,7 +60,7 @@ public class ArchetypeAuthorityDOImpl extends IMObjectDOImpl
     }
 
     /**
-     * Creates a new <tt>ArchetypeAuthorityDO</tt>.
+     * Creates a new <tt>ArchetypeAuthorityDOImpl</tt>.
      *
      * @param archetypeId the archetype id
      */

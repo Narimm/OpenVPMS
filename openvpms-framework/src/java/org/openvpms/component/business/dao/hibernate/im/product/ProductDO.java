@@ -19,16 +19,19 @@
 package org.openvpms.component.business.dao.hibernate.im.product;
 
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
+import org.openvpms.component.business.domain.im.product.Product;
 
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link Product} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ProductDO extends EntityDO {
+
     /**
      * Returns the prices.
      *

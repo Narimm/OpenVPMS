@@ -18,87 +18,89 @@
 
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
-import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
+
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link AssertionDescriptor}
+ * class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface AssertionDescriptorDO extends DescriptorDO {
+
     /**
-     * @return Returns the errorMessage.
+     * Returns the error message.
+     *
+     * @return the error message
      */
     String getErrorMessage();
 
     /**
-     * @param errorMessage The errorMessage to set.
+     * Sets the error message.
+     *
+     * @param errorMessage the error message to set
      */
     void setErrorMessage(String errorMessage);
 
     /**
-     * Return the properties as a map
+     * Return the assertion properties.
      *
-     * @return Returns the properties.
+     * @return the properties
      */
     PropertyMap getPropertyMap();
 
     /**
-     * @param propertyMap the properties to add
+     * Sets the assertion properties.
+     *
+     * @param properties the properties
      */
-    void setPropertyMap(PropertyMap propertyMap);
+    void setPropertyMap(PropertyMap properties);
 
     /**
-     * Add the property to the collection
-     * <p/>
-     * param property
-     * the property to add
+     * Adds an assertion property.
+     *
+     * @param property the property to add
      */
     void addProperty(NamedProperty property);
 
     /**
-     * Remove the specified property
+     * Removes an assertion property.
      *
      * @param property the property to remove
      */
     void removeProperty(NamedProperty property);
 
     /**
-     * Remove the property with the specified name
+     * Removes an assertion property.
      *
-     * @param name the property name
+     * @param name the name of the property to remove
      */
     void removeProperty(String name);
 
     /**
-     * Retrieve the property descriptor with the specified name
+     * Returns the assertion property by name.
      *
-     * @return NamedProperty
-     *         the named property or null
-     * @param, name
-     * the property name
+     * @param name the property name
+     * @return the corresponding assertion property, or <tt>null</tt> if none
+     *         is found
      */
     NamedProperty getProperty(String name);
 
     /**
-     * @return Returns the properties.
-     */
-    NamedProperty[] getPropertiesAsArray();
-
-    /**
-     * @param properties The properties to set.
-     */
-    void setPropertiesAsArray(NamedProperty[] properties);
-
-    /**
-     * @return Returns the index.
+     * Returns the index.
+     *
+     * @return the index
      */
     int getIndex();
 
     /**
-     * @param index The index to set.
+     * Sets the index.
+     *
+     * @param index the index to set
      */
     void setIndex(int index);
 }

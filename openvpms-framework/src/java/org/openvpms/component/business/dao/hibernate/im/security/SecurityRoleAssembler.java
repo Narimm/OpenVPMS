@@ -26,8 +26,9 @@ import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedA
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
 
+
 /**
- * Add description here.
+ * Assembles {@link SecurityRole}s from {@link SecurityRoleDO}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -35,19 +36,37 @@ import org.openvpms.component.business.domain.im.security.User;
 public class SecurityRoleAssembler
         extends IMObjectAssembler<SecurityRole, SecurityRoleDO> {
 
+    /**
+     * Assembles sets of users.
+     */
     private SetAssembler<User, UserDO> USERS
             = SetAssembler.create(User.class, UserDOImpl.class);
 
+    /**
+     * Assembles sets of authorities.
+     */
     private SetAssembler<ArchetypeAwareGrantedAuthority,
             ArchetypeAuthorityDO> AUTHS
             = SetAssembler.create(ArchetypeAwareGrantedAuthority.class,
                                   ArchetypeAuthorityDOImpl.class);
 
+
+    /**
+     * Creates a new <tt>SecurityRoleAssembler</tt>.
+     */
     public SecurityRoleAssembler() {
         super(SecurityRole.class, SecurityRoleDO.class,
               SecurityRoleDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(SecurityRoleDO target, SecurityRole source,
                               DOState state, Context context) {
@@ -57,6 +76,13 @@ public class SecurityRoleAssembler
         USERS.assembleDO(target.getUsers(), source.getUsers(), state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(SecurityRole target, SecurityRoleDO source,
                                   Context context) {
@@ -66,10 +92,22 @@ public class SecurityRoleAssembler
         USERS.assembleObject(target.getUsers(), source.getUsers(), context);
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected SecurityRole create(SecurityRoleDO object) {
         return new SecurityRole();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected SecurityRoleDO create(SecurityRole object) {
         return new SecurityRoleDOImpl();
     }

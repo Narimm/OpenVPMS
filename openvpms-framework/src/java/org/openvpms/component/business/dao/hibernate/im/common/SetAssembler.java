@@ -26,8 +26,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Provides support to asemble sets of {@link IMObject}s from sets of
+ * {@link IMObjectDO}s, and vice-versa.
+ * *
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -35,20 +38,50 @@ import java.util.Set;
 public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
         extends AbstractAssembler {
 
+    /**
+     * The object type.
+     */
     private final Class<T> type;
 
+    /**
+     * The data object implementation type.
+     */
     private final Class<? extends DO> typeDO;
 
+
+    /**
+     * Creates a new <tt>SetAssembler</tt>.
+     *
+     * @param type   the object type
+     * @param typeDO the data object implementation type
+     */
+    @SuppressWarnings("unchecked")
     public SetAssembler(Class<T> type, Class typeDO) {
         this.type = type;
         this.typeDO = typeDO;
     }
 
+    /**
+     * Creates a new assembler.
+     *
+     * @param type   the object type
+     * @param typeDO the data object implementation type
+     * @return a new assembler
+     */
     public static <T extends IMObject, DO extends IMObjectDO>
     SetAssembler<T, DO> create(Class<T> type, Class typeDO) {
         return new SetAssembler<T, DO>(type, typeDO);
     }
 
+    /**
+     * Assembles a set containing <tt>IMObjectDO</tt>s from a set containing
+     * <tt>IMObject</tt>s.
+     *
+     * @param target  the set to assemble
+     * @param source  the set to assemble from
+     * @param state   the parent data object state
+     * @param context the assembly context
+     */
     public void assembleDO(Set<DO> target, Set<T> source, DOState state,
                            Context context) {
         if (target.isEmpty()) {
@@ -86,6 +119,14 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
         }
     }
 
+    /**
+     * Assembles a set containing <tt>IMObject</tt>s from a set containing
+     * <tt>IMObjectDO</tt>s.
+     *
+     * @param target  the set to assemble
+     * @param source  the set to assemble from
+     * @param context the assembly context
+     */
     public void assembleObject(Set<T> target, Set<DO> source, Context context) {
         if (!target.isEmpty()) {
             target.clear();
@@ -98,6 +139,12 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
         }
     }
 
+    /**
+     * Helper to return a map of objects keyed on reference.
+     *
+     * @param set the set of objects
+     * @return the objects keyed on their references
+     */
     private Map<IMObjectReference, T> get(Set<T> set) {
         Map<IMObjectReference, T> result = new HashMap<IMObjectReference, T>();
         for (T object : set) {
@@ -106,6 +153,12 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
         return result;
     }
 
+    /**
+     * Helper to return a map of data objects keyed on reference.
+     *
+     * @param set the set of data objects
+     * @return the data objects keyed on their references
+     */
     private Map<IMObjectReference, DO> getDO(Set<DO> set) {
         Map<IMObjectReference, DO> result
                 = new HashMap<IMObjectReference, DO>();
@@ -115,6 +168,14 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
         return result;
     }
 
+    /**
+     * Help to return the data objects that have been removed from the source
+     * map, and need to be removed from the target.
+     *
+     * @param target   the target map
+     * @param retained the retained objects
+     * @return the removed data objects
+     */
     private Collection<DO> getRemoved(Map<IMObjectReference, DO> target,
                                       Map<IMObjectReference, DO> retained) {
         Map<IMObjectReference, DO> result = new HashMap<IMObjectReference, DO>(
@@ -123,6 +184,14 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
         return result.values();
     }
 
+    /**
+     * Helper to return the objects that are present in both the source and
+     * target map.
+     *
+     * @param target the target map
+     * @param source the source map
+     * @return the objects in the target that have keys in the source
+     */
     private Map<IMObjectReference, DO> getRetained(
             Map<IMObjectReference, DO> target,
             Map<IMObjectReference, T> source) {
@@ -132,6 +201,13 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
         return result;
     }
 
+    /**
+     * Helper to return the objects added to the source map.
+     *
+     * @param retained the objects that have keys in both source and target map
+     * @param source   the source map
+     * @return the the added objects
+     */
     private Collection<T> getAdded(Map<IMObjectReference, DO> retained,
                                    Map<IMObjectReference, T> source) {
         Map<IMObjectReference, T> result

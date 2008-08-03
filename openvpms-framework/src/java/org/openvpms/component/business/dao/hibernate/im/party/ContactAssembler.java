@@ -28,24 +28,40 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 
+
 /**
- * Add description here.
+ * Assembles {@link Contact}s from {@link ContactDO}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
 
+    /**
+     * Assembles sets of lookups.
+     */
     private static final SetAssembler<Lookup, LookupDO> LOOKUPS
             = SetAssembler.create(Lookup.class, LookupDOImpl.class);
 
+
+    /**
+     * Creates a new <tt>ContactAssembler</tt>.
+     */
     public ContactAssembler() {
         super(Contact.class, ContactDO.class, ContactDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
-    protected void assembleDO(ContactDO target, Contact source,
-                              DOState state, Context context) {
+    protected void assembleDO(ContactDO target, Contact source, DOState state,
+                              Context context) {
         super.assembleDO(target, source, state, context);
         target.setActiveStartTime(source.getActiveStartTime());
         target.setActiveEndTime(source.getActiveEndTime());
@@ -63,6 +79,13 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
                            state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(Contact target, ContactDO source,
                                   Context context) {
@@ -76,10 +99,22 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
                                context);
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected Contact create(ContactDO object) {
         return new Contact();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected ContactDO create(Contact object) {
         return new ContactDOImpl();
     }

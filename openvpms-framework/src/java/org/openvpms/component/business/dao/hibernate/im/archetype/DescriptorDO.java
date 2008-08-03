@@ -19,9 +19,11 @@
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor;
+
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link Descriptor} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -29,7 +31,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 public interface DescriptorDO extends IMObjectDO {
 
     /**
-     * An enumeration of different descriptor types
+     * An enumeration of different descriptor types.
      */
     public enum DescriptorType {
         ArchetypeDescriptor,
@@ -40,11 +42,11 @@ public interface DescriptorDO extends IMObjectDO {
     }
 
     /**
-     * An enumeration of the different validation errors
+     * An enumeration of the different validation errors.
      */
     public enum ValidationError {
         IsRequired,
         DuplicateNodeDescriptor
     }
-    
+
 }

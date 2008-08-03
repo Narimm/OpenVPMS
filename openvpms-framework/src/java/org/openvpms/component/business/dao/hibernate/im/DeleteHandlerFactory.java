@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.hibernate.impl;
+package org.openvpms.component.business.dao.hibernate.im;
 
 import org.openvpms.component.business.dao.hibernate.im.act.ActDeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDeleteHandler;

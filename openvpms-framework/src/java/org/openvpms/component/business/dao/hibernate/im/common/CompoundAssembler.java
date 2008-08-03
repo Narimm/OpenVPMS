@@ -140,6 +140,7 @@ public abstract class CompoundAssembler implements Assembler {
      */
     public DOState assemble(IMObjectDO target, IMObject source,
                             Context context) {
+        target = deproxy(target);
         Assembler assembler = getAssembler(source);
         return assembler.assemble(target, source, context);
     }

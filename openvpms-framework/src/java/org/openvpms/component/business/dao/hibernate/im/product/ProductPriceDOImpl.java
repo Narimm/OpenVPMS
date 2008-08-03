@@ -20,7 +20,6 @@ package org.openvpms.component.business.dao.hibernate.im.product;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.math.BigDecimal;
@@ -28,8 +27,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+
 /**
- * Represents the price of a {@link Product}
+ * Implementation of the {@link ProductPriceDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-05-02 14:28:50 +1000 (Wed, 02 May 2007) $
@@ -38,7 +38,7 @@ public class ProductPriceDOImpl extends IMObjectDOImpl
         implements ProductPriceDO {
 
     /**
-     * The product that it refers to.
+     * The product that this price belongs to.
      */
     private ProductDO product;
 
@@ -48,12 +48,12 @@ public class ProductPriceDOImpl extends IMObjectDOImpl
     private BigDecimal price;
 
     /**
-     * The product is valid from this date.
+     * The date that the price is active from.
      */
     private Date fromDate;
 
     /**
-     * The product is valid through to this date.
+     * The date that the price is active to.
      */
     private Date thruDate;
 
@@ -77,79 +77,99 @@ public class ProductPriceDOImpl extends IMObjectDOImpl
     }
 
     /**
-     * Creates a new <tt>ProductPriceDO</tt>.
+     * Creates a new <tt>ProductPriceDOImpl</tt>.
      *
-     * @param archetypeId the archetype id.
+     * @param archetypeId the archetype id
      */
     public ProductPriceDOImpl(ArchetypeId archetypeId) {
         super(archetypeId);
     }
 
     /**
-     * @return Returns the product.
+     * Returns the product that this price belongs to.
+     *
+     * @return the product. May be <tt>null</tt>
      */
     public ProductDO getProduct() {
         return product;
     }
 
     /**
-     * @param product The product to set.
+     * Sets the product that this product belongs to.
+     *
+     * @param product the product to set. May be <tt>null</tt>
      */
     public void setProduct(ProductDO product) {
         this.product = product;
     }
 
     /**
-     * @return Returns the fixed.
-     */
-    public boolean isFixed() {
-        return fixed;
-    }
-
-    /**
-     * @param fixed The fixed to set.
-     */
-    public void setFixed(boolean fixed) {
-        this.fixed = fixed;
-    }
-
-    /**
-     * @return Returns the fromDate.
-     */
-    public Date getFromDate() {
-        return fromDate;
-    }
-
-    /**
-     * @param fromDate The fromDate to set.
-     */
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    /**
-     * @return Returns the price.
+     * Returns the price.
+     *
+     * @return the price
      */
     public BigDecimal getPrice() {
         return price;
     }
 
     /**
-     * @param price The price to set.
+     * Sets the price.
+     *
+     * @param price the price
      */
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
     /**
-     * @return Returns the thruDate.
+     * Determines if it is a fixed price.
+     *
+     * @return <tt>true</tt> if it is a fixed price
+     */
+    public boolean isFixed() {
+        return fixed;
+    }
+
+    /**
+     * Determines if it is a fixed price.
+     *
+     * @param fixed if <tt>true</tt>, it is a fixed price
+     */
+    public void setFixed(boolean fixed) {
+        this.fixed = fixed;
+    }
+
+    /**
+     * Returns the date that the price is active from.
+     *
+     * @return the active from date. May be <tt>null</tt>
+     */
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    /**
+     * Sets the date that the price is active from.
+     *
+     * @param fromDate the active from date. May be <tt>null</tt>
+     */
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    /**
+     * Returns the date that the price is active to.
+     *
+     * @return the active to date. May be <tt>null</tt>
      */
     public Date getThruDate() {
         return thruDate;
     }
 
     /**
-     * @param thruDate The thruDate to set.
+     * Sets the date that the price is active to.
+     *
+     * @param thruDate the active to date. May be <tt>null</tt>
      */
     public void setThruDate(Date thruDate) {
         this.thruDate = thruDate;

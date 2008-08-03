@@ -24,8 +24,9 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import java.util.HashSet;
 import java.util.Set;
 
+
 /**
- * The persistent representation of a product.
+ * Implementation of the {@link ProductDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-12-14 16:43:53 +1100 (Thu, 14 Dec 2006) $
@@ -46,7 +47,7 @@ public class ProductDOImpl extends EntityDOImpl implements ProductDO {
     }
 
     /**
-     * Creates a new <tt>ProductDO</tt>.
+     * Creates a new <tt>ProductDOImpl</tt>.
      *
      * @param archetypeId the archetype id
      */

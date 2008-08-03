@@ -20,31 +20,72 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
+import org.openvpms.component.business.domain.im.common.Participation;
+
+import java.util.Date;
+
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link Participation} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ParticipationDO extends IMObjectDO {
+
     /**
-     * @return Returns the entity.
+     * Returns the entity.
+     *
+     * @return the entity
      */
     EntityDO getEntity();
 
     /**
-     * @param entity The entity to set.
+     * Sets the entity.
+     *
+     * @param entity the entity to set
      */
     void setEntity(EntityDO entity);
 
     /**
-     * @return Returns the act.
+     * Returns the act.
+     *
+     * @return the act
      */
     ActDO getAct();
 
     /**
-     * @param act The act to set.
+     * Sets the act.
+     *
+     * @param act the act to set
      */
     void setAct(ActDO act);
+
+    /**
+     * Returns the act start time.
+     *
+     * @return the act start time. May be <tt>null</tt>
+     */
+    Date getActivityStartTime();
+
+    /**
+     * Sets the act start time.
+     *
+     * @param startTime the start time to set. May be <tt>null</tt>
+     */
+    void setActivityStartTime(Date startTime);
+
+    /**
+     * Returns the act end time.
+     *
+     * @return the end time. May be <tt>null</tt>
+     */
+    Date getActivityEndTime();
+
+    /**
+     * Sets the act end time.
+     *
+     * @param endTime the end time to set. May be <tt>null</tt>
+     */
+    void setActivityEndTime(Date endTime);
 }

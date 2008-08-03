@@ -18,11 +18,11 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.hibernate.Session;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
-import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.system.common.query.IPage;
-import org.hibernate.Session;
 
 import java.util.List;
 
@@ -47,8 +47,14 @@ public abstract class HibernateResultCollector<T>
      */
     private ObjectLoader loader;
 
+    /**
+     * The hibernate session.
+     */
     private Session session;
 
+    /**
+     * The assembly context.
+     */
     private Context context;
 
     /**
@@ -107,18 +113,38 @@ public abstract class HibernateResultCollector<T>
         return page;
     }
 
+    /**
+     * Sets the hibernate session.
+     *
+     * @param session the session
+     */
     public void setSession(Session session) {
         this.session = session;
     }
 
+    /**
+     * Returns the hibernate session.
+     *
+     * @return the session
+     */
     public Session getSession() {
         return session;
     }
 
+    /**
+     * Sets the assembly context.
+     *
+     * @param context the assembly context
+     */
     public void setContext(Context context) {
         this.context = context;
     }
 
+    /**
+     * Returns the assembly context.
+     *
+     * @return the assembly context
+     */
     public Context getContext() {
         return context;
     }

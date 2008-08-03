@@ -66,7 +66,7 @@ public class DataLoaderTestCase
         DataLoader loader = new DataLoader(10);
         load(loader, CUSTOMERS);
         loader.flush();
-        LoadCache cache = loader.getRefCache();
+        LoadCache cache = loader.getLoadCache();
         Party customer = checkCustomer(cache, "C1", "MR", "Foo", "F", "Bar");
         Party patient = checkPatient(cache, "P1", "Spot", "CANINE",
                                      "GERMAN_SHEPHERD_DOG");
@@ -89,7 +89,7 @@ public class DataLoaderTestCase
         load(loader, CUSTOMERS);
         load(loader, ACTS);
         loader.flush();
-        LoadCache cache = loader.getRefCache();
+        LoadCache cache = loader.getLoadCache();
         Act act = (Act) checkReference(cache, "A1", "act.customerEstimation");
         Act item = (Act) checkReference(cache, "A2",
                                         "act.customerEstimationItem");
@@ -110,7 +110,7 @@ public class DataLoaderTestCase
         DataLoader loader = new DataLoader(6);
         load(loader, SECURITY);
         loader.flush();
-        LoadCache cache = loader.getRefCache();
+        LoadCache cache = loader.getLoadCache();
 
         SecurityRole role = (SecurityRole) checkReference(cache, "ROLE1",
                                                           "security.role");

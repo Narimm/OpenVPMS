@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
  * An {@link Assembler} is responsible for assembling {@link IMObjectDO}
- * instances from {@link IMObject} and vice-versa.
+ * instances from {@link IMObject}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

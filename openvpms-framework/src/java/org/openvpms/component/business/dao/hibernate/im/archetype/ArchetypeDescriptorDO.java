@@ -20,12 +20,13 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 
 import java.util.Map;
 
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link ArchetypeDescriptor} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -33,52 +34,65 @@ import java.util.Map;
 public interface ArchetypeDescriptorDO extends DescriptorDO {
 
     /**
-     * Return the archetype id, which is also the type
+     * Returns the archetype type.
      *
-     * @return String
+     * @return the archetype id
      */
     ArchetypeId getType();
 
     /**
-     * @return Returns the associated Java class name.
+     * Returns the java class name.
+     *
+     * @return the class name
      */
     String getClassName();
 
     /**
-     * @param className the class name.
+     * Sets the java class name.
+     *
+     * @param className the class name
      */
     void setClassName(String className);
 
     /**
-     * @return Returns the isLatest.
+     * Determines if this is the latest version of the archetype.
+     *
+     * @return <tt>true</tt> if this is the latest version
      */
     boolean isLatest();
 
     /**
-     * @param isLatest The isLatest to set.
+     * Determines if this is the latest version of the archetype.
+     *
+     * @param latest <tt>true</tt> if this is the latest version
      */
-    void setLatest(boolean isLatest);
+    void setLatest(boolean latest);
 
     /**
-     * @return Returns the primary.
+     * Determines if this is a primary archetype.
+     *
+     * @return <tt>true</tt> if this is a primary archetype
      */
     boolean isPrimary();
 
     /**
-     * @param primary The primary to set.
+     * Determines if this is a primary archetype.
+     *
+     * @param primary <tt>true</tt> if this is a primary archetype
      */
     void setPrimary(boolean primary);
 
     /**
-     * Add a node descriptor to this archetype descripor
+     * Add a node descriptor to this archetype descripor.
      *
      * @param node the node descriptor to add
-     * @throws DescriptorException if we are adding a node descriptor with the same name
+     * @throws DescriptorException if a node descriptor exists with the same
+     *                             name
      */
     void addNodeDescriptor(NodeDescriptorDO node);
 
     /**
-     * Remove the specified node descriptor
+     * Removes the specified node descriptor.
      *
      * @param node the node descriptor to remove
      */
@@ -117,7 +131,9 @@ public interface ArchetypeDescriptorDO extends DescriptorDO {
     String getDisplayName();
 
     /**
-     * @param displayName The displayName to set.
+     * Sets the display name.
+     *
+     * @param displayName the display name
      */
     void setDisplayName(String displayName);
 }

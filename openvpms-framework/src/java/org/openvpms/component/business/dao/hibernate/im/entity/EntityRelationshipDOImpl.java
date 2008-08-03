@@ -22,8 +22,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
+
 /**
- * Describes the relationship between two entities.
+ * Implementation of the {@link EntityRelationshipDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-04-01 14:58:48 +1100 (Tue, 01 Apr 2008) $
@@ -32,7 +33,7 @@ public class EntityRelationshipDOImpl extends PeriodRelationshipDOImpl
         implements EntityRelationshipDO {
 
     /**
-     * A relationship may also have an associated entity identity.
+     * The entity identity.
      */
     private EntityIdentityDO identity;
 
@@ -45,7 +46,7 @@ public class EntityRelationshipDOImpl extends PeriodRelationshipDOImpl
     }
 
     /**
-     * Creates a new <tt>EntityRelationshipDO</tt>.
+     * Creates a new <tt>EntityRelationshipDOImpl</tt>.
      *
      * @param archetypeId the archetype id
      */
@@ -54,24 +55,29 @@ public class EntityRelationshipDOImpl extends PeriodRelationshipDOImpl
     }
 
     /**
-     * @return Returns the entityIdentity.
+     * Returns the entity identity.
+     *
+     * @return the entity identity. May be <tt>null</tt>.
      */
     public EntityIdentityDO getIdentity() {
         return identity;
     }
 
     /**
-     * @param identity The identity to set.
+     * Sets the entity identity.
+     *
+     * @param identity the identity. May be <tt>null</tt>
      */
     public void setIdentity(EntityIdentityDO identity) {
         this.identity = identity;
     }
 
-    /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
+     */
     @Override
-    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(null)

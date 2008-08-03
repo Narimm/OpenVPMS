@@ -19,13 +19,10 @@
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDOImpl;
-import org.openvpms.component.business.domain.im.act.Act;
 
 
 /**
- * A class that represents the directed association between two {@link Act}s.
- * In parent/child act relationships, the source act is the parent, the target
- * act is the child.
+ * Implementation of the {@link ActRelationshipDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-04-01 14:58:48 +1100 (Tue, 01 Apr 2008) $
@@ -37,7 +34,7 @@ public class ActRelationshipDOImpl extends PeriodRelationshipDOImpl
      * Indicates whether the relationship is one of parent-child. This means
      * that the parent is the owner of the relationship and is responsible for
      * managing its lifecycle. When the parent is deleted then it will also
-     * delete the child
+     * delete the child.
      */
     private boolean parentChildRelationship;
 

@@ -69,16 +69,27 @@ public class DocumentAct extends Act {
         super();
     }
 
+    /**
+     * Returns the document reference.
+     *
+     * @return the document reference, or <tt>null</tt> if none is set
+     */
     public IMObjectReference getDocument() {
         return docReference;
     }
 
+    /**
+     * Sets the document reference.
+     *
+     * @param reference the document reference. May be <tt>null</tt>
+     */
     public void setDocument(IMObjectReference reference) {
         this.docReference = reference;
     }
 
     /**
      * @return Returns the document.
+     * @deprecated use {@link #getDocument()}
      */
     @Deprecated
     public IMObjectReference getDocReference() {
@@ -87,6 +98,7 @@ public class DocumentAct extends Act {
 
     /**
      * @param reference The document reference to set.
+     * @deprecated use {@link #setDocument(IMObjectReference)}
      */
     @Deprecated
     public void setDocReference(IMObjectReference reference) {

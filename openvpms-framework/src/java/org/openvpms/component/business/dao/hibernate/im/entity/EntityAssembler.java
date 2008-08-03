@@ -23,14 +23,17 @@ import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
+
 /**
- * Add description here.
+ * An {@link Assembler} responsible for assembling {@link EntityDO} instances
+ * from {@link Entity}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -38,23 +41,47 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
         extends IMObjectAssembler<T, DO> {
 
+    /**
+     * Assembles sets of entity identities.
+     */
     private static final SetAssembler<EntityIdentity, EntityIdentityDO>
             IDENT = SetAssembler.create(EntityIdentity.class,
                                         EntityIdentityDOImpl.class);
 
+    /**
+     * Assembles sets of lookups.
+     */
     private static final SetAssembler<Lookup, LookupDO> LOOKUPS
             = SetAssembler.create(Lookup.class, LookupDO.class);
 
+    /**
+     * Assembles sets of entity relationships.
+     */
     private static final SetAssembler<EntityRelationship, EntityRelationshipDO>
             RELATIONSHIP = SetAssembler.create(EntityRelationship.class,
                                                EntityRelationshipDOImpl.class);
 
 
+    /**
+     * Creates a new <tt>EntityAssembler</tt>.
+     *
+     * @param type   the object type
+     * @param typeDO the data object interface type
+     * @param impl the data object implementation type
+     */
     public EntityAssembler(Class<T> type, Class<DO> typeDO,
                            Class<? extends IMObjectDOImpl> impl) {
         super(type, typeDO, impl);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(DO target, T source, DOState state,
                               Context context) {
@@ -76,6 +103,13 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
                                 state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(T target, DO source, Context context) {
         super.assembleObject(target, source, context);

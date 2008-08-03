@@ -22,9 +22,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * The action type descriptor defines an action that is associated
- * with an assertion. It is defined by a class and method name. An action
- * maybe something like 'assert' or 'get'.
+ * Implementation of the {@link ActionTypeDescriptorDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-07-10 15:32:07 +1000 (Tue, 10 Jul 2007) $
@@ -33,49 +31,56 @@ public class ActionTypeDescriptorDOImpl extends DescriptorDOImpl
         implements ActionTypeDescriptorDO {
 
     /**
-     * The class name that is associatd with this action type
+     * The class name.
      */
     private String className;
 
     /**
-     * The method name associated with this action type
+     * The method name.
      */
     private String methodName;
 
-    
+
     /**
-     * Default constructor
+     * Default constructor.
      */
     public ActionTypeDescriptorDOImpl() {
         setArchetypeId(new ArchetypeId("descriptor.actionType.1.0"));
     }
 
     /**
-     * @return Returns the className.
+     * Returns the class name.
+     *
+     * @return the class name
      */
     public String getClassName() {
         return className;
     }
 
     /**
-     * @param className The className to set.
+     * Sets the class name.
+     *
+     * @param className the class name
      */
     public void setClassName(String className) {
         this.className = className;
     }
 
     /**
-     * @return Returns the methodName.
+     * Returns the method name.
+     *
+     * @return the method name
      */
     public String getMethodName() {
         return methodName;
     }
 
     /**
-     * @param methodName The methodName to set.
+     * Sets the method name.
+     *
+     * @param methodName the method name
      */
     public void setMethodName(String methodName) {
         this.methodName = methodName;
     }
-
 }

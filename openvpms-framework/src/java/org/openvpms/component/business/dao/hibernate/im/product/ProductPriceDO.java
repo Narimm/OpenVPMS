@@ -20,65 +20,88 @@ package org.openvpms.component.business.dao.hibernate.im.product;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link ProductPrice} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ProductPriceDO extends IMObjectDO {
+
     /**
-     * @return Returns the product.
+     * Returns the product that this price belongs to.
+     *
+     * @return the product. May be <tt>null</tt>
      */
     ProductDO getProduct();
 
     /**
-     * @param product The product to set.
+     * Sets the product that this product belongs to.
+     *
+     * @param product the product to set. May be <tt>null</tt>
      */
     void setProduct(ProductDO product);
 
     /**
-     * @return Returns the fixed.
-     */
-    boolean isFixed();
-
-    /**
-     * @param fixed The fixed to set.
-     */
-    void setFixed(boolean fixed);
-
-    /**
-     * @return Returns the fromDate.
-     */
-    Date getFromDate();
-
-    /**
-     * @param fromDate The fromDate to set.
-     */
-    void setFromDate(Date fromDate);
-
-    /**
-     * @return Returns the price.
+     * Returns the price.
+     *
+     * @return the price
      */
     BigDecimal getPrice();
 
     /**
-     * @param price The price to set.
+     * Sets the price.
+     *
+     * @param price the price
      */
     void setPrice(BigDecimal price);
 
     /**
-     * @return Returns the thruDate.
+     * Determines if it is a fixed price.
+     *
+     * @return <tt>true</tt> if it is a fixed price
+     */
+    boolean isFixed();
+
+    /**
+     * Determines if it is a fixed price.
+     *
+     * @param fixed if <tt>true</tt>, it is a fixed price
+     */
+    void setFixed(boolean fixed);
+
+    /**
+     * Returns the date that the price is active from.
+     *
+     * @return the active from date. May be <tt>null</tt>
+     */
+    Date getFromDate();
+
+    /**
+     * Sets the date that the price is active from.
+     *
+     * @param fromDate the active from date. May be <tt>null</tt>
+     */
+    void setFromDate(Date fromDate);
+
+    /**
+     * Returns the date that the price is active to.
+     *
+     * @return the active to date. May be <tt>null</tt>
      */
     Date getThruDate();
 
     /**
-     * @param thruDate The thruDate to set.
+     * Sets the date that the price is active to.
+     *
+     * @param thruDate the active to date. May be <tt>null</tt>
      */
     void setThruDate(Date thruDate);
 

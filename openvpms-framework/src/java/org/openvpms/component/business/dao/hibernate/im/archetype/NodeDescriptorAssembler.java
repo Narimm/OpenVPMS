@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
@@ -26,8 +27,10 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 
+
 /**
- * Add description here.
+ * An {@link Assembler} responsible for assembling {@link NodeDescriptorDO}
+ * instances from {@link NodeDescriptor}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -35,23 +38,38 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 public class NodeDescriptorAssembler
         extends IMObjectAssembler<NodeDescriptor, NodeDescriptorDO> {
 
+    /**
+     * Assembles node descriptors.
+     */
     private static final MapAssembler<String, NodeDescriptor, NodeDescriptorDO>
-            NODES = MapAssembler.create(NodeDescriptor.class,
-                                        NodeDescriptorDOImpl.class);
+            NODES = MapAssembler.create(NodeDescriptor.class);
 
+    /**
+     * Assembles assertion descriptors.
+     */
     private static final
     MapAssembler<String, AssertionDescriptor, AssertionDescriptorDO>
-            ASSERTION = MapAssembler.create(AssertionDescriptor.class,
-                                            AssertionDescriptorDOImpl.class);
+            ASSERTION = MapAssembler.create(AssertionDescriptor.class);
 
+
+    /**
+     * Creates a new <tt>NodeDescriptorAssembler</tt>.
+     */
     public NodeDescriptorAssembler() {
         super(NodeDescriptor.class, NodeDescriptorDO.class,
               NodeDescriptorDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
-    protected void assembleDO(NodeDescriptorDO target,
-                              NodeDescriptor source,
+    protected void assembleDO(NodeDescriptorDO target, NodeDescriptor source,
                               DOState state, Context context) {
         super.assembleDO(target, source, state, context);
 
@@ -99,6 +117,13 @@ public class NodeDescriptorAssembler
                              state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(NodeDescriptor target,
                                   NodeDescriptorDO source, Context context) {
@@ -135,10 +160,22 @@ public class NodeDescriptorAssembler
                                  context);
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected NodeDescriptor create(NodeDescriptorDO object) {
         return new NodeDescriptor();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected NodeDescriptorDO create(NodeDescriptor object) {
         return new NodeDescriptorDOImpl();
     }

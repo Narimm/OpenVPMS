@@ -21,8 +21,9 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
+
 /**
- * An identity for an {@link EntityDOImpl}.
+ * Implementation of the {@link EntityIdentityDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-01-18 23:41:49 +1100 (Fri, 18 Jan 2008) $

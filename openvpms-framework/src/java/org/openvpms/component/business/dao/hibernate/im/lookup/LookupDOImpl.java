@@ -29,23 +29,7 @@ import java.util.Set;
 
 
 /**
- * A lookup represents a piece of static data that is used by
- * OpenVPMS. It can be used to represent a Species, a Breed, a Country,
- * a PostCode etc.
- * <p/>
- * A lookup has a <em>code</em>, <em>name</em> and <em>description</em>.
- * The <em>code</em> is mandatory, used to uniquely identify the lookup within
- * its domain. The other attributes are optional.
- * The convention for alphabetic codes are that they appear all in uppercase,
- * with words separated by an underscore.
- * E.g, CANINE, COMPLETED, IN_PROGRESS.
- * The <em>name</em> is used for display purposes. If not specified, it
- * is derived from <em>code</code>.
- * The <em>description</em> is used for display purposes, and defaults to
- * <code>null</code>.
- * <p/>
- * A lookup can have additional information stored in the details
- * attribute.
+ * Implementation of the {@link LookupDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-05-02 14:28:50 +1000 (Wed, 02 May 2007) $
@@ -58,19 +42,19 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
     private String code;
 
     /**
-     * Is this the default lookup for a particular domain.
+     * Determines if the lookup is the default amongst lookups with the
+     * same archetype identifier.
      */
     private boolean defaultLookup;
 
-
     /**
-     * The {@link LookupRelationshipDOImpl}s that this lookup is a source of.
+     * The relationships where the lookup is the source.
      */
     private Set<LookupRelationshipDO> sourceLookupRelationshipDOs =
             new HashSet<LookupRelationshipDO>();
 
     /**
-     * The {@link LookupRelationshipDOImpl}s that this lookup is a target of.
+     * The relationships where the lookup is the target.
      */
     private Set<LookupRelationshipDO> targetLookupRelationshipDOs =
             new HashSet<LookupRelationshipDO>();
@@ -123,8 +107,8 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
     /**
      * Determines if this is the default lookup.
      *
-     * @return <code>true</code> if this is the default lookup, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if this is the default lookup, otherwise
+     *         <tt>false</tt>
      */
     public boolean isDefaultLookup() {
         return defaultLookup;
@@ -133,7 +117,7 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
     /**
      * Determines if this is the default lookup.
      *
-     * @param defaultLookup if <code>true</code> this is the default lookup
+     * @param defaultLookup if <tt>true</tt> this is the default lookup
      */
     public void setDefaultLookup(boolean defaultLookup) {
         this.defaultLookup = defaultLookup;
@@ -149,7 +133,7 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
     }
 
     /**
-     * Add a source {@link LookupRelationshipDOImpl}.
+     * Adds a relationship where this is the source.
      *
      * @param source the relationship to add
      */
@@ -159,7 +143,7 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
     }
 
     /**
-     * Remove a source {@link LookupRelationshipDOImpl}.
+     * Removes a source relationship.
      *
      * @param source the relationship to remove
      */
@@ -177,7 +161,7 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
     }
 
     /**
-     * Adds a target {@link LookupRelationshipDOImpl}.
+     * Adds a relationship where this is the target.
      *
      * @param target the relationship to add
      */
@@ -186,7 +170,7 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
     }
 
     /**
-     * Removes a target {@link LookupRelationshipDOImpl}.
+     * Removes a target relationship.
      *
      * @param target the relationship to remove
      */
@@ -194,8 +178,12 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
         targetLookupRelationshipDOs.remove(target);
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#equals(java.lang.Object)
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return <tt>true</tt> if this object is the same as the obj
+     *         argument; <tt>false</tt> otherwise
      */
     @Override
     public boolean equals(Object obj) {
@@ -211,8 +199,10 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
         return equal;
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#hashCode()
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object
      */
     @Override
     public int hashCode() {
@@ -222,11 +212,12 @@ public class LookupDOImpl extends IMObjectDOImpl implements LookupDO {
                 .toHashCode();
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
      */
     @Override
-    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())

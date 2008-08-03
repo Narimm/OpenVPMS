@@ -20,11 +20,12 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
+
+import java.util.Date;
+
 
 /**
- * A class representing an {@link Entity}'s participantion in an {@link Act}.
+ * Implementation of the {@link ParticipationDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-11-12 14:15:48 +1100 (Mon, 12 Nov 2007) $
@@ -42,6 +43,16 @@ public class ParticipationDOImpl extends IMObjectDOImpl
      */
     private ActDO act;
 
+    /**
+     * The act start time.
+     */
+    private Date startTime;
+
+    /**
+     * The act end time.
+     */
+    private Date endTime;
+
 
     /**
      * Default constructor.
@@ -51,31 +62,75 @@ public class ParticipationDOImpl extends IMObjectDOImpl
     }
 
     /**
-     * @return Returns the entity.
+     * Returns the entity.
+     *
+     * @return the entity
      */
     public EntityDO getEntity() {
         return entity;
     }
 
     /**
-     * @param entity The entity to set.
+     * Sets the entity.
+     *
+     * @param entity the entity to set
      */
     public void setEntity(EntityDO entity) {
         this.entity = entity;
     }
 
     /**
-     * @return Returns the act.
+     * Returns the act.
+     *
+     * @return the act
      */
     public ActDO getAct() {
         return act;
     }
 
     /**
-     * @param act The act to set.
+     * Sets the act.
+     *
+     * @param act the act to set
      */
     public void setAct(ActDO act) {
         this.act = act;
+    }
+
+    /**
+     * Returns the act start time.
+     *
+     * @return the act start time. May be <tt>null</tt>
+     */
+    public Date getActivityStartTime() {
+        return startTime;
+    }
+
+    /**
+     * Sets the act start time.
+     *
+     * @param startTime the start time to set. May be <tt>null</tt>
+     */
+    public void setActivityStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * Returns the act end time.
+     *
+     * @return the end time. May be <tt>null</tt>
+     */
+    public Date getActivityEndTime() {
+        return endTime;
+    }
+
+    /**
+     * Sets the act end time.
+     *
+     * @param endTime the end time to set. May be <tt>null</tt>
+     */
+    public void setActivityEndTime(Date endTime) {
+        this.endTime = endTime;
     }
 
 }

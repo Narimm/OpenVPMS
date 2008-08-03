@@ -103,8 +103,8 @@ public class EntityIdentityTestCase
 
         // retrieve the entity, check it and then update an entity identity
         person = (Party) service.get(person.getObjectReference());
-        assertTrue(person != null);
-        assertTrue(person.getIdentities().size() == 1);
+        assertNotNull(person);
+        assertEquals(1, person.getIdentities().size());
         ident1 = person.getIdentities().iterator().next();
         assertTrue(ident1.getIdentity().equals("jimbo"));
         ident1.setIdentity("jimmya");
@@ -112,8 +112,8 @@ public class EntityIdentityTestCase
 
         // make sure the update happened
         person = (Party) service.get(person.getObjectReference());
-        assertTrue(person != null);
-        assertTrue(person.getIdentities().size() == 1);
+        assertNotNull(person);
+        assertEquals(1, person.getIdentities().size());
         ident1 = person.getIdentities().iterator().next();
         assertTrue(ident1.getIdentity().equals("jimmya"));
     }

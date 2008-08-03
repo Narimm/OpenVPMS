@@ -20,20 +20,21 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.party.Contact;
 
 import java.util.HashSet;
 import java.util.Set;
 
 
 /**
+ * Implementation of the {@link PartyDO} interface.
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-05-22 15:14:34 +1000 (Thu, 22 May 2008) $
  */
 public class PartyDOImpl extends EntityDOImpl implements PartyDO {
 
     /**
-     * The list of contacts for the party.
+     * The set of contacts for the party.
      */
     private Set<ContactDO> contacts = new HashSet<ContactDO>();
 
@@ -46,7 +47,7 @@ public class PartyDOImpl extends EntityDOImpl implements PartyDO {
     }
 
     /**
-     * Creates a new <tt>PartyDO</tt>.
+     * Creates a new <tt>PartyDOImpl</tt>.
      *
      * @param archetypeId the archetype id
      */
@@ -64,7 +65,7 @@ public class PartyDOImpl extends EntityDOImpl implements PartyDO {
     }
 
     /**
-     * Add the {@link ContactDOImpl} to this party.
+     * Adds a contact.
      *
      * @param contact contact to add
      */
@@ -74,7 +75,7 @@ public class PartyDOImpl extends EntityDOImpl implements PartyDO {
     }
 
     /**
-     * Remove the {@link Contact} from this party.
+     * Removes a contact.
      *
      * @param contact the contact to remove
      */

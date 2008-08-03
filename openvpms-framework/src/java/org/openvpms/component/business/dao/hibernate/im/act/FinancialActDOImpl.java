@@ -19,15 +19,13 @@
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 import java.math.BigDecimal;
 
+
 /**
- * The financial act is used to model charge, refunds and payment acts to
- * name a few. It extends the {@link Act} class and adds additional
- * attributes
+ * Implementation of the {@link FinancialActDO} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-04-26 17:47:12 +1000 (Thu, 26 Apr 2007) $
@@ -79,14 +77,12 @@ public class FinancialActDOImpl extends ActDOImpl implements FinancialActDO {
      * Default constructor.
      */
     public FinancialActDOImpl() {
-        super();
     }
 
     /**
      * Determines if this is a credit or debit transaction.
      *
-     * @return <code>true</code> if it's a credit, <code>false</code> if it's
-     *         a debit
+     * @return <tt>true</tt> if it's a credit, <tt>false</tt> if it's a debit
      */
     public boolean isCredit() {
         return credit;
@@ -95,7 +91,7 @@ public class FinancialActDOImpl extends ActDOImpl implements FinancialActDO {
     /**
      * Determines if this is a credit or debit transaction.
      *
-     * @param credit if <code>true</code> it's a credit. If <code>false</code>
+     * @param credit if <tt>true</tt> it's a credit. If <tt>false</tt>
      *               it's a debit
      */
     public void setCredit(boolean credit) {
@@ -123,7 +119,7 @@ public class FinancialActDOImpl extends ActDOImpl implements FinancialActDO {
     /**
      * Determines if the act has been printed.
      *
-     * @return <code>true</code> if the act has been printed
+     * @return <tt>true</tt> if the act has been printed
      */
     public boolean isPrinted() {
         return printed;
@@ -132,7 +128,7 @@ public class FinancialActDOImpl extends ActDOImpl implements FinancialActDO {
     /**
      * Determines if the act has been printed.
      *
-     * @param printed if <code>true</code>, the act has been printed
+     * @param printed if <tt>true</tt>, the act has been printed
      */
     public void setPrinted(boolean printed) {
         this.printed = printed;
@@ -238,14 +234,15 @@ public class FinancialActDOImpl extends ActDOImpl implements FinancialActDO {
         allocatedAmount = amount;
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
      */
     @Override
-    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
-        return new ToStringBuilder(this)
-                .appendSuper(null)
+        return new ToStringBuilder(this, STYLE)
+                .appendSuper(super.toString())
                 .append("quantity", quantity)
                 .append("fixedAmount", fixedAmount)
                 .append("unitAmount", unitAmount)

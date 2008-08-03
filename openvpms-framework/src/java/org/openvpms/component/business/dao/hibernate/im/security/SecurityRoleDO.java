@@ -19,51 +19,58 @@
 package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.domain.im.security.SecurityRole;
 
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link SecurityRole} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface SecurityRoleDO extends IMObjectDO {
+
     /**
-     * @return Returns the authorities.
+     * Returns the archetype authorities.
+     *
+     * @return the authorities
      */
     Set<ArchetypeAuthorityDO> getAuthorities();
 
     /**
-     * Add the specified authority
+     * Adds an authority.
      *
      * @param authority the authority to add
      */
     void addAuthority(ArchetypeAuthorityDO authority);
 
     /**
-     * Remove the specified authority
+     * Removes an authority.
      *
      * @param authority the authhority to remove
      */
     void removeAuthority(ArchetypeAuthorityDO authority);
 
     /**
-     * @return Returns the users.
+     * Returns the users.
+     *
+     * @return the users
      */
     Set<UserDO> getUsers();
 
     /**
-     * Make the specified {@link UserDOImpl} a member of this role.
+     * Adds a user.
      *
-     * @param user
+     * @param user the user to add
      */
     void addUser(UserDO user);
 
     /**
-     * Remove the specified user so it is no longer a member of this role.
+     * Removes a user.
      *
-     * @param user
+     * @param user the user to remove
      */
     void removeUser(UserDO user);
 }

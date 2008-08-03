@@ -19,7 +19,7 @@
 			type="java.util.Date" />
 		<node name="docVersion" path="/docVersion" display="document version" 
 			type="java.util.String" />
-		<node name="docReference" path="/docReference" display="document reference" 
+		<node name="document" path="/document" display="document reference" 
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference" 
 			minCardinality="1" />
 		<node name="participations" path="/participations"

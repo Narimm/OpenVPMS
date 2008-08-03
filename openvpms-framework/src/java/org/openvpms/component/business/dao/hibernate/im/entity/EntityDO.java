@@ -20,39 +20,40 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.Entity;
 
 import java.util.Set;
 
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link Entity} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface EntityDO extends IMObjectDO {
+
     /**
-     * Add a new {@link EntityIdentity}
+     * Returns the entity identities.
+     *
+     * @return the entity identities
+     */
+    Set<EntityIdentityDO> getIdentities();
+
+    /**
+     * Adds an identity.
      *
      * @param identity the entity identity to add
      */
     void addIdentity(EntityIdentityDO identity);
 
     /**
-     * Remove the specified {@link EntityIdentity}
+     * Removes the identity.
      *
      * @param identity the identity to remove
-     * @return boolean
+     * @return <tt>true</tt> if the identity existed
      */
     boolean removeIdentity(EntityIdentityDO identity);
-
-    /**
-     * Return the {@link EntityIdentity} as an array
-     *
-     * @return EntityIdentity[]
-     */
-    Set<EntityIdentityDO> getIdentities();
 
     /**
      * Returns the relationships where this is the source entity.
@@ -97,11 +98,18 @@ public interface EntityDO extends IMObjectDO {
     void removeTargetEntityRelationship(EntityRelationshipDO target);
 
     /**
-     * Returns all the entity relationships. Do not use the returned set to
+     * Returns all the entity relationships.
      *
      * @return the relationships
      */
     Set<EntityRelationshipDO> getEntityRelationships();
+
+    /**
+     * Returns the classifications for this entity.
+     *
+     * @return the classifications
+     */
+    Set<LookupDO> getClassifications();
 
     /**
      * Adds a classification to this entity.
@@ -117,10 +125,4 @@ public interface EntityDO extends IMObjectDO {
      */
     void removeClassification(LookupDO classification);
 
-    /**
-     * Returns the classifications for this entity.
-     *
-     * @return the classifications
-     */
-    Set<LookupDO> getClassifications();
 }

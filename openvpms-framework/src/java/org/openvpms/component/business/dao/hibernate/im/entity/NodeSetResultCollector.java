@@ -40,7 +40,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class NodeSetResultCollector extends AbstractNodeResultCollector<NodeSet> {
+public class NodeSetResultCollector
+        extends AbstractNodeResultCollector<NodeSet> {
 
     /**
      * The results.

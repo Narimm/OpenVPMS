@@ -20,48 +20,59 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
+import org.openvpms.component.business.domain.im.party.Contact;
 
 import java.util.Date;
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link Contact} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ContactDO extends IMObjectDO {
+
     /**
-     * Returns the party.
+     * Returns the party that has this contact.
      *
-     * @return returns the party
+     * @return returns the party. May be <tt>null</tt>
      */
     PartyDO getParty();
 
     /**
      * Sets the party.
      *
-     * @param party the entity to set.
+     * @param party the party to set. May be <tt>null</tt>
      */
     void setParty(PartyDO party);
 
     /**
-     * @return Returns the activeStartTime.
+     * Returns the time when the contact became active.
+     *
+     * @return the active start time
      */
     Date getActiveStartTime();
 
     /**
-     * @param startTime The activeStartTime to set.
+     * Sets the active start time.
+     *
+     * @param startTime the active start time.
      */
     void setActiveStartTime(Date startTime);
 
     /**
-     * @return Returns the activeEndTime.
+     * Returns the time when the contact becomes inactive.
+     *
+     * @return the active end time
      */
     Date getActiveEndTime();
 
     /**
-     * @param endTime The activeEndTime to set.
+     * Sets the active end time.
+     *
+     * @param endTime the active end time
      */
     void setActiveEndTime(Date endTime);
 

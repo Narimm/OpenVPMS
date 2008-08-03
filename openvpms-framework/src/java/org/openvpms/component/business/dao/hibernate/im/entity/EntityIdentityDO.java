@@ -19,14 +19,17 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
+
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link EntityIdentity} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface EntityIdentityDO extends IMObjectDO {
+
     /**
      * Returns the identity.
      *

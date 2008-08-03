@@ -19,13 +19,12 @@
 
 package org.openvpms.tools.data.loader;
 
-// commons-resources
-
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
+
 /**
- * This is the base exception thrown by the archetype loader
+ * Exception thrown by the data loader.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$

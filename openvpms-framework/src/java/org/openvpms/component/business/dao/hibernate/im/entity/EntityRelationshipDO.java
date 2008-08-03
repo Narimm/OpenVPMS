@@ -19,21 +19,29 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDO;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+
 
 /**
- * Add description here.
+ * Data object interface corresponding to the {@link EntityRelationship}
+ * class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface EntityRelationshipDO extends PeriodRelationshipDO {
+
     /**
-     * @return Returns the entityIdentity.
+     * Returns the entity identity.
+     *
+     * @return the entity identity. May be <tt>null</tt>.
      */
     EntityIdentityDO getIdentity();
 
     /**
-     * @param identity The identity to set.
+     * Sets the entity identity.
+     *
+     * @param identity the identity. May be <tt>null</tt>
      */
     void setIdentity(EntityIdentityDO identity);
 }

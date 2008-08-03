@@ -27,8 +27,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+
 /**
- * The archetype descriptor is used to describe an archetype.
+ * Implementation of the {@link ArchetypeDescriptorDO} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-08-24 16:54:12 +1000 (Fri, 24 Aug 2007) $
@@ -37,49 +38,50 @@ public class ArchetypeDescriptorDOImpl extends DescriptorDOImpl
         implements ArchetypeDescriptorDO {
 
     /**
-     * The archetype id is the type.
+     * The type of the archetype.
      */
     private ArchetypeId type;
 
     /**
-     * The display name of the archetype. If the displayname is empty then
-     * simply return the name
+     * The display name of the archetype.
      */
     private String displayName;
 
     /**
-     * The full-qualified Java domain class that the archetype constrains
+     * The full-qualified Java domain class.
      */
     private String className;
 
     /**
-     * Indicates that this is the latest version of the archetype descritpor.
-     * Note that an archetype can be qualified by a version number.
+     * Determines if this is the latest version of the archetype descriptor.
      */
-    private boolean isLatest;
+    private boolean latest;
 
     /**
      * Indicates whether this is a primary or top level archetype. Defaults
-     * to true
+     * to <tt>true</tt>.
      */
     private boolean primary = true;
 
     /**
-     * A list of {@link NodeDescriptor} that belong to this archetype
+     * A list of {@link NodeDescriptor}s that belong to this archetype
      * descriptor.
      */
     private Map<String, NodeDescriptorDO> nodeDescriptors =
             new LinkedHashMap<String, NodeDescriptorDO>();
 
+
     /**
-     * Default constructor
+     * Default constructor.
      */
     public ArchetypeDescriptorDOImpl() {
         setArchetypeId(new ArchetypeId("descriptor.archetype.1.0"));
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#setName(java.lang.String)
+    /**
+     * Sets the object name.
+     *
+     * @param name the object name. May be <tt>null</tt>
      */
     @Override
     public void setName(String name) {
@@ -92,70 +94,74 @@ public class ArchetypeDescriptorDOImpl extends DescriptorDOImpl
     }
 
     /**
-     * Return the archetype id, which is also the type
+     * Returns the archetype type.
      *
-     * @return String
+     * @return the archetype id
      */
     public ArchetypeId getType() {
         return type;
     }
 
     /**
-     * Set the archetype id
+     * Returns the java class name.
      *
-     * @param type the archetype id
-     */
-    protected void setType(ArchetypeId type) {
-        this.type = type;
-    }
-
-    /**
-     * @return Returns the associated Java class name.
+     * @return the class name
      */
     public String getClassName() {
         return className;
     }
 
     /**
-     * @param className the class name.
+     * Sets the java class name.
+     *
+     * @param className the class name
      */
     public void setClassName(String className) {
         this.className = className;
     }
 
     /**
-     * @return Returns the isLatest.
+     * Determines if this is the latest version of the archetype.
+     *
+     * @return <tt>true</tt> if this is the latest version
      */
     public boolean isLatest() {
-        return isLatest;
+        return latest;
     }
 
     /**
-     * @param isLatest The isLatest to set.
+     * Determines if this is the latest version of the archetype.
+     *
+     * @param latest <tt>true</tt> if this is the latest version
      */
-    public void setLatest(boolean isLatest) {
-        this.isLatest = isLatest;
+    public void setLatest(boolean latest) {
+        this.latest = latest;
     }
 
     /**
-     * @return Returns the primary.
+     * Determines if this is a primary archetype.
+     *
+     * @return <tt>true</tt> if this is a primary archetype
      */
     public boolean isPrimary() {
         return primary;
     }
 
     /**
-     * @param primary The primary to set.
+     * Determines if this is a primary archetype.
+     *
+     * @param primary <tt>true</tt> if this is a primary archetype
      */
     public void setPrimary(boolean primary) {
         this.primary = primary;
     }
 
     /**
-     * Add a node descriptor to this archetype descripor
+     * Add a node descriptor to this archetype descripor.
      *
      * @param node the node descriptor to add
-     * @throws DescriptorException if we are adding a node descriptor with the same name
+     * @throws DescriptorException if a node descriptor exists with the same
+     *                             name
      */
     public void addNodeDescriptor(NodeDescriptorDO node) {
         if (nodeDescriptors.containsKey(node.getName())) {
@@ -168,7 +174,7 @@ public class ArchetypeDescriptorDOImpl extends DescriptorDOImpl
     }
 
     /**
-     * Remove the specified node descriptor
+     * Removes the specified node descriptor.
      *
      * @param node the node descriptor to remove
      */
@@ -184,7 +190,7 @@ public class ArchetypeDescriptorDOImpl extends DescriptorDOImpl
      *
      * @return the top-level node descriptors
      */
-    public Map<String,NodeDescriptorDO> getNodeDescriptors() {
+    public Map<String, NodeDescriptorDO> getNodeDescriptors() {
         return this.nodeDescriptors;
     }
 
@@ -195,8 +201,9 @@ public class ArchetypeDescriptorDOImpl extends DescriptorDOImpl
      *
      * @return the node descriptors
      */
-    public Map<String,NodeDescriptorDO> getAllNodeDescriptors() {
-        Map<String, NodeDescriptorDO> result = new LinkedHashMap<String, NodeDescriptorDO>();
+    public Map<String, NodeDescriptorDO> getAllNodeDescriptors() {
+        Map<String, NodeDescriptorDO> result
+                = new LinkedHashMap<String, NodeDescriptorDO>();
         for (NodeDescriptorDO descriptor : nodeDescriptors.values()) {
             result.put(descriptor.getName(), descriptor);
             result.putAll(descriptor.getNodeDescriptors());
@@ -225,33 +232,38 @@ public class ArchetypeDescriptorDOImpl extends DescriptorDOImpl
     }
 
     /**
-     * @param displayName The displayName to set.
+     * Sets the display name.
+     *
+     * @param displayName the display name
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
 
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object
      */
     @Override
     public int hashCode() {
         return (type != null) ? type.hashCode() : super.hashCode();
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return <tt>true</tt> if this object is the same as the obj
+     *         argument; <tt>false</tt> otherwise
      */
     @Override
     public boolean equals(Object obj) {
-
-        // is it of the correct type
         if (!(obj instanceof ArchetypeDescriptorDO)) {
             return false;
         }
 
-        // are they the same object
         if (this == obj) {
             return true;
         }
@@ -260,8 +272,10 @@ public class ArchetypeDescriptorDOImpl extends DescriptorDOImpl
         return type.equals(desc.getType());
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
      */
     @Override
     public String toString() {
@@ -270,10 +284,19 @@ public class ArchetypeDescriptorDOImpl extends DescriptorDOImpl
                 .append("type", type)
                 .append("displayName", displayName)
                 .append("className", className)
-                .append("isLatest", isLatest)
+                .append("isLatest", latest)
                 .append("primary", primary)
                 .append("nodeDescriptors", nodeDescriptors)
                 .toString();
+    }
+
+    /**
+     * Set the archetype type.
+     *
+     * @param type the archetype type
+     */
+    protected void setType(ArchetypeId type) {
+        this.type = type;
     }
 
     /**

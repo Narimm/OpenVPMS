@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
@@ -29,7 +30,8 @@ import org.openvpms.component.business.domain.im.common.Participation;
 
 
 /**
- * Add description here.
+ * An {@link Assembler} responsible for assembling {@link ActDO} instances from
+ * {@link Act}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -37,19 +39,40 @@ import org.openvpms.component.business.domain.im.common.Participation;
 public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
         extends IMObjectAssembler<T, DO> {
 
+    /**
+     * Assembles sets of participations.
+     */
     private static final SetAssembler<Participation, ParticipationDO>
             PARTICIPATIONS = SetAssembler.create(Participation.class,
                                                  ParticipationDOImpl.class);
 
+    /**
+     * Assembles sets of act relationships.
+     */
     private static final SetAssembler<ActRelationship, ActRelationshipDO>
             RELATIONSHIPS = SetAssembler.create(ActRelationship.class,
                                                 ActRelationshipDOImpl.class);
 
+    /**
+     * Creates a new <tt>AbstractActAssembler</tt>.
+     *
+     * @param type   the object type
+     * @param typeDO the data object interface type
+     * @param impl   the data object implementation type
+     */
     public AbstractActAssembler(Class<T> type, Class<DO> typeDO,
                                 Class<? extends IMObjectDOImpl> impl) {
         super(type, typeDO, impl);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(DO target, T source, DOState state,
                               Context context) {
@@ -68,8 +91,21 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
         PARTICIPATIONS.assembleDO(target.getParticipations(),
                                   source.getParticipations(),
                                   state, context);
+
+        // duplicate the act's timestamps to improve performance of queries
+        for (ParticipationDO participation : target.getParticipations()) {
+            participation.setActivityStartTime(source.getActivityStartTime());
+            participation.setActivityEndTime(source.getActivityEndTime());
+        }
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(T target, DO source, Context context) {
         super.assembleObject(target, source, context);

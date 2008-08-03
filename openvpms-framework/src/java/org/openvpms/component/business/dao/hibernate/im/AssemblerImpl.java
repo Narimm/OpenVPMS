@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.hibernate.impl;
+package org.openvpms.component.business.dao.hibernate.im;
 
 import org.openvpms.component.business.dao.hibernate.im.act.ActAssembler;
 import org.openvpms.component.business.dao.hibernate.im.act.DocumentActAssembler;
@@ -43,8 +43,9 @@ import org.openvpms.component.business.dao.hibernate.im.security.ArchetypeAuthor
 import org.openvpms.component.business.dao.hibernate.im.security.SecurityRoleAssembler;
 import org.openvpms.component.business.dao.hibernate.im.security.UserAssembler;
 
+
 /**
- * Add description here.
+ * Concrete implemention of the {@link CompoundAssembler}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

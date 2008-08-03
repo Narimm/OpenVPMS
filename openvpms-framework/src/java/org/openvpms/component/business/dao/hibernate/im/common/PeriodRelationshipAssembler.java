@@ -22,7 +22,8 @@ import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 
 
 /**
- * Add description here.
+ * Assembles {@link PeriodRelationship}s from {@link PeriodRelationshipDO}s
+ * and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -31,6 +32,17 @@ public abstract class PeriodRelationshipAssembler<T extends PeriodRelationship,
         DO extends PeriodRelationshipDO>
         extends IMObjectRelationshipAssembler<T, DO> {
 
+    /**
+     * Creates a new <tt>PeriodRelationshipAssembler</tt>.
+     *
+     * @param type        the relationship type
+     * @param typeDO      the relationship data object interface type
+     * @param impl        the relationship data object implementation type
+     * @param endType     the relationship source/target data object interface
+     *                    type
+     * @param endTypeImpl relationship source/target data object implementation
+     *                    type
+     */
     public PeriodRelationshipAssembler(
             Class<T> type, Class<DO> typeDO,
             Class<? extends IMObjectDOImpl> impl,
@@ -39,17 +51,31 @@ public abstract class PeriodRelationshipAssembler<T extends PeriodRelationship,
         super(type, typeDO, impl, endType, endTypeImpl);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
-    protected void assembleDO(DO target, T source,
-                              DOState state, Context context) {
+    protected void assembleDO(DO target, T source, DOState state,
+                              Context context) {
         super.assembleDO(target, source, state, context);
         target.setActiveStartTime(source.getActiveStartTime());
         target.setActiveEndTime(source.getActiveEndTime());
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
-    protected void assembleObject(T target, DO source,
-                                  Context context) {
+    protected void assembleObject(T target, DO source, Context context) {
         super.assembleObject(target, source, context);
         target.setActiveStartTime(source.getActiveStartTime());
         target.setActiveEndTime(source.getActiveEndTime());

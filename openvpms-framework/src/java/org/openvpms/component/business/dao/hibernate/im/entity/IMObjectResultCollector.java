@@ -43,9 +43,6 @@ public class IMObjectResultCollector
      */
     private List<IMObject> result = new ArrayList<IMObject>();
 
-    public IMObjectResultCollector() {
-    }
-
     /**
      * Collects an object.
      *

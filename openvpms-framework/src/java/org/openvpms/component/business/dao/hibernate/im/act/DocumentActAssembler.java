@@ -18,17 +18,20 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.ReferenceUpdater;
-import org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
+import org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
+
 /**
- * Add description here.
+ * An {@link Assembler} responsible for assembling {@link DocumentActDO}
+ * instances from {@link DocumentAct}s and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -36,11 +39,21 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 public class DocumentActAssembler
         extends AbstractActAssembler<DocumentAct, DocumentActDO> {
 
-
+    /**
+     * Creates a new <tt>DocumentActAssembler</tt>.
+     */
     public DocumentActAssembler() {
         super(DocumentAct.class, DocumentActDO.class, DocumentActDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(DocumentActDO target, DocumentAct source,
                               DOState state, Context context) {
@@ -52,6 +65,13 @@ public class DocumentActAssembler
         assembleDoc(target, source, state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(DocumentAct target, DocumentActDO source,
                                   Context context) {
@@ -66,16 +86,36 @@ public class DocumentActAssembler
         target.setDocument(ref);
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected DocumentAct create(DocumentActDO object) {
         return new DocumentAct();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected DocumentActDO create(DocumentAct object) {
         return new DocumentActDOImpl();
     }
 
+    /**
+     * Assembles the document of a document act.
+     *
+     * @param target  the target act
+     * @param source  the source act
+     * @param state   the target state
+     * @param context the assembly context
+     */
     private void assembleDoc(final DocumentActDO target,
-                             final DocumentAct source, 
+                             final DocumentAct source,
                              DOState state, Context context) {
         final IMObjectReference ref = source.getDocument();
         if (ref != null) {

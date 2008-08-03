@@ -18,13 +18,17 @@
 
 package org.openvpms.component.business.dao.hibernate.im.archetype;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 
+
 /**
- * Add description here.
+ * An {@link Assembler} responsible for assembling
+ * {@link AssertionDescriptorDO} instances from {@link AssertionDescriptor}s
+ * and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -33,21 +37,39 @@ public class AssertionDescriptorAssembler
         extends IMObjectAssembler<AssertionDescriptor,
         AssertionDescriptorDO> {
 
+    /**
+     * Creates a new <tt>AssertionDescriptorAssembler</tt>.
+     */
     public AssertionDescriptorAssembler() {
         super(AssertionDescriptor.class, AssertionDescriptorDO.class,
               AssertionDescriptorDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(AssertionDescriptorDO target,
-                              AssertionDescriptor source,
-                              DOState state, Context context) {
+                              AssertionDescriptor source, DOState state,
+                              Context context) {
         super.assembleDO(target, source, state, context);
         target.setErrorMessage(source.getErrorMessage());
         target.setIndex(source.getIndex());
         target.setPropertyMap(source.getPropertyMap());
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(AssertionDescriptor target,
                                   AssertionDescriptorDO source,
@@ -58,10 +80,22 @@ public class AssertionDescriptorAssembler
         target.setPropertyMap(source.getPropertyMap());
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected AssertionDescriptor create(AssertionDescriptorDO object) {
         return new AssertionDescriptor();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected AssertionDescriptorDO create(AssertionDescriptor object) {
         return new AssertionDescriptorDOImpl();
     }

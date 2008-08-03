@@ -28,8 +28,10 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 
+
 /**
- * Add description here.
+ * Assembles {@link ProductPrice} instances from {@link ProductPriceDO}
+ * instances and vice-versa.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -37,14 +39,29 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 public class ProductPriceAssembler
         extends IMObjectAssembler<ProductPrice, ProductPriceDO> {
 
+    /**
+     * Assembles sets of lookups.
+     */
     private SetAssembler<Lookup, LookupDO> LOOKUPS
             = SetAssembler.create(Lookup.class, LookupDOImpl.class);
 
+
+    /**
+     * Creates a new <tt>ProductPriceAssembler</tt>.
+     */
     public ProductPriceAssembler() {
         super(ProductPrice.class, ProductPriceDO.class,
               ProductPriceDOImpl.class);
     }
 
+    /**
+     * Assembles a data object from an object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param state   the data object state
+     * @param context the assembly context
+     */
     @Override
     protected void assembleDO(ProductPriceDO target, ProductPrice source,
                               DOState state, Context context) {
@@ -68,6 +85,13 @@ public class ProductPriceAssembler
                            state, context);
     }
 
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
     @Override
     protected void assembleObject(ProductPrice target, ProductPriceDO source,
                                   Context context) {
@@ -84,10 +108,22 @@ public class ProductPriceAssembler
                                context);
     }
 
+    /**
+     * Creates a new object.
+     *
+     * @param object the source data object
+     * @return a new object corresponding to the supplied data object
+     */
     protected ProductPrice create(ProductPriceDO object) {
         return new ProductPrice();
     }
 
+    /**
+     * Creates a new data object.
+     *
+     * @param object the source object
+     * @return a new data object corresponding to the supplied object
+     */
     protected ProductPriceDO create(ProductPrice object) {
         return new ProductPriceDOImpl();
     }

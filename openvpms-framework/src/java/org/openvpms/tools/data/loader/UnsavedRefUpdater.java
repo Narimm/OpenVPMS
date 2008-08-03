@@ -21,35 +21,61 @@ package org.openvpms.tools.data.loader;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
+
 /**
- * Add description here.
+ * Helper to update nodes with object references with their persistent values.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class UnsavedRefUpdater {
+class UnsavedRefUpdater {
 
+    /**
+     * The load state.
+     */
     private final LoadState state;
 
+    /**
+     * The unsaved reference.
+     */
     private final IMObjectReference reference;
 
+    /**
+     * The node descriptor.
+     */
     private final NodeDescriptor descriptor;
 
+
+    /**
+     * Creates a new <tt>UnsavedRefUpdater</tt>.
+     *
+     * @param state      the load state
+     * @param reference  the unsaved reference
+     * @param descriptor the node descriptor
+     */
     public UnsavedRefUpdater(LoadState state, IMObjectReference reference,
                              NodeDescriptor descriptor) {
         this.state = state;
         this.reference = reference;
         this.descriptor = descriptor;
-
     }
 
+    /**
+     * Returns the object reference.
+     *
+     * @return the object reference
+     */
     public IMObjectReference getRefeference() {
         return reference;
     }
 
+    /**
+     * Updates the node with the saved reference.
+     *
+     * @param reference the saved reference
+     */
     public void update(IMObjectReference reference) {
         descriptor.setValue(state.getObject(), reference);
         state.removeUnsaved(reference);
-
     }
 }
