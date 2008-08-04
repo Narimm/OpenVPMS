@@ -167,6 +167,22 @@
         </unzip>
     </goal>
 
+    <goal name="data:loadbase" description="Load the base data">
+        <ant:java
+                classname="org.openvpms.tools.data.loader.StaxArchetypeDataLoader"
+                failonerror="true"
+                maxmemory="512m"
+                fork="true">
+            <ant:classpath>
+                <ant:pathelement path="${basedir}/src/conf/log4j"/>
+                <ant:pathelement path="${maven.build.dest}"/>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:path refid="maven.dependency.classpath"/>
+            </ant:classpath>
+            <arg line="-c src/conf/spring/applicationContext.xml -s -b 1000 -f src/import/data/base.xml"/>
+        </ant:java>
+    </goal>
+
     <!-- ================================================================== -->
     <!-- Report loading                                                     -->
     <!-- ================================================================== -->
