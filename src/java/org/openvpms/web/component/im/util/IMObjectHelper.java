@@ -28,7 +28,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -103,8 +102,7 @@ public class IMObjectHelper {
                 try {
                     IArchetypeService service
                             = ArchetypeServiceHelper.getArchetypeService();
-                    result = ArchetypeQueryHelper.getByObjectReference(
-                            service, reference);
+                    result = service.get(reference);
                 } catch (OpenVPMSException error) {
                     log.error(error, error);
                 }
@@ -159,7 +157,7 @@ public class IMObjectHelper {
                 Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
                 if (iter.hasNext()) {
                     ObjectSet set = iter.next();
-                    return (String) set.get("o.name");
+                    return set.getString("o.name");
                 }
             } catch (OpenVPMSException error) {
                 log.error(error, error);
@@ -185,7 +183,7 @@ public class IMObjectHelper {
                 Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
                 if (iter.hasNext()) {
                     ObjectSet set = iter.next();
-                    return (Boolean) set.get("o.active");
+                    return set.getBoolean("o.active");
                 }
             } catch (OpenVPMSException error) {
                 log.error(error, error);
@@ -229,8 +227,7 @@ public class IMObjectHelper {
             try {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
-                result = (T) ArchetypeQueryHelper.getByObjectReference(
-                        service, object.getObjectReference());
+                result = (T) service.get(object.getObjectReference());
             } catch (OpenVPMSException error) {
                 log.error(error, error);
             }
@@ -466,8 +463,7 @@ public class IMObjectHelper {
             try {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
-                IMObject o = ArchetypeQueryHelper.getByObjectReference(
-                        service, object.getObjectReference());
+                IMObject o = service.get(object.getObjectReference());
                 if (o != null && o.getVersion() > object.getVersion()) {
                     result = true;
                 }

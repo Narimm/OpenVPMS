@@ -37,10 +37,10 @@ class PatientRelationshipStateFactory extends RelationshipStateFactory {
      * Creates a new <tt>PatientRelationshipState</tt>.
      *
      * @param relationship the relationship
-     * @param sourceUID    the source entity UID
+     * @param sourceId     the source entity Id
      * @param sourceName   the source entity name
      * @param sourceDesc   the source entity description
-     * @param targetUID    the target entity UID
+     * @param targetId     the target entity Id
      * @param targetName   the target entity name
      * @param targetDesc   the target entity description
      * @param active       determines the entities are active
@@ -48,12 +48,12 @@ class PatientRelationshipStateFactory extends RelationshipStateFactory {
      */
     @Override
     public RelationshipState create(EntityRelationship relationship,
-                                    long sourceUID, String sourceName,
-                                    String sourceDesc, long targetUID,
+                                    long sourceId, String sourceName,
+                                    String sourceDesc, long targetId,
                                     String targetName, String targetDesc,
                                     boolean active) {
-        return new PatientRelationshipState(relationship, sourceUID, sourceName,
-                                            sourceDesc, targetUID, targetName,
+        return new PatientRelationshipState(relationship, sourceId, sourceName,
+                                            sourceDesc, targetId, targetName,
                                             targetDesc, active);
     }
 

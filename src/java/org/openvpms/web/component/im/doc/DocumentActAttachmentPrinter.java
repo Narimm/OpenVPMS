@@ -87,8 +87,7 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
         Document result = null;
         if (template == null) {
             DocumentAct act = (DocumentAct) getObject();
-            result = (Document) IMObjectHelper.getObject(
-                    act.getDocReference());
+            result = (Document) IMObjectHelper.getObject(act.getDocument());
         }
         if (result == null) {
             result = super.getDocument();

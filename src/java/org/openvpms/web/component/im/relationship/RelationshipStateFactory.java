@@ -35,22 +35,22 @@ public class RelationshipStateFactory {
      * Creates a new <tt>RelationshipState</tt>.
      *
      * @param relationship the relationship
-     * @param sourceUID    the source entity UID
+     * @param sourceId     the source entity id
      * @param sourceName   the source entity name
      * @param sourceDesc   the source entity description
-     * @param targetUID    the target entity UID
+     * @param targetId     the target entity id
      * @param targetName   the target entity name
      * @param targetDesc   the target entity description
      * @param active       determines the entities are active
      * @return a new <tt>RelationshipState</tt>
      */
     public RelationshipState create(EntityRelationship relationship,
-                                    long sourceUID, String sourceName,
-                                    String sourceDesc, long targetUID,
+                                    long sourceId, String sourceName,
+                                    String sourceDesc, long targetId,
                                     String targetName, String targetDesc,
                                     boolean active) {
-        return new RelationshipState(relationship, sourceUID, sourceName,
-                                     sourceDesc, targetUID, targetName,
+        return new RelationshipState(relationship, sourceId, sourceName,
+                                     sourceDesc, targetId, targetName,
                                      targetDesc, active);
     }
 

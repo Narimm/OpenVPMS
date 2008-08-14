@@ -57,8 +57,8 @@ public class AbstractResultSetTest extends AbstractAppTest {
         childBean.addParticipation("participation.patient", patient);
         childBean.addParticipation("participation.product", product);
         bean.addRelationship("actRelationship.customerEstimationItem", child);
-        bean.save();
-        childBean.save();
+
+        TestHelper.save(act, child);
         return act;
     }
 

@@ -228,7 +228,7 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
         String status = null;
 
         if (AppointmentStatus.CHECKED_IN.equals(code)) {
-            Date arrival = (Date) set.get(AppointmentQuery.ARRIVAL_TIME);
+            Date arrival = set.getDate(AppointmentQuery.ARRIVAL_TIME);
             if (arrival != null) {
                 String diff = DateHelper.formatTimeDiff(arrival, new Date());
                 status = Messages.get("appointmenttablemodel.waiting", diff);
@@ -271,8 +271,8 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
      */
     private Component getViewer(ObjectSet set, String refKey, String nameKey,
                                 boolean link) {
-        IMObjectReference ref = (IMObjectReference) set.get(refKey);
-        String name = (String) set.get(nameKey);
+        IMObjectReference ref = set.getReference(refKey);
+        String name = set.getString(nameKey);
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
                 ref, name, link);
         return viewer.getComponent();

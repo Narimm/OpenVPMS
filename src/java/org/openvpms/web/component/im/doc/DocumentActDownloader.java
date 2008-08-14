@@ -118,7 +118,7 @@ public class DocumentActDownloader extends Downloader {
      * @throws DocumentException         if the document can't be found
      */
     protected Document getDocument() {
-        IMObjectReference ref = _act.getDocReference();
+        IMObjectReference ref = _act.getDocument();
         if (ref == null) {
             throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }

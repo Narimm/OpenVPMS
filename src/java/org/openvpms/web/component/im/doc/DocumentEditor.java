@@ -244,8 +244,8 @@ public class DocumentEditor extends AbstractPropertyEditor
         Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
         if (iter.hasNext()) {
             ObjectSet set = iter.next();
-            String name = (String) set.get("doc.name");
-            String description = (String) set.get("doc.description");
+            String name = set.getString("doc.name");
+            String description = set.getString("doc.description");
             selector.setObject(name, description, true);
         }
     }

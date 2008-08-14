@@ -61,7 +61,7 @@ public class DocumentParticipationLayoutStrategy
         IMObjectReference ref = (IMObjectReference) property.getValue();
         final DocumentAct act = (DocumentAct) IMObjectHelper.getObject(ref);
         Component component;
-        if (act != null) {
+        if (act != null && act.getDocument() != null) {
             DocumentActDownloader downloader = new DocumentActDownloader(act);
 
             // wrap in a row to left justify

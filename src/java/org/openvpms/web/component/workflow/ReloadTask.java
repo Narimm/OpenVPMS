@@ -21,7 +21,6 @@ package org.openvpms.web.component.workflow;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.ContextException;
@@ -65,8 +64,7 @@ public class ReloadTask extends SynchronousTask {
         } else {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
-            object = ArchetypeQueryHelper.getByObjectReference(
-                    service, object.getObjectReference());
+            object = service.get(object.getObjectReference());
             if (object == null) {
                 ErrorDialog.show(Messages.get("imobject.noexist"),
                                  DescriptorHelper.getDisplayName(shortName));

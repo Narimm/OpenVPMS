@@ -47,9 +47,9 @@ public class RelationshipState {
     private final EntityRelationship relationship;
 
     /**
-     * The source entity UID.
+     * The source entity id.
      */
-    private long sourceUID;
+    private long sourceId;
 
     /**
      * The source entity name.
@@ -62,9 +62,9 @@ public class RelationshipState {
     private String sourceDescription;
 
     /**
-     * The target entity UID.
+     * The target entity id.
      */
-    private long targetUID;
+    private long targetId;
 
     /**
      * The target entity name.
@@ -86,25 +86,25 @@ public class RelationshipState {
      * Creates a new <tt>RelationshipState</tt>.
      *
      * @param relationship      the relationship
-     * @param sourceUID         the source entity UID
+     * @param sourceId          the source entity id
      * @param sourceName        the source entity name
      * @param sourceDescription the source entity description
-     * @param targetUID         the target entity UID
+     * @param targetId          the target entity id
      * @param targetName        the target entity name
      * @param targetDescription the target entity description
      * @param active            determines the entities are active
      */
     public RelationshipState(EntityRelationship relationship,
-                             long sourceUID, String sourceName,
+                             long sourceId, String sourceName,
                              String sourceDescription,
-                             long targetUID, String targetName,
+                             long targetId, String targetName,
                              String targetDescription,
                              boolean active) {
         this.relationship = relationship;
-        this.sourceUID = sourceUID;
+        this.sourceId = sourceId;
         this.sourceName = sourceName;
         this.sourceDescription = sourceDescription;
-        this.targetUID = targetUID;
+        this.targetId = targetId;
         this.targetName = targetName;
         this.targetDescription = targetDescription;
         this.active = active;
@@ -128,7 +128,7 @@ public class RelationshipState {
             ObjectRefConstraint constraint
                     = new ObjectRefConstraint("o", reference);
             ArchetypeQuery query = new ArchetypeQuery(constraint);
-            query.add(new NodeSelectConstraint("o.uid"));
+            query.add(new NodeSelectConstraint("o.id"));
             query.add(new NodeSelectConstraint("o.name"));
             query.add(new NodeSelectConstraint("o.description"));
             query.add(new NodeSelectConstraint("o.active"));
@@ -136,22 +136,22 @@ public class RelationshipState {
             Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
             if (iter.hasNext()) {
                 ObjectSet set = iter.next();
-                long uid = (Long) set.get("o.uid");
-                String name = (String) set.get("o.name");
-                String desc = (String) set.get("o.description");
-                active = (Boolean) set.get("o.active");
+                long id = set.getLong("o.id");
+                String name = set.getString("o.name");
+                String desc = set.getString("o.description");
+                active = set.getBoolean("o.active");
                 if (source) {
-                    sourceUID = entity.getUid();
+                    sourceId = entity.getId();
                     sourceName = entity.getName();
                     sourceDescription = entity.getDescription();
-                    targetUID = uid;
+                    targetId = id;
                     targetName = name;
                     targetDescription = desc;
                 } else {
-                    sourceUID = uid;
+                    sourceId = id;
                     sourceName = name;
                     sourceDescription = desc;
-                    targetUID = entity.getUid();
+                    targetId = entity.getId();
                     targetName = entity.getName();
                     targetDescription = entity.getDescription();
                 }
@@ -160,12 +160,12 @@ public class RelationshipState {
     }
 
     /**
-     * Returns the source entity UID.
+     * Returns the source entity id.
      *
-     * @return the source entity UID
+     * @return the source entity id
      */
-    public long getSourceUID() {
-        return sourceUID;
+    public long getSourceId() {
+        return sourceId;
     }
 
     /**
@@ -187,12 +187,12 @@ public class RelationshipState {
     }
 
     /**
-     * Returns the target entity UID.
+     * Returns the target entity id.
      *
-     * @return the target entity UID
+     * @return the target entity id
      */
-    public long getTargetUID() {
-        return targetUID;
+    public long getTargetId() {
+        return targetId;
     }
 
     /**

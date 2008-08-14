@@ -31,7 +31,11 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.IMObjectProperty;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 
 /**
@@ -67,11 +71,11 @@ public abstract class AbstractCollectionPropertyEditorTest
      * Tests {@link CollectionPropertyEditor#save}.
      */
     public void testSave() {
-        IMObject parent = createParent();
+        final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
         assertTrue("Require collection with min cardinality >= 0",
                    property.getMinCardinality() >= 0);
-        CollectionPropertyEditor editor = createEditor(property, parent);
+        final CollectionPropertyEditor editor = createEditor(property, parent);
 
         IMObject element = createObject(parent);
         editor.add(element);
@@ -81,8 +85,13 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertTrue("Collection should be valid", editor.isValid());
         assertTrue("Collection should be modified", editor.isModified());
 
-        assertTrue("Failed to save parent", SaveHelper.save(parent));
-        assertTrue("Failed to save collection", editor.save());
+        execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                assertTrue("Failed to save collection", editor.save());
+                return null;
+            }
+        });
 
         assertTrue(editor.isSaved());
         assertFalse(editor.isModified());
@@ -108,11 +117,11 @@ public abstract class AbstractCollectionPropertyEditorTest
      * Tests {@link CollectionPropertyEditor#remove}.
      */
     public void testRemove() {
-        IMObject parent = createParent();
+        final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
         assertTrue("Require collection with min cardinality >= 0",
                    property.getMinCardinality() >= 0);
-        CollectionPropertyEditor editor = createEditor(property, parent);
+        final CollectionPropertyEditor editor = createEditor(property, parent);
 
         IMObject elt1 = createObject(parent);
         IMObject elt2 = createObject(parent);
@@ -126,8 +135,13 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertTrue(editor.isValid());
         assertTrue(editor.isModified());
 
-        assertTrue("Failed to save parent", SaveHelper.save(parent));
-        assertTrue("Failed to save collection", editor.save());
+        execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                assertTrue("Failed to save collection", editor.save());
+                return null;
+            }
+        });
 
         // make sure the elements have saved
         assertEquals("Retrieved element1 doesnt match that saved",
@@ -141,8 +155,13 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertFalse(editor.getObjects().contains(elt1));
         assertTrue(editor.getObjects().contains(elt2));
 
-        assertTrue("Failed to save parent", SaveHelper.save(parent));
-        assertTrue("Failed to save collection", editor.save());
+        execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                assertTrue("Failed to save collection", editor.save());
+                return null;
+            }
+        });
         assertNull("element1 wasnt deleted", get(elt1));
 
         // now retrieve parent and verify collection matches the original
@@ -163,11 +182,11 @@ public abstract class AbstractCollectionPropertyEditorTest
      * been saved and reloaded.
      */
     public void testRemoveAfterReload() {
-        IMObject parent = createParent();
+        final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
         assertTrue("Require collection with min cardinality >= 0",
                    property.getMinCardinality() >= 0);
-        CollectionPropertyEditor editor = createEditor(property, parent);
+        final CollectionPropertyEditor editor = createEditor(property, parent);
 
         IMObject elt1 = createObject(parent);
         IMObject elt2 = createObject(parent);
@@ -181,8 +200,13 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertTrue(editor.isValid());
         assertTrue(editor.isModified());
 
-        assertTrue("Failed to save parent", SaveHelper.save(parent));
-        assertTrue("Failed to save collection", editor.save());
+        execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                assertTrue("Failed to save collection", editor.save());
+                return null;
+            }
+        });
 
         // make sure the elements have saved
         assertEquals("Retrieved element1 doesnt match that saved",
@@ -191,24 +215,30 @@ public abstract class AbstractCollectionPropertyEditorTest
                      elt2, get(elt2));
 
         // reload parent and collection
-        parent = get(parent);
-        editor = createEditor(getCollectionProperty(parent), parent);
-        assertEquals(2, editor.getObjects().size());
+        final IMObject parent2 = get(parent);
+        final CollectionPropertyEditor editor2 = createEditor(
+                getCollectionProperty(parent2), parent2);
+        assertEquals(2, editor2.getObjects().size());
         elt1 = get(elt1);
         elt2 = get(elt2);
 
         // now remove elt1, save and verify that it is no longer available
-        editor.remove(elt1);
-        assertEquals(1, editor.getObjects().size());
-        assertFalse(editor.getObjects().contains(elt1));
-        assertTrue(editor.getObjects().contains(elt2));
+        editor2.remove(elt1);
+        assertEquals(1, editor2.getObjects().size());
+        assertFalse(editor2.getObjects().contains(elt1));
+        assertTrue(editor2.getObjects().contains(elt2));
 
-        assertTrue("Failed to save parent", SaveHelper.save(parent));
-        assertTrue("Failed to save collection", editor.save());
+        execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save parent", SaveHelper.save(parent2));
+                assertTrue("Failed to save collection", editor2.save());
+                return null;
+            }
+        });
         assertNull("element1 wasnt deleted", get(elt1));
 
         // now retrieve parent and verify collection matches the original
-        IMObject savedParent = get(parent);
+        IMObject savedParent = get(parent2);
         assertNotNull(savedParent);
         CollectionPropertyEditor saved = createEditor(
                 getCollectionProperty(savedParent), savedParent);
@@ -279,4 +309,14 @@ public abstract class AbstractCollectionPropertyEditorTest
         return IMObjectHelper.reload(object);
     }
 
+    /**
+     * Executes a callback in a transaction.
+     *
+     * @param callback the callback
+     */
+    protected void execute(TransactionCallback callback) {
+        TransactionTemplate template = new TransactionTemplate(
+                ServiceHelper.getTransactionManager());
+        template.execute(callback);
+    }
 }

@@ -42,21 +42,21 @@ class PatientRelationshipState extends RelationshipState {
      * Creates a new <tt>PatientRelationshipState</tt>.
      *
      * @param relationship      the relationship
-     * @param sourceUID         the source entity UID
+     * @param sourceId          the source entity id
      * @param sourceName        the source entity name
      * @param sourceDescription the source entity description
-     * @param targetUID         the target entity UID
+     * @param targetId          the target entity id
      * @param targetName        the target entity name
      * @param targetDescription the target entity description
      * @param active            determines the entities are active
      */
     public PatientRelationshipState(EntityRelationship relationship,
-                                    long sourceUID, String sourceName,
+                                    long sourceId, String sourceName,
                                     String sourceDescription,
-                                    long targetUID, String targetName,
+                                    long targetId, String targetName,
                                     String targetDescription,
                                     boolean active) {
-        super(relationship, sourceUID, sourceName, sourceDescription, targetUID,
+        super(relationship, sourceId, sourceName, sourceDescription, targetId,
               targetName, targetDescription, active);
     }
 

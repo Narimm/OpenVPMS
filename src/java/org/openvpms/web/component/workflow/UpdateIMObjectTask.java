@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.SaveHelper;
 
@@ -156,8 +155,7 @@ public class UpdateIMObjectTask extends SynchronousTask {
             if (reference != null) {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
-                object = ArchetypeQueryHelper.getByObjectReference(
-                        service, reference);
+                object = service.get(reference);
             } else {
                 object = context.getObject(shortName);
             }

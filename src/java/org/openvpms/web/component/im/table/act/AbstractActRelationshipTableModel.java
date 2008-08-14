@@ -20,10 +20,8 @@ package org.openvpms.web.component.im.table.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.web.component.im.table.DelegatingIMObjectTableModel;
 
 import java.util.ArrayList;
@@ -52,16 +50,15 @@ public abstract class AbstractActRelationshipTableModel<T extends Act>
      *
      * @param objects the objects to display
      */
+    @SuppressWarnings("unchecked")
     public void setObjects(List<ActRelationship> objects) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         _relationships = objects;
         List<T> acts = new ArrayList<T>();
-        for (IMObject object : objects) {
-            ActRelationship relationship = (ActRelationship) object;
+        for (ActRelationship relationship : objects) {
             if (relationship.getTarget() != null) {
-                T act = (T) ArchetypeQueryHelper.getByObjectReference(
-                        service, relationship.getTarget());
+                T act = (T) service.get(relationship.getTarget());
                 if (act != null) {
                     acts.add(act);
                 }

@@ -101,7 +101,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
             }
         });
         selector.setObject(act);
-        refMgr = new DocReferenceMgr(act.getDocReference());
+        refMgr = new DocReferenceMgr(act.getDocument());
     }
 
     /**
@@ -164,17 +164,17 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     @Override
     protected boolean saveChildren() {
         boolean saved = super.saveChildren();
-        if (saved && docModified) {
+        if (saved && (docModified || act.isNew())) {
             if (!act.isNew()) {
                 // need to reload the act as the participation has already
                 // been saved by the parent Entity. Failing to do so will
                 // result in hibernate StaleObjectExceptions
-                IMObjectReference ref = act.getDocReference();
+                IMObjectReference ref = act.getDocument();
                 String fileName = act.getFileName();
                 String mimeType = act.getMimeType();
                 String description = act.getDescription();
                 act = getDocumentAct();
-                act.setDocReference(ref);
+                act.setDocument(ref);
                 act.setFileName(fileName);
                 act.setMimeType(mimeType);
                 act.setDescription(description);
@@ -286,7 +286,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
      */
     private void replaceDocReference(Document document) {
         IMObjectReference ref = document.getObjectReference();
-        act.setDocReference(ref);
+        act.setDocument(ref);
         refMgr.add(ref);
     }
 

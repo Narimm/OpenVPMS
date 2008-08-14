@@ -112,7 +112,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     protected void onPrint() {
         boolean print = true;
         DocumentAct act = getObject();
-        if (act.getDocReference() == null) {
+        if (act.getDocument() == null) {
             if (canRefresh()) {
                 if (!refresh()) {
                     print = false;

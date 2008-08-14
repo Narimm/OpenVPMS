@@ -81,35 +81,34 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
         String style = BLOCK_STYLE1;
         IMTable<ObjectSet> actTable = (IMTable<ObjectSet>) table;
         ObjectSet set = actTable.getObjects().get(row);
-        String status = (String)set.get(AppointmentQuery.ACT_STATUS);
+        String status = set.getString(AppointmentQuery.ACT_STATUS);
         if (status != null && !status.equals("PENDING")) {
-        	style = "TaskTable." + status;
-        }
-        else {        	
-	        if (row == previousRow) {
-	            style = previousStyle;
-	        } else {
-	            Date startTime = (Date) set.get(AppointmentQuery.ACT_START_TIME);
-	            if (startTime != null) {
-	                Calendar calendar = new GregorianCalendar();
-	                calendar.setTime(startTime);
-	                int hour = calendar.get(Calendar.HOUR_OF_DAY);
-	                if (row == (previousRow + 1)) {
-	                    if (hour == previousHour) {
-	                        style = previousStyle;
-	                    } else if (BLOCK_STYLE1.equals(previousStyle)) {
-	                        style = BLOCK_STYLE2;
-	                    }
-	                } else {
-	                    if (hour % 2 == 1) {
-	                        style = BLOCK_STYLE2;
-	                    }
-	                }
-	                previousHour = hour;
-	            }
-	            previousRow = row;
-	            previousStyle = style;
-	        }
+            style = "TaskTable." + status;
+        } else {
+            if (row == previousRow) {
+                style = previousStyle;
+            } else {
+                Date startTime = set.getDate(AppointmentQuery.ACT_START_TIME);
+                if (startTime != null) {
+                    Calendar calendar = new GregorianCalendar();
+                    calendar.setTime(startTime);
+                    int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                    if (row == (previousRow + 1)) {
+                        if (hour == previousHour) {
+                            style = previousStyle;
+                        } else if (BLOCK_STYLE1.equals(previousStyle)) {
+                            style = BLOCK_STYLE2;
+                        }
+                    } else {
+                        if (hour % 2 == 1) {
+                            style = BLOCK_STYLE2;
+                        }
+                    }
+                    previousHour = hour;
+                }
+                previousRow = row;
+                previousStyle = style;
+            }
         }
         return style;
     }

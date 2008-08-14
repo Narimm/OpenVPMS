@@ -185,7 +185,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             try {
                 ObjectSet selected = browser.getSelected();
                 if (selected != null) {
-                    IMObjectReference ref = (IMObjectReference) selected.get(
+                    IMObjectReference ref = selected.getReference(
                             CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
                     if (ref != null) {
                         GlobalContext context = GlobalContext.getInstance();

@@ -161,7 +161,7 @@ public class CustomerBalanceSummaryTableModel
         Object value = set.get(columns[index][0]);
         switch (index) {
             case CUSTOMER_INDEX:
-                String name = (String) set.get(
+                String name = set.getString(
                         CustomerBalanceSummaryQuery.CUSTOMER_NAME);
                 result = getViewer((IMObjectReference) value, name);
                 break;

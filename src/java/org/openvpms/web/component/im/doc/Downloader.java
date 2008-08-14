@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.servlet.DownloadServlet;
@@ -83,8 +82,7 @@ public abstract class Downloader {
     protected Document getDocument(IMObjectReference reference) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        Document doc = (Document) ArchetypeQueryHelper.getByObjectReference(
-                service, reference);
+        Document doc = (Document) service.get(reference);
         if (doc == null) {
             throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }
