@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
@@ -155,9 +154,9 @@ public class ChargeStockUpdater {
     /**
      * Updates stock quantities.
      *
-     * @param stock the product and location state
+     * @param stock    the product and location state
      * @param quantity the quantity to add/remove
-     * @param credit determines if the act is a credit
+     * @param credit   determines if the act is a credit
      */
     private void updateStockQuantities(StockQty stock, BigDecimal quantity,
                                        boolean credit) {
@@ -241,8 +240,7 @@ public class ChargeStockUpdater {
      */
     private IMObject get(IMObjectReference ref) {
         if (ref != null) {
-            return ArchetypeQueryHelper.getByObjectReference(
-                    service, ref);
+            return service.get(ref);
         }
         return null;
     }
@@ -352,7 +350,7 @@ public class ChargeStockUpdater {
          * @param other the other stock quantity
          * @return <tt>true</tt> if they have the same product
          */
-        public boolean hasProduct(StockQty  other) {
+        public boolean hasProduct(StockQty other) {
             return ObjectUtils.equals(product, other.getProductRef());
         }
     }

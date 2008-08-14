@@ -91,8 +91,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         item.addParticipation("participation.product", product);
         item.addRelationship("actRelationship.invoiceItemDispensing",
                              medication);
-        save(medication);
-        item.save();
+        save(medication, item.getAct());
         item = reload(item); // reload to ensure the item has saved correctly
 
         // make sure a reminder has been added
@@ -335,7 +334,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         customer = TestHelper.createCustomer();
-        clinician = TestHelper.createClinician(false);
+        clinician = TestHelper.createClinician();
         patient = TestHelper.createPatient();
         reminder = ReminderTestHelper.createReminderType();
         template = createDocumentTemplate();
@@ -412,7 +411,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
             bean.addRelationship("entityRelationship.productDocument",
                                  template);
         }
-        bean.save();
+        save(product, reminder, template);
         return product;
     }
 

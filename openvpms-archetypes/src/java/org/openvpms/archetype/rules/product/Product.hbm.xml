@@ -25,24 +25,24 @@
     <query name="product.speciesQuery1">
         <![CDATA[
 select p
-from org.openvpms.component.business.domain.im.product.Product as p
-where p.uid in (
-       select p2.uid
-       from org.openvpms.component.business.domain.im.product.Product as p2
+from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p
+where p.id in (
+       select p2.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p2
        inner join p2.classifications c
        where p2.archetypeId.shortName=:shortName1
              and c.active=true
              and c.archetypeId.shortName='lookup.species'
              and c.code=:species)
-       or p.uid in (
-       select p3.uid
-       from org.openvpms.component.business.domain.im.product.Product p3
+       or p.id in (
+       select p3.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl p3
        left join p3.classifications c
        where p3.archetypeId.shortName=:shortName1
              and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
-             and p3.uid not in (
-             select p4.uid
-             from org.openvpms.component.business.domain.im.product.Product as p4
+             and p3.id not in (
+             select p4.id
+             from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p4
              inner join p4.classifications c
              where p4.archetypeId.shortName=:shortName1
                    and c.active=true
@@ -56,26 +56,26 @@ order by p.name
     <query name="product.nameAndSpeciesQuery1">
          <![CDATA[
 select p
-from org.openvpms.component.business.domain.im.product.Product as p
-where p.uid in (
-       select p2.uid
-       from org.openvpms.component.business.domain.im.product.Product as p2
+from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p
+where p.id in (
+       select p2.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p2
        inner join p2.classifications c
        where (p2.archetypeId.shortName=:shortName1)
              and p2.name like :name
              and c.active=true
              and c.archetypeId.shortName='lookup.species'
              and c.code=:species)
-       or p.uid in (
-       select p3.uid
-       from org.openvpms.component.business.domain.im.product.Product p3
+       or p.id in (
+       select p3.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl p3
        left join p3.classifications c
        where p3.archetypeId.shortName=:shortName1
              and p3.name like :name
              and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
-             and p3.uid not in (
-             select p4.uid
-             from org.openvpms.component.business.domain.im.product.Product as p4
+             and p3.id not in (
+             select p4.id
+             from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p4
              inner join p4.classifications c
              where (p4.archetypeId.shortName=:shortName1)
                    and p4.name like :name
@@ -90,24 +90,24 @@ order by p.name
    <query name="product.speciesQuery2">
         <![CDATA[
 select p
-from org.openvpms.component.business.domain.im.product.Product as p
-where p.uid in (
-       select p2.uid
-       from org.openvpms.component.business.domain.im.product.Product as p2
+from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p
+where p.id in (
+       select p2.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p2
        inner join p2.classifications c
        where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2)
              and c.active=true
              and c.archetypeId.shortName='lookup.species'
              and c.code=:species)
-       or p.uid in (
-       select p3.uid
-       from org.openvpms.component.business.domain.im.product.Product p3
+       or p.id in (
+       select p3.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl p3
        left join p3.classifications c
        where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2)
              and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
-             and p3.uid not in (
-             select p4.uid
-             from org.openvpms.component.business.domain.im.product.Product as p4
+             and p3.id not in (
+             select p4.id
+             from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p4
              inner join p4.classifications c
              where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2)
                    and c.active=true
@@ -121,26 +121,26 @@ order by p.name
     <query name="product.nameAndSpeciesQuery2">
          <![CDATA[
 select p
-from org.openvpms.component.business.domain.im.product.Product as p
-where p.uid in (
-       select p2.uid
-       from org.openvpms.component.business.domain.im.product.Product as p2
+from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p
+where p.id in (
+       select p2.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p2
        inner join p2.classifications c
        where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2)
              and p2.name like :name
              and c.active=true
              and c.archetypeId.shortName='lookup.species'
              and c.code=:species)
-       or p.uid in (
-       select p3.uid
-       from org.openvpms.component.business.domain.im.product.Product p3
+       or p.id in (
+       select p3.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl p3
        left join p3.classifications c
        where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2)
              and p3.name like :name
              and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
-             and p3.uid not in (
-             select p4.uid
-             from org.openvpms.component.business.domain.im.product.Product as p4
+             and p3.id not in (
+             select p4.id
+             from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p4
              inner join p4.classifications c
              where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2)
                    and p4.name like :name
@@ -155,24 +155,24 @@ order by p.name
    <query name="product.speciesQuery3">
         <![CDATA[
 select p
-from org.openvpms.component.business.domain.im.product.Product as p
-where p.uid in (
-       select p2.uid
-       from org.openvpms.component.business.domain.im.product.Product as p2
+from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p
+where p.id in (
+       select p2.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p2
        inner join p2.classifications c
        where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2 or p2.archetypeId.shortName=:shortName3)
              and c.active=true
              and c.archetypeId.shortName='lookup.species'
              and c.code=:species)
-       or p.uid in (
-       select p3.uid
-       from org.openvpms.component.business.domain.im.product.Product p3
+       or p.id in (
+       select p3.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl p3
        left join p3.classifications c
        where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2 or p3.archetypeId.shortName=:shortName3)
              and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
-             and p3.uid not in (
-             select p4.uid
-             from org.openvpms.component.business.domain.im.product.Product as p4
+             and p3.id not in (
+             select p4.id
+             from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p4
              inner join p4.classifications c
              where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2 or p4.archetypeId.shortName=:shortName3)
                    and c.active=true
@@ -186,26 +186,26 @@ order by p.name
     <query name="product.nameAndSpeciesQuery3">
          <![CDATA[
 select p
-from org.openvpms.component.business.domain.im.product.Product as p
-where p.uid in (
-       select p2.uid
-       from org.openvpms.component.business.domain.im.product.Product as p2
+from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p
+where p.id in (
+       select p2.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p2
        inner join p2.classifications c
        where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2 or p2.archetypeId.shortName=:shortName3)
              and p2.name like :name
              and c.active=true
              and c.archetypeId.shortName='lookup.species'
              and c.code=:species)
-       or p.uid in (
-       select p3.uid
-       from org.openvpms.component.business.domain.im.product.Product p3
+       or p.id in (
+       select p3.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl p3
        left join p3.classifications c
        where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2 or p3.archetypeId.shortName=:shortName3)
              and p3.name like :name
              and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
-             and p3.uid not in (
-             select p4.uid
-             from org.openvpms.component.business.domain.im.product.Product as p4
+             and p3.id not in (
+             select p4.id
+             from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p4
              inner join p4.classifications c
              where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2 or p4.archetypeId.shortName=:shortName3)
                    and p4.name like :name
@@ -220,24 +220,24 @@ order by p.name
     <query name="product.speciesQuery4">
          <![CDATA[
 select p
-from org.openvpms.component.business.domain.im.product.Product as p
-where p.uid in (
-       select p2.uid
-       from org.openvpms.component.business.domain.im.product.Product as p2
+from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p
+where p.id in (
+       select p2.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p2
        inner join p2.classifications c
        where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2 or p2.archetypeId.shortName=:shortName3 or p2.archetypeId.shortName=:shortName4)
              and c.active=true
              and c.archetypeId.shortName='lookup.species'
              and c.code=:species)
-       or p.uid in (
-       select p3.uid
-       from org.openvpms.component.business.domain.im.product.Product p3
+       or p.id in (
+       select p3.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl p3
        left join p3.classifications c
        where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2 or p3.archetypeId.shortName=:shortName3 or p3.archetypeId.shortName=:shortName4)
              and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
-             and p3.uid not in (
-             select p4.uid
-             from org.openvpms.component.business.domain.im.product.Product as p4
+             and p3.id not in (
+             select p4.id
+             from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p4
              inner join p4.classifications c
              where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2 or p4.archetypeId.shortName=:shortName3 or p4.archetypeId.shortName=:shortName4)
                    and c.active=true
@@ -251,26 +251,26 @@ order by p.name
     <query name="product.nameAndSpeciesQuery4">
          <![CDATA[
 select p
-from org.openvpms.component.business.domain.im.product.Product as p
-where p.uid in (
-       select p2.uid
-       from org.openvpms.component.business.domain.im.product.Product as p2
+from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p
+where p.id in (
+       select p2.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p2
        inner join p2.classifications c
        where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2 or p2.archetypeId.shortName=:shortName3 or p2.archetypeId.shortName=:shortName4)
              and p2.name like :name
              and c.active=true
              and c.archetypeId.shortName='lookup.species'
              and c.code=:species)
-       or p.uid in (
-       select p3.uid
-       from org.openvpms.component.business.domain.im.product.Product p3
+       or p.id in (
+       select p3.id
+       from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl p3
        left join p3.classifications c
        where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2 or p3.archetypeId.shortName=:shortName3 or p3.archetypeId.shortName=:shortName4)
              and p3.name like :name
              and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
-             and p3.uid not in (
-             select p4.uid
-             from org.openvpms.component.business.domain.im.product.Product as p4
+             and p3.id not in (
+             select p4.id
+             from org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl as p4
              inner join p4.classifications c
              where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2 or p4.archetypeId.shortName=:shortName3 or p4.archetypeId.shortName=:shortName4)
                    and p4.name like :name

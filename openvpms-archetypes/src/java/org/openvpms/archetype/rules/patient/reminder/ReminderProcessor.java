@@ -33,7 +33,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
@@ -183,8 +182,7 @@ public class ReminderProcessor
             IMObjectReference target = template.getTarget();
             if (target != null) {
                 documentTemplate =
-                        (Entity) ArchetypeQueryHelper.getByObjectReference(
-                                service, target);
+                        (Entity) service.get(target);
             }
         }
 

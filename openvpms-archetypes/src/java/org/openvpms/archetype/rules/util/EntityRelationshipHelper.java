@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanException;
 
@@ -128,8 +127,7 @@ public class EntityRelationshipHelper {
                                     IArchetypeService service) {
         Entity result = null;
         if (ref != null) {
-            Entity entity = (Entity) ArchetypeQueryHelper.getByObjectReference(
-                    service, ref);
+            Entity entity = (Entity) service.get(ref);
             if (entity != null && entity.isActive()) {
                 result = entity;
             }

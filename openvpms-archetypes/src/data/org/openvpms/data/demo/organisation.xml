@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetype>
-	<data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Demonstration Practice" >
+	<data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Demonstration Practice" currency="AUD">
 		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777" />
 		<data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC" postcode="3088" />
 	</data>	

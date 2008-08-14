@@ -70,8 +70,7 @@ public class StockUpdaterTestCase extends AbstractStockTest {
         bean.addRelationship(STOCK_TRANSFER_ITEM_RELATIONSHIP, item);
         itemBean.addParticipation(STOCK_PARTICIPATION, product);
         itemBean.setValue("quantity", quantity);
-        itemBean.save();
-        bean.save();
+        save(act, item);
 
         // verify transfer doesn't take place till the act is posted
         assertEquals(BigDecimal.ZERO, getStock(stockLocation));
@@ -106,8 +105,8 @@ public class StockUpdaterTestCase extends AbstractStockTest {
         bean.addRelationship(STOCK_ADJUST_ITEM_RELATIONSHIP, item);
         itemBean.addParticipation(STOCK_PARTICIPATION, product);
         itemBean.setValue("quantity", quantity);
-        itemBean.save();
-        bean.save();
+
+        save(act, item);
 
         // verify stock is not adjusted till the act is posted
         assertEquals(BigDecimal.ZERO, getStock(stockLocation));

@@ -58,7 +58,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
         Product copy = rules.copy(product, name);
 
         // verify it is a copy
-        assertTrue(product.getUid() != copy.getUid());
+        assertTrue(product.getId() != copy.getId());
         assertEquals(product.getArchetypeId(), copy.getArchetypeId());
         assertEquals(name, copy.getName());
 
@@ -66,7 +66,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
         Set<ProductPrice> productPrices = copy.getProductPrices();
         assertEquals(1, productPrices.size());
         ProductPrice priceCopy = productPrices.toArray(new ProductPrice[0])[0];
-        assertTrue(unitPrice.getUid() != priceCopy.getUid());
+        assertTrue(unitPrice.getId() != priceCopy.getId());
         assertEquals(unitPrice.getPrice(), priceCopy.getPrice());
 
         // verify the product supplier relationship has been copied
@@ -74,8 +74,8 @@ public class ProductRulesTestCase extends AbstractProductTest {
                                                           ps.getPackageSize(),
                                                           ps.getPackageUnits());
         assertNotNull(psCopy);
-        assertTrue(psCopy.getRelationship().getUid()
-                != ps.getRelationship().getUid());
+        assertTrue(psCopy.getRelationship().getId()
+                != ps.getRelationship().getId());
     }
 
     /**

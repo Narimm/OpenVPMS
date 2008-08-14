@@ -104,9 +104,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         problemBean.addRelationship(
                 "actRelationship.patientClinicalProblemItem",
                 note);
-        save(event);
-        save(problem);
-        save(note);
+        save(event, problem, note);
 
         // make sure each of the objects can be retrieved
         assertNotNull(get(event.getObjectReference()));
@@ -115,9 +113,9 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         remove(problem);  // remove shouldn't cascade to delete note
 
         // make sure the all but the problem can be retrieved
-        assertNotNull(get(event.getObjectReference()));
-        assertNull(get(problem.getObjectReference()));
-        assertNotNull(get(note.getObjectReference()));
+        assertNotNull(get(event));
+        assertNull(get(problem));
+        assertNotNull(get(note));
     }
 
     /**

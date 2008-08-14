@@ -547,7 +547,7 @@ class StatementActHelper {
         }
         query.add(constraint);
         query.add(new NodeSortConstraint("startTime"));
-        query.add(new NodeSortConstraint("uid"));
+        query.add(new NodeSortConstraint("id"));
         return query;
     }
 

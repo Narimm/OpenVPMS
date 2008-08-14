@@ -117,9 +117,8 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         ActBean bean = createAct(SupplierArchetypes.ORDER);
         bean.addRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP,
                              orderItem);
-        bean.save();
         bean.setValue("amount", orderItem.getTotal());
-        save(orderItem);
+        save(bean.getAct(), orderItem);
         return (FinancialAct) bean.getAct();
     }
 
@@ -214,7 +213,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
                              deliveryItem);
         bean.setValue("amount", deliveryItem.getTotal());
         bean.setValue("tax", deliveryItem.getTaxAmount());
-        bean.save();
+        save(bean.getAct(), deliveryItem);
         return (FinancialAct) bean.getAct();
     }
 
@@ -325,8 +324,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
                                        unitPrice, listPrice);
 
         bean.addRelationship(relationshipShortName, item);
-        bean.save();
-        save(item);
+        save(bean.getAct(), item);
         return (FinancialAct) bean.getAct();
     }
 
@@ -366,8 +364,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
                                       unitPrice, BigDecimal.ZERO);
         ActBean bean = new ActBean(act);
         bean.addRelationship(relationshipShortName, orderItem);
-        bean.save();
-        save(orderItem);
+        save(act, orderItem);
         return act;
     }
 

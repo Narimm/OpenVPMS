@@ -18,7 +18,7 @@
 <archetypes>
     <archetype name="party.organisationDeposit.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Deposit Account">
-        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"

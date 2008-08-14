@@ -52,8 +52,7 @@ public class OutstandingBalanceQueryTestCase
         // create and save a new invoice
         final Money amount = new Money(100);
         Date startTime = java.sql.Date.valueOf("2007-1-1");
-        FinancialAct invoice = createChargesInvoice(amount);
-        invoice.setActivityStartTime(startTime);
+        List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
         List<Party> after = getCustomersWithOutstandingBalances();
@@ -94,8 +93,7 @@ public class OutstandingBalanceQueryTestCase
         // create and save a new invoice
         final Money amount = new Money(100);
         Date startTime = java.sql.Date.valueOf("2007-1-1");
-        FinancialAct invoice = createChargesInvoice(amount);
-        invoice.setActivityStartTime(startTime);
+        List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
         // verify the customer is now returned

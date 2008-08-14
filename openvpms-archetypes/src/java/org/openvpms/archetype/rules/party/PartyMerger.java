@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DefaultIMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
@@ -316,7 +315,6 @@ public abstract class PartyMerger {
     }
 
     private Party getParty(IMObjectReference reference) {
-        return (reference != null) ? (Party) ArchetypeQueryHelper.getByObjectReference(
-                service, reference) : null;
+        return (reference != null) ? (Party) service.get(reference) : null;
     }
 }

@@ -20,7 +20,6 @@ package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.party.MergeException;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -31,7 +30,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctio
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -338,12 +336,6 @@ public class PatientRules {
                                                true);
         participation.add(new ObjectRefNodeConstraint(
                 "entity", patient.getObjectReference()));
-        participation.add(new ObjectRefNodeConstraint(
-                "act", new ArchetypeId("act.patientWeight")));
-        // re-specify the act short name. to force utilisation of the
-        // (faster) participation index. Ideally would only need to specify
-        // the act short name on participations, but this isn't supported
-        // by ArchetypeQuery.
         query.add(participation);
         query.add(new NodeSortConstraint("startTime", false));
         query.setMaxResults(1);
@@ -363,11 +355,11 @@ public class PatientRules {
      * @return the description node or <tt>null</tt> if no act can be found
      */
     public String getPatientWeight(Act act) {
-	    ActBean bean = new ActBean(act, service);
-	    Party patient = (Party) bean.getParticipant("participation.patient");
-	    return getPatientWeight(patient);
-    }   
-    
+        ActBean bean = new ActBean(act, service);
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        return getPatientWeight(patient);
+    }
+
     /**
      * Returns the most recent microchip number for a patient.
      *
@@ -433,8 +425,7 @@ public class PatientRules {
      */
     private Party get(IMObjectReference ref) {
         if (ref != null) {
-            return (Party) ArchetypeQueryHelper.getByObjectReference(service,
-                                                                     ref);
+            return (Party) service.get(ref);
         }
         return null;
     }

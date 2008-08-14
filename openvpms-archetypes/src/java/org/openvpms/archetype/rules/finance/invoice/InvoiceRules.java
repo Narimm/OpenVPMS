@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -87,8 +88,6 @@ public class InvoiceRules {
     /**
      * Invoked <em>prior</em> to an invoice being removed. Removes any reminders
      * or documents that don't have status 'Completed'.
-     * <p/>
-     * TODO - all modifications should be done within a transaction
      *
      * @param invoice the invoice
      */
@@ -118,42 +117,57 @@ public class InvoiceRules {
         if (!TypeHelper.isA(act, "act.customerAccountInvoiceItem")) {
             throw new IllegalArgumentException("Invalid argument 'act'");
         }
-        removeInvoiceItemReminders(act);
-        removeInvoiceItemDocuments(act);
+        List<Act> toRemove = removeInvoiceItemReminders(act);
+        toRemove.addAll(removeInvoiceItemDocuments(act));
+        if (!toRemove.isEmpty()) {
+            // TODO - need to save to update session prior
+            // to removing child acts. Shouldn't need this
+            service.save(act);
+            service.save(toRemove);
+            for (Act remove : toRemove) {
+                service.remove(remove);
+            }
+        }
     }
 
     /**
-     * Deletes any reminders associated with an
+     * Removes relationships to any reminders associated with an
      * <em>act.customerAccountInvoiceItem</em> that don't have status
      * 'Completed'.
      *
      * @param item the invoice item
+     * @return the documents to remove
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if the reminders node does't exist
      */
-    private void removeInvoiceItemReminders(FinancialAct item) {
+    private List<Act> removeInvoiceItemReminders(FinancialAct item) {
+        List<Act> toRemove = new ArrayList<Act>();
         ActBean bean = new ActBean(item, service);
         List<Act> acts = bean.getNodeActs("reminders");
 
         for (Act act : acts) {
             ActRelationship r = bean.getRelationship(act);
             if (!ActStatus.COMPLETED.equals(act.getStatus())) {
-                service.remove(act);
+                toRemove.add(act);
+                act.removeActRelationship(r);
                 bean.removeRelationship(r);
             }
         }
+        return toRemove;
     }
 
     /**
-     * Deletes any documents associated with an
+     * Removes relationships to any documents associated with an
      * <em>act.customerAccountInvoiceItem</em> that don't have status
      * 'Completed' or 'Posted'.
      *
      * @param item the invoice item
+     * @return the documents to remove
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if the documents node does't exist
      */
-    private void removeInvoiceItemDocuments(FinancialAct item) {
+    private List<Act> removeInvoiceItemDocuments(FinancialAct item) {
+        List<Act> toRemove = new ArrayList<Act>();
         ActBean bean = new ActBean(item, service);
         List<Act> acts = bean.getNodeActs("documents");
 
@@ -162,10 +176,12 @@ public class InvoiceRules {
             ActRelationship r = bean.getRelationship(act);
             if (!ActStatus.COMPLETED.equals(status)
                     && !ActStatus.POSTED.equals(status)) {
-                service.remove(act);
+                toRemove.add(act);
+                act.removeActRelationship(r);
                 bean.removeRelationship(r);
             }
         }
+        return toRemove;
     }
 
 }

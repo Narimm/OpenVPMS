@@ -72,7 +72,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
 
         String title = "Copy";
         Act copy = rules.copy(estimation, title);
-        assertTrue(copy.getUid() != estimation.getUid());
+        assertTrue(copy.getId() != estimation.getId());
         ActBean copyBean = new ActBean(copy);
 
         assertEquals(title, copy.getTitle());
@@ -88,7 +88,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
         List<Act> acts = copyBean.getActs();
         assertEquals(1, acts.size());
         Act itemCopy = acts.get(0);
-        assertTrue(itemCopy.getUid() != item.getUid());
+        assertTrue(itemCopy.getId() != item.getId());
         ActBean itemCopyBean = new ActBean(itemCopy);
 
         assertEquals(itemBean.getBigDecimal("fixedPrice"),
@@ -163,7 +163,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
                                      String node) {
         Entity entity = bean.getNodeParticipant(node);
         assertNotNull(entity);
-        assertEquals(expected.getUid(), entity.getUid());
+        assertEquals(expected.getId(), entity.getId());
     }
 
     /**

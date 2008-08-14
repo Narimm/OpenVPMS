@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -107,8 +106,7 @@ public class ReminderTypeCache {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Entity getEntity(IMObjectReference ref) {
-        return (Entity) ArchetypeQueryHelper.getByObjectReference(
-                service, ref);
+        return (Entity) service.get(ref);
     }
 
 }

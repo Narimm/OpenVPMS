@@ -98,13 +98,13 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(0, acts.size());
 
         Money amount = new Money(100);
-        FinancialAct invoice1 = createChargesInvoice(
+        List<FinancialAct> invoice1 = createChargesInvoice(
                 amount, getDatetime("2007-01-01 10:00:00"));
         save(invoice1);
 
         acts = getActs(customer, statementDate);
         assertEquals(1, acts.size());
-        checkAct(acts.get(0), invoice1, POSTED);
+        checkAct(acts.get(0), invoice1.get(0), POSTED);
 
         EndOfPeriodProcessor processor
                 = new EndOfPeriodProcessor(statementDate, true, getPractice());
@@ -113,7 +113,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertTrue(rules.hasStatement(customer, statementDate));
         acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
-        checkAct(acts.get(0), invoice1, POSTED);
+        checkAct(acts.get(0), invoice1.get(0), POSTED);
         checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
 
         // verify more acts aren't generated for the same statement date
@@ -122,7 +122,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(2, acts.size());
 
         // save a new invoice after the statement date
-        FinancialAct invoice2 = createChargesInvoice(
+        List<FinancialAct> invoice2 = createChargesInvoice(
                 amount, getDatetime("2007-01-02 10:00:00"));
         save(invoice2);
 
@@ -136,7 +136,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
         checkOpeningBalance(acts.get(0), new BigDecimal("100"));
-        checkAct(acts.get(1), invoice2, POSTED);
+        checkAct(acts.get(1), invoice2.get(0), POSTED);
     }
 
     /**
@@ -153,22 +153,22 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(customer);
 
         final Money amount = new Money(100);
-        FinancialAct invoice1 = createChargesInvoice(
-                amount, getDatetime("2007-01-01 10:00:00"));
-        invoice1.setStatus(FinancialActStatus.COMPLETED);  // will be posted
+        List<FinancialAct> invoice1 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 10:00:00"),
+                FinancialActStatus.COMPLETED);  // will be posted
         save(invoice1);
 
-        FinancialAct invoice2 = createChargesInvoice(
-                amount, getDatetime("2007-01-01 11:00:00"));
-        invoice2.setStatus(FinancialActStatus.IN_PROGRESS);  // won't be posted
+        List<FinancialAct> invoice2 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 11:00:00"),
+                FinancialActStatus.IN_PROGRESS);  // won't be posted
         save(invoice2);
 
-        FinancialAct invoice3 = createChargesInvoice(
-                amount, getDatetime("2007-01-01 11:00:00"));
-        invoice3.setStatus(FinancialActStatus.ON_HOLD);    // won't be posted
+        List<FinancialAct> invoice3 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 11:00:00"),
+                FinancialActStatus.ON_HOLD);    // won't be posted
         save(invoice3);
 
-        FinancialAct invoice4 = createChargesInvoice(
+        List<FinancialAct> invoice4 = createChargesInvoice(
                 amount, getDatetime("2007-01-01 11:00:00")); // already posted
         save(invoice4);
 
@@ -180,8 +180,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // verify the acts for the period match that expected
         List<Act> acts = getPostedActs(customer, statementDate);
         assertEquals(3, acts.size());
-        checkAct(acts, invoice1, POSTED); // first 2 acts
-        checkAct(acts, invoice4, POSTED); // in any order
+        checkAct(acts, invoice1.get(0), POSTED); // first 2 acts
+        checkAct(acts, invoice4.get(0), POSTED); // in any order
         checkClosingBalance(acts.get(2), new BigDecimal("200"),
                             BigDecimal.ZERO);
     }
@@ -194,22 +194,22 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Party customer = getCustomer();
 
         final Money amount = new Money(100);
-        FinancialAct invoice1 = createChargesInvoice(
-                amount, getDatetime("2007-01-01 10:00:00"));
-        invoice1.setStatus(FinancialActStatus.COMPLETED);  // won't be posted
+        List<FinancialAct> invoice1 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 10:00:00"),
+                FinancialActStatus.COMPLETED);  // won't be posted
         save(invoice1);
 
-        FinancialAct invoice2 = createChargesInvoice(
-                amount, getDatetime("2007-01-01 11:00:00"));
-        invoice2.setStatus(FinancialActStatus.IN_PROGRESS);  // won't be posted
+        List<FinancialAct> invoice2 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 11:00:00"),
+                FinancialActStatus.IN_PROGRESS);  // won't be posted
         save(invoice2);
 
-        FinancialAct invoice3 = createChargesInvoice(
-                amount, getDatetime("2007-01-01 11:00:00"));
-        invoice3.setStatus(FinancialActStatus.ON_HOLD);    // won't be posted
+        List<FinancialAct> invoice3 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 11:00:00"),
+                FinancialActStatus.ON_HOLD);    // won't be posted
         save(invoice3);
 
-        FinancialAct invoice4 = createChargesInvoice(
+        List<FinancialAct> invoice4 = createChargesInvoice(
                 amount, getDatetime("2007-01-01 11:00:00"));
         save(invoice4);
 
@@ -221,7 +221,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // verify the acts for the period match that expected
         List<Act> acts = getPostedActs(customer, statementDate);
         assertEquals(2, acts.size());
-        checkAct(acts.get(0), invoice4, POSTED);
+        checkAct(acts.get(0), invoice4.get(0), POSTED);
         checkClosingBalance(acts.get(1), amount, amount);
     }
 
@@ -240,9 +240,9 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(customer);
 
         final Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount, customer);
         Date datetime = getDatetime("2007-01-01 10:00:00");
-        invoice.setActivityStartTime(datetime);
+        List<FinancialAct> invoice = createChargesInvoice(
+                amount, customer, datetime);
         save(invoice);
 
         // run end of period 29 days from when the invoice was posted
@@ -256,7 +256,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
 
-        assertEquals(invoice, acts.get(0));
+        assertEquals(invoice.get(0), acts.get(0));
         FinancialAct closing = (FinancialAct) acts.get(1);
         checkClosingBalance(closing, amount, BigDecimal.ZERO);
         assertTrue(closing.isCredit());
@@ -318,7 +318,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Party customer = getCustomer();
 
         Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(
+        List<FinancialAct> invoice = createChargesInvoice(
                 amount, getDatetime("2007-01-01 10:00:00"));
         save(invoice);
         FinancialAct payment = createPayment(
@@ -337,7 +337,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         processor.process(customer);
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(3, acts.size());
-        checkAct(acts.get(0), invoice, POSTED);
+        checkAct(acts.get(0), invoice.get(0), POSTED);
         checkAct(acts.get(1), payment, POSTED);
         FinancialAct closing = (FinancialAct) acts.get(2);
         checkClosingBalance(closing, BigDecimal.ZERO, BigDecimal.ZERO);
@@ -426,12 +426,12 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(customer);
 
         final Money amount = new Money(100);
-        FinancialAct invoice1 = createChargesInvoice(amount, customer);
-        invoice1.setActivityStartTime(getDatetime("2007-01-01 10:00:00"));
+        List<FinancialAct> invoice1 = createChargesInvoice(
+                amount, customer, getDatetime("2007-01-01 10:00:00"));
         save(invoice1);
 
-        FinancialAct invoice2 = createChargesInvoice(amount, customer);
-        invoice2.setActivityStartTime(getDatetime("2007-02-02 12:00:00"));
+        List<FinancialAct> invoice2 = createChargesInvoice(
+                amount, customer, getDatetime("2007-02-02 12:00:00"));
         save(invoice2);
 
         // run end of period for the 2/1. Should only include invoice1,
@@ -448,7 +448,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(3, acts.size());
 
         BigDecimal balance = amount.add(feeAmount);
-        checkAct(acts.get(0), invoice1, POSTED);
+        checkAct(acts.get(0), invoice1.get(0), POSTED);
         checkAct(acts.get(1), DEBIT_ADJUST, feeAmount);
         checkClosingBalance(acts.get(2), balance, amount);
 
@@ -458,7 +458,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(2, acts.size());
 
         checkOpeningBalance(acts.get(0), balance);
-        checkAct(acts.get(1), invoice2, POSTED);
+        checkAct(acts.get(1), invoice2.get(0), POSTED);
 
         // run end of period for statemenDate2
         processor = new EndOfPeriodProcessor(statementDate2, true,
@@ -471,7 +471,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(4, acts.size());
 
         checkOpeningBalance(acts.get(0), balance);
-        checkAct(acts.get(1), invoice2, POSTED);
+        checkAct(acts.get(1), invoice2.get(0), POSTED);
         checkAct(acts.get(2), DEBIT_ADJUST, feeAmount);
 
         balance = balance.multiply(BigDecimal.valueOf(2));
@@ -510,8 +510,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(customer);
 
         final Money amount = new Money("50.00");
-        FinancialAct invoice1 = createChargesInvoice(amount, customer);
-        invoice1.setActivityStartTime(getDatetime("2008-04-15 10:00:00"));
+        List<FinancialAct> invoice1 = createChargesInvoice(
+                amount, customer, getDatetime("2008-04-15 10:00:00"));
         save(invoice1);
 
         // run end of period for the 30/04.
@@ -525,7 +525,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         List<Act> acts = getActs(customer, statementDate1);
         assertEquals(2, acts.size());
 
-        checkAct(acts.get(0), invoice1, POSTED);
+        checkAct(acts.get(0), invoice1.get(0), POSTED);
         checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
 
         // now save a payment
@@ -583,8 +583,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(customer);
 
         final Money amount = new Money("155.00");
-        FinancialAct invoice1 = createChargesInvoice(amount, customer);
-        invoice1.setActivityStartTime(getDatetime("2008-04-29 10:00:00"));
+        List<FinancialAct> invoice1 = createChargesInvoice(
+                amount, customer, getDatetime("2008-04-29 10:00:00"));
         save(invoice1);
 
         // run end of period for the 30/04.
@@ -598,7 +598,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         List<Act> acts = getActs(customer, statementDate1);
         assertEquals(2, acts.size());
 
-        checkAct(acts.get(0), invoice1, POSTED);
+        checkAct(acts.get(0), invoice1.get(0), POSTED);
         checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
 
         // now save a payment
@@ -657,8 +657,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(customer);
 
         final Money amount = new Money("160.00");
-        FinancialAct invoice1 = createChargesInvoice(amount, customer);
-        invoice1.setActivityStartTime(getDatetime("2008-04-15 10:00:00"));
+        List<FinancialAct> invoice1 = createChargesInvoice(
+                amount, customer, getDatetime("2008-04-15 10:00:00"));
         save(invoice1);
 
         // run end of period for the 30/04.
@@ -672,7 +672,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         List<Act> acts = getActs(customer, statementDate1);
         assertEquals(2, acts.size());
 
-        checkAct(acts.get(0), invoice1, POSTED);
+        checkAct(acts.get(0), invoice1.get(0), POSTED);
         checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
 
         // now save a payment
@@ -737,8 +737,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(customer);
 
         final Money amount = new Money("160.00");
-        FinancialAct invoice1 = createChargesInvoice(amount, customer);
-        invoice1.setActivityStartTime(getDatetime("2007-04-15 10:00:00"));
+        List<FinancialAct> invoice1 = createChargesInvoice(
+                amount, customer, getDatetime("2007-04-15 10:00:00"));
         save(invoice1);
 
         // run end of period for the 30/04.
@@ -752,7 +752,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         List<Act> acts = getActs(customer, statementDate1);
         assertEquals(2, acts.size());
 
-        checkAct(acts.get(0), invoice1, POSTED);
+        checkAct(acts.get(0), invoice1.get(0), POSTED);
         checkClosingBalance(acts.get(1), amount, BigDecimal.ZERO);
 
         // run end of period for the 31/05

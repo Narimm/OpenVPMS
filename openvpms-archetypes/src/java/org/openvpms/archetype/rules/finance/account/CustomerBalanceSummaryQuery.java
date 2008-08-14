@@ -357,11 +357,11 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         this.from = overdueFrom;
         this.to = overdueTo;
         rules = new CustomerAccountRules(service);
-        Collection<String> names = Arrays.asList("e.name", "p.entity", "p.act",
-                                                 "a.activityStartTime",
-                                                 "a.status", "a.total",
-                                                 "a.allocatedAmount",
-                                                 "a.credit", "c.code");
+        Collection<String> names = Arrays.asList(
+                "e.name", "e.archetypeId", "e.id", "e.linkId",
+                "a.archetypeId", "a.id", "a.linkId",
+                "a.activityStartTime", "a.status", "a.total",
+                "a.allocatedAmount", "a.credit", "c.code");
         NamedQuery query;
         if (accountType == null) {
             if (StringUtils.isEmpty(customerFrom)) {
@@ -394,7 +394,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
                     query.setParameter("to", customerTo.replace('*', '%'));
                 }
             }
-            query.setParameter("accountType", accountType.getLinkId());
+            query.setParameter("accountType", accountType.getId());
         }
         query.setParameter("startTime", this.date);
         query.setMaxResults(1000);
@@ -535,7 +535,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
                                                          credit);
                 }
             } else {
-                IMObjectReference act = (IMObjectReference) set.get("p.act");
+                IMObjectReference act = getAct(set);
                 if (TypeHelper.isA(act, INVOICE, COUNTER,
                                    CREDIT)) {
                     unbilled = calculator.addAmount(unbilled, amount, credit);
@@ -595,7 +595,10 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * @return the entity
      */
     private IMObjectReference getEntity(ObjectSet set) {
-        return (IMObjectReference) set.get("p.entity");
+        ArchetypeId archetypeId = (ArchetypeId) set.get("e.archetypeId");
+        long id = set.getLong("e.id");
+        String linkId = set.getString("e.linkId");
+        return new IMObjectReference(archetypeId, id, linkId);
     }
 
     /**
@@ -605,7 +608,10 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * @return the ct
      */
     private IMObjectReference getAct(ObjectSet set) {
-        return (IMObjectReference) set.get("p.act");
+        ArchetypeId archetypeId = (ArchetypeId) set.get("a.archetypeId");
+        long id = set.getLong("a.id");
+        String linkId = set.getString("a.linkId");
+        return new IMObjectReference(archetypeId, id, linkId);
     }
 
     /**
@@ -753,12 +759,6 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
             CollectionNodeConstraint constraint
                     = new CollectionNodeConstraint("customer");
             constraint.add(new ObjectRefNodeConstraint("entity", customer));
-            constraint.add(new ObjectRefNodeConstraint(
-                    "act", new ArchetypeId(shortName)));
-            // re-specify the act short name. to force utilisation of the
-            // (faster) participation index. Ideally would only need to specify
-            // the act short name on participations, but this isn't supported
-            // by ArchetypeQuery.
             query.add(constraint);
             query.add(new NodeSortConstraint("startTime", false));
             query.add(new NodeSelectConstraint("act.startTime"));

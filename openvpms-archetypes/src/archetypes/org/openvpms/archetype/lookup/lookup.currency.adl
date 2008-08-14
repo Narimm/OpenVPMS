@@ -19,7 +19,7 @@
     <archetype name="lookup.currency.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
                displayName="Currency">
-        <node name="uid" path="/uid" displayName="id" type="java.lang.Long"
+        <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node displayName="ISO code" name="code" path="/code"
               type="java.lang.String" minCardinality="1" maxLength="3">

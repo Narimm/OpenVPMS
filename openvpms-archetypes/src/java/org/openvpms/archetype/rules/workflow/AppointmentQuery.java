@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.workflow;
 
 import org.openvpms.component.business.dao.im.Page;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -229,8 +230,7 @@ public class AppointmentQuery {
         IMObjectReference currentAct = null;
         ObjectSet current = null;
         for (ObjectSet set : page.getResults()) {
-            IMObjectReference actRef = (IMObjectReference) set.get(
-                    ACT_REFERENCE);
+            IMObjectReference actRef = getAct(set);
             if (currentAct == null || !currentAct.equals(actRef)) {
                 if (current != null) {
                     result.add(current);
@@ -253,9 +253,8 @@ public class AppointmentQuery {
                 current.set(CLINICIAN_NAME, null);
                 current.set(ARRIVAL_TIME, null);
             }
-            IMObjectReference entityRef
-                    = (IMObjectReference) set.get("entity.objectReference");
-            String entityName = (String) set.get("entity.name");
+            IMObjectReference entityRef = getEntity(set);
+            String entityName = set.getString("entity.name");
             if (TypeHelper.isA(entityRef, "party.customer*")) {
                 current.set(CUSTOMER_REFERENCE, entityRef);
                 current.set(CUSTOMER_NAME, entityName);
@@ -269,7 +268,7 @@ public class AppointmentQuery {
                 current.set(CLINICIAN_REFERENCE, entityRef);
                 current.set(CLINICIAN_NAME, entityName);
             }
-            String key = (String) set.get("act.details_Keys");
+            String key = set.getString("act.details_Keys");
             TypedValue value = (TypedValue) set.get("act.details_Values");
             if (key != null) {
                 Object object = (value != null) ? value.getObject() : null;
@@ -283,18 +282,46 @@ public class AppointmentQuery {
     }
 
     /**
+     * Helper to return the act reference from a set.
+     *
+     * @param set the set
+     * @return the ct
+     */
+    private IMObjectReference getAct(ObjectSet set) {
+        ArchetypeId archetypeId = (ArchetypeId) set.get("act.archetypeId");
+        long id = set.getLong("act.id");
+        String linkId = set.getString("act.linkId");
+        return new IMObjectReference(archetypeId, id, linkId);
+    }
+
+    /**
+     * Helper to return the entity reference from a set.
+     *
+     * @param set the set
+     * @return the entity
+     */
+    private IMObjectReference getEntity(ObjectSet set) {
+        ArchetypeId archetypeId = (ArchetypeId) set.get("entity.archetypeId");
+        long id = set.getLong("entity.id");
+        String linkId = set.getString("entity.linkId");
+        return new IMObjectReference(archetypeId, id, linkId);
+    }
+
+    /**
      * Creates a new query.
      *
      * @return the query
      */
     private IArchetypeQuery createQuery() {
-        Collection<String> names = Arrays.asList("act.objectReference",
+        Collection<String> names = Arrays.asList("act.archetypeId",
+                                                 "act.id", "act.linkId",
                                                  "act.startTime", "act.endTime",
                                                  "act.details_Keys",
                                                  "act.details_Values",
                                                  "act.status", "act.reason",
                                                  "act.description",
-                                                 "entity.objectReference",
+                                                 "entity.archetypeId",
+                                                 "entity.id", "entity.linkId",
                                                  "entity.name");
         NamedQuery query;
         if (clinician != null) {
@@ -308,7 +335,7 @@ public class AppointmentQuery {
                 query = new NamedQuery(
                         "act.customerAppointment-clinician", names);
             }
-            query.setParameter("clinicianId", clinician.getLinkId());
+            query.setParameter("clinicianId", clinician.getId());
         } else {
             if (range == WorkflowStatus.StatusRange.INCOMPLETE) {
                 query = new NamedQuery(
@@ -322,7 +349,7 @@ public class AppointmentQuery {
             }
         }
 
-        query.setParameter("scheduleId", schedule.getLinkId());
+        query.setParameter("scheduleId", schedule.getId());
         query.setParameter("from", from);
         query.setParameter("to", to);
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);

@@ -33,6 +33,7 @@ import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -142,10 +143,10 @@ public class BalanceCalculator {
         ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
                 customer, ACCOUNT_ACTS);
         query.add(new NodeSortConstraint("startTime", true));
-        query.add(new NodeSortConstraint("uid", true));
+        query.add(new NodeSortConstraint("id", true));
+        query.add(new ObjectRefSelectConstraint("a"));
         query.add(new NodeSelectConstraint("a.amount"));
         query.add(new NodeSelectConstraint("a.credit"));
-        query.add(new NodeSelectConstraint("p.act"));
         query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
         Iterator<ObjectSet> iterator
                 = new ObjectSetQueryIterator(service, query);
@@ -155,7 +156,7 @@ public class BalanceCalculator {
             ObjectSet set = iterator.next();
             BigDecimal amount = set.getBigDecimal("a.amount", BigDecimal.ZERO);
             boolean credit = set.getBoolean("a.credit");
-            IMObjectReference act = set.getReference("p.act");
+            IMObjectReference act = set.getReference("a.reference");
             if (TypeHelper.isA(act, OPENING_BALANCE, CLOSING_BALANCE)) {
                 if (TypeHelper.isA(act, CLOSING_BALANCE)) {
                     credit = !credit;
@@ -215,30 +216,30 @@ public class BalanceCalculator {
                                         Date overdueDate) {
 
         NamedQuery query = new NamedQuery("getOverdueAmounts", Arrays.asList(
-                "uid", "total", "allocatedTotal", "allocatedAmount",
+                "id", "total", "allocatedTotal", "allocatedAmount",
                 "overdueAllocationTime"));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        query.setParameter("customer", customer.getLinkId());
+        query.setParameter("customer", customer.getId());
         query.setParameter("date", date);
         query.setParameter("overdueDate", overdueDate);
 
         ObjectSetQueryIterator iter = new ObjectSetQueryIterator(service,
                                                                  query);
-        long lastUID = -1;
+        long lastId = -1;
         BigDecimal total = BigDecimal.ZERO;
         BigDecimal allocatedTotal = BigDecimal.ZERO;
         BigDecimal result = BigDecimal.ZERO;
         while (iter.hasNext()) {
             ObjectSet set = iter.next();
-            long uid = set.getLong("uid");
-            if (uid != lastUID) {
-                if (lastUID != -1) {
+            long uid = set.getLong("id");
+            if (uid != lastId) {
+                if (lastId != -1) {
                     result = result.add(total).subtract(allocatedTotal);
                 }
                 total = set.getBigDecimal("total", BigDecimal.ZERO);
                 allocatedTotal = set.getBigDecimal("allocatedTotal",
                                                    BigDecimal.ZERO);
-                lastUID = uid;
+                lastId = uid;
             }
             BigDecimal allocatedAmount = set.getBigDecimal("allocatedAmount",
                                                            BigDecimal.ZERO);

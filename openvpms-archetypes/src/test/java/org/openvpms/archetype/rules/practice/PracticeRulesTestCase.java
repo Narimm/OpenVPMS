@@ -23,9 +23,11 @@ import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.List;
 
@@ -143,6 +145,10 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
     private Party createPractice() {
         Party party = (Party) create(PracticeArchetypes.PRACTICE);
         party.setName("XPractice2");
+        IMObjectBean bean = new IMObjectBean(party);
+        Lookup currency = TestHelper.getCurrency("AUD");
+        bean.setValue("currency", currency.getCode());
+
         Contact contact = (Contact) create("contact.phoneNumber");
         party.addContact(contact);
         return party;

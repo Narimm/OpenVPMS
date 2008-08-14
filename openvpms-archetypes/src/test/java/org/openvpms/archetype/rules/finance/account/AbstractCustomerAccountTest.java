@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -31,6 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -111,64 +113,128 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create an <em>act.customerAccountChargesInvoice</em>.
+     * Helper to create a <em>POSTED</em>
+     * <em>act.customerAccountChargesInvoice</em> with an associated
+     * <em>act.customerAccountInvoiceItem</em>.
      *
      * @param amount the act total
-     * @return a new act
+     * @return a list containing the invoice act and its item
      */
-    protected FinancialAct createChargesInvoice(Money amount) {
+    protected List<FinancialAct> createChargesInvoice(Money amount) {
         return createChargesInvoice(amount, getCustomer());
     }
 
     /**
-     * Helper to create an <em>act.customerAccountChargesInvoice</em>.
+     * Helper to create a <em>POSTED</em>
+     * <em>act.customerAccountChargesInvoice</em> with an associated
+     * <em>act.customerAccountInvoiceItem</em>.
      *
      * @param amount   the act total
      * @param customer the customer
-     * @return a new act
+     * @return a list containing the invoice act and its item
      */
-    protected FinancialAct createChargesInvoice(Money amount, Party customer) {
-        return FinancialTestHelper.createChargesInvoice(amount, customer,
-                                                        getPatient(),
-                                                        getProduct());
+    protected List<FinancialAct> createChargesInvoice(Money amount,
+                                                      Party customer) {
+        return FinancialTestHelper.createChargesInvoice(
+                amount, customer, getPatient(), getProduct(),
+                ActStatus.POSTED);
     }
 
     /**
-     * Helper to create an <em>act.customerAccountChargesInvoice</em>.
+     * Helper to create a <em>POSTED</em>
+     * <em>act.customerAccountChargesInvoice</em> with an associated
+     * <em>act.customerAccountInvoiceItem</em>.
+     *
+     * @param amount    the act total
+     * @param customer  the customer
+     * @param startTime the act start time
+     * @return a list containing the invoice act and its item
+     */
+    protected List<FinancialAct> createChargesInvoice(Money amount,
+                                                      Party customer,
+                                                      Date startTime) {
+        List<FinancialAct> acts = createChargesInvoice(amount, customer);
+        acts.get(0).setActivityStartTime(startTime);
+        return acts;
+    }
+
+    /**
+     * Helper to create a <em>POSTED</em>
+     * <em>act.customerAccountChargesInvoice</em> with an associated
+     * <em>act.customerAccountInvoiceItem</em>.
      *
      * @param amount    the act total
      * @param startTime the act start time
-     * @return a new act
+     * @return a list containing the invoice act and its item
      */
-    protected FinancialAct createChargesInvoice(Money amount,
-                                                Date startTime) {
-        FinancialAct invoice = createChargesInvoice(amount);
-        invoice.setActivityStartTime(startTime);
-        return invoice;
+    protected List<FinancialAct> createChargesInvoice(Money amount,
+                                                      Date startTime) {
+        List<FinancialAct> acts = createChargesInvoice(amount);
+        acts.get(0).setActivityStartTime(startTime);
+        return acts;
     }
 
     /**
-     * Helper to create an <em>act.customerAccountChargesCounter</em>.
+     * Helper to create an <em>act.customerAccountChargesInvoice</em> with an
+     * associated <em>act.customerAccountInvoiceItem</em>.
+     *
+     * @param amount    the act total
+     * @param customer  the customer
+     * @param startTime the act start time
+     * @param status    the act status
+     * @return a new act
+     */
+    protected List<FinancialAct> createChargesInvoice(Money amount,
+                                                      Party customer,
+                                                      Date startTime,
+                                                      String status) {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(
+                amount, customer, getPatient(), getProduct(), status);
+        acts.get(0).setActivityStartTime(startTime);
+        return acts;
+    }
+
+    /**
+     * Helper to create a <em>POSTED</em>
+     * <em>act.customerAccountChargesInvoice</em> with an associated
+     * <em>act.customerAccountInvoiceItem</em>.
+     *
+     * @param amount    the act total
+     * @param startTime the act start time
+     * @param status    the act status
+     * @return a new act
+     */
+    protected List<FinancialAct> createChargesInvoice(Money amount,
+                                                      Date startTime,
+                                                      String status) {
+        return createChargesInvoice(amount, getCustomer(), startTime, status);
+    }
+
+    /**
+     * Helper to create a <em>POSTED</em>
+     * <em>act.customerAccountChargesCounter</em> with an associated
+     * <em>act.customerAccountCreditItem</em>.
      *
      * @param amount the act total
      * @return a new act
      */
-    protected FinancialAct createChargesCounter(Money amount) {
-        return FinancialTestHelper.createChargesCounter(amount,
-                                                        getCustomer(),
-                                                        getProduct());
+    protected List<FinancialAct> createChargesCounter(Money amount) {
+        return FinancialTestHelper.createChargesCounter(
+                amount, getCustomer(), getProduct(), ActStatus.POSTED);
     }
 
     /**
-     * Helper to create an <em>act.customerAccountChargesCredit</em>.
+     * Helper to create an <em>IN_PROGRESS</em>
+     * <em>act.customerAccountChargesCredit</em> associated with a
+     * <em>customerAccountCreditItem</em>.
      *
      * @param amount the act total
      * @return a new act
      */
-    protected FinancialAct createChargesCredit(Money amount) {
-        return FinancialTestHelper.createChargesCredit(amount, getCustomer(),
-                                                       getPatient(),
-                                                       getProduct());
+    protected List<FinancialAct> createChargesCredit(Money amount) {
+        return FinancialTestHelper.createChargesCredit(
+                amount, getCustomer(), getPatient(), getProduct(),
+                ActStatus.POSTED);
     }
 
     /**

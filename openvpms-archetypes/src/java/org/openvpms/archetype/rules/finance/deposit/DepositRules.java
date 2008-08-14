@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.Date;
@@ -73,13 +72,12 @@ public class DepositRules {
                                            act.getArchetypeId().getShortName());
         }
 
-        Act oldAct = (Act) ArchetypeQueryHelper.getByUid(
-                service, act.getArchetypeId(), act.getUid());
+        Act oldAct = (Act) service.get(act.getObjectReference());
         if (oldAct != null) {
             // If the act already exists, make sure it hasn't been deposited
             if (DepositStatus.DEPOSITED.equals(oldAct.getStatus())) {
                 throw new DepositRuleException(DepositAlreadyDeposited,
-                                               act.getUid());
+                                               act.getId());
             }
         } else {
             // its a new bank deposit so if status is undeposited
@@ -88,12 +86,12 @@ public class DepositRules {
                 Entity account = bean.getParticipant(DEPOSIT_PARTICIPATION);
                 if (account == null) {
                     throw new DepositRuleException(MissingAccount,
-                                                   act.getUid());
+                                                   act.getId());
                 }
 
                 Act match = DepositHelper.getUndepositedDeposit(account);
                 if (match != null) {
-                    if (match.getUid() != act.getUid()) {
+                    if (match.getId() != act.getId()) {
                         throw new DepositRuleException(UndepositedDepositExists,
                                                        account.getName());
                     }
@@ -123,14 +121,13 @@ public class DepositRules {
                 DEPOSIT_PARTICIPATION);
         if (accountRef == null) {
             throw new DepositRuleException(MissingAccount,
-                                           act.getUid());
+                                           act.getId());
         }
 
         bean.save();
         // @todo - need to save in the same transaction when OBF-114 fixed
 
-        IMObject account = ArchetypeQueryHelper.getByObjectReference(
-                service, accountRef);
+        IMObject account = service.get(accountRef);
         IMObjectBean accBean = new IMObjectBean(account, service);
         accBean.setValue("lastDeposit", new Date());
 

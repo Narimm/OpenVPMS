@@ -21,10 +21,10 @@ package org.openvpms.archetype.rules.finance.tax;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
@@ -143,14 +143,9 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         Entity type = (Entity) create("entity.productType");
         type.setName("TaxRulesTestCase-entity" + type.hashCode());
         type.addClassification(taxType);
-        EntityRelationship relationship
-                = (EntityRelationship) create(
-                "entityRelationship.productTypeProduct");
-        relationship.setSource(type.getObjectReference());
-        relationship.setTarget(product.getObjectReference());
-        product.addEntityRelationship(relationship);
-        save(product);
-        save(type);
+        EntityBean bean = new EntityBean(type);
+        bean.addRelationship("entityRelationship.productTypeProduct", product);
+        save(product, type);
         return product;
     }
 

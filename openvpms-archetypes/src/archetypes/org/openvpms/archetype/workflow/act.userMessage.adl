@@ -18,7 +18,7 @@
 <archetypes>
 	<archetype name="act.userMessage.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.act.Act" displayName="Message" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Message'" />
 	    <node name="from" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"

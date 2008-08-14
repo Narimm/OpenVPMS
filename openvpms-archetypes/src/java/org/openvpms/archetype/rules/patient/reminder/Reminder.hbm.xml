@@ -25,11 +25,11 @@
     <query name="act.patientReminder-count">
         <![CDATA[
 select count(act)
-      from org.openvpms.component.business.domain.im.act.Act as act,
-      org.openvpms.component.business.domain.im.common.Participation as p
-where p.entity.linkId = :patientId
+      from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
+where p.entity.id = :patientId
       and p.archetypeId.shortName = 'participation.patient'
-      and p.act.linkId = act.linkId
+      and p.act = act
       and p.act.archetypeId.shortName='act.patientReminder'
       and act.status = 'IN_PROGRESS'
       ]]>
@@ -38,14 +38,14 @@ where p.entity.linkId = :patientId
     <query name="act.patientAlert-count">
         <![CDATA[
 select count(act)
-      from org.openvpms.component.business.domain.im.act.Act as act,
-      org.openvpms.component.business.domain.im.common.Participation as p
-where p.entity.linkId = :patientId
+      from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
+where p.entity.id = :patientId
       and p.archetypeId.shortName = 'participation.patient'
-      and p.act.linkId = act.linkId
+      and p.act = act
       and p.act.archetypeId.shortName='act.patientAlert'
       and act.status = 'IN_PROGRESS'
-      and (act.activityEndTime > :date or act.activityEndTime is null)
+      and (p.activityEndTime > :date or p.activityEndTime is null)
       ]]>
     </query>
 

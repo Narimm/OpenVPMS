@@ -31,7 +31,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
@@ -135,18 +134,20 @@ class InvoiceItemSaveRules {
         addDocuments();
 
         if (!toRemove.isEmpty()) {
+            service.save(item);     // TODO - shouldn't have to save
+            service.save(toRemove); // these prior to removing toRemove
+
             for (IMObject object : toRemove) {
                 service.remove(object);
             }
-            toSave.add(item); // need to save the item as well
         }
-        // Now save all the acts.  
+        // Now save all the acts.
         // TODO:  Modified due to batch save not working with rules in 1.1 version and rules not
-        // being triggered in rules causing reminders completions not to work.  
+        // being triggered in rules causing reminders completions not to work.
         // Need to modify back when this fixed in 1.2.
         for (IMObject object : toSave) {
             if (TypeHelper.isA(object, "act.patientReminder")) {
-                reminderRules.markMatchingRemindersCompleted((Act)object); 
+                reminderRules.markMatchingRemindersCompleted((Act) object);
             }
             service.save(object);
         }
@@ -193,6 +194,7 @@ class InvoiceItemSaveRules {
                 ActRelationship r = itemBean.getRelationship(reminder);
                 toRemove.add(reminder);
                 itemBean.removeRelationship(r);
+                reminder.removeActRelationship(r);
             } else {
                 actReminders.add(type);
             }
@@ -270,8 +272,9 @@ class InvoiceItemSaveRules {
                     = bean.getParticipantRef("participation.documentTemplate");
             if (template == null || !productDocs.contains(template)) {
                 ActRelationship r = itemBean.getRelationship(document);
-                itemBean.removeRelationship(r);
                 toRemove.add(document);
+                itemBean.removeRelationship(r);
+                document.removeActRelationship(r);
             } else {
                 actDocs.add(template);
             }
@@ -357,7 +360,7 @@ class InvoiceItemSaveRules {
      */
     private IMObject getObject(IMObjectReference ref) {
         if (ref != null) {
-            return ArchetypeQueryHelper.getByObjectReference(service, ref);
+            return service.get(ref);
         }
         return null;
     }

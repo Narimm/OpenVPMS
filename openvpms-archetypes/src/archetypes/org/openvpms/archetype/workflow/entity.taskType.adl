@@ -18,7 +18,7 @@
 <archetypes>
     <archetype name="entity.taskType.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity" displayName="Task Type">
-        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" displayName="Task Type" type="java.lang.String" path="/name" minCardinality="1"/>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="colour" path="/details/colour" type="java.lang.String" maxLength="10"/>

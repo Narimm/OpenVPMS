@@ -30,7 +30,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -187,7 +186,8 @@ public class MedicalRecordRules {
                     }
                 } else {  // COMPLETED
                     if (startTime.before(eventStart)
-                           || (eventEnd != null && startTime.after(eventEnd))) {
+                            || (eventEnd != null && startTime.after(eventEnd)))
+                    {
                         event = null; // need to create a new event
                     }
                 }
@@ -438,7 +438,7 @@ public class MedicalRecordRules {
      * @throws ArchetypeServiceException for any error
      */
     private Act get(IMObjectReference ref) {
-        return (Act) ArchetypeQueryHelper.getByObjectReference(service, ref);
+        return (Act) service.get(ref);
     }
 
 }

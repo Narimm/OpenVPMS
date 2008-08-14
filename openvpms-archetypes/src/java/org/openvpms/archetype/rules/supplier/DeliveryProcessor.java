@@ -42,7 +42,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -399,8 +398,7 @@ public class DeliveryProcessor {
     private FinancialAct getAct(IMObjectReference ref) {
         FinancialAct act = null;
         if (ref != null) {
-            act = (FinancialAct) ArchetypeQueryHelper.getByObjectReference(
-                    service, ref);
+            act = (FinancialAct) service.get(ref);
         }
         return act;
     }

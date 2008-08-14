@@ -66,7 +66,7 @@ public class CustomerBalanceSummaryQueryTestCase
 
         // create and save a new invoice
         final Money hundred = new Money(100);
-        FinancialAct invoice = createChargesInvoice(hundred, startTime);
+        List<FinancialAct> invoice = createChargesInvoice(hundred, startTime);
         save(invoice);
 
         // pay half the invoice
@@ -133,9 +133,7 @@ public class CustomerBalanceSummaryQueryTestCase
 
         // create and save a new invoice
         final Money hundred = new Money(100);
-        FinancialAct invoice = createChargesInvoice(hundred);
-        invoice.setActivityStartTime(startTime);
-        invoice.setStatus(ActStatus.POSTED);
+        List<FinancialAct> invoice = createChargesInvoice(hundred, startTime);
         save(invoice);
 
         // verify there is 1 act for accountType1
@@ -186,7 +184,7 @@ public class CustomerBalanceSummaryQueryTestCase
 
         // create and save a new invoice
         final Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount, startTime);
+        List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
         // get all customers with overdue balances. Should include the customer
@@ -252,9 +250,12 @@ public class CustomerBalanceSummaryQueryTestCase
         customers.add(customerZ);
 
         // save invoices for each of the customers
-        FinancialAct invoice1 = createChargesInvoice(new Money(100), customerA);
-        FinancialAct invoice2 = createChargesInvoice(new Money(100), customerB);
-        FinancialAct invoice3 = createChargesInvoice(new Money(100), customerZ);
+        List<FinancialAct> invoice1 = createChargesInvoice(new Money(100),
+                                                           customerA);
+        List<FinancialAct> invoice2 = createChargesInvoice(new Money(100),
+                                                           customerB);
+        List<FinancialAct> invoice3 = createChargesInvoice(new Money(100),
+                                                           customerZ);
         save(invoice1);
         save(invoice2);
         save(invoice3);
@@ -318,8 +319,8 @@ public class CustomerBalanceSummaryQueryTestCase
 
         // create and save a new invoice for customer1
         final Money hundred = new Money(100);
-        FinancialAct invoice = createChargesInvoice(hundred, customer1);
-        invoice.setActivityStartTime(startTime);
+        List<FinancialAct> invoice
+                = createChargesInvoice(hundred, customer1, startTime);
         save(invoice);
 
         // create and save a new payment for customer2. Will leave a credit
@@ -369,15 +370,17 @@ public class CustomerBalanceSummaryQueryTestCase
         // create and save invoices for customer1
         final Money hundred = new Money(100);
         for (int i = 0; i < 10; ++i) {
-            FinancialAct invoice1 = createChargesInvoice(hundred, customer1);
-            invoice1.setActivityStartTime(startTime);
+            List<FinancialAct> invoice1 = createChargesInvoice(hundred,
+                                                               customer1,
+                                                               startTime);
             save(invoice1);
             cust1Balance = cust1Balance.add(hundred);
         }
         // create and save invoices for customer2
         for (int i = 0; i < 12; ++i) {
-            FinancialAct invoice2 = createChargesInvoice(hundred, customer2);
-            invoice2.setActivityStartTime(startTime);
+            List<FinancialAct> invoice2 = createChargesInvoice(hundred,
+                                                               customer2,
+                                                               startTime);
             save(invoice2);
             cust2Balance = cust2Balance.add(hundred);
         }

@@ -212,7 +212,7 @@ public class ReminderRules {
     public int countReminders(Party patient) {
         NamedQuery query = new NamedQuery("act.patientReminder-count",
                                           Arrays.asList("count"));
-        query.setParameter("patientId", patient.getLinkId());
+        query.setParameter("patientId", patient.getId());
         return count(query);
     }
 
@@ -227,7 +227,7 @@ public class ReminderRules {
     public int countAlerts(Party patient, Date date) {
         NamedQuery query = new NamedQuery("act.patientAlert-count",
                                           Arrays.asList("count"));
-        query.setParameter("patientId", patient.getLinkId());
+        query.setParameter("patientId", patient.getId());
         query.setParameter("date", date);
         return count(query);
     }
@@ -267,7 +267,7 @@ public class ReminderRules {
         // First check if Patient deceased and if so set to Cancel
         Party patient = (Party) bean.getParticipant("participation.patient");
         EntityBean patientBean = new EntityBean(patient, service);
-        if (patientBean.getBoolean("deceased",false) == true) {
+        if (patientBean.getBoolean("deceased", false)) {
         	return true;
         }
         // Otherwise get reminderType and check cancel period

@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.party.AbstractPartyMergerTest;
 import org.openvpms.archetype.rules.party.MergeException;
@@ -35,6 +36,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -125,8 +127,9 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
         assertEquals(0, countParticipations(to));
 
         for (int i = 0; i < 10; ++i) {
-            FinancialAct invoice = FinancialTestHelper.createChargesInvoice(
-                    new Money(100), customer, from, product);
+            List<FinancialAct> invoice
+                    = FinancialTestHelper.createChargesInvoice(
+                    new Money(100), customer, from, product, ActStatus.POSTED);
             save(invoice);
         }
         int fromRefs = countParticipations(from);
