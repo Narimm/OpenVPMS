@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -158,8 +159,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testGetBalanceForChargesInvoiceAndPayment() {
         Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
-        FinancialAct payment = createPayment(amount);
+        List<FinancialAct> invoice = createChargesInvoice(amount);
+        List<FinancialAct> payment = Arrays.asList(createPayment(amount));
         checkCalculateBalanceForSameAmount(invoice, payment);
     }
 
@@ -169,8 +170,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testGetBalanceForChargesCounterAndPayment() {
         Money amount = new Money(100);
-        FinancialAct counter = createChargesCounter(amount);
-        FinancialAct payment = createPayment(amount);
+        List<FinancialAct> counter = createChargesCounter(amount);
+        List<FinancialAct> payment = Arrays.asList(createPayment(amount));
         checkCalculateBalanceForSameAmount(counter, payment);
     }
 
@@ -181,8 +182,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testGetBalanceForChargesInvoiceAndCredit() {
         Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
-        FinancialAct credit = createChargesCredit(amount);
+        List<FinancialAct> invoice = createChargesInvoice(amount);
+        List<FinancialAct> credit = createChargesCredit(amount);
         checkCalculateBalanceForSameAmount(invoice, credit);
     }
 
@@ -192,8 +193,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testGetBalanceForRefundAndPayment() {
         Money amount = new Money(100);
-        FinancialAct refund = createRefund(amount);
-        FinancialAct payment = createCreditAdjust(amount);
+        List<FinancialAct> refund = Arrays.asList(createRefund(amount));
+        List<FinancialAct> payment = Arrays.asList(createCreditAdjust(amount));
         checkCalculateBalanceForSameAmount(refund, payment);
     }
 
@@ -203,8 +204,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testGetBalanceForDebitAndCreditAdjust() {
         Money amount = new Money(100);
-        FinancialAct debit = createDebitAdjust(amount);
-        FinancialAct credit = createCreditAdjust(amount);
+        List<FinancialAct> debit = Arrays.asList(createDebitAdjust(amount));
+        List<FinancialAct> credit = Arrays.asList(createCreditAdjust(amount));
         checkCalculateBalanceForSameAmount(debit, credit);
     }
 
@@ -214,8 +215,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testGetBalanceForInitialBalanceAndBadDebt() {
         Money amount = new Money(100);
-        FinancialAct debit = createInitialBalance(amount);
-        FinancialAct credit = createBadDebt(amount);
+        List<FinancialAct> debit = Arrays.asList(createInitialBalance(amount));
+        List<FinancialAct> credit = Arrays.asList(createBadDebt(amount));
         checkCalculateBalanceForSameAmount(debit, credit);
     }
 
@@ -227,13 +228,14 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         Money hundred = new Money(100);
         Money sixty = new Money(60);
         Money forty = new Money(40);
-        FinancialAct invoice = createChargesInvoice(hundred);
-        save(invoice);
+        List<FinancialAct> invoiceActs = createChargesInvoice(hundred);
+        save(invoiceActs);
 
         // check the balance
         assertEquals(hundred, rules.getBalance(customer));
 
         // make sure the invoice has an account balance participation
+        FinancialAct invoice = invoiceActs.get(0);
         ActBean bean = new ActBean(invoice);
         assertEquals(customer, bean.getParticipant(
                 "participation.customerAccountBalance"));
@@ -294,7 +296,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         Money forty = new Money(40);
         Money ten = new Money(10);
         Money five = new Money(5);
-        FinancialAct invoice = createChargesInvoice(hundred);
+        List<FinancialAct> invoice = createChargesInvoice(hundred);
         save(invoice);
 
         // check the balance for a payment
@@ -337,8 +339,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // create and save a new invoice
         final Money amount = new Money(100);
         Date startTime = java.sql.Date.valueOf("2007-1-1");
-        FinancialAct invoice = createChargesInvoice(amount);
-        invoice.setActivityStartTime(startTime);
+        List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
         // check the invoice is not overdue on the day it is saved
@@ -358,9 +359,10 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // now save a credit for the same date as the invoice with total
         // > invoice total. The balance should be negative, but the overdue
         // balance should be zero as it only sums debits.
-        FinancialAct credit = createChargesCredit(new Money(150));
+        List<FinancialAct> creditActs = createChargesCredit(new Money(150));
+        FinancialAct credit = creditActs.get(0);
         credit.setActivityStartTime(startTime);
-        save(credit);
+        save(creditActs);
         checkBalance(new Money(-50));
         overdue = rules.getOverdueBalance(customer, now);
         assertEquals(BigDecimal.ZERO, overdue);
@@ -379,8 +381,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // create and save a new invoice
         final Money amount = new Money(100);
         Date startTime = java.sql.Date.valueOf("2007-1-1");
-        FinancialAct invoice = createChargesInvoice(amount);
-        invoice.setActivityStartTime(startTime);
+        List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
         // check the invoice is not overdue on the day it is saved
@@ -405,9 +406,10 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // The current balance should = -50, but the overdue balance as
         // of 31 days after saved should still be 100
         now = DateRules.getDate(statementDate, 1, DateUnits.DAYS);
-        FinancialAct credit = createChargesCredit(new Money(150));
+        List<FinancialAct> credits = createChargesCredit(new Money(150));
+        FinancialAct credit = credits.get(0);
         credit.setActivityStartTime(now);
-        save(credit);
+        save(credits);
 
         checkBalance(new Money(-50));
         overdue = rules.getOverdueBalance(customer, statementDate, overdueDate);
@@ -419,10 +421,15 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testGetCreditAmount() {
         final Money amount = new Money(100);
-        FinancialAct chargesCredit = createChargesCredit(amount);
+        List<FinancialAct> credits = createChargesCredit(amount);
         FinancialAct creditAdjust = createCreditAdjust(amount);
         FinancialAct payment = createPayment(amount);
         FinancialAct badDebt = createBadDebt(amount);
+
+        FinancialAct chargesCredit = credits.get(0);
+        chargesCredit.setStatus(ActStatus.IN_PROGRESS);
+        save(credits);
+        chargesCredit.setStatus(ActStatus.POSTED);
 
         FinancialAct[] acts = {chargesCredit, creditAdjust, payment, badDebt};
         for (int i = 0; i < acts.length; ++i) {
@@ -440,23 +447,29 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testGetUnbilledAmount() {
         final Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
-        FinancialAct counter = createChargesCounter(amount);
-        FinancialAct credit = createChargesCredit(amount);
+        List<FinancialAct> invoices = createChargesInvoice(amount);
+        List<FinancialAct> counters = createChargesCounter(amount);
+        List<FinancialAct> credits = createChargesCredit(amount);
+
+        FinancialAct invoice = invoices.get(0);
         invoice.setStatus(ActStatus.IN_PROGRESS);
+
+        FinancialAct counter = counters.get(0);
         counter.setStatus(ActStatus.IN_PROGRESS);
+
+        FinancialAct credit = credits.get(0);
         credit.setStatus(ActStatus.IN_PROGRESS);
 
         assertEquals(BigDecimal.ZERO, rules.getUnbilledAmount(getCustomer()));
 
-        save(invoice);
+        save(invoices);
         assertEquals(amount, rules.getUnbilledAmount(getCustomer()));
 
-        save(counter);
+        save(counters);
         assertEquals(amount.multiply(new BigDecimal(2)),
                      rules.getUnbilledAmount(getCustomer()));
 
-        save(credit);
+        save(credits);
         assertEquals(amount, rules.getUnbilledAmount(getCustomer()));
 
         credit.setStatus(ActStatus.POSTED);
@@ -547,7 +560,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testReverseAllocated() {
         Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
+        List<FinancialAct> invoice = createChargesInvoice(amount);
         save(invoice);
 
         FinancialAct payment = createPayment(amount);
@@ -564,12 +577,12 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testReverseUnallocated() {
         Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
+        List<FinancialAct> invoice = createChargesInvoice(amount);
         save(invoice);
 
         checkBalance(amount);
 
-        rules.reverse(invoice, new Date());
+        rules.reverse(invoice.get(0), new Date());
         checkBalance(BigDecimal.ZERO);
     }
 
@@ -582,8 +595,9 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         Money forty = new Money(40);
 
         // create a new invoice for $100
-        FinancialAct invoice = createChargesInvoice(amount);
-        save(invoice);
+        List<FinancialAct> invoices = createChargesInvoice(amount);
+        save(invoices);
+        FinancialAct invoice = invoices.get(0);
         assertEquals(BigDecimal.ZERO, invoice.getAllocatedAmount());
 
         // pay $60. Payment is fully allocated, $60 of invoice is allocated.
@@ -618,9 +632,10 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     public void testZeroAct() {
         // save an IN_PROGRESS invoice with a zero total, and verify it
         // has no balance participation
-        FinancialAct invoice = createChargesInvoice(Money.ZERO);
+        List<FinancialAct> invoices = createChargesInvoice(Money.ZERO);
+        FinancialAct invoice = invoices.get(0);
         invoice.setStatus(ActStatus.IN_PROGRESS);
-        save(invoice);
+        save(invoices);
         ActBean bean = new ActBean(invoice);
         assertNull(bean.getParticipation(BALANCE_PARTICIPATION));
 
@@ -655,31 +670,46 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Verfies that when an act is saved, a
      * <em>participation.customerAccountBalance</em> is associated with it.
      *
-     * @param act the act
+     * @param acts the act
      */
-    private void checkAddToBalance(FinancialAct act) {
+    private void checkAddToBalance(List<FinancialAct> acts) {
+        ActBean bean = new ActBean(acts.get(0));
+        assertNull(bean.getParticipant("participation.customerAccountBalance"));
+        save(acts);
+        Act act = get(acts.get(0));
+        bean = new ActBean(act);
+        assertEquals(getCustomer(), bean.getParticipant(
+                "participation.customerAccountBalance"));
+    }
+
+    private void checkAddToBalance(Act act) {
         save(act);
         act = get(act);
         ActBean bean = new ActBean(act);
         assertEquals(getCustomer(), bean.getParticipant(
                 "participation.customerAccountBalance"));
+
     }
 
     /**
      * Verifies that a debit is offset by a credit of the same amount.
      *
-     * @param debit  the debit act
-     * @param credit the credit act
+     * @param debits  the debit acts
+     * @param credits the credit act
      */
-    private void checkCalculateBalanceForSameAmount(FinancialAct debit,
-                                                    FinancialAct credit) {
+    private void checkCalculateBalanceForSameAmount(List<FinancialAct> debits,
+                                                    List<FinancialAct> credits) {
+        FinancialAct debit = debits.get(0);
+        FinancialAct credit = credits.get(0);
+
         BigDecimal amount = credit.getTotal();
         assertEquals(amount, debit.getTotal());
+
         assertTrue(credit.isCredit());
         assertFalse(debit.isCredit());
 
         // save and reload the debit. The allocated amount should be unchanged
-        save(debit);
+        save(debits);
         debit = get(debit);
         assertEquals(amount, debit.getTotal());
         assertEquals(BigDecimal.ZERO, debit.getAllocatedAmount());
@@ -690,7 +720,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // save the credit. The allocated amount for the debit and credit should
         // be the same as the total
-        save(credit);
+        save(credits);
 
         credit = get(credit);
         debit = get(debit);
@@ -779,6 +809,22 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * {@link CustomerAccountRules#reverse}, and has the correct child act,
      * if any.
      *
+     * @param acts          the acts to reverse
+     * @param shortName     the reversal act short name
+     * @param itemShortName the reversal act child short name.
+     *                      May be <tt>null</tt>
+     */
+    private void checkReverse(List<FinancialAct> acts, String shortName,
+                              String itemShortName) {
+        save(acts);
+        checkReverse(acts.get(0), shortName, itemShortName);
+    }
+
+    /**
+     * Verifies that an act can be reversed by
+     * {@link CustomerAccountRules#reverse}, and has the correct child act,
+     * if any.
+     *
      * @param act           the act to reverse
      * @param shortName     the reversal act short name
      * @param itemShortName the reversal act child short name.
@@ -787,6 +833,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     private void checkReverse(FinancialAct act, String shortName,
                               String itemShortName) {
         BigDecimal amount = act.getTotal();
+        act.setStatus(ActStatus.POSTED);
         save(act);
 
         // check the balance

@@ -191,8 +191,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("units", DateUnits.WEEKS);
         bean.setValue("source", reminderType.getObjectReference());
         bean.setValue("target", template.getObjectReference());
-        bean.save();
-        save(template);
+        save(reminderTypeTemplate, template);
         checkDue(reminder, "2007-01-01", "2007-02-14", false);
         checkDue(reminder, "2007-01-01", "2007-02-15", true);
     }

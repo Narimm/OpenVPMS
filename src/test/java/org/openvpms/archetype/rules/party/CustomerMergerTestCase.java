@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.party;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
@@ -45,6 +46,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -192,8 +194,9 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         assertEquals(0, countParticipations(to));
 
         for (int i = 0; i < 10; ++i) {
-            FinancialAct invoice = FinancialTestHelper.createChargesInvoice(
-                    new Money(100), from, patient, product);
+            List<FinancialAct> invoice
+                    = FinancialTestHelper.createChargesInvoice(
+                    new Money(100), from, patient, product, ActStatus.POSTED);
             save(invoice);
         }
         int fromRefs = countParticipations(from);
@@ -363,10 +366,12 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      */
     private void addInvoice(Date startTime, Money amount, Party customer,
                             Party patient, Product product) {
-        Act act = FinancialTestHelper.createChargesInvoice(
-                amount, customer, patient, product);
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(
+                amount, customer, patient, product,
+                ActStatus.POSTED);
+        FinancialAct act = acts.get(0);
         act.setActivityStartTime(startTime);
-        save(act);
+        save(acts);
     }
 
     /**

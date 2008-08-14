@@ -147,7 +147,7 @@ public class AccountBalanceTool {
      */
     public void generate(Party customer) {
         log.info("Generating account balance for " + customer.getName()
-                + ", ID=" + customer.getUid());
+                + ", ID=" + customer.getId());
         BalanceCalculator calc = new BalanceCalculator(service);
         BigDecimal oldBalance = calc.getBalance(customer);
         Generator generator = new Generator(customer);
@@ -201,7 +201,7 @@ public class AccountBalanceTool {
      */
     public boolean check(Party customer) {
         log.info("Checking account balance for " + customer.getName()
-                + ", ID=" + customer.getUid());
+                + ", ID=" + customer.getId());
         BalanceCalculator calc = new BalanceCalculator(service);
         boolean result = false;
         try {
@@ -210,14 +210,14 @@ public class AccountBalanceTool {
             result = expected.compareTo(actual) == 0;
             if (!result) {
                 log.error("Failed to check account balance for "
-                        + customer.getName() + ", ID=" + customer.getUid()
+                        + customer.getName() + ", ID=" + customer.getId()
                         + ": expected balance=" + expected
                         + ", actual balance=" + actual);
             }
         } catch (CustomerAccountRuleException exception) {
             // thrown when an opening or closing balance doesn't match
             log.error("Failed to check account balance for "
-                    + customer.getName() + ", ID=" + customer.getUid()
+                    + customer.getName() + ", ID=" + customer.getId()
                     + ": " + exception.getMessage());
         }
         return result;
@@ -364,7 +364,7 @@ public class AccountBalanceTool {
             query.add(new NodeConstraint("name", name));
         }
         query.add(new NodeSortConstraint("name"));
-        query.add(new NodeSortConstraint("uid"));
+        query.add(new NodeSortConstraint("id"));
         return query;
     }
 
@@ -376,7 +376,7 @@ public class AccountBalanceTool {
      */
     private ArchetypeQuery createIdQuery(long id) {
         ArchetypeQuery query = new ArchetypeQuery(SHORT_NAMES, true, false);
-        query.add(new NodeConstraint("uid", id));
+        query.add(new NodeConstraint("id", id));
         return query;
     }
 

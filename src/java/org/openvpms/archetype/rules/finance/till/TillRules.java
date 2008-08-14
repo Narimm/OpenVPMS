@@ -33,7 +33,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -46,7 +45,6 @@ import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 
 
@@ -126,12 +124,11 @@ public class TillRules {
                                         act.getArchetypeId().getShortName());
         }
 
-        Act oldAct = (Act) ArchetypeQueryHelper.getByUid(
-                service, act.getArchetypeId(), act.getUid());
+        Act oldAct = (Act) service.get(act.getObjectReference());
         if (oldAct != null) {
             // If the act already exists, make sure it hasn't been cleared
             if (TillBalanceStatus.CLEARED.equals(oldAct.getStatus())) {
-                throw new TillRuleException(ClearedTill, act.getUid());
+                throw new TillRuleException(ClearedTill, act.getId());
             }
         } else {
             // Else we have a completely new till balance so if status is
@@ -144,7 +141,7 @@ public class TillRules {
                 }
                 Act current = getUnclearedTillBalance(
                         till.getObjectReference());
-                if (current != null && current.getUid() != act.getUid()) {
+                if (current != null && current.getId() != act.getId()) {
                     throw new TillRuleException(UnclearedTillExists,
                                                 till.getName());
                 }
@@ -200,7 +197,7 @@ public class TillRules {
         ActBean balanceBean = new ActBean(balance, service);
         Entity till = balanceBean.getParticipant(TILL_PARTICIPATION);
         if (till == null) {
-            throw new TillRuleException(MissingTill, balance.getUid());
+            throw new TillRuleException(MissingTill, balance.getId());
         }
         IMObjectBean tillBean = new IMObjectBean(till, service);
         BigDecimal lastCashFloat = tillBean.getBigDecimal("tillFloat",
@@ -237,8 +234,7 @@ public class TillRules {
         acts.add(deposit);
         service.save(acts);
 */
-        service.save(balance);
-        service.save(deposit);
+        service.save(Arrays.asList(balance, deposit));
 
         // need to reload the till to avoid hibernate StaleObjectException
         // caused by saving the balance (which has a reference to the till)
@@ -275,44 +271,28 @@ public class TillRules {
         }
         Entity orig = balanceBean.getParticipant(TILL_PARTICIPATION);
         if (orig == null) {
-            throw new TillRuleException(MissingTill, balance.getUid());
+            throw new TillRuleException(MissingTill, balance.getId());
         }
         if (orig.equals(till)) {
             throw new TillRuleException(InvalidTransferTill, till.getName());
         }
         if (!TillBalanceStatus.UNCLEARED.equals(balance.getStatus())) {
-            throw new TillRuleException(ClearedTill, balance.getUid());
+            throw new TillRuleException(ClearedTill, balance.getId());
         }
         if (actBean.getParticipant(TILL_PARTICIPATION) == null) {
-            throw new TillRuleException(MissingTill, act.getUid());
+            throw new TillRuleException(MissingTill, act.getId());
         }
 
         ActRelationship relationship = balanceBean.getRelationship(act);
         if (relationship == null) {
-            throw new TillRuleException(MissingRelationship, balance.getUid());
+            throw new TillRuleException(MissingRelationship, balance.getId()
+            );
         }
         balanceBean.removeRelationship(relationship);
-        updateBalance(balanceBean);
-        balanceBean.save();
-
-/*
-        todo - commented out as workaround for OBF-114
-        List<Act> acts = new ArrayList<Act>();
-        acts.add(balance);
-        acts.add(act);
-        service.save(acts);
-*/
-//        actBean.setParticipant(TILL_PARTICIPATION, till);
-//        actBean.removeRelationship(relationship);
-//        actBean.save();
-
-        // need to reload the act to avoid hibernate StaleStateException
-        // due to propagation of removal of relationship
-        act = (Act) ArchetypeQueryHelper.getByObjectReference(
-                service, act.getObjectReference());
-        actBean = new ActBean(act, service);
+        actBean.removeRelationship(relationship);
         actBean.setParticipant(TILL_PARTICIPATION, till);
-        actBean.save();
+        updateBalance(balanceBean);
+        service.save(Arrays.asList(balance, act));
 
         // @todo should save all modifications in the one transaction
         doAddToTill(act);
@@ -395,8 +375,7 @@ public class TillRules {
         if (balanceBean.getRelationship(act) == null) {
             balanceBean.addRelationship(TILL_BALANCE_ITEM, act);
             updateBalance(balanceBean);
-            Collection<IMObject> list = Arrays.asList((IMObject) act, balance);
-            service.save(list);
+            service.save(Arrays.asList(act, balance));
         } else if (isAdjust) {
             updateBalance(balanceBean);
             balanceBean.save();
@@ -458,8 +437,7 @@ public class TillRules {
      * @return the reloaded object
      */
     private IMObject reload(IMObject object) {
-        return ArchetypeQueryHelper.getByObjectReference(
-                service, object.getObjectReference());
+        return service.get(object.getObjectReference());
     }
 
 

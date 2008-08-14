@@ -128,7 +128,6 @@ public class AppointmentRules {
      * @throws OpenVPMSException for any error
      */
     public boolean hasOverlappingAppointments(Act appointment) {
-        long uid = appointment.getUid();
         ActBean bean = new ActBean(appointment, service);
         IMObjectReference schedule
                 = bean.getParticipantRef("participation.schedule");
@@ -136,7 +135,7 @@ public class AppointmentRules {
         Date endTime = appointment.getActivityEndTime();
 
         if (startTime != null && endTime != null && schedule != null) {
-            return hasOverlappingAppointments(uid, startTime, endTime,
+            return hasOverlappingAppointments(appointment, startTime, endTime,
                                               schedule);
         }
         return false;
@@ -152,7 +151,7 @@ public class AppointmentRules {
      */
     public void updateTask(Act act) {
         ActBean bean = new ActBean(act, service);
-        List<Act> tasks = bean.getActsForNode("tasks");
+        List<Act> tasks = bean.getNodeActs("tasks");
         if (!tasks.isEmpty()) {
             Act task = tasks.get(0);
             updateStatus(act, task);
@@ -169,7 +168,7 @@ public class AppointmentRules {
      */
     public void updateAppointment(Act act) {
         ActBean bean = new ActBean(act, service);
-        List<Act> appointments = bean.getActsForNode("appointments");
+        List<Act> appointments = bean.getNodeActs("appointments");
         if (!appointments.isEmpty()) {
             Act appointment = appointments.get(0);
             updateStatus(act, appointment);
@@ -206,21 +205,26 @@ public class AppointmentRules {
     /**
      * Determines if there are acts that overlap with an appointment.
      *
-     * @param uid       the appointment id
-     * @param startTime the appointment start time
-     * @param endTime   the appointment end time
-     * @param schedule  the schedule
+     * @param appointment the appointment
+     * @param startTime   the appointment start time
+     * @param endTime     the appointment end time
+     * @param schedule    the schedule
      * @return a list of acts that overlap with the appointment
      * @throws OpenVPMSException for any error
      */
-    private boolean hasOverlappingAppointments(long uid, Date startTime,
+    private boolean hasOverlappingAppointments(Act appointment, Date startTime,
                                                Date endTime,
                                                IMObjectReference schedule) {
-        NamedQuery query = new NamedQuery("act.customerAppointment-overlap");
+        String name = (appointment.isNew())
+                ? "act.customerAppointment-overlapNew"
+                : "act.customerAppointment-overlap";
+        NamedQuery query = new NamedQuery(name);
         query.setParameter("startTime", startTime);
         query.setParameter("endTime", endTime);
-        query.setParameter("scheduleId", schedule.getLinkId());
-        query.setParameter("actId", uid);
+        query.setParameter("scheduleId", schedule.getId());
+        if (!appointment.isNew()) {
+            query.setParameter("actId", appointment.getId());
+        }
         List<ObjectSet> overlaps = service.getObjects(query).getResults();
         return !overlaps.isEmpty();
 /*
@@ -241,7 +245,7 @@ public class AppointmentRules {
         //   && ((act.startTime < startTime && act.endTime > startTime)
         //   || (act.startTime < endTime && act.endTime > endTime)
         //   || (act.startTime >= startTime && act.endTime <= endTime))
-        query.add(new NodeConstraint("uid", RelationalOp.NE, uid));
+        query.add(new NodeConstraint("id", RelationalOp.NE, uid));
         CollectionNodeConstraint participations = new CollectionNodeConstraint(
                 "schedule", "participation.schedule", false, true)
                 .add(new ObjectRefNodeConstraint("entity", schedule))

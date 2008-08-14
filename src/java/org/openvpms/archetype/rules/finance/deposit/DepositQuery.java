@@ -116,8 +116,8 @@ public class DepositQuery {
                 ActBean tillBalanceItemBean = new ActBean(tillBalanceItem);
                 if (tillBalanceItemBean.isA("act.tillBalanceAdjustment")) {
                     ObjectSet set = new ObjectSet();
-                    set.add(BANK_DEPOSIT, bankDeposit);
-                    set.add(ACT, tillBalanceItem);
+                    set.set(BANK_DEPOSIT, bankDeposit);
+                    set.set(ACT, tillBalanceItem);
                     Act item;
                     if (tillBalanceItemBean.getBoolean("credit")) {
                         item = (FinancialAct) service.create(
@@ -131,8 +131,8 @@ public class DepositQuery {
 
                     itemBean.setValue("amount", actAmount);
                     item.setDescription(tillBalanceItem.getDescription());
-                    set.add(ACT_ITEM, item);
-                    set.add(AMOUNT, actAmount.negate());
+                    set.set(ACT_ITEM, item);
+                    set.set(AMOUNT, actAmount.negate());
                     result.add(set);
                 } else {
                     for (Act item : tillBalanceItemBean.getNodeActs("items"))
@@ -143,10 +143,10 @@ public class DepositQuery {
                             continue;
                         }
                         ObjectSet set = new ObjectSet();
-                        set.add(BANK_DEPOSIT, bankDeposit);
-                        set.add(ACT, tillBalanceItem);
-                        set.add(ACT_ITEM, item);
-                        set.add(AMOUNT, getAmount(item).negate());
+                        set.set(BANK_DEPOSIT, bankDeposit);
+                        set.set(ACT, tillBalanceItem);
+                        set.set(ACT_ITEM, item);
+                        set.set(AMOUNT, getAmount(item).negate());
                         result.add(set);
 
                     }

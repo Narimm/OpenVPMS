@@ -166,7 +166,7 @@ public class ReminderQuery {
         ShortNameConstraint participation = new ShortNameConstraint(
                 "participation", "participation.patient", true);
         ShortNameConstraint owner = new ShortNameConstraint(
-                "owner", "entityRelationship.patientOwner", true);
+                "owner", "entityRelationship.patientOwner", false);
         ShortNameConstraint patient = new ShortNameConstraint(
                 "patient", "party.patientpet", true);
         ShortNameConstraint customer = new ShortNameConstraint(

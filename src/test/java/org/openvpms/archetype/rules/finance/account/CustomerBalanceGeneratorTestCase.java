@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -54,8 +55,8 @@ public class CustomerBalanceGeneratorTestCase
      */
     public void testGenerateBalanceForChargesInvoiceAndPayment() {
         Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
-        FinancialAct payment = createPayment(amount);
+        List<FinancialAct> invoice = createChargesInvoice(amount);
+        List<FinancialAct> payment = Arrays.asList(createPayment(amount));
         checkCalculateBalanceForSameAmount(invoice, payment);
     }
 
@@ -65,8 +66,8 @@ public class CustomerBalanceGeneratorTestCase
      */
     public void testGetBalanceForChargesCounterAndPayment() {
         Money amount = new Money(100);
-        FinancialAct counter = createChargesCounter(amount);
-        FinancialAct payment = createPayment(amount);
+        List<FinancialAct> counter = createChargesCounter(amount);
+        List<FinancialAct> payment = Arrays.asList(createPayment(amount));
         checkCalculateBalanceForSameAmount(counter, payment);
     }
 
@@ -77,8 +78,8 @@ public class CustomerBalanceGeneratorTestCase
      */
     public void testGetBalanceForChargesInvoiceAndCredit() {
         Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
-        FinancialAct credit = createChargesCredit(amount);
+        List<FinancialAct> invoice = createChargesInvoice(amount);
+        List<FinancialAct> credit = createChargesCredit(amount);
         checkCalculateBalanceForSameAmount(invoice, credit);
     }
 
@@ -88,8 +89,8 @@ public class CustomerBalanceGeneratorTestCase
      */
     public void testGetBalanceForRefundAndPayment() {
         Money amount = new Money(100);
-        FinancialAct refund = createRefund(amount);
-        FinancialAct payment = createCreditAdjust(amount);
+        List<FinancialAct> refund = Arrays.asList(createRefund(amount));
+        List<FinancialAct> payment = Arrays.asList(createCreditAdjust(amount));
         checkCalculateBalanceForSameAmount(refund, payment);
     }
 
@@ -99,8 +100,8 @@ public class CustomerBalanceGeneratorTestCase
      */
     public void testGetBalanceForDebitAndCreditAdjust() {
         Money amount = new Money(100);
-        FinancialAct debit = createDebitAdjust(amount);
-        FinancialAct credit = createCreditAdjust(amount);
+        List<FinancialAct> debit = Arrays.asList(createDebitAdjust(amount));
+        List<FinancialAct> credit = Arrays.asList(createCreditAdjust(amount));
         checkCalculateBalanceForSameAmount(debit, credit);
     }
 
@@ -110,8 +111,8 @@ public class CustomerBalanceGeneratorTestCase
      */
     public void testGetBalanceForInitialBalanceAndBadDebt() {
         Money amount = new Money(100);
-        FinancialAct debit = createInitialBalance(amount);
-        FinancialAct credit = createBadDebt(amount);
+        List<FinancialAct> debit = Arrays.asList(createInitialBalance(amount));
+        List<FinancialAct> credit = Arrays.asList(createBadDebt(amount));
         checkCalculateBalanceForSameAmount(debit, credit);
     }
 
@@ -120,13 +121,13 @@ public class CustomerBalanceGeneratorTestCase
      * added for acts that don't have <tt>POSTED</tt> status.
      */
     public void testAddParticipationForNonPostedActs() {
-        FinancialAct invoice1 = createChargesInvoice(new Money(100));
+        List<FinancialAct> invoice1 = createChargesInvoice(new Money(100));
         checkAddParticipationForNonPostedAct(invoice1,
                                              FinancialActStatus.IN_PROGRESS);
-        FinancialAct invoice2 = createChargesInvoice(new Money(100));
+        List<FinancialAct> invoice2 = createChargesInvoice(new Money(100));
         checkAddParticipationForNonPostedAct(invoice2,
                                              FinancialActStatus.ON_HOLD);
-        FinancialAct invoice3 = createChargesInvoice(new Money(100));
+        List<FinancialAct> invoice3 = createChargesInvoice(new Money(100));
         checkAddParticipationForNonPostedAct(invoice3,
                                              FinancialActStatus.COMPLETED);
     }
@@ -137,18 +138,19 @@ public class CustomerBalanceGeneratorTestCase
      */
     public void testChangeOpeningAndClosingBalances() {
         Party customer = getCustomer();
-        FinancialAct invoice = createChargesInvoice(new Money(10));
+        List<FinancialAct> invoice = createChargesInvoice(new Money(10));
         FinancialAct opening1 = createOpeningBalance(customer);
         FinancialAct payment = createPayment(new Money(30));
         FinancialAct closing1 = createClosingBalance(customer);
         FinancialAct opening2 = createOpeningBalance(customer);
 
-        save(invoice, opening1, payment, closing1, opening2);
+        save(invoice);
+        save(opening1, payment, closing1, opening2);
 
         assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         try {
-           rules.getDefinitiveBalance(customer);
+            rules.getDefinitiveBalance(customer);
             fail("Expected getDefinitiveBalance() to fail");
         } catch (CustomerAccountRuleException expected) {
             assertEquals(CustomerAccountRuleException.ErrorCode.InvalidBalance,
@@ -196,11 +198,11 @@ public class CustomerBalanceGeneratorTestCase
     /**
      * Verifies that a debit is offset by a credit of the same amount.
      *
-     * @param debit  the debit act
-     * @param credit the credit act
+     * @param debits  the debit acts
+     * @param credits the credit acts
      */
-    private void checkCalculateBalanceForSameAmount(FinancialAct debit,
-                                                    FinancialAct credit) {
+    private void checkCalculateBalanceForSameAmount(List<FinancialAct> debits,
+                                                    List<FinancialAct> credits) {
         Party customer = getCustomer();
 
         // initial balance is zero
@@ -209,10 +211,11 @@ public class CustomerBalanceGeneratorTestCase
 
         // save the debit act, and verify the balance is the same as the debit
         // total
-        save(debit);
+        save(debits);
 
         // definitive balance out of sync with balance until generate invoked
         assertFalse(checkBalance(customer));
+        FinancialAct debit = debits.get(0);
         assertEquals(debit.getTotal(), generate(customer));
         assertEquals(debit.getTotal(), rules.getBalance(customer));
 
@@ -237,14 +240,14 @@ public class CustomerBalanceGeneratorTestCase
         assertFalse(balanceParticipation1.equals(balanceParticipation2));
 
         // save the credit act and update the balance. Balance should be zero
-        save(credit);
+        save(credits);
         assertEquals(BigDecimal.ZERO, generate(customer));
         assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // verify there is an actRelationship.customerAccountAllocation
         // linking the acts
         debit = get(debit);
-        credit = get(credit);
+        FinancialAct credit = get(credits.get(0));
         ActRelationship debitAlloc = getAccountAllocationRelationship(debit);
         ActRelationship creditAlloc = getAccountAllocationRelationship(credit);
         checkAllocation(debitAlloc, debit, credit, debit.getTotal());
@@ -313,16 +316,17 @@ public class CustomerBalanceGeneratorTestCase
      * Verifies that an <em>participation.customerAccountBalance</tt> is
      * added for acts that don't have <tt>POSTED</tt> status.
      *
-     * @param act    the act
+     * @param acts   the act and associated child acts
      * @param status the act status
      */
-    private void checkAddParticipationForNonPostedAct(FinancialAct act,
+    private void checkAddParticipationForNonPostedAct(List<FinancialAct> acts,
                                                       String status) {
         assertFalse(FinancialActStatus.POSTED.equals(status));
         Party customer = getCustomer();
 
+        FinancialAct act = acts.get(0);
         act.setStatus(status);
-        save(act);
+        save(acts);
 
         assertEquals(BigDecimal.ZERO, generate(customer));
         act = get(act);

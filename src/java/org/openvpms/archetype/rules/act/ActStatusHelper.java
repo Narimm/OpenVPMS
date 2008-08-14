@@ -45,7 +45,7 @@ public class ActStatusHelper {
         ArchetypeQuery query = new ArchetypeQuery(
                 new ObjectRefConstraint("act", act.getObjectReference()));
         query.add(new NodeConstraint("act.status", ActStatus.POSTED));
-        query.add(new NodeSelectConstraint("act.uid"));
+        query.add(new NodeSelectConstraint("act.id"));
         return !service.getObjects(query).getResults().isEmpty();
     }
 

@@ -19,7 +19,7 @@
 	<archetype name="participation.product.1.0"
 		latest="true"
 		type="org.openvpms.component.business.domain.im.common.Participation" displayName="Product" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node displayName="Product" name="entity" path="/entity" minCardinality="1" maxCardinality="1"
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">

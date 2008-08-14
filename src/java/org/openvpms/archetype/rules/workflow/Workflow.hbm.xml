@@ -24,250 +24,264 @@
 
     <query name="act.customerAppointment">
         <![CDATA[
-select p.act,
-      act.activityStartTime,
-      act.activityEndTime,
+select act.archetypeId, act.id, act.linkId,
+      p.activityStartTime,
+      p.activityEndTime,
       indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
-      p.entity,
+      e.archetypeId, e.id, e.linkId,
       e.name
-from  org.openvpms.component.business.domain.im.act.Act as act,
-      org.openvpms.component.business.domain.im.common.Participation as p,
-      org.openvpms.component.business.domain.im.common.Entity as e
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
+      org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl as e
 left outer join act.details as details
-where p.act.linkId = act.linkId
-      and p.entity.linkId = e.linkId
+where p.act = act
+      and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
-      and ((act.activityStartTime < :from and act.activityEndTime > :from)
-	   	or (act.activityStartTime < :to and act.activityEndTime > :to)
-      	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
-      and act.linkId in (
-            select distinct act.linkId
-            from org.openvpms.component.business.domain.im.act.Act as act,
-           org.openvpms.component.business.domain.im.common.Participation as p
+      and ((p.activityStartTime < :from and p.activityEndTime > :from)
+	   	or (p.activityStartTime < :to and p.activityEndTime > :to)
+      	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
+      and act in (
+            select distinct act
+            from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+           org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
       where act.archetypeId.shortName = 'act.customerAppointment'
             and p.archetypeId.shortName = 'participation.schedule'
-            and act.linkId = p.act.linkId
-            and p.entity.linkId = :scheduleId
-            and ((act.activityStartTime < :from and act.activityEndTime > :from)
-            	or (act.activityStartTime < :to and act.activityEndTime > :to)
-            	or (act.activityStartTime >= :from and act.activityEndTime <=:to)))
-order by act.activityStartTime, act.linkId
+            and act = p.act
+            and p.entity.id = :scheduleId
+            and ((p.activityStartTime < :from and p.activityEndTime > :from)
+            	or (p.activityStartTime < :to and p.activityEndTime > :to)
+            	or (p.activityStartTime >= :from and p.activityEndTime <=:to)))
+order by p.activityStartTime, act.id
       ]]>
     </query>
 
     <query name="act.customerAppointment-incomplete">
         <![CDATA[
-select p.act,
-      act.activityStartTime,
-      act.activityEndTime,
+select act.archetypeId, act.id, act.linkId,
+      p.activityStartTime,
+      p.activityEndTime,
       indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
-      p.entity,
+      e.archetypeId, e.id, e.linkId,
       e.name
-from  org.openvpms.component.business.domain.im.act.Act as act,
-      org.openvpms.component.business.domain.im.common.Participation as p,
-      org.openvpms.component.business.domain.im.common.Entity as e
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
+      org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl as e
 left outer join act.details as details
-where p.act.linkId = act.linkId
-      and p.entity.linkId = e.linkId
+where p.act = act
+      and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
-      and ((act.activityStartTime < :from and act.activityEndTime > :from)
-      	or (act.activityStartTime < :to and act.activityEndTime > :to)
-      	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
-      and act.linkId in (
-            select distinct act.linkId
-            from org.openvpms.component.business.domain.im.act.Act as act,
-           org.openvpms.component.business.domain.im.common.Participation as p
+      and ((p.activityStartTime < :from and p.activityEndTime > :from)
+      	or (p.activityStartTime < :to and p.activityEndTime > :to)
+      	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
+      and act in (
+            select distinct act
+            from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+           org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
       where act.archetypeId.shortName = 'act.customerAppointment'
             and p.archetypeId.shortName = 'participation.schedule'
-            and act.linkId = p.act.linkId
-            and p.entity.linkId = :scheduleId
-            and ((act.activityStartTime < :from and act.activityEndTime > :from)
-            	or (act.activityStartTime < :to and act.activityEndTime > :to)
-            	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
+            and act = p.act
+            and p.entity.id = :scheduleId
+            and ((p.activityStartTime < :from and p.activityEndTime > :from)
+            	or (p.activityStartTime < :to and p.activityEndTime > :to)
+            	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
             and not (act.status = 'COMPLETED' or act.status='CANCELLED'))
-order by act.activityStartTime, act.linkId
+order by p.activityStartTime, act.id
       ]]>
     </query>
 
     <query name="act.customerAppointment-complete">
         <![CDATA[
-select p.act,
-      act.activityStartTime,
-      act.activityEndTime,
+select act.archetypeId, act.id, act.linkId,
+      p.activityStartTime,
+      p.activityEndTime,
       indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
-      p.entity,
+      e.archetypeId, e.id, e.linkId,
       e.name
-from  org.openvpms.component.business.domain.im.act.Act as act,
-      org.openvpms.component.business.domain.im.common.Participation as p,
-      org.openvpms.component.business.domain.im.common.Entity as e
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
+      org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl as e
 left outer join act.details as details
-where p.act.linkId = act.linkId
-      and p.entity.linkId = e.linkId
+where p.act = act
+      and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
-      and ((act.activityStartTime < :from and act.activityEndTime > :from)
-      	or (act.activityStartTime < :to and act.activityEndTime > :to)
-      	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
-      and act.linkId in (
-            select distinct act.linkId
-            from org.openvpms.component.business.domain.im.act.Act as act,
-           org.openvpms.component.business.domain.im.common.Participation as p
+      and ((p.activityStartTime < :from and p.activityEndTime > :from)
+      	or (p.activityStartTime < :to and p.activityEndTime > :to)
+      	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
+      and act in (
+            select distinct act
+            from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+           org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
       where act.archetypeId.shortName = 'act.customerAppointment'
             and p.archetypeId.shortName = 'participation.schedule'
-            and act.linkId = p.act.linkId
-            and p.entity.linkId = :scheduleId
-            and ((act.activityStartTime < :from and act.activityEndTime > :from)
-            	or (act.activityStartTime < :to and act.activityEndTime > :to)
-            	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
+            and act = p.act
+            and p.entity.id = :scheduleId
+            and ((p.activityStartTime < :from and p.activityEndTime > :from)
+            	or (p.activityStartTime < :to and p.activityEndTime > :to)
+            	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
             and (act.status = 'COMPLETED' or act.status='CANCELLED'))
-order by act.activityStartTime, act.linkId
+order by p.activityStartTime, act.id
       ]]>
     </query>
 
     <query name="act.customerAppointment-clinician">
         <![CDATA[
-select p.act,
-      act.activityStartTime,
-      act.activityEndTime,
+select act.archetypeId, act.id, act.linkId,
+      p.activityStartTime,
+      p.activityEndTime,
       indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
-      p.entity,
+      e.archetypeId, e.id, e.linkId,
       e.name
-from  org.openvpms.component.business.domain.im.act.Act as act,
-      org.openvpms.component.business.domain.im.common.Participation as p,
-      org.openvpms.component.business.domain.im.common.Entity as e
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
+      org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl as e
 left outer join act.details as details
-where p.act.linkId = act.linkId
-      and p.entity.linkId = e.linkId
+where p.act = act
+      and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
-      and ((act.activityStartTime < :from and act.activityEndTime > :from)
-      	or (act.activityStartTime < :to and act.activityEndTime > :to)
-      	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
-      and act.linkId in (
-            select distinct act.linkId
-            from org.openvpms.component.business.domain.im.act.Act as act,
-           org.openvpms.component.business.domain.im.common.Participation as pschedule,
-           org.openvpms.component.business.domain.im.common.Participation as pclinician
+      and ((p.activityStartTime < :from and p.activityEndTime > :from)
+      	or (p.activityStartTime < :to and p.activityEndTime > :to)
+      	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
+      and act in (
+            select distinct act
+            from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+           org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pschedule,
+           org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pclinician
       where act.archetypeId.shortName = 'act.customerAppointment'
             and pschedule.archetypeId.shortName = 'participation.schedule'
-            and act.linkId = pschedule.act.linkId
-            and pschedule.entity.linkId = :scheduleId
+            and act = pschedule.act
+            and pschedule.entity.id = :scheduleId
             and pclinician.archetypeId.shortName = 'participation.clinician'
-            and act.linkId = pclinician.act.linkId
-            and pclinician.entity.linkId = :clinicianId
-            and ((act.activityStartTime < :from and act.activityEndTime > :from)
-            	or (act.activityStartTime < :to and act.activityEndTime > :to)
-            	or (act.activityStartTime >= :from and act.activityEndTime <=:to)))
-order by act.activityStartTime, act.linkId
+            and act = pclinician.act
+            and pclinician.entity.id = :clinicianId
+            and ((p.activityStartTime < :from and p.activityEndTime > :from)
+            	or (p.activityStartTime < :to and p.activityEndTime > :to)
+            	or (p.activityStartTime >= :from and p.activityEndTime <=:to)))
+order by p.activityStartTime, act.id
       ]]>
     </query>
 
     <query name="act.customerAppointment-clinician-incomplete">
         <![CDATA[
-select p.act,
-      act.activityStartTime,
-      act.activityEndTime,
+select act.archetypeId, act.id, act.linkId,
+      p.activityStartTime,
+      p.activityEndTime,
       indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
-      p.entity,
+      e.archetypeId, e.id, e.linkId,
       e.name
-from  org.openvpms.component.business.domain.im.act.Act as act,
-      org.openvpms.component.business.domain.im.common.Participation as p,
-      org.openvpms.component.business.domain.im.common.Entity as e
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
+      org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl as e
 left outer join act.details as details
-where p.act.linkId = act.linkId
-      and p.entity.linkId = e.linkId
+where p.act = act
+      and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
-      and ((act.activityStartTime < :from and act.activityEndTime > :from)
-      	or (act.activityStartTime < :to and act.activityEndTime > :to)
-      	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
-      and act.linkId in (
-            select distinct act.linkId
-            from org.openvpms.component.business.domain.im.act.Act as act,
-           org.openvpms.component.business.domain.im.common.Participation as pschedule,
-           org.openvpms.component.business.domain.im.common.Participation as pclinician
+      and ((p.activityStartTime < :from and p.activityEndTime > :from)
+      	or (p.activityStartTime < :to and p.activityEndTime > :to)
+      	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
+      and act in (
+            select distinct act
+            from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+           org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pschedule,
+           org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pclinician
       where act.archetypeId.shortName = 'act.customerAppointment'
             and pschedule.archetypeId.shortName = 'participation.schedule'
-            and act.linkId = pschedule.act.linkId
-            and pschedule.entity.linkId = :scheduleId
+            and act = pschedule.act
+            and pschedule.entity.id = :scheduleId
             and pclinician.archetypeId.shortName = 'participation.clinician'
-            and act.linkId = pclinician.act.linkId
-            and pclinician.entity.linkId = :clinicianId
-            and ((act.activityStartTime < :from and act.activityEndTime > :from)
-            	or (act.activityStartTime < :to and act.activityEndTime > :to)
-            	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
+            and act = pclinician.act
+            and pclinician.entity.id = :clinicianId
+            and ((p.activityStartTime < :from and p.activityEndTime > :from)
+            	or (p.activityStartTime < :to and p.activityEndTime > :to)
+            	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
             and not (act.status = 'COMPLETED' or act.status='CANCELLED'))
-order by act.activityStartTime, act.linkId
+order by p.activityStartTime, act.id
       ]]>
     </query>
 
     <query name="act.customerAppointment-clinician-complete">
         <![CDATA[
-select p.act,
-      act.activityStartTime,
-      act.activityEndTime,
+select act.archetypeId, act.id, act.linkId,
+      p.activityStartTime,
+      p.activityEndTime,
       indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
-      p.entity,
+      e.archetypeId, e.id, e.linkId,
       e.name
-from  org.openvpms.component.business.domain.im.act.Act as act,
-      org.openvpms.component.business.domain.im.common.Participation as p,
-      org.openvpms.component.business.domain.im.common.Entity as e
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
+      org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl as e
 left outer join act.details as details
-where p.act.linkId = act.linkId
-      and p.entity.linkId = e.linkId
+where p.act= act
+      and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
-      and ((act.activityStartTime < :from and act.activityEndTime > :from)
-      	or (act.activityStartTime < :to and act.activityEndTime > :to)
-      	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
-      and act.linkId in (
-            select distinct act.linkId
-            from org.openvpms.component.business.domain.im.act.Act as act,
-           org.openvpms.component.business.domain.im.common.Participation as pschedule,
-           org.openvpms.component.business.domain.im.common.Participation as pclinician
+      and ((p.activityStartTime < :from and p.activityEndTime > :from)
+      	or (p.activityStartTime < :to and p.activityEndTime > :to)
+      	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
+      and act in (
+            select distinct act
+            from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+           org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pschedule,
+           org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pclinician
       where act.archetypeId.shortName = 'act.customerAppointment'
             and pschedule.archetypeId.shortName = 'participation.schedule'
-            and act.linkId = pschedule.act.linkId
-            and pschedule.entity.linkId = :scheduleId
+            and act = pschedule.act
+            and pschedule.entity.id = :scheduleId
             and pclinician.archetypeId.shortName = 'participation.clinician'
             and act.linkId = pclinician.act.linkId
-            and pclinician.entity.linkId = :clinicianId
-            and ((act.activityStartTime < :from and act.activityEndTime > :from)
-            	or (act.activityStartTime < :to and act.activityEndTime > :to)
-            	or (act.activityStartTime >= :from and act.activityEndTime <=:to))
+            and pclinician.entity.id = :clinicianId
+            and ((p.activityStartTime < :from and p.activityEndTime > :from)
+            	or (p.activityStartTime < :to and p.activityEndTime > :to)
+            	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
             and (act.status = 'COMPLETED' or act.status='CANCELLED'))
-order by act.activityStartTime, act.linkId
+order by p.activityStartTime, act.id
       ]]>
     </query>
 
     <query name="act.customerAppointment-overlap">
         <![CDATA[
-select act.uid
-from  org.openvpms.component.business.domain.im.act.Act as act,
-      org.openvpms.component.business.domain.im.common.Participation as p
+select act.id
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
 where act.archetypeId.shortName = 'act.customerAppointment'
-      and act.uid <> :actId
-      and act.linkId = p.act.linkId
-      and p.entity.linkId = :scheduleId
-      and p.act.archetypeId.shortName = 'act.customerAppointment'
+      and act.id <> :actId
+      and act = p.act
+      and p.entity.id = :scheduleId
       and act.active = 1
-      and ((act.activityStartTime < :startTime and act.activityEndTime > :startTime)
-           or (act.activityStartTime < :endTime and  act.activityEndTime > :endTime)
-           or (act.activityStartTime >= :startTime and act.activityEndTime <= :endTime))
+      and ((p.activityStartTime < :startTime and p.activityEndTime > :startTime)
+           or (p.activityStartTime < :endTime and  p.activityEndTime > :endTime)
+           or (p.activityStartTime >= :startTime and p.activityEndTime <= :endTime))
+      ]]>
+    </query>
+
+    <query name="act.customerAppointment-overlapNew">
+        <![CDATA[
+select act.id
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
+      org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
+where act.archetypeId.shortName = 'act.customerAppointment'
+      and act = p.act
+      and p.entity.id = :scheduleId
+      and act.active = 1
+      and ((p.activityStartTime < :startTime and p.activityEndTime > :startTime)
+           or (p.activityStartTime < :endTime and  p.activityEndTime > :endTime)
+           or (p.activityStartTime >= :startTime and p.activityEndTime <= :endTime))
       ]]>
     </query>
 

@@ -82,24 +82,28 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         customer.addClassification(accountType);
         save(customer);
 
-        FinancialAct invoice1 = createChargesInvoice(new Money(100));
+        List<FinancialAct> invoices1 = createChargesInvoice(new Money(100));
+        FinancialAct invoice1 = invoices1.get(0);
         invoice1.setActivityStartTime(getDatetime("2007-01-01 10:00:00"));
-        save(invoice1);
+        save(invoices1);
 
-        FinancialAct invoice2 = createChargesInvoice(new Money(100));
+        List<FinancialAct> invoices2 = createChargesInvoice(new Money(100));
+        FinancialAct invoice2 = invoices2.get(0);
         invoice2.setActivityStartTime(getDatetime("2007-01-01 10:30:00"));
         invoice2.setStatus(ActStatus.COMPLETED);
-        save(invoice2);
+        save(invoices2);
 
-        FinancialAct invoice3 = createChargesInvoice(new Money(10));
+        List<FinancialAct> invoices3 = createChargesInvoice(new Money(10));
+        FinancialAct invoice3 = invoices3.get(0);
         invoice3.setActivityStartTime(getDatetime("2007-01-01 11:00:00"));
         invoice3.setStatus(ActStatus.IN_PROGRESS);
-        save(invoice3);
+        save(invoices3);
 
-        FinancialAct invoice4 = createChargesInvoice(new Money(10));
+        List<FinancialAct> invoices4 = createChargesInvoice(new Money(10));
+        FinancialAct invoice4 = invoices4.get(0);
         invoice4.setActivityStartTime(getDatetime("2007-01-03 11:00:00"));
         invoice4.setStatus(ActStatus.POSTED);
-        save(invoice4);
+        save(invoices4);
 
         Date statementDate = getDate("2007-01-02");
 
@@ -138,24 +142,28 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
                                                      feeAmount));
         save(customer);
 
-        FinancialAct invoice1 = createChargesInvoice(new Money(100));
+        List<FinancialAct> invoices1 = createChargesInvoice(new Money(100));
+        FinancialAct invoice1 = invoices1.get(0);
         invoice1.setActivityStartTime(getDatetime("2007-01-01 10:00:00"));
-        save(invoice1);
+        save(invoices1);
 
-        FinancialAct invoice2 = createChargesInvoice(new Money(100));
+        List<FinancialAct> invoices2 = createChargesInvoice(new Money(100));
+        FinancialAct invoice2 = invoices2.get(0);
         invoice2.setActivityStartTime(getDatetime("2007-01-01 10:30:00"));
         invoice2.setStatus(ActStatus.COMPLETED);
-        save(invoice2);
+        save(invoices2);
 
-        FinancialAct invoice3 = createChargesInvoice(new Money(10));
+        List<FinancialAct> invoices3 = createChargesInvoice(new Money(10));
+        FinancialAct invoice3 = invoices3.get(0);
         invoice3.setActivityStartTime(getDatetime("2007-01-01 11:00:00"));
         invoice3.setStatus(ActStatus.IN_PROGRESS);
-        save(invoice3);
+        save(invoices3);
 
-        FinancialAct invoice4 = createChargesInvoice(new Money(10));
+        List<FinancialAct> invoices4 = createChargesInvoice(new Money(10));
+        FinancialAct invoice4 = invoices4.get(0);
         invoice4.setActivityStartTime(getDatetime("2007-02-06 11:00:00"));
         invoice4.setStatus(ActStatus.COMPLETED);
-        save(invoice4);
+        save(invoices4);
 
         Date statementDate = getDate("2007-02-05");
 
@@ -203,9 +211,10 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
 
         // create an invoice
         Money amount = new Money(950);
-        FinancialAct invoice1 = createChargesInvoice(amount);
+        List<FinancialAct> invoices1 = createChargesInvoice(amount);
+        FinancialAct invoice1 = invoices1.get(0);
         invoice1.setActivityStartTime(getDatetime("2007-12-29 10:00:00"));
-        save(invoice1);
+        save(invoices1);
 
         // run EOP for 31/12/2007.
         Date statementDate1 = getDate("2007-12-31");

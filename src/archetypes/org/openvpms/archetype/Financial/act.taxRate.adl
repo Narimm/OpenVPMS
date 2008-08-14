@@ -18,7 +18,7 @@
 <archetypes>
 	<archetype name="act.taxRate.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Tax Rate" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
         <node name="taxType" path="/participations" type="java.util.HashSet"

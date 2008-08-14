@@ -71,8 +71,7 @@ public class OverdueBalanceQueryTestCase extends AbstractCustomerAccountTest {
 
         // create and save a new invoice
         final Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
-        invoice.setActivityStartTime(startTime);
+        List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
         // get all customers with overdue balances. Should include the customer

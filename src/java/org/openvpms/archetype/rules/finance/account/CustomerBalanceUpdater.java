@@ -133,7 +133,6 @@ public class CustomerBalanceUpdater {
      * @param unallocated the unallocated acts
      * @return a list of the acts that were updated
      */
-    @SuppressWarnings("unchecked")
     public List<FinancialAct> updateBalance(
             FinancialAct act, Iterator<FinancialAct> unallocated) {
         List<BalanceAct> debits = new ArrayList<BalanceAct>();
@@ -173,9 +172,7 @@ public class CustomerBalanceUpdater {
         }
         if (!modified.isEmpty()) {
             // save all updates in the one transaction
-            List objects = modified;
-            service.save(objects);
-            modified = objects;
+            service.save(modified);
         }
         return modified;
     }

@@ -51,7 +51,7 @@ public class AccountBalanceToolTestCase extends AbstractCustomerAccountTest {
      */
     public void testGenerateForCustomerId() {
         Party customer = getCustomer();
-        long id = customer.getUid();
+        long id = customer.getId();
         Money amount = new Money(100);
         FinancialAct debit = createInitialBalance(amount);
         save(debit);

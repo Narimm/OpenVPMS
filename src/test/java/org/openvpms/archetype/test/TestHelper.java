@@ -40,6 +40,7 @@ import org.openvpms.component.system.common.query.QueryIterator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -74,6 +75,17 @@ public class TestHelper extends Assert {
      */
     public static void save(IMObject object) {
         ArchetypeServiceHelper.getArchetypeService().save(object);
+    }
+
+    /**
+     * Helper to save a collection of objects.
+     *
+     * @param objects the objects to save
+     * @throws ArchetypeServiceException if the service cannot save the object
+     * @throws ValidationException       if the object cannot be validated
+     */
+    public static void save(Collection<? extends IMObject> objects) {
+        ArchetypeServiceHelper.getArchetypeService().save(objects);
     }
 
     /**
@@ -330,15 +342,26 @@ public class TestHelper extends Assert {
             party.addContact(contact);
         }
 
-        Lookup currency = getClassification("lookup.currency", "AUD");
-        IMObjectBean ccyBean = new IMObjectBean(currency);
-        ccyBean.setValue("minDenomination", new BigDecimal("0.05"));
-        ccyBean.save();
+        Lookup currency = getCurrency("AUD");
 
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("currency", currency.getCode());
         bean.save();
         return party;
+    }
+
+    /**
+     * Returns a currency with the specified currency code, creating it
+     * if it doesn't exist.
+     *
+     * @return the currency
+     */
+    public static Lookup getCurrency(String code) {
+        Lookup currency = getClassification("lookup.currency", code, false);
+        IMObjectBean ccyBean = new IMObjectBean(currency);
+        ccyBean.setValue("minDenomination", new BigDecimal("0.05"));
+        ccyBean.save();
+        return currency;
     }
 
     /**

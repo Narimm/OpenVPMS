@@ -164,7 +164,7 @@ public class AppointmentTestHelper extends TestHelper {
         bean.setValue("endTime", endTime);
         bean.setValue("reason", reason.getCode());
         bean.setValue("status", AppointmentStatus.IN_PROGRESS);
-        Entity appointmentType = (Entity) create("entity.appointmentType");
+        Entity appointmentType = createAppointmentType();
         appointmentType.setName("XAppointmentType");
         save(appointmentType);
         bean.setParticipant("participation.customer", customer);

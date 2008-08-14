@@ -159,7 +159,6 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
      * @param acts the charge act and item
      */
     private void checkStockUpdate(List<FinancialAct> acts) {
-        FinancialAct act = acts.get(0);
         FinancialAct item = acts.get(1);
         BigDecimal initialQuantity = BigDecimal.ZERO;
         BigDecimal quantity = BigDecimal.valueOf(5);
@@ -173,11 +172,10 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
 
         assertEquals(initialQuantity, getStock(stockLocation, product));
 
-        save(act);
-        save(item);
+        save(acts);
         assertEquals(expected, getStock(stockLocation, product));
 
-        save(act);
+        save(acts);  // stock shouldn't change if resaved
         assertEquals(expected, getStock(stockLocation, product));
 
         item = get(item);
@@ -210,8 +208,7 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
         FinancialAct item = acts.get(1);
         item.setQuantity(quantity);
 
-        save(act);
-        save(item);
+        save(acts);
 
         BigDecimal expected = getQuantity(BigDecimal.ZERO, quantity,
                                           act.isCredit());
@@ -227,12 +224,10 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
 
     private void checkItemRemoval(List<FinancialAct> acts) {
         BigDecimal quantity = new BigDecimal(10);
-        FinancialAct act = acts.get(0);
         FinancialAct item = acts.get(1);
         item.setQuantity(quantity);
 
-        save(act);
-        save(item);
+        save(acts);
 
         boolean credit = TypeHelper.isA(
                 item, CustomerAccountArchetypes.CREDIT_ITEM);

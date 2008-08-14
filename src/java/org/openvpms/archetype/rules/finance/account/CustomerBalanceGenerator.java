@@ -23,7 +23,6 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.customer.CustomerArchetypes.CUSTOMER_PARTICIPATION;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
 import org.openvpms.archetype.rules.math.MathRules;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -38,7 +37,6 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -283,19 +281,7 @@ public class CustomerBalanceGenerator {
                 "entity", customer.getObjectReference()));
         query.add(constraint);
         query.add(new NodeSortConstraint("startTime", true));
-        query.add(new NodeSortConstraint("uid", true));
-        OrConstraint or = new OrConstraint();
-        for (String shortName : shortNames) {
-            // duplicate the act short names onto the participation act
-            // references, to force utilisation of the (faster)
-            // participation index. Ideally would only need to specify the
-            // act short names on participations, but this isn't supported
-            // by ArchetypeQuery.
-            ObjectRefNodeConstraint ref = new ObjectRefNodeConstraint(
-                    "act", new ArchetypeId(shortName));
-            or.add(ref);
-        }
-        constraint.add(or);
+        query.add(new NodeSortConstraint("id", true));
         query.setMaxResults(1000);
         return new IMObjectQueryIterator<FinancialAct>(service, query);
     }

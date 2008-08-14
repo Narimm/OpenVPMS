@@ -528,7 +528,7 @@ public class PartyRules {
         // this will be a running total
         int sum = 0;
         // Get string value of party uid
-        String uid = String.valueOf(party.getUid());
+        String uid = String.valueOf(party.getId());
 
         // loop through digits from right to left
         for (int i = 0; i < uid.length(); i++) {

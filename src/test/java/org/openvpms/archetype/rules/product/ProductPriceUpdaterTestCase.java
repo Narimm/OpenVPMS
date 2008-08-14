@@ -72,6 +72,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("firstName", "Foo");
         bean.setValue("lastName", "XSupplier" + party.hashCode());
+        bean.setValue("title", "MR");
         bean.save();
         checkUpdateFromSupplier(party);
     }
