@@ -168,8 +168,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @param act the act
      */
     protected void actSelected(ObjectSet act) {
-        IMObjectReference actRef
-                = (IMObjectReference) act.get("act.objectReference");
+        IMObjectReference actRef = act.getReference("act.objectReference");
         Act object = (Act) IMObjectHelper.getObject(actRef);
         window.setObject(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);

@@ -33,6 +33,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.Arrays;
+
 
 /**
  * Test helper.
@@ -56,13 +58,13 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Saves an object.
+     * Saves one or more objects.
      *
-     * @param object the object to save
+     * @param objects the objects to save
      */
-    public static void save(IMObject object) {
+    public static <T extends IMObject> void save(T ... objects) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        service.save(object);
+        service.save(Arrays.asList(objects));
     }
 
     /**

@@ -51,7 +51,7 @@ public class DocumentActTableHelper {
                                               boolean link) {
         Component result;
         ActBean bean = new ActBean(act);
-        if (act.getDocReference() != null) {
+        if (act.getDocument() != null) {
             DocumentViewer viewer = new DocumentViewer(act, link);
             result = viewer.getComponent();
         } else if (bean.hasNode("documentTemplate")) {

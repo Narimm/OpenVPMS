@@ -67,8 +67,7 @@ public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
             throw new PrintException(PrintException.ErrorCode.NoPrinter);
         }
         DocumentAct act = (DocumentAct) getObject();
-        Document doc = (Document) IMObjectHelper.getObject(
-                act.getDocReference());
+        Document doc = (Document) IMObjectHelper.getObject(act.getDocument());
         if (doc == null) {
             super.print(printer);
         } else {

@@ -60,7 +60,7 @@ public class DocumentViewer {
      * @param link if <tt>true</tt> enable an hyperlink to the object
      */
     public DocumentViewer(DocumentAct act, boolean link) {
-        this(act.getDocReference(), act, link);
+        this(act.getDocument(), act, link);
     }
 
     /**

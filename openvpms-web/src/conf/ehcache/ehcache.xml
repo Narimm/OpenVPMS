@@ -43,49 +43,52 @@
            maxElementsInMemory="10000" eternal="false" timeToIdleSeconds="120"
            timeToLiveSeconds="120" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.lookup.Lookup"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.product.Product"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.party.Party"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.common.EntityRelationship"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.lookup.LookupRelationship"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.product.ProductPrice"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.product.ProductPriceDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.act.Act"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.security.SecurityRole"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.act.DocumentActDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.common.Entity"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.act.FinancialActDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.party.Contact"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.security.SecurityRoleDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.common.EntityIdentity"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.act.ActRelationship"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.common.Classification"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.common.Participation"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.domain.im.document.Document"
+    <cache name="org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
 </ehcache>

@@ -71,11 +71,11 @@ public class DocumentActEditor extends AbstractActEditor {
 
 
     /**
-     * Construct a new <code>PatientDocumentActEditor</code>.
+     * Construct a new <tt>DocumentActEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>.
+     * @param parent  the parent object. May be <tt>null</tt>
+     * @param context the layout context. May be <tt>null</tt>.
      */
     public DocumentActEditor(DocumentAct act, IMObject parent,
                              LayoutContext context) {
@@ -105,7 +105,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Regenerates the document from the template.
      *
-     * @return <code>true</code> if the document was regenerated
+     * @return <tt>true</tt> if the document was regenerated
      */
     public boolean refresh() {
         boolean refreshed = false;
@@ -131,7 +131,7 @@ public class DocumentActEditor extends AbstractActEditor {
      */
     private void onDocumentUpdate() {
         DocumentAct act = (DocumentAct) getObject();
-        IMObjectReference docRef = act.getDocReference();
+        IMObjectReference docRef = act.getDocument();
         Document document = (Document) IMObjectHelper.getObject(docRef);
         updateFileProperties(document);
     }
@@ -153,8 +153,8 @@ public class DocumentActEditor extends AbstractActEditor {
      * Generates the document.
      *
      * @param template the document template
-     * @return <code>true</code> if the document was regenerated,
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the document was regenerated,
+     *         otherwise <tt>false</tt>
      */
     private boolean generateDoc(IMObjectReference template) {
         boolean result = false;
@@ -196,7 +196,7 @@ public class DocumentActEditor extends AbstractActEditor {
      * Helper to return a reference to the current template, an instance of
      * <em>entity.documentTemplate</em>.
      *
-     * @return a reference to the current template. May be <code>null</code>
+     * @return a reference to the current template. May be <tt>null</tt>
      */
     private IMObjectReference getTemplate() {
         CollectionProperty property

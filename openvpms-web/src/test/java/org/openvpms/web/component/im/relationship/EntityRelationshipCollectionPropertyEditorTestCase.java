@@ -43,7 +43,7 @@ public class EntityRelationshipCollectionPropertyEditorTestCase
      * @return the parent object
      */
     protected IMObject createParent() {
-        return TestHelper.createCustomer(false);
+        return TestHelper.createCustomer(true);
     }
 
     /**
@@ -78,7 +78,7 @@ public class EntityRelationshipCollectionPropertyEditorTestCase
         EntityRelationship result = (EntityRelationship) TestHelper.create(
                 "entityRelationship.patientOwner");
         result.setSource(parent.getObjectReference());
-        Party patient = TestHelper.createPatient();
+        Party patient = TestHelper.createPatient(true);
         result.setTarget(patient.getObjectReference());
         return result;
     }

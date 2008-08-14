@@ -88,9 +88,9 @@ public class RelationshipStateQuery {
     private final String secondaryNode;
 
     /**
-     * The qualified secondary UID node.
+     * The qualified secondary id node.
      */
-    private final String secondaryUIDNode;
+    private final String secondaryIdNode;
 
     /**
      * The qualified secondary name node.
@@ -160,7 +160,7 @@ public class RelationshipStateQuery {
             shortNames = sourceShortNames;
         }
         String alias = getSecondaryAlias();
-        secondaryUIDNode = alias + ".uid";
+        secondaryIdNode = alias + ".id";
         secondaryNameNode = alias + ".name";
         secondaryDescNode = alias + ".description";
         secondaryActiveNode = alias + ".active";
@@ -193,54 +193,54 @@ public class RelationshipStateQuery {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Map<EntityRelationship, RelationshipState> query() {
-        // create a map of relationships keyed on their UID
-        Map<Long, EntityRelationship> relsByUID
+        // create a map of relationships keyed on their id
+        Map<Long, EntityRelationship> relsById
                 = new HashMap<Long, EntityRelationship>();
         for (IMObject relationship : relationships) {
-            relsByUID.put(relationship.getUid(),
-                          (EntityRelationship) relationship);
+            relsById.put(relationship.getId(),
+                         (EntityRelationship) relationship);
         }
         Map<EntityRelationship, RelationshipState> result
                 = new HashMap<EntityRelationship, RelationshipState>();
-        if (!relsByUID.isEmpty()) {
+        if (!relsById.isEmpty()) {
             // query the the database for matching relationship states, and
             // create RelationshipState instances for each returned ObjectSet
             ArchetypeQuery query = createQuery();
             Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
             while (iter.hasNext()) {
                 ObjectSet set = iter.next();
-                long relUID = (Long) set.get("rel.uid");
-                long uid = (Long) set.get(secondaryUIDNode);
-                String name = (String) set.get(secondaryNameNode);
-                String description = (String) set.get(secondaryDescNode);
-                boolean active = (Boolean) set.get(secondaryActiveNode);
+                long relId = set.getLong("rel.id");
+                long id = set.getLong(secondaryIdNode);
+                String name = set.getString(secondaryNameNode);
+                String description = set.getString(secondaryDescNode);
+                boolean active = set.getBoolean(secondaryActiveNode);
 
-                EntityRelationship r = relsByUID.remove(relUID);
+                EntityRelationship r = relsById.remove(relId);
                 if (r != null) {
-                    long sourceUID;
+                    long sourceId;
                     String sourceName;
                     String sourceDesc;
-                    long targetUID;
+                    long targetId;
                     String targetName;
                     String targetDesc;
 
                     if (source) {
-                        sourceUID = entity.getUid();
+                        sourceId = entity.getId();
                         sourceName = entity.getName();
                         sourceDesc = entity.getDescription();
-                        targetUID = uid;
+                        targetId = id;
                         targetName = name;
                         targetDesc = description;
                     } else {
-                        sourceUID = uid;
+                        sourceId = id;
                         sourceName = name;
                         sourceDesc = description;
-                        targetUID = entity.getUid();
+                        targetId = entity.getId();
                         targetName = entity.getName();
                         targetDesc = entity.getDescription();
                     }
                     RelationshipState state = factory.create(
-                            r, sourceUID, sourceName, sourceDesc, targetUID,
+                            r, sourceId, sourceName, sourceDesc, targetId,
                             targetName, targetDesc, active);
                     result.put(r, state);
                 } else {
@@ -253,7 +253,7 @@ public class RelationshipStateQuery {
             // from the relationship. This is somewhat slower
             // as the name and active nodes require a single query for each
             // relationship.
-            for (EntityRelationship r : relsByUID.values()) {
+            for (EntityRelationship r : relsById.values()) {
                 result.put(r, factory.create(entity, r, source));
             }
         }
@@ -270,7 +270,7 @@ public class RelationshipStateQuery {
     }
 
     /**
-     * Creates a new archetype query returning the relationship UID,
+     * Creates a new archetype query returning the relationship id,
      * and the name and active nodes for the secondary entity.
      *
      * @return a new archetype query
@@ -289,8 +289,8 @@ public class RelationshipStateQuery {
         query.add(secondary);
         query.add(new IdConstraint("rel.source", "source"));
         query.add(new IdConstraint("rel.target", "target"));
-        query.add(new NodeSelectConstraint("rel.uid"));
-        query.add(new NodeSelectConstraint(secondaryUIDNode));
+        query.add(new NodeSelectConstraint("rel.id"));
+        query.add(new NodeSelectConstraint(secondaryIdNode));
         query.add(new NodeSelectConstraint(secondaryNameNode));
         query.add(new NodeSelectConstraint(secondaryDescNode));
         query.add(new NodeSelectConstraint(secondaryActiveNode));

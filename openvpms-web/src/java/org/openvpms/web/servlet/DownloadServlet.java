@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.OpenVPMSApp;
 import org.springframework.context.ApplicationContext;
@@ -88,13 +87,12 @@ public class DownloadServlet extends HttpServlet {
             tempDocs.add(document.getObjectReference());
         }
         String qname = document.getArchetypeId().getQualifiedName();
-        String linkId = document.getLinkId();
         StringBuffer uri = new StringBuffer();
         uri.append(ServletHelper.getRedirectURI("download"));
         uri.append("?qname=");
         uri.append(qname);
-        uri.append("&linkId=");
-        uri.append(linkId);
+        uri.append("&id=");
+        uri.append(document.getId());
         Command command = new BrowserOpenWindowCommand(
                 uri.toString(), null,
                 "width=800,height=600,resizable=yes,scrollbars=yes");
@@ -134,14 +132,13 @@ public class DownloadServlet extends HttpServlet {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         String qname = request.getParameter("qname");
-        String linkId = request.getParameter("linkId");
-        if (StringUtils.isEmpty(qname) || StringUtils.isEmpty(linkId)) {
+        String id = request.getParameter("id");
+        if (StringUtils.isEmpty(qname) || StringUtils.isEmpty(id)) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         } else {
-            ArchetypeId id = new ArchetypeId(qname);
-            IMObjectReference ref = new IMObjectReference(id, linkId);
-            IMObject object = ArchetypeQueryHelper.getByObjectReference(
-                    service, ref);
+            IMObjectReference ref = new IMObjectReference(
+                    new ArchetypeId(qname), Integer.valueOf(id));
+            IMObject object = service.get(ref);
             if (!(object instanceof Document)) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             } else {

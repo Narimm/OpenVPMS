@@ -114,10 +114,10 @@ class StatementGenerator extends AbstractStatementGenerator {
         List<Party> customers = new ArrayList<Party>();
         for (ObjectSet set : balances) {
             BigDecimal balance
-                    = (BigDecimal) set.get(CustomerBalanceSummaryQuery.BALANCE);
+                    = set.getBigDecimal(CustomerBalanceSummaryQuery.BALANCE);
             if (BigDecimal.ZERO.compareTo(balance) != 0) {
                 // only include customers with non-zero balances
-                IMObjectReference ref = (IMObjectReference) set.get(
+                IMObjectReference ref = set.getReference(
                         CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
                 Party customer = (Party) IMObjectHelper.getObject(ref);
                 if (customer != null) {

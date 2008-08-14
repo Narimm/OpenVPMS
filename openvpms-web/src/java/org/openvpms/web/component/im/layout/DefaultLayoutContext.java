@@ -113,7 +113,7 @@ public class DefaultLayoutContext implements LayoutContext {
      */
     public DefaultLayoutContext(IMObjectComponentFactory factory) {
         this.factory = factory;
-        NodeFilter id = new ValueNodeFilter("uid", -1);
+        NodeFilter id = new ValueNodeFilter("id", -1);
         NodeFilter showOptional = new BasicNodeFilter(true);
         filter = new ChainedNodeFilter(id, showOptional);
     }

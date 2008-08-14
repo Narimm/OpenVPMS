@@ -106,29 +106,29 @@ class PatientRelationshipStateQuery extends RelationshipStateQuery {
                 }
             }
         } else if (!states.isEmpty()) {
-            // build a map of patient UIDs to their corresponding states
+            // build a map of patient ids to their corresponding states
             Map<Long, PatientRelationshipState> patients
                     = new HashMap<Long, PatientRelationshipState>();
             for (RelationshipState state : states.values()) {
-                long uid = (parentIsSource()) ? state.getTargetUID()
-                        : state.getSourceUID();
-                patients.put(uid, (PatientRelationshipState) state);
+                long id = (parentIsSource()) ? state.getTargetId()
+                        : state.getSourceId();
+                patients.put(id, (PatientRelationshipState) state);
             }
 
-            // query each matching patient on uid
+            // query each matching patient on id
             ArchetypeQuery query = new ArchetypeQuery(getShortNames(), false,
                                                       false);
             query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-            List<String> nodes = Arrays.asList("uid", "deceased");
-            query.add(new NodeConstraint("uid", RelationalOp.IN,
+            List<String> nodes = Arrays.asList("id", "deceased");
+            query.add(new NodeConstraint("id", RelationalOp.IN,
                                          patients.keySet().toArray()));
             Iterator<NodeSet> iter = new NodeSetQueryIterator(query, nodes);
             while (iter.hasNext()) {
                 NodeSet set = iter.next();
-                boolean deceased = (Boolean) set.get("deceased");
+                boolean deceased = set.getBoolean("deceased");
                 if (deceased) {
-                    long uid = (Long) set.get("uid");
-                    PatientRelationshipState state = patients.get(uid);
+                    long id = set.getLong("id");
+                    PatientRelationshipState state = patients.get(id);
                     state.setDeceased(true);
                 }
             }

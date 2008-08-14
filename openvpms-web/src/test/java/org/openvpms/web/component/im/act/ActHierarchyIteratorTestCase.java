@@ -121,9 +121,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
                              problem);
         bean.addRelationship("actRelationship.patientClinicalEventItem",
                              weight);
-        TestHelper.save(note);
-        TestHelper.save(problem);
-        TestHelper.save(weight);
+        TestHelper.save(event, note, problem, weight);
         bean.save();
         return event;
     }

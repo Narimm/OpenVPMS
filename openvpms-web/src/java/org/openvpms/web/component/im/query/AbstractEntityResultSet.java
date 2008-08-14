@@ -125,7 +125,7 @@ public abstract class AbstractEntityResultSet<T> extends NameResultSet<T> {
     /**
      * Adds sort constraints.
      * This implementation adds all those returned by
-     * {@link #getSortConstraints()}, and finally adds a sort on <em>uid</em>
+     * {@link #getSortConstraints()}, and finally adds a sort on <em>id</em>
      * to guarantee that subsequent queries will return results in the same
      * order.
      *
@@ -135,7 +135,7 @@ public abstract class AbstractEntityResultSet<T> extends NameResultSet<T> {
     protected void addSortConstraints(ArchetypeQuery query) {
         super.addSortConstraints(query);
         String alias = getArchetypes().getAlias();
-        query.add(new NodeSortConstraint(alias, "uid"));
+        query.add(new NodeSortConstraint(alias, "id"));
     }
 
 }

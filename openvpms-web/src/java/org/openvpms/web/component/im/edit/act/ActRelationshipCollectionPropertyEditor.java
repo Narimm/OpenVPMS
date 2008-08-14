@@ -34,7 +34,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
@@ -229,8 +228,7 @@ public class ActRelationshipCollectionPropertyEditor
             acts = new LinkedHashMap<Act, ActRelationship>();
             for (IMObject object : relationships) {
                 ActRelationship relationship = (ActRelationship) object;
-                Act item = (Act) ArchetypeQueryHelper.getByObjectReference(
-                        service, relationship.getTarget());
+                Act item = (Act) service.get(relationship.getTarget());
                 if (item != null) {
                     acts.put(item, relationship);
                 } else {

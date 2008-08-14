@@ -83,7 +83,7 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
     public Document getDocument() {
         DocumentAct object = (DocumentAct) getObject();
         Document doc = (Document) IMObjectHelper.getObject(
-                object.getDocReference());
+                object.getDocument());
         if (doc == null) {
             doc = super.getDocument();
         }

@@ -35,6 +35,8 @@ import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.test.TestHelper;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 
 /**
@@ -77,9 +79,9 @@ public class ActRelationshipCollectionPropertyEditorTestCase
      * This verifies the fix for OVPMS-710.
      */
     public void testSaveTwice() {
-        IMObject parent = createParent();
+        final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
-        CollectionPropertyEditor editor = createEditor(property, parent);
+        final CollectionPropertyEditor editor = createEditor(property, parent);
 
         IMObject element = createObject(parent);
         editor.add(element);
@@ -87,8 +89,13 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         assertSame(element, editor.getObjects().get(0));
 
         // save the parent and child, verifying the versions have incremented
-        assertTrue(SaveHelper.save(parent));
-        assertTrue(editor.save());
+        execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue(SaveHelper.save(parent));
+                assertTrue(editor.save());
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });
         assertEquals(0, parent.getVersion());
         assertEquals(0, element.getVersion());
 
@@ -117,7 +124,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         Act act = (Act) TestHelper.create("act.customerEstimation");
         ActBean bean = new ActBean(act);
 
-        Party customer = TestHelper.createCustomer();
+        Party customer = TestHelper.createCustomer(true);
         bean.addParticipation("participation.customer", customer);
         act.setStatus(FinancialActStatus.IN_PROGRESS);
         return act;
@@ -155,8 +162,8 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         Act act = (Act) TestHelper.create("act.customerEstimationItem");
         assertNotNull(act);
 
-        Product product = TestHelper.createProduct();
-        Party patient = TestHelper.createPatient();
+        Product product = TestHelper.createProduct(true);
+        Party patient = TestHelper.createPatient(true);
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);
         bean.addParticipation("participation.product", product);

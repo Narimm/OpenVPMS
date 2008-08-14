@@ -107,7 +107,7 @@ class TaskQueryHelper {
             query.add(new ParticipantConstraint("worklist",
                                                 "participation.worklist",
                                                 workList));
-            query.add(new NodeConstraint("uid", RelationalOp.NE, act.getUid()));
+            query.add(new NodeConstraint("id", RelationalOp.NE, act.getId()));
             query.add(new NodeConstraint("status", RelationalOp.NE,
                                          FinancialActStatus.CANCELLED));
             query.add(createDateRangeConstraint(startTime));

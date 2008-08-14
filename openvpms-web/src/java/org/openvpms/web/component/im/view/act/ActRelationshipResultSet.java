@@ -150,17 +150,17 @@ public class ActRelationshipResultSet
         try {
             List<IMObject> sorted = new ArrayList<IMObject>();
             ArchetypeQuery query = createQuery(nodes, sortAscending);
-            Map<Long, ActRelationship> relsByUID
+            Map<Long, ActRelationship> relsById
                     = new LinkedHashMap<Long, ActRelationship>();
             for (IMObject object : getObjects()) {
-                relsByUID.put(object.getUid(), (ActRelationship) object);
+                relsById.put(object.getId(), (ActRelationship) object);
             }
 
             Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
             while (iter.hasNext()) {
                 ObjectSet set = iter.next();
-                Long uid = (Long) set.get("rel.uid");
-                ActRelationship relationship = relsByUID.remove(uid);
+                long id = set.getLong("rel.id");
+                ActRelationship relationship = relsById.remove(id);
                 if (relationship != null) {
                     sorted.add(relationship);
                 }
@@ -170,7 +170,7 @@ public class ActRelationshipResultSet
             // TODO. Should fall back and use in memory sorting with a binary
             // search to determine where they should go, or a Collection.sort()
             // if it is more efficient to do so.
-            for (IMObject relationship : relsByUID.values()) {
+            for (IMObject relationship : relsById.values()) {
                 sorted.add(relationship);
             }
             getObjects().clear();
@@ -202,7 +202,7 @@ public class ActRelationshipResultSet
         query.add(target);
         query.add(new IdConstraint("rel.source", "source"));
         query.add(new IdConstraint("rel.target", "target"));
-        query.add(new NodeSelectConstraint("rel.uid"));
+        query.add(new NodeSelectConstraint("rel.id"));
         for (String node : nodes) {
             NodeDescriptor descriptor = QueryHelper.getDescriptor(target, node);
             if (descriptor != null) {
