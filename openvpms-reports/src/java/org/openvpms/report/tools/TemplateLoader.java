@@ -147,7 +147,6 @@ public class TemplateLoader {
         }
 
         act.setDocument(document.getObjectReference());
-        service.save(Arrays.asList(document, act));
 
         String name = template.getName();
         if (name == null) {
@@ -156,7 +155,7 @@ public class TemplateLoader {
         entity.setName(name);
         EntityBean bean = new EntityBean(entity);
         bean.setValue("archetype", template.getArchetype());
-        service.save(entity);
+        service.save(Arrays.asList(document, entity, act));
     }
 
     /**
