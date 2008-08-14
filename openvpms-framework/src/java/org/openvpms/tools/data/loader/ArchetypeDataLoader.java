@@ -42,7 +42,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.tools.archetype.loader.ArchetypeLoader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -171,8 +170,7 @@ public class ArchetypeDataLoader {
     /**
      * Process all the files in the directory
      * 
-     * @param the
-     *            directory
+     * @param dir the directory
      */
     private void processDir(String dir) throws Exception {
         String[] extensions = { extension };
@@ -385,8 +383,6 @@ public class ArchetypeDataLoader {
      *            the attribute which has an id reference
      * @param ndesc
      *            the corresponding node descriptor
-     * @throws Exception
-     *            propagate exception to caller            
      */
     private void processIdReference(IMObject object, Attribute attr, NodeDescriptor ndesc) {
         String ref = attr.getValue().substring("id:".length());
@@ -395,8 +391,7 @@ public class ArchetypeDataLoader {
         if (ndesc.isObjectReference()) {
             imobj = imref;
         } else {
-            imobj = ArchetypeQueryHelper.getByObjectReference(archetypeService, 
-                    imref);
+            imobj = archetypeService.get(imref);
         }
 
         if (ndesc.isCollection()) {
@@ -408,7 +403,7 @@ public class ArchetypeDataLoader {
 
     /**
      * @param attributes
-     * @return
+     * @return <tt>true</tt> if the attributes contain references
      */
     private boolean attributesContainReferences(List attributes) {
         for (Object attr : attributes) {

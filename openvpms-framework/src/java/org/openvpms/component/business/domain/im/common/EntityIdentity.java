@@ -19,10 +19,7 @@
 package org.openvpms.component.business.domain.im.common;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -39,9 +36,9 @@ import java.util.Map;
 public class EntityIdentity extends IMObject {
 
     /**
-     * Generated SUID
+     * Serialization version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * The system identity
@@ -49,39 +46,44 @@ public class EntityIdentity extends IMObject {
     private String identity;
 
     /**
-     * Holds details about the entity identity.
-     */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
-
-    /**
      * Reference the Entity that this object references
      */
     private Entity entity;
 
+
     /**
-     * Default constructor
+     * Default constructor.
      */
     public EntityIdentity() {
         // do nothing
     }
 
     /**
-     * Constructs a valid instance of an entity identity.
-     * 
-     * @param archetypeId
-     *            the archetype id constraining this object
-     * @param identity
-     *            the identity
-     * @param details
-     *            the details of this entity identity
-     * @throws IllegalArgumentException
-     *             thrown if the preconditions are not met.
+     * Creates a new <tt>EntityIdentity</tt>.
+     *
+     * @param archetypeId the archetype id
+     * @param identity    the identity
      */
+    public EntityIdentity(ArchetypeId archetypeId, String identity) {
+        super(archetypeId);
+        setIdentity(identity);
+    }
+
+    /**
+     * Constructs a valid instance of an entity identity.
+     *
+     * @param archetypeId the archetype id constraining this object
+     * @param identity    the identity
+     * @param details     the details of this entity identity
+     * @throws IllegalArgumentException thrown if the preconditions are not met.
+     */
+    @Deprecated
     public EntityIdentity(ArchetypeId archetypeId,
                           String identity, Map<String, Object> details) {
-        super(archetypeId);
-        this.identity = identity;
-        this.details = TypedValueMap.create(details);
+        this(archetypeId, identity);
+        if (details != null) {
+            setDetails(details);
+        }
     }
 
     /**
@@ -96,21 +98,6 @@ public class EntityIdentity extends IMObject {
      */
     public void setIdentity(String identity) {
         this.identity = identity;
-    }
-
-    /**
-     * @return Returns the details.
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * @param details
-     *            The details to set.
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -132,12 +119,6 @@ public class EntityIdentity extends IMObject {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        EntityIdentity copy = (EntityIdentity)super.clone();
-        copy.details = (details == null) ? null
-                : new HashMap<String, TypedValue>(details);
-        copy.entity = this.entity;
-        copy.identity = this.identity;
-
-        return copy;
+        return super.clone();
     }
 }

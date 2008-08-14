@@ -18,6 +18,9 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -32,13 +35,13 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class IMObjectResultCollector extends HibernateResultCollector<IMObject> {
+public class IMObjectResultCollector
+        extends HibernateResultCollector<IMObject> {
 
     /**
      * The results.
      */
     private List<IMObject> result = new ArrayList<IMObject>();
-
 
     /**
      * Collects an object.
@@ -47,13 +50,14 @@ class IMObjectResultCollector extends HibernateResultCollector<IMObject> {
      *               <code>IMObject</code>
      */
     public void collect(Object object) {
-        if (!(object instanceof IMObject)) {
+        if (!(object instanceof IMObjectDO)) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.CannotCollectObject,
                     object.getClass().getName());
         }
-        getLoader().load(object);
-        result.add((IMObject) object);
+        Context context = getContext();
+        Assembler assembler = context.getAssembler();
+        result.add(assembler.assemble((IMObjectDO) object, context));
     }
 
     /**

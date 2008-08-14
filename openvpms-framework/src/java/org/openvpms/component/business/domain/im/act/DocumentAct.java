@@ -20,6 +20,7 @@
 package org.openvpms.component.business.domain.im.act;
 
 // commons-lang
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -27,8 +28,8 @@ import org.openvpms.component.business.domain.im.document.Document;
 /**
  * Document specific-act
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class DocumentAct extends Act {
     /**
@@ -69,17 +70,39 @@ public class DocumentAct extends Act {
     }
 
     /**
-     * @return Returns the document.
+     * Returns the document reference.
+     *
+     * @return the document reference, or <tt>null</tt> if none is set
      */
-    public IMObjectReference getDocReference() {
+    public IMObjectReference getDocument() {
         return docReference;
     }
 
     /**
-     * @param reference The document reference to set.
+     * Sets the document reference.
+     *
+     * @param reference the document reference. May be <tt>null</tt>
      */
-    public void setDocReference(IMObjectReference reference) {
+    public void setDocument(IMObjectReference reference) {
         this.docReference = reference;
+    }
+
+    /**
+     * @return Returns the document.
+     * @deprecated use {@link #getDocument()}
+     */
+    @Deprecated
+    public IMObjectReference getDocReference() {
+        return getDocument();
+    }
+
+    /**
+     * @param reference The document reference to set.
+     * @deprecated use {@link #setDocument(IMObjectReference)}
+     */
+    @Deprecated
+    public void setDocReference(IMObjectReference reference) {
+        setDocument(reference);
     }
 
     /**
@@ -143,10 +166,10 @@ public class DocumentAct extends Act {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        DocumentAct copy = (DocumentAct)super.clone();
+        DocumentAct copy = (DocumentAct) super.clone();
 
         copy.docVersion = this.docVersion;
-        copy.docReference = (IMObjectReference)this.docReference.clone();
+        copy.docReference = (IMObjectReference) this.docReference.clone();
 
         return copy;
     }
@@ -158,10 +181,10 @@ public class DocumentAct extends Act {
     @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(null)
-            .append("docVersion", docVersion)
-            .append("docReference", docReference)
-            .toString();
+                .appendSuper(null)
+                .append("docVersion", docVersion)
+                .append("docReference", docReference)
+                .toString();
     }
 
 

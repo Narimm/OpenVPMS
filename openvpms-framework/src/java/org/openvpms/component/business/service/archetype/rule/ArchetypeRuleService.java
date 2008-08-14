@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
@@ -284,7 +285,7 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    public void save(Collection<IMObject> objects) {
+    public void save(Collection<? extends IMObject> objects) {
         save(objects, true);
     }
 
@@ -318,7 +319,7 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
      * @throws ValidationException       if an object can't be validated
      */
     @Deprecated
-    public void save(final Collection<IMObject> objects,
+    public void save(final Collection<? extends IMObject> objects,
                      final boolean validate) {
         execute("save", objects, new Runnable() {
             public void run() {
@@ -340,6 +341,17 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
                 service.remove(object);
             }
         });
+    }
+
+    /**
+     * Retrieves an object given its reference.
+     *
+     * @param reference the object reference
+     * @return the corresponding object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException if the query fails
+     */
+    public IMObject get(IMObjectReference reference) {
+        return service.get(reference);
     }
 
     /**
@@ -512,7 +524,8 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
      * @param objects the object that will be supplied to before and after rules
      * @param op      the operation to execute
      */
-    private void execute(final String name, final Collection<IMObject> objects,
+    private void execute(final String name,
+                         final Collection<? extends IMObject> objects,
                          final Runnable op) {
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {

@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionException;
@@ -275,18 +274,8 @@ public class ArchetypeRuleServiceTestCase
         person = reload(person);
         assertNotNull(person);
 
-        // verify the persistent instance has the properties
+        // verify the persistent instance has the before property
         assertEquals(Boolean.TRUE, person.getDetails().get("before"));
-
-        // the transaction is comitted on completion of the 'after' rule,
-        // so changes made to the object via the rule are also made persistent
-        // NOTE: this only occurs if the object is new. If it already
-        // exists only those changes applied on save() will be committed,
-        // and the following assertion would fail.
-        // TODO - how to make this consistent? The reason being that for new
-        // objects, saveOrUpdate() is used, whereas for persistent objects,
-        // merge() is used
-        assertEquals(Boolean.TRUE, person.getDetails().get("after"));
     }
 
     /**
@@ -335,7 +324,7 @@ public class ArchetypeRuleServiceTestCase
      * @return the corresponding object or <tt>null</tt>
      */
     private IMObject get(IMObjectReference ref) {
-        return ArchetypeQueryHelper.getByObjectReference(service, ref);
+        return service.get(ref);
     }
 
     /**

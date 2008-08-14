@@ -73,42 +73,6 @@ public class JXPathTestCase extends BaseTestCase {
      */
     private ArchetypeService service;
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(JXPathTestCase.class);
-    }
-
-    /**
-     * Constructor for JXPathTestCase.
-     *
-     * @param name
-     */
-    public JXPathTestCase(String name) {
-        super(name);
-    }
-
-    /*
-     * @see BaseTestCase#setUp()
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        Hashtable gparams = getTestData().getGlobalParams();
-        String afile = (String) gparams.get("assertionFile");
-        String dir = (String) gparams.get("dir");
-        String extension = (String) gparams.get("extension");
-
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
-                                                                         new String[]{extension},
-                                                                         afile);
-        service = new ArchetypeService(cache);
-    }
-
-    /*
-     * @see BaseTestCase#tearDown()
-     */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
 
     /**
      * Test JXPath on node descriptors
@@ -124,7 +88,7 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(((Boolean) getValue(adesc,
                                        " nodeDescriptors/description/string")));
         assertTrue(((Boolean) getValue(adesc,
-                                       "nodeDescriptors/uid/identifier")));
+                                       "nodeDescriptors/id/identifier")));
         assertNull(getValue(adesc, "nodeDescriptors/jimbo"));
     }
 
@@ -284,22 +248,22 @@ public class JXPathTestCase extends BaseTestCase {
     }
 
     /**
-     * Test the JXPath expressions for retrieving an object with a uid
+     * Test the JXPath expressions for retrieving an object with an id
      * from a collection
      */
     public void testJXPathSearchCollectionForMatchingUid()
             throws Exception {
         List<Party> list = new ArrayList<Party>();
         Party person = createPerson("MR", "Jim", "Alateras");
-        person.setUid(1);
+        person.setId(1);
         list.add(person);
 
         person = createPerson("MS", "Bernadette", "Feeney");
-        person.setUid(2);
+        person.setId(2);
         list.add(person);
 
         person = createPerson("MS", "Grace", "Alateras");
-        person.setUid(3);
+        person.setId(3);
         list.add(person);
 
         JXPathContext ctx = JXPathHelper.newContext(list);
@@ -527,6 +491,23 @@ public class JXPathTestCase extends BaseTestCase {
 
         // test static methods
         assertEquals("Jimmy", ctx.getValue("test:getContacts()"));
+    }
+
+    /*
+     * @see BaseTestCase#setUp()
+     */
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        Hashtable gparams = getTestData().getGlobalParams();
+        String afile = (String) gparams.get("assertionFile");
+        String dir = (String) gparams.get("dir");
+        String extension = (String) gparams.get("extension");
+
+        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
+                                                                         new String[]{extension},
+                                                                         afile);
+        service = new ArchetypeService(cache);
     }
 
     /**

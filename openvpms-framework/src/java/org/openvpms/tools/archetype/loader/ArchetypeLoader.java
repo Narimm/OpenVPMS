@@ -43,7 +43,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorValidationError;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import static org.openvpms.tools.archetype.loader.ArchetypeLoaderException.ErrorCode.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -445,8 +444,7 @@ public class ArchetypeLoader {
         if (existing != null) {
             // make sure using the latest version of the descriptor, rather
             // than a cached one
-            existing = (Descriptor) ArchetypeQueryHelper.getByObjectReference(
-                    service, existing.getObjectReference());
+            existing = (Descriptor) service.get(existing.getObjectReference());
         }
         if (existing != null) {
             if (!overwrite) {

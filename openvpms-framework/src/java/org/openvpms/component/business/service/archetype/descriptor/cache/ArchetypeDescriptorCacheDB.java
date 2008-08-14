@@ -21,7 +21,7 @@ package org.openvpms.component.business.service.archetype.descriptor.cache;
 
 // java core
 import org.apache.log4j.Logger;
-import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate;
+import org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;

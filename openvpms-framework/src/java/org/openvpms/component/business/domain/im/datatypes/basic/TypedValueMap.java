@@ -257,7 +257,9 @@ public class TypedValueMap implements Map<String, Object> {
         Map<String, TypedValue> result
                 = new HashMap<String, TypedValue>(map.size());
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            result.put(entry.getKey(), new TypedValue(entry.getValue()));
+            if (entry.getValue() != null) {
+                result.put(entry.getKey(), new TypedValue(entry.getValue()));
+            }
         }
         return result;
     }

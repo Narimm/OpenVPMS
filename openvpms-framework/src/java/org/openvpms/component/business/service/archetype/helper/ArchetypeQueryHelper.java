@@ -54,15 +54,14 @@ public class ArchetypeQueryHelper {
      *
      * @param service the archetype service
      * @param archId  the archetype id of the object to retrieve
-     * @param uid     the uid of the object
+     * @param id      the id of the object
      * @return the object of null if one does not exist
+     * @deprecated use {@link IArchetypeService#get(IMObjectReference)}
      */
+    @Deprecated
     public static IMObject getByUid(IArchetypeService service,
-                                    ArchetypeId archId, long uid) {
-        ArchetypeQuery query = new ArchetypeQuery(archId)
-                .add(new NodeConstraint("uid", RelationalOp.EQ, uid));
-        List<IMObject> results = service.get(query).getResults();
-        return (!results.isEmpty()) ? results.get(0) : null;
+                                    ArchetypeId archId, long id) {
+        return service.get(new IMObjectReference(archId, id));
     }
 
     /**
@@ -71,12 +70,12 @@ public class ArchetypeQueryHelper {
      * @param service   the archetype service
      * @param reference the object reference
      * @return the matching object or null
+     * @deprecated use {@link IArchetypeService#get(IMObjectReference)}
      */
+    @Deprecated
     public static IMObject getByObjectReference(IArchetypeService service,
                                                 IMObjectReference reference) {
-        ArchetypeQuery query = new ArchetypeQuery(reference);
-        List<IMObject> results = service.get(query).getResults();
-        return (!results.isEmpty()) ? results.get(0) : null;
+        return service.get(reference);
     }
 
     /**

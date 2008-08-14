@@ -19,23 +19,17 @@
 
 package org.openvpms.component.business.domain.im.product;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 
 /**
- * Represents the price of a {@link Product}
+ * Represents the price of a {@link Product}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -45,7 +39,7 @@ public class ProductPrice extends IMObject {
     /**
      * Serialisation version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * The product that it refers to.
@@ -78,74 +72,83 @@ public class ProductPrice extends IMObject {
      */
     private Set<Lookup> classifications = new HashSet<Lookup>();
 
-    /**
-     * A placeholder for all entity details, which denotes the dynamic and
-     * adaptive details of the entity.
-     */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
-
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public ProductPrice() {
-        // do nothing
     }
 
     /**
-     * @return Returns the product.
+     * Returns the product.
+     *
+     * @return the product
      */
     public Product getProduct() {
         return product;
     }
 
     /**
-     * @param product The product to set.
+     * Sets the product.
+     *
+     * @param product the product
      */
     public void setProduct(Product product) {
         this.product = product;
     }
 
     /**
-     * @return Returns the fixed.
+     * Determines if the price is a fixed price.
+     *
+     * @return <tt>true</tt> if the price is a fixed price
      */
     public boolean isFixed() {
         return fixed;
     }
 
     /**
-     * @param fixed The fixed to set.
+     * Determines if the price is a fixed price.
+     *
+     * @param fixed <tt>true</tt> if the price is a fixed price
      */
     public void setFixed(boolean fixed) {
         this.fixed = fixed;
     }
 
     /**
-     * @return Returns the fromDate.
-     */
-    public Date getFromDate() {
-        return fromDate;
-    }
-
-    /**
-     * @param fromDate The fromDate to set.
-     */
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    /**
-     * @return Returns the price.
+     * Returns the price.
+     *
+     * @return the price
      */
     public BigDecimal getPrice() {
         return price;
     }
 
     /**
-     * @param price The price to set.
+     * Sets the price.
+     *
+     * @param price the price
      */
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    /**
+     * Returns the from date.
+     *
+     * @return the from date
+     */
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    /**
+     * Sets the from date.
+     *
+     * @param date the from date
+     */
+    public void setFromDate(Date date) {
+        fromDate = date;
     }
 
     /**
@@ -160,20 +163,6 @@ public class ProductPrice extends IMObject {
      */
     public void setThruDate(Date thruDate) {
         this.thruDate = thruDate;
-    }
-
-    /**
-     * @return Returns the details.
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * @param details The details to set.
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -221,32 +210,13 @@ public class ProductPrice extends IMObject {
         classifications.remove(classification);
     }
 
-
-    /* (non-Javadoc)
-    * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
-    */
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this,
-                                                  ToStringStyle.MULTI_LINE_STYLE);
-    }
-
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
         ProductPrice copy = (ProductPrice) super.clone();
-        copy.fixed = this.fixed;
-        copy.fromDate = (Date) (this.fromDate == null ?
-                null : this.fromDate.clone());
-        copy.price = this.price;
-        copy.classifications = new HashSet<Lookup>(this.classifications);
-        copy.product = this.product;
-        copy.thruDate = (Date) (this.thruDate == null ?
-                null : this.thruDate.clone());
-        copy.details = (details == null) ? null : new HashMap<String, TypedValue>(details);
-
+        copy.classifications = new HashSet<Lookup>(classifications);
         return copy;
     }
 }

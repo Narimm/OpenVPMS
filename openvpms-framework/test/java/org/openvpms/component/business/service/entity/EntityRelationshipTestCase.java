@@ -22,12 +22,12 @@ package org.openvpms.component.business.service.entity;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.ServiceBaseTestCase;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.Date;
 
@@ -39,7 +39,8 @@ import java.util.Date;
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class EntityRelationshipTestCase extends ServiceBaseTestCase {
+public class EntityRelationshipTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
      * Holds a reference to the archetype service.
@@ -67,9 +68,7 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
 
             // now retrieve them and ensure that the correct entity relationship
             // exists
-            pet = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                        pet.getArchetypeId(),
-                                                        pet.getUid());
+            pet = (Party) service.get(pet.getObjectReference());
             assertTrue(pet.getEntityRelationships().size() == 1);
             service.validateObject(
                     person.getEntityRelationships().iterator().next());
@@ -96,16 +95,12 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
             service.save(person);
 
             // retrieve the person again
-            person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                           person.getArchetypeId(),
-                                                           person.getUid());
+            person = (Party) service.get(person.getObjectReference());
             assertTrue(person != null);
             assertTrue(person.getEntityRelationships().size() == 1);
 
             // retrieve the pet again
-            pet = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                        pet.getArchetypeId(),
-                                                        pet.getUid());
+            pet = (Party) service.get(pet.getObjectReference());
             assertTrue(pet != null);
             assertTrue(pet.getEntityRelationships().size() == 1);
 
@@ -134,13 +129,9 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
 
         // now retrieve them and ensure that the correct entity relationship
         // exists
-        person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                       person.getArchetypeId(),
-                                                       person.getUid());
+        person = (Party) service.get(person.getObjectReference());
         assertTrue(person.getEntityRelationships().size() == 1);
-        pet = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                    pet.getArchetypeId(),
-                                                    pet.getUid());
+        pet = (Party) service.get(pet.getObjectReference());
         assertTrue(pet.getEntityRelationships().size() == 1);
 
         // retrieve the entity relationship
@@ -150,13 +141,9 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
 
         // now retrieve both the animal and the person and check the entity
         // relatioships
-        person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                       person.getArchetypeId(),
-                                                       person.getUid());
+        person = (Party) service.get(person.getObjectReference());
         assertTrue(person.getEntityRelationships().size() == 0);
-        pet = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                    pet.getArchetypeId(),
-                                                    pet.getUid());
+        pet = (Party) service.get(pet.getObjectReference());
         assertTrue(pet.getEntityRelationships().size() == 0);
     }
 
@@ -178,13 +165,9 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
 
         // now retrieve them and ensure that the correct entity relationship
         // exists
-        person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                       person.getArchetypeId(),
-                                                       person.getUid());
+        person = (Party) service.get(person.getObjectReference());
         assertTrue(person.getEntityRelationships().size() == 1);
-        pet = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                    pet.getArchetypeId(),
-                                                    pet.getUid());
+        pet = (Party) service.get(pet.getObjectReference());
         assertTrue(pet.getEntityRelationships().size() == 1);
 
         // now remove the relationship and make sure it all works
@@ -194,13 +177,9 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
         service.save(pet);
 
         // check the relationsahips again
-        person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                       person.getArchetypeId(),
-                                                       person.getUid());
+        person = (Party) service.get(person.getObjectReference());
         assertTrue(person.getEntityRelationships().size() == 0);
-        pet = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                    pet.getArchetypeId(),
-                                                    pet.getUid());
+        pet = (Party) service.get(pet.getObjectReference());
         assertTrue(pet.getEntityRelationships().size() == 0);
 
     }
@@ -227,13 +206,9 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
 
         // now retrieve them and ensure that the correct entity relationship
         // exists
-        person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                       person.getArchetypeId(),
-                                                       person.getUid());
+        person = (Party) service.get(person.getObjectReference());
         assertTrue(person.getEntityRelationships().size() == 3);
-        pet1 = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                     pet1.getArchetypeId(),
-                                                     pet1.getUid());
+        pet1 = (Party) service.get(pet1.getObjectReference());
         assertTrue(pet1.getEntityRelationships().size() == 1);
 
         // remove one of the relationships from the target side and check
@@ -241,21 +216,13 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
         pet1.removeEntityRelationship(
                 pet1.getEntityRelationships().iterator().next());
         service.save(pet1);
-        person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                       person.getArchetypeId(),
-                                                       person.getUid());
+        person = (Party) service.get(person.getObjectReference());
         assertTrue(person.getEntityRelationships().size() == 2);
-        pet1 = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                     pet1.getArchetypeId(),
-                                                     pet1.getUid());
+        pet1 = (Party) service.get(pet1.getObjectReference());
         assertTrue(pet1.getEntityRelationships().size() == 0);
-        pet2 = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                     pet2.getArchetypeId(),
-                                                     pet2.getUid());
+        pet2 = (Party) service.get(pet2.getObjectReference());
         assertTrue(pet2.getEntityRelationships().size() == 1);
-        pet3 = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                     pet3.getArchetypeId(),
-                                                     pet3.getUid());
+        pet3 = (Party) service.get(pet3.getObjectReference());
         assertTrue(pet3.getEntityRelationships().size() == 1);
     }
 
@@ -268,9 +235,8 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
         Party pet = createAnimal("buddy");
         EntityRelationship rel = createEntityRelationship(person, pet);
         EntityRelationship copy = (EntityRelationship) rel.clone();
-        copy.setReason("none at all");
-        assertTrue(rel.getReason() == null || rel.getReason().length() == 0);
-        assertTrue(copy.getReason() != null && copy.getReason().length() > 0);
+        assertEquals(person.getObjectReference(), copy.getSource());
+        assertEquals(pet.getObjectReference(), copy.getTarget());
     }
 
     /**
@@ -290,16 +256,12 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
 
         // now retrieve them and ensure that the correct entity relationship
         // exists
-        person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                       person.getArchetypeId(),
-                                                       person.getUid());
+        person = (Party) service.get(person.getObjectReference());
         assertTrue(person.getEntityRelationships().size() == 1);
         rel = person.getEntityRelationships().iterator().next();
         assertTrue(rel != null);
-        Party samePerson = (Party) ArchetypeQueryHelper.getByObjectReference(
-                service,
-                rel.getSource());
-        assertTrue(person.getUid() == samePerson.getUid());
+        Party samePerson = (Party) service.get(rel.getSource());
+        assertTrue(person.getId() == samePerson.getId());
         assertTrue(person.getVersion() == samePerson.getVersion());
     }
 
@@ -420,7 +382,6 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
         EntityRelationship rel = (EntityRelationship) service.create(shortName);
 
         rel.setActiveStartTime(new Date());
-        rel.setSequence(1);
         rel.setSource(source.getObjectReference());
         rel.setTarget(target.getObjectReference());
 

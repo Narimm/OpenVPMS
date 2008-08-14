@@ -21,19 +21,16 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 
 /**
  * A class representing an {@link Entity}'s participantion in an {@link Act}.
- * 
- * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class Participation extends IMObject {
 
@@ -51,7 +48,7 @@ public class Participation extends IMObject {
     /**
      * Indicates the mode that the {@link Entity} is participating in the
      * {@link Act}
-     *
+     * <p/>
      * TODO Look at incorporating with the terminology service
      */
     private String mode;
@@ -81,11 +78,6 @@ public class Participation extends IMObject {
      */
     private IMObjectReference act;
 
-    /**
-     * Holds details about the participation.
-     */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
-
 
     /**
      * Default constructor.
@@ -97,35 +89,19 @@ public class Participation extends IMObject {
     /**
      * Constructs a participantion between an {@link Entity} and an {@link Act}.
      *
-     * @param archetypeId
-     *            the archetype id constraining this object
-     * @param entity
-     *            the entity in the participation
-     * @param act
-     *            the act that this participation is associated with
-     * @param details
-     *            holds dynamic details about the participation.
+     * @param archetypeId the archetype id constraining this object
+     * @param entity      the entity in the participation
+     * @param act         the act that this participation is associated with
+     * @param details     holds dynamic details about the participation.
      */
     public Participation(ArchetypeId archetypeId, IMObjectReference entity,
                          IMObjectReference act, Map<String, Object> details) {
         super(archetypeId);
         this.act = act;
         this.entity = entity;
-        this.details = TypedValueMap.create(details);
-    }
-
-    /**
-     * @return Returns the details.
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * @param details The details to set.
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
+        if (details != null) {
+            setDetails(details);
+        }
     }
 
     /**
@@ -241,26 +217,5 @@ public class Participation extends IMObject {
      */
     public void setEntity(IMObjectReference entity) {
         this.entity = entity;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        Participation copy = (Participation)super.clone();
-        copy.act = this.act;
-        copy.activeEndTime = (Date)(this.activeEndTime == null ?
-                null : this.activeEndTime.clone());
-        copy.activeStartTime = (Date)(this.activeStartTime == null ?
-                null : this.activeStartTime.clone());
-        copy.details = (this.details == null) ? null
-                : new HashMap<String, TypedValue>(details);
-        copy.entity = this.entity;
-        copy.mode = this.mode;
-        copy.percentage = this.percentage;
-        copy.sequence = this.sequence;
-
-        return copy;
     }
 }

@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
@@ -205,7 +206,7 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    void save(Collection<IMObject> objects);
+    void save(Collection<? extends IMObject> objects);
 
     /**
      * Save a collection of {@link IMObject} instances.
@@ -216,7 +217,16 @@ public interface IArchetypeService {
      * @throws ValidationException       if an object can't be validated
      */
     @Deprecated
-    void save(Collection<IMObject> objects, boolean validate);
+    void save(Collection<? extends IMObject> objects, boolean validate);
+
+    /**
+     * Retrieves an object given its reference.
+     *
+     * @param reference the object reference
+     * @return the corresponding object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException if the query fails
+     */
+    IMObject get(IMObjectReference reference);
 
     /**
      * Retrieves the objects matching the query.
@@ -225,7 +235,7 @@ public interface IArchetypeService {
      * @return a page of objects that match the query criteria
      * @throws ArchetypeServiceException if the query fails
      */
-    public IPage<IMObject> get(IArchetypeQuery query);
+    IPage<IMObject> get(IArchetypeQuery query);
 
     /**
      * Retrieves partially populated objects that match the query.

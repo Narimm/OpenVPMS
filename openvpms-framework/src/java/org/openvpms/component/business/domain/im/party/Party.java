@@ -79,9 +79,12 @@ public class Party extends Entity {
     public Party(ArchetypeId archetypeId, String name,
                  String description, Set<Contact> contacts,
                  Map<String, Object> details) {
-        super(archetypeId, name, description, details);
+        super(archetypeId, name, description);
         if (contacts != null) {
             this.contacts = contacts;
+        }
+        if (details != null) {
+            setDetails(details);
         }
     }
 

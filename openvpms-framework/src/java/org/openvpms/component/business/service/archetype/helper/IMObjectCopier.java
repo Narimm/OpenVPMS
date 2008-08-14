@@ -199,8 +199,7 @@ public class IMObjectCopier {
                                             boolean save) {
         IMObjectReference result = references.get(reference);
         if (result == null) {
-            IMObject original = ArchetypeQueryHelper.getByObjectReference(
-                    service, reference);
+            IMObject original = service.get(reference);
             IMObject object = apply(original, children, save);
             if (object != original && object != null) {
                 // child was copied

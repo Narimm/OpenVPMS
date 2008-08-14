@@ -159,11 +159,9 @@ public class ActTestCase extends
         archetypeService.save(act2);
         act1.addSourceActRelationship(createActRelationship(act1, act2));
         archetypeService.save(act1);
-        act1 = (Act)ArchetypeQueryHelper.getByUid(archetypeService,
-                act1.getArchetypeId(), act1.getUid());
+        act1 = (Act)archetypeService.get(act1.getObjectReference());
         for (ActRelationship theRel : act1.getSourceActRelationships()) {
-            act2 = (Act)ArchetypeQueryHelper.getByObjectReference(archetypeService,
-                    theRel.getTarget());
+            act2 = (Act)archetypeService.get(theRel.getTarget());
         }
         archetypeService.save(act2);
        archetypeService.save(act1);
@@ -248,8 +246,7 @@ public class ActTestCase extends
         act1.addActRelationship(rel);
         archetypeService.save(act1);
 
-        Act tmp = (Act)ArchetypeQueryHelper.getByObjectReference(archetypeService,
-                act1.getObjectReference());
+        Act tmp = (Act)archetypeService.get(act1.getObjectReference());
         assertTrue(tmp != null);
         assertFalse(StringUtils.isEmpty(rel.getName()));
         assertFalse(StringUtils.isEmpty(rel.getDescription()));

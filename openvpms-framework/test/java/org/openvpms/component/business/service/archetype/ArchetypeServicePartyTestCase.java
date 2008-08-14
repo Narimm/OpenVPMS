@@ -18,19 +18,17 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import org.hibernate.Query;
-import org.hibernate.SessionFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.Arrays;
 import java.util.Collection;
+
 
 /**
  * Test that ability to create and query on parties.
@@ -39,18 +37,13 @@ import java.util.Collection;
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServicePartyTestCase extends
-                                           AbstractDependencyInjectionSpringContextTests {
+public class ArchetypeServicePartyTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
      * Holds a reference to the entity service
      */
     private ArchetypeService service;
-
-    /**
-     * A reference to the hibernate session factory
-     */
-    private SessionFactory sessionFactory;
 
 
     /**
@@ -67,19 +60,9 @@ public class ArchetypeServicePartyTestCase extends
         person.addContact(createContact(classification1));
         service.save(person);
 
-        // try the hql query
-        Query query = sessionFactory.openSession().createQuery(
-                "select party from " + Party.class.getName()
-                        + " as party inner join party.contacts as contact "
-                        + "left outer join contact.classifications as "
-                        + "classification "
-                        + "where party.uid = :uid and "
-                        + "contact.archetypeId.shortName = :shortName "
-                        + "and classification.name = :classification");
-        query.setParameter("uid", person.getUid());
-        query.setParameter("shortName", "contact.location");
-        query.setParameter("classification", classification.getName());
-        assertEquals(1, query.list().size());
+        Party person2 = (Party) get(person.getObjectReference());
+        assertNotNull(person2);
+        assertEquals(2, person.getContacts().size());
     }
 
     /**
@@ -132,23 +115,29 @@ public class ArchetypeServicePartyTestCase extends
         person1.addContact(createContact(classification1));
 
         // check the initial values of the ids
-        assertEquals(-1, person1.getUid());
-        assertEquals(-1, person2.getUid());
+        assertEquals(-1, person1.getId());
+        assertEquals(-1, person2.getId());
 
         // save the collection
-        Collection<IMObject> col = Arrays.asList((IMObject) person1, person2);
+        Collection<Party> col = Arrays.asList(person1, person2);
         service.save(col);
 
         // verify the ids have updated
-        assertFalse(person1.getUid() == -1);
-        assertFalse(person2.getUid() == -1);
+        assertFalse(person1.getId() == -1);
+        assertFalse(person2.getId() == -1);
         assertEquals(0, person1.getVersion());
         assertEquals(0, person2.getVersion());
 
-        // now check that versions update when the objects are saved again
+        // verify the versions don't update until a change is made
+        service.save(col);
+        assertEquals(0, person1.getVersion());
+        assertEquals(0, person2.getVersion());
+
+        // update person1 and recheck versions after save
+        person1.getDetails().put("lastName", "Foo");
         service.save(col);
         assertEquals(1, person1.getVersion());
-        assertEquals(1, person2.getVersion());
+        assertEquals(0, person2.getVersion());
     }
 
     /*
@@ -170,10 +159,8 @@ public class ArchetypeServicePartyTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        this.service = (ArchetypeService) applicationContext.getBean(
+        service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
-        this.sessionFactory = (SessionFactory) applicationContext.getBean(
-                "sessionFactory");
     }
 
     /**
@@ -230,6 +217,6 @@ public class ArchetypeServicePartyTestCase extends
      * @return the object or <tt>null</tt> if its not found
      */
     private IMObject get(IMObjectReference ref) {
-        return ArchetypeQueryHelper.getByObjectReference(service, ref);
+        return service.get(ref);
     }
 }

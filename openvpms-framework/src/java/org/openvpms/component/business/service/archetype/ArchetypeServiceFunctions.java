@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
@@ -61,8 +60,7 @@ public class ArchetypeServiceFunctions {
             List<IMObjectReference> references) {
         List<IMObject> objects = new ArrayList<IMObject>();
         for (IMObjectReference ref : references) {
-            objects.add(ArchetypeQueryHelper.getByObjectReference(
-                    ArchetypeServiceHelper.getArchetypeService(), ref));
+            objects.add(ArchetypeServiceHelper.getArchetypeService().get(ref));
         }
 
         return objects;
@@ -75,8 +73,7 @@ public class ArchetypeServiceFunctions {
      * @return IMObject
      */
     public static IMObject resolve(IMObjectReference reference) {
-        return ArchetypeQueryHelper.getByObjectReference(
-                ArchetypeServiceHelper.getArchetypeService(), reference);
+        return ArchetypeServiceHelper.getArchetypeService().get(reference);
     }
 
     /**

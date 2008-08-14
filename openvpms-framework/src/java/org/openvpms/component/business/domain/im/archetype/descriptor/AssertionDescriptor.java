@@ -20,15 +20,13 @@
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class AssertionDescriptor extends Descriptor {
 
@@ -36,17 +34,17 @@ public class AssertionDescriptor extends Descriptor {
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * The associated error message. This is used when the assertion fails
      */
     private String errorMessage;
-    
+
     /**
      * The index of this assertion descriptor
      */
     private int index;
-    
+
     /**
      * Holds the properties that are required to evaluate the assertion. All
      * properties are in the form of key value pairs but in some instances it
@@ -77,6 +75,7 @@ public class AssertionDescriptor extends Descriptor {
 
     /**
      * Return the properties as a map
+     *
      * @return Returns the properties.
      */
     public PropertyMap getPropertyMap() {
@@ -84,50 +83,47 @@ public class AssertionDescriptor extends Descriptor {
     }
 
     /**
-     * @param propertyMap
-     *            the properties to add
+     * @param propertyMap the properties to add
      */
     public void setPropertyMap(PropertyMap propertyMap) {
         this.propertyMap = propertyMap;
     }
-    
+
     /**
      * Add the property to the collection
-     * 
+     * <p/>
      * param property
-     *            the property to add
+     * the property to add
      */
     public void addProperty(NamedProperty property) {
         propertyMap.getProperties().put(property.getName(), property);
     }
-    
+
     /**
-     * Remove the specified property 
-     * 
-     * @param property
-     *            the property to remove
+     * Remove the specified property
+     *
+     * @param property the property to remove
      */
     public void removeProperty(NamedProperty property) {
         propertyMap.getProperties().remove(property.getName());
     }
-    
+
     /**
      * Remove the property with the specified name
-     * 
-     * @param name
-     *            the property name
+     *
+     * @param name the property name
      */
     public void removeProperty(String name) {
         propertyMap.getProperties().remove(name);
     }
-    
+
     /**
      * Retrieve the property descriptor with the specified name
-     * 
-     * @param, name
-     *            the property name
+     *
      * @return NamedProperty
-     *            the named property or null            
+     *         the named property or null
+     * @param, name
+     * the property name
      */
     public NamedProperty getProperty(String name) {
         return propertyMap.getProperties().get(name);
@@ -170,8 +166,7 @@ public class AssertionDescriptor extends Descriptor {
      */
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, 
-                ToStringStyle.MULTI_LINE_STYLE);
+        return ToStringBuilder.reflectionToString(this, STYLE);
     }
 
     /* (non-Javadoc)
@@ -179,12 +174,10 @@ public class AssertionDescriptor extends Descriptor {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        AssertionDescriptor copy = (AssertionDescriptor)super.clone();
-        copy.errorMessage = this.errorMessage;
-        copy.index = this.index;
-        copy.propertyMap = (PropertyMap)(this.propertyMap == null ?
-                null : this.propertyMap.clone());
-        
+        AssertionDescriptor copy = (AssertionDescriptor) super.clone();
+        if (propertyMap != null) {
+            copy.propertyMap = (PropertyMap) propertyMap.clone();
+        }
         return copy;
     }
 

@@ -19,7 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate;
+import org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -85,8 +85,7 @@ public class ArchetypeServiceActTestCase
         act.addParticipation(participation);
         service.save(act);
 
-        Act act1 = (Act) ArchetypeQueryHelper.getByUid(
-                service, act.getArchetypeId(), act.getUid());
+        Act act1 = (Act) service.get(act.getObjectReference());
         assertEquals(act1, act);
     }
 
@@ -97,6 +96,7 @@ public class ArchetypeServiceActTestCase
     public void testGetActs() throws Exception {
         // create an act which participates in 5 acts
         Party person = createPerson("MR", "Jim", "Alateras");
+        service.save(person);
         for (int index = 0; index < 5; index++) {
             Act act = createSimpleAct("study" + index, "inprogress");
             Participation participation = createSimpleParticipation(
@@ -105,8 +105,6 @@ public class ArchetypeServiceActTestCase
             act.addParticipation(participation);
             service.save(act);
         }
-
-        service.save(person);
 
         // now use the getActs request
         IPage<Act> acts = ArchetypeQueryHelper.getActs(
@@ -262,7 +260,7 @@ public class ArchetypeServiceActTestCase
         estimation.addActRelationship(relationship);
         item.addActRelationship(relationship);
 
-        List<IMObject> acts = Arrays.asList((IMObject) estimation, item);
+        List<Act> acts = Arrays.asList(estimation, item);
         checkSaveCollection(acts, 0);
 
         // reload the estimation and item. Each will have a separate copy of
@@ -272,10 +270,12 @@ public class ArchetypeServiceActTestCase
         assertNotNull(estimation);
         assertNotNull(item);
 
-        acts = Arrays.asList((IMObject) estimation, item);
+        acts = Arrays.asList(estimation, item);
 
         // save the collection, and verify they have saved by checking the
         // versions.
+        estimation.setTitle("changed"); // make a change to each to ensure
+        item.setTitle("changed");       // they save
         checkSaveCollection(acts, 1);
 
         // now remove the relationship, and add a new one
@@ -310,11 +310,11 @@ public class ArchetypeServiceActTestCase
 
         service.save(act1);
         act1.setStatus("POSTED");
-        Collection<IMObject> objects = Arrays.asList((IMObject) act1);
+        Collection<Act> objects = Arrays.asList(act1);
         service.save(objects);
 
         act1.removeParticipation(p1);
-        objects = Arrays.asList((IMObject) act1);
+        objects = Arrays.asList(act1);
         service.save(objects);
 
         service.save(act1);
@@ -351,9 +351,7 @@ public class ArchetypeServiceActTestCase
         // create a relationship from act2 -> act3
         addRelationship(act2, act3, "act2->act3");
 
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
+        service.save(Arrays.asList(act1, act2, act3));
 
         service.remove(act1);
         assertNull(reload(act1));
@@ -375,7 +373,6 @@ public class ArchetypeServiceActTestCase
      */
     public void testParentChildRemoval() {
         Act estimation = (Act) service.create("act.customerEstimation");
-        service.remove(estimation);
         estimation.setStatus("IN_PROGRESS");
         Act item1 = (Act) service.create("act.customerEstimationItem");
         Act item2 = (Act) service.create("act.customerEstimationItem");
@@ -384,10 +381,7 @@ public class ArchetypeServiceActTestCase
         bean.addRelationship("actRelationship.customerEstimationItem", item1);
         bean.addRelationship("actRelationship.customerEstimationItem", item2);
         bean.addRelationship("actRelationship.customerEstimationItem", item3);
-        service.save(item1);
-        service.save(item2);
-        service.save(item3);
-        bean.save();
+        service.save(Arrays.asList(estimation, item1, item2, item3));
 
         // remove an item, and verify it has been removed and that the other
         // acts aren't removed
@@ -449,9 +443,7 @@ public class ArchetypeServiceActTestCase
         addRelationship(act1, act2, "act1->act2", true);
         addRelationship(act1, act3, "act1->act3", false);
 
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
+        service.save(Arrays.asList(act1, act2, act3));
 
         // remove act1, and verify that it and act2 are removed, and act3
         // remains.
@@ -474,9 +466,7 @@ public class ArchetypeServiceActTestCase
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
 
         addRelationship(act1, act2, "act1->act2", true);
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
+        service.save(Arrays.asList(act1, act2, act3));
 
         Act stale = reload(act1);
 
@@ -521,14 +511,12 @@ public class ArchetypeServiceActTestCase
         final ActRelationship relAct1Act3 = addRelationship(act1, act3,
                                                             "act1->act3");
 
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
+        service.save(Arrays.asList(act1, act2, act3));
 
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 service.remove(act1);
-                assertNotNull(reload(act1));  // can reload till commit
+                assertNull(reload(act1));
 
                 // reload act2 and verify that it no longer has a relationship
                 // to act1, and can be saved again
@@ -558,7 +546,7 @@ public class ArchetypeServiceActTestCase
             public Object doInTransaction(TransactionStatus status) {
                 Act act3reloaded = reload(act3);
                 service.remove(act3reloaded);
-                assertNotNull(reload(act3reloaded));  // can reload till commit
+                assertNull(reload(act3reloaded));
 
                 // reload act2 and verify that it no longer has a relationship
                 // to act3
@@ -587,8 +575,7 @@ public class ArchetypeServiceActTestCase
         final ActRelationship relAct1Act2 = addRelationship(act1, act2,
                                                             "act1->act2");
 
-        service.save(act1);
-        service.save(act2);
+        service.save(Arrays.asList(act1, act2));
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 service.remove(act2);
@@ -632,10 +619,7 @@ public class ArchetypeServiceActTestCase
                 = addRelationship(act2, act4, "act2->act4", false);
         final ActRelationship relAct3Act4
                 = addRelationship(act3, act4, "act3->act4", false);
-        service.save(act1);
-        service.save(act2);
-        service.save(act3);
-        service.save(act4);
+        service.save(Arrays.asList(act1, act2, act3, act4));
 
         assertTrue(act4.getActRelationships().contains(relAct2Act4));
         assertTrue(act4.getActRelationships().contains(relAct3Act4));
@@ -675,10 +659,13 @@ public class ArchetypeServiceActTestCase
         final ActRelationship rel
                 = addRelationship(act1, act2, "act1->act2", true);
 
-        // initial ids should be unset
-        assertEquals(-1, act1.getUid());
-        assertEquals(-1, act2.getUid());
-        assertEquals(-1, rel.getUid());
+        // initial ids and versions should be unset
+        assertEquals(-1, act1.getId());
+        assertEquals(0, act1.getVersion());
+        assertEquals(-1, act2.getId());
+        assertEquals(0, act2.getVersion());
+        assertEquals(-1, rel.getId());
+        // TODO: act relationships unversioned.
 
         // save objects in a transaction, and rollback. Within the transaction,
         // the objects should be assigned identifiers. After rollback, they
@@ -688,11 +675,18 @@ public class ArchetypeServiceActTestCase
                 public Object doInTransaction(TransactionStatus status) {
                     service.save(act1);
                     service.save(act2);
+                    act1.setName("f0o");
+                    service.save(act1);
 
                     // objects should have ids assigned now
-                    assertFalse(-1 == act1.getUid());
-                    assertFalse(-1 == act2.getUid());
-                    assertFalse(-1 == rel.getUid());
+                    assertFalse(-1 == act1.getId());
+                    assertFalse(-1 == act2.getId());
+                    assertFalse(-1 == rel.getId());
+
+                    // versions don't get updated until commit
+                    assertEquals(0, act1.getVersion());
+                    assertEquals(0, act2.getVersion());
+
                     throw new RuntimeException("Trigger rollback");
                 }
             });
@@ -702,27 +696,35 @@ public class ArchetypeServiceActTestCase
         }
 
         // id changes should be reverted on rollback
-        assertEquals(-1, act1.getUid());
-        assertEquals(-1, act2.getUid());
-        assertEquals(-1, rel.getUid());
+        assertEquals(-1, act1.getId());
+        assertEquals(-1, act2.getId());
+        assertEquals(-1, rel.getId());
 
-        // now verify the objects can be saved
-        try {
-            template.execute(new TransactionCallback() {
-                public Object doInTransaction(TransactionStatus status) {
-                    service.save(act1);
-                    service.save(act2);
-                    return null;
-                }
-            });
-        } catch (Exception error) {
-            fail("Expected transaction to succeed");
+        assertEquals(0, act1.getVersion());
+        assertEquals(0, act2.getVersion());
+
+        // now verify the objects can be saved. Save twice to inc version.
+        for (int i = 0; i < 2; ++i) {
+            try {
+                template.execute(new TransactionCallback() {
+                    public Object doInTransaction(TransactionStatus status) {
+                        service.save(act1);
+                        service.save(act2);
+                        return null;
+                    }
+                });
+            } catch (Exception error) {
+                fail("Expected transaction to succeed");
+            }
         }
 
         // objects should have ids assigned now
-        assertFalse(-1 == act1.getUid());
-        assertFalse(-1 == act2.getUid());
-        assertFalse(-1 == rel.getUid());
+        assertFalse(-1 == act1.getId());
+        assertFalse(-1 == act2.getId());
+        assertFalse(-1 == rel.getId());
+
+        assertEquals(1, act1.getVersion());
+        assertEquals(1, act2.getVersion());
 
         // now verfiy that a subsequent rollback of persistent objects
         // doesn't reset the ids
@@ -739,10 +741,13 @@ public class ArchetypeServiceActTestCase
             // expected behaviour
         }
 
-        // objects should have ids assigned still
-        assertFalse(-1 == act1.getUid());
-        assertFalse(-1 == act2.getUid());
-        assertFalse(-1 == rel.getUid());
+        // objects should have ids and versions assigned still
+        assertFalse(-1 == act1.getId());
+        assertFalse(-1 == act2.getId());
+        assertFalse(-1 == rel.getId());
+
+        assertEquals(1, act1.getVersion());
+        assertEquals(1, act2.getVersion());
     }
 
     /**
@@ -751,12 +756,12 @@ public class ArchetypeServiceActTestCase
     public void testOBF190() {
         // Create 2 acts with the following relationship:
         // act1 -- (parent/child) --> act2
-        final Act act1 = createSimpleAct("act1", "IN_POGRESS");
+        final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
         final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
 
         String name = "act1->act2";
         final ActRelationship rel = addRelationship(act1, act2, name, true);
-        service.save(act2);
+        service.save(Arrays.asList(act1, act2));
 
         final String newName = "act1->act2 changed";
 
@@ -826,7 +831,8 @@ public class ArchetypeServiceActTestCase
      * @param objects the objects to save
      * @param version the expected version
      */
-    private void checkSaveCollection(List<IMObject> objects, long version) {
+    private void checkSaveCollection(List<? extends IMObject> objects,
+                                     long version) {
         service.save(objects);
         for (IMObject object : objects) {
             assertEquals(version, object.getVersion());
@@ -845,8 +851,7 @@ public class ArchetypeServiceActTestCase
      */
     @SuppressWarnings("unchecked")
     private <T extends IMObject> T reload(T object) {
-        return (T) ArchetypeQueryHelper.getByObjectReference(
-                service, object.getObjectReference());
+        return (T) service.get(object.getObjectReference());
     }
 
     /**

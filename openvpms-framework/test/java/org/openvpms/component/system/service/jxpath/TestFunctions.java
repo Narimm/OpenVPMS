@@ -50,7 +50,7 @@ public class TestFunctions {
        if (list != null) {
            for (Object object : list) {
                if ((object instanceof IMObject) &&
-                   (((IMObject)object).getUid() == uid)) {
+                   (((IMObject)object).getId() == uid)) {
                    return (IMObject)object;
                }
            }
