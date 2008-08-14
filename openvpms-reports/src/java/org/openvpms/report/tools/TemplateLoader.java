@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Arrays;
 
 
 /**
@@ -145,9 +146,8 @@ public class TemplateLoader {
             participation.setEntity(entity.getObjectReference());
         }
 
-        act.setDocReference(document.getObjectReference());
-        service.save(document);
-        service.save(act);
+        act.setDocument(document.getObjectReference());
+        service.save(Arrays.asList(document, act));
 
         String name = template.getName();
         if (name == null) {

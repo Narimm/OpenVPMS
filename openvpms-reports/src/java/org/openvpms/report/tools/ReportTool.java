@@ -28,9 +28,9 @@ import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -95,7 +95,7 @@ public class ReportTool {
         IPage<IMObject> rows = service.get(query);
         for (IMObject object : rows.getResults()) {
             System.out.println(object.getArchetypeId().getShortName()
-                    + " " + object.getUid() + " " + object.getName());
+                    + " " + object.getId() + " " + object.getName());
         }
     }
 
@@ -120,12 +120,13 @@ public class ReportTool {
      * Returns the first instance with the specified short name and uid
      *
      * @param shortName the archetype short name
-     * @param uid       the instance identifier
+     * @param id       the instance identifier
      * @return the corresponding object, or <code>null</code> if none was found
      */
-    public IMObject get(String shortName, long uid) {
-        ArchetypeId id = service.getArchetypeDescriptor(shortName).getType();
-        return ArchetypeQueryHelper.getByUid(service, id, uid);
+    public IMObject get(String shortName, long id) {
+        ArchetypeId archetypeId = new ArchetypeId(shortName);
+        IMObjectReference reference = new IMObjectReference(archetypeId, id);
+        return service.get(reference);
     }
 
     /**
