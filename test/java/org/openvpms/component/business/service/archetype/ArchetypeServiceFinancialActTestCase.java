@@ -18,14 +18,11 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// java-core
-
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
@@ -34,53 +31,21 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import java.math.BigDecimal;
 import java.util.Date;
 
+
 /**
- * Test that ability to create and query on Documentss.
+ * Test that ability to create and query on financial acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServiceFinancialActTestCase extends
-                                                  AbstractDependencyInjectionSpringContextTests {
+public class ArchetypeServiceFinancialActTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Holds a reference to the entity service
+     * The archetype service.
      */
     private ArchetypeService service;
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeServiceFinancialActTestCase.class);
-    }
-
-    /**
-     * Default constructor
-     */
-    public ArchetypeServiceFinancialActTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
-    }
 
     /**
      * Test the creation of a FinancialAct using the {@link NodeDescriptor}s.
@@ -168,8 +133,7 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
 
         // now retrieve it
-        FinancialAct act1 = (FinancialAct) ArchetypeQueryHelper
-                .getByObjectReference(service, act.getObjectReference());
+        FinancialAct act1 = (FinancialAct) service.get(act.getObjectReference());
         assertTrue(act1 != null);
         assertTrue(act.getName().equals(act1.getName()));
         assertTrue(act.getDescription().equals(act1.getDescription()));
@@ -197,8 +161,7 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
 
         // now retrieve it
-        FinancialAct act1 = (FinancialAct) ArchetypeQueryHelper
-                .getByObjectReference(service, act.getObjectReference());
+        FinancialAct act1 = (FinancialAct) service.get(act.getObjectReference());
         assertTrue(act1 != null);
 
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
@@ -396,8 +359,7 @@ public class ArchetypeServiceFinancialActTestCase extends
                                               false);
         service.save(act);
         FinancialAct loaded
-                = (FinancialAct) ArchetypeQueryHelper.getByObjectReference(
-                service, act.getObjectReference());
+                = (FinancialAct) service.get(act.getObjectReference());
         assertNotNull(loaded);
         assertTrue(total.compareTo(loaded.getTotal()) == 0);
     }
@@ -434,4 +396,28 @@ public class ArchetypeServiceFinancialActTestCase extends
 
         return act;
     }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
+        };
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+
+        this.service = (ArchetypeService) applicationContext.getBean(
+                "archetypeService");
+    }
+
 }

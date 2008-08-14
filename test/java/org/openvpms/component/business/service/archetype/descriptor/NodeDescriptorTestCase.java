@@ -70,9 +70,9 @@ public class NodeDescriptorTestCase extends TestCase {
         ArchetypeDescriptor archetype = getArchetype("party.person");
 
         // node with display name specified
-        NodeDescriptor uid = archetype.getNodeDescriptor("uid");
-        assertNotNull(uid);
-        assertEquals("id", uid.getDisplayName());
+        NodeDescriptor id = archetype.getNodeDescriptor("id");
+        assertNotNull(id);
+        assertEquals("Customer Id", id.getDisplayName());
 
         // node with no display name specified
         NodeDescriptor firstName = archetype.getNodeDescriptor("firstName");

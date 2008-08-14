@@ -20,7 +20,6 @@ package org.openvpms.component.business.domain.im.datatypes.basic;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 
@@ -51,8 +50,7 @@ public class PersistentTypedValueMapTestCase
         person.getDetails().put("firstName", null);
         service.save(person);
 
-        person = (Party) ArchetypeQueryHelper.getByObjectReference(
-                service, person.getObjectReference());
+        person = (Party) service.get(person.getObjectReference());
         assertNotNull(person);
         person.getDetails().put("firstName", "bar");
         service.save(person);

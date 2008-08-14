@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionContext;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -73,8 +74,9 @@ public class EntityRelationshipAssertions {
                     IMObjectReference source = entry.getSource();
                     IMObjectReference target = entry.getTarget();
                     for (EntityRelationship other : active) {
-                        if (source.equals(other.getSource())
-                                && target.equals(other.getTarget())) {
+                        if (ObjectUtils.equals(source, other.getSource())
+                                && ObjectUtils.equals(target,
+                                                      other.getTarget())) {
                             return false;
                         }
                     }

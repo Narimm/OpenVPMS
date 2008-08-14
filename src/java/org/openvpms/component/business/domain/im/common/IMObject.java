@@ -19,9 +19,10 @@
 package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.jxpath.Pointer;
-import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang.builder.StandardToStringStyle;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
@@ -29,7 +30,9 @@ import org.openvpms.component.system.service.uuid.JUGGenerator;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+
 
 /**
  * This is the base class for information model objects. An {@link IMObject}
@@ -43,20 +46,14 @@ import java.util.Map;
 public class IMObject implements Serializable, Cloneable {
 
     /**
-     * An internal UUID generator.
+     * Serialization version identifier.
      */
-    private static final JUGGenerator generator = new JUGGenerator();
+    private static final long serialVersionUID = 2L;
 
     /**
-     * Define a logger for this class
+     * Identifier assigned when the object is saved.
      */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(IMObject.class);
-
-    /**
-     * SUID.
-     */
-    private static final long serialVersionUID = 1L;
+    private long id = -1;
 
     /**
      * Indicates whether this object is active
@@ -65,7 +62,6 @@ public class IMObject implements Serializable, Cloneable {
 
     /**
      * The archetype that is attached to this object. which defines
-     *
      */
     private ArchetypeId archetypeId;
 
@@ -80,11 +76,8 @@ public class IMObject implements Serializable, Cloneable {
     private Date lastModified;
 
     /**
-     * This is the link id for the object, which is used to associated one
-     * IMObject with another in hibernate. This is required to support cascade
-     * save/updates and to work reliable in detached mode and to allow the
-     * a call to saveOrUpdate to be made. This is not be confused with the
-     * object id, which  is set by the mapping
+     * The object link identifier, a UUID used to link objects until they can
+     * be made persistent, and to provide support for object equality.
      */
     private String linkId;
 
@@ -95,29 +88,49 @@ public class IMObject implements Serializable, Cloneable {
     private String name;
 
     /**
-     * Uniquely identifies an instance of this class. This is the identifier
-     * that is used for persistence.
-     */
-    private long uid = -1;
-
-    /**
-     * Indicates the version of this object
+     * Indicates the version of this object.
      */
     private long version;
 
+    /**
+     * Dynamic details of the object.
+     */
+    private Map<String, Object> details
+            = new HashMap<String, Object>();
 
     /**
-     * Default constructor
+     * toString() style.
+     */
+    protected static final StandardToStringStyle STYLE;
+
+    /**
+     * An internal UUID generator.
+     */
+    private static final JUGGenerator generator = new JUGGenerator();
+
+    /**
+     * Define a logger for this class
+     */
+    private static final Log log = LogFactory.getLog(IMObject.class);
+
+
+    static {
+        STYLE = new StandardToStringStyle();
+        STYLE.setUseShortClassName(true);
+        STYLE.setUseIdentityHashCode(false);
+    }
+
+
+    /**
+     * Default constructor.
      */
     public IMObject() {
     }
 
     /**
-     * Construct an instance of an info model object given the specified
-     * data.
+     * Creates a new <tt>IMObject</tt>.
      *
-     * @param archetypeId
-     *            the archetype id.
+     * @param archetypeId the archetype id
      */
     public IMObject(ArchetypeId archetypeId) {
         this.archetypeId = archetypeId;
@@ -126,15 +139,11 @@ public class IMObject implements Serializable, Cloneable {
     }
 
     /**
-     * Construct an instance of an info model object given the specified
-     * data.
+     * Creates a new <tt>IMObject</tt>.
      *
-     * @param archetypeId
-     *            the archetype id.
-     * @param name
-     *            the name of the object
-     * @param description
-     *            the description for this object
+     * @param archetypeId the archetype id.
+     * @param name        the name of the object
+     * @param description the description for this object
      */
     public IMObject(ArchetypeId archetypeId, String name, String description) {
         this(archetypeId);
@@ -142,24 +151,50 @@ public class IMObject implements Serializable, Cloneable {
         this.description = description;
     }
 
+    /**
+     * Returns the object's persistent identifier.
+     *
+     * @return the object identifier, or <tt>-1</tt> if the object has not been
+     *         saved
+     */
+    public long getId() {
+        return id;
+    }
+
+    /**
+     * Sets the object persistent identifier.
+     *
+     * @param id the object identifier
+     */
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    /**
+     * @return Returns the id.
+     * @deprecated use {@link #getId).
+     */
+    @Deprecated
+    public long getUid() {
+        return getId();
+    }
+
+    /**
+     * @param id The id to set.
+     * @deprecated use {@link #setId(long)} 
+     */
+    @Deprecated
+    public void setUid(long id) {
+        setId(id);
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#clone()
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        IMObject copy = (IMObject)super.clone();
-
-        copy.active = this.active;
-        copy.archetypeId = (ArchetypeId)(this.archetypeId == null ?
-                null : this.archetypeId.clone());
-        copy.description = this.description;
-        copy.lastModified = (Date)(this.lastModified == null ?
-                null :this.lastModified.clone());
-        copy.linkId = this.linkId;
-        copy.name = this.name;
-        copy.uid = this.uid;
-        copy.version = this.version;
-
+        IMObject copy = (IMObject) super.clone();
+        copy.linkId = getLinkId();
         return copy;
     }
 
@@ -168,16 +203,14 @@ public class IMObject implements Serializable, Cloneable {
      */
     @Override
     public boolean equals(Object obj) {
-        if ((obj == null) ||
-            !(obj instanceof IMObject)) {
-            return false;
+        if (this == obj) {
+            return true;
         }
-
-        IMObject rhs = (IMObject)obj;
-        return new EqualsBuilder()
-            .append(getLinkId(), rhs.getLinkId())
-            .append(getArchetypeId(), rhs.getArchetypeId())
-            .isEquals();
+        if (obj instanceof IMObject) {
+            IMObject rhs = (IMObject) obj;
+            return getObjectReference().equals(rhs.getObjectReference());
+        }
+        return false;
     }
 
     /**
@@ -191,10 +224,11 @@ public class IMObject implements Serializable, Cloneable {
      * Return the archetypeId as a string
      *
      * @return String
-     *            the fully qualified archetype id
+     *         the fully qualified archetype id
      */
     public String getArchetypeIdAsString() {
-        return (this.archetypeId == null) ? null : archetypeId.getQualifiedName();
+        return (this.archetypeId == null) ? null
+                : archetypeId.getQualifiedName();
     }
 
     /**
@@ -221,7 +255,12 @@ public class IMObject implements Serializable, Cloneable {
     }
 
     /**
-     * @return Returns the linkId.
+     * Returns the object link identifier.
+     * <p/>
+     * This is a UUID that is used to link objects until they can be made
+     * persistent, and to provide support for object equality.
+     *
+     * @return the link identifier
      */
     public String getLinkId() {
         if (linkId == null) {
@@ -231,24 +270,10 @@ public class IMObject implements Serializable, Cloneable {
     }
 
     /**
-     * Return the object reference for this object.
-     *
-     * @return IMObjectReference
-     * @throws
-     */
-
-    /**
      * @return Returns the name.
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * @return Returns the id.
-     */
-    public long getUid() {
-        return this.uid;
     }
 
     /**
@@ -280,7 +305,25 @@ public class IMObject implements Serializable, Cloneable {
      * @return boolean
      */
     public boolean isNew() {
-        return uid == -1;
+        return id == -1;
+    }
+
+    /**
+     * Returns the details.
+     *
+     * @return the details
+     */
+    public Map<String, Object> getDetails() {
+        return details;
+    }
+
+    /**
+     * Sets the details.
+     *
+     * @param details the details
+     */
+    public void setDetails(Map<String, Object> details) {
+        this.details = details;
     }
 
     /**
@@ -289,19 +332,18 @@ public class IMObject implements Serializable, Cloneable {
      * return it as is. If the returned object is an instance of a Map then
      * it will return the value objects
      *
-     * @param path
-     *            a xpath expression in to this object
+     * @param path a xpath expression in to this object
      * @return Pointer
-     *            a pointer to the location
+     *         a pointer to the location
      */
     @Deprecated
     public Pointer pathToCollection(String path) {
         Pointer ptr = pathToObject(path);
         if (ptr != null) {
-            Object obj  = ptr.getValue();
+            Object obj = ptr.getValue();
             if (obj instanceof Map) {
                 ptr = JXPathHelper.newContext(obj).getPointer("values(.)");
-            } else if (obj instanceof PropertyCollection){
+            } else if (obj instanceof PropertyCollection) {
                 ptr = JXPathHelper.newContext(obj).getPointer("values(.)");
             }
         }
@@ -313,10 +355,9 @@ public class IMObject implements Serializable, Cloneable {
      * This method will retrieve an attribute of this object
      * give an xpath
      *
-     * @param path
-     *            an xpath expression in to this object
+     * @param path an xpath expression in to this object
      * @return Pointer
-     *            a pointer ot the object or null.
+     *         a pointer ot the object or null.
      */
     @Deprecated
     public Pointer pathToObject(String path) {
@@ -325,7 +366,7 @@ public class IMObject implements Serializable, Cloneable {
         try {
             ptr = JXPathHelper.newContext(this).getPointer(path);
         } catch (Exception exception) {
-            logger.warn("No path to: " + path + " for object of type: "
+            log.warn("No path to: " + path + " for object of type: "
                     + this.getClass().getName(), exception);
         }
 
@@ -338,6 +379,7 @@ public class IMObject implements Serializable, Cloneable {
     public void setActive(boolean active) {
         this.active = active;
     }
+
     /**
      * @param archetypeId The archetypeId to set.
      */
@@ -348,8 +390,7 @@ public class IMObject implements Serializable, Cloneable {
     /**
      * Set the archetypeId from a string
      *
-     * @param archId
-     *            the fully qualified archetype name
+     * @param archId the fully qualified archetype name
      */
     public void setArchetypeIdAsString(String archId) {
         this.archetypeId = new ArchetypeId(archId);
@@ -372,7 +413,7 @@ public class IMObject implements Serializable, Cloneable {
     /**
      * @param linkId The linkId to set.
      */
-    protected void setLinkId(String linkId) {
+    public void setLinkId(String linkId) {
         this.linkId = linkId;
     }
 
@@ -381,13 +422,6 @@ public class IMObject implements Serializable, Cloneable {
      */
     public void setName(String name) {
         this.name = name;
-    }
-
-    /**
-     * @param id The id to set.
-     */
-    public void setUid(long id) {
-        this.uid = id;
     }
 
     /**
@@ -402,13 +436,13 @@ public class IMObject implements Serializable, Cloneable {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-            .append("uid", uid)
-            .append("archetypeId", archetypeId.getQualifiedName())
-            .append("linkId", getLinkId())
-            .append("version", version)
-            .append("name", name)
-            .toString();
+        return new ToStringBuilder(this, STYLE)
+                .append("id", id)
+                .append("archetypeId", archetypeId)
+                .append("linkId", getLinkId())
+                .append("version", version)
+                .append("name", name)
+                .toString();
     }
 }
 

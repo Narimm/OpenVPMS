@@ -22,7 +22,7 @@ import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,9 +41,9 @@ abstract class AbstractNodeResultCollector<T>
         extends HibernateResultCollector<T> {
 
     /**
-     * The archetype service.
+     * The archetype descriptor cache.
      */
-    private final IArchetypeService service;
+    private final IArchetypeDescriptorCache cache;
 
     /**
      * The names of the nodes to collect.
@@ -51,14 +51,14 @@ abstract class AbstractNodeResultCollector<T>
     private final Collection<String> names;
 
     /**
-     * Constructs a new <code>AbstractNodeResultCollector</code>.
+     * Constructs a new <tt>AbstractNodeResultCollector</tt>.
      *
-     * @param service the archetype service
-     * @param nodes   the names of the nodes to collect
+     * @param cache the archetype descriptor cache
+     * @param nodes the names of the nodes to collect
      */
-    public AbstractNodeResultCollector(IArchetypeService service,
+    public AbstractNodeResultCollector(IArchetypeDescriptorCache cache,
                                        Collection<String> nodes) {
-        this.service = service;
+        this.cache = cache;
         this.names = nodes;
     }
 
@@ -71,7 +71,7 @@ abstract class AbstractNodeResultCollector<T>
     protected List<NodeDescriptor> getDescriptors(IMObject object) {
         List<NodeDescriptor> result;
         String shortName = object.getArchetypeId().getShortName();
-        ArchetypeDescriptor archetype = service.getArchetypeDescriptor(
+        ArchetypeDescriptor archetype = cache.getArchetypeDescriptor(
                 shortName);
         if (archetype == null) {
             result = Collections.emptyList();

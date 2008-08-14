@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -54,29 +53,15 @@ public class ArchetypeServiceDescriptorTestCase
     private ArchetypeService service;
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
     /**
      * Create and save a simple {@link ArchetypeDescriptor} using this service
      */
-    public void testCreateArchetypeDescriptor()
-            throws Exception {
+    public void testCreateArchetypeDescriptor() {
         ArchetypeDescriptor desc = (ArchetypeDescriptor) service.create(
                 "descriptor.archetype");
         assertTrue(desc != null);
 
-        String name = "archetype.dummy.1.0";
-        removeDescriptor(name);
+        String name = "archetype.dummy-" + System.currentTimeMillis() + ".1.0";
         desc.setName(name);
         desc.setClassName(this.getClass().getName());
         desc.setDisplayName("archetype.dummy");
@@ -95,14 +80,12 @@ public class ArchetypeServiceDescriptorTestCase
      * Creation and save of an invalid {@link ArchetypeDescriptor} using this
      * service
      */
-    public void testCreateInvalidArchetypeDescriptor()
-            throws Exception {
+    public void testCreateInvalidArchetypeDescriptor() {
         ArchetypeDescriptor desc = (ArchetypeDescriptor) service.create(
                 "descriptor.archetype");
         assertNotNull(desc);
 
-        String name = "archetype.dummy.1.0";
-        removeDescriptor(name);
+        String name = "archetype.dummy-" + System.currentTimeMillis() + ".1.0";
         desc.setName(name);
         desc.setDisplayName("archetype.dummy");
         desc.setDescription("Archetype Dummy v1.0");
@@ -120,10 +103,8 @@ public class ArchetypeServiceDescriptorTestCase
     /**
      * Create a simple archetype descriptor with node descriptor
      */
-    public void testCreateArchetypeWithNodeDescriptor()
-            throws Exception {
-        String name = "archetype.dummy.1.0";
-        removeDescriptor(name);
+    public void testCreateArchetypeWithNodeDescriptor() {
+        String name = "archetype.dummy-" + System.currentTimeMillis() + ".1.0";
         ArchetypeDescriptor desc = createArchetypeDescriptor(
                 name, "thisClass",
                 "archetype.dummy", true);
@@ -139,9 +120,7 @@ public class ArchetypeServiceDescriptorTestCase
             throw ex;
         }
 
-        IMObject obj = ArchetypeQueryHelper.getByUid(service,
-                                                     desc.getArchetypeId(),
-                                                     desc.getUid());
+        IMObject obj = service.get(desc.getObjectReference());
         assertTrue(obj != null);
         assertTrue(obj instanceof ArchetypeDescriptor);
         assertTrue(
@@ -157,10 +136,8 @@ public class ArchetypeServiceDescriptorTestCase
     /**
      * Tests the fix for OBF-174.
      */
-    public void testOBF174()
-            throws Exception {
-        String name = "archetype.dummy.1.0";
-        removeDescriptor(name);
+    public void testOBF174() {
+        String name = "archetype.dummy-" + System.currentTimeMillis() + ".1.0";
         ArchetypeDescriptor desc = createArchetypeDescriptor(
                 name, "thisClass",
                 "archetype.dummy", true);
@@ -179,9 +156,7 @@ public class ArchetypeServiceDescriptorTestCase
         service.save(ndesc);     // verify the node descriptor and assertion
         service.save(assertion); // descriptor can be re-saved
 
-        IMObject obj = ArchetypeQueryHelper.getByUid(service,
-                                                     desc.getArchetypeId(),
-                                                     desc.getUid());
+        IMObject obj = service.get(desc.getObjectReference());
         assertNotNull(obj);
         assertTrue(obj instanceof ArchetypeDescriptor);
         ArchetypeDescriptor desc2 = (ArchetypeDescriptor) obj;
@@ -199,10 +174,10 @@ public class ArchetypeServiceDescriptorTestCase
 
     /**
      * Test that we can clone and save the cloned object in to the database.
-     * Commented out for OBF-167.
+     * TODO - cloning is broken as it only does a shallow copy
      */
-    public void XtestCloneOnCreateArchetypeWithNodeDescriptor()
-            throws Exception {
+    public void testCloneOnCreateArchetypeWithNodeDescriptor() throws
+                                                               Exception {
         removeDescriptor("archetype.dummy.1.0");
         removeDescriptor("archetype.dummy.2.0");
         ArchetypeDescriptor desc = createArchetypeDescriptor(
@@ -213,12 +188,7 @@ public class ArchetypeServiceDescriptorTestCase
                                                     "java.lang.String", 1, 1);
         desc.addNodeDescriptor(ndesc);
 
-        try {
-            service.save(desc);
-        } catch (ValidationException ex) {
-            dumpValidationException(ex);
-            throw ex;
-        }
+        service.save(desc);
 
         // clone the object and resave it
         ArchetypeDescriptor copy = (ArchetypeDescriptor) desc.clone();
@@ -230,8 +200,8 @@ public class ArchetypeServiceDescriptorTestCase
 
         // retrieve the cloned and saved object and ensure that the values
         // are correct
-        ArchetypeDescriptor obj = (ArchetypeDescriptor) ArchetypeQueryHelper
-                .getByUid(service, copy.getArchetypeId(), copy.getUid());
+        ArchetypeDescriptor obj
+                = (ArchetypeDescriptor) service.get(copy.getObjectReference());
         assertNotNull(obj);
         assertEquals(1, obj.getNodeDescriptors().size());
         assertEquals(copy.getName(), obj.getName());
@@ -239,55 +209,19 @@ public class ArchetypeServiceDescriptorTestCase
 
         // clone the object again 
         ArchetypeDescriptor copy2 = (ArchetypeDescriptor) copy.clone();
-        for (NodeDescriptor toRemove : copy2.getAllNodeDescriptors()) {
-            copy2.removeNodeDescriptor(toRemove);
-
-            // NOTE: need to explicitly remove the children of cloned objects
-            // as they don't contain hibernate peristent collection instances.
-            service.remove(toRemove);
-        }
-        assertEquals(0, copy2.getNodeDescriptors().size());
         service.save(copy2);
 
         // retrieve the object again and check the info
-        obj = (ArchetypeDescriptor) ArchetypeQueryHelper.getByUid(service,
-                                                                  copy2.getArchetypeId(),
-                                                                  copy2.getUid());
+        obj = (ArchetypeDescriptor) service.get(copy2.getObjectReference());
         assertNotNull(obj);
-        assertEquals(0, obj.getNodeDescriptors().size());
-        assertTrue(copy2.getName().equals(obj.getName()));
-        assertTrue(copy2.getClassName().equals(obj.getClassName()));
+        assertEquals(copy2.getName(), obj.getName());
+        assertEquals(copy2.getClassName(), obj.getClassName());
     }
 
     /**
-     * Test loading arhetypes from file system in to the database
+     * Test fix for OVPMS-194.
      */
-    public void testLoadingArchetypesFromXML()
-            throws Exception {
-        //deleteAllArchetypeDescriptors();
-        for (ArchetypeDescriptor desc : service.getArchetypeDescriptors()) {
-            try {
-                ArchetypeQuery query = new ArchetypeQuery(
-                        "descriptor.archetype",
-                        false, true)
-                        .add(new NodeConstraint("type", desc.getName()));
-                List<IMObject> results = service.get(query).getResults();
-                // only add if the entry does not exist
-                if (results == null || results.size() == 0) {
-                    service.save(desc);
-                }
-            } catch (ValidationException ex) {
-                dumpValidationException(ex);
-                throw ex;
-            }
-        }
-    }
-
-    /**
-     * Test fix for OVPMS-194
-     */
-    public void testOVPMS194()
-            throws Exception {
+    public void testOVPMS194() {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 "descriptor.archetype");
         NodeDescriptor ndesc = adesc.getNodeDescriptor("nodeDescriptors");
@@ -302,8 +236,7 @@ public class ArchetypeServiceDescriptorTestCase
     /**
      * Test for the improvement specified in OVPMS-261
      */
-    public void testOVPMS261()
-            throws Exception {
+    public void testOVPMS261() {
         List<String> shortNames = service.getArchetypeShortNames(
                 "entityRelationship.*", false);
         assertTrue(shortNames != null);
@@ -332,10 +265,9 @@ public class ArchetypeServiceDescriptorTestCase
      * {@link IArchetypeService#save(Collection<IMObject>)} method.
      */
     public void testSaveCollection() {
-        String name1 = "archetype1.dummy.1.0";
-        String name2 = "archetype2.dummy.1.0";
-        removeDescriptor(name1);
-        removeDescriptor(name2);
+        String name1 = "archetype1.dummy" + System.currentTimeMillis() + ".1.0";
+        String name2 = "archetype2.dummy" + System.currentTimeMillis() + ".1.0";
+
         ArchetypeDescriptor desc1 = createArchetypeDescriptor(
                 name1, "thisClass", "archetype1.dummy", true);
         NodeDescriptor ndesc1 = createNodeDescriptor("name", "/name",
@@ -349,23 +281,30 @@ public class ArchetypeServiceDescriptorTestCase
         desc2.addNodeDescriptor(ndesc2);
 
         // check the initial values of the ids
-        assertEquals(-1, desc1.getUid());
-        assertEquals(-1, desc2.getUid());
+        assertEquals(-1, desc1.getId());
+        assertEquals(-1, desc2.getId());
 
         // save the archetype descriptors
-        Collection<IMObject> col = Arrays.asList((IMObject) desc1, desc2);
+        Collection<ArchetypeDescriptor> col = Arrays.asList(desc1, desc2);
         service.save(col);
 
         // verify the ids have updated
-        assertFalse(desc1.getUid() == -1);
-        assertFalse(desc2.getUid() == -1);
+        assertFalse(desc1.getId() == -1);
+        assertFalse(desc2.getId() == -1);
 
         assertEquals(0, desc1.getVersion());
         assertEquals(0, desc2.getVersion());
 
-        // verify the versions have updated
+        // verify the versions don't update until a change is made
         service.save(col);
+        assertEquals(0, desc1.getVersion());
+        assertEquals(0, desc2.getVersion());
 
+        // make a change to each and re-save
+        desc1.setDisplayName("changed");
+        desc2.setDisplayName("changed");
+
+        service.save(col);
         assertEquals(1, desc1.getVersion());
         assertEquals(1, desc2.getVersion());
     }
@@ -375,8 +314,7 @@ public class ArchetypeServiceDescriptorTestCase
      * the same name in a transaction.
      */
     public void testReplace() {
-        String name = "archetype.dummy.1.0";
-        removeDescriptor(name);
+        String name = "archetype.dummy" + System.currentTimeMillis() + ".1.0";
         final ArchetypeDescriptor desc1 = createArchetypeDescriptor(
                 name, "thisClass", "archetype.dummy", true);
         NodeDescriptor ndesc1 = createNodeDescriptor("name", "/name",
@@ -410,12 +348,10 @@ public class ArchetypeServiceDescriptorTestCase
         });
 
         // verify the original descriptor can't be retrieved
-        assertNull(ArchetypeQueryHelper.getByObjectReference(
-                service, desc1.getObjectReference()));
+        assertNull(service.get(desc1.getObjectReference()));
 
-        ArchetypeDescriptor reloaded = (ArchetypeDescriptor)
-                ArchetypeQueryHelper.getByObjectReference(
-                        service, desc2.getObjectReference());
+        ArchetypeDescriptor reloaded
+                = (ArchetypeDescriptor) service.get(desc2.getObjectReference());
         assertNotNull(reloaded.getNodeDescriptor("name2"));
     }
 
@@ -426,6 +362,18 @@ public class ArchetypeServiceDescriptorTestCase
     protected void onSetUp() throws Exception {
         service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
+    }
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+    */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
+        };
     }
 
     /**

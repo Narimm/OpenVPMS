@@ -2,7 +2,7 @@
 	<archetype name="descriptor.collectionNode.1.0"
 		latest="true" primary="false"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor">
-		<node name="uid" path="/uid" displayName="id"
+		<node name="id" path="/id" displayName="id"
 			type="java.lang.Long" />
 		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />

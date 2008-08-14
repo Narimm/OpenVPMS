@@ -198,7 +198,7 @@ public class NodeResolver {
         IMObjectReference ref = (IMObjectReference) descriptor.getValue(parent);
         if (ref != null) {
             try {
-                return ArchetypeQueryHelper.getByObjectReference(service, ref);
+                return service.get(ref);
             } catch (OpenVPMSException exception) {
                 _log.warn(exception, exception);
             }

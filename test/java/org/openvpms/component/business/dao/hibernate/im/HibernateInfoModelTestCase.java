@@ -19,29 +19,31 @@
 
 package org.openvpms.component.business.dao.hibernate.im;
 
+import junit.framework.TestCase;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
-import org.openvpms.component.business.domain.im.security.SecurityRole;
-import org.openvpms.component.system.common.test.BaseTestCase;
+import org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.archetype.ActionTypeDescriptorDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.archetype.ArchetypeDescriptorDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.archetype.AssertionDescriptorDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.archetype.AssertionTypeDescriptorDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.archetype.NodeDescriptorDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.entity.ReflectingObjectLoader;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.product.ProductPriceDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.security.ArchetypeAuthorityDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.security.SecurityRoleDOImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,10 +55,10 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class HibernateInfoModelTestCase extends BaseTestCase {
+public abstract class HibernateInfoModelTestCase extends TestCase {
 
     /**
-     * A Hibernate session factory.
+     * The hibernate session factory.
      */
     private SessionFactory sessionFactory;
 
@@ -65,44 +67,11 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
      */
     private Session session;
 
-
-    /*
-     * @see BaseTestCase#setUp()
+    /**
+     * Helper to fully load object graphs.
      */
-    protected void setUp() throws Exception {
-        super.setUp();
+    ReflectingObjectLoader loader = new ReflectingObjectLoader();
 
-        // create the hibernate session factory
-        Configuration config = new Configuration();
-        config.addClass(Contact.class);
-        config.addClass(Entity.class);
-        config.addClass(Act.class);
-        config.addClass(ActRelationship.class);
-        config.addClass(Participation.class);
-        config.addClass(EntityRelationship.class);
-        config.addClass(EntityIdentity.class);
-        config.addClass(Lookup.class);
-        config.addClass(LookupRelationship.class);
-        config.addClass(ArchetypeDescriptor.class);
-        config.addClass(NodeDescriptor.class);
-        config.addClass(AssertionDescriptor.class);
-        config.addClass(AssertionTypeDescriptor.class);
-        config.addClass(ActionTypeDescriptor.class);
-        config.addClass(ProductPrice.class);
-        config.addClass(SecurityRole.class);
-        config.addClass(ArchetypeAwareGrantedAuthority.class);
-        config.addClass(Document.class);
-        this.sessionFactory = config.buildSessionFactory();
-    }
-
-
-    /*
-    * @see BaseTestCase#tearDown()
-    */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        closeSession();
-    }
 
     /**
      * Returns current hibernate session.
@@ -111,19 +80,59 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
      */
     public Session getSession() {
         if (session == null) {
-            session = sessionFactory.openSession();
+            session = createSession();
         }
         return session;
     }
 
     /**
-     * Close the current hibernate session.
+     * Creates a new hibernate session.
+     *
+     * @return a new session
      */
-    public void closeSession() {
+    public Session createSession() {
+        return sessionFactory.openSession();
+    }
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    protected void setUp() throws Exception {
+        // create the hibernate session factory
+        Configuration config = new Configuration();
+        config.addClass(ContactDOImpl.class);
+        config.addClass(EntityDOImpl.class);
+        config.addClass(ActDOImpl.class);
+        config.addClass(ActRelationshipDOImpl.class);
+        config.addClass(ParticipationDOImpl.class);
+        config.addClass(EntityRelationshipDOImpl.class);
+        config.addClass(EntityIdentityDOImpl.class);
+        config.addClass(LookupDOImpl.class);
+        config.addClass(LookupRelationshipDOImpl.class);
+        config.addClass(ArchetypeDescriptorDOImpl.class);
+        config.addClass(NodeDescriptorDOImpl.class);
+        config.addClass(AssertionDescriptorDOImpl.class);
+        config.addClass(AssertionTypeDescriptorDOImpl.class);
+        config.addClass(ActionTypeDescriptorDOImpl.class);
+        config.addClass(ProductPriceDOImpl.class);
+        config.addClass(SecurityRoleDOImpl.class);
+        config.addClass(ArchetypeAuthorityDOImpl.class);
+        config.addClass(DocumentDOImpl.class);
+        sessionFactory = config.buildSessionFactory();
+    }
+
+    /**
+     * Cleans up after a test.
+     *
+     * @throws Exception for any error
+     */
+    protected void tearDown() throws Exception {
         if (session != null) {
             session.close();
-            session = null;
         }
+        sessionFactory.close();
     }
 
     /**
@@ -137,6 +146,27 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         map.put("dummy", "dummy");
         map.put("dummy1", "dummy1");
         return map;
+    }
+
+    /**
+     * Reloads an object from the database, using a new session.
+     *
+     * @param object the object to reload
+     * @return the reloaded object or <tt>null</tt> if it can't be found
+     */
+    @SuppressWarnings("unchecked")
+    protected <T extends IMObjectDO> T reload(T object) {
+        Object result;
+        Session session = createSession();
+        try {
+            result = session.get(object.getClass(), object.getId());
+            if (result != null) {
+                loader.load(result);
+            }
+        } finally {
+            session.close();
+        }
+        return (T) result;
     }
 
     /**
@@ -159,7 +189,8 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
     protected int countDetails(Class type) {
         String hql = "select count(elements(p)) from "
                 + type.getName() + " o right outer join o.details as p";
-        Query query = session.createQuery(hql);
+        Query query = getSession().createQuery(hql);
         return ((Number) query.list().get(0)).intValue();
     }
+
 }

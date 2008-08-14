@@ -90,7 +90,7 @@ public abstract class AbstractIMObjectCopyHandler
     /**
      * Helper to determine if a node is copyable.
      * </p>
-     * This implementation excludes <em>uid</em> nodes, and derived nodes
+     * This implementation excludes <em>id</em> nodes, and derived nodes
      * where the node is the target.
      *
      * @param archetype the archetype descriptor
@@ -101,7 +101,7 @@ public abstract class AbstractIMObjectCopyHandler
      */
     protected boolean isCopyable(ArchetypeDescriptor archetype,
                                  NodeDescriptor node, boolean source) {
-        boolean result = !node.getName().equals("uid");  // NON-NLS
+        boolean result = !node.getName().equals("id");  // NON-NLS
         if (result && !source) {
             // Removed readOnly check for temporary OBF-115 fix.
 //            result = (!node.isReadOnly() && !node.isDerived());

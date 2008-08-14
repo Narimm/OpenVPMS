@@ -22,26 +22,21 @@ package org.openvpms.component.business.domain.im.document;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
  * Models any type of resource, which has a mime type, a size and holds the
- * contents 
+ * contents
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class Document extends IMObject {
 
     /**
-     * Default SUID
+     * Serialization version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * The mime type
@@ -63,20 +58,17 @@ public class Document extends IMObject {
      */
     private byte[] contents;
 
-    /**
-     * Details holds dynamic attributes for a document.
-     */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
-     * default constructor
+     * Default constructor.
      */
     public Document() {
-        super();
     }
 
     /**
-     * @param archetypeId
+     * Creates a new <tt>Document</tt>.
+     *
+     * @param archetypeId the archetype id
      */
     public Document(ArchetypeId archetypeId) {
         super(archetypeId);
@@ -138,39 +130,17 @@ public class Document extends IMObject {
         this.mimeType = mimeType;
     }
 
-    /**
-     * @return Returns the details.
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * @param details The details to set.
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
-    }
-
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        Document copy = (Document)super.clone();
-
-        copy.mimeType = this.mimeType;
-        copy.docSize = this.docSize;
-        copy.checksum = this.checksum;
+        Document copy = (Document) super.clone();
 
         // copy the contents
         copy.contents = new byte[this.contents.length];
-        System.arraycopy(this.contents, 0, copy.contents, 0, copy.contents.length);
-
-        // details
-        copy.details = (details == null) ? null
-                : new HashMap<String, TypedValue>(details);
-
+        System.arraycopy(this.contents, 0, copy.contents, 0,
+                         copy.contents.length);
         return copy;
     }
 
@@ -181,10 +151,10 @@ public class Document extends IMObject {
     @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(null)
-            .append("mimeType", mimeType)
-            .append("docSize", docSize)
-            .append("checksum", checksum)
-            .toString();
+                .appendSuper(super.toString())
+                .append("mimeType", mimeType)
+                .append("docSize", docSize)
+                .append("checksum", checksum)
+                .toString();
     }
 }

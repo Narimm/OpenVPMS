@@ -20,28 +20,25 @@
 package org.openvpms.component.business.domain.im.party;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 
 /**
- * Defines a contact for a {@link Party}. 
+ * Defines a contact for a {@link Party}.
  *
- * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class Contact extends IMObject {
+
     /**
-     * Generated SUID
+     * Serialization version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * The time that this participation was activitated
@@ -58,19 +55,14 @@ public class Contact extends IMObject {
      */
     private Set<Lookup> classifications = new HashSet<Lookup>();
 
-    /*
-    * Specific details for the contact purpose.
-    */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
-
     /**
-     * A reference to the owning {@link Party}
+     * A reference to the owning party.
      */
     private Party party;
 
 
     /**
-     * Define a protected default constructor
+     * Default constructor.
      */
     public Contact() {
         // do nothing
@@ -79,7 +71,7 @@ public class Contact extends IMObject {
     /**
      * Returns the party.
      *
-     * @return returns the party
+     * @return the party
      */
     public Party getParty() {
         return party;
@@ -88,7 +80,7 @@ public class Contact extends IMObject {
     /**
      * Sets the party.
      *
-     * @param party the entity to set.
+     * @param party the party
      */
     public void setParty(Party party) {
         this.party = party;
@@ -123,23 +115,9 @@ public class Contact extends IMObject {
     }
 
     /**
-     * @return Returns the details.
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * @param details The details to set.
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
-    }
-
-    /**
-     * Convenience method that returns all the classification lookups as an 
+     * Convenience method that returns all the classification lookups as an
      * array.
-     * 
+     *
      * @return the classifications
      */
     public Lookup[] getClassificationsAsArray() {
@@ -148,7 +126,7 @@ public class Contact extends IMObject {
 
     /**
      * Returns the classifications for this contact.
-     * 
+     *
      * @return the classifications
      */
     public Set<Lookup> getClassifications() {
@@ -166,7 +144,7 @@ public class Contact extends IMObject {
 
     /**
      * Adds a classification.
-     * 
+     *
      * @param classification the classification to add
      */
     public void addClassification(Lookup classification) {
@@ -175,7 +153,7 @@ public class Contact extends IMObject {
 
     /**
      * Removes a classification.
-     * 
+     *
      * @param classification the classification to remove
      */
     public void removeClassification(Lookup classification) {
@@ -187,15 +165,8 @@ public class Contact extends IMObject {
     */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        Contact copy = (Contact)super.clone();
-        copy.activeEndTime = (Date)(this.activeEndTime == null ?
-                null : this.activeEndTime.clone());
-        copy.activeStartTime = (Date)(this.activeStartTime == null ?
-                null : this.activeStartTime.clone());
-        copy.classifications = new HashSet<Lookup>(this.classifications);
-        copy.details = (details == null) ? null : new HashMap<String, TypedValue>(details);
-        copy.party = this.party;
-
+        Contact copy = (Contact) super.clone();
+        copy.classifications = new HashSet<Lookup>(classifications);
         return copy;
     }
 }

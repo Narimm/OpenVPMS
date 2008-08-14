@@ -19,16 +19,15 @@
 package org.openvpms.component.business.domain.im.party;
 
 // java core
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Address of a contact.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  * @deprecated will be removed post 1.0
@@ -45,74 +44,37 @@ class Address extends IMObject {
      * Contacts that reference this address
      */
     private Set<Contact> contacts = new HashSet<Contact>();
-    
+
     /**
      * A reference to the owning {@link Party}
      */
     private Party party;
-    
-    /**
-     * Address details specific, which is specified by the archetype definition
-     */
-    private DynamicAttributeMap details;
 
     /**
      * Define a protected default constructor
      */
     public Address() {
     }
-    
-    /**
-     * Construct an address.
-     * 
-     * @param archetypeId
-     *            the archetype id constraining this object
-     * @param details
-     *            The details of the address object
-     * @throws IllegalArgumentException
-     *             if the constructor pre-conditions are not satisfied.
-     */
-    public Address(ArchetypeId archetypeId,
-            DynamicAttributeMap details) {
-        super(archetypeId);
-        this.details = details;
-        this.contacts = new HashSet<Contact>();
-    }
 
-    /**
-     * @return Returns the details.
-     */
-    public DynamicAttributeMap getDetails() {
-        return details;
-    }
-
-    /**
-     * @param details
-     *            The details to set.
-     */
-    public void setDetails(DynamicAttributeMap details) {
-        this.details = details;
-    }
-    
     /**
      * Return the {@link Contact} that is associated with this address
-     * 
+     *
      * @return Contact
      */
     public Contact[] getContactsAsArray() {
         return contacts.toArray(new Contact[contacts.size()]);
     }
-    
+
     /**
      * Convenience method that returns the number of {@link Contact) that this
      * address is associated with.
-     * 
+     *
      * @return int
      */
     public int getNumOfContacts() {
         return contacts.size();
     }
-    
+
     /**
      * @return Returns the contacts.
      */
@@ -122,19 +84,17 @@ class Address extends IMObject {
 
     /**
      * Associated the address with a contact
-     * 
-     * @param contact 
-     *            the contract to associate it with
+     *
+     * @param contact the contract to associate it with
      */
     public void addContact(Contact contact) {
         contacts.add(contact);
     }
-    
+
     /**
      * Disassociate the address with the specified contact
-     * 
-     * @param contact
-     *            the contact to disassociate
+     *
+     * @param contact the contact to disassociate
      */
     public void removeContact(Contact contact) {
         contacts.remove(contact);
@@ -166,12 +126,8 @@ class Address extends IMObject {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        Address copy = (Address)super.clone();
+        Address copy = (Address) super.clone();
         copy.contacts = new HashSet<Contact>(this.contacts);
-        copy.details = (DynamicAttributeMap)(this.details == null ?
-                null : this.details.clone());
-        copy.party = this.party;
-        
         return copy;
     }
 }

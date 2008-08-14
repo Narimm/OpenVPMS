@@ -19,10 +19,10 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
-// java core
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.util.ArrayList;
@@ -38,59 +38,65 @@ import java.util.Map;
 /**
  * The archetype descriptor is used to describe an archetype.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ArchetypeDescriptor extends Descriptor {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeDescriptor.class);
 
     /**
-     * Default SUID
+     * Serialization version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * The archetype id is the type.
      */
     private ArchetypeId type;
-    
+
     /**
      * The display name of the archetype. If the displayname is empty then
      * simply return the name
      */
     private String displayName;
-    
+
     /**
      * The full-qualified Java domain class that the archetype constrains
      */
     private String className;
-    
+
+    /**
+     * Cache the clazz. Do not access this directly. Use the {@link #getClazz()}
+     * method instead.
+     */
+    private Class clazz;
+
     /**
      * Indicates that this is the latest version of the archetype descritpor.
      * Note that an archetype can be qualified by a version number.
      */
     private boolean isLatest;
-    
+
     /**
-     * Indicates whether this is a primary or top level archetype. Defaults 
+     * Indicates whether this is a primary or top level archetype. Defaults
      * to true
      */
     private boolean primary = true;
-    
+
     /**
      * A list of {@link NodeDescriptor} that belong to this archetype
      * descriptor.
      */
-    private Map<String,NodeDescriptor> nodeDescriptors = 
-        new LinkedHashMap<String, NodeDescriptor>();
-    
+    private Map<String, NodeDescriptor> nodeDescriptors =
+            new LinkedHashMap<String, NodeDescriptor>();
+
     /**
-     * Default constructor 
+     * The logger.
+     */
+    private final Log log = LogFactory.getLog(ArchetypeDescriptor.class);
+
+
+    /**
+     * Default constructor.
      */
     public ArchetypeDescriptor() {
         setArchetypeId(new ArchetypeId("descriptor.archetype.1.0"));
@@ -127,22 +133,22 @@ public class ArchetypeDescriptor extends Descriptor {
 
     /**
      * Return the archetype id, which is also the type
-     * 
+     *
      * @return String
      */
     public ArchetypeId getType() {
         return type;
     }
-    
+
     /**
      * Set the archetype id
-     * 
+     *
      * @param type the archetype id
      */
     protected void setType(ArchetypeId type) {
         this.type = type;
     }
-    
+
     /**
      * @return Returns the associated Java class name.
      */
@@ -155,6 +161,22 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     public void setClassName(String className) {
         this.className = className;
+    }
+
+    /**
+     * Returns the class for the specified type.
+     *
+     * @return the class, or <tt>null</tt> if {@link #getType()} returns
+     *         empty/null
+     * @throws DescriptorException if the class can't be loaded
+     */
+    public Class getClazz() {
+        if (clazz == null) {
+            synchronized (this) {
+                clazz = getClass(className);
+            }
+        }
+        return clazz;
     }
 
     /**
@@ -187,11 +209,9 @@ public class ArchetypeDescriptor extends Descriptor {
 
     /**
      * Add a node descriptor to this archetype descripor
-     * 
-     * @param node
-     *            the node descriptor to add
-     * @throws DescriptorException
-     *            if we are adding a node descriptor with the same name                         
+     *
+     * @param node the node descriptor to add
+     * @throws DescriptorException if we are adding a node descriptor with the same name
      */
     public void addNodeDescriptor(NodeDescriptor node) {
         if (nodeDescriptors.containsKey(node.getName())) {
@@ -206,8 +226,7 @@ public class ArchetypeDescriptor extends Descriptor {
     /**
      * Remove the specified node descriptor
      *
-     * @param node
-     *            the node descriptor to remove
+     * @param node the node descriptor to remove
      */
     public void removeNodeDescriptor(NodeDescriptor node) {
         NodeDescriptor removed = nodeDescriptors.remove(node.getName());
@@ -221,8 +240,7 @@ public class ArchetypeDescriptor extends Descriptor {
      * descriptor hierarchy and remove the first one with the specified
      * name
      *
-     * @param nodeName
-     *            the name of the node descriptor
+     * @param nodeName the name of the node descriptor
      */
     public void removeNodeDescriptor(String nodeName) {
         removeNodeDescriptorWithName(getNodeDescriptors(), nodeName);
@@ -232,8 +250,8 @@ public class ArchetypeDescriptor extends Descriptor {
     /**
      * Return the top level  node descriptors. The caller must be aware that
      * a {@link NodeDescriptor can contain other node descriptors.
-     *
-     *  TODO Inconsistent return type...change to List
+     * <p/>
+     * TODO Inconsistent return type...change to List
      *
      * @return NodeDescriptor[]
      */
@@ -252,7 +270,7 @@ public class ArchetypeDescriptor extends Descriptor {
         List<NodeDescriptor> all = getAllNodeDescriptors();
         List<NodeDescriptor> simple = new ArrayList<NodeDescriptor>();
         for (NodeDescriptor node : all) {
-            if (!node.isComplexNode()){
+            if (!node.isComplexNode()) {
                 simple.add(node);
             }
         }
@@ -270,7 +288,7 @@ public class ArchetypeDescriptor extends Descriptor {
         List<NodeDescriptor> all = getAllNodeDescriptors();
         List<NodeDescriptor> complex = new ArrayList<NodeDescriptor>();
         for (NodeDescriptor node : all) {
-            if (node.isComplexNode()){
+            if (node.isComplexNode()) {
                 complex.add(node);
             }
         }
@@ -305,6 +323,7 @@ public class ArchetypeDescriptor extends Descriptor {
     /**
      * Return the {@link NodeDescriptor} instances as a map of name and
      * descriptor
+     *
      * @return Returns the nodeDescriptors.
      */
     public Map<String, NodeDescriptor> getNodeDescriptors() {
@@ -314,7 +333,8 @@ public class ArchetypeDescriptor extends Descriptor {
     /**
      * @param nodeDescriptors The nodeDescriptors to set.
      */
-    public void setNodeDescriptors(Map<String, NodeDescriptor> nodeDescriptors) {
+    public void setNodeDescriptors(
+            Map<String, NodeDescriptor> nodeDescriptors) {
         this.nodeDescriptors = nodeDescriptors;
     }
 
@@ -334,7 +354,7 @@ public class ArchetypeDescriptor extends Descriptor {
      * Return the archetype short name .
      *
      * @return String
-     *            the node name
+     *         the node name
      */
     public String getShortName() {
         return type == null ? null : type.getShortName();
@@ -345,7 +365,7 @@ public class ArchetypeDescriptor extends Descriptor {
      * return the archtypes short name
      *
      * @return String
-     *            the display name
+     *         the display name
      */
     public String getDisplayName() {
         return StringUtils.isEmpty(displayName) ? getShortName() : displayName;
@@ -361,8 +381,7 @@ public class ArchetypeDescriptor extends Descriptor {
     /**
      * Return the node descriptor for the specified node name
      *
-     * @param name
-     *            the node name
+     * @param name the node name
      * @return NodeDescriptor
      */
     public NodeDescriptor getNodeDescriptor(String name) {
@@ -374,7 +393,7 @@ public class ArchetypeDescriptor extends Descriptor {
      * This will do a search right down the NodeDescriptor hierarchy.
      *
      * @return List<NodeDescriptor>
-     *            a list of matching NodeDescriptors
+     *         a list of matching NodeDescriptors
      */
     public List<NodeDescriptor> getNodeDescriptors(String[] names) {
         List<NodeDescriptor>  result = new ArrayList<NodeDescriptor>();
@@ -386,7 +405,7 @@ public class ArchetypeDescriptor extends Descriptor {
             if (descriptor != null) {
                 result.add(descriptor);
             } else {
-                logger.warn("Could not find a node with name " + nodeName);
+                log.warn("Could not find a node with name " + nodeName);
             }
         }
 
@@ -401,7 +420,7 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     public List<DescriptorValidationError> validate() {
         List<DescriptorValidationError> errors =
-            new ArrayList<DescriptorValidationError>();
+                new ArrayList<DescriptorValidationError>();
 
 
         if (type == null) {
@@ -416,12 +435,11 @@ public class ArchetypeDescriptor extends Descriptor {
                     "className", Descriptor.ValidationError.IsRequired));
         }
 
-
         // validate that there are no duplicate node descriptor names
         List<NodeDescriptor> nodes = getAllNodeDescriptors();
         Map<String, NodeDescriptor> names = new HashMap<String, NodeDescriptor>();
 
-        for (NodeDescriptor node :nodes) {
+        for (NodeDescriptor node : nodes) {
             if (names.containsKey(node.getName())) {
                 errors.add(new DescriptorValidationError(
                         Descriptor.DescriptorType.NodeDescriptor,
@@ -443,55 +461,33 @@ public class ArchetypeDescriptor extends Descriptor {
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-
-        // is it of the correct type
-        if (!(obj instanceof ArchetypeDescriptor)) {
-            return false;
-        }
-
-        // are they the same object
-        if (this == obj) {
-            return true;
-        }
-
-        ArchetypeDescriptor desc = (ArchetypeDescriptor)obj;
-        return type.equals(desc.type);
-    }
-
-    /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-            .append("name", getName())
-            .append("type", type)
-            .append("displayName", displayName)
-            .append("className", className)
-            .append("isLatest", isLatest)
-            .append("primary", primary)
-            .append("nodeDescriptors", nodeDescriptors)
-            .toString();
+        return new ToStringBuilder(this, STYLE)
+                .appendSuper(super.toString())
+                .append("type", type)
+                .append("displayName", displayName)
+                .append("className", className)
+                .append("isLatest", isLatest)
+                .append("primary", primary)
+                .append("nodeDescriptors", nodeDescriptors)
+                .toString();
     }
 
     /**
      * Search the node descriptors recursively searching for the
      * specified name
      *
-     * @param nodes
-     *            the list of NodeDescriptors to search
-     * @param name
-     *            the name to search for
+     * @param nodes the list of NodeDescriptors to search
+     * @param name  the name to search for
      * @return NodeDescriptor
-     *            the node descriptor or null
+     *         the node descriptor or null
      */
     private NodeDescriptor findNodeDescriptorWithName(NodeDescriptor[] nodes,
-            String name) {
-        for (NodeDescriptor node : nodes ) {
+                                                      String name) {
+        for (NodeDescriptor node : nodes) {
             if (node.getName().equals(name)) {
                 return node;
             }
@@ -512,17 +508,15 @@ public class ArchetypeDescriptor extends Descriptor {
      * Remove the node the node descriptors recursively searching for the
      * specified name
      *
-     * @param nodes
-     *            the list of NodeDescriptors to search
-     * @param nodeName
-     *            the name to search for
+     * @param nodes    the list of NodeDescriptors to search
+     * @param nodeName the name to search for
      * @return NodeDescriptor
-     *            the node descriptor that was remove or null
+     *         the node descriptor that was remove or null
      */
     private NodeDescriptor removeNodeDescriptorWithName(
             Map<String, NodeDescriptor> nodes,
             String nodeName) {
-        for (String name : nodes.keySet() ) {
+        for (String name : nodes.keySet()) {
             NodeDescriptor node = nodes.get(name);
             if (node.getName().equals(nodeName)) {
                 return nodes.remove(nodeName);
@@ -544,20 +538,18 @@ public class ArchetypeDescriptor extends Descriptor {
      * This is a recursive function that returns all the nodes in this archetype
      * descriptor.
      *
-     * @param nodes
-     *            the node descriptors to process
-     * @param nodes
-     *            the resultant node array
+     * @param nodes the node descriptors to process
+     * @param nodes the resultant node array
      */
     private void getAllNodeDescriptors(NodeDescriptor[] nodes,
-            List<NodeDescriptor> result) {
+                                       List<NodeDescriptor> result) {
         Arrays.sort(nodes, new NodeDescriptorIndexComparator());
 
         for (NodeDescriptor node : nodes) {
             result.add(node);
             if (node.getNodeDescriptorsAsArray().length > 0) {
                 getAllNodeDescriptors(node.getNodeDescriptorsAsArray(),
-                        result);
+                                      result);
             }
         }
     }
@@ -567,17 +559,16 @@ public class ArchetypeDescriptor extends Descriptor {
      * node descriptor. If the node has children node descriptors then make sure
      * you count them as well.
      *
-     * @param nodes
-     *            the nodes to count
+     * @param nodes the nodes to count
      * @return int
-     *
      */
     private int getTotalNodeDescriptorCount(Collection<NodeDescriptor> nodes) {
         int total = nodes.size();
 
         for (NodeDescriptor node : nodes) {
             if (node.getNodeDescriptorCount() > 0) {
-                total += getTotalNodeDescriptorCount(node.getNodeDescriptors().values());
+                total += getTotalNodeDescriptorCount(
+                        node.getNodeDescriptors().values());
             }
         }
 
@@ -589,19 +580,15 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        ArchetypeDescriptor copy = (ArchetypeDescriptor)super.clone();
-        copy.className = this.className;
-        copy.displayName = this.displayName;
-        copy.isLatest = this.isLatest;
-        copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(this.nodeDescriptors);
+        ArchetypeDescriptor copy = (ArchetypeDescriptor) super.clone();
+        copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(
+                this.nodeDescriptors);
         copy.primary = this.primary;
-        copy.type = (ArchetypeId)(this.type == null ?
-                null : this.type.clone());
+        copy.type = (ArchetypeId) (type == null ? null : this.type.clone());
 
         return copy;
     }
 }
-
 
 
 /**
@@ -616,10 +603,10 @@ class NodeDescriptorIndexComparator implements Comparator<NodeDescriptor> {
         if (no1 == no2) {
             return 0;
         }
-        
+
         if (no1.getIndex() == no2.getIndex()) {
             return 0;
-        } else if (no1.getIndex() >  no2.getIndex()) {
+        } else if (no1.getIndex() > no2.getIndex()) {
             return 1;
         } else {
             return -1;

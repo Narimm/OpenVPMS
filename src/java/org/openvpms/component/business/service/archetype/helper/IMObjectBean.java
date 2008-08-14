@@ -471,8 +471,7 @@ public class IMObjectBean {
      */
     protected IMObject resolve(IMObjectReference ref) {
         if (ref != null) {
-            return ArchetypeQueryHelper.getByObjectReference(
-                    getArchetypeService(), ref);
+            return getArchetypeService().get(ref);
         }
         return null;
     }

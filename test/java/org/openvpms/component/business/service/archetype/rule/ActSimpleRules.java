@@ -36,8 +36,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class ActSimpleRules {
 
     /**
-     * Creates and saves a new act in a new transaction, associating it
-     * with the specified act as the source of the act relationship.
+     * Creates and saves a new act in a new transaction.
+     * On return the supplied act will have a new unsaved relationship to the
+     * new act.
      *
      * @param act     the act
      * @param service the archetype service
@@ -48,13 +49,6 @@ public class ActSimpleRules {
                                                final IArchetypeService service,
                                                PlatformTransactionManager manager) {
         final Act related = (Act) service.create("act.simple");
-        ActRelationship relationship
-                = (ActRelationship) service.create("actRelationship.simple");
-        relationship.setName("a simple relationship");
-        relationship.setSource(related.getObjectReference());
-        relationship.setTarget(act.getObjectReference());
-        related.addActRelationship(relationship);
-        act.addActRelationship(relationship);
 
         TransactionTemplate template = new TransactionTemplate(manager);
         template.setPropagationBehavior(
@@ -68,5 +62,14 @@ public class ActSimpleRules {
                 return null;
             }
         });
+
+        ActRelationship relationship
+                = (ActRelationship) service.create("actRelationship.simple");
+        relationship.setName("a simple relationship");
+        relationship.setSource(related.getObjectReference());
+        relationship.setTarget(act.getObjectReference());
+
+        related.addActRelationship(relationship);
+        act.addActRelationship(relationship);
     }
 }

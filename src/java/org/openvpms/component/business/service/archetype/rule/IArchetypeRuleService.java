@@ -80,7 +80,7 @@ public interface IArchetypeRuleService extends IArchetypeService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    void save(Collection<IMObject> objects);
+    void save(Collection<? extends IMObject> objects);
 
     /**
      * Removes an object, executing any <em>remove</em> rules associated with

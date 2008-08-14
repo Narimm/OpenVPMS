@@ -18,16 +18,15 @@
 
 package org.openvpms.component.business.service.archetype;
 
+import junit.framework.TestCase;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
-import org.openvpms.component.system.common.test.BaseTestCase;
 
 import java.util.Date;
-import java.util.Hashtable;
 
 
 /**
@@ -36,11 +35,10 @@ import java.util.Hashtable;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class ValidationErrorTestCase extends BaseTestCase {
+public class ValidationErrorTestCase extends TestCase {
 
     /**
-     * cache the archetype service.
+     * The archetype service.
      */
     private ArchetypeService service;
 
@@ -179,15 +177,6 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * Test a simple regex validation.
      */
     public void testRegExValidation() throws Exception {
-        Hashtable cparams = getTestData().getGlobalParams();
-        Hashtable params = this.getTestData().getTestCaseParams(
-                "testRegExValidation", "normal");
-
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
-                (String) params.get("file"), (String) cparams
-                .get("assertionFile"));
-        ArchetypeService service = new ArchetypeService(cache);
-
         assertNotNull(service.getArchetypeDescriptor("contact.phoneNumber"));
         Contact contact = (Contact) service.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
@@ -208,19 +197,10 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * Test that min and max cardinalities also work for collection classes.
      */
     public void testMinMaxCardinalityOnCollections() throws Exception {
-        Hashtable cparams = getTestData().getGlobalParams();
-        Hashtable params = this.getTestData().getTestCaseParams(
-                "testMinMaxCardinalityOnCollections", "normal");
-
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
-                (String) params.get("file"), (String) cparams
-                .get("assertionFile"));
-        ArchetypeService service = new ArchetypeService(cache);
-
         assertTrue(service.getArchetypeDescriptor("party.animalpet") != null);
         Party pet = (Party) service.create("party.animalpet");
         pet.setName("bill");
-        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("sex", "MALE");
         pet.getDetails().put("dateOfBirth", new Date());
 
         try {
@@ -264,15 +244,6 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * Test where only the max cardinality is specified on a collection.
      */
     public void testMaxCardinalityOnCollections() throws Exception {
-        Hashtable cparams = getTestData().getGlobalParams();
-        Hashtable params = this.getTestData().getTestCaseParams(
-                "testMaxCardinalityOnCollections", "normal");
-
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
-                (String) params.get("file"), (String) cparams
-                .get("assertionFile"));
-        ArchetypeService service = new ArchetypeService(cache);
-
         assertNotNull(service.getArchetypeDescriptor("party.animalpet1"));
         Party pet = (Party) service.create("party.animalpet1");
         pet.setName("bill");
@@ -312,16 +283,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * Test where min cardinality and unbounded is specifed on collection.
      */
     public void testMinUnboundedCardinalityOnCollections() throws Exception {
-        Hashtable cparams = getTestData().getGlobalParams();
-        Hashtable params = this.getTestData().getTestCaseParams(
-                "testMinUnboundedCardinalityOnCollections", "normal");
-
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
-                (String) params.get("file"), (String) cparams
-                .get("assertionFile"));
-        ArchetypeService service = new ArchetypeService(cache);
-
-        assertTrue(service.getArchetypeDescriptor("party.animalpet") != null);
+        assertTrue(service.getArchetypeDescriptor("party.animalpet2") != null);
         Party pet = (Party) service.create("party.animalpet2");
         pet.setName("bill");
         pet.getDetails().put("sex", "male");
@@ -386,15 +348,6 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * Test where only unbounded cardinality is specified on collections.
      */
     public void testUnboundedCardinalityOnCollections() throws Exception {
-        Hashtable cparams = getTestData().getGlobalParams();
-        Hashtable params = this.getTestData().getTestCaseParams(
-                "testUnboundedCardinalityOnCollections", "normal");
-
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
-                (String) params.get("file"), (String) cparams
-                .get("assertionFile"));
-        ArchetypeService service = new ArchetypeService(cache);
-
         assertNotNull(service.getArchetypeDescriptor("party.animalpet3"));
         Party pet = (Party) service.create("party.animalpet3");
         pet.setName("bill");
@@ -439,15 +392,6 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * @throws Exception for any error
      */
     public void testInvalidChars() throws Exception {
-        Hashtable cparams = getTestData().getGlobalParams();
-        Hashtable params = this.getTestData().getTestCaseParams(
-                "testMinUnboundedCardinalityOnCollections", "normal");
-
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
-                (String) params.get("file"), (String) cparams
-                .get("assertionFile"));
-        ArchetypeService service = new ArchetypeService(cache);
-
         assertNotNull(service.getArchetypeDescriptor("party.animalpet"));
         Party pet = (Party) service.create("party.animalpet");
 
@@ -471,22 +415,16 @@ public class ValidationErrorTestCase extends BaseTestCase {
         }
     }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
-    */
+    /**
+     * Sets up the test case.
+     */
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        Hashtable params = getTestData().getGlobalParams();
-        String assertionFile = (String) params.get("assertionFile");
-        String dir = (String) params.get("dir");
-        String extension = (String) params.get("extension");
+    protected void setUp() {
+        String archFile = "org/openvpms/component/business/service/archetype/ValidationErrorArchetypes.xml";
+        String assertionFile = "org/openvpms/component/business/service/archetype/assertionTypes.xml";
 
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
-                dir, new String[]{extension}, assertionFile);
+                archFile, assertionFile);
         service = new ArchetypeService(cache);
     }
 
@@ -526,25 +464,24 @@ public class ValidationErrorTestCase extends BaseTestCase {
      */
     private Lookup createLookup(String shortName, String code) {
         Lookup lookup = (Lookup) service.create(shortName);
+        assertNotNull(lookup);
         lookup.setCode(code);
         return lookup;
     }
 
     /**
-     * This will create an entity identtiy with the specified identity.
+     * Helper to create a new entity identity.
      *
      * @param shortName the archetype
-     * @param identity  the identity to set
-     * @return EntityIdentity
-     * @throws Exception
+     * @param identity  the identity
+     * @return a new entity identity
      */
     private EntityIdentity createEntityIdentity(String shortName,
-                                                String identity)
-            throws Exception {
-        EntityIdentity eid = (EntityIdentity) service.create(shortName);
-        eid.setIdentity(identity);
-
-        return eid;
+                                                String identity) {
+        EntityIdentity result = (EntityIdentity) service.create(shortName);
+        assertNotNull(result);
+        result.setIdentity(identity);
+        return result;
     }
 
     /**

@@ -37,6 +37,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -48,14 +49,14 @@ import java.util.TimerTask;
  * This implementation reads the archetype descriptors from the file system,
  * parses them and caches them in memory.
  * <p>
- * The cache can be 
+ * The cache can be
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
 public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
     implements IArchetypeDescriptorCache {
-    /** 
+    /**
      * Define a logger for this class
      */
     @SuppressWarnings("unused")
@@ -66,15 +67,15 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
      * The timer is used to schedule tasks
      */
     private Timer timer = new Timer();
-    
+
 
     /**
      * Construct an instance of this cache by loading and parsing all the
      * archetype definitions in the specified file.
      * <p>
-     * The resource specified by archefile must be loadable from the classpath. 
+     * The resource specified by archefile must be loadable from the classpath.
      * A similar constraint applies to the assertFile.
-     * 
+     *
      * @param archeFile
      *            the file that holds all the archetype records.
      * @param assertFile
@@ -91,7 +92,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
      * Construct the archetype cache by loading and parsing all archetype
      * definitions in the specified directory. Only process files with the
      * specified extensions
-     * 
+     *
      * @param archDir
      *            the directory
      * @param extensions only process files with these extensions
@@ -113,10 +114,10 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
      * <p>
      * If a scanInterval greater than 0 is specified then a thread will be
      * created to monitor changes in the archetype definition.
-     * 
+     *
      * @param archDir
      *            the directory
-     * @param extensions 
+     * @param extensions
      *            only process files with these extensions
      * @param assertFile
      *            the file that holds the assertions
@@ -136,7 +137,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
     /**
      * Process the archetypes defined in the specified file. Te file must be
      * located in the classpath.
-     * 
+     *
      * @param afile
      *            the path to the file containing the archetype records
      * @throws ArchetypeDescriptorCacheException
@@ -168,7 +169,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
      * invalid throw an exception.
      * <p>
      * The archetypes will be cached in memory.
-     * 
+     *
      * @param adir
      *            the directory to search
      * @param extensions
@@ -191,7 +192,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
                     ArchetypeDescriptorCacheException.ErrorCode.InvalidDir,
                     new Object[] {adir});
         }
-        
+
         if (!dir.isDirectory()) {
             throw new ArchetypeDescriptorCacheException(
                     ArchetypeDescriptorCacheException.ErrorCode.InvalidDir,
@@ -226,7 +227,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
     /**
      * Iterate over all the descriptors and add them to the existing set of
      * descriptores
-     * 
+     *
      * @param descriptors
      *            the descriptors to process
      * @throws ArchetypeDescriptorCacheException
@@ -261,7 +262,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
 
     /**
      * Process the file and load all the {@link AssertionTypeDescriptor} instances
-     * 
+     *
      * @param assertFile
      *            the name of the file holding the assertion types
      */
@@ -297,7 +298,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
     /**
      * Return the {@link ArchetypeDescriptors} declared in the specified file.
      * In this case the file must be a resource in the class path.
-     * 
+     *
      * @param resourceName
      *            the name of the resource that the archetypes are dfined
      * @return ArchetypeDescriptors
@@ -309,19 +310,16 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
         // load the mapping file
         Mapping mapping = new Mapping();
 
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                        "org/openvpms/component/business/domain/im/archetype/descriptor/archetype-mapping-file.xml"))));
+        mapping.loadMapping(getResource("org/openvpms/component/business/domain/im/archetype/descriptor/archetype-mapping-file.xml"));
+        Unmarshaller unmarshaller = new Unmarshaller(mapping);
 
-        return (ArchetypeDescriptors) new Unmarshaller(mapping)
-                .unmarshal(new InputSource(new InputStreamReader(Thread
-                        .currentThread().getContextClassLoader()
-                        .getResourceAsStream(resourceName))));
+        InputSource descriptors = getResource(resourceName);
+        return (ArchetypeDescriptors) unmarshaller.unmarshal(descriptors);
     }
 
     /**
      * Return the {@link ArchetypeDescriptors} declared in the specified file.
-     * 
+     *
      * @param name
      *            the file name
      * @return ArchetypeDescriptors
@@ -333,9 +331,8 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
         // load the mapping file
         Mapping mapping = new Mapping();
 
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                        "org/openvpms/component/business/domain/im/archetype/descriptor/archetype-mapping-file.xml"))));
+        mapping.loadMapping(getResource(
+                        "org/openvpms/component/business/domain/im/archetype/descriptor/archetype-mapping-file.xml"));
 
         return (ArchetypeDescriptors) new Unmarshaller(mapping)
                 .unmarshal(new InputSource(new FileInputStream(name)));
@@ -344,7 +341,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
     /**
      * Return the {@link ArchetypeDescriptors} declared in the specified file.
      * In this case the file must be a resource in the class path.
-     * 
+     *
      * @param reader
      *            the reader that declares all the archetypes
      * @return ArchetypeDescriptors
@@ -356,9 +353,8 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
         // load the mapping file
         Mapping mapping = new Mapping();
 
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                        "org/openvpms/component/business/domain/im/archetype/descriptor/archetype-mapping-file.xml"))));
+        mapping.loadMapping(getResource(
+                        "org/openvpms/component/business/domain/im/archetype/descriptor/archetype-mapping-file.xml"));
 
         return (ArchetypeDescriptors) new Unmarshaller(mapping)
                 .unmarshal(reader);
@@ -366,7 +362,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
 
     /**
      * Return the {@link AssertionTypeDescriptors} in the specified file
-     * 
+     *
      * @param assertFile
      *            the file that declares the assertions
      * @return AssertionTypeDescriptors
@@ -378,27 +374,24 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
         // load the mapping file
         Mapping mapping = new Mapping();
 
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                        "org/openvpms/component/business/domain/im/archetype/descriptor/assertion-type-mapping-file.xml"))));
+        mapping.loadMapping(getResource(
+                        "org/openvpms/component/business/domain/im/archetype/descriptor/assertion-type-mapping-file.xml"));
 
         return (AssertionTypeDescriptors) new Unmarshaller(mapping)
-                .unmarshal(new InputSource(new InputStreamReader(Thread
-                        .currentThread().getContextClassLoader()
-                        .getResourceAsStream(assertFile))));
+                .unmarshal(getResource(assertFile));
     }
 
     /**
      * Create athread to monitor changes in archeype definitions. A thread will
      * only be created if an scanInteval greater than 0 is defined.
-     * 
+     *
      * @param dir
      *            the base directory name
      * @param ext
      *            the extension to look for
      * @param interval
      *            the scan interval
-     * 
+     *
      */
     private void createArchetypeMonitorThread(String dir, String[] ext,
             long interval) {
@@ -412,8 +405,6 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
             logger.warn("The directory " + dir + " does not exist.");
         }
     }
-
-    
 
     /**
      * This class is used to monitor changes in archetypes. It doesn't handle
@@ -439,7 +430,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
          * Instantiate an instance of this class using a base directory and a
          * list of file extensions. It will only deal with files that fulfill
          * this criteria. By default it will do a recursive search.
-         * 
+         *
          * @param dir
          *            the base directory
          * @param extensions
@@ -499,5 +490,21 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
 
             return changedFiles;
         }
+    }
+
+    /**
+     * Helper to return an <tt>InputSource</tt> for a resource.
+     * @param resourceName the resource name
+     * @return the input source
+     * @throws IllegalArgumentException if the resource does not exist
+     */
+    private InputSource getResource(String resourceName) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream stream = loader.getResourceAsStream(resourceName);
+        if (stream == null) {
+            throw new IllegalArgumentException("Resource not found: "
+                    + resourceName);
+        }
+        return new InputSource(new InputStreamReader(stream));
     }
 }
