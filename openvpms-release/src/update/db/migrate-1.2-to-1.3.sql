@@ -180,10 +180,6 @@ update participations p, acts a
         p.activity_end_time = a.activity_end_time
 where p.act_linkId = a.linkId;
 
-update participations p, acts a
-set
-where p.act_id = a.act_id;
-
 alter table participations
     drop column entity_linkId,
     drop column act_linkId,
