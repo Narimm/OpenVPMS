@@ -76,11 +76,8 @@ public class IMObject implements Serializable, Cloneable {
     private Date lastModified;
 
     /**
-     * This is the link id for the object, which is used to associated one
-     * IMObject with another in hibernate. This is required to support cascade
-     * save/updates and to work reliable in detached mode and to allow the
-     * a call to saveOrUpdate to be made. This is not be confused with the
-     * object id, which  is set by the mapping
+     * The object link identifier, a UUID used to link objects until they can
+     * be made persistent, and to provide support for object equality.
      */
     private String linkId;
 
@@ -258,7 +255,12 @@ public class IMObject implements Serializable, Cloneable {
     }
 
     /**
-     * @return Returns the linkId.
+     * Returns the object link identifier.
+     * <p/>
+     * This is a UUID that is used to link objects until they can be made
+     * persistent, and to provide support for object equality.
+     *
+     * @return the link identifier
      */
     public String getLinkId() {
         if (linkId == null) {

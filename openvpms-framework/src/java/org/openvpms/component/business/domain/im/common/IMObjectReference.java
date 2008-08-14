@@ -50,7 +50,8 @@ public class IMObjectReference implements Serializable, Cloneable {
     private long id = -1;
 
     /**
-     * The transient identity of the object.
+     * The object link identifier, a UUID used to link objects until they can
+     * be made persistent, and to provide support for object equality.
      */
     private String linkId;
 
@@ -63,60 +64,66 @@ public class IMObjectReference implements Serializable, Cloneable {
     }
 
     /**
-     * Costruct an object object reference using the specified
-     * {@link IMObject}
+     * Creates a new <tt>IMObjectReference</tt> from the specified
+     * {@link IMObject}.
      *
-     * @param object the im object
-     * @throws IMObjectException if an object reference cannot be constructed.
+     * @param object the object
+     * @throws IllegalArgumentException if the object is <tt>null</tt>
      */
     public IMObjectReference(IMObject object) {
         if (object == null) {
-            throw new IMObjectException(
-                    IMObjectException.ErrorCode.FailedToCreateObjectReference);
+            throw new IllegalArgumentException(
+                    "Invalid argument 'object'");
         }
-
         this.archetypeId = object.getArchetypeId();
         this.id = object.getId();
         this.linkId = object.getLinkId();
     }
 
     /**
-     * Construct an object reference using the specified archetype id and
-     * uid.
+     * Creates a new <tt>IMObjectReference</tt> for the specified archetype id
+     * and persistent id.
      *
      * @param archetypeId the archetype id of the object
      * @param id          the persistent identity of the object
-     * @throws IMObjectException if the archetype id is null
+     * @throws IllegalArgumentException if the archetype id is <tt>null</tt>
      */
     public IMObjectReference(ArchetypeId archetypeId, long id) {
         this(archetypeId, id, null);
     }
 
+    /**
+     * Creates a new <tt>IMObjectReference</tt> for the specified archetype id,
+     * persistent id, and link id.
+     *
+     * @param archetypeId the archetype id of the object
+     * @param id          the persistent identity of the object
+     * @param linkId      the link identifier. May be <tt>null</tt>
+     * @throws IllegalArgumentException if the archetype id is <tt>null</tt>
+     */
     public IMObjectReference(ArchetypeId archetypeId, long id, String linkId) {
         if (archetypeId == null) {
-            throw new IMObjectException(
-                    IMObjectException.ErrorCode.FailedToCreateObjectReference);
+            throw new IllegalArgumentException(
+                    "Invalid argument 'archetypeId'");
         }
-
         this.archetypeId = archetypeId;
         this.id = id;
         this.linkId = linkId;
     }
 
     /**
-     * Construct an object reference using the specified arhcetype id and
-     * uid
+     * Creates a new <tt>IMObjectReference</tt> for the specified archetype id
+     * and link id.
      *
      * @param archetypeId the archetype id of the object
-     * @param linkId      the link of the object
-     * @throws IMObjectException
+     * @param linkId      the link of the object. May be <tt>null</tt>
+     * @throws IllegalArgumentException if the archetype id is <tt>null</tt>
      */
     public IMObjectReference(ArchetypeId archetypeId, String linkId) {
         if (archetypeId == null) {
-            throw new IMObjectException(
-                    IMObjectException.ErrorCode.FailedToCreateObjectReference);
+            throw new IllegalArgumentException(
+                    "Invalid argument 'archetypeId'");
         }
-
         this.archetypeId = archetypeId;
         this.linkId = linkId;
     }
@@ -150,15 +157,24 @@ public class IMObjectReference implements Serializable, Cloneable {
         return id;
     }
 
+    /**
+     * Determines if the object is new. A new object is one that has not
+     * been made persistent.
+     *
+     * @return <tt>true</tt> if the object is new, <tt>false</tt> if it has
+     *         been made persistent
+     */
     public boolean isNew() {
         return id == -1;
     }
 
     /**
-     * Returns the object's transient identifier.
+     * Returns the object link identifier.
+     * <p/>
+     * This is a UUID that is used to link objects until they can be made
+     * persistent, and to provide support for object equality.
      *
-     * @return the object's transient identifier. May be <tt>null</tt> if the
-     *         object is persistent.
+     * @return the link identifier. May be <tt>null</tt>
      */
     public String getLinkId() {
         return linkId;
@@ -184,7 +200,7 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public int hashCode() {
-        return linkId.hashCode();
+        return (linkId != null) ? linkId.hashCode() : (int) id;
     }
 
     /* (non-Javadoc)

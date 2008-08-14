@@ -28,7 +28,9 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
+ * @deprecated no replacement
  */
+@Deprecated
 public class IMObjectException extends OpenVPMSException {
 
     /**
