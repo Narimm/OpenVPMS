@@ -44,13 +44,13 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         ObjectSet set = new ObjectSet();
-        set.add("int", 10);
-        set.add("string", "astring");
+        set.set("int", 10);
+        set.set("string", "astring");
         Date date = new Date();
-        set.add("date", date);
+        set.set("date", date);
         Party customer = createCustomer("Foo", "Bar");
-        set.add("act.customer", customer);
-        set.add("anull", null);
+        set.set("act.customer", customer);
+        set.set("anull", null);
 
         ObjectSetExpressionEvaluator eval
                 = new ObjectSetExpressionEvaluator(set, service);
@@ -79,13 +79,13 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         ObjectSet set = new ObjectSet();
-        set.add("int", 10);
-        set.add("string", "astring");
-        set.add("money", new Money(100));
+        set.set("int", 10);
+        set.set("string", "astring");
+        set.set("money", new Money(100));
         Date date = java.sql.Date.valueOf("2007-01-11");
-        set.add("date", date);
+        set.set("date", date);
         IMObject customer = createCustomer("Foo", "Bar");
-        set.add("act.customer", customer);
+        set.set("act.customer", customer);
 
         ObjectSetExpressionEvaluator eval
                 = new ObjectSetExpressionEvaluator(set, service);

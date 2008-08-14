@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.component.business.service.archetype.helper.NodeResolverException;
@@ -210,8 +209,7 @@ public abstract class AbstractExpressionEvaluator<T>
         if (ref != null) {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
-            object = ArchetypeQueryHelper.getByObjectReference(
-                    service, ref);
+            object = service.get(ref);
         }
         return getValue(object);
     }
