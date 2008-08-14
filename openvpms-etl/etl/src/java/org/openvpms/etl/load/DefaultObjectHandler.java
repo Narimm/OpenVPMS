@@ -305,8 +305,17 @@ public class DefaultObjectHandler implements ObjectHandler {
                         Collection<ETLLog> errorLogs) {
         try {
             service.save(objects);
-            for (List<ETLLog> logList : logs.values()) {
-                dao.save(logList);
+            for (IMObject object : objects) {
+                List<ETLLog> objectLogs = logs.get(object.getLinkId());
+                if (objectLogs == null) {
+                    throw new IllegalArgumentException(
+                            "No logs corresponding to object: "
+                                    + object.getLinkId());
+                }
+                for (ETLLog log : objectLogs) {
+                    log.setReference(object.getObjectReference());
+                }
+                dao.save(objectLogs);
             }
         } catch (OpenVPMSException exception) {
             // can't process as a batch. Process individual objects.
@@ -337,11 +346,15 @@ public class DefaultObjectHandler implements ObjectHandler {
     protected void save(IMObject object, List<ETLLog> logs) {
         try {
             service.save(object);
+            // update the reference for each log prior to save
+            for (ETLLog log : logs) {
+                log.setReference(object.getObjectReference());
+            }
         } catch (OpenVPMSException exception) {
             ETLLog first = logs.get(0);
             for (ETLLog log : logs) {
                 log.setErrors(exception.getMessage());
-                log.setLinkId(null);
+                log.setReference(null);
             }
             notifyListener(first.getRowId(), exception);
         }
@@ -403,13 +416,14 @@ public class DefaultObjectHandler implements ObjectHandler {
         if (archetype == null) {
             throw new LoaderException(ArchetypeNotFound, log.getArchetype());
         }
-        if (log.getLinkId() == null) {
+        IMObjectReference reference = log.getReference();
+        if (reference == null) {
             throw new LoaderException(ReferencedObjectNotMapped,
                                       Reference.create(log.getArchetype(),
                                                        log.getRowId()),
                                       log.getErrors());
         }
-        return new IMObjectReference(archetype.getType(), log.getLinkId());
+        return reference;
     }
 
     /**
@@ -475,7 +489,7 @@ public class DefaultObjectHandler implements ObjectHandler {
     private ETLLog createLog(String rowId, IMObject object, int index) {
         ETLLog log = new ETLLog(loaderName, rowId,
                                 object.getArchetypeId().getShortName(), index);
-        log.setLinkId(object.getLinkId());
+        log.setReference(object.getObjectReference());
         return log;
     }
 

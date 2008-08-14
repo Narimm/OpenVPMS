@@ -33,7 +33,8 @@
         <property name="archetype" type="string" column="archetype"
                   index="etl_rowId_archetype_idx" not-null="false"/>
         <property name="index" column="collection_index" type="integer" not-null="false"/>
-        <property name="linkId" type="string" length="36" column="linkId"/>
+        <property name="id" type="long" precision="20" scale="0" column="id"/>
+        <property name="linkId" type="string" length="36" column="linkId"/>        
         <property name="errors" column="error_messages" type="string"
                   length="1024"/>
     </class>
