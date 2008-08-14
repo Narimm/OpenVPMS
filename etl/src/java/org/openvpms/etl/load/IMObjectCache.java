@@ -74,8 +74,7 @@ public class IMObjectCache {
         if (ref != null) {
             result = (IMObject) objects.get(ref);
             if (result == null) {
-                result = ArchetypeQueryHelper.getByObjectReference(
-                        service, ref);
+                result = service.get(ref);
                 if (result != null) {
                     objects.put(ref, result);
                 }

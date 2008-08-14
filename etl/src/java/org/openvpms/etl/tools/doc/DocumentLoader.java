@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -169,10 +168,9 @@ public class DocumentLoader {
                     DocumentAct act = getDocumentAct(ref);
                     if (act != null) {
                         Document doc = factory.create(act);
-                        act.setDocReference(doc.getObjectReference());
+                        act.setDocument(doc.getObjectReference());
                         act.setMimeType(doc.getMimeType());
-                        service.save(doc);
-                        service.save(act);
+                        service.save(Arrays.asList(act, doc));
                     }
                 } catch (OpenVPMSException exception) {
                     if (failOnError) {
@@ -232,8 +230,7 @@ public class DocumentLoader {
      * @return the corresponding act, or <tt>null</tt>
      */
     private DocumentAct getDocumentAct(IMObjectReference reference) {
-        return (DocumentAct) ArchetypeQueryHelper.getByObjectReference(
-                service, reference);
+        return (DocumentAct) service.get(reference);
     }
 
     /**

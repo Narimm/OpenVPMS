@@ -18,7 +18,9 @@
 
 package org.openvpms.etl.load;
 
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 
 /**
@@ -56,6 +58,11 @@ public class ETLLog {
      * The target archetype short name.
      */
     private String archetype;
+
+    /**
+     * The target object's identifier.
+     */
+    private long id = -1;
 
     /**
      * The target object's link identifier.
@@ -221,21 +228,30 @@ public class ETLLog {
     }
 
     /**
-     * Sets the target object's link identifier.
+     * Sets the target object's reference.
      *
-     * @param linkId the link identifier. May be <tt>null</tt>
+     * @param reference the reference. May be <tt>null</tt>
      */
-    public void setLinkId(String linkId) {
-        this.linkId = linkId;
+    public void setReference(IMObjectReference reference) {
+        if (reference != null) {
+            id = reference.getId();
+            linkId = reference.getLinkId();
+        } else {
+            id = -1;
+            linkId = null;
+        }
     }
 
     /**
-     * Returns the target object's link identifier.
+     * Returns the target object's reference.
      *
-     * @return the link identifier. May be <tt>null</tt>
+     * @return the reference, or <tt>null</tt> if it is unknown
      */
-    public String getLinkId() {
-        return linkId;
+    public IMObjectReference getReference() {
+        if (id == -1 && linkId == null) {
+            return null;
+        }
+        return new IMObjectReference(new ArchetypeId(archetype), id, linkId);
     }
 
     /**
@@ -255,4 +271,25 @@ public class ETLLog {
     public void setErrors(String errors) {
         this.errors = errors;
     }
+
+    protected long getId() {
+        return id;
+    }
+
+    protected void setId(long id) {
+        this.id = id;
+    }
+
+    /**
+     * Sets the link id.
+     *
+     */
+    protected void setLinkId(String linkId) {
+        this.linkId = linkId;
+    }
+
+    protected String getLinkId() {
+        return linkId;
+    }
+
 }

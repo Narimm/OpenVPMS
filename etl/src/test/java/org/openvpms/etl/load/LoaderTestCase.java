@@ -253,7 +253,7 @@ public class LoaderTestCase
         // add a log for the product, so it can be referenced
         ETLLog productLog = new ETLLog("PRODLOADER", "PROD1",
                                        "product.medication");
-        productLog.setLinkId(product.getLinkId());
+        productLog.setReference(product.getObjectReference());
         dao.save(productLog);
 
         // create a product participation mapping
@@ -333,7 +333,7 @@ public class LoaderTestCase
         // add a log for the product, so it can be referenced
         ETLLog productLog = new ETLLog("PRODLOADER", "PROD1",
                                        "product.medication");
-        productLog.setLinkId(product.getLinkId());
+        productLog.setReference(product.getObjectReference());
         dao.save(productLog);
 
         Mappings mappings = new Mappings();
