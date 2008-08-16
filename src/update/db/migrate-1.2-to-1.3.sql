@@ -31,6 +31,11 @@ alter table act_relationships
     drop column source_linkId,
     drop column target_linkId;
 
+delete r, d
+from act_relationships r, act_relationship_details d
+where r.act_relationship_id = d.act_relationship_id
+    and (r.source_id is null or r.target_id is null);
+
 # action_type_descriptors
 
 alter table action_type_descriptors
@@ -115,6 +120,11 @@ alter table entity_relationships
     add constraint FK861BFDDF3EFA2333 foreign key (target_id)
         references entities (entity_id) on delete cascade;
 
+delete r, d
+from entity_relationships r, entity_relationship_details d
+where r.entity_relationship_id = d.entity_relationship_id
+    and (source_id is null or target_id is null);
+
 # granted_authorities
 
 alter table granted_authorities
@@ -168,7 +178,6 @@ alter table participations
     add column activity_start_time datetime,
     add column activity_end_time datetime,
     drop column entity_arch_short_name,
-    drop column act_arch_short_name,
     drop index linkId;
 
 update participations p, entities e
@@ -190,7 +199,11 @@ alter table participations
     add constraint FKA301B52D8B907FA
         foreign key (act_id) references acts (act_id) on delete cascade,
     add index participation_entity_start_time_idx (entity_id, activity_start_time),
-    add index participation_entity_end_time_idx (entity_id, activity_end_time);
+    add index participation_entity_end_time_idx (entity_id, activity_end_time),
+    add index participation_act_entity_start_time_idx (act_arch_short_name, entity_id, activity_start_time);
+
+delete from participations
+    where entity_id is null or act_id is null;
 
 # product_prices
 
