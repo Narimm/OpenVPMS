@@ -30,6 +30,7 @@ select count(act)
 where p.entity.id = :patientId
       and p.archetypeId.shortName = 'participation.patient'
       and p.act = act
+      and p.actShortName='act.patientReminder'
       and p.act.archetypeId.shortName='act.patientReminder'
       and act.status = 'IN_PROGRESS'
       ]]>
@@ -43,6 +44,7 @@ select count(act)
 where p.entity.id = :patientId
       and p.archetypeId.shortName = 'participation.patient'
       and p.act = act
+      and p.actShortName='act.patientAlert'
       and p.act.archetypeId.shortName='act.patientAlert'
       and act.status = 'IN_PROGRESS'
       and (p.activityEndTime > :date or p.activityEndTime is null)
