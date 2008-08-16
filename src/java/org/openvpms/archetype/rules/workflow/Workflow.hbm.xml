@@ -40,6 +40,7 @@ left outer join act.details as details
 where p.act = act
       and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
+      and p.actShortName = 'act.customerAppointment'
       and ((p.activityStartTime < :from and p.activityEndTime > :from)
 	   	or (p.activityStartTime < :to and p.activityEndTime > :to)
       	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
@@ -48,6 +49,7 @@ where p.act = act
             from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
            org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
       where act.archetypeId.shortName = 'act.customerAppointment'
+            and p.actShortName = 'act.customerAppointment'
             and p.archetypeId.shortName = 'participation.schedule'
             and act = p.act
             and p.entity.id = :scheduleId
@@ -76,6 +78,7 @@ left outer join act.details as details
 where p.act = act
       and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
+      and p.actShortName = 'act.customerAppointment'
       and ((p.activityStartTime < :from and p.activityEndTime > :from)
       	or (p.activityStartTime < :to and p.activityEndTime > :to)
       	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
@@ -84,6 +87,7 @@ where p.act = act
             from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
            org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
       where act.archetypeId.shortName = 'act.customerAppointment'
+            and p.actShortName = 'act.customerAppointment'
             and p.archetypeId.shortName = 'participation.schedule'
             and act = p.act
             and p.entity.id = :scheduleId
@@ -113,6 +117,7 @@ left outer join act.details as details
 where p.act = act
       and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
+      and p.actShortName = 'act.customerAppointment'
       and ((p.activityStartTime < :from and p.activityEndTime > :from)
       	or (p.activityStartTime < :to and p.activityEndTime > :to)
       	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
@@ -121,6 +126,7 @@ where p.act = act
             from org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
            org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
       where act.archetypeId.shortName = 'act.customerAppointment'
+            and p.actShortName = 'act.customerAppointment'
             and p.archetypeId.shortName = 'participation.schedule'
             and act = p.act
             and p.entity.id = :scheduleId
@@ -150,6 +156,7 @@ left outer join act.details as details
 where p.act = act
       and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
+      and p.actShortName = 'act.customerAppointment'
       and ((p.activityStartTime < :from and p.activityEndTime > :from)
       	or (p.activityStartTime < :to and p.activityEndTime > :to)
       	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
@@ -159,6 +166,7 @@ where p.act = act
            org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pschedule,
            org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pclinician
       where act.archetypeId.shortName = 'act.customerAppointment'
+            and p.actShortName = 'act.customerAppointment'
             and pschedule.archetypeId.shortName = 'participation.schedule'
             and act = pschedule.act
             and pschedule.entity.id = :scheduleId
@@ -190,6 +198,7 @@ left outer join act.details as details
 where p.act = act
       and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
+      and p.actShortName = 'act.customerAppointment'
       and ((p.activityStartTime < :from and p.activityEndTime > :from)
       	or (p.activityStartTime < :to and p.activityEndTime > :to)
       	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
@@ -199,6 +208,7 @@ where p.act = act
            org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pschedule,
            org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pclinician
       where act.archetypeId.shortName = 'act.customerAppointment'
+            and p.actShortName = 'act.customerAppointment'
             and pschedule.archetypeId.shortName = 'participation.schedule'
             and act = pschedule.act
             and pschedule.entity.id = :scheduleId
@@ -231,6 +241,7 @@ left outer join act.details as details
 where p.act= act
       and p.entity = e
       and act.archetypeId.shortName = 'act.customerAppointment'
+      and p.actShortName = 'act.customerAppointment'
       and ((p.activityStartTime < :from and p.activityEndTime > :from)
       	or (p.activityStartTime < :to and p.activityEndTime > :to)
       	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
@@ -240,6 +251,7 @@ where p.act= act
            org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pschedule,
            org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as pclinician
       where act.archetypeId.shortName = 'act.customerAppointment'
+            and p.actShortName = 'act.customerAppointment'
             and pschedule.archetypeId.shortName = 'participation.schedule'
             and act = pschedule.act
             and pschedule.entity.id = :scheduleId
@@ -260,6 +272,7 @@ select act.id
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
       org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
 where act.archetypeId.shortName = 'act.customerAppointment'
+      and p.actShortName = 'act.customerAppointment'
       and act.id <> :actId
       and act = p.act
       and p.entity.id = :scheduleId
@@ -276,6 +289,7 @@ select act.id
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act,
       org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p
 where act.archetypeId.shortName = 'act.customerAppointment'
+      and p.actShortName = 'act.customerAppointment'
       and act = p.act
       and p.entity.id = :scheduleId
       and act.active = 1
