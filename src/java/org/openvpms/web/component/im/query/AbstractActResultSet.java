@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -29,8 +28,9 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IConstraintContainer;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.query.ParticipationConstraint;
+import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -238,13 +238,13 @@ public abstract class AbstractActResultSet<T>
                     if (shortNames.length > 1) {
                         OrConstraint or = new OrConstraint();
                         for (String shortName : shortNames) {
-                            ArchetypeId id = new ArchetypeId(shortName);
-                            or.add(new ObjectRefNodeConstraint("act", id));
+                            or.add(new ParticipationConstraint(ActShortName,
+                                                               shortName));
                         }
                         p.add(or);
                     } else if (shortNames.length == 1) {
-                        ArchetypeId id = new ArchetypeId(shortNames[0]);
-                        p.add(new ObjectRefNodeConstraint("act", id));
+                        p.add(new ParticipationConstraint(ActShortName,
+                                                          shortNames[0]));
                     }
                     query.add(p);
                 }
