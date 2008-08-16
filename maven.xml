@@ -4,8 +4,12 @@
   xmlns:j="jelly:core"
   xmlns:castor="castor">
 
-	<preGoal name="java:compile">
-    	<attainGoal name="castor:prepare-filesystem"/>
+    <!--pregoal name="antlr:generate">
+        <ant:delete dir="${maven.build.dir}/antlr"/>
+    </pregoal-->
+
+    <preGoal name="java:compile">
+        <attainGoal name="castor:prepare-filesystem"/>
     	<castor:generate 
     		schema="src/java/org/openvpms/tools/security/loader/security-loader.xsd"
             package="org.openvpms.tools.security.loader"
@@ -47,6 +51,7 @@
 	<goal name="lookup:load" description="Load the Lookup Data from File">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
 	    <attainGoal name="test:test-resources"/>
 		<ant:java
         	classname="org.openvpms.tools.data.loader.StaxArchetypeDataLoader"
@@ -57,6 +62,7 @@
            		<ant:pathelement path="${maven.build.dest}"/>
            		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dir}/test-classes"/>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
         	<arg line="${openvpms.lookup.loader.cmdline}"/>
     	</ant:java>	
@@ -65,6 +71,7 @@
 	<goal name="data:load" description="Load the Archetyped Data Using STAX">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
 	    <attainGoal name="test:test-resources"/>
 		<ant:java
         	classname="org.openvpms.tools.data.loader.StaxArchetypeDataLoader"
@@ -75,6 +82,7 @@
            		<ant:pathelement path="${maven.build.dest}"/>
            		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dir}/test-classes"/>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
         	<arg line="${openvpms.data.loader.cmdline}"/>
     	</ant:java>	
@@ -83,6 +91,7 @@
 	<goal name="archetype:load" description="Load the Archetypes from a directory">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
 	    <attainGoal name="test:test-resources"/>
 		<ant:java
         	classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
@@ -92,6 +101,7 @@
            		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dest}"/>
            		<ant:pathelement path="${maven.test.dest}"/>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
         	<arg line="${openvpms.archetype.loader.cmdline}"/>
     	</ant:java>	
@@ -100,6 +110,7 @@
 	<goal name="security:load" description="Load the Security Data into the database">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
 		<ant:java
         	classname="org.openvpms.tools.security.loader.SecurityLoader"
 	        failonerror="true"
@@ -107,6 +118,7 @@
             <ant:classpath>
            		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dest}"/>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
         	<arg line="${openvpms.security.loader.cmdline}"/>
     	</ant:java>	
@@ -115,6 +127,7 @@
     <goal name="migrate:details" description="Migrate the details column">
         <attainGoal name="java:compile"/>
         <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
         <attainGoal name="test:test-resources"/>
         <ant:java
             classname="org.openvpms.tools.data.migration.DetailsMigrator"
@@ -124,6 +137,7 @@
                 <ant:path refid="maven.dependency.classpath"/>
                 <ant:pathelement path="${maven.build.dest}"/>
                 <ant:pathelement path="${maven.test.dest}"/>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
             <arg line="${openvpms.migration.details.cmdline}"/>
         </ant:java>

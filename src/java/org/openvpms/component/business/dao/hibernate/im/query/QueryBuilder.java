@@ -48,6 +48,7 @@ import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.query.ParticipationConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.SelectConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -532,6 +533,32 @@ public class QueryBuilder {
     }
 
     /**
+     * Processes the specified participation constraint.
+     *
+     * @param constraint the participation constraint
+     * @param context    the query context
+     */
+    private void process(ParticipationConstraint constraint,
+                         QueryContext context) {
+        String property = null;
+        switch (constraint.getField()) {
+            case ActShortName:
+                property = "actShortName";
+                break;
+            case StartTime:
+                property = "activityStartTime";
+                break;
+            case EndTime:
+                property = "activityEndTime";
+                break;
+        }
+
+        context.addWhereConstraint(constraint.getAlias(), property,
+                                   constraint.getOperator(),
+                                   constraint.getValue());
+    }
+
+    /**
      * Process the collection constraints, which involves a join across tables.
      *
      * @param constraint the collection constraint
@@ -761,6 +788,8 @@ public class QueryBuilder {
             process((NodeSortConstraint) constraint, context);
         } else if (constraint instanceof ArchetypeSortConstraint) {
             process((ArchetypeSortConstraint) constraint, context);
+        } else if (constraint instanceof ParticipationConstraint) {
+            process((ParticipationConstraint) constraint, context);
         } else {
             throw new QueryBuilderException(
                     QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,
