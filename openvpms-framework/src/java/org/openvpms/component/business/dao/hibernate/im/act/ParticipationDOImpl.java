@@ -44,14 +44,22 @@ public class ParticipationDOImpl extends IMObjectDOImpl
     private ActDO act;
 
     /**
-     * The act start time.
+     * The act start time, stored redundantly to improve performance
+     * for some queries.
      */
     private Date startTime;
 
     /**
-     * The act end time.
+     * The act end time, stored redundantly to improve performance
+     * for some queries.
      */
     private Date endTime;
+
+    /**
+     * The act archetype short name, stored redundantly to improve performance
+     * for some queries.
+     */
+    private String actShortName;
 
 
     /**
@@ -95,8 +103,22 @@ public class ParticipationDOImpl extends IMObjectDOImpl
      */
     public void setAct(ActDO act) {
         this.act = act;
+        if (act != null) {
+            setActShortName(act.getArchetypeId().getShortName());
+        } else {
+            setActShortName(null);
+        }
     }
 
+    /**
+     * Returns the act archetype short name.
+     *
+     * @return the act archetype short name. May be <tt>null</tt>
+     */
+    public String getActShortName() {
+        return actShortName;
+    }
+    
     /**
      * Returns the act start time.
      *
@@ -131,6 +153,15 @@ public class ParticipationDOImpl extends IMObjectDOImpl
      */
     public void setActivityEndTime(Date endTime) {
         this.endTime = endTime;
+    }
+
+    /**
+     * Sets the act archetype short name.
+     *
+     * @param shortName the act archetype short name
+     */
+    protected void setActShortName(String shortName) {
+        actShortName = shortName;
     }
 
 }
