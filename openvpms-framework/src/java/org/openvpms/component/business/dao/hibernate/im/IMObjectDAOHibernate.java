@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
+import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
@@ -33,8 +34,10 @@ import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.ContextHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DeferredReference;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.DefaultObjectLoader;
 import org.openvpms.component.business.dao.hibernate.im.entity.HibernateResultCollector;
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectNodeResultCollector;
@@ -70,6 +73,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -616,6 +620,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                     for (Object object : rows) {
                         collector.collect(object);
                     }
+                    resolveDeferredReferences(context);
                 }
                 return null;
             }
@@ -680,6 +685,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 for (Object object : rows) {
                     collector.collect(object);
                 }
+                resolveDeferredReferences(context);
                 return null;
             }
         });
@@ -800,13 +806,15 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                     throws HibernateException {
                 Query query = session.createQuery(queryString.toString());
                 query.setParameter(name, value);
-                List result = query.list();
-                if (result.size() == 0) {
+                List results = query.list();
+                if (results.size() == 0) {
                     return null;
                 } else {
                     Context context = getContext(session);
-                    IMObjectDO object = (IMObjectDO) result.get(0);
-                    return assembler.assemble(object, context);
+                    IMObjectDO object = (IMObjectDO) results.get(0);
+                    IMObject result = assembler.assemble(object, context);
+                    resolveDeferredReferences(context);
+                    return result;
                 }
             }
         });
@@ -954,6 +962,53 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         state.updateIds(context);
         context.addSaved(state);
     }
+
+    /**
+      * Resolves deferred references.
+      */
+     private void resolveDeferredReferences(Context context) {
+         List<DeferredReference> deferred = context.getDeferredReferences();
+         if (!deferred.isEmpty()) {
+             Map<Class<? extends IMObjectDOImpl>, List<DeferredReference>> map
+                     = new HashMap<Class<? extends IMObjectDOImpl>, List<DeferredReference>>();
+             for (DeferredReference ref : deferred) {
+                 IMObjectDO object = ref.getObject();
+                 if (Hibernate.isInitialized(object)) {
+                     ref.update(object.getObjectReference());
+                 } else {
+                     List<DeferredReference> list = map.get(ref.getType());
+                     if (list == null) {
+                         list = new ArrayList<DeferredReference>();
+                         map.put(ref.getType(), list);
+                     }
+                     list.add(ref);
+                 }
+             }
+             if (!map.isEmpty()) {
+                 for (Map.Entry<Class<? extends IMObjectDOImpl>,
+                         List<DeferredReference>> entry : map.entrySet()) {
+                     Class<? extends IMObjectDOImpl> type = entry.getKey();
+                     List<DeferredReference> refs = entry.getValue();
+                     Map<Long, IMObjectDO> objects = new HashMap<Long, IMObjectDO>();
+                     for (DeferredReference ref : refs) {
+                         IMObjectDO object = ref.getObject();
+                         objects.put(object.getId(), object);
+                     }
+                     Map<Long, IMObjectReference> resolvedRefs
+                             = context.getReferences(objects, type);
+                     for (DeferredReference ref : refs) {
+                         IMObjectReference resolved
+                                 = resolvedRefs.get(ref.getObject().getId());
+                         if (resolved != null) {
+                             ref.update(resolved);
+                         }
+                     }
+                 }
+                 map.clear();
+             }
+             deferred.clear();
+         }
+     }
 
     /**
      * Check whether write operations are allowed on the given Session.

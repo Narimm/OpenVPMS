@@ -51,7 +51,7 @@
         <property name="status" column="status" type="string"
                   index="act_short_name_status_idx"/>
         <map name="details" access="field" table="act_details" lazy="false"
-             cascade="all,delete-orphan">
+             batch-size="50" cascade="all,delete-orphan">
             <key column="act_id"/>
             <map-key column="name" type="string"/>
             <composite-element

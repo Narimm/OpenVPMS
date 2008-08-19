@@ -42,7 +42,7 @@
         <property name="docSize" column="doc_size" type="int"/>
         <property name="checksum" column="checksum" type="long"/>
         <map name="details" access="field" table="document_details" lazy="false"
-             cascade="all,delete-orphan">
+             batch-size="50" cascade="all,delete-orphan">
             <key column="document_id"/>
             <map-key column="name" type="string"/>
             <composite-element

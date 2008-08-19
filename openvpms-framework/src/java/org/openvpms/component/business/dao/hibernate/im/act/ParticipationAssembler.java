@@ -18,10 +18,12 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
+import org.hibernate.Hibernate;
 import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DeferredReference;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.ReferenceUpdater;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
@@ -75,8 +77,8 @@ public class ParticipationAssembler
     protected void assembleObject(Participation target, ParticipationDO source,
                                   Context context) {
         super.assembleObject(target, source, context);
-        target.setEntity(source.getEntity().getObjectReference());
-        target.setAct(source.getAct().getObjectReference());
+        assembleEntityRef(target, source, context);
+        assembleActRef(target, source, context);
     }
 
     /**
@@ -171,6 +173,59 @@ public class ParticipationAssembler
             }
         } else {
             target.setAct(null);
+        }
+    }
+
+    /**
+     * Assembles the participation entity reference.
+     *
+     * @param result  the participation to assemble
+     * @param source  the source participation
+     * @param context the assembly context
+     */
+    private void assembleEntityRef(final Participation result,
+                                   ParticipationDO source, Context context) {
+        EntityDO entity = source.getEntity();
+        if (entity != null) {
+            if (Hibernate.isInitialized(entity)) {
+                result.setEntity(context.getReference(entity,
+                                                      EntityDOImpl.class));
+            } else {
+                context.addDeferredReference(
+                        new DeferredReference(entity, EntityDOImpl.class) {
+                            public void update(IMObjectReference reference) {
+                                result.setEntity(reference);
+                            }
+                        });
+            }
+        } else {
+            result.setEntity(null);
+        }
+    }
+
+    /**
+     * Assembles the participation act reference.
+     *
+     * @param result  the participation to assemble
+     * @param source  the source participation
+     * @param context the assembly context
+     */
+    private void assembleActRef(final Participation result,
+                                ParticipationDO source, Context context) {
+        ActDO act = source.getAct();
+        if (act != null) {
+            if (Hibernate.isInitialized(act)) {
+                result.setAct(context.getReference(act, ActDOImpl.class));
+            } else {
+                context.addDeferredReference(
+                        new DeferredReference(act, ActDOImpl.class) {
+                            public void update(IMObjectReference reference) {
+                                result.setAct(reference);
+                            }
+                        });
+            }
+        } else {
+            result.setAct(null);
         }
     }
 }

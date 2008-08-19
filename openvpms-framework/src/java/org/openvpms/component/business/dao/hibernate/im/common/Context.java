@@ -18,16 +18,21 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+import org.hibernate.Hibernate;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.proxy.HibernateProxy;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -88,6 +93,12 @@ public class Context {
      * The set of objects currently being assembled.
      */
     private Set<Object> assembling = new HashSet<Object>();
+
+    /**
+     * The references to assemble.
+     */
+    private List<DeferredReference> deferredRefs
+            = new ArrayList<DeferredReference>();
 
     /**
      * Determines if transaction synchronization is active.
@@ -331,6 +342,87 @@ public class Context {
         return type.cast(result);
     }
 
+    public void addDeferredReference(DeferredReference deferredReference) {
+        deferredRefs.add(deferredReference);
+    }
+
+    public List<DeferredReference> getDeferredReferences() {
+        return deferredRefs;
+    }
+
+    /**
+     * Helper to retrieve the reference of an object. This avoids loading
+     * the object if it isn't already present in the session.
+     *
+     * @param object the object
+     * @param type   the implementation type
+     * @return the object's reference. May be <tt>null</tt>
+     */
+    public IMObjectReference getReference(
+            IMObjectDO object, Class<? extends IMObjectDOImpl> type) {
+        if (Hibernate.isInitialized(object)) {
+            return object.getObjectReference();
+        }
+        Query query = session.createQuery("select archetypeId, linkId from "
+                + type.getName() + " where id=?");
+        query.setParameter(0, object.getId());
+        List result = query.list();
+        if (!result.isEmpty()) {
+            Object[] values = (Object[]) result.get(0);
+            return new IMObjectReference((ArchetypeId) values[0],
+                                         object.getId(), (String) values[1]);
+
+        }
+        return null;
+    }
+
+    /**
+     * Helper to retrieve the references for a map of objects. This avoids
+     * loading the object if it isn't already present in the session, as long
+     * as the {@link IMObjectDO#getId()} method is the only method invoked.
+     *
+     * @param objects the objects
+     * @param type    the implementation type
+     * @return a map of the object ids to their corresponding references
+     */
+    public Map<Long, IMObjectReference> getReferences(
+            Map<Long, IMObjectDO> objects,
+            Class<? extends IMObjectDOImpl> type) {
+        List<Long> ids = new ArrayList<Long>();
+        Map<Long, IMObjectReference> result
+                = new HashMap<Long, IMObjectReference>();
+        for (Map.Entry<Long, IMObjectDO> entry : objects.entrySet()) {
+            IMObjectDO object = entry.getValue();
+            if (Hibernate.isInitialized(object)) {
+                result.put(entry.getKey(), object.getObjectReference());
+            } else {
+                ids.add(entry.getKey());
+            }
+        }
+
+        if (!ids.isEmpty()) {
+            StringBuffer hql
+                    = new StringBuffer("select id, archetypeId, linkId from ")
+                    .append(type.getName()).append(" where id in (?");
+            for (int i = 1; i < ids.size(); ++i) {
+                hql.append(",?");
+            }
+            hql.append(")");
+            Query query = session.createQuery(hql.toString());
+            for (int i = 0; i < ids.size(); ++i) {
+                query.setParameter(i, ids.get(i));
+            }
+            for (Object match : query.list()) {
+                Object[] values = (Object[]) match;
+                long id = (Long) values[0];
+                ArchetypeId archId = (ArchetypeId) values[1];
+                String linkId = (String) values[2];
+                result.put(id, new IMObjectReference(archId, id, linkId));
+            }
+        }
+        return result;
+    }
+
     /**
      * Destroys the context, releasing resources.
      */
@@ -485,7 +577,7 @@ public class Context {
          *
          * @param obj the reference object with which to compare.
          * @return <tt>true</tt> if this object is the same as the obj
-         *         argument; <tt>false</tt> otherwise.                               
+         *         argument; <tt>false</tt> otherwise.
          */
         @Override
         public boolean equals(Object obj) {

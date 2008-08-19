@@ -51,7 +51,7 @@
         <many-to-one name="identity" column="identity_id" cascade="none"
                      class="org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl"/>
         <map name="details" access="field" table="entity_relationship_details"
-             lazy="false" cascade="all,delete-orphan">
+             lazy="false" batch-size="50" cascade="all,delete-orphan">
             <key column="entity_relationship_id"/>
             <map-key column="name" type="string"/>
             <composite-element
