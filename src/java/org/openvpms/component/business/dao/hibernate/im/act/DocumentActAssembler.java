@@ -18,10 +18,12 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
+import org.hibernate.Hibernate;
 import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.DeferredReference;
 import org.openvpms.component.business.dao.hibernate.im.common.ReferenceUpdater;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDO;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl;
@@ -80,10 +82,7 @@ public class DocumentActAssembler
         target.setFileName(source.getFileName());
         target.setMimeType(source.getMimeType());
         target.setPrinted(source.isPrinted());
-        DocumentDO document = source.getDocument();
-        IMObjectReference ref = (document != null)
-                ? document.getObjectReference() : null;
-        target.setDocument(ref);
+        assembleDocRef(target, source, context);
     }
 
     /**
@@ -144,4 +143,32 @@ public class DocumentActAssembler
             target.setDocument(null);
         }
     }
+
+    /**
+     * Assembles the document reference of a document act.
+     *
+     * @param target  the target act
+     * @param source  the source act
+     * @param context the assembly context
+     */
+    private void assembleDocRef(final DocumentAct target, DocumentActDO source,
+                                Context context) {
+        DocumentDO document = source.getDocument();
+        if (document != null) {
+            if (Hibernate.isInitialized(document)) {
+                target.setDocument(context.getReference(document,
+                                                        DocumentDOImpl.class));
+            } else {
+                context.addDeferredReference(
+                        new DeferredReference(document, DocumentDOImpl.class) {
+                            public void update(IMObjectReference reference) {
+                                target.setDocument(reference);
+                            }
+                        });
+            }
+        } else {
+            target.setDocument(null);
+        }
+    }
+
 }

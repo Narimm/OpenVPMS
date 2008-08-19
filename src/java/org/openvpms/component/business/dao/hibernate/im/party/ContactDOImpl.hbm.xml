@@ -48,8 +48,8 @@
                   column="active_start_time" type="date"/>
         <property name="activeEndTime" access="property"
                   column="active_end_time" type="date"/>
-        <map name="details" access="field" table="contact_details" lazy="false"
-             cascade="all,delete-orphan">
+        <map name="details" access="field" table="contact_details"
+             lazy="false" batch-size="50" cascade="all,delete-orphan">
             <key column="contact_id"/>
             <map-key column="name" type="string"/>
             <composite-element

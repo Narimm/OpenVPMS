@@ -45,7 +45,7 @@
                   precision="18" scale="3"/>
         <property name="active" column="active" type="boolean"/>
         <map name="details" access="field" table="product_price_details"
-             lazy="false" cascade="all,delete-orphan">
+             lazy="false" batch-size="50" cascade="all,delete-orphan">
             <key column="product_price_id"/>
             <map-key column="name" type="string"/>
             <composite-element

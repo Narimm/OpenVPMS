@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
+import org.hibernate.Hibernate;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 
@@ -91,8 +92,8 @@ public abstract class IMObjectRelationshipAssembler
     @Override
     protected void assembleObject(T target, DO source, Context context) {
         super.assembleObject(target, source, context);
-        target.setSource(source.getSource().getObjectReference());
-        target.setTarget(source.getTarget().getObjectReference());
+        assembleSourceRef(target, source, context);
+        assembleTargetRef(target, source, context);
     }
 
     /**
@@ -103,8 +104,8 @@ public abstract class IMObjectRelationshipAssembler
      * @param state   the relationship state
      * @param context the assembly context
      */
-    protected void assembleSource(final DO result, final T source,
-                                  DOState state, Context context) {
+    private void assembleSource(final DO result, final T source,
+                                DOState state, Context context) {
         final IMObjectReference sourceRef = source.getSource();
         if (sourceRef != null) {
             DOState sourceDO = get(sourceRef, endType, endTypeImpl, context);
@@ -163,6 +164,56 @@ public abstract class IMObjectRelationshipAssembler
                         source.setTarget(updated);
                     }
                 };
+            }
+        } else {
+            result.setTarget(null);
+        }
+    }
+
+    /**
+     * Assembles the relationship source reference.
+     *
+     * @param result  the relationship to assemble
+     * @param source  the source relationship
+     * @param context the assembly context
+     */
+    private void assembleSourceRef(final T result, DO source, Context context) {
+        IMObjectDO relSource = source.getSource();
+        if (relSource != null) {
+            if (Hibernate.isInitialized(relSource)) {
+                result.setSource(context.getReference(relSource, endTypeImpl));
+            } else {
+                context.addDeferredReference(
+                        new DeferredReference(relSource, endTypeImpl) {
+                            public void update(IMObjectReference reference) {
+                                result.setSource(reference);
+                            }
+                        });
+            }
+        } else {
+            result.setSource(null);
+        }
+    }
+
+    /**
+     * Assembles the relationship target reference.
+     *
+     * @param result  the relationship to assemble
+     * @param source  the source relationship
+     * @param context the assembly context
+     */
+    private void assembleTargetRef(final T result, DO source, Context context) {
+        IMObjectDO relTarget = source.getTarget();
+        if (relTarget != null) {
+            if (Hibernate.isInitialized(relTarget)) {
+                result.setTarget(context.getReference(relTarget, endTypeImpl));
+            } else {
+                context.addDeferredReference(
+                        new DeferredReference(relTarget, endTypeImpl) {
+                            public void update(IMObjectReference reference) {
+                                result.setTarget(reference);
+                            }
+                        });
             }
         } else {
             result.setTarget(null);
