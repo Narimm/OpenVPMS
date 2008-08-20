@@ -84,6 +84,10 @@ public class IMObjectHelper {
      * Returns an object given its reference.
      * This checks the specified context first. If not found in the context,
      * tries to retrieve it from the archetype service.
+     * <p/>
+     * Note that if the object in the context is only partially populated,
+     * (as indicated by a <tt>version &lt 0</tt>), the actual object will
+     * be retrieved from the archetype service.
      *
      * @param reference the object reference. May be <tt>null</tt>
      * @param context   the context to use. If <tt>null</tt> accesses the
@@ -98,7 +102,7 @@ public class IMObjectHelper {
             if (context != null) {
                 result = context.getObject(reference);
             }
-            if (result == null) {
+            if (result == null || result.getVersion() < 0) {
                 try {
                     IArchetypeService service
                             = ArchetypeServiceHelper.getArchetypeService();
