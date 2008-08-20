@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.practice;
 
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -99,7 +100,21 @@ public class LocationRules {
     }
 
     /**
+     * Returns the default stock location reference associated with a location.
+     *
+     * @return the default stock location reference, or <tt>null</tt> if none
+     *         is found
+     */
+    public IMObjectReference getDefaultStockLocationRef(Party location) {
+        return EntityRelationshipHelper.getDefaultTargetRef(
+                location, "stockLocations", service);
+    }
+
+    /**
      * Returns the default stock location associated with a location.
+     * <p/>
+     * NOTE: retrieval of stock locations may be an expensive operation,
+     * due to the no. of relationhips to products.
      *
      * @param location the location
      * @return the default location or <tt>null</tt> if none is found
