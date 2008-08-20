@@ -38,6 +38,26 @@ import java.util.List;
 public class EntityRelationshipHelper {
 
     /**
+     * Returns the target from the default entity relationship from the
+     * specified relationship node.
+     *
+     * @param entity  the parent entity
+     * @param node    the relationship node
+     * @param service the archetype service
+     * @return the default target, or the the first target if there is no
+     *         default, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the node does't exist or an element
+     *                                   is of the wrong type
+     */
+    public static IMObjectReference getDefaultTargetRef(
+            Entity entity, String node, IArchetypeService service) {
+        IMObjectBean bean = new IMObjectBean(entity, service);
+        return getDefaultTargetRef(
+                bean.getValues(node, EntityRelationship.class), service);
+    }
+
+    /**
      * Returns the active target from the default entity relationship from the
      * specified relationship node.
      *
@@ -78,6 +98,37 @@ public class EntityRelationshipHelper {
                     IMObjectBean bean = new IMObjectBean(relationship);
                     if (bean.hasNode("default") && bean.getBoolean("default")) {
                         result = getEntity(relationship.getTarget(), service);
+                        if (result != null) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the active target reference from the default entity relationship
+     * from the supplied relationship list.
+     *
+     * @param relationships a list of relationship objects
+     * @param service       the archetype service
+     * @return the default target, or the the first target if there is no
+     *         default, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static IMObjectReference getDefaultTargetRef(
+            List<EntityRelationship> relationships, IArchetypeService service) {
+        IMObjectReference result = null;
+        for (EntityRelationship relationship : relationships) {
+            if (relationship.isActive()) {
+                if (result == null) {
+                    result = relationship.getTarget();
+                } else {
+                    IMObjectBean bean = new IMObjectBean(relationship, service);
+                    if (bean.hasNode("default") && bean.getBoolean("default")) {
+                        result = relationship.getTarget();
                         if (result != null) {
                             break;
                         }

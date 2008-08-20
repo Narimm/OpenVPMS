@@ -91,7 +91,7 @@ public class TemplateHelper {
                 = new IMObjectQueryIterator<DocumentAct>(service, query);
         if (iterator.hasNext()) {
             DocumentAct act = iterator.next();
-            result = (Document) get(act.getDocReference());
+            result = (Document) get(act.getDocument());
         }
         return result;
     }
@@ -205,7 +205,7 @@ public class TemplateHelper {
         if (template != null) {
             DocumentAct act = getDocumentAct(template);
             if (act != null) {
-                document = (Document) get(act.getDocReference());
+                document = (Document) get(act.getDocument());
             }
         }
         return document;
@@ -220,7 +220,7 @@ public class TemplateHelper {
     public Document getDocumentFromTemplate(Entity template) {
         DocumentAct act = getDocumentAct(template);
         if (act != null) {
-            return (Document) get(act.getDocReference());
+            return (Document) get(act.getDocument());
         }
         return null;
     }
