@@ -25,9 +25,15 @@ import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.system.SpringApplicationInstance;
 
 
@@ -176,13 +182,50 @@ public abstract class ContextApplicationInstance
             till = rules.getDefaultTill(location);
             schedule = rules.getDefaultSchedule(location);
             workList = rules.getDefaultWorkList(location);
-            stockLocation = rules.getDefaultStockLocation(location);
+            stockLocation = getStockLocation(rules, location);
         }
         context.setDeposit(deposit);
         context.setTill(till);
         context.setSchedule(schedule);
         context.setWorkList(workList);
         context.setStockLocation(stockLocation);
+    }
+
+    /**
+     * Helper to return the stock location for a location.
+     * <p/>
+     * NOTE: this implementation returns a partially populated object, as
+     * stock locations may have a large no. of product relationships.
+     * <p/>
+     * The version of the object is set to <tt>-1</tt> so that it cannot
+     * be used to overwrite the actual stock location.
+     *
+     * @param rules    the location rules
+     * @param location the location
+     * @return the stock location, or <tt>null</tt> if none is found
+     */
+    private Party getStockLocation(LocationRules rules, Party location) {
+        Party result = null;
+        IMObjectReference ref = rules.getDefaultStockLocationRef(location);
+        if (ref != null) {
+            ObjectRefConstraint constraint
+                    = new ObjectRefConstraint("loc", ref);
+            ArchetypeQuery query = new ArchetypeQuery(constraint);
+            query.add(new NodeSelectConstraint("loc.name"));
+            query.add(new NodeSelectConstraint("loc.description"));
+            ObjectSetQueryIterator iter = new ObjectSetQueryIterator(query);
+            if (iter.hasNext()) {
+                ObjectSet set = iter.next();
+                result = new Party();
+                result.setId(ref.getId());
+                result.setArchetypeId(ref.getArchetypeId());
+                result.setLinkId(ref.getLinkId());
+                result.setName(set.getString("loc.name"));
+                result.setDescription(set.getString("loc.description"));
+                result.setVersion(-1);
+            }
+        }
+        return result;
     }
 
 }
