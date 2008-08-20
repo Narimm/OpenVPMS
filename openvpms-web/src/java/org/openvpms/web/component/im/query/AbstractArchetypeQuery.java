@@ -193,6 +193,15 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
+     * Returns the selected archetype short name.
+     *
+     * @return the archetype short name. May be <tt>null</tt>
+     */
+    public String getShortName() {
+        return shortName;
+    }
+
+    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be <tt>null</tt>
@@ -236,15 +245,6 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     protected boolean includeInactive() {
         return (inactive != null && inactive.isSelected());
-    }
-
-    /**
-     * Returns the selected archetype short name.
-     *
-     * @return the archetype short name. May be <tt>null</tt>
-     */
-    protected String getShortName() {
-        return shortName;
     }
 
     /**

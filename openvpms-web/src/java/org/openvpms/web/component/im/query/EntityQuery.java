@@ -18,9 +18,16 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -30,7 +37,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-08-17 06:51:11Z $
  */
-public class EntityQuery extends AbstractEntityQuery<Entity> {
+public class EntityQuery extends QueryAdapter<ObjectSet, Entity> {
 
     /**
      * Construct a new <tt>EntityQuery</tt> that queries entities
@@ -41,18 +48,48 @@ public class EntityQuery extends AbstractEntityQuery<Entity> {
      *                                 archetypes
      */
     public EntityQuery(String[] shortNames) {
-        super(shortNames);
+        super(new EntityObjectSetQuery(shortNames),
+              IMObjectHelper.getType(shortNames));
+        // verify that the specified type matches what the query actually
+        // returns
+        if (!Entity.class.isAssignableFrom(getType())) {
+            throw new QueryException(QueryException.ErrorCode.InvalidType,
+                                     Entity.class, getType());
+
+        }
     }
 
     /**
-     * Creates the result set.
+     * Returns the selected archetype short name.
      *
-     * @param sort the sort criteria. May be <tt>null</tt>
-     * @return a new result set
+     * @return the archetype short name. May be <tt>null</tt>
      */
-    protected ResultSet<Entity> createResultSet(SortConstraint[] sort) {
-        return new EntityResultSet<Entity>(getArchetypeConstraint(), getName(),
-                                           isIdentitySearch(), getConstraints(),
-                                           sort, getMaxResults(), isDistinct());
+    public String getShortName() {
+        return ((EntityObjectSetQuery) getQuery()).getShortName();
     }
+
+    /**
+     * Converts a result set.
+     *
+     * @param set the set to convert
+     * @return the converted set
+     */
+    protected ResultSet<Entity> convert(ResultSet<ObjectSet> set) {
+        return new ResultSetAdapter<ObjectSet, Entity>(set) {
+
+            protected IPage<Entity> convert(IPage<ObjectSet> page) {
+                List<Entity> objects = new ArrayList<Entity>();
+                for (ObjectSet set : page.getResults()) {
+                    IMObjectReference ref
+                            = set.getReference("entity.reference");
+                    Entity entity = (Entity) IMObjectHelper.getObject(ref);
+                    objects.add(entity);
+                }
+                return new Page<Entity>(objects, page.getFirstResult(),
+                                        page.getPageSize(),
+                                        page.getTotalResults());
+            }
+        };
+    }
+
 }
