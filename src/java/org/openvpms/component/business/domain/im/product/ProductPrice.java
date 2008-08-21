@@ -52,14 +52,14 @@ public class ProductPrice extends IMObject {
     private BigDecimal price;
 
     /**
-     * The product is valid from this date.
+     * The price is valid from this date.
      */
     private Date fromDate;
 
     /**
-     * The product is valid through to this date.
+     * The price is valid to this date.
      */
-    private Date thruDate;
+    private Date toDate;
 
     /**
      * Indicates whether this is a fixed or variable price (i.e.
@@ -152,17 +152,39 @@ public class ProductPrice extends IMObject {
     }
 
     /**
-     * @return Returns the thruDate.
+     * Returns the date that the price is valid to.
+     *
+     * @return the date
      */
+    public Date getToDate() {
+        return toDate;
+    }
+
+    /**
+     * Sets the date that the price is valid to.
+     *
+     * @param date the date
+     */
+    public void setToDate(Date date) {
+        toDate = date;
+    }
+
+    /**
+     * @return Returns the thruDate.
+     * @deprecated use {@link #getToDate()}
+     */
+    @Deprecated
     public Date getThruDate() {
-        return thruDate;
+        return getToDate();
     }
 
     /**
      * @param thruDate The thruDate to set.
+     * @deprecated use {@link #setToDate(Date)}
      */
+    @Deprecated
     public void setThruDate(Date thruDate) {
-        this.thruDate = thruDate;
+        setToDate(thruDate);
     }
 
     /**

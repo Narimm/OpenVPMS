@@ -96,14 +96,14 @@ public interface ProductPriceDO extends IMObjectDO {
      *
      * @return the active to date. May be <tt>null</tt>
      */
-    Date getThruDate();
+    Date getToDate();
 
     /**
      * Sets the date that the price is active to.
      *
-     * @param thruDate the active to date. May be <tt>null</tt>
+     * @param toDate the active to date. May be <tt>null</tt>
      */
-    void setThruDate(Date thruDate);
+    void setToDate(Date toDate);
 
     /**
      * Returns the classifications for this price.

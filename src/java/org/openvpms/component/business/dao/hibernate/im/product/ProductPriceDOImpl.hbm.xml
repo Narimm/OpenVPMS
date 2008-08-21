@@ -39,7 +39,7 @@
         <property name="name" column="name" type="string"/>
         <property name="description" column="description" type="string"/>
         <property name="fromDate" column="start_time" type="timestamp"/>
-        <property name="thruDate" column="end_time" type="timestamp"/>
+        <property name="toDate" column="end_time" type="timestamp"/>
         <property name="fixed" column="is_fixed" type="boolean"/>
         <property name="price" column="price" type="big_decimal"
                   precision="18" scale="3"/>

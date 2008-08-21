@@ -21,9 +21,9 @@ package org.openvpms.component.business.dao.hibernate.im.product;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOHelper;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOHelper;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.math.BigDecimal;
@@ -292,7 +292,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
                 new ArchetypeId("productPrice.basic.1.0"));
         result.setName("price");
         result.setFromDate(new Date());
-        result.setThruDate(new Date());
+        result.setToDate(new Date());
         result.setFixed(fixed);
         result.setPrice(new BigDecimal(price));
         return result;
