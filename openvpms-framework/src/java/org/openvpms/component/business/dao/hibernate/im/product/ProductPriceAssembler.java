@@ -69,7 +69,7 @@ public class ProductPriceAssembler
         target.setFixed(source.isFixed());
         target.setFromDate(source.getFromDate());
         target.setPrice(source.getPrice());
-        target.setThruDate(source.getThruDate());
+        target.setToDate(source.getToDate());
 
         ProductDO product = null;
         DOState productState = getDO(source.getProduct(),
@@ -101,7 +101,7 @@ public class ProductPriceAssembler
         target.setPrice(source.getPrice());
         target.setProduct(
                 getObject(source.getProduct(), Product.class, context));
-        target.setThruDate(source.getThruDate());
+        target.setToDate(source.getToDate());
 
         LOOKUPS.assembleObject(target.getClassifications(),
                                source.getClassifications(),

@@ -55,7 +55,7 @@ public class ProductPriceDOImpl extends IMObjectDOImpl
     /**
      * The date that the price is active to.
      */
-    private Date thruDate;
+    private Date toDate;
 
     /**
      * Indicates whether this is a fixed or variable price (i.e.
@@ -162,17 +162,17 @@ public class ProductPriceDOImpl extends IMObjectDOImpl
      *
      * @return the active to date. May be <tt>null</tt>
      */
-    public Date getThruDate() {
-        return thruDate;
+    public Date getToDate() {
+        return toDate;
     }
 
     /**
      * Sets the date that the price is active to.
      *
-     * @param thruDate the active to date. May be <tt>null</tt>
+     * @param toDate the active to date. May be <tt>null</tt>
      */
-    public void setThruDate(Date thruDate) {
-        this.thruDate = thruDate;
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
     /**
