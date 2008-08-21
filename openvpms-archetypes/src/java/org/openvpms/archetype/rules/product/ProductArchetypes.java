@@ -48,6 +48,11 @@ public class ProductArchetypes {
     public static final String TEMPLATE = "product.template";
 
     /**
+     * Price template short name.
+     */
+    public static final String PRICE_TEMPLATE = "product.priceTemplate";
+
+    /**
      * Product participation short name.
      */
     public static final String PRODUCT_PARTICIPATION = "participation.product";
@@ -67,6 +72,12 @@ public class ProductArchetypes {
      */
     public static final String PRODUCT_SUPPLIER_RELATIONSHIP
             = "entityRelationship.productSupplier";
+
+    /**
+     * Product link entity relationship short name.
+     */
+    public static final String PRODUCT_LINK_RELATIONSHIP
+            = "entityRelationship.productLink";
 
     /**
      * Product type short name.

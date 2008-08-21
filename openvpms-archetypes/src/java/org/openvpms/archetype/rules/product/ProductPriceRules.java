@@ -21,12 +21,15 @@ package org.openvpms.archetype.rules.product;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -36,6 +39,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 
@@ -71,9 +75,35 @@ public class ProductPriceRules {
      *
      * @param service the archetype service
      */
-    public ProductPriceRules(IArchetypeService service, ILookupService lookups) {
+    public ProductPriceRules(IArchetypeService service,
+                             ILookupService lookups) {
         this.service = service;
         this.lookups = lookups;
+    }
+
+    /**
+     * Returns the first price with the specified short name active at the
+     * specified date.
+     *
+     * @param product   the product
+     * @param shortName the price short name
+     * @param date      the date
+     * @return the first matching price, or <tt>null</tt> if none is found
+     */
+    public ProductPrice getProductPrice(Product product, String shortName,
+                                        Date date) {
+        ProductPrice result = findPrice(product, shortName, date);
+        if (result == null && ProductArchetypes.FIXED_PRICE.equals(shortName)) {
+            // see if there is a fixed price in linked products
+            EntityBean bean = new EntityBean(product, service);
+            for (Entity linked : bean.getNodeTargetEntities("linked", date)) {
+                result = findPrice((Product) linked, shortName, date);
+                if (result != null) {
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -225,6 +255,33 @@ public class ProductPriceRules {
             return percent.divide(BigDecimal.valueOf(100));
         }
         return BigDecimal.ZERO;
+    }
+
+    /**
+     * Finds a product price matching the specified short name and active
+     * at the specified date.
+     *
+     * @param product   the product
+     * @param shortName the price short name
+     * @param date      the date
+     * @return the price matching the criteria, or <tt>null</tt> if none is
+     *         found
+     */
+    private ProductPrice findPrice(Product product, String shortName,
+                                   Date date) {
+        ProductPrice result = null;
+        for (ProductPrice price : product.getProductPrices()) {
+            if (TypeHelper.isA(price, shortName) && price.isActive()) {
+                Date from = price.getFromDate();
+                Date to = price.getToDate();
+                if ((from == null || DateRules.compareTo(from, date) <= 0)
+                        && (to == null || DateRules.compareTo(to, date) >= 0)) {
+                    result = price;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
 }

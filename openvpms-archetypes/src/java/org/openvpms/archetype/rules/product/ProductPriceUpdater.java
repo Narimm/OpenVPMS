@@ -249,7 +249,7 @@ public class ProductPriceUpdater {
                                         cost, getPractice(), getCurrency());
         if (!result.isEmpty()) {
             if (save) {
-                save(result);
+                service.save(result);
             } else {
                 for (ProductPrice price : result) {
                     service.deriveValues(price);
@@ -287,16 +287,10 @@ public class ProductPriceUpdater {
         if (result == null) {
             result = Collections.emptyList();
         } else if (save) {
-            save(result);
+            service.save(result);
         }
         return result;
     }
-
-    @SuppressWarnings("unchecked")
-    private void save(List<ProductPrice> result) {
-        service.save((List) result);
-    }
-
 
     /**
      * Returns the practice.

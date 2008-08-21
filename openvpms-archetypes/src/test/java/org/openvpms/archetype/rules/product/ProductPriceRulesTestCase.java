@@ -20,14 +20,20 @@ package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Random;
 
 
@@ -59,6 +65,60 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      */
     private ProductPriceRules rules;
 
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrice} method.
+     */
+    public void testGetProductPrice() {
+        ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-1-1", "2008-1-31");
+        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-2-1",
+                                          "2008-12-31");
+        ProductPrice fixed3 = createPrice(FIXED_PRICE, "2008-2-1", null);
+
+        ProductPrice unit1 = createPrice(UNIT_PRICE, "2008-1-1", "2008-1-10");
+        ProductPrice unit2 = createPrice(UNIT_PRICE, "2008-2-1", null);
+
+        assertNull(rules.getProductPrice(product, FIXED_PRICE, new Date()));
+        assertNull(rules.getProductPrice(product, UNIT_PRICE, new Date()));
+
+        fixed3.setFromDate(getDate("2009-1-1"));
+
+        product.addProductPrice(fixed1);
+        product.addProductPrice(fixed2);
+        product.addProductPrice(unit1);
+        product.addProductPrice(unit2);
+
+        checkPrice(null, FIXED_PRICE, "2007-1-1");
+        checkPrice(fixed1, FIXED_PRICE, "2008-1-1");
+        checkPrice(fixed1, FIXED_PRICE, "2008-1-31");
+        checkPrice(fixed2, FIXED_PRICE, "2008-2-1");
+        checkPrice(fixed2, FIXED_PRICE, "2008-12-31");
+        checkPrice(null, FIXED_PRICE, "2009-1-1");
+
+        checkPrice(null, UNIT_PRICE, "2007-12-31");
+        checkPrice(unit1, UNIT_PRICE, "2008-1-1");
+        checkPrice(unit1, UNIT_PRICE, "2008-1-10");
+        checkPrice(null, UNIT_PRICE, "2008-1-11");
+        checkPrice(unit2, UNIT_PRICE, "2008-2-1");
+        checkPrice(unit2, UNIT_PRICE, "2010-2-1"); // unbounded
+
+        // verify that linked products are used if there are no matching prices
+        // for the date
+        Product priceTemplate = (Product) create(
+                ProductArchetypes.PRICE_TEMPLATE);
+        priceTemplate.addProductPrice(fixed3);
+        priceTemplate.setName("XPriceTemplate");
+        save(priceTemplate);
+
+        EntityBean bean = new EntityBean(product);
+        bean.addRelationship(ProductArchetypes.PRODUCT_LINK_RELATIONSHIP,
+                             priceTemplate);
+        bean.save();
+
+        product = get(product);
+        checkPrice(fixed3, FIXED_PRICE, "2009-1-1");
+        checkPrice(fixed2, FIXED_PRICE, "2008-12-31");
+    }
 
     /**
      * Tests the {@link ProductPriceRules#getPrice} method.
@@ -97,6 +157,37 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(practice);
         Currencies currencies = new Currencies();
         currency = currencies.getCurrency(bean.getString("currency"));
+    }
+
+    /**
+     * Verfies a price matches that expected.
+     *
+     * @param expected  the expected price
+     * @param shortName the price short name
+     * @param date      the date that the price applies to
+     */
+    private void checkPrice(ProductPrice expected, String shortName,
+                            String date) {
+        assertEquals(expected,
+                     rules.getProductPrice(product, shortName, getDate(date)));
+    }
+
+    /**
+     * Helper to create a new price.
+     *
+     * @param shortName the short name
+     * @param from      the active from date. May be <tt>null</tt>
+     * @param to        the active to date. May be <tt>null</tt>
+     */
+    private ProductPrice createPrice(String shortName, String from, String to) {
+        ProductPrice result = (ProductPrice) create(shortName);
+        result.setName("XPrice");
+        Date fromDate = (from != null) ? getDate(from) : null;
+        Date toDate = (to != null) ? getDate(to) : null;
+        result.setPrice(BigDecimal.ONE);
+        result.setFromDate(fromDate);
+        result.setToDate(toDate);
+        return result;
     }
 
     /**

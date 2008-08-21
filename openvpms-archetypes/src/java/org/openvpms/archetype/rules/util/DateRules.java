@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.util;
 
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -60,5 +61,28 @@ public class DateRules {
             }
         }
         return calendar.getTime();
+    }
+
+    /**
+     * Helper to compare two dates.
+     * <p/>
+     * This is functionally equivalent to the {@link Date#compareTo(Date)}
+     * method, except that it doesn't throw <tt>ClassCastExceptions</tt>
+     * if <tt>lhs</tt> is an instance of a {@link Timestamp Timestamp} and
+     * <tt>rhs</tt> isn't.
+     * <p/>
+     * For timestamps, the nanoseconds are ignored.
+     *
+     * @param lhs the date
+     * @param rhs the date to compare with
+     * @return <tt>0</tt> if the <tt>lhs</tt> is equal to <tt>rhs</tt>;
+     *          a value less than <tt>0</tt> if <tt>lhs</tt> is before
+     *         <tt>rhs</tt>; and a value greater than
+     *      <tt>0</tt> if <tt>lhs</tt> is after <tt>rhs</tt>.
+     */
+    public static int compareTo(Date lhs, Date rhs) {
+        long lhsTime = lhs.getTime();
+        long rhsTime = rhs.getTime();
+        return (lhsTime < rhsTime ? -1 : (lhsTime == rhsTime ? 0 : 1));
     }
 }

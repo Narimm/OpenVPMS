@@ -24,7 +24,7 @@
               minCardinality="1" derivedValue="concat('Unit Price','')"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" minCardinality="1" derived="true"
-              derivedValue="concat('$ ',/price, ' ',openvpms:lookup(.,'uom'),'(',date:formatDate(/fromDate), ' - ',date:formatDate(/thruDate),')')"/>
+              derivedValue="concat('$ ',/price, ' ',openvpms:lookup(.,'uom'),'(',date:formatDate(/fromDate), ' - ',date:formatDate(/toDate),')')"/>
         <node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" hidden="true" defaultValue="false()"/>
         <node name="cost" path="/details/cost" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="0.0"/>
 		<node name="markup" path="/details/markup" type="java.math.BigDecimal"  minCardinality="0" defaultValue="100.0"/>			
@@ -41,7 +41,7 @@
 		<node displayName="From Date" name="fromDate" path="/fromDate"
 			type="java.util.Date" minCardinality="0"
 			defaultValue="java.util.Date.new()" />
-		<node displayName="To Date" name="thruDate" path="/thruDate"
+		<node displayName="To Date" name="toDate" path="/toDate"
 			type="java.util.Date" minCardinality="0" />
     </archetype>
 </archetypes>
