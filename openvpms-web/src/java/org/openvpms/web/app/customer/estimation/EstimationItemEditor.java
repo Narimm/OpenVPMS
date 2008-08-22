@@ -16,20 +16,18 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.estimation;
+package org.openvpms.web.app.customer.estimation;
 
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.app.customer.FixedPriceActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -50,7 +48,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class EstimationItemEditor extends ActItemEditor {
+public class EstimationItemEditor extends FixedPriceActItemEditor {
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -86,6 +84,7 @@ public class EstimationItemEditor extends ActItemEditor {
         getProperty("fixedPrice").addModifiableListener(listener);
         getProperty("highUnitPrice").addModifiableListener(listener);
         getProperty("highQty").addModifiableListener(listener);
+
     }
 
     /**
@@ -99,43 +98,40 @@ public class EstimationItemEditor extends ActItemEditor {
     }
 
     /**
-     * Invoked when the participation product is changed, to update prices.
+     * Invoked when the product is changed, to update prices.
      *
-     * @param participation the product participation instance
+     * @param product the product. May be <tt>null</tt>
      */
-    protected void productModified(Participation participation) {
-        IMObjectReference entity = participation.getEntity();
-        IMObject object = IMObjectHelper.getObject(entity);
-        if (object instanceof Product) {
-            Product product = (Product) object;
-            if (TypeHelper.isA(product, "product.template")) {
-                if (getFilter() != TEMPLATE_FILTER) {
-                    changeLayout(TEMPLATE_FILTER);
-                }
-                // zero out the fixed, low and high prices.
-                Property fixedPrice = getProperty("fixedPrice");
-                Property lowUnitPrice = getProperty("lowUnitPrice");
-                Property highUnitPrice = getProperty("highUnitPrice");
-                fixedPrice.setValue(BigDecimal.ZERO);
-                lowUnitPrice.setValue(BigDecimal.ZERO);
-                highUnitPrice.setValue(BigDecimal.ZERO);
-            } else {
-                if (getFilter() != null) {
-                    changeLayout(null);
-                }
-                Property fixedPrice = getProperty("fixedPrice");
-                Property lowUnitPrice = getProperty("lowUnitPrice");
-                Property highUnitPrice = getProperty("highUnitPrice");
-                ProductPrice fixed = getPrice("productPrice.fixedPrice",
-                                              product);
-                ProductPrice unit = getPrice("productPrice.unitPrice", product);
-                if (fixed != null) {
-                    fixedPrice.setValue(fixed.getPrice());
-                }
-                if (unit != null) {
-                    lowUnitPrice.setValue(unit.getPrice());
-                    highUnitPrice.setValue(unit.getPrice());
-                }
+    @Override
+    protected void productModified(Product product) {
+        super.productModified(product);
+        if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+            if (getFilter() != TEMPLATE_FILTER) {
+                changeLayout(TEMPLATE_FILTER);
+            }
+            // zero out the fixed, low and high prices.
+            Property fixedPrice = getProperty("fixedPrice");
+            Property lowUnitPrice = getProperty("lowUnitPrice");
+            Property highUnitPrice = getProperty("highUnitPrice");
+            fixedPrice.setValue(BigDecimal.ZERO);
+            lowUnitPrice.setValue(BigDecimal.ZERO);
+            highUnitPrice.setValue(BigDecimal.ZERO);
+        } else {
+            if (getFilter() != null) {
+                changeLayout(null);
+            }
+            Property fixedPrice = getProperty("fixedPrice");
+            Property lowUnitPrice = getProperty("lowUnitPrice");
+            Property highUnitPrice = getProperty("highUnitPrice");
+            ProductPrice fixed = getPrice("productPrice.fixedPrice",
+                                          product);
+            ProductPrice unit = getPrice("productPrice.unitPrice", product);
+            if (fixed != null) {
+                fixedPrice.setValue(fixed.getPrice());
+            }
+            if (unit != null) {
+                lowUnitPrice.setValue(unit.getPrice());
+                highUnitPrice.setValue(unit.getPrice());
             }
         }
     }
@@ -148,7 +144,7 @@ public class EstimationItemEditor extends ActItemEditor {
             Party customer = (Party) IMObjectHelper.getObject(getCustomer());
             Party patient = (Party) IMObjectHelper.getObject(getPatient());
             Product product = (Product) IMObjectHelper.getObject(
-                    getProduct());
+                    getProductRef());
 
             if (customer != null && patient != null && product != null) {
                 Act act = (Act) getObject();

@@ -149,7 +149,7 @@ public class ActRelationshipCollectionEditor
         Act act = (Act) editor.getObject();
         if (editor instanceof ActItemEditor
                 && hasProductTemplate((ActItemEditor) editor)) {
-            IMObjectReference product = ((ActItemEditor) editor).getProduct();
+            IMObjectReference product = ((ActItemEditor) editor).getProductRef();
             if (TypeHelper.isA(product, TEMPLATE)) {
                 result = expandTemplate((ActItemEditor) editor, act, product);
                 if (result) {
@@ -244,7 +244,7 @@ public class ActRelationshipCollectionEditor
                     }
                 }
 
-                editor.setProduct(product);
+                editor.setProductRef(product);
 
                 collection.add(copy);
                 collection.setEditor(copy, editor);
@@ -262,7 +262,7 @@ public class ActRelationshipCollectionEditor
      * @param editor the editor
      */
     private boolean hasProductTemplate(ActItemEditor editor) {
-        IMObjectReference product = editor.getProduct();
+        IMObjectReference product = editor.getProductRef();
         return TypeHelper.isA(product, TEMPLATE);
     }
 

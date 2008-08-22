@@ -19,6 +19,7 @@
 package org.openvpms.web.component.util;
 
 import echopointng.RichTextArea;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.PasswordField;
 import nextapp.echo2.app.TextArea;
@@ -94,6 +95,24 @@ public class TextComponentFactory extends ComponentFactory {
                                    Format format) {
         TextField text = new BoundFormattedField(property, columns, format);
         setDefaultStyle(text);
+        return text;
+    }
+
+    /**
+     * Creates a new bound text field, restricted to numeric input.
+     *
+     * @param property the property to bind
+     * @param columns  the no. of columnns to display
+     * @return a new bound text field
+     */
+    public static TextField createNumeric(Property property, int columns) {
+        boolean edit = !property.isReadOnly() || property.isDerived();
+        Format format = NumberFormatter.getFormat(property, edit);
+        TextField text = create(property, columns, format);
+        if (!edit) {
+            Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
+            text.setAlignment(align);
+        }
         return text;
     }
 

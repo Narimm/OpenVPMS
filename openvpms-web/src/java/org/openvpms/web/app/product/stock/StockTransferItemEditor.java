@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -31,7 +30,6 @@ import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -110,7 +108,7 @@ public class StockTransferItemEditor extends ActItemEditor {
      */
     public void setTransferFrom(Party location) {
         transferFrom = location;
-        updateFromQuantity();
+        updateFromQuantity(getProduct());
     }
 
     /**
@@ -120,17 +118,18 @@ public class StockTransferItemEditor extends ActItemEditor {
      */
     public void setTransferTo(Party location) {
         transferTo = location;
-        updateToQuantity();
+        updateToQuantity(getProduct());
     }
 
     /**
-     * Invoked when the participation product is changed.
+     * Invoked when the product is changed.
      *
-     * @param participation the product participation instance
+     * @param product the product. May be <tt>null</tt>
      */
-    protected void productModified(Participation participation) {
-        updateFromQuantity();
-        updateToQuantity();
+    @Override
+    protected void productModified(Product product) {
+        updateFromQuantity(product);
+        updateToQuantity(product);
     }
 
     /**
@@ -162,28 +161,32 @@ public class StockTransferItemEditor extends ActItemEditor {
 
     /**
      * Updates the transfer-from stock quantity.
+     *
+     * @param product the product. May be <tt>null</tt>
      */
-    private void updateFromQuantity() {
-        fromQuantity.setValue(getStock(transferFrom));
+    private void updateFromQuantity(Product product) {
+        fromQuantity.setValue(getStock(product, transferFrom));
     }
 
     /**
      * Updates the transfer-to stock quantity.
+     *
+     * @param product the product. May be <tt>null</tt>
      */
-    private void updateToQuantity() {
-        toQuantity.setValue(getStock(transferTo));
+    private void updateToQuantity(Product product) {
+        toQuantity.setValue(getStock(product, transferTo));
     }
 
     /**
      * Returns the stock at the specified stock location.
      *
+     * @param product       the product
      * @param stockLocation the stock location
      * @return the stock quantity
      */
-    private BigDecimal getStock(Party stockLocation) {
+    private BigDecimal getStock(Product product, Party stockLocation) {
         BigDecimal result = BigDecimal.ZERO;
         try {
-            Product product = (Product) IMObjectHelper.getObject(getProduct());
             if (product != null && stockLocation != null) {
                 result = rules.getStock(product, stockLocation);
             }
