@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -88,8 +89,17 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return a reference to the product, or <tt>null</tt> if the act has
      *         no product
      */
-    public IMObjectReference getProduct() {
+    public IMObjectReference getProductRef() {
         return getParticipantRef("product");
+    }
+
+    /**
+     * Returns the product.
+     *
+     * @return the product, or <tt>null</tt> if the act has no product
+     */
+    public Product getProduct() {
+        return (Product) IMObjectHelper.getObject(getProductRef());
     }
 
     /**
@@ -97,7 +107,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *
      * @param product a reference to the product.
      */
-    public void setProduct(IMObjectReference product) {
+    public void setProductRef(IMObjectReference product) {
         ProductParticipationEditor editor = getProductEditor();
         if (editor != null) {
             Property entity = editor.getProperty();
@@ -136,13 +146,30 @@ public abstract class ActItemEditor extends AbstractActEditor {
 
     /**
      * Invoked when the participation product is changed.
+     * <p/>
+     * This delegates to {@link #productModified(Product)}.
      *
      * @param participation the product participation instance
      */
-    protected abstract void productModified(Participation participation);
+    protected void productModified(Participation participation) {
+        Product product = (Product) IMObjectHelper.getObject(
+                participation.getEntity());
+        productModified(product);
+    }
 
     /**
-     * Helper to return a product price from a product.
+     * Invoked when the product is changed.
+     * <p/>
+     * This implementation is a no-op.
+     *
+     * @param product the product. May be <tt>null</tt>
+     */
+    protected void productModified(Product product) {
+    }
+
+    /**
+     * Returns the first price with the specified short name, active at the
+     * specified date.
      *
      * @param shortName the price short name
      * @param product   the product
@@ -150,7 +177,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         <tt>null</tt> if none exists
      */
     protected ProductPrice getPrice(String shortName, Product product) {
-        return IMObjectHelper.getObject(shortName, product.getProductPrices());
+        ProductPriceRules rules = new ProductPriceRules();
+        return rules.getProductPrice(product, shortName, getStartTime());
     }
 
     /**

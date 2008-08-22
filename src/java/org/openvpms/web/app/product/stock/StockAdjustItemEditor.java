@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -31,7 +30,6 @@ import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -96,13 +94,18 @@ public class StockAdjustItemEditor extends ActItemEditor {
     }
 
     /**
-     * Invoked when the participation product is changed.
+     * Updates the current stock quantity when the product changes.
      *
-     * @param participation the product participation instance
+     * @param product the product. May be <tt>null</tt>
      */
-    protected void productModified(Participation participation) {
+    @Override
+    protected void productModified(Product product) {
         try {
-            updateCurrentStock();
+            BigDecimal quantity = BigDecimal.ZERO;
+            if (stockLocation != null && product != null) {
+                quantity = rules.getStock(product, stockLocation);
+            }
+            currentQuantity.setValue(quantity);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -130,19 +133,6 @@ public class StockAdjustItemEditor extends ActItemEditor {
                 return set;
             }
         };
-    }
-
-    private void updateCurrentStock() {
-        BigDecimal quantity = BigDecimal.ZERO;
-        try {
-            Product product = (Product) IMObjectHelper.getObject(getProduct());
-            if (stockLocation != null && product != null) {
-                quantity = rules.getStock(product, stockLocation);
-            }
-        } catch (OpenVPMSException error) {
-            ErrorHelper.show(error);
-        }
-        currentQuantity.setValue(quantity);
     }
 
 }

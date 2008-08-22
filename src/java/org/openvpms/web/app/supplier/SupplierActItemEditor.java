@@ -93,7 +93,8 @@ public abstract class SupplierActItemEditor extends ActItemEditor {
         if (quantity != null && unitPrice != null) {
             Context context = getLayoutContext().getContext();
             Party practice = context.getPractice();
-            Product product = (Product) IMObjectHelper.getObject(getProduct());
+            Product product = (Product) IMObjectHelper.getObject(
+                    getProductRef());
             if (product != null && practice != null) {
                 BigDecimal amount = quantity.multiply(unitPrice);
                 BigDecimal previousTax = act.getTaxAmount();

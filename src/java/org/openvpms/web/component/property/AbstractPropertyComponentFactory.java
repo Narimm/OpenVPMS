@@ -18,16 +18,11 @@
 
 package org.openvpms.web.component.property;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.TextComponentFactory;
-
-import java.text.Format;
 
 
 /**
@@ -114,15 +109,7 @@ public abstract class AbstractPropertyComponentFactory
      */
     protected Component createNumeric(Property property) {
         int maxColumns = 10;
-        boolean edit = !property.isReadOnly() || property.isDerived();
-        Format format = NumberFormatter.getFormat(property, edit);
-        TextField text = TextComponentFactory.create(property, maxColumns,
-                                                     format);
-        if (!edit) {
-            Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
-            text.setAlignment(align);
-        }
-        return text;
+        return TextComponentFactory.createNumeric(property, maxColumns);
     }
 
     /**

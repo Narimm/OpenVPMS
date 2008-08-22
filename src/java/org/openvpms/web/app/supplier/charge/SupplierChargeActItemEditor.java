@@ -18,17 +18,14 @@
 
 package org.openvpms.web.app.supplier.charge;
 
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.supplier.SupplierActItemEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
 
@@ -60,20 +57,16 @@ public class SupplierChargeActItemEditor extends SupplierActItemEditor {
     }
 
     /**
-     * Invoked when the participation product is changed, to update prices.
+     * Invoked when the product is changed to update prices.
      *
-     * @param participation the product participation instance
+     * @param product the product. May be <tt>null</tt>
      */
-    protected void productModified(Participation participation) {
-        IMObjectReference entity = participation.getEntity();
-        IMObject object = IMObjectHelper.getObject(entity);
-        if (object instanceof Product) {
-            Product product = (Product) object;
-            Property unitCost = getProperty("unitPrice");
-            ProductPrice unit = getPrice("productPrice.unitPrice", product);
-            if (unit != null) {
-                unitCost.setValue(unit.getPrice());
-            }
+    @Override
+    protected void productModified(Product product) {
+        Property unitCost = getProperty("unitPrice");
+        ProductPrice unit = getPrice(ProductArchetypes.UNIT_PRICE, product);
+        if (unit != null) {
+            unitCost.setValue(unit.getPrice());
         }
     }
 }

@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -40,9 +39,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.customer.FixedPriceActItemEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
@@ -68,13 +67,14 @@ import java.util.Set;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerAccountInvoiceItem</em>, <em>act.customerAccountCreditItem</em>
+ * <em>act.customerAccountInvoiceItem</em>,
+ * <em>act.customerAccountCreditItem</em>
  * or <em>act.customerAccountCounterItem</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class CustomerChargeActItemEditor extends ActItemEditor {
+public class CustomerChargeActItemEditor extends FixedPriceActItemEditor {
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -143,7 +143,7 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
 
         calculateTax();
 
-        IMObjectReference ref = getProduct();
+        IMObjectReference ref = getProductRef();
         if (!TypeHelper.isA(ref, MEDICATION)) {
             setFilter(DISPENSING_FILTER);
         }
@@ -219,7 +219,8 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
     protected boolean doSave() {
         CollectionProperty dispensing
                 = (CollectionProperty) getProperty("dispensing");
-        if (dispensing != null && !TypeHelper.isA(getProduct(), MEDICATION)) {
+        if (dispensing != null && !TypeHelper.isA(getProductRef(), MEDICATION))
+        {
             // need to remove any redundant dispensing act
             if (!dispensing.getValues().isEmpty()) {
                 Object[] values = dispensing.getValues().toArray();
@@ -272,48 +273,45 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
     }
 
     /**
-     * Invoked when the participation product is changed, to update prices
+     * Invoked when the product is changed, to update prices
      * and dispensing acts.
      *
-     * @param participation the product participation instance
+     * @param product the product. May be <tt>null</tt>
      */
-    protected void productModified(Participation participation) {
-        IMObjectReference entity = participation.getEntity();
-        IMObject object = IMObjectHelper.getObject(entity);
-        if (object instanceof Product) {
-            Product product = (Product) object;
-            if (TypeHelper.isA(product, TEMPLATE)) {
-                if (getFilter() != TEMPLATE_FILTER) {
-                    changeLayout(TEMPLATE_FILTER);
-                }
-                // zero out the fixed and unit prices.
-                Property fixedPrice = getProperty("fixedPrice");
-                Property unitPrice = getProperty("unitPrice");
-                fixedPrice.setValue(BigDecimal.ZERO);
-                unitPrice.setValue(BigDecimal.ZERO);
-            } else {
-                if (TypeHelper.isA(product, MEDICATION)) {
-                    if (getFilter() != null) {
-                        changeLayout(null);
-                    }
-                    updateMedicationProduct(product);
-                } else {
-                    if (getFilter() != DISPENSING_FILTER) {
-                        changeLayout(DISPENSING_FILTER);
-                    }
-                }
-                Property fixedPrice = getProperty("fixedPrice");
-                Property unitPrice = getProperty("unitPrice");
-                ProductPrice fixed = getPrice(FIXED_PRICE, product);
-                ProductPrice unit = getPrice(UNIT_PRICE, product);
-                if (fixed != null) {
-                    fixedPrice.setValue(fixed.getPrice());
-                }
-                if (unit != null) {
-                    unitPrice.setValue(unit.getPrice());
-                }
-                updateStockLocation(product);
+    @Override
+    protected void productModified(Product product) {
+        super.productModified(product);
+        if (TypeHelper.isA(product, TEMPLATE)) {
+            if (getFilter() != TEMPLATE_FILTER) {
+                changeLayout(TEMPLATE_FILTER);
             }
+            // zero out the fixed and unit prices.
+            Property fixedPrice = getProperty("fixedPrice");
+            Property unitPrice = getProperty("unitPrice");
+            fixedPrice.setValue(BigDecimal.ZERO);
+            unitPrice.setValue(BigDecimal.ZERO);
+        } else {
+            if (TypeHelper.isA(product, MEDICATION)) {
+                if (getFilter() != null) {
+                    changeLayout(null);
+                }
+                updateMedicationProduct(product);
+            } else {
+                if (getFilter() != DISPENSING_FILTER) {
+                    changeLayout(DISPENSING_FILTER);
+                }
+            }
+            Property fixedPrice = getProperty("fixedPrice");
+            Property unitPrice = getProperty("unitPrice");
+            ProductPrice fixed = getPrice(FIXED_PRICE, product);
+            ProductPrice unit = getPrice(UNIT_PRICE, product);
+            if (fixed != null) {
+                fixedPrice.setValue(fixed.getPrice());
+            }
+            if (unit != null) {
+                unitPrice.setValue(unit.getPrice());
+            }
+            updateStockLocation(product);
         }
     }
 
@@ -327,7 +325,7 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
         Party customer = (Party) IMObjectHelper.getObject(getCustomer());
         Context context = getLayoutContext().getContext();
         Party practice = context.getPractice();
-        if (customer != null && getProduct() != null && practice != null) {
+        if (customer != null && getProductRef() != null && practice != null) {
             FinancialAct act = (FinancialAct) getObject();
             BigDecimal previousTax = act.getTaxAmount();
             CustomerTaxRules rules
@@ -359,7 +357,7 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
             Party customer = (Party) IMObjectHelper.getObject(getCustomer());
             Party patient = (Party) IMObjectHelper.getObject(getPatient());
             Product product = (Product) IMObjectHelper.getObject(
-                    getProduct());
+                    getProductRef());
 
             // calculate the discount
             if (customer != null && product != null) {
