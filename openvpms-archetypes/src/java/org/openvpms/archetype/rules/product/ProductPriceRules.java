@@ -40,7 +40,9 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -82,7 +84,7 @@ public class ProductPriceRules {
     }
 
     /**
-     * Returns the first price with the specified short name active at the
+     * Returns the first price with the specified short name, active at the
      * specified date.
      *
      * @param product   the product
@@ -92,15 +94,48 @@ public class ProductPriceRules {
      */
     public ProductPrice getProductPrice(Product product, String shortName,
                                         Date date) {
-        ProductPrice result = findPrice(product, shortName, date);
-        if (result == null && ProductArchetypes.FIXED_PRICE.equals(shortName)) {
+        boolean useDefault = ProductArchetypes.FIXED_PRICE.equals(shortName);
+        ProductPrice result = findPrice(product, shortName, date, useDefault);
+        if (useDefault && (result == null || !isDefault(result))) {
+            // see if there is a fixed price in linked products
+            EntityBean bean = new EntityBean(product, service);
+            List<Entity> products = bean.getNodeTargetEntities("linked", date);
+            for (Entity linked : products) {
+                ProductPrice price = findPrice((Product) linked, shortName,
+                                               date, useDefault);
+                if (price != null) {
+                    if (isDefault(price)) {
+                        result = price;
+                        break;
+                    } else if (result == null) {
+                        result = price;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all prices matching the specified short name, active at the
+     * specified date.
+     *
+     * @param product   the product
+     * @param shortName the price short name
+     * @param date      the date
+     * @return the first matching price, or <tt>null</tt> if none is found
+     */
+    public Set<ProductPrice> getProductPrices(Product product, String shortName,
+                                              Date date) {
+        Set<ProductPrice> result = new HashSet<ProductPrice>();
+        List<ProductPrice> prices = findPrices(product, shortName, date);
+        result.addAll(prices);
+        if (ProductArchetypes.FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
             EntityBean bean = new EntityBean(product, service);
             for (Entity linked : bean.getNodeTargetEntities("linked", date)) {
-                result = findPrice((Product) linked, shortName, date);
-                if (result != null) {
-                    break;
-                }
+                prices = findPrices((Product) linked, shortName, date);
+                result.addAll(prices);
             }
         }
         return result;
@@ -261,27 +296,90 @@ public class ProductPriceRules {
      * Finds a product price matching the specified short name and active
      * at the specified date.
      *
+     * @param product    the product
+     * @param shortName  the price short name
+     * @param date       the date
+     * @param useDefault if <tt>true</tt>, select prices that have a
+     *                   <tt>true</tt> default node
+     * @return the price matching the criteria, or <tt>null</tt> if none is
+     *         found
+     */
+    private ProductPrice findPrice(Product product, String shortName,
+                                   Date date, boolean useDefault) {
+        ProductPrice result = null;
+        ProductPrice fallback = null;
+        for (ProductPrice price : product.getProductPrices()) {
+            if (matches(price, shortName, date)) {
+                if (useDefault) {
+                    if (isDefault(price)) {
+                        result = price;
+                        break;
+                    } else {
+                        fallback = price;
+                    }
+                } else {
+                    result = price;
+                }
+            }
+        }
+        return (result != null) ? result : fallback;
+    }
+
+    /**
+     * Finds a product price matching the specified short name and active
+     * at the specified date.
+     *
      * @param product   the product
      * @param shortName the price short name
      * @param date      the date
      * @return the price matching the criteria, or <tt>null</tt> if none is
      *         found
      */
-    private ProductPrice findPrice(Product product, String shortName,
-                                   Date date) {
-        ProductPrice result = null;
+    private List<ProductPrice> findPrices(Product product, String shortName,
+                                          Date date) {
+        List<ProductPrice> result = null;
         for (ProductPrice price : product.getProductPrices()) {
-            if (TypeHelper.isA(price, shortName) && price.isActive()) {
-                Date from = price.getFromDate();
-                Date to = price.getToDate();
-                if ((from == null || DateRules.compareTo(from, date) <= 0)
-                        && (to == null || DateRules.compareTo(to, date) >= 0)) {
-                    result = price;
-                    break;
+            if (matches(price, shortName, date)) {
+                if (result == null) {
+                    result = new ArrayList<ProductPrice>();
                 }
+                result.add(price);
             }
+        }
+        if (result == null) {
+            result = Collections.emptyList();
         }
         return result;
     }
 
+    /**
+     * Determines if a fixed price is the default.
+     *
+     * @param price the price
+     * @return <tt>true</tt> if it is the default, otherwise <tt>false</tt>
+     */
+    private boolean isDefault(ProductPrice price) {
+        IMObjectBean bean = new IMObjectBean(price, service);
+        return bean.getBoolean("default");
+    }
+
+    /**
+     * Determines if a price matches the specified criteria.
+     *
+     * @param price     the price to check
+     * @param shortName the price short name
+     * @param date      the date that the price must be active
+     * @return <tt>true</tt> if the price matches, otherwise <tt>false</tt>
+     */
+    private boolean matches(ProductPrice price, String shortName, Date date) {
+        if (TypeHelper.isA(price, shortName) && price.isActive()) {
+            Date from = price.getFromDate();
+            Date to = price.getToDate();
+            if ((from == null || DateRules.compareTo(from, date) <= 0)
+                    && (to == null || DateRules.compareTo(to, date) >= 0)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

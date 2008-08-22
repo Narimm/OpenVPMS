@@ -25,6 +25,7 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import static org.openvpms.archetype.test.TestHelper.getDate;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -35,6 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Random;
+import java.util.Set;
 
 
 /**
@@ -70,18 +72,15 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link ProductPriceRules#getProductPrice} method.
      */
     public void testGetProductPrice() {
-        ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-1-1", "2008-1-31");
-        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-2-1",
-                                          "2008-12-31");
-        ProductPrice fixed3 = createPrice(FIXED_PRICE, "2008-2-1", null);
+        ProductPrice fixed1 = createFixedPrice("2008-1-1", "2008-1-31", false);
+        ProductPrice fixed2 = createFixedPrice("2008-2-1", "2008-12-31", false);
+        ProductPrice fixed3 = createFixedPrice("2008-3-1", null, true);
 
         ProductPrice unit1 = createPrice(UNIT_PRICE, "2008-1-1", "2008-1-10");
         ProductPrice unit2 = createPrice(UNIT_PRICE, "2008-2-1", null);
 
         assertNull(rules.getProductPrice(product, FIXED_PRICE, new Date()));
         assertNull(rules.getProductPrice(product, UNIT_PRICE, new Date()));
-
-        fixed3.setFromDate(getDate("2009-1-1"));
 
         product.addProductPrice(fixed1);
         product.addProductPrice(fixed2);
@@ -111,13 +110,68 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         save(priceTemplate);
 
         EntityBean bean = new EntityBean(product);
-        bean.addRelationship(ProductArchetypes.PRODUCT_LINK_RELATIONSHIP,
-                             priceTemplate);
+        EntityRelationship relationship = bean.addRelationship(
+                ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
+        relationship.setActiveStartTime(getDate("2008-1-1"));
         bean.save();
 
         product = get(product);
-        checkPrice(fixed3, FIXED_PRICE, "2009-1-1");
-        checkPrice(fixed2, FIXED_PRICE, "2008-12-31");
+        checkPrice(fixed2, FIXED_PRICE, "2008-2-1");
+
+        // fixed3 overrides fixed2 as it is the default
+        checkPrice(fixed3, FIXED_PRICE, "2008-3-1");
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrices} method.
+     */
+    public void testGetProductPrices() {
+        ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-1-1", "2008-1-31");
+        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-1-1",
+                                          "2008-12-31");
+        ProductPrice fixed3 = createPrice(FIXED_PRICE, "2008-2-1", null);
+
+        product.addProductPrice(fixed1);
+        product.addProductPrice(fixed2);
+
+        Product priceTemplate = (Product) create(
+                ProductArchetypes.PRICE_TEMPLATE);
+        priceTemplate.addProductPrice(fixed3);
+        priceTemplate.setName("XPriceTemplate");
+        save(priceTemplate);
+
+        EntityBean bean = new EntityBean(product);
+        EntityRelationship relationship = bean.addRelationship(
+                ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
+        relationship.setActiveStartTime(getDate("2008-1-1"));
+        bean.save();
+
+        product = get(product);
+
+        Set<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE,
+                                                          getDate("2007-1-1"));
+        assertTrue(prices.isEmpty());
+
+        prices = rules.getProductPrices(product, FIXED_PRICE,
+                                        getDate("2008-1-1"));
+        assertEquals(2, prices.size());
+        assertTrue(prices.contains(fixed1));
+        assertTrue(prices.contains(fixed2));
+        assertFalse(prices.contains(fixed3));
+
+        prices = rules.getProductPrices(product, FIXED_PRICE,
+                                        getDate("2008-2-1"));
+        assertEquals(2, prices.size());
+        assertFalse(prices.contains(fixed1));
+        assertTrue(prices.contains(fixed2));
+        assertTrue(prices.contains(fixed3));
+
+        prices = rules.getProductPrices(product, FIXED_PRICE,
+                                        getDate("2009-1-1"));
+        assertEquals(1, prices.size());
+        assertFalse(prices.contains(fixed1));
+        assertFalse(prices.contains(fixed2));
+        assertTrue(prices.contains(fixed3));
     }
 
     /**
@@ -170,6 +224,22 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
                             String date) {
         assertEquals(expected,
                      rules.getProductPrice(product, shortName, getDate(date)));
+    }
+
+    /**
+     * Helper to create a new fixed price.
+     *
+     * @param from      the active from date. May be <tt>null</tt>
+     * @param to        the active to date. May be <tt>null</tt>
+     * @param defaultPrice <tt>true</tt> if the price is the default
+     */
+    private ProductPrice createFixedPrice(String from, String to,
+                                     boolean defaultPrice) {
+        ProductPrice result = createPrice(ProductArchetypes.FIXED_PRICE,
+                                          from, to);
+        IMObjectBean bean = new IMObjectBean(result);
+        bean.setValue("default", defaultPrice);
+        return result;
     }
 
     /**
