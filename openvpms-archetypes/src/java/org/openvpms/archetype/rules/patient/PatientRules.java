@@ -285,7 +285,7 @@ public class PatientRules {
                     result = weeks + " Weeks";
                 }
             } else if (diffdays < (365 * 2)) {
-                result = (diffdays / 31) + " Months";
+                result = (diffdays / 30) + " Months";
             } else {
                 result = (diffdays / 365) + " Years";
             }
