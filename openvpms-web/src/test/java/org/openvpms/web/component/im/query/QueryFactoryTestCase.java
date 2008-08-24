@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
@@ -68,15 +67,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * <em>party.organisationOTC</em> which returns {@link EntityQuery}.
      */
     public void testOrganisationQuery() {
-        String[] shortNames
-                = DescriptorHelper.getShortNames("party.organisation*");
-        for (String shortName : shortNames) {
-            if (shortName.equals("party.organisationOTC")) {
-                checkCreate(shortName, EntityQuery.class, Party.class);
-            } else {
-                checkCreate(shortName, AutoQuery.class, Party.class);
-            }
-        }
+        checkCreate("party.organisation*", EntityQuery.class, Party.class);
     }
 
     /**
