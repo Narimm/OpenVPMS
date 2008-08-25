@@ -26,6 +26,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.workflow.WorkflowQuery;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.AbstractResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -54,6 +55,10 @@ public class CustomerAppointmentQuery extends WorkflowQuery<ObjectSet> {
     public CustomerAppointmentQuery(Party schedule) {
         super(schedule, "schedule", "participation.schedule",
               new String[]{CUSTOMER_APPOINTMENT}, ObjectSet.class);
+        // Set the date to the last date unless null
+        if (GlobalContext.getInstance().getScheduleDate() != null) {
+        	setDate(GlobalContext.getInstance().getScheduleDate());
+        }
     }
 
     /**

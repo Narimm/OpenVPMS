@@ -18,14 +18,19 @@
 
 package org.openvpms.web.app.workflow;
 
-import echopointng.DateChooser;
-import echopointng.DateField;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -47,11 +52,8 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import echopointng.DateChooser;
+import echopointng.DateField;
 
 
 /**
@@ -141,9 +143,22 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
                 // no-op
             }
         });
+        // Create the date field
+        date = DateFieldFactory.create();
     }
 
     /**
+     * Set the displayed date
+     * 
+     * @param date the date to set
+     */
+    public void setDate(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        this.date.getDateChooser().setSelectedDate(calendar);
+	}
+
+	/**
      * Returns the selected date.
      *
      * @return the selected date
@@ -195,7 +210,6 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
                 addDays(-1);
             }
         });
-        date = DateFieldFactory.create();
         Button currentDay = ButtonFactory.create(
                 null, "date.currentDay", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
