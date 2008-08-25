@@ -101,7 +101,7 @@ class ProductReferenceEditor
      */
     @Override
     protected void onUpdated(Product product) {
-        if (product != null) {
+        if (product != null && hasSuppliers(product)) {
             List<EntityRelationship> relationships
                     = getSupplierRelationships(product);
             if (relationships.isEmpty()) {
