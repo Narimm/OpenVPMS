@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -42,11 +43,14 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -106,13 +110,13 @@ public class DiscountRules {
      * </ol>
      * The rates associated with the remaining discountTypes are used to
      * calculate the discount amount. The discount amount is the sum of:
-     * <p>
+     * <p/>
      * <tt>(fixedPrice * discountRate/100) + qty * (unitPrice * discountRate/100)</tt>
      * </p>
      * <br/>
      * for each rate. If the discount amount exceeds the maximum discount
      * calculated by:
-     * <p>
+     * <p/>
      * <tt>(fixedPrice * maxFixedPriceDiscount/100) + qty * (unitPrice * maxUnitPriceDiscount/100)</tt>
      * <p/>
      * then the maximum discount amount will be returned.
@@ -130,14 +134,13 @@ public class DiscountRules {
      * @return the discount amount
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal calculateDiscountAmount(Date date, Party customer,
-                                              Party patient,
-                                              Product product,
-                                              BigDecimal fixedPrice,
-                                              BigDecimal unitPrice,
-                                              BigDecimal quantity,
-                                              BigDecimal maxFixedPriceDiscount,
-                                              BigDecimal maxUnitPriceDiscount) {
+    public BigDecimal calculateDiscount(Date date, Party customer,
+                                        Party patient, Product product,
+                                        BigDecimal fixedPrice,
+                                        BigDecimal unitPrice,
+                                        BigDecimal quantity,
+                                        BigDecimal maxFixedPriceDiscount,
+                                        BigDecimal maxUnitPriceDiscount) {
         BigDecimal discount;
         if (fixedPrice.compareTo(BigDecimal.ZERO) == 0
                 && (unitPrice.compareTo(BigDecimal.ZERO) == 0
@@ -160,6 +163,52 @@ public class DiscountRules {
             }
         }
         return MathRules.round(discount);
+    }
+
+    /**
+     * Returns the discounts for a customer, patient and product.
+     * <p/>
+     * This is the union of all <em>entity.discountType</em> entities associated
+     * with the customer and patient that are also associated with the product.
+     * <p/>
+     * If a customer, patient or product has <em>entity.discountGroupType</em>
+     * entities, the associated <em>entity.discountType</em> entitieswill be
+     * included.
+     *
+     * @param date     the date, used to determine if a discount applies
+     * @param customer the customer
+     * @param patient  the patient. May be <tt>null</tt>
+     * @param product  the product
+     * @return the discount entities
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<Entity> getDiscounts(Date date, Party customer, Party patient,
+                                     Product product) {
+        List<Entity> result = Collections.emptyList();
+        DiscountGroups groups = new DiscountGroups(date);
+        Set<IMObjectReference> productSet = getProductDiscounts(product, date,
+                                                                groups);
+        Set<IMObjectReference> customerSet = getPartyDiscounts(customer, date,
+                                                               groups);
+        Set<IMObjectReference> patientSet = getPartyDiscounts(patient, date,
+                                                              groups);
+        Set<IMObjectReference> partySet
+                = new HashSet<IMObjectReference>(customerSet);
+        partySet.addAll(patientSet);
+
+        Set<IMObjectReference> refs
+                = new HashSet<IMObjectReference>(productSet);
+        refs.retainAll(partySet);
+        if (!refs.isEmpty()) {
+            result = new ArrayList<Entity>();
+            for (IMObjectReference ref : refs) {
+                Entity discount = (Entity) service.get(ref);
+                if (discount != null && discount.isActive()) {
+                    result.add(discount);
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -255,50 +304,15 @@ public class DiscountRules {
     }
 
     /**
-     * Returns the <em>entity.discountType</em> entities for a customer, patient
-     * and product, active for the specified date.
-     *
-     * @param date     the date, used to determine if a discount applies
-     * @param customer the customer
-     * @param patient  the patient. May be <tt>null</tt>
-     * @param product  the product
-     * @return the discount entities
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private List<Entity> getDiscounts(Date date, Party customer, Party patient,
-                                      Product product) {
-        List<Entity> result = Collections.emptyList();
-        Set<IMObjectReference> productSet = getProductDiscounts(product, date);
-        List<IMObjectReference> customerSet = getPartyDiscounts(customer, date);
-        List<IMObjectReference> patientSet = getPartyDiscounts(patient, date);
-        Set<IMObjectReference> partySet
-                = new HashSet<IMObjectReference>(customerSet);
-        partySet.addAll(patientSet);
-
-        Set<IMObjectReference> refs
-                = new HashSet<IMObjectReference>(productSet);
-        refs.retainAll(partySet);
-        if (!refs.isEmpty()) {
-            result = new ArrayList<Entity>();
-            for (IMObjectReference ref : refs) {
-                Entity discount
-                        = (Entity) service.get(ref);
-                if (discount != null && discount.isActive()) {
-                    result.add(discount);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns a set of references to <em>entity.disccountType</em> entities
+     * Returns a set of references to <em>entity.disccountType</em> references
      * for a party.
      *
-     * @param party the party. May be <tt>null</tt>
-     * @return a set of <em>entity.discountType</em> for the party
+     * @param party          the party. May be <tt>null</tt>
+     * @param discountGroups the discount group cache
+     * @return a set of <em>entity.discountType</em> references for the party
      */
-    private List<IMObjectReference> getPartyDiscounts(Party party, Date date) {
+    private Set<IMObjectReference> getPartyDiscounts(
+            Party party, Date date, DiscountGroups discountGroups) {
         List<IMObjectReference> result = Collections.emptyList();
         if (party != null) {
             EntityBean bean = new EntityBean(party, service);
@@ -306,20 +320,21 @@ public class DiscountRules {
                 result = bean.getNodeTargetEntityRefs("discounts", date);
             }
         }
-        return result;
+        return expandGroups(result, discountGroups);
     }
 
     /**
      * Returns a set of references to <em>entity.discountType</em> entities
      * for a product.
      *
-     * @param product the product
-     * @param date    the date
-     * @return a set of <em>entity.discountType</em> for the product
+     * @param product        the product
+     * @param date           the date
+     * @param discountGroups the discount group cache
+     * @return a set of <em>entity.discountType</em> references for the product
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Set<IMObjectReference> getProductDiscounts(Product product,
-                                                       Date date) {
+    private Set<IMObjectReference> getProductDiscounts(
+            Product product, Date date, DiscountGroups discountGroups) {
         EntityBean bean = new EntityBean(product, service);
         Set<IMObjectReference> discounts = new HashSet<IMObjectReference>();
         discounts.addAll(bean.getNodeTargetEntityRefs("discounts", date));
@@ -329,30 +344,59 @@ public class DiscountRules {
             for (EntityRelationship relationship : types) {
                 IMObjectReference srcRef = relationship.getSource();
                 if (srcRef != null) {
-                    discounts.addAll(getProductTypeDiscounts(srcRef, date));
+                    discounts.addAll(getProductTypeDiscounts(srcRef, date,
+                                                             discountGroups));
                 }
             }
         }
-        return discounts;
+        return expandGroups(discounts, discountGroups);
     }
 
     /**
      * Returns discounts associated with an <em>entity.productType</em>,
      * active for the specified date.
      *
-     * @param ref  the product type reference
-     * @param date the date
+     * @param ref            the product type reference
+     * @param date           the date
+     * @param discountGroups the discount group cache
      * @return the discounts associated with the reference
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private List<IMObjectReference> getProductTypeDiscounts(
-            IMObjectReference ref, Date date) {
+    private Set<IMObjectReference> getProductTypeDiscounts(
+            IMObjectReference ref, Date date, DiscountGroups discountGroups) {
+        List<IMObjectReference> discounts
+                = getRelatedEntityReferences(
+                ref, "entityRelationship.discountProductType", "discounts",
+                date);
+        return expandGroups(discounts, discountGroups);
+    }
+
+    private Set<IMObjectReference> expandGroups(
+            Collection<IMObjectReference> discounts,
+            DiscountGroups groups) {
+        if (discounts.isEmpty()) {
+            return Collections.emptySet();
+        }
+        Set<IMObjectReference> result = new HashSet<IMObjectReference>();
+        for (IMObjectReference ref : discounts) {
+            if (TypeHelper.isA(ref, "entity.discountGroupType")) {
+                result.addAll(groups.getDiscountTypes(ref));
+            } else {
+                result.add(ref);
+            }
+        }
+        return result;
+    }
+
+    private List<IMObjectReference> getRelatedEntityReferences(
+            IMObjectReference ref, String relationshipShortName,
+            String collectionNodeName, Date date) {
         List<IMObjectReference> result;
         ShortNameConstraint rel = new ShortNameConstraint(
-                "rel", "entityRelationship.discountProductType", true, false);
+                "rel", relationshipShortName, true, false);
         ArchetypeQuery query = new ArchetypeQuery(
                 new ObjectRefConstraint(ref));
-        query.add(new CollectionNodeConstraint("discounts", rel));
+        query.add(new CollectionNodeConstraint(collectionNodeName, rel));
         query.add(new ObjectRefSelectConstraint("rel.target"));
 
         OrConstraint startTime = new OrConstraint();
@@ -380,4 +424,26 @@ public class DiscountRules {
         return result;
     }
 
+    private class DiscountGroups {
+        private final Date date;
+        private Map<IMObjectReference, List<IMObjectReference>> groups
+                = new HashMap<IMObjectReference, List<IMObjectReference>>();
+
+
+        public DiscountGroups(Date date) {
+            this.date = date;
+        }
+
+        public List<IMObjectReference> getDiscountTypes(IMObjectReference ref) {
+            List<IMObjectReference> result = groups.get(ref);
+            if (result == null) {
+                result = getRelatedEntityReferences(ref,
+                                                    "entityRelationship.discountType",
+                                                    "discounts", date);
+                groups.put(ref, result);
+            }
+            return result;
+        }
+
+    }
 }

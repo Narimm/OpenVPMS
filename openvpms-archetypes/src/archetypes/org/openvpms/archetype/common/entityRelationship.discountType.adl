@@ -11,35 +11,31 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="entityRelationship.discountCustomer.1.0"
+    <archetype name="entityRelationship.discountType.1.0"
                latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityRelationship"
-               displayName="Customer Discount">
+               displayName="Product Discount">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Customer Discount'"/>
+              derivedValue="'Discount Type'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name, ' (', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
-        <node name="source" displayName="Customer" path="/source"
+        <node name="source" displayName="Group" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="party.customerperson"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="party.customerorganisation"/>
+                                  value="entity.discountGroupType"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
@@ -53,10 +49,6 @@
                     <propertyMap name="archetype">
                         <property name="shortName"
                                   value="entity.discountType"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entity.discountGroupType"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
