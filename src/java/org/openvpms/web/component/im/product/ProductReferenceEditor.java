@@ -70,7 +70,8 @@ class ProductReferenceEditor
      * Creates a new <tt>ProductReferenceEditor</tt>.
      *
      * @param editor   the parent editor
-     * @param property the
+     * @param property the product reference property
+     * @param context  the layout context
      */
     public ProductReferenceEditor(ProductParticipationEditor editor,
                                   Property property, LayoutContext context) {
