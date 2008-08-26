@@ -184,7 +184,7 @@ public class PriceActItemEditor extends ActItemEditor {
             }
             ProductPrice fixedProductPrice = getFixedProductPrice(product);
             ProductPrice unitProductPrice = getUnitProductPrice(product);
-            amount = rules.calculateDiscountAmount(
+            amount = rules.calculateDiscount(
                     startTime, customer, patient, product, fixedPrice,
                     unitPrice, quantity, getMaxDiscount(fixedProductPrice),
                     getMaxDiscount(unitProductPrice));
