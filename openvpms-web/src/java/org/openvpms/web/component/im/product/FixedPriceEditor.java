@@ -23,7 +23,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -36,6 +36,7 @@ import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.TextComponentFactory;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Set;
@@ -75,6 +76,11 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      */
     private ProductPriceRules rules;
 
+    /**
+     * The selected fixed price.
+     */
+    private ProductPrice price;
+
 
     /**
      * Creates a new <tt>FixedPriceEditor</tt>.
@@ -108,6 +114,15 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     }
 
     /**
+     * Returns the price.
+     *
+     * @return the price
+     */
+    public BigDecimal getPrice() {
+        return (BigDecimal) getProperty().getValue();
+    }
+
+    /**
      * Sets the date. This determines when a price must be active.
      * Defaults to the current date.
      *
@@ -136,11 +151,30 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     }
 
     /**
+     * Returns the selected product price.
+     *
+     * @return the product price, or <tt>null</tt> if none is selected
+     */
+    public ProductPrice getProductPrice() {
+        return price;
+    }
+
+    /**
+     * Sets the product price.
+     *
+     * @param price the product price. May be <tt>null</tt>
+     */
+    public void setProductPrice(ProductPrice price) {
+        this.price = price;
+    }
+
+    /**
      * Invoked when a price is selected.
      *
      * @param price the selected price. May be <tt>null</tt>
      */
     private void onSelected(ProductPrice price) {
+        this.price = price;
         if (price != null) {
             getProperty().setValue(price.getPrice());
         }
@@ -159,7 +193,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
                 rules = new ProductPriceRules();
             }
             Set<ProductPrice> prices = rules.getProductPrices(
-                    product, ProductArchetypes.FIXED_PRICE, date);
+                    product, FIXED_PRICE, date);
             if (!prices.isEmpty()) {
                 result = createPriceTable(prices);
             }
@@ -202,7 +236,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
          * Creates a new <tt>PriceTableModel</tt>.
          */
         public PriceTableModel() {
-            super(new String[]{ProductArchetypes.FIXED_PRICE});
+            super(new String[]{FIXED_PRICE});
         }
 
         /**

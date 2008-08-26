@@ -168,15 +168,13 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
-     * Returns the first price with the specified short name, active at the
-     * specified date.
+     * Returns the first price with the specified short name.
      *
      * @param shortName the price short name
      * @param product   the product
-     * @return the price corresponding to  <tt>shortName</tt> or
-     *         <tt>null</tt> if none exists
+     * @return the corresponding product price, or <tt>null</tt> if none exists
      */
-    protected ProductPrice getPrice(String shortName, Product product) {
+    protected ProductPrice getProductPrice(String shortName, Product product) {
         ProductPriceRules rules = new ProductPriceRules();
         return rules.getProductPrice(product, shortName, getStartTime());
     }

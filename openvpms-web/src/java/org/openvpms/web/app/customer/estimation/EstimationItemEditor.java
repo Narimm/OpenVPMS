@@ -18,27 +18,20 @@
 
 package org.openvpms.web.app.customer.estimation;
 
-import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.customer.FixedPriceActItemEditor;
+import org.openvpms.web.app.customer.PriceActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ErrorHelper;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 
 /**
@@ -48,7 +41,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class EstimationItemEditor extends FixedPriceActItemEditor {
+public class EstimationItemEditor extends PriceActItemEditor {
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -60,14 +53,13 @@ public class EstimationItemEditor extends FixedPriceActItemEditor {
 
 
     /**
-     * Construct a new <code>EstimationItemEdtor</code>.
+     * Construct a new <tt>EstimationItemEdtor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act
      * @param context the layout context
      */
-    public EstimationItemEditor(Act act, Act parent,
-                                LayoutContext context) {
+    public EstimationItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.customerEstimationItem")) {
             throw new IllegalArgumentException(
@@ -84,7 +76,6 @@ public class EstimationItemEditor extends FixedPriceActItemEditor {
         getProperty("fixedPrice").addModifiableListener(listener);
         getProperty("highUnitPrice").addModifiableListener(listener);
         getProperty("highQty").addModifiableListener(listener);
-
     }
 
     /**
@@ -105,6 +96,10 @@ public class EstimationItemEditor extends FixedPriceActItemEditor {
     @Override
     protected void productModified(Product product) {
         super.productModified(product);
+
+        Property discount = getProperty("discount");
+        discount.setValue(BigDecimal.ZERO);
+
         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
             if (getFilter() != TEMPLATE_FILTER) {
                 changeLayout(TEMPLATE_FILTER);
@@ -123,9 +118,9 @@ public class EstimationItemEditor extends FixedPriceActItemEditor {
             Property fixedPrice = getProperty("fixedPrice");
             Property lowUnitPrice = getProperty("lowUnitPrice");
             Property highUnitPrice = getProperty("highUnitPrice");
-            ProductPrice fixed = getPrice("productPrice.fixedPrice",
-                                          product);
-            ProductPrice unit = getPrice("productPrice.unitPrice", product);
+            ProductPrice fixed = getDefaultFixedProductPrice(product);
+            ProductPrice unit = getDefaultUnitProductPrice(product);
+
             if (fixed != null) {
                 fixedPrice.setValue(fixed.getPrice());
             }
@@ -137,39 +132,29 @@ public class EstimationItemEditor extends FixedPriceActItemEditor {
     }
 
     /**
-     * Calculates the discount amount.
+     * Returns the unit price.
+     * <p/>
+     * This implememntation returns the high unit price.
+     *
+     * @return the unit price
      */
-    private void updateDiscount() {
-        try {
-            Party customer = (Party) IMObjectHelper.getObject(getCustomer());
-            Party patient = (Party) IMObjectHelper.getObject(getPatient());
-            Product product = (Product) IMObjectHelper.getObject(
-                    getProductRef());
+    @Override
+    protected BigDecimal getUnitPrice() {
+        BigDecimal value = (BigDecimal) getProperty("highUnitPrice").getValue();
+        return (value != null) ? value : BigDecimal.ZERO;
+    }
 
-            if (customer != null && patient != null && product != null) {
-                Act act = (Act) getObject();
-                ActBean bean = new ActBean(act);
-                BigDecimal fixedPrice = bean.getBigDecimal("fixedPrice",
-                                                           BigDecimal.ZERO);
-                BigDecimal unitPrice = bean.getBigDecimal("highUnitPrice",
-                                                          BigDecimal.ZERO);
-                BigDecimal quantity = bean.getBigDecimal("highQty",
-                                                         BigDecimal.ZERO);
-                DiscountRules rules = new DiscountRules();
-                Date startTime = act.getActivityStartTime();
-                if (startTime == null) {
-                    Act parent = (Act) getParent();
-                    startTime = parent.getActivityStartTime();
-                }
-                BigDecimal amount = rules.calculateDiscountAmount(
-                        startTime, customer, patient, product, fixedPrice,
-                        unitPrice, quantity);
-                Property discount = getProperty("discount");
-                discount.setValue(amount);
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+    /**
+     * Returns the quantity.
+     * <p/>
+     * This implememntation returns the high quantity.
+     *
+     * @return the quantity
+     */
+    @Override
+    protected BigDecimal getQuantity() {
+        BigDecimal value = (BigDecimal) getProperty("highQty").getValue();
+        return (value != null) ? value : BigDecimal.ZERO;
     }
 
 }

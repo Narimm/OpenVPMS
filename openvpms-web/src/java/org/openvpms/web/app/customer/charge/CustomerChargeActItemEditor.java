@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.customer.charge;
 
-import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.*;
@@ -39,7 +38,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.customer.FixedPriceActItemEditor;
+import org.openvpms.web.app.customer.PriceActItemEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -74,7 +73,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class CustomerChargeActItemEditor extends FixedPriceActItemEditor {
+public class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -281,11 +280,14 @@ public class CustomerChargeActItemEditor extends FixedPriceActItemEditor {
     @Override
     protected void productModified(Product product) {
         super.productModified(product);
+
+        Property discount = getProperty("discount");
+        discount.setValue(BigDecimal.ZERO);
+
         if (TypeHelper.isA(product, TEMPLATE)) {
             if (getFilter() != TEMPLATE_FILTER) {
                 changeLayout(TEMPLATE_FILTER);
             }
-            // zero out the fixed and unit prices.
             Property fixedPrice = getProperty("fixedPrice");
             Property unitPrice = getProperty("unitPrice");
             fixedPrice.setValue(BigDecimal.ZERO);
@@ -303,8 +305,9 @@ public class CustomerChargeActItemEditor extends FixedPriceActItemEditor {
             }
             Property fixedPrice = getProperty("fixedPrice");
             Property unitPrice = getProperty("unitPrice");
-            ProductPrice fixed = getPrice(FIXED_PRICE, product);
-            ProductPrice unit = getPrice(UNIT_PRICE, product);
+            ProductPrice fixed = getDefaultFixedProductPrice(product);
+            ProductPrice unit = getDefaultUnitProductPrice(product);
+
             if (fixed != null) {
                 fixedPrice.setValue(fixed.getPrice());
             }
@@ -344,52 +347,6 @@ public class CustomerChargeActItemEditor extends FixedPriceActItemEditor {
     private void updateTaxAmount() {
         try {
             calculateTax();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Calculates the discount amount.
-     */
-    private void updateDiscount() {
-        try {
-            Party customer = (Party) IMObjectHelper.getObject(getCustomer());
-            Party patient = (Party) IMObjectHelper.getObject(getPatient());
-            Product product = (Product) IMObjectHelper.getObject(
-                    getProductRef());
-
-            // calculate the discount
-            if (customer != null && product != null) {
-                FinancialAct act = (FinancialAct) getObject();
-                BigDecimal fixedPrice = act.getFixedAmount();
-                BigDecimal unitPrice = act.getUnitAmount();
-                BigDecimal quantity = act.getQuantity();
-                if (fixedPrice == null) {
-                    fixedPrice = BigDecimal.ZERO;
-                }
-                if (unitPrice == null) {
-                    unitPrice = BigDecimal.ZERO;
-                }
-                if (quantity == null) {
-                    quantity = BigDecimal.ZERO;
-                }
-                DiscountRules rules = new DiscountRules();
-                Date startTime = act.getActivityStartTime();
-                if (startTime == null) {
-                    Act parent = (Act) getParent();
-                    startTime = parent.getActivityStartTime();
-                }
-                BigDecimal amount = rules.calculateDiscountAmount(
-                        startTime, customer, patient, product, fixedPrice,
-                        unitPrice, quantity);
-                // If discount amount calculates to zero don't update any
-                // existing value as may have been manually modified.
-                if (amount.compareTo(BigDecimal.ZERO) != 0) {
-                    Property discount = getProperty("discount");
-                    discount.setValue(amount);
-                }
-            }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
