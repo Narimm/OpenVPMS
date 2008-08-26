@@ -39,8 +39,7 @@
                     <propertyMap name="archetype">
                         <property name="shortName"
                                   value="productPrice.unitPrice"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
+                    </propertyMap>                    <propertyMap name="archetype">
                         <property name="shortName"
                                   value="productPrice.markup"/>
                     </propertyMap>
