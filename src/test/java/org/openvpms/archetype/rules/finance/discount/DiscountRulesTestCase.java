@@ -54,6 +54,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * The rules.
      */
     private DiscountRules rules;
+    private static final BigDecimal HUNDRED = new BigDecimal("100");
 
 
     /**
@@ -248,6 +249,33 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link DiscountRules#calculateDiscountAmount}
+     * method where the product has a 10% discount, and the product
+     * type has a 5% discount, and there is a maximum discount of 10%.
+     */
+    public void testCalculateDiscountForMaxDiscount() {
+        BigDecimal cents10 = new BigDecimal("0.10");
+        BigDecimal percent10 = new BigDecimal("10.00");
+        Party custNoDisc = createCustomer();
+        Party custWithDisc = createCustomerWithDiscount(discount5,
+                                                        discount10);
+        Party patientNoDisc = createPatient();
+        Party patientWithDisc = createPatientWithDiscount(discount10);
+        Product product = createProductWithProductTypeDiscount(discount5);
+        addDiscount(product, discount10, null);
+
+        Date now = new Date();
+        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product,
+                               percent10, percent10, BigDecimal.ZERO);
+        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product,
+                               percent10, percent10, cents10);
+        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product,
+                               percent10, percent10, cents10);
+        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product,
+                               percent10, percent10, cents10);
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -274,14 +302,36 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
                                         Party patient,
                                         Product product,
                                         BigDecimal expectedDiscount) {
+        checkCalculateDiscount(date, customer, patient, product,
+                               expectedDiscount, HUNDRED, HUNDRED);
+    }
+
+    /**
+     * Verifies that the discount is calculated correctly by
+     * {@link DiscountRules#calculateDiscountAmount},
+     * for an act with a total value of <code>1.00</code>.
+     *
+     * @param date             the date, used to determine if a discount applies
+     * @param customer         the customer
+     * @param product          the product
+     * @param maxFixedDiscount the maximum fixed price discount %
+     * @param maxUnitDiscount  the maximum unit price discount %
+     * @param expectedDiscount the expected discount
+     */
+    private void checkCalculateDiscount(Date date, Party customer,
+                                        Party patient,
+                                        Product product,
+                                        BigDecimal maxFixedDiscount,
+                                        BigDecimal maxUnitDiscount,
+                                        BigDecimal expectedDiscount) {
         BigDecimal fixedPrice = new BigDecimal("0.50");
         BigDecimal unitPrice = new BigDecimal("0.50");
         BigDecimal quantity = BigDecimal.ONE;
 
         BigDecimal discount = rules.calculateDiscountAmount(
                 date, customer, patient, product, fixedPrice, unitPrice,
-                quantity);
-        assertTrue(expectedDiscount.compareTo(discount) == 0);
+                quantity, maxFixedDiscount, maxUnitDiscount);
+        assertEquals(expectedDiscount, discount);
     }
 
     /**
@@ -378,7 +428,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
                                                Entity ... discounts) {
         Product product = createProduct();
         for (Entity discount : discounts) {
-            addDiscount(product, discount,  endTime);
+            addDiscount(product, discount, endTime);
         }
         save(product);
         return product;

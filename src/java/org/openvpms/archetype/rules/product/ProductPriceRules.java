@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.product;
 
+import org.apache.commons.collections.Predicate;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
@@ -94,26 +95,24 @@ public class ProductPriceRules {
      */
     public ProductPrice getProductPrice(Product product, String shortName,
                                         Date date) {
-        boolean useDefault = ProductArchetypes.FIXED_PRICE.equals(shortName);
-        ProductPrice result = findPrice(product, shortName, date, useDefault);
-        if (useDefault && (result == null || !isDefault(result))) {
-            // see if there is a fixed price in linked products
-            EntityBean bean = new EntityBean(product, service);
-            List<Entity> products = bean.getNodeTargetEntities("linked", date);
-            for (Entity linked : products) {
-                ProductPrice price = findPrice((Product) linked, shortName,
-                                               date, useDefault);
-                if (price != null) {
-                    if (isDefault(price)) {
-                        result = price;
-                        break;
-                    } else if (result == null) {
-                        result = price;
-                    }
-                }
-            }
-        }
-        return result;
+        Predicate predicate = new ShortNameDatePredicate(shortName, date);
+        return getProductPrice(shortName, product, predicate, date);
+    }
+
+    /**
+     * Returns the first product price with the specified price, and short name,
+     * active at the specified date.
+     *
+     * @param product   the product
+     * @param price     the price
+     * @param shortName the price short name
+     * @param date      the date
+     * @return the first matching price, or <tt>null</tt> if none is found
+     */
+    public ProductPrice getProductPrice(Product product, BigDecimal price,
+                                        String shortName, Date date) {
+        Predicate predicate = new PricePredicate(price, shortName, date);
+        return getProductPrice(shortName, product, predicate, date);
     }
 
     /**
@@ -128,13 +127,15 @@ public class ProductPriceRules {
     public Set<ProductPrice> getProductPrices(Product product, String shortName,
                                               Date date) {
         Set<ProductPrice> result = new HashSet<ProductPrice>();
-        List<ProductPrice> prices = findPrices(product, shortName, date);
+        ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName,
+                                                                      date);
+        List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
         if (ProductArchetypes.FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
             EntityBean bean = new EntityBean(product, service);
             for (Entity linked : bean.getNodeTargetEntities("linked", date)) {
-                prices = findPrices((Product) linked, shortName, date);
+                prices = findPrices((Product) linked, predicate);
                 result.addAll(prices);
             }
         }
@@ -293,23 +294,54 @@ public class ProductPriceRules {
     }
 
     /**
-     * Finds a product price matching the specified short name and active
-     * at the specified date.
+     * Returns a product price matching the specified predicate.
+     *
+     * @param shortName the price short name
+     * @param product   the product
+     * @param predicate the predicate
+     * @param date      the date
+     * @return a price matching the predicate, or <tt>null</tt> if none is found
+     */
+    private ProductPrice getProductPrice(String shortName, Product product,
+                                         Predicate predicate, Date date) {
+        boolean useDefault = ProductArchetypes.FIXED_PRICE.equals(shortName);
+        ProductPrice result = findPrice(product, predicate, useDefault);
+        if (useDefault && (result == null || !isDefault(result))) {
+            // see if there is a fixed price in linked products
+            EntityBean bean = new EntityBean(product, service);
+            List<Entity> products = bean.getNodeTargetEntities("linked", date);
+            for (Entity linked : products) {
+                ProductPrice price = findPrice((Product) linked, predicate,
+                                               useDefault);
+                if (price != null) {
+                    if (isDefault(price)) {
+                        result = price;
+                        break;
+                    } else if (result == null) {
+                        result = price;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Finds a product price matching the predicate.
      *
      * @param product    the product
-     * @param shortName  the price short name
-     * @param date       the date
+     * @param predicate  the predicate to evaluate
      * @param useDefault if <tt>true</tt>, select prices that have a
      *                   <tt>true</tt> default node
      * @return the price matching the criteria, or <tt>null</tt> if none is
      *         found
      */
-    private ProductPrice findPrice(Product product, String shortName,
-                                   Date date, boolean useDefault) {
+    private ProductPrice findPrice(Product product, Predicate predicate,
+                                   boolean useDefault) {
         ProductPrice result = null;
         ProductPrice fallback = null;
         for (ProductPrice price : product.getProductPrices()) {
-            if (matches(price, shortName, date)) {
+            if (predicate.evaluate(price)) {
                 if (useDefault) {
                     if (isDefault(price)) {
                         result = price;
@@ -326,20 +358,17 @@ public class ProductPriceRules {
     }
 
     /**
-     * Finds a product price matching the specified short name and active
-     * at the specified date.
+     * Finds product prices matching the specified predicate.
      *
      * @param product   the product
-     * @param shortName the price short name
-     * @param date      the date
-     * @return the price matching the criteria, or <tt>null</tt> if none is
-     *         found
+     * @param predicate the predicate
+     * @return the pricees matching the predicate
      */
-    private List<ProductPrice> findPrices(Product product, String shortName,
-                                          Date date) {
+    private List<ProductPrice> findPrices(Product product,
+                                          Predicate predicate) {
         List<ProductPrice> result = null;
         for (ProductPrice price : product.getProductPrices()) {
-            if (matches(price, shortName, date)) {
+            if (predicate.evaluate(price)) {
                 if (result == null) {
                     result = new ArrayList<ProductPrice>();
                 }
@@ -364,22 +393,62 @@ public class ProductPriceRules {
     }
 
     /**
-     * Determines if a price matches the specified criteria.
-     *
-     * @param price     the price to check
-     * @param shortName the price short name
-     * @param date      the date that the price must be active
-     * @return <tt>true</tt> if the price matches, otherwise <tt>false</tt>
+     * Predicate to determine if a price matches a short name and date.
      */
-    private boolean matches(ProductPrice price, String shortName, Date date) {
-        if (TypeHelper.isA(price, shortName) && price.isActive()) {
-            Date from = price.getFromDate();
-            Date to = price.getToDate();
-            if ((from == null || DateRules.compareTo(from, date) <= 0)
-                    && (to == null || DateRules.compareTo(to, date) >= 0)) {
-                return true;
-            }
+    private static class ShortNameDatePredicate implements Predicate {
+
+        /**
+         * The price short name.
+         */
+        private final String shortName;
+
+        /**
+         * The date.
+         */
+        private final Date date;
+
+        public ShortNameDatePredicate(String shortName, Date date) {
+            this.shortName = shortName;
+            this.date = date;
         }
-        return false;
+
+        public boolean evaluate(Object object) {
+            ProductPrice price = (ProductPrice) object;
+            if (TypeHelper.isA(price, shortName) && price.isActive()) {
+                Date from = price.getFromDate();
+                Date to = price.getToDate();
+                if ((from == null || DateRules.compareTo(from, date) <= 0)
+                        && (to == null || DateRules.compareTo(to, date) >= 0)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
+
+    /**
+     * Predicate to determine if a product price matches a price, short name
+     * and date.
+     */
+    private static class PricePredicate extends ShortNameDatePredicate {
+
+        /**
+         * The price.
+         */
+        private final BigDecimal price;
+
+        public PricePredicate(BigDecimal price, String shortName, Date date) {
+            super(shortName, date);
+            this.price = price;
+        }
+
+        public boolean evaluate(Object object) {
+            ProductPrice other = (ProductPrice) object;
+            if (other.getPrice().compareTo(price) == 0) {
+                return super.evaluate(other);
+            }
+            return false;
+        }
+    }
+
 }

@@ -123,6 +123,79 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal,
+     * String, Date)}  method.
+     */
+    public void testGetProductPriceForPrice() {
+        BigDecimal one = BigDecimal.ONE;
+        BigDecimal two = new BigDecimal("2.0");
+        BigDecimal three = new BigDecimal("3.0");
+
+        ProductPrice fixed1 = createFixedPrice("2008-1-1", "2008-1-31", false);
+        ProductPrice fixed2 = createFixedPrice("2008-2-1", "2008-12-31", false);
+        ProductPrice fixed3 = createFixedPrice("2008-3-1", null, true);
+
+        fixed1.setPrice(one);
+        fixed2.setPrice(two);
+        fixed3.setPrice(three);
+
+        ProductPrice unit1 = createPrice(UNIT_PRICE, "2008-1-1", "2008-1-10");
+        ProductPrice unit2 = createPrice(UNIT_PRICE, "2008-2-1", null);
+
+        unit1.setPrice(one);
+        unit2.setPrice(two);
+
+        // should be no prices returned until one is registered
+        assertNull(rules.getProductPrice(product, one, FIXED_PRICE,
+                                         new Date()));
+        assertNull(rules.getProductPrice(product, one, UNIT_PRICE, new Date()));
+
+        // add prices
+        product.addProductPrice(fixed1);
+        product.addProductPrice(fixed2);
+        product.addProductPrice(unit1);
+        product.addProductPrice(unit2);
+
+        checkPrice(null, two, FIXED_PRICE, "2008-1-1");
+        checkPrice(fixed1, one, FIXED_PRICE, "2008-1-1");
+        checkPrice(null, two, FIXED_PRICE, "2008-1-31");
+        checkPrice(fixed1, one, FIXED_PRICE, "2008-1-31");
+        checkPrice(null, one, FIXED_PRICE, "2008-2-1");
+        checkPrice(fixed2, two, FIXED_PRICE, "2008-12-31");
+        checkPrice(null, two, FIXED_PRICE, "2009-1-1");
+
+        checkPrice(null, one, UNIT_PRICE, "2007-12-31");
+        checkPrice(null, two, UNIT_PRICE, "2008-1-1");
+        checkPrice(unit1, one, UNIT_PRICE, "2008-1-1");
+        checkPrice(null, two, UNIT_PRICE, "2008-1-10");
+        checkPrice(unit1, one, UNIT_PRICE, "2008-1-10");
+        checkPrice(null, two, UNIT_PRICE, "2008-1-11");
+        checkPrice(null, three, UNIT_PRICE, "2008-2-1");
+        checkPrice(unit2, two, UNIT_PRICE, "2008-2-1");
+        checkPrice(null, three, UNIT_PRICE, "2010-2-1");
+        checkPrice(unit2, two, UNIT_PRICE, "2010-2-1"); // unbounded
+
+        // verify that linked products are used if there are no matching prices
+        // for the date
+        Product priceTemplate = (Product) create(
+                ProductArchetypes.PRICE_TEMPLATE);
+        priceTemplate.addProductPrice(fixed3);
+        priceTemplate.setName("XPriceTemplate");
+        save(priceTemplate);
+
+        EntityBean bean = new EntityBean(product);
+        EntityRelationship relationship = bean.addRelationship(
+                ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
+        relationship.setActiveStartTime(getDate("2008-1-1"));
+        bean.save();
+
+        product = get(product);
+        checkPrice(fixed2, two, FIXED_PRICE, "2008-2-1");
+        checkPrice(fixed3, three, FIXED_PRICE, "2008-3-1");
+        checkPrice(fixed2, two, FIXED_PRICE, "2008-3-1");
+    }
+
+    /**
      * Tests the {@link ProductPriceRules#getProductPrices} method.
      */
     public void testGetProductPrices() {
@@ -227,14 +300,29 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verfies a price matches that expected.
+     *
+     * @param expected  the expected price
+     * @param price     the price
+     * @param shortName the price short name
+     * @param date      the date that the price applies to
+     */
+    private void checkPrice(ProductPrice expected, BigDecimal price,
+                            String shortName, String date) {
+        assertEquals(expected,
+                     rules.getProductPrice(product, price, shortName,
+                                           getDate(date)));
+    }
+
+    /**
      * Helper to create a new fixed price.
      *
-     * @param from      the active from date. May be <tt>null</tt>
-     * @param to        the active to date. May be <tt>null</tt>
+     * @param from         the active from date. May be <tt>null</tt>
+     * @param to           the active to date. May be <tt>null</tt>
      * @param defaultPrice <tt>true</tt> if the price is the default
      */
     private ProductPrice createFixedPrice(String from, String to,
-                                     boolean defaultPrice) {
+                                          boolean defaultPrice) {
         ProductPrice result = createPrice(ProductArchetypes.FIXED_PRICE,
                                           from, to);
         IMObjectBean bean = new IMObjectBean(result);
