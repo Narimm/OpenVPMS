@@ -45,7 +45,7 @@ public class ProductQueryFactoryTestCase extends ArchetypeServiceTest {
      */
     private static final String CANINE = "CANINE";
 
-    
+
     /**
      * Tests the {@link IArchetypeQuery} instances returned by
      * {@link ProductQueryFactory}.
@@ -53,7 +53,9 @@ public class ProductQueryFactoryTestCase extends ArchetypeServiceTest {
     public void testCreate() {
         // test query on all canine products
         IArchetypeQuery canine = ProductQueryFactory.create(
-                new String[]{"product.*"}, null, CANINE, null);
+                new String[]{"product.medication", "product.template",
+                             "product.service", "product.merchandise"},
+                null, CANINE, null);
         checkQuery(canine, true, false, true);
 
         // test query on all feline medication products
@@ -63,7 +65,9 @@ public class ProductQueryFactoryTestCase extends ArchetypeServiceTest {
 
         // test query on all canine products named XProduct*.
         IArchetypeQuery canine2 = ProductQueryFactory.create(
-                new String[]{"product.*"}, "XProduct*", CANINE, null);
+                new String[]{"product.medication", "product.template",
+                             "product.service", "product.merchandise"},
+                "XProduct*", CANINE, null);
         checkQuery(canine2, true, false, true);
 
         // test query on all feline medication products named XProduct*.

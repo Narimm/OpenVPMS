@@ -68,6 +68,11 @@ public class DiscountRules {
      */
     private static final String PERCENTAGE = "PERCENTAGE";
 
+    /**
+     * 100% discount.
+     */
+    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
+
 
     /**
      * Constructs a new <tt>DiscountRules</tt>.
@@ -101,16 +106,27 @@ public class DiscountRules {
      * </ol>
      * The rates associated with the remaining discountTypes are used to
      * calculate the discount amount. The discount amount is the sum of:
+     * <p>
      * <tt>(fixedPrice * discountRate/100) + qty * (unitPrice * discountRate/100)</tt>
-     * for each rate.
+     * </p>
+     * <br/>
+     * for each rate. If the discount amount exceeds the maximum discount
+     * calculated by:
+     * <p>
+     * <tt>(fixedPrice * maxFixedPriceDiscount/100) + qty * (unitPrice * maxUnitPriceDiscount/100)</tt>
+     * <p/>
+     * then the maximum discount amount will be returned.
      *
-     * @param date       the date, used to determine if a discount applies
-     * @param customer   the customer
-     * @param patient    the patient. May be <tt>null</tt>
-     * @param product    the product
-     * @param fixedPrice the fixed amount
-     * @param unitPrice  the unit price
-     * @param quantity   the quantity
+     * @param date                  the date, used to determine if a discount
+     *                              applies
+     * @param customer              the customer
+     * @param patient               the patient. May be <tt>null</tt>
+     * @param product               the product
+     * @param fixedPrice            the fixed amount
+     * @param unitPrice             the unit price
+     * @param quantity              the quantity
+     * @param maxFixedPriceDiscount the maximum fixed price discount percentage
+     * @param maxUnitPriceDiscount  the maximum unit price discount percentage
      * @return the discount amount
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -119,7 +135,9 @@ public class DiscountRules {
                                               Product product,
                                               BigDecimal fixedPrice,
                                               BigDecimal unitPrice,
-                                              BigDecimal quantity) {
+                                              BigDecimal quantity,
+                                              BigDecimal maxFixedPriceDiscount,
+                                              BigDecimal maxUnitPriceDiscount) {
         BigDecimal discount;
         if (fixedPrice.compareTo(BigDecimal.ZERO) == 0
                 && (unitPrice.compareTo(BigDecimal.ZERO) == 0
@@ -133,6 +151,12 @@ public class DiscountRules {
             } else {
                 discount = calculateDiscountAmount(fixedPrice, unitPrice,
                                                    quantity, discounts);
+                BigDecimal maxDiscount = calculateMaxDiscount(
+                        fixedPrice, unitPrice, quantity, maxFixedPriceDiscount,
+                        maxUnitPriceDiscount);
+                if (discount.compareTo(maxDiscount) > 0) {
+                    discount = maxDiscount;
+                }
             }
         }
         return MathRules.round(discount);
@@ -181,6 +205,24 @@ public class DiscountRules {
     }
 
     /**
+     * @param fixedPrice
+     * @param unitPrice
+     * @param quantity
+     * @param fixedDiscountRate
+     * @param unitDiscountRate
+     * @return the maximum discount
+     */
+    private BigDecimal calculateMaxDiscount(BigDecimal fixedPrice,
+                                            BigDecimal unitPrice,
+                                            BigDecimal quantity,
+                                            BigDecimal fixedDiscountRate,
+                                            BigDecimal unitDiscountRate) {
+        BigDecimal dFixedPrice = calcDiscount(fixedPrice, fixedDiscountRate);
+        BigDecimal dUnitPrice = calcDiscount(unitPrice, unitDiscountRate);
+        return quantity.multiply(dUnitPrice).add(dFixedPrice);
+    }
+
+    /**
      * Helper to calculates amount * discountRate/100, to 3 decimal places.
      *
      * @param amount       the amount
@@ -192,13 +234,23 @@ public class DiscountRules {
                                     String discountType) {
         BigDecimal result;
         if (PERCENTAGE.equals(discountType)) {
-            final BigDecimal hundred = BigDecimal.valueOf(100);
-            result = amount.multiply(rate);
-            result = MathRules.divide(result, hundred, 3);
-            return result;
+            return calcDiscount(amount, rate);
         } else {
             result = rate;
         }
+        return result;
+    }
+
+    /**
+     * Helper to calculates amount * rate/100, to 3 decimal places.
+     *
+     * @param amount the amount
+     * @param rate   the rate
+     * @return amount * rate/100
+     */
+    private BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate) {
+        BigDecimal result = amount.multiply(rate);
+        result = MathRules.divide(result, HUNDRED, 3);
         return result;
     }
 
