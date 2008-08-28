@@ -154,14 +154,6 @@ public class AppointmentActEditor extends AbstractActEditor {
     @Override
     protected void onStartTimeChanged() {
         try {
-            Date now = DateHelper.getDayMonthYear(new Date());
-            Date startDate = startTimeField.getDate();
-            if (startDate != null && startDate.compareTo(now) < 0) {
-                // don't permit backdating of appointments
-                removeStartEndTimeListeners();
-                startTimeField.setDate(now);
-                addStartEndTimeListeners();
-            }
             calculateEndTime();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
