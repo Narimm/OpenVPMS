@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.workflow.WorkflowQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
@@ -52,6 +53,7 @@ public class TaskQuery extends WorkflowQuery<Act> {
         super(schedule, "worklist", "participation.worklist",
               new String[]{"act.customerTask"}, Act.class);
         QueryFactory.initialise(this);
+        setDefaultSortConstraint(new SortConstraint[]{new NodeSortConstraint("startTime",true)});
     }
 
     /**

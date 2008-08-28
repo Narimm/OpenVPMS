@@ -63,7 +63,7 @@ public class TaskTableModel extends AbstractActTableModel {
      */
     @Override
     protected String[] getNodeNames() {
-        return new String[]{"status", "taskType", "customer", "patient",
+        return new String[]{"startTime", "status", "taskType", "customer", "patient",
                             "description"};
     }
 
