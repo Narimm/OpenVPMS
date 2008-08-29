@@ -42,7 +42,7 @@ public abstract class DeferredUpdater {
      * @param id the object identifier
      */
     public DeferredUpdater(String id) {
-        this.id = id;
+        this.id = LoadCache.stripPrefix(id);
     }
 
     /**

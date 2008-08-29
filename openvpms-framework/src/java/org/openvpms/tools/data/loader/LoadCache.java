@@ -19,7 +19,6 @@
 package org.openvpms.tools.data.loader;
 
 import org.apache.commons.collections.map.ReferenceMap;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.NullReference;
@@ -138,12 +137,12 @@ class LoadCache {
      * @return the id with any prefix removed
      * @throws ArchetypeDataLoaderException if the id is invalid
      */
-    private String stripPrefix(String id) {
+    public static String stripPrefix(String id) {
         if (id.startsWith(ID_PREFIX)) {
             id = id.substring(ID_PREFIX.length());
-            if (StringUtils.isEmpty(id)) {
-                throw new ArchetypeDataLoaderException(NullReference);
-            }
+        }
+        if (id.length() == 0) {
+            throw new ArchetypeDataLoaderException(NullReference);
         }
         return id;
     }
