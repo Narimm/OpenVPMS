@@ -34,8 +34,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,16 +72,10 @@ class DataLoader {
     private int batchSize;
 
     /**
-     * The current batch of unsaved objects, keyed on their references.
+     * Objects to be saved, keyed on their references.
      */
-    private Map<IMObjectReference, LoadState> batch
+    private Map<IMObjectReference, LoadState> queue
             = new LinkedHashMap<IMObjectReference, LoadState>();
-
-    /**
-     * The child objects of objects in the batch, keyed on their references.
-     */
-    private Map<IMObjectReference, IMObject> children
-            = new LinkedHashMap<IMObjectReference, IMObject>();
 
     /**
      * If <tt>true</tt> perform verbose logging.
@@ -103,7 +97,6 @@ class DataLoader {
      * Object's whose save has been deferred as they aren't complete.
      */
     private List<LoadState> deferred = new ArrayList<LoadState>();
-
 
     /**
      * The logger.
@@ -192,27 +185,44 @@ class DataLoader {
      * Attempts to save any unsaved objects.
      */
     public void flush() {
-        processDeferred();
-        for (LoadState state : batch.values()) {
+        save();
+        while (processDeferred()) {
+            save();
+        }
+    }
+
+    /**
+     * Closes the loader, flusing any pending objects.
+     */
+    public void close() {
+        flush();
+        for (LoadState state : queue.values()) {
             Set<IMObjectReference> unsaved = state.getUnsaved();
             if (!unsaved.isEmpty()) {
                 for (IMObjectReference ref : unsaved) {
-                    if (!batch.containsKey(ref) && !children.containsKey(ref)) {
+                    if (!queue.containsKey(ref)) {
                         String id = cache.getId(ref);
                         if (id == null) {
                             id = "<unset>";
                         }
-                        log.warn("Cannot save object, archetype="
+                        log.error("Cannot save object, archetype="
                                 + state.getArchetypeId().getShortName()
                                 + " from path=" + state.getPath()
                                 + ", line=" + state.getLineNumber()
                                 + ": requires " + unsaved + ", id=" + id);
                     }
-
                 }
             }
         }
-        saveBatch();
+        for (LoadState state : deferred) {
+            for (DeferredUpdater deferred : state.getDeferred()) {
+                log.error("Cannot save object, archetype="
+                        + state.getArchetypeId().getShortName()
+                        + " from path=" + state.getPath()
+                        + ", line=" + state.getLineNumber()
+                        + ": requires id=" + deferred.getId());
+            }
+        }
     }
 
     /**
@@ -363,13 +373,8 @@ class DataLoader {
         if (!state.isComplete()) {
             deferred.add(state);
         } else {
-            boolean updateDeferred = !deferred.isEmpty();
             IMObject object = state.getObject();
-            if (state.getParent() == null) {
-                queue(state);
-            } else {
-                children.put(object.getObjectReference(), object);
-            }
+            queue(state);
 
             // update the stats
             String shortName = state.getArchetypeId().getShortName();
@@ -383,81 +388,6 @@ class DataLoader {
             if (verbose) {
                 log.info("[CREATED]" + object);
             }
-
-            if (updateDeferred) {
-                processDeferred();
-            }
-        }
-    }
-
-    /**
-     * Processes any deferred objects.
-     */
-    private void processDeferred() {
-        boolean processed;
-        do {
-            processed = false;
-            LoadState[] states = deferred.toArray(new LoadState[0]);
-            Set<DeferredUpdater> updaters = new HashSet<DeferredUpdater>();
-            for (LoadState state : states) {
-                Set<DeferredUpdater> set = state.getDeferred();
-                if (!set.isEmpty()) {
-                    updaters.addAll(set);
-                } else {
-                    deferred.remove(state);
-                    queue(state);
-                }
-            }
-            if (!updaters.isEmpty()) {
-                for (DeferredUpdater updater : updaters) {
-                    IMObjectReference ref
-                            = context.getReference(updater.getId());
-                    if (ref != null) {
-                        if (ref.isNew() && batch.containsKey(ref)) {
-                            ref = attemptSave(ref);
-                        }
-                        if (updater.update(ref, context)) {
-                            processed = true;
-                        }
-                    }
-                }
-            }
-        } while (processed);
-    }
-
-    /**
-     * Attempts to save the object associated with the specified reference.
-     *
-     * @param reference the object reference
-     * @return the updated reference, if the object saved successfully, or
-     *         <tt>reference</tt> if the save failed
-     */
-    private IMObjectReference attemptSave(IMObjectReference reference) {
-
-        LoadState state = batch.get(reference);
-        if (state != null && state.isComplete()) {
-            try {
-                IMObject object = state.getObject();
-                service.save(state.getObjects());
-                batch.remove(reference);
-                saved(object.getObjectReference()); // ref now contains id
-            } catch (OpenVPMSException ignore) {
-                // ignore
-            }
-        }
-        return reference;
-    }
-
-    /**
-     * Invoked when an object is saved. Updates the references of any batched
-     * states that depend on the reference.
-     *
-     * @param reference the saved reference
-     */
-    private void saved(IMObjectReference reference) {
-        cache.update(reference);
-        for (LoadState state : batch.values()) {
-            state.update(reference);
         }
     }
 
@@ -473,71 +403,145 @@ class DataLoader {
         if (validateOnly) {
             service.validateObject(object);
         } else {
-            batch.put(object.getObjectReference(), state);
-            if (batch.size() >= batchSize && isComplete()) {
-                saveBatch();
+            queue.put(object.getObjectReference(), state);
+            if (queue.size() >= batchSize) {
+                save();
+                processDeferred();
             }
         }
     }
 
     /**
-     * Determines if the batch can be saved.
-     *
-     * @return <tt>true</tt> if the batch can be saved
+     * Saves all queued objects that have all their dependencies met.
      */
-    private boolean isComplete() {
-        Set<IMObjectReference> unsaved = new HashSet<IMObjectReference>();
-        for (LoadState state : batch.values()) {
-            unsaved.addAll(state.getUnsaved());
-        }
-        for (IMObjectReference ref : unsaved) {
-            if (!batch.containsKey(ref) && !children.containsKey(ref)) {
-                return false;
-            }
-        }
-        return true;
-    }
+    private void save() {
+        LoadState[] objects = queue.values().toArray(new LoadState[0]);
+        Map<IMObjectReference, IMObject> batch
+                = new HashMap<IMObjectReference, IMObject>();
 
-    /**
-     * Saves the batch.
-     */
-    private void saveBatch() {
-        List<IMObject> objects = new ArrayList<IMObject>();
-        for (LoadState state : batch.values()) {
-            objects.add(state.getObject());
-        }
-        try {
-            service.save(objects);
-        } catch (OpenVPMSException exception) {
-            // One of the batch failed so nothing saved.
-            // Try again one by one logging each error.
-            log.error("Failed to save batch. Attempting to save objects "
-                    + "individually", exception);
-            for (IMObject object : objects) {
-                try {
-                    service.save(object);
-                } catch (OpenVPMSException e) {
-                    LoadState state
-                            = batch.get(object.getObjectReference());
-                    log.error("Failed to save object, archetype="
-                            + object.getArchetypeId().getShortName()
-                            + " from path=" + state.getPath()
-                            + ", line=" + state.getLineNumber(), e);
+        // collect all unsaved objects whose dependencies are present
+        for (LoadState state : objects) {
+            IMObject object = state.getObject();
+            IMObjectReference ref = object.getObjectReference();
+            if (!batch.containsKey(ref)) {
+                Map<IMObjectReference, IMObject> attempt
+                        = new HashMap<IMObjectReference, IMObject>(batch);
+                if (getPending(ref, attempt)) {
+                    batch = attempt;
                 }
             }
         }
-        for (IMObject object : objects) {
-            saved(object.getObjectReference());
-        }
-        batch.clear();
-        objects.clear();
-
-        for (IMObject child : children.values().toArray(new IMObject[0])) {
-            if (!child.isNew()) {
-                IMObjectReference ref = child.getObjectReference();
-                saved(ref);
-                children.remove(ref);
+        if (!batch.isEmpty()) {
+            try {
+                save(batch);
+            } catch (OpenVPMSException exception) {
+                // One of the batch failed so nothing saved.
+                // Try again one by one logging each error.
+                for (LoadState state : objects) {
+                    IMObject object = state.getObject();
+                    IMObjectReference ref = object.getObjectReference();
+                    batch = new HashMap<IMObjectReference, IMObject>();
+                    if (getPending(ref, batch)) {
+                        try {
+                            save(batch);
+                        } catch (OpenVPMSException e) {
+                            Set<IMObjectReference> unsaved = batch.keySet();
+                            queue.keySet().removeAll(unsaved);
+                            log.error("Failed to save object, archetype="
+                                    + object.getArchetypeId().getShortName()
+                                    + " from path=" + state.getPath()
+                                    + ", line=" + state.getLineNumber(), e);
+                        }
+                    }
+                }
             }
         }
     }
+
+    /**
+     * Processes any deferred objects.
+     *
+     * @return <tt>true</tt> if any objects were processed
+     */
+    private boolean processDeferred() {
+        boolean result = false;
+        while (true) {
+            boolean processed = false;
+            LoadState[] states = deferred.toArray(new LoadState[0]);
+            for (LoadState state : states) {
+                Collection<DeferredUpdater> updaters = state.getDeferred();
+                if (!updaters.isEmpty()) {
+                    for (DeferredUpdater updater
+                            : updaters.toArray(new DeferredUpdater[0])) {
+                        String id = updater.getId();
+                        IMObjectReference ref = context.getReference(id);
+                        if (ref != null && updater.update(ref, context)) {
+                            processed = true;
+                            result = true;
+                        }
+                    }
+                } else {
+                    deferred.remove(state);
+                    queue(state);
+                    result = true;
+                }
+            }
+            if (!processed) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Collects all queued objects required by the specified reference,
+     * adding them to <tt>objects</tt>.
+     *
+     * @param ref     the reference
+     * @param objects the unsaved objects
+     * @return <tt>true</tt> if all unsaved objects could be resolved
+     */
+    private boolean getPending(IMObjectReference ref,
+                               Map<IMObjectReference, IMObject> objects) {
+        boolean resolved = true;
+        LoadState state = queue.get(ref);
+        if (state != null) {
+            objects.put(ref, state.getObject());
+            for (IMObjectReference unsaved : state.getUnsaved()) {
+                if (!objects.containsKey(unsaved)) {
+                    if (!getPending(unsaved, objects)) {
+                        resolved = false;
+                        break;
+                    }
+                }
+            }
+        } else {
+            resolved = false;
+        }
+        return resolved;
+    }
+
+    /**
+     * Saves a collection of objects, keyed on their references.
+     *
+     * @param objects the objects to save
+     */
+    private void save(Map<IMObjectReference, IMObject> objects) {
+        Set<IMObjectReference> saved = objects.keySet();
+        service.save(objects.values());
+        this.queue.keySet().removeAll(saved);
+
+        // now update the references of any queued object that need the
+        // saved references.
+        for (IMObject object : objects.values()) {
+            IMObjectReference reference = object.getObjectReference();
+            cache.update(reference);
+            for (LoadState state : queue.values()) {
+                if (state.getUnsaved().contains(reference)) {
+                    state.update(reference);
+                }
+            }
+        }
+    }
+
 }

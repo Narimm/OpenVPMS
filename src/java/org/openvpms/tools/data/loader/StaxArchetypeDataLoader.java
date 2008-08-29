@@ -151,7 +151,7 @@ public class StaxArchetypeDataLoader {
                 // process the files
                 processDir(dir, loader);
             }
-            loader.flush();
+            loader.close();
 
             // dump the statistics
             dumpStatistics(start);
@@ -174,6 +174,7 @@ public class StaxArchetypeDataLoader {
         for (int i = 0, n = files.length; i < n; i++) {
             File file = files[i];
             processFile(file.getAbsolutePath(), loader);
+            loader.flush();
         }
     }
 

@@ -28,11 +28,10 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,11 +62,6 @@ class LoadState {
     private final List<LoadState> childStates = new ArrayList<LoadState>();
 
     /**
-     * Child objects of this state.
-     */
-    private final Set<IMObject> childObjects = new HashSet<IMObject>();
-
-    /**
      * The parent state. If <tt>null</tt> indicates there is no parent.
      */
     private final LoadState parent;
@@ -84,9 +78,22 @@ class LoadState {
             = new HashMap<String, DeferredUpdater>();
 
     /**
+     * Cache of local and child deferred updaters.
+     */
+    private Map<Integer, DeferredUpdater> deferredCache
+            = new HashMap<Integer, DeferredUpdater>();
+
+    /**
      * A map of unsaved references to their corresponding updaters.
      */
-    private Map<IMObjectReference, UnsavedRefUpdater> unsaved;
+    private Map<IMObjectReference, UnsavedRefUpdater> unsaved
+            = new HashMap<IMObjectReference, UnsavedRefUpdater>();
+
+    /**
+     * Cache of local and child unsaved references.
+     */
+    private Set<IMObjectReference> unsavedCache
+            = new HashSet<IMObjectReference>();
 
     /**
      * The path that the object came from.
@@ -145,19 +152,6 @@ class LoadState {
     }
 
     /**
-     * Returns the objects to save.
-     *
-     * @return the objects to save
-     */
-    public Set<IMObject> getObjects() {
-        ObjectCollector collector = new ObjectCollector();
-        collector.visit(this);
-        Set<IMObject> result = new LinkedHashSet<IMObject>(childObjects);
-        result.addAll(collector.getObjects());
-        return result;
-    }
-
-    /**
      * Sets a node value.
      *
      * @param name    the node name
@@ -170,6 +164,7 @@ class LoadState {
         try {
             if (value.startsWith(ID_PREFIX)) {
                 if (node.isCollection()) {
+                    value = LoadCache.stripPrefix(value);
                     addChild(node, value, context);
                 } else {
                     setReference(node, value, context);
@@ -191,10 +186,8 @@ class LoadState {
      *
      * @return the set of deferred updaters
      */
-    public Set<DeferredUpdater> getDeferred() {
-        DeferredCollector collector = new DeferredCollector();
-        collector.visit(this);
-        return collector.getUpdaters();
+    public Collection<DeferredUpdater> getDeferred() {
+        return deferredCache.values();
     }
 
     /**
@@ -213,9 +206,15 @@ class LoadState {
      *         any deferred updaters
      */
     public boolean isComplete() {
-        return new CompleteVistor().visit(this);
+        return deferredCache.isEmpty();
     }
 
+    /**
+     * Addsa a child object to the specified collection.
+     *
+     * @param collection the collection node name
+     * @param child      the child object
+     */
     public void addChild(String collection, final LoadState child) {
         final NodeDescriptor node = getNode(collection);
         if (!node.isCollection()) {
@@ -234,13 +233,13 @@ class LoadState {
                     if (child.isComplete()) {
                         node.addChildToCollection(object, child.getObject());
                         childStates.add(child);
-                        deferred.remove(getId());
+                        removeDeferred(getId());
                         return true;
                     }
                     return false;
                 }
             };
-            deferred.put(childUpdater.getId(), childUpdater);
+            addDeferred(childUpdater);
         }
     }
 
@@ -259,6 +258,7 @@ class LoadState {
                     ParentNotACollection, lineNo);
         }
 
+        id = LoadCache.stripPrefix(id);
         addChild(node, id, context);
     }
 
@@ -268,9 +268,7 @@ class LoadState {
      * @return the set of unsaved object references
      */
     public Set<IMObjectReference> getUnsaved() {
-        UnsavedCollector collector = new UnsavedCollector();
-        collector.visit(this);
-        return collector.getUnsaved();
+        return unsavedCache;
     }
 
     /**
@@ -290,6 +288,7 @@ class LoadState {
      */
     public void removeUnsaved(IMObjectReference reference) {
         unsaved.remove(reference);
+        removeUnsavedCache(reference);
     }
 
     /**
@@ -329,11 +328,11 @@ class LoadState {
         final IMObjectReference ref = context.getReference(id);
         if (ref == null) {
             if (!deferred.containsKey(id)) {
-                deferred.put(id, new DeferredUpdater(id) {
+                addDeferred(new DeferredUpdater(id) {
                     public boolean update(IMObjectReference reference,
                                           LoadContext context) {
                         if (setReference(descriptor, id, context)) {
-                            deferred.remove(getId());
+                            removeDeferred(getId());
                             return true;
                         }
                         return false;
@@ -348,7 +347,7 @@ class LoadState {
                     unsaved = new HashMap<IMObjectReference,
                             UnsavedRefUpdater>();
                 }
-                unsaved.put(ref, new UnsavedRefUpdater(this, ref, descriptor));
+                addUnsaved(ref, descriptor);
             }
         }
         return result;
@@ -368,15 +367,14 @@ class LoadState {
         IMObject child = context.getObject(id);
         if (child != null) {
             node.addChildToCollection(object, child);
-            childObjects.add(child);
             result = true;
 
         } else {
-            deferred.put(id, new DeferredUpdater(id) {
+            addDeferred(new DeferredUpdater(id) {
                 public boolean update(IMObjectReference reference,
                                       LoadContext context) {
                     if (addChild(node, id, context)) {
-                        deferred.remove(id);
+                        removeDeferred(id);
                         return true;
                     }
                     return false;
@@ -399,6 +397,93 @@ class LoadState {
                     InvalidAttribute, lineNo, name, descriptor.getType());
         }
         return ndesc;
+    }
+
+    /**
+     * Adds a deferred updater.
+     *
+     * @param updater the deferred upadtor
+     */
+    private void addDeferred(DeferredUpdater updater) {
+        String id = updater.getId();
+        removeDeferred(id);
+        deferred.put(id, updater);
+        addDeferredCache(updater);
+    }
+
+    /**
+     * Adds a deferred updater to the cache, and propagates it to the parent,
+     * if present.
+     *
+     * @param updater the deferred updater
+     */
+    private void addDeferredCache(DeferredUpdater updater) {
+        deferredCache.put(System.identityHashCode(updater), updater);
+        if (parent != null) {
+            parent.addDeferredCache(updater);
+        }
+    }
+
+    /**
+     * Removes a deferred updater.
+     *
+     * @param id the id of the updater
+     */
+    private void removeDeferred(String id) {
+        DeferredUpdater updater = deferred.remove(id);
+        if (updater != null) {
+            removeDeferredCache(updater);
+        }
+    }
+
+    /**
+     * Removes a deferred updater from the cache, and propagates the removal
+     * to the parent, if present.
+     *
+     * @param updater the updater to remove
+     */
+    private void removeDeferredCache(DeferredUpdater updater) {
+        deferredCache.remove(System.identityHashCode(updater));
+        if (parent != null) {
+            parent.removeDeferredCache(updater);
+        }
+    }
+
+    /**
+     * Adds a new unsaved reference updater.
+     *
+     * @param ref        the reference to update
+     * @param descriptor the node descriptor
+     */
+    private void addUnsaved(IMObjectReference ref, NodeDescriptor descriptor) {
+        unsaved.put(ref, new UnsavedRefUpdater(this, ref, descriptor));
+        addUnsavedCache(ref);
+    }
+
+    /**
+     * Adds an unsaved reference to the cache, and propagates it to the
+     * parent, if present.
+     *
+     * @param reference the reference to add
+     */
+    private void addUnsavedCache(IMObjectReference reference) {
+        unsavedCache.add(reference);
+        if (parent != null) {
+            parent.addUnsavedCache(reference);
+        }
+    }
+
+    /**
+     * Removes an unsaved reference updater from the cache, and propagates
+     * the removal to the parent, if present.
+     *
+     * @param reference the reference of the updater to remove
+     */
+    private void removeUnsavedCache(IMObjectReference reference) {
+        unsavedCache.remove(reference);
+        if (parent != null) {
+            parent.removeUnsaved(reference);
+        }
     }
 
     /**
@@ -492,185 +577,6 @@ class LoadState {
             visited.add(state);
         }
 
-    }
-
-    /**
-     * Visitor that collects the IMObject from each state.
-     */
-    private static class ObjectCollector extends Visitor {
-
-        /**
-         * The collected objects.
-         */
-        private Set<IMObject> objects = new LinkedHashSet<IMObject>();
-
-        /**
-         * Returns the collected objects.
-         *
-         * @return the collected object
-         */
-        public Set<IMObject> getObjects() {
-            return objects;
-        }
-
-        /**
-         * Visits each state reachable from the specified state
-         *
-         * @param state the starting state
-         * @return <tt>true</tt>
-         */
-        @Override
-        public boolean visit(LoadState state) {
-            addVisited(state);
-            visitChildren(state);
-            doVisit(state);
-            return true;
-        }
-
-        /**
-         * Visits the specified state.
-         *
-         * @param state the state to visit
-         * @return <tt>true</tt> to visit any other state, <tt>false</tt> to
-         *         terminate
-         */
-        protected boolean doVisit(LoadState state) {
-            objects.add(state.getObject());
-            return true;
-        }
-    }
-
-    /**
-     * Visitor that determines if the state is complete.
-     */
-    private static class CompleteVistor extends Visitor {
-
-        /**
-         * Determines if the state is complete.
-         *
-         * @param state the state
-         * @return <tt>true</tt> if there are no deferred updaters, otherwise
-         *         <tt>false</tt>
-         */
-        public boolean doVisit(LoadState state) {
-            return state.deferred.isEmpty();
-        }
-    }
-
-    /**
-     * Visitor that collects deferred updaters from each state.
-     */
-    private static class DeferredCollector extends Visitor {
-
-        /**
-         * The collected updaters.
-         */
-        private Set<DeferredUpdater> updaters;
-
-        /**
-         * Helper empty set.
-         */
-        private static final Set<DeferredUpdater> EMPTY
-                = Collections.emptySet();
-
-        /**
-         * Returns the collected deferred updaters.
-         *
-         * @return the deferred updaters.
-         */
-        public Set<DeferredUpdater> getUpdaters() {
-            return (updaters != null) ? updaters : EMPTY;
-        }
-
-        /**
-         * Collects deferred updaters from the state.
-         *
-         * @param state the state
-         * @return <tt>true</tt>
-         */
-        protected boolean doVisit(LoadState state) {
-            Map<String, DeferredUpdater> deferred = state.deferred;
-            if (deferred != null && !state.deferred.isEmpty()) {
-                if (updaters == null) {
-                    updaters = new HashSet<DeferredUpdater>();
-                }
-                updaters.addAll(deferred.values());
-            }
-            return true;
-        }
-
-    }
-
-    /**
-     * Visitor that collects unsaved references from each state.
-     */
-    private static class UnsavedCollector extends Visitor {
-
-        /**
-         * The collected references.
-         */
-        private Set<IMObjectReference> refs;
-
-        /**
-         * Helper empty set.
-         */
-        private static final Set<IMObjectReference> EMPTY
-                = Collections.emptySet();
-
-        /**
-         * Returns the unsaved object references.
-         *
-         * @return the unsaved references
-         */
-        public Set<IMObjectReference> getUnsaved() {
-            return (refs != null) ? refs : EMPTY;
-        }
-
-        /**
-         * Collects unsaved references from the specified state.
-         *
-         * @param state the state
-         * @return <tt>true</tt>
-         */
-        @Override
-        public boolean visit(LoadState state) {
-            LoadState parent = state.parent;
-            if (parent != null && parent.getObject().isNew()) {
-                addUnsaved(parent.getObject().getObjectReference());
-            }
-            return super.visit(state);
-        }
-
-        /**
-         * Collects unsaved references.
-         *
-         * @param state the state
-         * @return <tt>true</tt>
-         */
-        protected boolean doVisit(LoadState state) {
-            IMObject object = state.getObject();
-            if (object.isNew()) {
-                addUnsaved(object.getObjectReference());
-            }
-            if (state.unsaved != null) {
-                for (IMObjectReference ref : state.unsaved.keySet()) {
-                    addUnsaved(ref);
-                }
-            }
-            return true;
-        }
-
-        /**
-         * Adds an unsaved reference.
-         *
-         * @param ref the reference
-         */
-        private void addUnsaved(IMObjectReference ref) {
-            if (refs == null) {
-                refs = new HashSet<IMObjectReference>();
-            }
-            refs.add(ref);
-        }
     }
 
     /**
