@@ -18,8 +18,11 @@
 
 package org.openvpms.web.app.customer.charge;
 
+import java.util.Date;
+
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -27,6 +30,9 @@ import org.openvpms.web.component.im.edit.act.AltModelActRelationshipCollectionE
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
@@ -41,6 +47,11 @@ import org.openvpms.web.component.property.CollectionProperty;
 public class ChargeItemRelationshipCollectionEditor
         extends AltModelActRelationshipCollectionEditor {
 
+	/**
+     * Last Selected Item Date.
+     */
+	private Date lastItemDate = null;
+	
     /**
      * The medication manager.
      */
@@ -69,11 +80,25 @@ public class ChargeItemRelationshipCollectionEditor
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        IMObjectEditor editor = super.createEditor(object, context);
+        final IMObjectEditor editor = super.createEditor(object, context);
         if (editor instanceof CustomerChargeActItemEditor) {
             ((CustomerChargeActItemEditor) editor).setMedicationManager(
                     medicationMgr);
         }
+        
+        // Set startTime to to last used value
+        if (lastItemDate != null) {
+        	editor.getProperty("startTime").setValue(lastItemDate);
+        }
+        
+        // add a listener to store the last used item starttime.
+        ModifiableListener startTimeListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                lastItemDate = (Date)editor.getProperty("startTime").getValue();
+            }
+        };
+        editor.getProperty("startTime").addModifiableListener(startTimeListener);        
+        
         return editor;
     }
 
