@@ -11,31 +11,35 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.component.business.service.lookup;
+package org.openvpms.component.business.service.archetype;
 
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Default implementation of the {@link ILookupService}.
+ * Listener for {@link IArchetypeService} events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class LookupService extends AbstractLookupService {
+public interface IArchetypeServiceListener {
 
     /**
-     * Constructs a new <tt>LookupService</tt>.
+     * Invoked after an object has been saved and the transaction committed.
      *
-     * @param service the archetype service
+     * @param object the saved object
      */
-    public LookupService(IArchetypeService service) {
-        super(service);
-    }
+    void saved(IMObject object);
 
+    /**
+     * Invoked after an object has been remove and the transaction committed.
+     *
+     * @param object the removed object
+     */
+    void removed(IMObject object);
 }

@@ -76,13 +76,15 @@ public class LookupHelper {
      * @return a list of lookups
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
+     * @deprecated use {@link LookupHelper#get(IArchetypeService, NodeDescriptor)}
      */
+    @Deprecated
     public static List<Lookup> get(IArchetypeService service,
                                    NodeDescriptor descriptor,
                                    Collection<String> nodes) {
         LookupAssertion assertion = LookupAssertionFactory.create(
                 descriptor, service, LookupServiceHelper.getLookupService());
-        return assertion.getLookups(nodes);
+        return assertion.getLookups();
     }
 
     /**
@@ -99,8 +101,9 @@ public class LookupHelper {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
-    public static List<Lookup> get(IArchetypeService service,
-                                   NodeDescriptor descriptor, IMObject object) {
+    public static Collection<Lookup> get(IArchetypeService service,
+                                         NodeDescriptor descriptor,
+                                         IMObject object) {
         LookupAssertion assertion = LookupAssertionFactory.create(
                 descriptor, service, LookupServiceHelper.getLookupService());
         return assertion.getLookups(object);
@@ -119,13 +122,16 @@ public class LookupHelper {
      * @return List<Lookup>
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
+     * @deprecated use {@link LookupHelper#get(IArchetypeService, NodeDescriptor, IMObject)}
      */
-    public static List<Lookup> get(IArchetypeService service,
-                                   NodeDescriptor descriptor, IMObject object,
-                                   Collection<String> nodes) {
+    @Deprecated
+    public static Collection<Lookup> get(IArchetypeService service,
+                                         NodeDescriptor descriptor,
+                                         IMObject object,
+                                         Collection<String> nodes) {
         LookupAssertion assertion = LookupAssertionFactory.create(
                 descriptor, service, LookupServiceHelper.getLookupService());
-        return assertion.getLookups(object, nodes);
+        return assertion.getLookups(object);
     }
 
     /**
@@ -237,6 +243,7 @@ public class LookupHelper {
      * @param numOfRows the num of rows to retieve
      * @return IPage<Lookup>
      * @throws ArchetypeServiceException if the request cannot complete
+     * @deprecated use {@link ILookupService#getLookups(String)}
      */
     @Deprecated
     @SuppressWarnings("unchecked")
@@ -251,16 +258,15 @@ public class LookupHelper {
     /**
      * Helper method to return a list of target {@link Lookup} instances
      * give a reference source {@link Lookup}.
-     * <p/>
-     * Note this will work if the target lookups have a 'target' collection
-     * node of lookup relationships, and each relationship has a 'source' node.
      *
      * @param service a reference to the archetype service
      * @param source  the source lookup
      * @param target  the archetype shortNames of the target
      * @return a list of lookup objects
      * @throws ArchetypeServiceException for any archetype service error
+     * @deprecated use {@link ILookupService#getTargetLookups(Lookup)}
      */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public static List<Lookup> getTargetLookups(IArchetypeService service,
                                                 Lookup source,
@@ -290,7 +296,9 @@ public class LookupHelper {
      * @param source  the list of shortnames for the source
      * @return a list of lookup objects
      * @throws ArchetypeServiceException if the request cannot complete
+     * @deprecated use {@link ILookupService#getSourceLookups(Lookup)}
      */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public static List<Lookup> getSourceLookups(IArchetypeService service,
                                                 Lookup target,
@@ -320,6 +328,7 @@ public class LookupHelper {
      * @return IMObject
      *         the object of null if one does not exist
      * @throws ArchetypeServiceException if the request cannot complete
+     * @deprecated use {@link ILookupService#getDefaultLookup(String)}
      */
     @Deprecated
     public static Lookup getDefaultLookup(IArchetypeService service,

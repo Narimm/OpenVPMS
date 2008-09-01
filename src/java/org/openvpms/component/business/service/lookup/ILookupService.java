@@ -57,4 +57,45 @@ public interface ILookupService {
      */
     Lookup getDefaultLookup(String shortName);
 
+    /**
+     * Returns the lookups that are the source of any lookup relationship where
+     * the supplied lookup is the target.
+     *
+     * @param lookup the target lookup
+     * @return a collection of source lookups
+     */
+    Collection<Lookup> getSourceLookups(Lookup lookup);
+
+    /**
+     * Returns the lookups that are the source of specific lookup relationships
+     * where the supplied lookup is the target.
+     *
+     * @param lookup                the target lookup
+     * @param relationshipShortName the relationship short name. May contain
+     *                              wildcards
+     * @return a collection of source lookups
+     */
+    Collection<Lookup> getSourceLookups(Lookup lookup,
+                                        String relationshipShortName);
+
+    /**
+     * Returns the lookups that are the target of any lookup relationship where
+     * the supplied lookup is the source.
+     *
+     * @param lookup the source lookup
+     * @return a collection of target lookups
+     */
+    Collection<Lookup> getTargetLookups(Lookup lookup);
+
+    /**
+     * Returns the lookups that are the target of specific lookup relationships
+     * where the supplied lookup is the source.
+     *
+     * @param lookup                the source lookup
+     * @param relationshipShortName the relationship short name. May contain
+     *                              wildcards
+     * @return a collection of target lookups
+     */
+    Collection<Lookup> getTargetLookups(Lookup lookup,
+                                        String relationshipShortName);
 }

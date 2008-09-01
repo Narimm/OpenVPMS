@@ -138,10 +138,25 @@
         </property>
     </bean>
 
+  <bean id="lookupCache"
+    class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+    <property name="diskPersistent" value="false"/>
+    <property name="cacheName" value="lookupCache"/>
+    <property name="maxElementsInMemory" value="40000"/>
+    <property name="overflowToDisk" value="false"/>
+    <property name="eternal" value="true"/>
+  </bean>
+
+  <bean id="lookupService"
+        class="org.openvpms.component.business.service.lookup.CachingLookupService">
+    <constructor-arg ref="archetypeService"/>
+    <constructor-arg ref="lookupCache"/>
+  </bean>
+
     <!--  Instantiate the archetype service helper bean and inject their dependencies -->
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
-        <constructor-arg index="0">
+        <constructor-arg>
             <ref local="archetypeService"/>
         </constructor-arg>
     </bean>

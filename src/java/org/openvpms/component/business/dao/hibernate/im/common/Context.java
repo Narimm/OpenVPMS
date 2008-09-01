@@ -29,6 +29,7 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -400,17 +401,24 @@ public class Context {
             }
         }
 
-        if (!ids.isEmpty()) {
+        final int size = ids.size();
+        if (size > 1) {
+            // sort the ids so the references are retrieved in index order
+            Collections.sort(ids);
+        }
+        int index = 0;
+        while (index < size) {
+            int max = index + 100 < size ? 100 : size - index;
             StringBuffer hql
                     = new StringBuffer("select id, archetypeId, linkId from ")
                     .append(type.getName()).append(" where id in (?");
-            for (int i = 1; i < ids.size(); ++i) {
+            for (int i = 1; i < max; ++i) {
                 hql.append(",?");
             }
             hql.append(")");
             Query query = session.createQuery(hql.toString());
-            for (int i = 0; i < ids.size(); ++i) {
-                query.setParameter(i, ids.get(i));
+            for (int i = 0; i < max; ++i) {
+                query.setParameter(i, ids.get(i + index));
             }
             for (Object match : query.list()) {
                 Object[] values = (Object[]) match;
@@ -419,6 +427,7 @@ public class Context {
                 String linkId = (String) values[2];
                 result.put(id, new IMObjectReference(archId, id, linkId));
             }
+            index += max;
         }
         return result;
     }

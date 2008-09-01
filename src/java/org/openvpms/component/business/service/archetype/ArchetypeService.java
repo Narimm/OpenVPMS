@@ -44,6 +44,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -77,6 +78,12 @@ public class ArchetypeService implements IArchetypeService {
      * not support rule engine invocations.
      */
     private IRuleEngine ruleEngine;
+
+    /**
+     * The listeners, keyed on archetype short name.
+     */
+    private final Map<String, List<IArchetypeServiceListener>> listeners
+            = new HashMap<String, List<IArchetypeServiceListener>>();
 
     /**
      * Control characters, excluding <em>'\n', '\r', '\t'</em>.
@@ -483,6 +490,7 @@ public class ArchetypeService implements IArchetypeService {
 
         try {
             dao.delete(entity);
+            removed(entity);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
@@ -524,6 +532,7 @@ public class ArchetypeService implements IArchetypeService {
                     || entity instanceof AssertionTypeDescriptor) {
                 updateCache(entity);
             }
+            saved(entity);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToSaveObject,
@@ -567,6 +576,7 @@ public class ArchetypeService implements IArchetypeService {
         // now issue a call to save the objects
         try {
             dao.save(objects);
+            saved(objects);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects,
@@ -636,6 +646,61 @@ public class ArchetypeService implements IArchetypeService {
                     ArchetypeServiceException.ErrorCode.FailedToExecuteRule,
                     exception, ruleUri);
         }
+    }
+
+    /**
+     * Adds a listener to receive notification of changes.
+     * <p/>
+     * In a transaction, notifications occur on successful commit.
+     *
+     * @param shortName the archetype short to receive events for. May contain
+     *                  wildcards.
+     * @param listener  the listener to add
+     */
+    public void addListener(String shortName,
+                            IArchetypeServiceListener listener) {
+        synchronized (listeners) {
+            for (String name : getArchetypeShortNames(shortName, false)) {
+                List<IArchetypeServiceListener> list = listeners.get(name);
+                if (list == null) {
+                    list = new ArrayList<IArchetypeServiceListener>();
+                    listeners.put(name, list);
+                }
+                list.add(listener);
+            }
+        }
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param shortName the archetype short to remove the listener for. May
+     *                  contain wildcards.
+     * @param listener  the listener to remove
+     */
+    public void removeListener(String shortName,
+                               IArchetypeServiceListener listener) {
+        synchronized (listeners) {
+            for (String name : getArchetypeShortNames(shortName, false)) {
+                List<IArchetypeServiceListener> list = listeners.get(name);
+                if (list != null) {
+                    if (list.remove(listener)) {
+                        if (list.isEmpty()) {
+                            listeners.remove(name);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the listeners.
+     *
+     * @return the listeners
+     */
+    protected Map<String, List<IArchetypeServiceListener>> getListeners() {
+        return listeners;
     }
 
     /**
@@ -1018,6 +1083,69 @@ public class ArchetypeService implements IArchetypeService {
                     = (AssertionTypeDescriptor) object;
             dCache.addAssertionTypeDescriptor(descriptor, true);
         }
+    }
+
+    /**
+     * Notifies any listeners when an object is saved.
+     *
+     * @param object the saved object
+     */
+    private void saved(IMObject object) {
+        synchronized (listeners) {
+            notifySaved(object, null);
+        }
+    }
+
+    /**
+     * Notifies any listeners when a collection of objects is saved.
+     *
+     * @param objects the saved objects
+     */
+    private void saved(Collection<? extends IMObject> objects) {
+        synchronized (listeners) {
+            Notifier notifier = null;
+            for (IMObject object : objects) {
+                notifier = notifySaved(object, notifier);
+            }
+        }
+    }
+
+    /**
+     * Notifies any listeners when an object is removed.
+     *
+     * @param object removed saved object
+     */
+    private void removed(IMObject object) {
+        synchronized (listeners) {
+            ArchetypeId id = object.getArchetypeId();
+            String shortName = id.getShortName();
+            List<IArchetypeServiceListener> list = listeners.get(shortName);
+            if (list != null) {
+                Notifier notifier = Notifier.getNotifier(this);
+                notifier.notifyRemoved(object, list);
+            }
+        }
+    }
+
+    /**
+     * Notifies any listeners when an object is saved.
+     *
+     * @param object   the saved object
+     * @param notifier the notifier to use. If <tt>null</tt> indicates to create
+     *                 a new notifier
+     * @return the notifier
+     */
+    private Notifier notifySaved(IMObject object, Notifier notifier) {
+        ArchetypeId id = object.getArchetypeId();
+        String shortName = id.getShortName();
+        List<IArchetypeServiceListener> list = listeners.get(shortName);
+        if (list != null) {
+            if (notifier == null) {
+                notifier = Notifier.getNotifier(this);
+            }
+            notifier.notifySaved(object, list);
+        }
+        return notifier;
     }
 
 

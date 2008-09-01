@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.ruleengine.IRuleEngine;
 import org.openvpms.component.business.service.ruleengine.RuleSetUriHelper;
@@ -508,6 +509,32 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
                 return null;
             }
         });
+    }
+
+    /**
+     * Adds a listener to receive notification of changes.
+     * <p/>
+     * In a transaction, notifications occur on successful commit.
+     *
+     * @param shortName the archetype short to receive events for. May contain
+     *                  wildcards.
+     * @param listener  the listener to add
+     */
+    public void addListener(String shortName,
+                            IArchetypeServiceListener listener) {
+        service.addListener(shortName, listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param shortName the archetype short to remove the listener for. May
+     *                  contain wildcards.
+     * @param listener  the listener to remove
+     */
+    public void removeListener(String shortName,
+                               IArchetypeServiceListener listener) {
+        service.removeListener(shortName, listener);
     }
 
     /**

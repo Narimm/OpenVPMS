@@ -69,30 +69,7 @@ public interface LookupAssertion {
      * @throws LookupHelperException     if this method is unsupported by the
      *                                   lookup type
      */
-    List<Lookup> getLookups(IMObject context);
-
-    /**
-     * Returns partially populated lookups for this assertion.
-     *
-     * @param nodes the nodes to populate
-     * @return a list of lookups
-     * @throws ArchetypeServiceException for any archetype service error
-     * @throws LookupHelperException     if this method is unsupported by the
-     *                                   lookup type
-     */
-    List<Lookup> getLookups(Collection<String> nodes);
-
-    /**
-     * Returns partially populated lookups for this assertion.
-     *
-     * @param context the context.
-     * @param nodes   the nodes to populate
-     * @return a list of lookups
-     * @throws ArchetypeServiceException for any archetype service error
-     * @throws LookupHelperException     if this method is unsupported by the
-     *                                   lookup type
-     */
-    List<Lookup> getLookups(IMObject context, Collection<String> nodes);
+    Collection<Lookup> getLookups(IMObject context);
 
     /**
      * Returns the lookup with the specified code.

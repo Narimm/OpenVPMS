@@ -29,10 +29,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import static org.openvpms.component.business.service.archetype.helper.LookupHelperException.ErrorCode.*;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSet;
 
 import java.util.Collection;
 import java.util.List;
@@ -122,35 +118,8 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @return a list of lookups
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public List<Lookup> getLookups(IMObject context) {
+    public Collection<Lookup> getLookups(IMObject context) {
         return getLookups();
-    }
-
-    /**
-     * Returns partially populated lookups for this assertion.
-     * This implementation delegates to
-     * {@link LookupAssertion#getLookups()}.
-     *
-     * @param nodes the nodes to populate
-     * @return a list of lookups
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public List<Lookup> getLookups(Collection<String> nodes) {
-        return getLookups();
-    }
-
-    /**
-     * Returns partially populated lookups for this assertion.
-     * This implementation delegates to
-     * {@link LookupAssertion#getLookups(IMObject)}.
-     *
-     * @param context the context.
-     * @param nodes   the nodes to populate
-     * @return a list of lookups
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public List<Lookup> getLookups(IMObject context, Collection<String> nodes) {
-        return getLookups(context);
     }
 
     /**
@@ -248,36 +217,6 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
     }
 
     /**
-     * Executes a query.
-     *
-     * @param query the query to execute
-     * @return a list of lookups
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    @SuppressWarnings("unchecked")
-    protected List<Lookup> getLookups(ArchetypeQuery query) {
-        query.setCountResults(false);
-        List result = service.get(query).getResults();
-        return (List<Lookup>) result;
-    }
-
-    /**
-     * Executes a query.
-     *
-     * @param nodes the nodes to populate
-     * @param query the query to execute
-     * @return a list of lookups
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    @SuppressWarnings("unchecked")
-    protected List<Lookup> getLookups(Collection<String> nodes,
-                                      ArchetypeQuery query) {
-        query.setCountResults(false);
-        List result = service.get(query, nodes).getResults();
-        return (List<Lookup>) result;
-    }
-
-    /**
      * Returns the value of the named property from the assertion descriptor.
      *
      * @param name the property name
@@ -285,29 +224,6 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      */
     protected String getProperty(String name) {
         return LookupAssertionHelper.getValue(descriptor, name);
-    }
-
-    /**
-     * Returns specific nodes of a lookup.
-     *
-     * @param shortNames the lookup short names to match on
-     * @param code       the lookup code
-     * @param nodes      the nodes to query
-     * @return the nodes
-     */
-    protected NodeSet getLookupNodes(String[] shortNames, String code,
-                                     Collection<String> nodes) {
-        NodeSet result = null;
-        ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true)
-                .add(new NodeConstraint("code", code))
-                .setFirstResult(0)
-                .setMaxResults(1)
-                .setCountResults(false);
-        IPage<NodeSet> page = service.getNodes(query, nodes);
-        if (!page.getResults().isEmpty()) {
-            result = page.getResults().get(0);
-        }
-        return result;
     }
 
     /**
@@ -328,7 +244,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
         String[] shortNames = getArchetypeShortNames(relationshipShortName,
                                                      relationshipNode);
         for (String shortName : shortNames) {
-            result = lookupService.getLookup(shortName,  code);
+            result = lookupService.getLookup(shortName, code);
             if (result != null) {
                 break;
             }
