@@ -19,10 +19,12 @@
 package org.openvpms.component.business.service.lookup;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import java.util.Arrays;
 import java.util.Collection;
+
 
 /**
  * Tests the {@link LookupService}.
@@ -37,7 +39,7 @@ public class LookupServiceTestCase
     /**
      * The archetype service
      */
-    private ArchetypeService service;
+    private IArchetypeService service;
 
     /**
      * The lookup service.
@@ -48,18 +50,6 @@ public class LookupServiceTestCase
      * Default constructor
      */
     public LookupServiceTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/lookup/lookup-service-appcontext.xml"
-        };
     }
 
     /**
@@ -84,12 +74,12 @@ public class LookupServiceTestCase
      * Tests the {@link ILookupService#getLookups} method.
      */
     public void testGetLookups() throws Exception {
-        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
-                                                "AU");
-
         Collection<Lookup> lookups1
                 = lookupService.getLookups("lookup.country");
+
+        Lookup lookup = LookupUtil.createLookup("lookup.country", "AU");
         service.save(lookup);
+
         Collection<Lookup> lookups2
                 = lookupService.getLookups("lookup.country");
         assertEquals(lookups1.size() + 1, lookups2.size());
@@ -100,21 +90,10 @@ public class LookupServiceTestCase
      * Tests the {@link ILookupService#getDefaultLookup} method.
      */
     public void testGetDefaultLookups() {
-        // clean out existing lookups
-        Collection<Lookup> lookups = lookupService.getLookups("lookup.country");
-        for (Lookup lookup : lookups) {
-            service.remove(lookup);
-        }
-        lookups = lookupService.getLookups("lookup.country");
-        assertTrue(lookups.isEmpty());
-
-        // save 2 new lookups
-        Lookup au = (Lookup) service.create("lookup.country");
-        au.setCode("AU");
+        Lookup au = LookupUtil.createLookup(service, "lookup.country", "AU");
         au.setDefaultLookup(true);
 
-        Lookup uk = (Lookup) service.create("lookup.country");
-        uk.setCode("UK");
+        Lookup uk = LookupUtil.createLookup(service, "lookup.country", "UK");
 
         service.save(au);
         service.save(uk);
@@ -123,16 +102,69 @@ public class LookupServiceTestCase
         assertEquals(au, lookup);
     }
 
-    /* (non-Javadoc)
-    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-    */
+    /**
+     * Tests the {@link ILookupService#getSourceLookups(Lookup)} and
+     * {@link ILookupService#getTargetLookups(Lookup)} method.
+     */
+    public void testGetSourceAndTargetLookups() {
+        Lookup au = LookupUtil.createLookup("lookup.country", "AU");
+        Lookup uk = LookupUtil.createLookup("lookup.country", "UK");
+
+        service.save(au);
+        service.save(uk);
+
+        Lookup vic = LookupUtil.createLookup("lookup.state", "VIC");
+        LookupUtil.addRelationship(service, "lookupRelationship.countryState",
+                                   au, vic);
+        service.save(Arrays.asList(au, vic));
+
+        assertEquals(0, lookupService.getSourceLookups(au).size());
+        Collection<Lookup> targets = lookupService.getTargetLookups(au);
+        assertEquals(1, targets.size());
+        assertTrue(targets.contains(vic));
+
+        assertEquals(0, lookupService.getTargetLookups(vic).size());
+        Collection<Lookup> sources = lookupService.getSourceLookups(vic);
+        assertEquals(1, sources.size());
+        assertTrue(sources.contains(au));
+    }
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        service = (ArchetypeService) applicationContext.getBean(
+        service = (IArchetypeService) applicationContext.getBean(
                 "archetypeService");
-        lookupService = new LookupService(service);
+        lookupService = (ILookupService) applicationContext.getBean(
+                "lookupService");
+
+        removeLookups("lookup.country");
+        removeLookups("lookup.state");
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/lookup/lookup-service-appcontext.xml"
+        };
+    }
+
+    private void removeLookups(String shortName) {
+        Collection<Lookup> lookups = lookupService.getLookups(shortName);
+        for (Lookup lookup : lookups) {
+            service.remove(lookup);
+        }
 
     }
+
 }

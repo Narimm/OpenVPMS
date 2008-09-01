@@ -21,28 +21,14 @@ package org.openvpms.component.business.service.archetype.helper.lookup;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.IdConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.NodeSet;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 
 /**
@@ -70,7 +56,7 @@ class TargetLookup extends AbstractLookupAssertion {
 
 
     /**
-     * Constructs a new <code>TargetLookup</code>.
+     * Constructs a new <tt>TargetLookup</tt>.
      *
      * @param descriptor    the assertion descriptor
      * @param service       the archetype service
@@ -96,13 +82,12 @@ class TargetLookup extends AbstractLookupAssertion {
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
-    public List<Lookup> getLookups(IMObject context) {
-        List<Lookup> lookups;
+    public Collection<Lookup> getLookups(IMObject context) {
+        Collection<Lookup> lookups;
         Lookup lookup = getSourceLookup(context);
         if (lookup != null) {
-            String[] target = getArchetypeShortNames(relationship, "target");
-            lookups = LookupHelper.getTargetLookups(
-                    getArchetypeService(), lookup, target);
+            lookups = getLookupService().getTargetLookups(lookup,
+                                                          relationship);
         } else {
             lookups = Collections.emptyList();
         }
@@ -110,52 +95,25 @@ class TargetLookup extends AbstractLookupAssertion {
     }
 
     /**
-     * Returns partially populated lookups for this assertion.
-     *
-     * @param context the context.
-     * @param nodes   the nodes to populate
-     * @return a list of lookups
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    @Override
-    public List<Lookup> getLookups(IMObject context, Collection<String> nodes) {
-        List<Lookup> result;
-        IMObjectReference lookup = getSourceLookupRef(context);
-        if (lookup != null) {
-            String[] target = getArchetypeShortNames(relationship, "target");
-            ArchetypeQuery query = new ArchetypeQuery(
-                    new ShortNameConstraint(
-                            target, false, false))
-                    .add(new CollectionNodeConstraint("target", false)
-                            .add(new ObjectRefNodeConstraint("source", lookup)))
-                    .add(new NodeSortConstraint("name", true))
-                    .setMaxResults(ArchetypeQuery.ALL_RESULTS)
-                    .setActiveOnly(true);
-            result = getLookups(nodes, query);
-        } else {
-            result = Collections.emptyList();
-        }
-        return result;
-    }
-
-    /**
      * Returns the lookup with the specified code.
      *
      * @param context the context
-     * @return the lookup matching <code>code</code>, or <code>null</code> if
+     * @return the lookup matching <tt>code</tt>, or <tt>null</tt> if
      *         none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
     public Lookup getLookup(IMObject context, String code) {
         Lookup result = null;
-
-        IMObjectReference lookup = getSourceLookupRef(context);
-        if (lookup != null) {
-            ArchetypeQuery query = createQuery(lookup, code);
-            List<Lookup> lookups = getLookups(query);
-            if (!lookups.isEmpty()) {
-                result = lookups.get(0);
+        Lookup source = getSourceLookup(context);
+        if (source != null) {
+            Collection<Lookup> lookups
+                    = getLookupService().getTargetLookups(source, relationship);
+            for (Lookup lookup : lookups) {
+                if (code.equals(lookup.getCode())) {
+                    result = lookup;
+                    break;
+                }
             }
         }
         return result;
@@ -164,83 +122,25 @@ class TargetLookup extends AbstractLookupAssertion {
     /**
      * Returns the name of the lookup with the specified code.
      *
-     * @param context the context. May be <code>null</code>
-     * @return the name of the lookup matching <code>code</code>, or
-     *         <code>null</code> if none is found
+     * @param context the context. May be <tt>null</tt>
+     * @return the name of the lookup matching <tt>code</tt>, or
+     *         <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
-    @SuppressWarnings("HardCodedStringLiteral")
     public String getName(IMObject context, String code) {
-        String srcCode = getPathValue(context, value);
-        ShortNameConstraint source = new ShortNameConstraint(
-                "source", getArchetypeShortNames(relationship, "source"), true,
-                true);
-        ShortNameConstraint target = new ShortNameConstraint(
-                "target", getArchetypeShortNames(relationship, "target"), true,
-                true);
-        ShortNameConstraint relConstraint = new ShortNameConstraint(
-                "relationship", relationship, true, true);
-        ArchetypeQuery query = new ArchetypeQuery(relConstraint);
-        query.add(source);
-        query.add(target);
-        query.add(new IdConstraint("relationship.source", "source"));
-        query.add(new IdConstraint("relationship.target", "target"));
-        query.add(new NodeConstraint("source.code", srcCode));
-        query.add(new NodeConstraint("target.code", code));
-        query.add(new NodeSelectConstraint("target.name"));
-        query.setMaxResults(1);
-        ObjectSetQueryIterator iter = new ObjectSetQueryIterator(
-                getArchetypeService(), query);
-        if (iter.hasNext()) {
-            ObjectSet set = iter.next();
-            return (String) set.get("target.name");
-        }
-        return null;
-    }
-
-    /**
-     * Creates a query.
-     *
-     * @param lookup the source lookup
-     * @param code   the lookup code
-     * @return a new query
-     */
-    private ArchetypeQuery createQuery(IMObjectReference lookup, String code) {
-        String[] target = getArchetypeShortNames(relationship, "target");
-        return new ArchetypeQuery(
-                new ShortNameConstraint(
-                        target, false, false))
-                .add(new CollectionNodeConstraint("target", false)
-                        .add(new ObjectRefNodeConstraint("source", lookup)))
-                .add(new NodeConstraint("code", code))
-                .setActiveOnly(true)
-                .setMaxResults(ArchetypeQuery.ALL_RESULTS)
-                .setCountResults(false);
+        Lookup lookup = getLookup(context, code);
+        return (lookup != null) ? lookup.getName() : null;
     }
 
     /**
      * Returns the source lookup.
      *
      * @param context the context
-     * @return the source lookup, or <code>null</code> if none can be found
+     * @return the source lookup, or <tt>null</tt> if none can be found
      */
     private Lookup getSourceLookup(IMObject context) {
         return getLookup(context, value, relationship, "source");
     }
 
-    /**
-     * Returns a reference to the target lookup.
-     *
-     * @param context the context object
-     * @return a reference to the target lookup or <code>null</code> if it
-     *         can't be found
-     */
-    private IMObjectReference getSourceLookupRef(IMObject context) {
-        String srcVal = getPathValue(context, value);
-        String[] source = getArchetypeShortNames(relationship, "source");
-        List<String> names = Collections.emptyList();
-        NodeSet nodes = getLookupNodes(source, srcVal, names);
-        return (nodes != null) ? nodes.getObjectReference() : null;
-    }
 }

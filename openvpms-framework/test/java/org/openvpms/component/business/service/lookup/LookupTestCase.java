@@ -111,9 +111,9 @@ public class LookupTestCase
         assertNotNull(adesc);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("target");
         assertNotNull(ndesc);
-        List<Lookup> page = LookupHelper.getTargetLookups(
-                service, cty, new String[]{"lookup.state"});
-        assertEquals(3, page.size());
+        Collection<Lookup> lookups
+                = LookupServiceHelper.getLookupService().getTargetLookups(cty);
+        assertEquals(3, lookups.size());
     }
 
     /**

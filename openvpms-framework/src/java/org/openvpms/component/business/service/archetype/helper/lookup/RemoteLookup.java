@@ -20,13 +20,11 @@ package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -98,32 +96,6 @@ class RemoteLookup extends AbstractLookupAssertion {
     public List<Lookup> getLookups() {
         Collection<Lookup> lookups = getLookupService().getLookups(source);
         return new ArrayList<Lookup>(lookups);
-    }
-
-    /**
-     * Returns partially populated lookups for this assertion.
-     *
-     * @param nodes the nodes to populate
-     * @return a list of lookups
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public List<Lookup> getLookups(Collection<String> nodes) {
-        ArchetypeQuery query = new ArchetypeQuery(source, false, true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        return getLookups(nodes, query);
-    }
-
-    /**
-     * Returns partially populated lookups for this assertion.
-     *
-     * @param context the context.
-     * @param nodes   the nodes to populate
-     * @return a list of lookups
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    @Override
-    public List<Lookup> getLookups(IMObject context, Collection<String> nodes) {
-        return getLookups(nodes);
     }
 
     /**

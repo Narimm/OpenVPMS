@@ -335,4 +335,24 @@ public interface IArchetypeService {
      */
     public List<Object> executeRule(String ruleUri, Map<String, Object> props,
                                     List<Object> facts);
+
+    /**
+     * Adds a listener to receive notification of changes.
+     * <p/>
+     * In a transaction, notifications occur on successful commit.
+     *
+     * @param shortName the archetype short to receive events for. May contain
+     *                  wildcards.
+     * @param listener  the listener to add
+     */
+    void addListener(String shortName, IArchetypeServiceListener listener);
+
+    /**
+     * Removes a listener.
+     *
+     * @param shortName the archetype short to remove the listener for. May
+     *                  contain wildcards.
+     * @param listener  the listener to remove
+     */
+    void removeListener(String shortName, IArchetypeServiceListener listener);
 }
