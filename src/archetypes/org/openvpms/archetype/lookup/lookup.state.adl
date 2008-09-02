@@ -33,6 +33,20 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name,' ', lookup:isDefault(/defaultLookup))"/>
+        <node name="source" path="/sourceLookupRelationships"
+              type="java.util.HashSet" baseName="sourceLookupRelationship"
+              minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange"
+                       filter="lookupRelationship.speciesBreed">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="lookupRelationship.stateSuburb"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
         <node name="target" path="/targetLookupRelationships"
               type="java.util.HashSet" baseName="targetLookupRelationship"
               minCardinality="0" maxCardinality="1">

@@ -36,6 +36,19 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat (/name, ' ', /details/postCode,lookup:isDefault(/defaultLookup))"/>
+        <node name="target" path="/targetLookupRelationships"
+              type="java.util.HashSet" baseName="targetLookupRelationship"
+              minCardinality="0" maxCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="lookupRelationship.stateSuburb"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
         <node displayName="default" name="defaultLookup"
               type="java.lang.Boolean" path="/defaultLookup"
               defaultValue="false()"/>
