@@ -43,6 +43,7 @@
 		<node name="derivedValue" path="/derivedValue"
 			type="java.lang.String" />
 		<node name="hidden" path="/hidden" type="java.lang.Boolean" />
+		<node name="readOnly" path="/readOnly" type="java.lang.Boolean" />
 		<node name="assertionDescriptors" path="/assertionDescriptors"
 			parentChild="true" type="java.util.LinkedHashMap"
 			baseName="assertionDescriptor" maxCardinality="*">
