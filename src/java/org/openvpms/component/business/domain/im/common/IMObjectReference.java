@@ -55,6 +55,11 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     private String linkId;
 
+    /**
+     * The hash code.
+     */
+    private transient int hashCode;
+
 
     /**
      * Default constructor provided for serialization.
@@ -76,8 +81,8 @@ public class IMObjectReference implements Serializable, Cloneable {
                     "Invalid argument 'object'");
         }
         this.archetypeId = object.getArchetypeId();
-        this.id = object.getId();
-        this.linkId = object.getLinkId();
+        setId(object.getId());
+        setLinkId(object.getLinkId());
     }
 
     /**
@@ -107,8 +112,8 @@ public class IMObjectReference implements Serializable, Cloneable {
                     "Invalid argument 'archetypeId'");
         }
         this.archetypeId = archetypeId;
-        this.id = id;
-        this.linkId = linkId;
+        setId(id);
+        setLinkId(linkId);
     }
 
     /**
@@ -125,7 +130,7 @@ public class IMObjectReference implements Serializable, Cloneable {
                     "Invalid argument 'archetypeId'");
         }
         this.archetypeId = archetypeId;
-        this.linkId = linkId;
+        setLinkId(linkId);
     }
 
     /**
@@ -200,7 +205,7 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public int hashCode() {
-        return (linkId != null) ? linkId.hashCode() : (int) id;
+        return hashCode;
     }
 
     /* (non-Javadoc)
@@ -236,6 +241,7 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     protected void setId(long id) {
         this.id = id;
+        updateHash();
     }
 
     /**
@@ -245,6 +251,18 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     protected void setLinkId(String linkId) {
         this.linkId = linkId;
+        updateHash();
+    }
+
+    /**
+     * Updates the cached hash code.
+     */
+    private void updateHash() {
+        if (linkId != null) {
+            hashCode = linkId.hashCode();
+        } else {
+            hashCode = (int) id;
+        }
     }
 
 }

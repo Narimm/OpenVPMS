@@ -147,12 +147,6 @@
     <property name="eternal" value="true"/>
   </bean>
 
-  <bean id="lookupService"
-        class="org.openvpms.component.business.service.lookup.CachingLookupService">
-    <constructor-arg ref="archetypeService"/>
-    <constructor-arg ref="lookupCache"/>
-  </bean>
-
     <!--  Instantiate the archetype service helper bean and inject their dependencies -->
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
