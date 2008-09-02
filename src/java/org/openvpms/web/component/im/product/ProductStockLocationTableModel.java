@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.product;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipDescriptorTableModel;
 
@@ -31,7 +31,7 @@ import org.openvpms.web.component.im.relationship.RelationshipDescriptorTableMod
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ProductStockLocationTableModel
-        extends RelationshipDescriptorTableModel<EntityRelationship> {
+        extends RelationshipDescriptorTableModel<IMObjectRelationship> {
 
     /**
      * Creates a new <tt>ProductStockLocationTableModel</tt>.

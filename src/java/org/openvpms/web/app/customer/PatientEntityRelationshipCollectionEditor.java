@@ -22,8 +22,8 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionEditor;
-import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionPropertyEditor;
+import org.openvpms.web.component.im.relationship.RelationshipCollectionEditor;
+import org.openvpms.web.component.im.relationship.RelationshipCollectionPropertyEditor;
 import org.openvpms.web.component.im.relationship.RelationshipState;
 import org.openvpms.web.component.im.relationship.RelationshipStateQuery;
 import org.openvpms.web.component.im.table.IMTableModel;
@@ -40,7 +40,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PatientEntityRelationshipCollectionEditor
-        extends EntityRelationshipCollectionEditor {
+        extends RelationshipCollectionEditor {
 
     /**
      * Creates a new <tt>EntityRelationshipCollectionEditor</tt>.
@@ -64,18 +64,17 @@ public class PatientEntityRelationshipCollectionEditor
     @Override
     protected IMTableModel<RelationshipState> createTableModel(
             LayoutContext context) {
-        EntityRelationshipCollectionPropertyEditor editor
+        RelationshipCollectionPropertyEditor editor
                 = getCollectionPropertyEditor();
         return new PatientRelationshipStateTableModel(context,
                                                       editor.parentIsSource());
     }
 
     /**
-     * An {@link EntityRelationshipCollectionPropertyEditor} that excludes
+     * An {@link RelationshipCollectionPropertyEditor} that excludes
      * inactive/deceased patients if the 'hide inactive' checkbox is selected.
      */
-    private static class Editor
-            extends EntityRelationshipCollectionPropertyEditor {
+    private static class Editor extends RelationshipCollectionPropertyEditor {
 
         /**
          * Construct a new <tt>Editor</tt>.
@@ -94,9 +93,10 @@ public class PatientEntityRelationshipCollectionEditor
          * @return a new query
          */
         @Override
-        protected RelationshipStateQuery createQuery(Entity parent) {
+        protected RelationshipStateQuery createQuery(IMObject parent) {
             return new PatientRelationshipStateQuery(
-                    parent, getObjects(), getProperty().getArchetypeRange());
+                    (Entity) parent, getObjects(),
+                    getProperty().getArchetypeRange());
         }
     }
 

@@ -45,6 +45,7 @@ import org.openvpms.web.app.supplier.delivery.DeliveryItemEditor;
 import org.openvpms.web.app.supplier.order.OrderEditor;
 import org.openvpms.web.app.supplier.order.OrderItemEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
+import org.openvpms.web.component.im.contact.LocationEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
@@ -79,7 +80,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * class is configured.
      */
     public void testCreateDefaultEditor() {
-        checkCreate("contact.location", DefaultIMObjectEditor.class);
+        checkCreate("contact.phoneNumber", DefaultIMObjectEditor.class);
     }
 
     /**
@@ -424,6 +425,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     public void testCreateProductPriceEditor() {
         checkCreate("productPrice.fixedPrice", ProductPriceEditor.class);
         checkCreate("productPrice.unitPrice", ProductPriceEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link LocationEditor} is created for
+     * <em>productPrice.fixedPrice</em> and <em>productPrice.unitPrice</em>.
+     */
+    public void testLocationEditor() {
+        checkCreate("contact.location", LocationEditor.class);
     }
 
     /**

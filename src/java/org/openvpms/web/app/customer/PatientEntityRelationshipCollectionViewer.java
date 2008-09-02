@@ -19,9 +19,10 @@
 package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionViewer;
+import org.openvpms.web.component.im.relationship.RelationshipCollectionViewer;
 import org.openvpms.web.component.im.relationship.RelationshipState;
 import org.openvpms.web.component.im.relationship.RelationshipStateQuery;
 import org.openvpms.web.component.im.table.IMTableModel;
@@ -38,7 +39,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PatientEntityRelationshipCollectionViewer
-        extends EntityRelationshipCollectionViewer {
+        extends RelationshipCollectionViewer {
 
     /**
      * Construct a new <tt>PatientEntityRelationshipCollectionViewer</tt>.
@@ -71,8 +72,9 @@ public class PatientEntityRelationshipCollectionViewer
      * @return a new query
      */
     @Override
-    protected RelationshipStateQuery createQuery(Entity parent) {
+    protected RelationshipStateQuery createQuery(IMObject parent) {
         return new PatientRelationshipStateQuery(
-                parent, getObjects(), getProperty().getArchetypeRange());
+                (Entity) parent, getObjects(),
+                getProperty().getArchetypeRange());
     }
 }

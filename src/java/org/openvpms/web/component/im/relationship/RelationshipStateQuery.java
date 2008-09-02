@@ -18,9 +18,8 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -40,7 +39,7 @@ import java.util.Map;
 
 /**
  * Helper to create {@link RelationshipState} instances for each of the supplied
- * {@link EntityRelationship} instances associated with an {@link Entity}.
+ * {@link IMObjectRelationship} instances associated with an {@link IMObject}.
  * This performs a query to reduce the number of database accesses.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -49,9 +48,9 @@ import java.util.Map;
 public class RelationshipStateQuery {
 
     /**
-     * The parent entity.
+     * The parent object.
      */
-    private final Entity entity;
+    private final IMObject parent;
 
     /**
      * The relationships.
@@ -64,7 +63,7 @@ public class RelationshipStateQuery {
     private final String[] relationshipShortNames;
 
     /**
-     * Determines if <tt>entity</tt> is the source or target of the
+     * Determines if <tt>parent</tt> is the source or target of the
      * relationships.
      */
     private final boolean source;
@@ -76,13 +75,13 @@ public class RelationshipStateQuery {
     private final String[] shortNames;
 
     /**
-     * The primary relationship node name. If entity is the source,
+     * The primary relationship node name. If parent is the source,
      * it will be "source", otherwise "target".
      */
     private final String primaryNode;
 
     /**
-     * The secondary relationship node name. If entity is the source,
+     * The secondary relationship node name. If parent is the source,
      * it will be "target", otherwise "source".
      */
     private final String secondaryNode;
@@ -122,33 +121,33 @@ public class RelationshipStateQuery {
     /**
      * Creates a new <tt>RelationshipStateQuery</tt>.
      *
-     * @param entity                 the parent entity
+     * @param parent                 the parent object
      * @param relationships          the relationships
      * @param relationshipShortNames the relationship short names
      */
-    public RelationshipStateQuery(Entity entity, List<IMObject> relationships,
+    public RelationshipStateQuery(IMObject parent, List<IMObject> relationships,
                                   String[] relationshipShortNames) {
-        this(entity, relationships, relationshipShortNames, DEFAULT_FACTORY);
+        this(parent, relationships, relationshipShortNames, DEFAULT_FACTORY);
     }
 
     /**
      * Creates a new <tt>RelationshipStateQuery</tt>.
      *
-     * @param entity                 the parent entity
+     * @param parent                 the parent object
      * @param relationships          the relationships
      * @param relationshipShortNames the relationship short names
      * @param factory                the relationship state factory
      */
-    public RelationshipStateQuery(Entity entity, List<IMObject> relationships,
+    public RelationshipStateQuery(IMObject parent, List<IMObject> relationships,
                                   String[] relationshipShortNames,
                                   RelationshipStateFactory factory) {
-        this.entity = entity;
+        this.parent = parent;
         this.relationships = relationships;
         this.relationshipShortNames = relationshipShortNames;
         this.factory = factory;
         String[] sourceShortNames = DescriptorHelper.getNodeShortNames(
                 relationshipShortNames, "source");
-        source = TypeHelper.isA(entity, sourceShortNames);
+        source = TypeHelper.isA(parent, sourceShortNames);
         if (source) {
             primaryNode = "source";
             secondaryNode = "target";
@@ -167,12 +166,12 @@ public class RelationshipStateQuery {
     }
 
     /**
-     * Returns the parent entity.
+     * Returns the parent object.
      *
-     * @return the parent entity
+     * @return the parent object
      */
-    public Entity getEntity() {
-        return entity;
+    public IMObject getParent() {
+        return parent;
     }
 
     /**
@@ -192,16 +191,16 @@ public class RelationshipStateQuery {
      *         their associated relationships
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Map<EntityRelationship, RelationshipState> query() {
+    public Map<IMObjectRelationship, RelationshipState> query() {
         // create a map of relationships keyed on their id
-        Map<Long, EntityRelationship> relsById
-                = new HashMap<Long, EntityRelationship>();
+        Map<Long, IMObjectRelationship> relsById
+                = new HashMap<Long, IMObjectRelationship>();
         for (IMObject relationship : relationships) {
             relsById.put(relationship.getId(),
-                         (EntityRelationship) relationship);
+                         (IMObjectRelationship) relationship);
         }
-        Map<EntityRelationship, RelationshipState> result
-                = new HashMap<EntityRelationship, RelationshipState>();
+        Map<IMObjectRelationship, RelationshipState> result
+                = new HashMap<IMObjectRelationship, RelationshipState>();
         if (!relsById.isEmpty()) {
             // query the the database for matching relationship states, and
             // create RelationshipState instances for each returned ObjectSet
@@ -215,7 +214,7 @@ public class RelationshipStateQuery {
                 String description = set.getString(secondaryDescNode);
                 boolean active = set.getBoolean(secondaryActiveNode);
 
-                EntityRelationship r = relsById.remove(relId);
+                IMObjectRelationship r = relsById.remove(relId);
                 if (r != null) {
                     long sourceId;
                     String sourceName;
@@ -225,9 +224,9 @@ public class RelationshipStateQuery {
                     String targetDesc;
 
                     if (source) {
-                        sourceId = entity.getId();
-                        sourceName = entity.getName();
-                        sourceDesc = entity.getDescription();
+                        sourceId = parent.getId();
+                        sourceName = parent.getName();
+                        sourceDesc = parent.getDescription();
                         targetId = id;
                         targetName = name;
                         targetDesc = description;
@@ -235,16 +234,16 @@ public class RelationshipStateQuery {
                         sourceId = id;
                         sourceName = name;
                         sourceDesc = description;
-                        targetId = entity.getId();
-                        targetName = entity.getName();
-                        targetDesc = entity.getDescription();
+                        targetId = parent.getId();
+                        targetName = parent.getName();
+                        targetDesc = parent.getDescription();
                     }
                     RelationshipState state = factory.create(
                             r, sourceId, sourceName, sourceDesc, targetId,
                             targetName, targetDesc, active);
                     result.put(r, state);
                 } else {
-                    // no corresponding EntityRelationship, so discard it
+                    // no corresponding IMObjectRelationship, so discard it
                 }
             }
 
@@ -253,8 +252,8 @@ public class RelationshipStateQuery {
             // from the relationship. This is somewhat slower
             // as the name and active nodes require a single query for each
             // relationship.
-            for (EntityRelationship r : relsById.values()) {
-                result.put(r, factory.create(entity, r, source));
+            for (IMObjectRelationship r : relsById.values()) {
+                result.put(r, factory.create(parent, r, source));
             }
         }
         return result;
@@ -271,7 +270,7 @@ public class RelationshipStateQuery {
 
     /**
      * Creates a new archetype query returning the relationship id,
-     * and the name and active nodes for the secondary entity.
+     * and the name and active nodes for the secondary object.
      *
      * @return a new archetype query
      */
@@ -279,7 +278,7 @@ public class RelationshipStateQuery {
         ShortNameConstraint relationships = new ShortNameConstraint(
                 "rel", relationshipShortNames, false, false);
         ObjectRefConstraint primary = new ObjectRefConstraint(
-                primaryNode, entity.getObjectReference());
+                primaryNode, parent.getObjectReference());
         ShortNameConstraint secondary = new ShortNameConstraint(
                 secondaryNode, shortNames, false, false);
 
@@ -298,17 +297,17 @@ public class RelationshipStateQuery {
     }
 
     /**
-     * Returns the short names of the entities to query, obtained from the
+     * Returns the short names of the objects to query, obtained from the
      * relationships.
      *
-     * @return the entity short names
+     * @return the object short names
      */
     protected String[] getShortNames() {
         return shortNames;
     }
 
     /**
-     * Returns the query alias for the secondary (i.e non parent) entity.
+     * Returns the query alias for the secondary (i.e non parent) object.
      *
      * @return the alias
      */

@@ -20,6 +20,10 @@ package org.openvpms.web.component.im.lookup;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -68,6 +72,46 @@ public abstract class AbstractLookupQuery implements LookupQuery {
             }
         }
         return null;
+    }
+
+    /**
+     * Sorts lookups on name.
+     *
+     * @param lookups the lookups to sort
+     */
+    protected void sort(List<Lookup> lookups) {
+        Collections.sort(lookups, new Comparator<Lookup>() {
+            public int compare(Lookup o1, Lookup o2) {
+                String name1 = o1.getName();
+                String name2 = o2.getName();
+                if (name1 == null) {
+                    name1 = "";
+                }
+                if (name2 == null) {
+                    name2 = "";
+                }
+                return name1.compareTo(name2);
+            }
+        });
+    }
+
+    /**
+     * Removes inactive lookups.
+     *
+     * @param lookups the lookups to filter
+     * @return the filtered lookups
+     */
+    protected List<Lookup> filter(Collection<Lookup> lookups) {
+        if (lookups.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Lookup> result = new ArrayList<Lookup>();
+        for (Lookup lookup : lookups) {
+            if (lookup.isActive()) {
+                result.add(lookup);
+            }
+        }
+        return result;
     }
 
 

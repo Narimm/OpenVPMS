@@ -26,7 +26,7 @@ import nextapp.echo2.app.layout.TableLayoutData;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.FastLookupHelper;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.layout.TableLayoutStrategyFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
@@ -67,7 +67,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
         Label result = LabelFactory.create();
         NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor != null) {
-            result.setText(FastLookupHelper.getLookupName(descriptor, context));
+            result.setText(LookupNameHelper.getLookupName(descriptor, context));
         }
         return result;
     }

@@ -20,8 +20,8 @@ package org.openvpms.web.app.customer;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -79,8 +79,8 @@ class PatientRelationshipStateQuery extends RelationshipStateQuery {
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
-    public Map<EntityRelationship, RelationshipState> query() {
-        Map<EntityRelationship, RelationshipState> result = super.query();
+    public Map<IMObjectRelationship, RelationshipState> query() {
+        Map<IMObjectRelationship, RelationshipState> result = super.query();
         checkDeceased(result);
         return result;
     }
@@ -92,12 +92,12 @@ class PatientRelationshipStateQuery extends RelationshipStateQuery {
      * @param states the set of relationship states
      */
     private void checkDeceased(
-            Map<EntityRelationship, RelationshipState> states) {
-        if (TypeHelper.isA(getEntity(), "party.patientpet")) {
+            Map<IMObjectRelationship, RelationshipState> states) {
+        if (TypeHelper.isA(getParent(), "party.patientpet")) {
             // if the entity is the patient, update the states using the
             // its deceased state
             PatientRules rules = new PatientRules();
-            boolean deceased = rules.isDeceased((Party) getEntity());
+            boolean deceased = rules.isDeceased((Party) getParent());
             if (deceased) {
                 for (RelationshipState state : states.values()) {
                     PatientRelationshipState pState

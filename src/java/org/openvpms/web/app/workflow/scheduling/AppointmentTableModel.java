@@ -31,7 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
-import org.openvpms.web.component.im.util.FastLookupHelper;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -236,7 +236,7 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
         }
         if (status == null) {
             if (statuses == null) {
-                statuses = FastLookupHelper.getLookupNames(
+                statuses = LookupNameHelper.getLookupNames(
                         "act.customerAppointment", "status");
             }
             if (statuses != null) {
@@ -254,7 +254,7 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
      */
     private String getReason(String code) {
         if (reasons == null) {
-            reasons = FastLookupHelper.getLookupNames("act.customerAppointment",
+            reasons = LookupNameHelper.getLookupNames("act.customerAppointment",
                                                       "reason");
         }
         return (reasons != null) ? reasons.get(code) : null;

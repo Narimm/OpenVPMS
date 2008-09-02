@@ -28,15 +28,12 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
@@ -245,12 +242,7 @@ public class ActAmountTableModel<T extends Act>
                 = DescriptorHelper.getArchetypeDescriptor(act);
         NodeDescriptor status = archetype.getNodeDescriptor("status");
         if (status != null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            Lookup lookup = LookupHelper.getLookup(service, status, act);
-            if (lookup != null) {
-                result = lookup.getName();
-            }
+            result = LookupNameHelper.getLookupName(status, act);
         }
         if (result == null) {
             result = act.getStatus();

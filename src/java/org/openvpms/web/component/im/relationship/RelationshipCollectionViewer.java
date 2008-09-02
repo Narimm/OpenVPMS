@@ -22,9 +22,8 @@ import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -41,12 +40,12 @@ import java.util.Map;
 
 
 /**
- * Viewer for collections of {@link EntityRelationship}s.
+ * Viewer for collections of {@link IMObjectRelationship}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityRelationshipCollectionViewer
+public class RelationshipCollectionViewer
         extends IMTableCollectionViewer<RelationshipState> {
 
     /**
@@ -55,11 +54,11 @@ public class EntityRelationshipCollectionViewer
     private final boolean parentIsSource;
 
     /**
-     * The entity relationship states, keyed on their corresponding
+     * The relationship states, keyed on their corresponding
      * relationships.
      */
-    private Map<EntityRelationship, RelationshipState> states
-            = new LinkedHashMap<EntityRelationship, RelationshipState>();
+    private Map<IMObjectRelationship, RelationshipState> states
+            = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
 
     /**
      * Determines if inactive relationships should be displayed.
@@ -68,16 +67,16 @@ public class EntityRelationshipCollectionViewer
 
 
     /**
-     * Constructs a new <tt>EntityRelationshipCollectionViewer</tt>.
+     * Constructs a new <tt>RelationshipCollectionViewer</tt>.
      *
      * @param property the collection to view
      * @param parent   the parent object
      * @param context  the layout context. May be <tt>null</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public EntityRelationshipCollectionViewer(CollectionProperty property,
-                                              Entity parent,
-                                              LayoutContext context) {
+    public RelationshipCollectionViewer(CollectionProperty property,
+                                        IMObject parent,
+                                        LayoutContext context) {
         super(property, parent, context);
         RelationshipStateQuery query = createQuery(parent);
         parentIsSource = query.parentIsSource();
@@ -139,10 +138,10 @@ public class EntityRelationshipCollectionViewer
     /**
      * Creates a new relationship state query.
      *
-     * @param parent the parent entity
+     * @param parent the parent object
      * @return a new query
      */
-    protected RelationshipStateQuery createQuery(Entity parent) {
+    protected RelationshipStateQuery createQuery(IMObject parent) {
         return new RelationshipStateQuery(
                 parent, getObjects(), getProperty().getArchetypeRange());
     }

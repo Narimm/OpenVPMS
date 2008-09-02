@@ -11,16 +11,15 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
 package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
@@ -34,18 +33,18 @@ import java.util.Map;
 
 /**
  * A {@link CollectionPropertyEditor} for collections of
- * {@link EntityRelationship}s.
+ * {@link IMObjectRelationship}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityRelationshipCollectionPropertyEditor
+public class RelationshipCollectionPropertyEditor
         extends AbstractCollectionPropertyEditor {
 
     /**
      * The parent object.
      */
-    private final Entity parent;
+    private final IMObject parent;
 
     /**
      * Determines if the parent is the source or target of the relationships.
@@ -63,22 +62,21 @@ public class EntityRelationshipCollectionPropertyEditor
     private boolean exclude = true;
 
     /**
-     * The entity relationship states, keyed on their corresponding
-     * relationships.
+     * The relationship states, keyed on their corresponding relationships.
      */
-    private Map<EntityRelationship, RelationshipState> states
-            = new LinkedHashMap<EntityRelationship, RelationshipState>();
+    private Map<IMObjectRelationship, RelationshipState> states
+            = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
 
 
     /**
-     * Creates a new <tt>EntityRelationshipCollectionPropertyEditor</tt>.
+     * Creates a new <tt>RelationshipCollectionPropertyEditor</tt>.
      *
      * @param property the collection property
-     * @param parent   the parent entity
+     * @param parent   the parent object
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public EntityRelationshipCollectionPropertyEditor(
-            CollectionProperty property, Entity parent) {
+    public RelationshipCollectionPropertyEditor(
+            CollectionProperty property, IMObject parent) {
         super(property);
         this.parent = parent;
 
@@ -93,7 +91,7 @@ public class EntityRelationshipCollectionPropertyEditor
      *
      * @return the parent object
      */
-    public Entity getParent() {
+    public IMObject getParent() {
         return parent;
     }
 
@@ -153,7 +151,7 @@ public class EntityRelationshipCollectionPropertyEditor
      * @return the corresponding state, or <tt>null</tt> if none is found
      */
     public RelationshipState getRelationshipState(
-            EntityRelationship relationship) {
+            IMObjectRelationship relationship) {
         return states.get(relationship);
     }
 
@@ -166,7 +164,7 @@ public class EntityRelationshipCollectionPropertyEditor
     @Override
     public boolean add(IMObject object) {
         boolean added = super.add(object);
-        EntityRelationship relationship = (EntityRelationship) object;
+        IMObjectRelationship relationship = (IMObjectRelationship) object;
         if (added) {
             RelationshipState state = factory.create(getParent(), relationship,
                                                      parentIsSource);
@@ -195,7 +193,7 @@ public class EntityRelationshipCollectionPropertyEditor
      * @param parent the parent entity
      * @return a new query
      */
-    protected RelationshipStateQuery createQuery(Entity parent) {
+    protected RelationshipStateQuery createQuery(IMObject parent) {
         return new RelationshipStateQuery(
                 parent, getObjects(), getProperty().getArchetypeRange());
     }
