@@ -142,11 +142,11 @@ public class StaxArchetypeDataLoader {
                                            verbose, validateOnly, batchSize,
                                            statistics);
 
-        String file = config.getString("file");
+        String[] files = config.getStringArray("file");
         String dir = config.getString("dir");
-        if (file != null || dir != null) {
-            if (file != null) {
-                processFile(file, loader);
+        if (files.length != 0 || dir != null) {
+            if (files.length != 0) {
+                processFiles(files, loader);
             } else {
                 // process the files
                 processDir(dir, loader);
@@ -175,6 +175,18 @@ public class StaxArchetypeDataLoader {
             File file = files[i];
             processFile(file.getAbsolutePath(), loader);
             loader.flush();
+        }
+    }
+
+    /**
+     * Processes a list of files.
+     *
+     * @param files the file names
+     */
+    private void processFiles(String[] files, DataLoader loader)
+            throws Exception {
+        for (String file : files) {
+            processFile(file, loader);
         }
     }
 
@@ -259,6 +271,7 @@ public class StaxArchetypeDataLoader {
                 .setLongFlag("subdir").setDefault("false").setHelp(
                 "Search the subdirectories as well."));
         jsap.registerParameter(new FlaggedOption("file").setShortFlag('f')
+                .setList(true).setListSeparator(',')
                 .setLongFlag("file").setHelp("Name of file containing data"));
         jsap.registerParameter(new Switch("verbose").setShortFlag('v')
                 .setLongFlag("verbose").setDefault("false").setHelp(
