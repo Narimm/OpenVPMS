@@ -18,14 +18,16 @@
 
 package org.openvpms.component.business.service.lookup;
 
+import net.sf.ehcache.Cache;
+
 
 /**
- * Tests the {@link LookupService}.
+ * Tests the {@link CachingLookupService}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class LookupServiceTestCase extends AbstractLookupServiceTest {
+public class CachingLookupServiceTestCase extends AbstractLookupServiceTest {
 
     /**
      * Sets up the test case.
@@ -35,7 +37,9 @@ public class LookupServiceTestCase extends AbstractLookupServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        setLookupService(new LookupService(getArchetypeService()));
+        Cache cache = (Cache) applicationContext.getBean("lookupCache");
+        setLookupService(new CachingLookupService(getArchetypeService(),
+                                                  cache));
     }
 
 }
