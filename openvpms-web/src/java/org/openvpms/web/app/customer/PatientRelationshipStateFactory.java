@@ -20,6 +20,8 @@ package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.relationship.RelationshipState;
 import org.openvpms.web.component.im.relationship.RelationshipStateFactory;
@@ -47,12 +49,13 @@ class PatientRelationshipStateFactory extends RelationshipStateFactory {
      * @return a new <tt>PatientRelationshipState</tt>
      */
     @Override
-    public RelationshipState create(EntityRelationship relationship,
+    public RelationshipState create(IMObjectRelationship relationship,
                                     long sourceId, String sourceName,
                                     String sourceDesc, long targetId,
                                     String targetName, String targetDesc,
                                     boolean active) {
-        return new PatientRelationshipState(relationship, sourceId, sourceName,
+        return new PatientRelationshipState((EntityRelationship) relationship,
+                                            sourceId, sourceName,
                                             sourceDesc, targetId, targetName,
                                             targetDesc, active);
     }
@@ -60,17 +63,19 @@ class PatientRelationshipStateFactory extends RelationshipStateFactory {
     /**
      * Creates a new <tt>PatientRelationshipState</tt>.
      *
-     * @param entity       the parent entity
+     * @param parent       the parent entity
      * @param relationship the relationship
-     * @param source       determines if entity is the source or target of the
+     * @param source       determines if parent is the source or target of the
      *                     relationship
      * @return a new <tt>PatientRelationshipState</tt>
      * @throws ArchetypeServiceException for any archetype service exception
      */
     @Override
-    public RelationshipState create(Entity entity,
-                                    EntityRelationship relationship,
+    public RelationshipState create(IMObject parent,
+                                    IMObjectRelationship relationship,
                                     boolean source) {
-        return new PatientRelationshipState(entity, relationship, source);
+        return new PatientRelationshipState((Entity) parent,
+                                            (EntityRelationship) relationship,
+                                            source);
     }
 }

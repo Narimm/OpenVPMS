@@ -19,8 +19,10 @@
 package org.openvpms.web.component.im.lookup;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.web.component.im.util.FastLookupHelper;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -54,6 +56,11 @@ public class ArchetypeLookupQuery extends AbstractLookupQuery {
      * @return the lookups
      */
     public List<Lookup> getLookups() {
-        return FastLookupHelper.getLookups(shortName);
+        Collection<Lookup> lookups
+                = LookupServiceHelper.getLookupService().getLookups(shortName);
+        List<Lookup> result = (lookups instanceof List) ? (List<Lookup>) lookups
+                : new ArrayList<Lookup>(lookups);
+        sort(result);
+        return result;
     }
 }

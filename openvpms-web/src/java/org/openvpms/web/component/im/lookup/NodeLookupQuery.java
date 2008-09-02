@@ -23,9 +23,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.Collections;
@@ -92,14 +94,29 @@ public class NodeLookupQuery extends AbstractLookupQuery {
      * @return the lookups
      */
     public List<Lookup> getLookups() {
+        List<Lookup> result = Collections.emptyList();
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
         try {
-            return (shortName != null)
-                    ? FastLookupHelper.getLookups(shortName, node)
-                    : FastLookupHelper.getLookups(descriptor, object);
+            if (shortName != null) {
+                ArchetypeDescriptor archetype
+                        = DescriptorHelper.getArchetypeDescriptor(shortName);
+                if (archetype != null) {
+                    NodeDescriptor descriptor = archetype.getNodeDescriptor(
+                            node);
+                    if (descriptor != null) {
+                        result = filter(LookupHelper.get(service, descriptor));
+                    }
+                }
+            } else {
+                result = filter(LookupHelper.get(service, descriptor, object));
+
+            }
         } catch (OpenVPMSException error) {
             ErrorHelper.show(error);
-            return Collections.emptyList();
         }
+        sort(result);
+        return result;
     }
 
     /**

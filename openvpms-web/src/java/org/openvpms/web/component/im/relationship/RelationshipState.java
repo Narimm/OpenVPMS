@@ -18,9 +18,9 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -28,12 +28,11 @@ import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
-import java.util.Date;
 import java.util.Iterator;
 
 
 /**
- * Contains the details required to render an {@link EntityRelationship}.
+ * Contains the details required to render an {@link IMObjectRelationship}.
  * This is used to reduce database accesses.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -44,7 +43,7 @@ public class RelationshipState {
     /**
      * The relationship.
      */
-    private final EntityRelationship relationship;
+    private final IMObjectRelationship relationship;
 
     /**
      * The source entity id.
@@ -77,7 +76,7 @@ public class RelationshipState {
     private String targetDescription;
 
     /**
-     * Determines if the relationship and corresponding entities are active.
+     * Determines if the relationship and corresponding objects are active.
      */
     private boolean active;
 
@@ -86,15 +85,15 @@ public class RelationshipState {
      * Creates a new <tt>RelationshipState</tt>.
      *
      * @param relationship      the relationship
-     * @param sourceId          the source entity id
-     * @param sourceName        the source entity name
-     * @param sourceDescription the source entity description
-     * @param targetId          the target entity id
-     * @param targetName        the target entity name
-     * @param targetDescription the target entity description
-     * @param active            determines the entities are active
+     * @param sourceId          the source id
+     * @param sourceName        the source name
+     * @param sourceDescription the source description
+     * @param targetId          the target id
+     * @param targetName        the target name
+     * @param targetDescription the target description
+     * @param active            determines if the source and target are active
      */
-    public RelationshipState(EntityRelationship relationship,
+    public RelationshipState(IMObjectRelationship relationship,
                              long sourceId, String sourceName,
                              String sourceDescription,
                              long targetId, String targetName,
@@ -113,13 +112,13 @@ public class RelationshipState {
     /**
      * Creates a new <tt>RelationshipState</tt>.
      *
-     * @param entity       the parent entity
+     * @param parent       the parent object
      * @param relationship the relationship
-     * @param source       determines if entity is the source or target of the
+     * @param source       determines if parent is the source or target of the
      *                     relationship
      * @throws ArchetypeServiceException for any archetype service exception
      */
-    public RelationshipState(Entity entity, EntityRelationship relationship,
+    public RelationshipState(IMObject parent, IMObjectRelationship relationship,
                              boolean source) {
         this.relationship = relationship;
         IMObjectReference reference = (source)
@@ -141,9 +140,9 @@ public class RelationshipState {
                 String desc = set.getString("o.description");
                 active = set.getBoolean("o.active");
                 if (source) {
-                    sourceId = entity.getId();
-                    sourceName = entity.getName();
-                    sourceDescription = entity.getDescription();
+                    sourceId = parent.getId();
+                    sourceName = parent.getName();
+                    sourceDescription = parent.getDescription();
                     targetId = id;
                     targetName = name;
                     targetDescription = desc;
@@ -151,63 +150,63 @@ public class RelationshipState {
                     sourceId = id;
                     sourceName = name;
                     sourceDescription = desc;
-                    targetId = entity.getId();
-                    targetName = entity.getName();
-                    targetDescription = entity.getDescription();
+                    targetId = parent.getId();
+                    targetName = parent.getName();
+                    targetDescription = parent.getDescription();
                 }
             }
         }
     }
 
     /**
-     * Returns the source entity id.
+     * Returns the source id.
      *
-     * @return the source entity id
+     * @return the source id
      */
     public long getSourceId() {
         return sourceId;
     }
 
     /**
-     * Returns the source entity name.
+     * Returns the source name.
      *
-     * @return the source entity name. May be <tt>null</tt>
+     * @return the source name. May be <tt>null</tt>
      */
     public String getSourceName() {
         return sourceName;
     }
 
     /**
-     * Returns the source entity description.
+     * Returns the source description.
      *
-     * @return the source entity description. May be <tt>null</tt>
+     * @return the source description. May be <tt>null</tt>
      */
     public String getSourceDescription() {
         return sourceDescription;
     }
 
     /**
-     * Returns the target entity id.
+     * Returns the target id.
      *
-     * @return the target entity id
+     * @return the target id
      */
     public long getTargetId() {
         return targetId;
     }
 
     /**
-     * Returns the target entity name.
+     * Returns the target name.
      *
-     * @return the target entity name. May be <tt>null</tt>
+     * @return the target name. May be <tt>null</tt>
      */
     public String getTargetName() {
         return targetName;
     }
 
     /**
-     * Returns the target entity description.
+     * Returns the target description.
      *
-     * @return the target entity description. May be <tt>null</tt>
+     * @return the target description. May be <tt>null</tt>
      */
     public String getTargetDescription() {
         return targetDescription;
@@ -217,39 +216,29 @@ public class RelationshipState {
      * Determines if the relationship is active.
      * It is active if:
      * <ul>
-     * <li>the underlying {@link EntityRelationship} is active
+     * <li>the underlying {@link IMObjectRelationship} is active
      * <li>the underlying entities are active
-     * <li>{@link EntityRelationship#getActiveEndTime} is null or greater than
-     * the current time
      * </ul>
      *
      * @return <tt>true</tt> if this is active; otherwise <tt>false</tt>
      */
     public boolean isActive() {
-        boolean result = false;
-        if (active && relationship.isActive()) {
-            Date endTime = relationship.getActiveEndTime();
-            if (endTime == null
-                    || endTime.getTime() > System.currentTimeMillis()) {
-                result = true;
-            }
-        }
-        return result;
+        return (active && relationship.isActive());
     }
 
     /**
-     * Returns the source entity reference.
+     * Returns the source reference.
      *
-     * @return the source entity reference
+     * @return the source reference
      */
     public IMObjectReference getSource() {
         return relationship.getSource();
     }
 
     /**
-     * Returns the target entity reference.
+     * Returns the target reference.
      *
-     * @return the target entity reference
+     * @return the target reference
      */
     public IMObjectReference getTarget() {
         return relationship.getTarget();
@@ -260,7 +249,7 @@ public class RelationshipState {
      *
      * @return the relationship
      */
-    public EntityRelationship getRelationship() {
+    public IMObjectRelationship getRelationship() {
         return relationship;
     }
 

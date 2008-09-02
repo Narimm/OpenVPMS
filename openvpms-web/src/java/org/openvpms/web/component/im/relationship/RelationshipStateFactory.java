@@ -18,8 +18,8 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
 
@@ -35,16 +35,16 @@ public class RelationshipStateFactory {
      * Creates a new <tt>RelationshipState</tt>.
      *
      * @param relationship the relationship
-     * @param sourceId     the source entity id
-     * @param sourceName   the source entity name
-     * @param sourceDesc   the source entity description
-     * @param targetId     the target entity id
-     * @param targetName   the target entity name
-     * @param targetDesc   the target entity description
-     * @param active       determines the entities are active
+     * @param sourceId     the source id
+     * @param sourceName   the source name
+     * @param sourceDesc   the source description
+     * @param targetId     the target id
+     * @param targetName   the target name
+     * @param targetDesc   the target description
+     * @param active       determines the objects are active
      * @return a new <tt>RelationshipState</tt>
      */
-    public RelationshipState create(EntityRelationship relationship,
+    public RelationshipState create(IMObjectRelationship relationship,
                                     long sourceId, String sourceName,
                                     String sourceDesc, long targetId,
                                     String targetName, String targetDesc,
@@ -57,17 +57,17 @@ public class RelationshipStateFactory {
     /**
      * Creates a new <tt>RelationshipState</tt>.
      *
-     * @param entity       the parent entity
+     * @param parent       the parent object
      * @param relationship the relationship
-     * @param source       determines if entity is the source or target of the
+     * @param source       determines if parent is the source or target of the
      *                     relationship
      * @return a new <tt>RelationshipState</tt>
      * @throws ArchetypeServiceException for any archetype service exception
      */
-    public RelationshipState create(Entity entity,
-                                    EntityRelationship relationship,
+    public RelationshipState create(IMObject parent,
+                                    IMObjectRelationship relationship,
                                     boolean source) {
-        return new RelationshipState(entity, relationship, source);
+        return new RelationshipState(parent, relationship, source);
     }
 
 }

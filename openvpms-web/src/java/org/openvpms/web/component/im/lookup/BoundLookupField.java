@@ -34,6 +34,12 @@ import org.openvpms.web.component.property.Property;
 public class BoundLookupField extends LookupField {
 
     /**
+     * The binder.
+     */
+    private final Binder binder;
+
+
+    /**
      * Creates a new <tt>BoundLookupField</tt>.
      *
      * @param property the property to bind
@@ -63,10 +69,26 @@ public class BoundLookupField extends LookupField {
     public BoundLookupField(Property property, LookupQuery source,
                             boolean all) {
         super(source, all, property.isRequired());
-        Binder binder = new SelectFieldBinder(this, property);
+        binder = new SelectFieldBinder(this, property);
         binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
+    }
+
+    /**
+     * Refreshes the model if required.
+     * <p/>
+     * If the model refreshes, the selection will be cleared.
+     *
+     * @return <tt>true</tt> if the model refreshed
+     */
+    @Override
+    public boolean refresh() {
+        boolean result = super.refresh();
+        if (result) {
+            binder.setProperty();
+        }
+        return result;
     }
 }

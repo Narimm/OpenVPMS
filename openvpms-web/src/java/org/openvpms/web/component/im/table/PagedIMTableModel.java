@@ -128,8 +128,8 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
     public boolean setPage(int page) {
         IPage<T> result = set.getPage(page);
         if (result != null) {
-            setPage(result.getResults());
             this.page = page;
+            setPage(result.getResults());
             return true;
         }
         return false;

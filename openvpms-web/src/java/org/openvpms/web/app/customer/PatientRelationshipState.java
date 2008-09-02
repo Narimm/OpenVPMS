@@ -21,7 +21,7 @@ package org.openvpms.web.app.customer;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.web.component.im.relationship.RelationshipState;
+import org.openvpms.web.component.im.relationship.PeriodRelationshipState;
 
 
 /**
@@ -30,7 +30,7 @@ import org.openvpms.web.component.im.relationship.RelationshipState;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class PatientRelationshipState extends RelationshipState {
+class PatientRelationshipState extends PeriodRelationshipState {
 
     /**
      * Determines if the patient is deceased.

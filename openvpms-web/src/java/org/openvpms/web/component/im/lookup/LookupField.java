@@ -133,9 +133,18 @@ public class LookupField extends SelectField {
     }
 
     /**
-     * Refreshes the field.
+     * Refreshes the model if required.
+     * <p/>
+     * If the model refreshes, the selection will be cleared.
+     *
+     * @return <tt>true</tt> if the model refreshed
      */
-    public void refresh() {
-        ((LookupListModel) getModel()).refresh();
+    public boolean refresh() {
+        LookupListModel model = ((LookupListModel) getModel());
+        boolean refreshed = model.refresh();
+        if (refreshed) {
+            getSelectionModel().clearSelection();
+        }
+        return refreshed;
     }
 }

@@ -220,6 +220,35 @@
     </bean>
 
     <!-- ================================================================== -->
+    <!--                         LOOKUP SERVICE                             -->
+    <!-- ================================================================== -->
+
+    <bean id="lookupService"
+          class="org.openvpms.component.business.service.lookup.CachingLookupService">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg>
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="diskPersistent" value="false"/>
+                <property name="cacheName" value="lookupCache"/>
+                <property name="maxElementsInMemory" value="40000"/>
+                <property name="overflowToDisk" value="false"/>
+                <property name="eternal" value="true"/>
+            </bean>
+        </constructor-arg>
+        <property name="cached">
+            <list>
+                <value>lookup.state</value>
+                <value>lookup.suburb</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="lookupServiceHelper"
+          class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <!-- ================================================================== -->
     <!--                 RULES ENGINE (DROOLS)                              -->
     <!-- ================================================================== -->
 
@@ -394,11 +423,6 @@
     <!-- ================================================================== -->
     <!--                        MISC                                        -->
     <!-- ================================================================== -->
-
-    <bean id="lookupService"
-          class="org.openvpms.component.business.service.lookup.LookupService">
-        <constructor-arg ref="archetypeService"/>
-    </bean>
 
     <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
         <constructor-arg ref="archetypeService"/>

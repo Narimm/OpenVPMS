@@ -19,11 +19,10 @@
 package org.openvpms.web.component.im.product;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.DelegatingRelationshipStateTableModel;
-import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionViewer;
+import org.openvpms.web.component.im.relationship.RelationshipCollectionViewer;
 import org.openvpms.web.component.im.relationship.RelationshipState;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -38,7 +37,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @version $LastChangedDate$
  */
 public class ProductSupplierCollectionViewer
-        extends EntityRelationshipCollectionViewer {
+        extends RelationshipCollectionViewer {
 
     /**
      * Constructs a new <tt>ProductSupplierCollectionViewer</tt>.
@@ -61,9 +60,10 @@ public class ProductSupplierCollectionViewer
      * @return a new table model
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected IMTableModel<RelationshipState> createTableModel(
             LayoutContext context) {
-        IMTableModel<EntityRelationship> model = new ProductSupplierTableModel(
+        IMTableModel model = new ProductSupplierTableModel(
                 getProperty().getArchetypeRange(), context, parentIsSource());
         return new DelegatingRelationshipStateTableModel(model, context);
     }

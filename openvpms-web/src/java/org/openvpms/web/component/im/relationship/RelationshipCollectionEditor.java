@@ -22,9 +22,8 @@ import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.IMTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -39,12 +38,12 @@ import java.util.List;
 
 
 /**
- * Editor for collections of {@link EntityRelationship}s.
+ * Editor for collections of {@link IMObjectRelationship}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityRelationshipCollectionEditor
+public class RelationshipCollectionEditor
         extends IMTableCollectionEditor<RelationshipState> {
 
     /**
@@ -54,29 +53,28 @@ public class EntityRelationshipCollectionEditor
 
 
     /**
-     * Constructs a new <tt>EntityRelationshipCollectionEditor</tt>.
+     * Constructs a new <tt>RelationshipCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param object   the object being edited
      * @param context  the layout context
      */
-    public EntityRelationshipCollectionEditor(CollectionProperty property,
-                                              Entity object,
-                                              LayoutContext context) {
-        this(new EntityRelationshipCollectionPropertyEditor(property, object),
+    public RelationshipCollectionEditor(CollectionProperty property,
+                                        IMObject object,
+                                        LayoutContext context) {
+        this(new RelationshipCollectionPropertyEditor(property, object),
              object, context);
     }
 
     /**
-     * Construct a new <tt>EntityRelationshipCollectionEditor</tt>.
+     * Construct a new <tt>RelationshipCollectionEditor</tt>.
      *
      * @param editor  the collection property editor
      * @param object  the object being edited
      * @param context the layout context
      */
-    protected EntityRelationshipCollectionEditor(
-            EntityRelationshipCollectionPropertyEditor editor,
-            IMObject object,
+    protected RelationshipCollectionEditor(
+            RelationshipCollectionPropertyEditor editor, IMObject object,
             LayoutContext context) {
         super(editor, object, context);
     }
@@ -89,7 +87,7 @@ public class EntityRelationshipCollectionEditor
      */
     protected IMTableModel<RelationshipState> createTableModel(
             LayoutContext context) {
-        EntityRelationshipCollectionPropertyEditor editor
+        RelationshipCollectionPropertyEditor editor
                 = getCollectionPropertyEditor();
         return new RelationshipStateTableModel(context,
                                                editor.parentIsSource());
@@ -101,10 +99,10 @@ public class EntityRelationshipCollectionEditor
      * @param object the object to select
      */
     protected void setSelected(IMObject object) {
-        EntityRelationshipCollectionPropertyEditor editor
+        RelationshipCollectionPropertyEditor editor
                 = getCollectionPropertyEditor();
         RelationshipState state
-                = editor.getRelationshipState((EntityRelationship) object);
+                = editor.getRelationshipState((IMObjectRelationship) object);
         getTable().getTable().setSelected(state);
     }
 
@@ -124,7 +122,7 @@ public class EntityRelationshipCollectionEditor
      * @return a new result set
      */
     protected ResultSet<RelationshipState> createResultSet() {
-        EntityRelationshipCollectionPropertyEditor editor
+        RelationshipCollectionPropertyEditor editor
                 = getCollectionPropertyEditor();
         List<RelationshipState> relationships
                 = new ArrayList<RelationshipState>(editor.getRelationships());
@@ -160,9 +158,9 @@ public class EntityRelationshipCollectionEditor
      * @return the collection property editor
      */
     @Override
-    protected EntityRelationshipCollectionPropertyEditor
+    protected RelationshipCollectionPropertyEditor
             getCollectionPropertyEditor() {
-        return (EntityRelationshipCollectionPropertyEditor)
+        return (RelationshipCollectionPropertyEditor)
                 super.getCollectionPropertyEditor();
     }
 
@@ -170,7 +168,7 @@ public class EntityRelationshipCollectionEditor
      * Invoked when the 'hide inactive' checkbox changes.
      */
     private void onHideInactiveChanged() {
-        EntityRelationshipCollectionPropertyEditor editor
+        RelationshipCollectionPropertyEditor editor
                 = getCollectionPropertyEditor();
         editor.setExcludeInactive(hideInactive.isSelected());
         populateTable();

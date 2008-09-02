@@ -158,16 +158,21 @@ public class LookupListModel extends AbstractListModel {
 
     /**
      * Refreshes the model, if needed.
+     *
+     * @return <tt>true</tt> if the model was refreshed
      */
-    public void refresh() {
+    public boolean refresh() {
+        boolean refreshed = false;
         if (source != null) {
             List<Lookup> lookups = getLookups();
             if (!this.lookups.equals(lookups)) {
                 this.lookups = lookups;
                 int last = this.lookups.isEmpty() ? 0 : this.lookups.size() - 1;
                 fireContentsChanged(0, last);
+                refreshed = true;
             }
         }
+        return refreshed;
     }
 
     /**

@@ -19,11 +19,11 @@
 package org.openvpms.web.component.im.product;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.DelegatingRelationshipStateTableModel;
-import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionViewer;
+import org.openvpms.web.component.im.relationship.RelationshipCollectionViewer;
 import org.openvpms.web.component.im.relationship.RelationshipState;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -39,7 +39,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @version $LastChangedDate: 2008-03-19 07:02:38Z $
  */
 public class ProductStockLocationCollectionViewer
-        extends EntityRelationshipCollectionViewer {
+        extends RelationshipCollectionViewer {
 
     /**
      * Constructs a new <tt>ProductStockLocationCollectionViewer</tt>.
@@ -65,7 +65,7 @@ public class ProductStockLocationCollectionViewer
     protected IMTableModel<RelationshipState> createTableModel(
             LayoutContext context) {
         String[] shortNames = getProperty().getArchetypeRange();
-        IMTableModel<EntityRelationship> model
+        IMTableModel<IMObjectRelationship> model
                 = new ProductStockLocationTableModel(shortNames, context,
                                                      parentIsSource());
         return new DelegatingRelationshipStateTableModel(model, context);

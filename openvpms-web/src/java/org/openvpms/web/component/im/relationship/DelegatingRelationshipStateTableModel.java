@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.relationship;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DelegatingIMTableModel;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
@@ -51,7 +51,8 @@ import java.util.List;
  * @version $LastChangedDate$
  */
 public class DelegatingRelationshipStateTableModel
-        extends DelegatingIMTableModel<RelationshipState, EntityRelationship> {
+        extends DelegatingIMTableModel<RelationshipState,
+        IMObjectRelationship> {
 
     /**
      * The relationship states.
@@ -81,7 +82,7 @@ public class DelegatingRelationshipStateTableModel
      * @param context the layout context
      */
     public DelegatingRelationshipStateTableModel(
-            IMTableModel<EntityRelationship> model,
+            IMTableModel<IMObjectRelationship> model,
             LayoutContext context) {
         setModel(model);
         this.context = context;
@@ -112,8 +113,8 @@ public class DelegatingRelationshipStateTableModel
     @Override
     public void setObjects(List<RelationshipState> objects) {
         this.states = objects;
-        List<EntityRelationship> list
-                = new ArrayList<EntityRelationship>(states.size());
+        List<IMObjectRelationship> list
+                = new ArrayList<IMObjectRelationship>(states.size());
         for (RelationshipState state : states) {
             list.add(state.getRelationship());
         }
@@ -136,7 +137,7 @@ public class DelegatingRelationshipStateTableModel
      * @param model the model to delegate to
      */
     @Override
-    protected void setModel(IMTableModel<EntityRelationship> model) {
+    protected void setModel(IMTableModel<IMObjectRelationship> model) {
         super.setModel(model);
         TableColumnModel columns = model.getColumnModel();
         sourceColumn = getModelIndex(columns, "source");

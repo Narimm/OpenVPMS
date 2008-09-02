@@ -36,7 +36,7 @@ import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.LookupFilter;
 import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
-import org.openvpms.web.component.im.util.FastLookupHelper;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.DelegatingProperty;
@@ -134,7 +134,7 @@ public class OrderEditor extends FinancialActEditor {
             deliveryStatus.setValue(newStatus.toString());
             NodeDescriptor descriptor = deliveryStatus.getDescriptor();
             if (descriptor != null) {
-                deliveryStatusField.setText(FastLookupHelper.getLookupName(
+                deliveryStatusField.setText(LookupNameHelper.getLookupName(
                         descriptor, getObject()));
             }
         }
