@@ -44,6 +44,17 @@ public class ActStatuses implements LookupQuery {
      */
     private final String exclude;
 
+    /**
+     * Overrides the default lookup.
+     */
+    private Lookup defaultLookup;
+
+    /**
+     * Indicates to use defaultLookup instead of that returned by
+     * {@link #getDefault()}.
+     */
+    private boolean useDefault;
+
 
     /**
      * Creates a new <tt>ActStatuses</tt> selecting all lookups from the
@@ -81,12 +92,23 @@ public class ActStatuses implements LookupQuery {
     }
 
     /**
+     * Sets the default status, overriding that returned by
+     * {@link LookupQuery#getDefault()}.
+     *
+     * @param lookup the default lookup. May be <tt>null</tt>
+     */
+    public void setDefault(Lookup lookup) {
+        useDefault = true;
+        defaultLookup = lookup;
+    }
+
+    /**
      * Returns the default status.
      *
      * @return the default status, or <tt>null</tt> if none is defined
      */
     public Lookup getDefault() {
-        return lookups.getDefault();
+        return (useDefault) ? defaultLookup : lookups.getDefault();
     }
 
     /**

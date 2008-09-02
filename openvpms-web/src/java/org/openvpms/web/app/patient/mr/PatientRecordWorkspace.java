@@ -98,8 +98,12 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     /**
      * The document statuses to query
      */
-    private static final ActStatuses DOC_STATUSES
-            = new ActStatuses("act.patientDocumentLetter");
+    private static final ActStatuses DOC_STATUSES;
+
+    static {
+        DOC_STATUSES = new ActStatuses("act.patientDocumentLetter");
+        DOC_STATUSES.setDefault(null);
+    }
 
 
     /**
