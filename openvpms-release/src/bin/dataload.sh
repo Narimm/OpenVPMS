@@ -4,10 +4,10 @@
 
 if [ "$1" = "base" ] ;
 then
-    java -classpath $CLASSPATH org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f ../import/data/base.xml
+    java -classpath $CLASSPATH org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f ../import/data/base.xml -b 1000
 elif [ "$1" = "setup" ] ;
 then
-    java -classpath $CLASSPATH org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -d ../import/data
+    java -classpath $CLASSPATH org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f ../import/data/base.xml,../import/data/setup.xml,../import/data/postcodes.xml -b 1000
 else
     echo "Usage:  dataload.sh ( commands ... )"
     echo "commands:"
