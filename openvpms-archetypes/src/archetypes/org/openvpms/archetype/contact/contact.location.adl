@@ -24,14 +24,21 @@
               derivedValue="'Location'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(/details/address,' ', /details/suburb,' ',/details/postCode, ' ',party:getContactPurposes())"/>
+              derivedValue="concat(/details/address,' ', openvpms:lookup(., 'suburb'),' ',/details/postCode, ' ',party:getContactPurposes())"/>
         <node name="address" path="/details/address"
               type="java.lang.String" maxLength="300" minCardinality="0"/>
         <node name="suburb" path="/details/suburb"
               type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="targetLookup"/>
+                <property name="relationship"
+                          value="lookupRelationship.stateSuburb"/>
+                <property name="value" value="/details/state"/>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
         </node>
         <node name="postcode" path="/details/postCode"
-              type="java.lang.String" minCardinality="0">
+              type="java.lang.String" minCardinality="0" readOnly="true">
         </node>
         <node name="state" path="/details/state"
               type="java.lang.String" minCardinality="0">
