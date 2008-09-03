@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.util;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Collection;
@@ -69,7 +70,8 @@ public abstract class AbstractArchetypeHandlers<T> {
                                   Collection<String> wildcards) {
         String match = null;
         int bestDotCount = -1; // more dots in a short name, the more specific
-        int bestWildCardCount = -1; // less wildcards, the more specific
+        int bestWildCardCount = -1;   // less wildcards, the more specific
+        int bestMatchCount = -1;      // fewer matches, the more specific
         for (String wildcard : wildcards) {
             boolean found = true;
             for (String shortName : shortNames) {
@@ -83,13 +85,25 @@ public abstract class AbstractArchetypeHandlers<T> {
                     match = wildcard;
                     bestDotCount = StringUtils.countMatches(wildcard, ".");
                     bestWildCardCount = StringUtils.countMatches(wildcard, "*");
+                    String[] matches = DescriptorHelper.getShortNames(wildcard);
+                    bestMatchCount = matches.length;
                 } else {
                     int dotCount = StringUtils.countMatches(wildcard, ".");
                     int wildcardCount = StringUtils.countMatches(wildcard, "*");
                     if (dotCount > bestDotCount ||
                             (dotCount == bestDotCount
                                     && wildcardCount < bestWildCardCount)) {
+                        bestDotCount = dotCount;
+                        bestWildCardCount = wildcardCount;
                         match = wildcard;
+                    } else {
+                        String[] wildcardMatches
+                                = DescriptorHelper.getShortNames(wildcard);
+                        int matchCount = wildcardMatches.length;
+                        if (matchCount < bestMatchCount) {
+                            bestMatchCount = matchCount;
+                            match = wildcard;
+                        }
                     }
                 }
             }

@@ -277,9 +277,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         Component result;
         Label label = getDetail(act);
 
-        // only display a hyperlink if there is a document to download
-        boolean link = act.getDocument() != null;
-        Component viewer = DocumentActTableHelper.getDocumentViewer(act, link);
+        Component viewer = DocumentActTableHelper.getDocumentViewer(act, true);
 
         if (StringUtils.isEmpty(label.getText())) {
             result = viewer;

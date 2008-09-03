@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.admin.user;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -36,11 +37,12 @@ public class UserLayoutStrategy extends AbstractLayoutStrategy {
      * Returns a node filter to filter nodes. This implementation filters
      * the "password" node.
      *
+     * @param object
      * @param context the context
      * @return a node filter to filter nodes
      */
     @Override
-    protected NodeFilter getNodeFilter(LayoutContext context) {
+    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         NodeFilter filter = new NamedNodeFilter("password");
         return getNodeFilter(context, filter);
     }

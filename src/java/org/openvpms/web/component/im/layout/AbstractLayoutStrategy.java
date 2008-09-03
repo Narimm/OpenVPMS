@@ -124,7 +124,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         List<NodeDescriptor> simple = getSimpleNodes(archetype);
         List<NodeDescriptor> complex = getComplexNodes(archetype);
 
-        NodeFilter filter = getNodeFilter(context);
+        NodeFilter filter = getNodeFilter(object, context);
         simple = filter(object, simple, filter);
         complex = filter(object, complex, filter);
 
@@ -203,11 +203,12 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * Returns a node filter to filter nodes. This implementation return {@link
      * LayoutContext#getDefaultNodeFilter()}.
      *
+     * @param object  the object to filter nodes for
      * @param context the context
      * @return a node filter to filter nodes, or <code>null</code> if no
      *         filterering is required
      */
-    protected NodeFilter getNodeFilter(LayoutContext context) {
+    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         return context.getDefaultNodeFilter();
     }
 

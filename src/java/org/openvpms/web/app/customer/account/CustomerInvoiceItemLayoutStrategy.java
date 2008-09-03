@@ -66,17 +66,18 @@ public class CustomerInvoiceItemLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Returns a node filter to filter nodes.
      *
+     * @param object
      * @param context the context
      * @return a node filter to filter nodes, or <code>null</code> if no
      *         filterering is required
      */
     @Override
-    protected NodeFilter getNodeFilter(LayoutContext context) {
+    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         NodeFilter filter;
         if (hideDispensing) {
             filter = getNodeFilter(context, new NamedNodeFilter("dispensing"));
         } else {
-            filter = super.getNodeFilter(context);
+            filter = super.getNodeFilter(object, context);
         }
         return filter;
     }

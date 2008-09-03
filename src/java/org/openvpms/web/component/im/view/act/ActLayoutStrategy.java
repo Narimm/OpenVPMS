@@ -154,16 +154,17 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * Returns a node filter to filter nodes. This implementation filters the
      * "items" node.
      *
+     * @param object
      * @param context the context
      * @return a node filter to filter nodes
      */
-    // @Override
-    protected NodeFilter getNodeFilter(LayoutContext context) {
+    @Override
+    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         NodeFilter filter;
         if (!showItems) {
             filter = getNodeFilter(context, new NamedNodeFilter(itemsNode));
         } else {
-            filter = super.getNodeFilter(context);
+            filter = super.getNodeFilter(object, context);
         }
         return filter;
     }

@@ -27,14 +27,17 @@ import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
+import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.RowFactory;
@@ -54,15 +57,20 @@ public class DocumentActDownloader extends Downloader {
     /**
      * The document act.
      */
-    private final DocumentAct _act;
+    private final DocumentAct act;
 
     /**
-     * Creates a new <code>DocumentActDownloader</code>.
+     * The template, when there is no document present.
+     */
+    private Entity template;
+
+    /**
+     * Creates a new <tt>DocumentActDownloader</tt>.
      *
      * @param act the act
      */
     public DocumentActDownloader(DocumentAct act) {
-        _act = act;
+        this.act = act;
     }
 
     /**
@@ -78,9 +86,15 @@ public class DocumentActDownloader extends Downloader {
             }
         });
         String styleName;
-        String fileName = _act.getFileName();
+        String fileName = act.getFileName();
+        if (fileName == null) {
+            Entity template = getTemplate();
+            if (template != null) {
+                fileName = template.getName();
+            }
+        }
         boolean convert = Converter.canConvert(
-                fileName, _act.getMimeType(), DocFormats.PDF_TYPE);
+                fileName, act.getMimeType(), DocFormats.PDF_TYPE);
         if (fileName != null) {
             String ext = FilenameUtils.getExtension(fileName).toLowerCase();
             styleName = "download." + ext;
@@ -105,7 +119,7 @@ public class DocumentActDownloader extends Downloader {
                               Messages.get("file.download.asPDF.tooltip"));
             component = RowFactory.create("CellSpacing", button, asPDF);
         } else {
-            component = button;
+            component = RowFactory.create("CellSpacing", button);
         }
         return component;
     }
@@ -118,11 +132,22 @@ public class DocumentActDownloader extends Downloader {
      * @throws DocumentException         if the document can't be found
      */
     protected Document getDocument() {
-        IMObjectReference ref = _act.getDocument();
-        if (ref == null) {
+        IMObjectReference ref = act.getDocument();
+        Document document = null;
+        if (ref != null) {
+            document = getDocument(ref);
+        } else {
+            Entity template = getTemplate();
+            if (template != null) {
+                DocumentActReporter reporter
+                        = new DocumentActReporter(act, template);
+                document = reporter.getDocument();
+            }
+        }
+        if (document == null) {
             throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }
-        return getDocument(ref);
+        return document;
     }
 
     /**
@@ -142,5 +167,20 @@ public class DocumentActDownloader extends Downloader {
         } finally {
             OpenOfficeHelper.close(connection);
         }
+    }
+
+    /**
+     * Returns the document template.
+     *
+     * @return the document template. May be <tt>null</tt>
+     */
+    private Entity getTemplate() {
+        if (template == null) {
+            ActBean bean = new ActBean(act);
+            if (bean.hasNode("documentTemplate")) {
+                template = bean.getNodeParticipant("documentTemplate");
+            }
+        }
+        return template;
     }
 }

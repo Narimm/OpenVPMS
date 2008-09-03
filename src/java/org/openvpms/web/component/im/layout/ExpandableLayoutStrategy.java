@@ -194,10 +194,11 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Returns a node filter.
      *
+     * @param object
      * @param context the context
      * @return a node filter to filter nodes
      */
-    protected NodeFilter getNodeFilter(LayoutContext context) {
+    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         return new ComplexNodeFilter(_showOptional, false);
     }
 

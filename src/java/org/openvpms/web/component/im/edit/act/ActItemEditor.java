@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -288,12 +289,14 @@ public abstract class ActItemEditor extends AbstractActEditor {
         /**
          * Returns a node filter to filter nodes.
          *
+         * @param object
          * @param context the context
          * @return a node filter to filter nodes, or <tt>null</tt> if no
          *         filterering is required
          */
         @Override
-        protected NodeFilter getNodeFilter(LayoutContext context) {
+        protected NodeFilter getNodeFilter(IMObject object,
+                                           LayoutContext context) {
             return super.getNodeFilter(context, getFilter());
         }
 

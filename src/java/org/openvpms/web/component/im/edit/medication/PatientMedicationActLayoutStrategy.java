@@ -151,18 +151,19 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
      * Returns a node filter to filter nodes. This implementation filters
      * out the product node if {@link #showProduct} is <code>false</code>.
      *
+     * @param object
      * @param context the context
      * @return a node filter to filter nodes, or <code>null</code> if no
      *         filterering is required
      */
     @Override
-    protected NodeFilter getNodeFilter(LayoutContext context) {
+    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         NodeFilter filter;
         if (!showProduct) {
             filter = super.getNodeFilter(context,
                                          new NamedNodeFilter("product"));
         } else {
-            filter = super.getNodeFilter(context);
+            filter = super.getNodeFilter(object, context);
         }
         return filter;
     }
