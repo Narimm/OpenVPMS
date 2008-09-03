@@ -174,11 +174,13 @@ public abstract class AbstractRelationshipEditor
          * Returns a node filter to filter nodes. This implementation filters
          * the "source" and "target" nodes.
          *
+         * @param object
          * @param context the context
          * @return a node filter to filter nodes
          */
         @Override
-        protected NodeFilter getNodeFilter(LayoutContext context) {
+        protected NodeFilter getNodeFilter(IMObject object,
+                                           LayoutContext context) {
             NodeFilter filter = new NamedNodeFilter("source", "target");
             return getNodeFilter(context, filter);
         }

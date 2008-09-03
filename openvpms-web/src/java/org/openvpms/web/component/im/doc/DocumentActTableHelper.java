@@ -21,13 +21,7 @@ package org.openvpms.web.component.im.doc;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.component.property.IMObjectProperty;
-import org.openvpms.web.component.property.Property;
 
 
 /**
@@ -51,21 +45,9 @@ public class DocumentActTableHelper {
                                               boolean link) {
         Component result;
         ActBean bean = new ActBean(act);
-        if (act.getDocument() != null) {
+        if (act.getDocument() != null || bean.hasNode("documentTemplate")) {
             DocumentViewer viewer = new DocumentViewer(act, link);
             result = viewer.getComponent();
-        } else if (bean.hasNode("documentTemplate")) {
-            NodeDescriptor descriptor
-                    = bean.getDescriptor("documentTemplate");
-            LayoutContext context = new DefaultLayoutContext();
-            if (!link) {
-                context.setEdit(true); // hack to disable hyerlinks
-            }
-            TableComponentFactory factory = new TableComponentFactory(
-                    context);
-            context.setComponentFactory(factory);
-            Property property = new IMObjectProperty(act, descriptor);
-            result = factory.create(property, act).getComponent();
         } else {
             result = new Label();
         }

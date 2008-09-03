@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -75,6 +76,7 @@ public class DocumentViewer {
         this.reference = reference;
         this.parent = parent;
         this.link = link;
+
     }
 
     /**
@@ -84,7 +86,16 @@ public class DocumentViewer {
      */
     public Component getComponent() {
         Component result;
+        boolean hasDoc;
         if (reference != null) {
+            hasDoc = true;
+        } else if (parent instanceof DocumentAct) {
+            IMObjectBean bean = new IMObjectBean(parent);
+            hasDoc = bean.hasNode("documentTemplate");
+        } else {
+            hasDoc = false;
+        }
+        if (hasDoc) {
             if (link) {
                 Downloader downloader;
                 if (parent instanceof DocumentAct) {

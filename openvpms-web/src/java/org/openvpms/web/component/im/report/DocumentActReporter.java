@@ -57,6 +57,17 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
     }
 
     /**
+     * Creates a new <tt>DocumentActReporter</tt>.
+     *
+     * @param act      the document act
+     * @param template the document template
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public DocumentActReporter(DocumentAct act, Entity template) {
+        super(act, act.getArchetypeId().getShortName(), template);
+    }
+
+    /**
      * Returns the report.
      *
      * @return the report
