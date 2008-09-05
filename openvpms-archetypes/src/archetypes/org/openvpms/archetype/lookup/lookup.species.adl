@@ -51,5 +51,7 @@
               type="java.lang.Boolean" path="/defaultLookup"
               defaultValue="false()"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="customFields" type="java.lang.String" path="/details/customFields"
+              minCardinality="0" maxCardinality="1"/>
     </archetype>
 </archetypes>
