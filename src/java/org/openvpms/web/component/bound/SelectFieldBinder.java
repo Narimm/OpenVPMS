@@ -84,17 +84,15 @@ public class SelectFieldBinder extends Binder {
      * @param value the value to set
      */
     protected void setFieldValue(Object value) {
-        if (value != null) {
-            component.removeActionListener(listener);
-            int index = setSelected(value);
-            if (index == -1 && component.getModel().size() != 0) {
-                // current value not in the list, so default it to the first
-                // list value.
-                component.setSelectedIndex(0);
-                property.setValue(component.getSelectedItem());
-            }
-            component.addActionListener(listener);
+        component.removeActionListener(listener);
+        int index = setSelected(value);
+        if (index == -1 && component.getModel().size() != 0) {
+            // current value not in the list, so default it to the first
+            // list value.
+            component.setSelectedIndex(0);
+            property.setValue(component.getSelectedItem());
         }
+        component.addActionListener(listener);
     }
 
     /**

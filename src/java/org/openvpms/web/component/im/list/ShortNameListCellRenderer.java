@@ -58,12 +58,12 @@ public class ShortNameListCellRenderer
      * @param list   the list component
      * @param object the object
      * @param index  the object index
-     * @return <code>true</code> if the object represents 'All'.
+     * @return <tt>true</tt> if the object represents 'All'.
      */
     protected boolean isAll(Component list, String object, int index) {
-        // use identityHashCode to override intellij warnings on ==.
-        return System.identityHashCode(object)
-                == System.identityHashCode(ShortNameListModel.ALL);
+        AbstractListComponent l = (AbstractListComponent) list;
+        ShortNameListModel model = (ShortNameListModel) l.getModel();
+        return model.isAll(index);
     }
 
     /**
@@ -71,11 +71,13 @@ public class ShortNameListCellRenderer
      *
      * @param list
      * @param object the object
-     * @param index
-     * @return <code>false</code>. 'None' not supported.
+     * @param index  object index
+     * @return <tt>true</tt> if the object represents ' None'.
      */
     protected boolean isNone(Component list, String object, int index) {
-        return false;
+        AbstractListComponent l = (AbstractListComponent) list;
+        ShortNameListModel model = (ShortNameListModel) l.getModel();
+        return model.isNone(index);
     }
 
 }

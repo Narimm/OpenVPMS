@@ -27,7 +27,6 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.LookupQuery;
@@ -151,7 +150,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
         }
         // Do the initial archetype query
         ShortNameConstraint archetypes;
-        if (type == null || type.equals(ShortNameListModel.ALL)) {
+        if (type == null) {
             archetypes = getArchetypes();
             archetypes.setActiveOnly(activeOnly);
         } else {

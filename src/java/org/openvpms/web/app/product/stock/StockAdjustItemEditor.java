@@ -129,7 +129,7 @@ public class StockAdjustItemEditor extends ActItemEditor {
                                                             context);
                 ComponentState component = createComponent(currentQuantity,
                                                            object, context);
-                set.add(component, currentQuantity.getDisplayName());
+                set.add(component);
                 return set;
             }
         };

@@ -228,7 +228,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
         String type = getShortName();
         boolean activeOnly = !includeInactive();
         ShortNameConstraint result;
-        if (type == null || type.equals(ShortNameListModel.ALL)) {
+        if (type == null) {
             result = getArchetypes();
             result.setActiveOnly(activeOnly);
         } else {

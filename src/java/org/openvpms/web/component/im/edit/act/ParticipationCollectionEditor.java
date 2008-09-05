@@ -18,20 +18,13 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.DefaultIMObjectCollectionEditor;
-import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.DelegatingCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.Validator;
 
 
 /**
@@ -40,14 +33,7 @@ import org.openvpms.web.component.property.Validator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class ParticipationCollectionEditor
-        implements IMObjectCollectionEditor {
-
-    /**
-     * The editor to delegate to.
-     */
-    private AbstractIMObjectCollectionEditor editor;
-
+public class ParticipationCollectionEditor extends DelegatingCollectionEditor {
 
     /**
      * Constructs a new <tt>ParticipationCollectionEditor</tt>.
@@ -61,6 +47,7 @@ public class ParticipationCollectionEditor
                                          LayoutContext context) {
         String[] shortNames = property.getArchetypeRange();
         int max = property.getMaxCardinality();
+        AbstractIMObjectCollectionEditor editor;
         if (max == 1 && shortNames.length == 1) {
             editor = new SingleParticipationCollectionEditor(property, object,
                                                              context);
@@ -68,168 +55,7 @@ public class ParticipationCollectionEditor
             editor = new DefaultIMObjectCollectionEditor(property, object,
                                                          context);
         }
+        setEditor(editor);
     }
 
-    /**
-     * Returns the collection property.
-     *
-     * @return the collection property
-     */
-    public CollectionProperty getCollection() {
-        return editor.getCollection();
-    }
-
-    /**
-     * Returns the parent of the collection.
-     *
-     * @return the parent object
-     */
-    public IMObject getObject() {
-        return editor.getObject();
-    }
-
-    /**
-     * Determines if items can be added and removed.
-     *
-     * @param readOnly if <tt>true</tt> items cannot be added or removed
-     */
-    public void setCardinalityReadOnly(boolean readOnly) {
-        editor.setCardinalityReadOnly(readOnly);
-    }
-
-    /**
-     * Determines if items can be added or removed.
-     *
-     * @return <tt>true</tt> if items can't be added or removed.
-     */
-    public boolean isCardinalityReadOnly() {
-        return editor.isCardinalityReadOnly();
-    }
-
-    /**
-     * Sets a listener to be notified when an object is created.
-     *
-     * @param listener the listener. May be <tt>null</tt>
-     */
-    public void setCreationListener(IMObjectCreationListener listener) {
-        editor.setCreationListener(listener);
-    }
-
-    /**
-     * Refreshes the collection display.
-     */
-    public void refresh() {
-        editor.refresh();
-    }
-
-    /**
-     * Returns the property being edited.
-     *
-     * @return the property being edited
-     */
-    public Property getProperty() {
-        return editor.getProperty();
-    }
-
-    /**
-     * Returns the edit component.
-     *
-     * @return the edit component
-     */
-    public Component getComponent() {
-        return editor.getComponent();
-    }
-
-    /**
-     * Determines if the object has been modified.
-     *
-     * @return <tt>true</tt> if the object has been modified
-     */
-    public boolean isModified() {
-        return editor.isModified();
-    }
-
-    /**
-     * Clears the modified status of the object.
-     */
-    public void clearModified() {
-        editor.clearModified();
-    }
-
-    /**
-     * Adds a listener to be notified when this changes.
-     *
-     * @param listener the listener to add
-     */
-    public void addModifiableListener(ModifiableListener listener) {
-        editor.addModifiableListener(listener);
-    }
-
-    /**
-     * Removes a listener.
-     *
-     * @param listener the listener to remove
-     */
-    public void removeModifiableListener(ModifiableListener listener) {
-        editor.removeModifiableListener(listener);
-    }
-
-    /**
-     * Determines if the object is valid.
-     *
-     * @return <tt>true</tt> if the object is valid; otherwise
-     *         <tt>false</tt>
-     */
-    public boolean isValid() {
-        return editor.isValid();
-    }
-
-    /**
-     * Validates the object.
-     *
-     * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
-     */
-    public boolean validate(Validator validator) {
-        return editor.validate(validator);
-    }
-
-    /**
-     * Save any edits.
-     *
-     * @return <tt>true</tt> if the save was successful
-     */
-    public boolean save() {
-        return editor.save();
-    }
-
-    /**
-     * Determines if any edits have been saved.
-     *
-     * @return <tt>true</tt> if edits have been saved.
-     */
-    public boolean isSaved() {
-        return editor.isSaved();
-    }
-
-    /**
-     * Returns the current editor.
-     *
-     * @return the current editor, or <tt>null</tt> if there is no current
-     *         editor
-     */
-    public IMObjectEditor getCurrentEditor() {
-        return editor.getCurrentEditor();
-    }
-
-    /**
-     * Returns the focus group.
-     *
-     * @return the focus group, or <tt>null</tt> if the editor hasn't been
-     *         rendered
-     */
-    public FocusGroup getFocusGroup() {
-        return editor.getFocusGroup();
-    }
 }

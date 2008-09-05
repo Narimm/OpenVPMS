@@ -46,7 +46,17 @@ public class ShortNameListModel extends AbstractListModel {
     private final String[][] shortNames;
 
     /**
-     * Construct a new <code>LookupListModel</code>.
+     * The index of 'All', or <tt>-1</tt> if it is not present.
+     */
+    private int allIndex = -1;
+
+    /**
+     * The index of 'None', or <tt>-1</tt> if it is not present.
+     */
+    private int noneIndex = -1;
+
+    /**
+     * Construct a new <tt>ShortNameListModel</tt>.
      *
      * @param shortNames the short names to populate the list with
      */
@@ -55,31 +65,31 @@ public class ShortNameListModel extends AbstractListModel {
     }
 
     /**
-     * Construct a new <code>LookupListModel</code>.
+     * Construct a new <tt>ShortNameListModel</tt>.
      *
      * @param shortNames the short names to populate the list with
-     * @param all        if <code>true</code>, add a localised "All"
+     * @param all        if <tt>true</tt>, add a localised "All"
      */
     public ShortNameListModel(String[] shortNames, boolean all) {
         this(shortNames, all, true);
     }
 
     /**
-     * Construct a new <code>LookupListModel</code>.
+     * Construct a new <tt>LookupListModel</tt>.
      *
      * @param shortNames the short names to populate the list with
-     * @param all        if <code>true</code>, add a localised "All"
+     * @param all        if <tt>true</tt>, add a localised "All"
      */
     public ShortNameListModel(List<String> shortNames, boolean all) {
         this(shortNames.toArray(new String[0]), all, true);
     }
 
     /**
-     * Construct a new <code>LookupListModel</code>.
+     * Construct a new <tt>ShortNameListModel</tt>.
      *
      * @param shortNames the short names to populate the list with
-     * @param all        if <code>true</code>, add a localised "All"
-     * @param sort       if <code>true</code>, sort the list alphabetically
+     * @param all        if <tt>true</tt>, add a localised "All"
+     * @param sort       if <tt>true</tt>, sort the list alphabetically
      */
     public ShortNameListModel(List<String> shortNames, boolean all,
                               boolean sort) {
@@ -87,13 +97,26 @@ public class ShortNameListModel extends AbstractListModel {
     }
 
     /**
-     * Construct a new <code>LookupListModel</code>.
+     * Construct a new <tt>ShortNameListModel</tt>.
      *
      * @param shortNames the short names to populate the list with
-     * @param all        if <code>true</code> add a localised "All"
-     * @param sort       if <code>true</code>, sort the list alphabetically
+     * @param all        if <tt>true</tt> add a localised "All"
+     * @param sort       if <tt>true</tt>, sort the list alphabetically
      */
     public ShortNameListModel(String[] shortNames, boolean all, boolean sort) {
+        this(shortNames, all, false, sort);
+    }
+
+    /**
+     * Construct a new <tt>ShortNameListModel</tt>.
+     *
+     * @param shortNames the short names to populate the list with
+     * @param all        if <tt>true</tt> add a localised "All"
+     * @param none       if <tt>true</tt>, add a localised "None"
+     * @param sort       if <tt>true</tt>, sort the list alphabetically
+     */
+    public ShortNameListModel(String[] shortNames, boolean all, boolean none,
+                              boolean sort) {
         if (sort) {
             Arrays.sort(shortNames);
         }
@@ -102,10 +125,15 @@ public class ShortNameListModel extends AbstractListModel {
         if (all) {
             ++size;
         }
+        if (none) {
+            ++size;
+        }
         this.shortNames = new String[size][2];
         if (all) {
-            this.shortNames[index][0] = ALL;
-            ++index;
+            allIndex = index++;
+        }
+        if (none) {
+            noneIndex = index++;
         }
         for (int i = 0; i < shortNames.length; ++i, ++index) {
             String shortName = shortNames[i];
@@ -123,7 +151,8 @@ public class ShortNameListModel extends AbstractListModel {
      * This implementation returns the short name.
      *
      * @param index the index
-     * @return the value
+     * @return the value, or <tt>null</tt> if the index represents 'All' or
+     *         'None'
      */
     public Object get(int index) {
         return getShortName(index);
@@ -142,7 +171,8 @@ public class ShortNameListModel extends AbstractListModel {
      * Returns the short name at the specified index in the list.
      *
      * @param index the index
-     * @return the short name
+     * @return the short name or <tt>null</tt> if the index represents 'All' or
+     *         'None'
      */
     public String getShortName(int index) {
         return shortNames[index][0];
@@ -162,7 +192,7 @@ public class ShortNameListModel extends AbstractListModel {
      * Returns the index of the specified short name.
      *
      * @param shortName the short name
-     * @return the index of <code>shortName</code>, or <code>-1</code> if it
+     * @return the index of <tt>shortName</tt>, or <tt>-1</tt> if it
      *         doesn't exist
      */
     public int indexOf(String shortName) {
@@ -176,4 +206,23 @@ public class ShortNameListModel extends AbstractListModel {
         return result;
     }
 
+    /**
+     * Determines if the specified index indicates 'All'.
+     *
+     * @param index the index
+     * @return <tt>true</tt> if the index indicates 'All'
+     */
+    public boolean isAll(int index) {
+        return index == allIndex;
+    }
+
+    /**
+     * Determines if the specified index indicates 'None'.
+     *
+     * @param index the index
+     * @return <tt>true</tt> if the index indicates 'None'
+     */
+    public boolean isNone(int index) {
+        return index == noneIndex;
+    }
 }

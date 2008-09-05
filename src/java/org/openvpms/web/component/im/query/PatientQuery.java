@@ -31,7 +31,6 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.focus.FocusHelper;
-import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -218,7 +217,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
         boolean activeOnly = !includeInactive();
         boolean idSearch = isIdentitySearch();
 
-        if (type == null || type.equals(ShortNameListModel.ALL)) {
+        if (type == null) {
             for (String shortName : getShortNames()) {
                 List<Party> matches
                         = filter(patients, shortName, name, idSearch,

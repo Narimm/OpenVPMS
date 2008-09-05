@@ -51,6 +51,15 @@ public class ComponentSet {
     /**
      * Adds a component.
      *
+     * @param component the component to add
+     */
+    public void add(ComponentState component) {
+        add(component, component.getDisplayName());
+    }
+
+    /**
+     * Adds a component.
+     *
      * @param component the component
      * @param label     a label for the component
      */

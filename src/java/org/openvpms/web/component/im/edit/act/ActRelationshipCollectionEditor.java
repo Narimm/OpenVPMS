@@ -32,9 +32,9 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.relationship.MultipleRelationshipCollectionTargetEditor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -54,11 +54,11 @@ import java.util.Set;
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class ActRelationshipCollectionEditor
-        extends IMObjectTableCollectionEditor {
+        extends MultipleRelationshipCollectionTargetEditor {
 
 
     /**
-     * Construct a new <code>ActRelationshipCollectionEditor</code>.
+     * Construct a new <tt>ActRelationshipCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param act      the parent act
@@ -77,20 +77,7 @@ public class ActRelationshipCollectionEditor
      */
     public List<Act> getActs() {
         ActRelationshipCollectionPropertyEditor collection = getEditor();
-        List<Act> result = new ArrayList<Act>();
-        for (IMObject object : collection.getObjects()) {
-            result.add((Act) object);
-        }
-        return result;
-    }
-
-    /**
-     * Adds an act to the collection.
-     *
-     * @param act the act to add
-     */
-    public void add(Act act) {
-        getEditor().add(act);
+        return new ArrayList<Act>(collection.getActs().keySet());
     }
 
     /**
@@ -110,30 +97,6 @@ public class ActRelationshipCollectionEditor
             result.add((Act) current.getObject());
         }
         return new ArrayList<Act>(result);
-    }
-
-    /**
-     * Returns an editor for an object, creating one if it doesn't exist.
-     *
-     * @param object the object to edit
-     * @return an editor for the object
-     */
-    @Override
-    public IMObjectEditor getEditor(IMObject object) {
-        return super.getEditor(object);
-    }
-
-    /**
-     * Creates a new editor.
-     *
-     * @param object  the object to edit
-     * @param context the layout context
-     * @return an editor to edit <code>object</code>
-     */
-    @Override
-    public IMObjectEditor createEditor(IMObject object,
-                                       LayoutContext context) {
-        return super.createEditor(object, context);
     }
 
     /**

@@ -11,62 +11,42 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
-package org.openvpms.web.component.im.edit.act;
+package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
-import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
-
-import java.util.Map;
 
 
 /**
  * A {@link CollectionPropertyEditor} for collections of
- * {@link ActRelationship}s.
+ * {@link EntityRelationship}s where the targets are being added and removed.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActRelationshipCollectionPropertyEditor
+public class EntityRelationshipCollectionTargetPropertyEditor
         extends RelationshipCollectionTargetPropertyEditor {
 
     /**
-     * Creates a new <tt>ActRelationshipCollectionPropertyEditor</tt>.
+     * Creates a new <tt>EntityRelationshipCollectionTargetPropertyEditor</tt>.
      *
      * @param property the property to edit
-     * @param act      the parent act
+     * @param parent   the parent object
      */
-    public ActRelationshipCollectionPropertyEditor(
-            CollectionProperty property, Act act) {
-        super(property, act);
-    }
-
-    /**
-     * Returns the child acts.
-     *
-     * @return the child acts
-     */
-    @SuppressWarnings("unchecked")
-    protected Map<Act, ActRelationship> getActs() {
-        Map relationships = super.getTargets();
-        return (Map<Act, ActRelationship>) relationships;
+    public EntityRelationshipCollectionTargetPropertyEditor(
+            CollectionProperty property, Entity parent) {
+        super(property, parent);
     }
 
     /**
@@ -81,21 +61,24 @@ public class ActRelationshipCollectionPropertyEditor
     protected IMObjectRelationship addRelationship(IMObject source,
                                                    IMObject target,
                                                    String shortName) {
-        ActBean bean = new ActBean((Act) source);
-        return bean.addRelationship(getRelationshipShortName(), (Act) target);
+        EntityBean bean = new EntityBean((Entity) source);
+        return bean.addRelationship(shortName, (Entity) target);
     }
 
     /**
      * Removes a relationship.
      *
-     * @param source
-     * @param target
+     * @param source       the source object to remove from
+     * @param target       the target object to remove from
      * @param relationship the relationship to remove
      */
     protected void removeRelationship(IMObject source,
                                       IMObject target,
                                       IMObjectRelationship relationship) {
-        ActBean bean = new ActBean((Act) source);
-        bean.removeRelationship((ActRelationship) relationship);
+        Entity sourceEntity = (Entity) source;
+        Entity targetEntity = (Entity) target;
+        EntityRelationship rel = (EntityRelationship) relationship;
+        sourceEntity.removeEntityRelationship(rel);
+        targetEntity.removeEntityRelationship(rel);
     }
 }

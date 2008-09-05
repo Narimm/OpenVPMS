@@ -19,15 +19,29 @@
 package org.openvpms.web.app.patient;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionTargetEditor;
+import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetEditor;
+import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+
+import java.util.List;
 
 
 /**
  * Editor for <em>party.patientpet</em> parties.
+ * <p/>
  * Creates an <em>entityRelationship.patientOwner</em> with the current
  * customer, if the parent object isn't an entity relationship.
  *
@@ -35,6 +49,12 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PatientEditor extends AbstractIMObjectEditor {
+
+    /**
+     * Editor for the "customFields" node.
+     */
+    private RelationshipCollectionTargetEditor customFieldEditor;
+
 
     /**
      * Constructs a new <tt>PatientEditor</tt>.
@@ -46,16 +66,128 @@ public class PatientEditor extends AbstractIMObjectEditor {
     public PatientEditor(Party patient, IMObject parent,
                          LayoutContext context) {
         super(patient, parent, context);
-        if (patient.isNew() && !(parent instanceof EntityRelationship)) {
-            Party customer = getLayoutContext().getContext().getCustomer();
-            if (customer != null) {
-                PatientRules rules = new PatientRules();
-                if (!rules.isOwner(customer, patient)) {
-                    rules.addPatientOwnerRelationship(customer, patient);
-                }
+        if (patient.isNew()) {
+            if (!(parent instanceof EntityRelationship)) {
+                addOwnerRelationship(patient);
+            }
+        }
+        getProperty("species").addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                speciesChanged();
+            }
+        });
+        CollectionProperty customField
+                = (CollectionProperty) getProperty("customFields");
+        customFieldEditor = new EntityRelationshipCollectionTargetEditor(
+                customField, patient, getLayoutContext());
+        getEditors().add(customFieldEditor);
+        updateCustomFields();
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new PatientLayoutStrategy(customFieldEditor);
+    }
+
+    /**
+     * Adds a patient owner relationship to the current context customer,
+     * if present.
+     *
+     * @param patient the patient
+     */
+    private void addOwnerRelationship(Party patient) {
+        Party customer = getLayoutContext().getContext().getCustomer();
+        if (customer != null) {
+            PatientRules rules = new PatientRules();
+            if (!rules.isOwner(customer, patient)) {
+                rules.addPatientOwnerRelationship(customer, patient);
             }
         }
     }
 
+    /**
+     * Updates the customFields node.
+     * <p/>
+     * If there is an existing <em>entity.customPatient*</em> that doesn't
+     * match the customFields node of the associated <em>lookup.species</em>,
+     * it will be removed.
+     * <p/>
+     * If there is an <em>entity.customPatient*</em> object and its archetype
+     * matches that of the associated <em>lookup.species</em>, no update will occur.
+     * <p/>
+     * If there is no <em>entity.customPatient*</em> object, and the
+     * <em>lookup.species</em> customFields node specifies an archetype, one
+     * will be added.
+     *
+     * @return <tt>true</tt> if an update was performed
+     */
+    private boolean updateCustomFields() {
+        boolean changed = false;
+        String species = (String) getProperty("species").getValue();
+        String shortName = getCustomFieldsArchetype(species);
+        String currentShortName = null;
+        Entity fields = getCustomFields();
+        if (fields != null) {
+            currentShortName = fields.getArchetypeId().getShortName();
+        }
+        if (currentShortName != null && !currentShortName.equals(shortName)) {
+            customFieldEditor.remove(fields);
+            changed = true;
+        }
+        if (shortName != null && !shortName.equals(currentShortName)) {
+            IMObject object = IMObjectCreator.create(shortName);
+            if (object instanceof Entity) {
+                customFieldEditor.add(object);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Invoked when the species changes. Updates the customFields node.
+     */
+    private void speciesChanged() {
+        if (updateCustomFields()) {
+            onLayout();
+            getEditors().add(customFieldEditor);
+        }
+    }
+
+    /**
+     * Returns the archetype short name from customFields node of the specified
+     * species lookup.
+     *
+     * @param species the <em>lookup.species</em> code
+     * @return the archetype short name, or <tt>null</tt> if none is found
+     */
+    private String getCustomFieldsArchetype(String species) {
+        String result = null;
+        if (species != null) {
+            Lookup lookup = LookupServiceHelper.getLookupService().getLookup(
+                    "lookup.species", species);
+            if (lookup != null) {
+                IMObjectBean bean = new IMObjectBean(lookup);
+                result = bean.getString("customFields");
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the <em>entity.customFields</em> object from the customFields
+     * node.
+     *
+     * @return the object, or <tt>null</tt> if none is found
+     */
+    private Entity getCustomFields() {
+        List<IMObject> result = customFieldEditor.getObjects();
+        return !result.isEmpty() ? (Entity) result.get(0) : null;
+    }
 
 }
