@@ -95,21 +95,7 @@ public class LookupEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new AbstractLayoutStrategy() {
-
-            @Override
-            protected ComponentState createComponent(Property property,
-                                                     IMObject parent,
-                                                     LayoutContext context) {
-                ComponentState state = super.createComponent(property,
-                                                             parent,
-                                                             context);
-                if ("code".equals(property.getName())) {
-                    code = state.getComponent();
-                }
-                return state;
-            }
-        };
+        return new LayoutStrategy();
     }
 
     /**
@@ -136,6 +122,21 @@ public class LookupEditor extends AbstractIMObjectEditor {
                 code = code.replaceAll("[^A-Z0-9]+", "_");
             }
             getProperty("code").setValue(code);
+        }
+    }
+
+    protected class LayoutStrategy extends AbstractLayoutStrategy {
+        @Override
+        protected ComponentState createComponent(Property property,
+                                                 IMObject parent,
+                                                 LayoutContext context) {
+            ComponentState state = super.createComponent(property,
+                                                         parent,
+                                                         context);
+            if ("code".equals(property.getName())) {
+                code = state.getComponent();
+            }
+            return state;
         }
     }
 }

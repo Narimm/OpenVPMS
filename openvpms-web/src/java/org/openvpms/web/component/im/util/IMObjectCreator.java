@@ -66,7 +66,6 @@ public final class IMObjectCreator {
                 String message = Messages.get("imobject.create.noarchetype",
                                               shortName);
                 ErrorHelper.show(title, message);
-
             }
         } catch (OpenVPMSException exception) {
             String title = Messages.get("imobject.create.failed", shortName);

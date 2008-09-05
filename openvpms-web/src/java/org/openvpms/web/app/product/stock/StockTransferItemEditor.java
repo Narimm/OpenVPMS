@@ -152,8 +152,8 @@ public class StockTransferItemEditor extends ActItemEditor {
                                                       context);
                 ComponentState to = createComponent(toQuantity, object,
                                                     context);
-                set.add(from, fromQuantity.getDisplayName());
-                set.add(to, toQuantity.getDisplayName());
+                set.add(from);
+                set.add(to);
                 return set;
             }
         };

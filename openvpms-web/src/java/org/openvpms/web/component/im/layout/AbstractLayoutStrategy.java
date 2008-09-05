@@ -309,17 +309,18 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         int shortcut = 1;
         for (NodeDescriptor nodeDesc : descriptors) {
             Property property = properties.get(nodeDesc);
-            ComponentState child = createComponent(property, object,
-                                                   context);
+            ComponentState child = createComponent(property, object, context);
             Component inset = ColumnFactory.create("Inset",
                                                    child.getComponent());
             setFocusTraversal(child);
-            String text;
-            if (shortcuts && shortcut <= 10) {
-                text = getShortcut(nodeDesc.getDisplayName(), shortcut);
-                ++shortcut;
-            } else {
+            String text = child.getDisplayName();
+            if (text == null) {
                 text = nodeDesc.getDisplayName();
+            }
+
+            if (shortcuts && shortcut <= 10) {
+                text = getShortcut(text, shortcut);
+                ++shortcut;
             }
             model.addTab(text, inset);
         }
@@ -344,7 +345,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             Property property = properties.get(descriptor);
             ComponentState component = createComponent(property, object,
                                                        context);
-            result.add(component, descriptor.getDisplayName());
+            String displayName = component.getDisplayName();
+            if (displayName == null) {
+                displayName = descriptor.getDisplayName();
+            }
+            result.add(component, displayName);
         }
         return result;
     }
@@ -353,12 +358,14 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * Helper to add a node to a container.
      *
      * @param container the container
-     * @param name      the node display name
+     * @param name      the node display name. May be <tt>null</tt>
      * @param component the component representing the node
      */
     protected void add(Component container, String name, Component component) {
         Label label = LabelFactory.create();
-        label.setText(name);
+        if (name != null) {
+            label.setText(name);
+        }
         container.add(label);
         container.add(component);
     }

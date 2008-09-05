@@ -91,10 +91,10 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
         shortNameSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 int index = shortNameSelector.getSelectedIndex();
-                String shortName = model.getShortName(index);
-                if (ShortNameListModel.ALL.equals(shortName)) {
+                if (model.isAll(index)) {
                     itemShortNames = allShortNames;
                 } else {
+                    String shortName = model.getShortName(index);
                     itemShortNames = new String[]{shortName};
                 }
                 onQuery();
