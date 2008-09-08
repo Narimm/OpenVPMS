@@ -41,8 +41,7 @@ public class RelationshipCollectionTargetEditor
     /**
      * The collection property editor.
      */
-    private final RelationshipCollectionTargetPropertyEditor
-            propertyEditor;
+    private final RelationshipCollectionTargetPropertyEditor propertyEditor;
 
 
     /**
@@ -71,38 +70,12 @@ public class RelationshipCollectionTargetEditor
     }
 
     /**
-     * Adds an object to the collection.
+     * Returns the target objects in the collection.
      *
-     * @param object the object to add
-     */
-    public void add(IMObject object) {
-        propertyEditor.add(object);
-    }
-
-    /**
-     * Removes an object from the collection.
-     *
-     * @param object the object to remove
-     */
-    public void remove(IMObject object) {
-        propertyEditor.remove(object);
-    }
-
-    /**
-     * Returns the set of objects being edited.
-     *
-     * @return the set of objects being edited.
+     * @return the target objects in the collection
      */
     public List<IMObject> getObjects() {
-        return getEditor().getObjects();
+        return propertyEditor.getObjects();
     }
 
-    /**
-     * Returns the collection property editor.
-     *
-     * @return the collection property editor
-     */
-    protected RelationshipCollectionTargetPropertyEditor getEditor() {
-        return propertyEditor;
-    }
 }

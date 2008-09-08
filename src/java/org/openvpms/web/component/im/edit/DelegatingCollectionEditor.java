@@ -104,6 +104,24 @@ public abstract class DelegatingCollectionEditor
     }
 
     /**
+     * Adds an object to the collection.
+     *
+     * @param object the object to add
+     */
+    public void add(IMObject object) {
+        editor.add(object);
+    }
+
+    /**
+     * Removes an object from the collection.
+     *
+     * @param object the object to remove
+     */
+    public void remove(IMObject object) {
+        editor.remove(object);
+    }
+
+    /**
      * Refreshes the collection display.
      */
     public void refresh() {
@@ -228,5 +246,14 @@ public abstract class DelegatingCollectionEditor
      */
     protected void setEditor(AbstractIMObjectCollectionEditor editor) {
         this.editor = editor;
+    }
+
+    /**
+     * Returns the editor to delegate to.
+     *
+     * @return the editor to delegate to
+     */
+    protected AbstractIMObjectCollectionEditor getEditor() {
+        return editor;
     }
 }
