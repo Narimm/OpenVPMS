@@ -300,6 +300,27 @@ public abstract class AbstractIMObjectCollectionEditor
     }
 
     /**
+     * Adds an object to the collection.
+     *
+     * @param object the object to add
+     */
+    public void add(IMObject object) {
+        collection.add(object);
+    }
+
+    /**
+     * Removes an object from the collection.
+     *
+     * @param object the object to remove
+     */
+    public void remove(IMObject object) {
+        collection.remove(object);
+        if (editor != null && editor.getObject() == object) {
+            removeCurrentEditor();
+        }
+    }
+
+    /**
      * Returns the current editor.
      *
      * @return the current editor. May be <tt>null</tt>
@@ -359,6 +380,15 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     protected void setCurrentEditor(IMObjectEditor editor) {
         this.editor = editor;
+    }
+
+    /**
+     * Removes the current editor.
+     * <p/>
+     * This implementation simply invokes <tt>setCurrentEditor(null)</tt>.
+     */
+    protected void removeCurrentEditor() {
+        setCurrentEditor(null);
     }
 
     /**

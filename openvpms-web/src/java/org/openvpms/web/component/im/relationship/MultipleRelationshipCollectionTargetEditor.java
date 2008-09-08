@@ -60,15 +60,6 @@ public class MultipleRelationshipCollectionTargetEditor
     }
 
     /**
-     * Removes an object from the collection.
-     *
-     * @param object the object to remove
-     */
-    public void remove(IMObject object) {
-        delete(object);
-    }
-
-    /**
      * Returns an editor for an object, creating one if it doesn't exist.
      *
      * @param object the object to edit

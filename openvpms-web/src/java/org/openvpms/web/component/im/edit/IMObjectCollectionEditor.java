@@ -69,6 +69,20 @@ public interface IMObjectCollectionEditor extends PropertyEditor, Saveable {
     void setCreationListener(IMObjectCreationListener listener);
 
     /**
+     * Adds an object to the collection.
+     *
+     * @param object the object to add
+     */
+    void add(IMObject object);
+
+    /**
+     * Removes an object from the collection.
+     *
+     * @param object the object to remove
+     */
+    void remove(IMObject object);
+
+    /**
      * Refreshes the collection display.
      */
     void refresh();

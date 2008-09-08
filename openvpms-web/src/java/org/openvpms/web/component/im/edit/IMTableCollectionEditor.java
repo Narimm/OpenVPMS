@@ -191,6 +191,31 @@ public abstract class IMTableCollectionEditor<T>
     }
 
     /**
+     * Removes an object from the collection.
+     *
+     * @param object the object to remove
+     */
+    @Override
+    public void remove(IMObject object) {
+        // remove the current editor if it matches the object being deleted.
+        // This won't generate any events.
+        IMObjectEditor editor = getCurrentEditor();
+        if (editor != null && editor.getObject() == object) {
+            removeCurrentEditor();
+        }
+        // remove the object from the collection. May generate events
+        boolean removed = getCollectionPropertyEditor().remove(object);
+        populateTable();
+        if (!removed) {
+            // the object was not committed, so no notification has been
+            // generated yet
+            getListeners().notifyListeners(getProperty());
+        }
+        // workaround for OVPMS-629
+        KeyStrokeHelper.reregisterKeyStrokeListeners(container);
+    }
+
+    /**
      * Refreshes the collection display.
      */
     public void refresh() {
@@ -365,35 +390,11 @@ public abstract class IMTableCollectionEditor<T>
         }
         if (object != null) {
             if (object.isNew()) {
-                delete(object);
+                remove(object);
             } else {
                 confirmDelete(object);
             }
         }
-    }
-
-    /**
-     * Delete an object.
-     *
-     * @param object the object to delete
-     */
-    protected void delete(IMObject object) {
-        // remove the current editor if it matches the object being deleted.
-        // This won't generate any events.
-        IMObjectEditor editor = getCurrentEditor();
-        if (editor != null && editor.getObject() == object) {
-            removeEditor();
-        }
-        // remove the object from the collection. May generate events
-        boolean removed = getCollectionPropertyEditor().remove(object);
-        populateTable();
-        if (!removed) {
-            // the object was not committed, so no notification has been
-            // generated yet
-            getListeners().notifyListeners(getProperty());
-        }
-        // workaround for OVPMS-629
-        KeyStrokeHelper.reregisterKeyStrokeListeners(container);
     }
 
     /**
@@ -469,9 +470,9 @@ public abstract class IMTableCollectionEditor<T>
     }
 
     /**
-     * Remove the editor.
+     * Removes the current editor.
      */
-    private void removeEditor() {
+    protected void removeCurrentEditor() {
         IMObjectEditor editor = getCurrentEditor();
         focusGroup.remove(editorFocusGroup);
         editorFocusGroup = null;
@@ -480,8 +481,9 @@ public abstract class IMTableCollectionEditor<T>
         editor.removePropertyChangeListener(
                 IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
         editor.removeModifiableListener(editorListener);
-        setCurrentEditor(null);
         editBox = null;
+
+        super.removeCurrentEditor();
     }
 
     /**
@@ -500,7 +502,7 @@ public abstract class IMTableCollectionEditor<T>
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    delete(object);
+                    remove(object);
                 }
             }
         });
