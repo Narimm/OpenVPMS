@@ -11,20 +11,34 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.util;
+package org.openvpms.archetype.rules.workflow;
+
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.ObjectSet;
+
+import java.util.Date;
+import java.util.List;
 
 
 /**
- * Date units.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public enum DateUnits {
-    MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS
+public interface AppointmentService {
+
+    /**
+     * Returns all appointments for the specified schedule and day.
+     *
+     * @param schedule an <em>party.organisationSchedule</em>
+     * @param day the day
+     * @return a list of appointments
+     */
+    List<ObjectSet> getAppointments(Party schedule, Date day);
 }

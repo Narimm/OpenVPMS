@@ -18,7 +18,6 @@
 
 package org.openvpms.archetype.rules.patient;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -321,7 +320,7 @@ public class MedicalRecordRules {
         query.add(new CollectionNodeConstraint("patient").add(
                 new ObjectRefNodeConstraint("entity", patient)));
         OrConstraint or = new OrConstraint();
-        Date lowerBound = getDate(date);
+        Date lowerBound = DateRules.getDate(date);
         Date upperBound = getEndTime(date);
         or.add(new NodeConstraint(START_TIME, RelationalOp.LTE,
                                   lowerBound));
@@ -397,17 +396,6 @@ public class MedicalRecordRules {
             }
         }
         return result;
-    }
-
-    /**
-     * Returns the date part of a date-time, zero-ing out any time
-     * component.
-     *
-     * @param dateTime the date-time
-     * @return the date part of <tt>dateTime</tt>
-     */
-    private Date getDate(Date dateTime) {
-        return DateUtils.truncate(dateTime, Calendar.DAY_OF_MONTH);
     }
 
     /**
