@@ -22,9 +22,9 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -35,7 +35,6 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -153,8 +152,7 @@ public class MedicalRecordActLinker {
         int count = 0;
         while (iterator.hasNext()) {
             Act act = iterator.next();
-            Date date = DateUtils.truncate(act.getActivityStartTime(),
-                                           Calendar.DAY_OF_MONTH);
+            Date date = DateRules.getDate(act.getActivityStartTime());
             if (current != null && !current.equals(date)) {
                 rules.addToHistoricalEvents(acts, current);
                 acts.clear();

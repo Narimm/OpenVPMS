@@ -50,83 +50,6 @@ import java.util.List;
 public class AppointmentQuery {
 
     /**
-     * The act reference.
-     */
-    public static final String ACT_REFERENCE = "act.objectReference";
-
-    /**
-     * The act start time.
-     */
-    public static final String ACT_START_TIME = "act.startTime";
-
-    /**
-     * The act end time.
-     */
-    public static final String ACT_END_TIME = "act.endTime";
-
-    /**
-     * The act status.
-     */
-    public static final String ACT_STATUS = "act.status";
-
-    /**
-     * The act reason.
-     */
-    public static final String ACT_REASON = "act.reason";
-
-    /**
-     * The act description.
-     */
-    public static final String ACT_DESCRIPTION = "act.description";
-
-    /**
-     * The customer reference.
-     */
-    public static final String CUSTOMER_REFERENCE = "customer.objectReference";
-
-    /**
-     * The customer name.
-     */
-    public static final String CUSTOMER_NAME = "customer.name";
-
-    /**
-     * The patient reference.
-     */
-    public static final String PATIENT_REFERENCE = "patient.objectReference";
-
-    /**
-     * The patient name.
-     */
-    public static final String PATIENT_NAME = "patient.name";
-
-    /**
-     * The appointment reference.
-     */
-    public static final String APPOINTMENT_REFERENCE
-            = "appointmentType.objectReference";
-
-    /**
-     * The appointment name.
-     */
-    public static final String APPOINTMENT_NAME = "appointmentType.name";
-
-    /**
-     * The clinician reference.
-     */
-    public static final String CLINICIAN_REFERENCE
-            = "clinician.objectReference";
-
-    /**
-     * The clinician name.
-     */
-    public static final String CLINICIAN_NAME = "clinician.name";
-
-    /**
-     * The arrival time.
-     */
-    public static final String ARRIVAL_TIME = "arrivalTime";
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -237,36 +160,36 @@ public class AppointmentQuery {
                 }
                 currentAct = actRef;
                 current = new ObjectSet();
-                current.set(ACT_REFERENCE, actRef);
-                current.set(ACT_START_TIME, set.get(ACT_START_TIME));
-                current.set(ACT_END_TIME, set.get(ACT_END_TIME));
-                current.set(ACT_STATUS, set.get(ACT_STATUS));
-                current.set(ACT_REASON, set.get(ACT_REASON));
-                current.set(ACT_DESCRIPTION, set.get(ACT_DESCRIPTION));
-                current.set(CUSTOMER_REFERENCE, null);
-                current.set(CUSTOMER_NAME, null);
-                current.set(PATIENT_REFERENCE, null);
-                current.set(PATIENT_NAME, null);
-                current.set(APPOINTMENT_REFERENCE, null);
-                current.set(APPOINTMENT_NAME, null);
-                current.set(CLINICIAN_REFERENCE, null);
-                current.set(CLINICIAN_NAME, null);
-                current.set(ARRIVAL_TIME, null);
+                current.set(Appointment.ACT_REFERENCE, actRef);
+                current.set(Appointment.ACT_START_TIME, set.get(Appointment.ACT_START_TIME));
+                current.set(Appointment.ACT_END_TIME, set.get(Appointment.ACT_END_TIME));
+                current.set(Appointment.ACT_STATUS, set.get(Appointment.ACT_STATUS));
+                current.set(Appointment.ACT_REASON, set.get(Appointment.ACT_REASON));
+                current.set(Appointment.ACT_DESCRIPTION, set.get(Appointment.ACT_DESCRIPTION));
+                current.set(Appointment.CUSTOMER_REFERENCE, null);
+                current.set(Appointment.CUSTOMER_NAME, null);
+                current.set(Appointment.PATIENT_REFERENCE, null);
+                current.set(Appointment.PATIENT_NAME, null);
+                current.set(Appointment.APPOINTMENT_TYPE_REFERENCE, null);
+                current.set(Appointment.APPOINTMENT_TYPE_NAME, null);
+                current.set(Appointment.CLINICIAN_REFERENCE, null);
+                current.set(Appointment.CLINICIAN_NAME, null);
+                current.set(Appointment.ARRIVAL_TIME, null);
             }
             IMObjectReference entityRef = getEntity(set);
             String entityName = set.getString("entity.name");
             if (TypeHelper.isA(entityRef, "party.customer*")) {
-                current.set(CUSTOMER_REFERENCE, entityRef);
-                current.set(CUSTOMER_NAME, entityName);
+                current.set(Appointment.CUSTOMER_REFERENCE, entityRef);
+                current.set(Appointment.CUSTOMER_NAME, entityName);
             } else if (TypeHelper.isA(entityRef, "party.patient*")) {
-                current.set(PATIENT_REFERENCE, entityRef);
-                current.set(PATIENT_NAME, entityName);
+                current.set(Appointment.PATIENT_REFERENCE, entityRef);
+                current.set(Appointment.PATIENT_NAME, entityName);
             } else if (TypeHelper.isA(entityRef, "entity.appointmentType")) {
-                current.set(APPOINTMENT_REFERENCE, entityRef);
-                current.set(APPOINTMENT_NAME, entityName);
+                current.set(Appointment.APPOINTMENT_TYPE_REFERENCE, entityRef);
+                current.set(Appointment.APPOINTMENT_TYPE_NAME, entityName);
             } else if (TypeHelper.isA(entityRef, "security.user")) {
-                current.set(CLINICIAN_REFERENCE, entityRef);
-                current.set(CLINICIAN_NAME, entityName);
+                current.set(Appointment.CLINICIAN_REFERENCE, entityRef);
+                current.set(Appointment.CLINICIAN_NAME, entityName);
             }
             String key = set.getString("act.details_Keys");
             TypedValue value = (TypedValue) set.get("act.details_Values");

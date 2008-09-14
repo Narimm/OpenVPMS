@@ -92,34 +92,34 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         for (int i = 0; i < results.size(); ++i) {
             ObjectSet set = results.get(i);
             assertEquals(appointments[i].getObjectReference(),
-                         set.get(AppointmentQuery.ACT_REFERENCE));
+                         set.get(Appointment.ACT_REFERENCE));
             assertEquals(startTimes[i],
-                         set.get(AppointmentQuery.ACT_START_TIME));
-            assertEquals(endTimes[i], set.get(AppointmentQuery.ACT_END_TIME));
+                         set.get(Appointment.ACT_START_TIME));
+            assertEquals(endTimes[i], set.get(Appointment.ACT_END_TIME));
             assertEquals(appointments[i].getStatus() ,
-                         set.get(AppointmentQuery.ACT_STATUS));
+                         set.get(Appointment.ACT_STATUS));
             assertEquals(appointments[i].getReason() ,
-                         set.get(AppointmentQuery.ACT_REASON));
+                         set.get(Appointment.ACT_REASON));
             assertEquals(appointments[i].getDescription() ,
-                         set.get(AppointmentQuery.ACT_DESCRIPTION));
+                         set.get(Appointment.ACT_DESCRIPTION));
             assertEquals(customers[i].getObjectReference(),
-                         set.get(AppointmentQuery.CUSTOMER_REFERENCE));
+                         set.get(Appointment.CUSTOMER_REFERENCE));
             assertEquals(customers[i].getName(),
-                         set.get(AppointmentQuery.CUSTOMER_NAME));
+                         set.get(Appointment.CUSTOMER_NAME));
             assertEquals(patients[i].getObjectReference(),
-                         set.get(AppointmentQuery.PATIENT_REFERENCE));
+                         set.get(Appointment.PATIENT_REFERENCE));
             assertEquals(patients[i].getName(),
-                         set.get(AppointmentQuery.PATIENT_NAME));
+                         set.get(Appointment.PATIENT_NAME));
             assertEquals(clinicians[i].getObjectReference(),
-                         set.get(AppointmentQuery.CLINICIAN_REFERENCE));
+                         set.get(Appointment.CLINICIAN_REFERENCE));
             assertEquals(clinicians[i].getName(),
-                         set.get(AppointmentQuery.CLINICIAN_NAME));
+                         set.get(Appointment.CLINICIAN_NAME));
             assertEquals(appointmentTypes[i].getObjectReference(),
-                         set.get(AppointmentQuery.APPOINTMENT_REFERENCE));
+                         set.get(Appointment.APPOINTMENT_TYPE_REFERENCE));
             assertEquals(appointmentTypes[i].getName(),
-                         set.get(AppointmentQuery.APPOINTMENT_NAME));
+                         set.get(Appointment.APPOINTMENT_TYPE_NAME));
             assertEquals(arrivalTimes[i],
-                         set.get(AppointmentQuery.ARRIVAL_TIME));
+                         set.get(Appointment.ARRIVAL_TIME));
         }
     }
 

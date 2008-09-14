@@ -116,7 +116,7 @@ public class AppointmentRules {
         EntityBean schedBean = new EntityBean(schedule, service);
         int noSlots = getSlots(schedBean, appointmentType);
         int minutes = getSlotSize(schedBean) * noSlots;
-        int millis = minutes * DateUtils.MILLIS_IN_MINUTE;
+        long millis = minutes * DateUtils.MILLIS_PER_MINUTE;
         return new Date(startTime.getTime() + millis);
     }
 

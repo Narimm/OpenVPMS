@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.util;
 
+import org.apache.commons.lang.time.DateUtils;
+
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
@@ -58,9 +60,26 @@ public class DateRules {
                 case DAYS:
                     calendar.add(Calendar.DAY_OF_YEAR, interval);
                     break;
+                case HOURS:
+                    calendar.add(Calendar.HOUR_OF_DAY, interval);
+                    break;
+                case MINUTES:
+                    calendar.add(Calendar.MINUTE, interval);
+                    break;
             }
         }
         return calendar.getTime();
+    }
+
+    /**
+     * Returns the date part of a date-time, zero-ing out any time
+     * component.
+     *
+     * @param datetime the date/time
+     * @return the date part of <tt>datetime</tt>
+     */
+    public static Date getDate(Date datetime) {
+        return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
     }
 
     /**
@@ -76,9 +95,9 @@ public class DateRules {
      * @param lhs the date
      * @param rhs the date to compare with
      * @return <tt>0</tt> if the <tt>lhs</tt> is equal to <tt>rhs</tt>;
-     *          a value less than <tt>0</tt> if <tt>lhs</tt> is before
+     *         a value less than <tt>0</tt> if <tt>lhs</tt> is before
      *         <tt>rhs</tt>; and a value greater than
-     *      <tt>0</tt> if <tt>lhs</tt> is after <tt>rhs</tt>.
+     *         <tt>0</tt> if <tt>lhs</tt> is after <tt>rhs</tt>.
      */
     public static int compareTo(Date lhs, Date rhs) {
         long lhsTime = lhs.getTime();
