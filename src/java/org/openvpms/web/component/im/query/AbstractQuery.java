@@ -120,8 +120,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      *                                 archetypes
      */
     @SuppressWarnings("unchecked")
-    public AbstractQuery(String[] shortNames, boolean primaryOnly,
-                         Class type) {
+    public AbstractQuery(String[] shortNames, boolean primaryOnly, Class type) {
         this.shortNames = DescriptorHelper.getShortNames(shortNames,
                                                          primaryOnly);
         this.type = type;
@@ -324,7 +323,6 @@ public abstract class AbstractQuery<T> implements Query<T> {
      */
     public void addQueryListener(QueryListener listener) {
         listeners.add(listener);
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     /**

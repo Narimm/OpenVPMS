@@ -39,7 +39,6 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.DateTimeFieldFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 
@@ -89,7 +88,6 @@ public class AppointmentActEditor extends AbstractActEditor {
                 setParticipant("appointmentType", appointmentType);
             }
         }
-
 
         Date startTime = getStartTime();
         if (startTime == null) {

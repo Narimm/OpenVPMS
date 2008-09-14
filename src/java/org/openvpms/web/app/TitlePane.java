@@ -97,7 +97,7 @@ public class TitlePane extends ContentPane {
             if (defLocation != null) {
                 locationSelector.setSelectedItem(defLocation);
             }
-            locationSelector.setCellRenderer(new IMObjectListCellRenderer());
+            locationSelector.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
             locationUserRow.add(location, 0);
             locationUserRow.add(locationSelector, 1);
             locationSelector.addActionListener(new ActionListener() {

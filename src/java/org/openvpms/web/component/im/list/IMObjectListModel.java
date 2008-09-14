@@ -18,11 +18,8 @@
 
 package org.openvpms.web.component.im.list;
 
-import nextapp.echo2.app.list.AbstractListModel;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -33,46 +30,18 @@ import java.util.List;
  * @version $LastChangedDate: 2006-07-05 22:12:49Z $
  * @see IMObjectListCellRenderer
  */
-public class IMObjectListModel extends AbstractListModel {
+public class IMObjectListModel extends AbstractIMObjectListModel<IMObject> {
 
     /**
-     * The objects.
-     */
-    private List<IMObject> objects;
-
-    /**
-     * Dummy IMObject indicating that all values apply.
-     */
-    public static final IMObject ALL;
-
-    /**
-     * Dummy IMObject indicating that no value is required.
-     */
-    public static final IMObject NONE;
-
-    /**
-     * Determines if "all" should be included.
-     */
-    private final boolean all;
-
-    /**
-     * Determines if "none" should be included.
-     */
-    private final boolean none;
-
-
-    /**
-     * Construct a new <code>IMObjectListModel</code>.
+     * Creates a new <tt>IMObjectListModel</tt>.
      *
      * @param objects the objects to populate the list with.
-     * @param all     if <code>true</code>, add a localised "All"
-     * @param none    if <code>true</code>, add a localised "None"
+     * @param all     if <tt>true</tt>, add a localised "All"
+     * @param none    if <tt>true</tt>, add a localised "None"
      */
-    public <T extends IMObject> IMObjectListModel(List<T> objects, boolean all,
-                                                  boolean none) {
-        this.all = all;
-        this.none = none;
-        this.objects = getObjects(objects);
+    public IMObjectListModel(List<? extends IMObject> objects, boolean all,
+                             boolean none) {
+        super(objects, all, none);
     }
 
     /**
@@ -82,59 +51,7 @@ public class IMObjectListModel extends AbstractListModel {
      * @return the value
      */
     public Object get(int index) {
-        return objects.get(index);
+        return getObject(index);
     }
 
-    /**
-     * Returns the size of the list.
-     *
-     * @return the size
-     */
-    public int size() {
-        return objects.size();
-    }
-
-    /**
-     * Returns the index of the specified object.
-     *
-     * @param object the objecvt
-     * @return the index of <tt>object</tt>, or <tt>-1</tt> if it doesn't exist
-     */
-    public int indexOf(IMObject object) {
-        int result = -1;
-        for (int i = 0; i < objects.size(); ++i) {
-            if (objects.get(i).equals(object)) {
-                result = i;
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Helper to prepend the objects "all" or "none" when required.
-     * *
-     *
-     * @param objects the objects
-     * @return a copy of <code>objects</code> preprended with "all" and/or
-     *         "none" added when required
-     */
-    protected <T extends IMObject> List<IMObject> getObjects(List<T> objects) {
-        List<IMObject> result = new ArrayList<IMObject>(objects);
-        if (all) {
-            result.add(0, ALL);
-        }
-        if (none) {
-            result.add(0, NONE);
-        }
-        return result;
-    }
-
-    static {
-        ArchetypeId dummy = new ArchetypeId("dummy", "dummy", "1.0");
-        ALL = new IMObject();
-        ALL.setArchetypeId(dummy);
-        NONE = new IMObject();
-        NONE.setArchetypeId(dummy);
-    }
 }

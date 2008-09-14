@@ -42,7 +42,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class TableBrowser<T> extends AbstractBrowser<T> {
+public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
 
     /**
      * The selected action command.

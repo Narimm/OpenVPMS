@@ -20,21 +20,18 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+import org.openvpms.archetype.rules.workflow.Appointment;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.app.workflow.WorkflowQuery;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
-import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
@@ -50,7 +47,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
+public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
 
     /**
      * The workspace.
@@ -58,19 +55,14 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     private Component workspace;
 
     /**
-     * The query.
-     */
-    private ActQuery<ObjectSet> query;
-
-    /**
      * The act browser.
      */
-    private Browser<ObjectSet> browser;
+    private AppointmentBrowser browser;
 
     /**
      * The CRUD window.
      */
-    private CRUDWindow<Act> window;
+    private AppointmentCRUDWindow window;
 
 
     /**
@@ -78,7 +70,8 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      */
     public SchedulingWorkspace() {
         super("workflow", "scheduling",
-              Archetypes.create("party.organisationSchedule", Party.class));
+              Archetypes.create("entity.scheduleViewType", Entity.class),
+              false);
     }
 
     /**
@@ -87,9 +80,9 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @param object the object. May be <tt>null</tt>
      */
     @Override
-    public void setObject(Party object) {
+    public void setObject(Entity object) {
         super.setObject(object);
-        GlobalContext.getInstance().setSchedule(object);
+        // GlobalContext.getInstance().setSchedule(object);
         layoutWorkspace(object);
         initQuery(object);
     }
@@ -115,10 +108,9 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @return the latest version of the schedule context object, or
      *         {@link #getObject()} if they are the same
      */
-    @Override
-    protected Party getLatest() {
+    /*   protected Party getLatest() {
         return getLatest(GlobalContext.getInstance().getSchedule());
-    }
+    }*/
 
     /**
      * Determines if the workspace should be refreshed.
@@ -163,26 +155,34 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     }
 
     /**
-     * Invoked when an act is selected.
+     * Invoked when an appointment is selected.
      *
-     * @param act the act
+     * @param appointment the appointment. May be <tt>null</tt>
      */
-    protected void actSelected(ObjectSet act) {
-        IMObjectReference actRef = act.getReference("act.objectReference");
-        Act object = (Act) IMObjectHelper.getObject(actRef);
-        window.setObject(object);
-        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    protected void actSelected(ObjectSet appointment) {
+        if (appointment != null) {
+            IMObjectReference actRef = appointment.getReference(
+                    Appointment.ACT_REFERENCE);
+            Act object = (Act) IMObjectHelper.getObject(actRef);
+            window.setObject(object);
+            firePropertyChange(SUMMARY_PROPERTY, null, null);
+        } else {
+            window.setObject(null);
+        }
+        window.setStartTime(browser.getSelectedTime());
+
+        // update the context schedule
+        GlobalContext.getInstance().setSchedule(browser.getSelectedSchedule());
     }
 
     /**
      * Lays out the workspace.
      *
-     * @param party the party
+     * @param view the schedule view
      */
-    protected void layoutWorkspace(Party party) {
-        setQuery(createQuery(party));
-        setBrowser(createBrowser(query));
-        setCRUDWindow(createCRUDWindow());
+    protected void layoutWorkspace(Entity view) {
+        setBrowser(new AppointmentBrowser());
+        setCRUDWindow(new AppointmentCRUDWindow());
         setWorkspace(createWorkspace());
     }
 
@@ -211,40 +211,11 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     }
 
     /**
-     * Creates a new browser to query and display acts.
-     *
-     * @param query the query
-     * @return a new browser
-     */
-    protected Browser<ObjectSet> createBrowser(Query<ObjectSet> query) {
-        return new AppointmentBrowser((WorkflowQuery<ObjectSet>) query,
-                                      createTableModel());
-    }
-
-    /**
-     * Registers a new query.
-     *
-     * @param query the new query
-     */
-    protected void setQuery(ActQuery<ObjectSet> query) {
-        this.query = query;
-    }
-
-    /**
-     * Returns the query.
-     *
-     * @return the query
-     */
-    protected Query<ObjectSet> getQuery() {
-        return query;
-    }
-
-    /**
      * Registers a new browser.
      *
      * @param browser the new browser
      */
-    protected void setBrowser(Browser<ObjectSet> browser) {
+    protected void setBrowser(AppointmentBrowser browser) {
         this.browser = browser;
         this.browser.addQueryListener(new QueryBrowserListener<ObjectSet>() {
             public void query() {
@@ -285,7 +256,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      *
      * @param window the window
      */
-    protected void setCRUDWindow(CRUDWindow<Act> window) {
+    protected void setCRUDWindow(AppointmentCRUDWindow window) {
         this.window = window;
         this.window.setListener(new CRUDWindowListener<Act>() {
             public void saved(Act object, boolean isNew) {
@@ -314,10 +285,10 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     /**
      * Perform an initial query, selecting the first available act.
      *
-     * @param party the party
+     * @param view the party
      */
-    protected void initQuery(Party party) {
-        query.setEntity(party);
+    protected void initQuery(Entity view) {
+        browser.setScheduleView(view);
         browser.query();
         onQuery();
     }
@@ -332,43 +303,14 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     }
 
     /**
-     * Creates a new CRUD window for viewing and editing acts.
-     *
-     * @return a new CRUD window
-     */
-    protected CRUDWindow<Act> createCRUDWindow() {
-        return new AppointmentCRUDWindow();
-    }
-
-    /**
-     * Creates a new query.
-     *
-     * @param party the party to query acts for
-     * @return a new query
-     */
-    protected ActQuery<ObjectSet> createQuery(Party party) {
-        return new CustomerAppointmentQuery(party);
-    }
-
-    /**
      * Invoked when acts are queried. Selects the first available act, if any.
      */
     protected void onQuery() {
         selectFirst();
-        CustomerAppointmentQuery query = (CustomerAppointmentQuery) getQuery();
-        if (query != null) {
-            GlobalContext.getInstance().setScheduleDate(query.getDate());
-        }
+        GlobalContext context = GlobalContext.getInstance();
+        context.setScheduleDate(browser.getDate());
+        context.setSchedule(browser.getSelectedSchedule());
         firePropertyChange(SUMMARY_PROPERTY, null, null);
-    }
-
-    /**
-     * Creates a new table model to display acts.
-     *
-     * @return a new table model.
-     */
-    protected IMTableModel<ObjectSet> createTableModel() {
-        return new AppointmentTableModel();
     }
 
     /**
@@ -377,13 +319,15 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        Party latest = getLatest();
+        Entity latest = getLatest();
         if (latest != getObject()) {
             setObject(latest);
+        } else if (browser == null) {
+            layoutWorkspace(null);
+            latest = browser.getScheduleView();
+            setObject(latest);
         } else {
-            if (browser != null) {
-                browser.query();
-            }
+            browser.query();
 
             // need to add the existing workspace to the container
             Component workspace = getWorkspace();

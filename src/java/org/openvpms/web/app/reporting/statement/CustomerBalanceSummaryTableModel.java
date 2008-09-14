@@ -114,7 +114,7 @@ public class CustomerBalanceSummaryTableModel
 
 
     /**
-     * Creates a new <tt>AppointmentTableModel</tt>.
+     * Creates a new <tt>CustomerBalanceSummaryTableModel</tt>.
      */
     public CustomerBalanceSummaryTableModel() {
         DefaultTableColumnModel model = new DefaultTableColumnModel();

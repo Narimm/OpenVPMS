@@ -46,7 +46,7 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractTreeBrowser<T extends IMObject>
-        extends AbstractBrowser<T> implements TreeBrowser<T> {
+        extends AbstractQueryBrowser<T> implements TreeBrowser<T> {
 
     /**
      * The tree builder.

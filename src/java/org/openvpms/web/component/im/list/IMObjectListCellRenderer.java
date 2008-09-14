@@ -29,14 +29,22 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @version $LastChangedDate$
  */
 public class IMObjectListCellRenderer
-        extends AbstractListCellRenderer<IMObject> {
+        extends AllNoneListCellRenderer<IMObject> {
+
+    /**
+     * The singleton instance.
+     */
+    public static final IMObjectListCellRenderer INSTANCE
+            = new IMObjectListCellRenderer();
+
 
     /**
      * Constructs a new <tt>IMObjectListCellRenderer</tt>.
      */
-    public IMObjectListCellRenderer() {
+    protected IMObjectListCellRenderer() {
         super(IMObject.class);
     }
+
 
     /**
      * Renders an object.
@@ -48,30 +56,6 @@ public class IMObjectListCellRenderer
      */
     protected Object getComponent(Component list, IMObject object, int index) {
         return (object != null) ? object.getName() : null;
-    }
-
-    /**
-     * Determines if an object represents 'All'.
-     *
-     * @param list   the list component
-     * @param object the object. May be <tt>null</tt>
-     * @param index  the object index
-     * @return <tt>true</tt> if the object represents 'All'.
-     */
-    protected boolean isAll(Component list, IMObject object, int index) {
-        return (object != null) && object.equals(IMObjectListModel.ALL);
-    }
-
-    /**
-     * Determines if an object represents 'None'.
-     *
-     * @param list   the list component
-     * @param object the object. May be <tt>null</tt>
-     * @param index  the object index
-     * @return <tt>true</tt> if the object represents 'None'.
-     */
-    protected boolean isNone(Component list, IMObject object, int index) {
-        return (object != null) && object.equals(IMObjectListModel.NONE);
     }
 
 }

@@ -19,9 +19,9 @@
 package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Table;
-import org.openvpms.archetype.rules.workflow.AppointmentQuery;
+import org.openvpms.archetype.rules.workflow.Appointment;
+import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
 
 import java.util.Calendar;
@@ -79,16 +79,19 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
     @SuppressWarnings("unchecked")
     protected String getStyle(Table table, Object value, int column, int row) {
         String style = BLOCK_STYLE1;
-        IMTable<ObjectSet> actTable = (IMTable<ObjectSet>) table;
-        ObjectSet set = actTable.getObjects().get(row);
-        String status = set.getString(AppointmentQuery.ACT_STATUS);
-        if (status != null && !status.equals("PENDING")) {
+        AppointmentTableModel model = (AppointmentTableModel) table.getModel();
+        ObjectSet set = model.getAppointment(column, row);
+        String status = null;
+        if (set != null) {
+            status = set.getString(Appointment.ACT_STATUS);
+        }
+        if (status != null && !status.equals(WorkflowStatus.PENDING)) {
             style = "TaskTable." + status;
         } else {
             if (row == previousRow) {
                 style = previousStyle;
             } else {
-                Date startTime = set.getDate(AppointmentQuery.ACT_START_TIME);
+                Date startTime = model.getStartTime(row);
                 if (startTime != null) {
                     Calendar calendar = new GregorianCalendar();
                     calendar.setTime(startTime);
