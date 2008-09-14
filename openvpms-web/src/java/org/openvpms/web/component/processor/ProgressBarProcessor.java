@@ -74,7 +74,7 @@ public abstract class ProgressBarProcessor<T>
     /**
      * Determines how often to re-schedule the processor, to force a refresh.
      */
-    private long refreshInterval = DateUtils.MILLIS_IN_SECOND * 2;
+    private long refreshInterval = DateUtils.MILLIS_PER_SECOND * 2;
 
     /**
      * The retry listener.

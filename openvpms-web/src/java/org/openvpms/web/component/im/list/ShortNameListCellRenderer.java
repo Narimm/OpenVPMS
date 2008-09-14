@@ -29,10 +29,10 @@ import nextapp.echo2.app.list.AbstractListComponent;
  * @version $LastChangedDate: 2006-10-24 21:52:03Z $
  */
 public class ShortNameListCellRenderer
-        extends AbstractListCellRenderer<String> {
+        extends AllNoneListCellRenderer<String> {
 
     /**
-     * Constructs a new <code>ShortNameListModel</code>.
+     * Constructs a new <tt>ShortNameListCellRenderer</tt>.
      */
     public ShortNameListCellRenderer() {
         super(String.class);
@@ -50,34 +50,6 @@ public class ShortNameListCellRenderer
         AbstractListComponent l = (AbstractListComponent) list;
         ShortNameListModel model = (ShortNameListModel) l.getModel();
         return model.getDisplayName(index);
-    }
-
-    /**
-     * Determines if an object represents 'All'.
-     *
-     * @param list   the list component
-     * @param object the object
-     * @param index  the object index
-     * @return <tt>true</tt> if the object represents 'All'.
-     */
-    protected boolean isAll(Component list, String object, int index) {
-        AbstractListComponent l = (AbstractListComponent) list;
-        ShortNameListModel model = (ShortNameListModel) l.getModel();
-        return model.isAll(index);
-    }
-
-    /**
-     * Determines if an object represents 'None'.
-     *
-     * @param list
-     * @param object the object
-     * @param index  object index
-     * @return <tt>true</tt> if the object represents ' None'.
-     */
-    protected boolean isNone(Component list, String object, int index) {
-        AbstractListComponent l = (AbstractListComponent) list;
-        ShortNameListModel model = (ShortNameListModel) l.getModel();
-        return model.isNone(index);
     }
 
 }

@@ -248,6 +248,26 @@
         <constructor-arg ref="lookupService"/>
     </bean>
 
+
+    <!-- ================================================================== -->
+    <!--                    APPOINTMENT SERVICE                             -->
+    <!-- ================================================================== -->
+
+    <bean id="appointmentService"
+          class="org.openvpms.archetype.rules.workflow.AppointmentServiceImpl">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg>
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="diskPersistent" value="false"/>
+                <property name="cacheName" value="appointmentCache"/>
+                <property name="maxElementsInMemory" value="30"/>
+                <!-- 30 days of data -->
+                <property name="overflowToDisk" value="false"/>
+                <property name="eternal" value="true"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                 RULES ENGINE (DROOLS)                              -->
     <!-- ================================================================== -->

@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.list;
 
-import nextapp.echo2.app.list.AbstractListModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,38 +35,12 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class LookupListModel extends AbstractListModel {
-
-    /**
-     * Dummy lookup indicating that all values apply.
-     */
-    public static final Lookup ALL = new Lookup(null, null, "all");
-
-    /**
-     * Dummy lookup indicating that no value is required.
-     */
-    public static final Lookup NONE = new Lookup(null, null, "none");
-
-    /**
-     * The lookups.
-     */
-    private List<Lookup> lookups;
-
-    /**
-     * Determines if "all" should be included.
-     */
-    private boolean all;
-
-    /**
-     * Determines if "none" should be included.
-     */
-    private boolean none;
+public class LookupListModel extends AbstractIMObjectListModel<Lookup> {
 
     /**
      * The lookup source. May be <tt>null</tt>.
      */
     private LookupQuery source;
-
 
     /**
      * The logger.
@@ -104,38 +77,30 @@ public class LookupListModel extends AbstractListModel {
      */
     public LookupListModel(LookupQuery source, boolean all, boolean none) {
         this.source = source;
-        this.all = all;
-        this.none = none;
-        lookups = getLookups();
+        setObjects(getLookups(), all, none);
     }
 
     /**
      * Returns the value at the specified index in the list.
      *
      * @param index the index
-     * @return the lookup code
+     * @return the lookup code, or <tt>null</tt> if it represents 'All' or
+     *         'None'
      */
     public Object get(int index) {
-        return getLookup(index).getCode();
-    }
-
-    /**
-     * Returns the size of the list.
-     *
-     * @return the size
-     */
-    public int size() {
-        return lookups.size();
+        Lookup lookup = getLookup(index);
+        return (lookup != null) ? lookup.getCode() : null;
     }
 
     /**
      * Returns the lookup at the specified index.
      *
      * @param index the index
-     * @return the lookup
+     * @return the lookup code, or <tt>null</tt> if it represents 'All' or
+     *         'None'
      */
     public Lookup getLookup(int index) {
-        return lookups.get(index);
+        return getObject(index);
     }
 
     /**
@@ -147,8 +112,10 @@ public class LookupListModel extends AbstractListModel {
      */
     public int indexOf(String lookup) {
         int result = -1;
+        List<Lookup> lookups = getObjects();
         for (int i = 0; i < lookups.size(); ++i) {
-            if (StringUtils.equals(lookup, lookups.get(i).getCode())) {
+            Lookup other = lookups.get(i);
+            if (other != null && StringUtils.equals(lookup, other.getCode())) {
                 result = i;
                 break;
             }
@@ -164,11 +131,12 @@ public class LookupListModel extends AbstractListModel {
     public boolean refresh() {
         boolean refreshed = false;
         if (source != null) {
+            List<Lookup> current = getCurrentLookups();
             List<Lookup> lookups = getLookups();
-            if (!this.lookups.equals(lookups)) {
-                this.lookups = lookups;
-                int last = this.lookups.isEmpty() ? 0 : this.lookups.size() - 1;
-                fireContentsChanged(0, last);
+            if (!current.equals(lookups)) {
+                boolean all = getAllIndex() != -1;
+                boolean none = getNoneIndex() != -1;
+                setObjects(lookups, all, none);
                 refreshed = true;
             }
         }
@@ -180,10 +148,9 @@ public class LookupListModel extends AbstractListModel {
      *
      * @return a list of lookups
      */
-    protected List<Lookup> getLookups() {
+    private List<Lookup> getLookups() {
         try {
-            List<Lookup> lookups = source.getLookups();
-            return getLookups(lookups);
+            return source.getLookups();
         } catch (OpenVPMSException exception) {
             log.error(exception, exception);
             return new ArrayList<Lookup>();
@@ -191,23 +158,18 @@ public class LookupListModel extends AbstractListModel {
     }
 
     /**
-     * Helper to prepend the lookups "all" or "none" when required.
+     * Returns a list of the current lookups.
      *
-     * @param lookups the lookups
-     * @return a copy of <tt>lookups</tt> preprended with "all" and/or
-     *         "none" added when required
+     * @return the current lookups, minus any nulls.
      */
-    protected List<Lookup> getLookups(List<Lookup> lookups) {
-        if (all || none) {
-            lookups = new ArrayList<Lookup>(lookups);
-            if (all) {
-                lookups.add(0, ALL);
-            }
-            if (none) {
-                lookups.add(0, NONE);
+    private List<Lookup> getCurrentLookups() {
+        List<Lookup> result = new ArrayList<Lookup>();
+        for (Lookup lookup : getObjects()) {
+            if (lookup != null) {
+                result.add(lookup);
             }
         }
-        return lookups;
+        return result;
     }
 
 }

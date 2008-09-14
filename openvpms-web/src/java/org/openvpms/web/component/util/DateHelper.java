@@ -270,9 +270,9 @@ public class DateHelper {
      * @return the time in hours and minutes
      */
     public static String formatTime(long time) {
-        long hours = time / DateUtils.MILLIS_IN_HOUR;
-        long mins = (time % DateUtils.MILLIS_IN_HOUR)
-                / DateUtils.MILLIS_IN_MINUTE;
+        long hours = time / DateUtils.MILLIS_PER_HOUR;
+        long mins = (time % DateUtils.MILLIS_PER_HOUR)
+                / DateUtils.MILLIS_PER_MINUTE;
         return Messages.get("time.format.abs", hours, mins);
     }
 

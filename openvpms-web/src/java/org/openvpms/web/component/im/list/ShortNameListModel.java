@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.list;
 
-import nextapp.echo2.app.list.AbstractListModel;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
@@ -32,28 +31,13 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ShortNameListModel extends AbstractListModel {
-
-    /**
-     * Short name indicating that all values apply.
-     */
-    public static final String ALL = "all";
+public class ShortNameListModel extends AllNoneListModel {
 
     /**
      * The short names. The first column is the short name, the second the
      * corresponding display name.
      */
     private final String[][] shortNames;
-
-    /**
-     * The index of 'All', or <tt>-1</tt> if it is not present.
-     */
-    private int allIndex = -1;
-
-    /**
-     * The index of 'None', or <tt>-1</tt> if it is not present.
-     */
-    private int noneIndex = -1;
 
     /**
      * Construct a new <tt>ShortNameListModel</tt>.
@@ -130,10 +114,10 @@ public class ShortNameListModel extends AbstractListModel {
         }
         this.shortNames = new String[size][2];
         if (all) {
-            allIndex = index++;
+            setAll(index++);
         }
         if (none) {
-            noneIndex = index++;
+            setNone(index++);
         }
         for (int i = 0; i < shortNames.length; ++i, ++index) {
             String shortName = shortNames[i];
@@ -206,23 +190,4 @@ public class ShortNameListModel extends AbstractListModel {
         return result;
     }
 
-    /**
-     * Determines if the specified index indicates 'All'.
-     *
-     * @param index the index
-     * @return <tt>true</tt> if the index indicates 'All'
-     */
-    public boolean isAll(int index) {
-        return index == allIndex;
-    }
-
-    /**
-     * Determines if the specified index indicates 'None'.
-     *
-     * @param index the index
-     * @return <tt>true</tt> if the index indicates 'None'
-     */
-    public boolean isNone(int index) {
-        return index == noneIndex;
-    }
 }

@@ -39,6 +39,8 @@ import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.Date;
+
 
 /**
  * Appointment CRUD window.
@@ -47,6 +49,8 @@ import org.openvpms.web.resource.util.Messages;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
+
+    private Date startTime;
 
     /**
      * The check-in button.
@@ -66,6 +70,40 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
         super(Archetypes.create(
                 "act.customerAppointment", Act.class,
                 Messages.get("workflow.scheduling.createtype")));
+    }
+
+    /**
+     * Invoked when the 'new' button is pressed.
+     */
+    @Override
+    public void onCreate() {
+        if (GlobalContext.getInstance().getSchedule() != null) {
+            super.onCreate();
+        }
+    }
+
+    /**
+     * Sets the start time for new appointments.
+     *
+     * @param startTime the start time. If <tt>null</tt>, specifies to use the
+     *                  default start time
+     */
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * Edits an object.
+     *
+     * @param editor the object editor
+     */
+    @Override
+    protected void edit(IMObjectEditor editor) {
+        if (startTime != null && editor.getObject().isNew()
+                && editor instanceof AppointmentActEditor) {
+            ((AppointmentActEditor) editor).setStartTime(startTime);
+        }
+        super.edit(editor);
     }
 
     /**

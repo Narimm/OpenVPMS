@@ -29,12 +29,19 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class LookupListCellRenderer extends AbstractListCellRenderer<String> {
+public class LookupListCellRenderer extends AllNoneListCellRenderer<String> {
 
     /**
-     * Constructs a new <code>LookupListCellRenderer</code>.
+     * The singleton instance.
      */
-    public LookupListCellRenderer() {
+    public static LookupListCellRenderer INSTANCE
+            = new LookupListCellRenderer();
+
+
+    /**
+     * Creates a new <tt>LookupListCellRenderer</tt>.
+     */
+    protected LookupListCellRenderer() {
         super(String.class);
     }
 
@@ -51,36 +58,6 @@ public class LookupListCellRenderer extends AbstractListCellRenderer<String> {
         LookupListModel model = (LookupListModel) l.getModel();
         Lookup lookup = model.getLookup(index);
         return lookup.getName();
-    }
-
-    /**
-     * Determines if an object represents 'All'.
-     *
-     * @param list   the list component
-     * @param object the object
-     * @param index  the object index
-     * @return <code>true</code> if the object represents 'All'.
-     */
-    protected boolean isAll(Component list, String object, int index) {
-        AbstractListComponent l = (AbstractListComponent) list;
-        LookupListModel model = (LookupListModel) l.getModel();
-        Lookup lookup = model.getLookup(index);
-        return (LookupListModel.ALL == lookup);
-    }
-
-    /**
-     * Determines if an object represents 'None'.
-     *
-     * @param list   the list component
-     * @param object the object
-     * @param index  the object index
-     * @return <code>true</code> if the object represents 'None'.
-     */
-    protected boolean isNone(Component list, String object, int index) {
-        AbstractListComponent l = (AbstractListComponent) list;
-        LookupListModel model = (LookupListModel) l.getModel();
-        Lookup lookup = model.getLookup(index);
-        return (LookupListModel.NONE == lookup);
     }
 
 }

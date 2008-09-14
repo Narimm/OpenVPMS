@@ -11,23 +11,14 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
 
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.util.ButtonRow;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,25 +28,9 @@ import java.util.List;
  * Abstract implementation of the {@link Browser} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractBrowser<T> implements Browser<T> {
-
-    /**
-     * The query object.
-     */
-    private final Query<T> query;
-
-    /**
-     * The sort criteria. If <tt>null</tt>, the query's default sort criteria
-     * is used.
-     */
-    private SortConstraint[] sort;
-
-    /**
-     * The browser component.
-     */
-    private Component component;
 
     /**
      * The event listener list.
@@ -64,38 +39,10 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
             = new ArrayList<QueryBrowserListener<T>>();
 
     /**
-     * Query button id.
-     */
-    private static final String QUERY_ID = "query";
-
-    /**
-     * Style name for this.
-     */
-    private static final String STYLE = "Browser";
-
-    /**
      * The focus group.
      */
     private FocusGroup focusGroup = new FocusGroup(getClass().getName());
 
-
-    /**
-     * Construct a new <tt>AbstractBrowser</tt> that queries IMObjects using
-     * the specified query.
-     *
-     * @param query the query
-     * @param sort  the sort criteria. May be <tt>null</tt>
-     */
-    public AbstractBrowser(Query<T> query, SortConstraint[] sort) {
-        this.query = query;
-        this.sort = sort;
-        this.query.addQueryListener(new QueryListener() {
-            public void query() {
-                onQuery();
-            }
-        });
-        focusGroup.add(query.getFocusGroup());
-    }
 
     /**
      * Adds a listener to receive notification of selection and query actions.
@@ -104,30 +51,6 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      */
     public void addQueryListener(QueryBrowserListener<T> listener) {
         listeners.add(listener);
-    }
-
-    /**
-     * Returns the query component.
-     *
-     * @return the query component
-     */
-    public Component getComponent() {
-        if (component == null) {
-            doLayout();
-            if (query.isAuto()) {
-                query();
-            }
-        }
-        return component;
-    }
-
-    /**
-     * Returns the query.
-     *
-     * @return the query
-     */
-    public Query<T> getQuery() {
-        return query;
     }
 
     /**
@@ -140,49 +63,14 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     }
 
     /**
-     * Lay out this component.
+     * Notifies any registered query listeners.
      */
-    protected void doLayout() {
-        Column container = ColumnFactory.create(STYLE);
-        doLayout(container);
-        setComponent(container);
-    }
-
-    /**
-     * Lays out this component.
-     *
-     * @param container the container
-     */
-    protected void doLayout(Component container) {
-        // query component
-        Component component = query.getComponent();
-
-        ButtonRow row = new ButtonRow(focusGroup);
-        row.add(component);
-        row.addButton(QUERY_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onQuery();
-            }
-        });
-        container.add(row);
-    }
-
-    /**
-     * Performs the query.
-     *
-     * @return the query result set
-     */
-    protected ResultSet<T> doQuery() {
-        ResultSet<T> result = null;
-        try {
-            result = (sort != null) ? query.query(sort) : query.query();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+    protected void notifyQueryListeners() {
+        QueryBrowserListener[] listeners
+                = this.listeners.toArray(new QueryBrowserListener[0]);
+        for (QueryBrowserListener listener : listeners) {
+            listener.query();
         }
-        if (result == null) {
-            result = new EmptyResultSet<T>(query.getMaxResults());
-        }
-        return result;
     }
 
     /**
@@ -197,28 +85,6 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
                 new QueryBrowserListener[0]);
         for (QueryBrowserListener<T> listener : listeners) {
             listener.selected(selected);
-        }
-    }
-
-    /**
-     * Registers the browser component.
-     *
-     * @param component the component
-     */
-    protected void setComponent(Component component) {
-        this.component = component;
-    }
-
-    /**
-     * Invoked when the query button is pressed. Performs the query and notifies
-     * any listeners.
-     */
-    private void onQuery() {
-        query();
-        QueryBrowserListener[] listeners
-                = this.listeners.toArray(new QueryBrowserListener[0]);
-        for (QueryBrowserListener listener : listeners) {
-            listener.query();
         }
     }
 

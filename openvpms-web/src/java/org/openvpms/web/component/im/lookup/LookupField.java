@@ -81,7 +81,7 @@ public class LookupField extends SelectField {
      */
     public LookupField(LookupListModel model) {
         super(model);
-        setCellRenderer(new LookupListCellRenderer());
+        setCellRenderer(LookupListCellRenderer.INSTANCE);
     }
 
     /**
@@ -99,8 +99,6 @@ public class LookupField extends SelectField {
      * Returns the selected lookup.
      *
      * @return the selected lookup, or <tt>null</tt> if no lookup is selected.
-     *         If "All" is selected, returns {@link LookupListModel#ALL}.
-     *         If "None" is selected, returns {@link LookupListModel#NONE}.
      */
     public Lookup getSelected() {
         int index = getSelectedIndex();

@@ -629,7 +629,7 @@
         <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-app</artifactId>
-            <version>2.1.0.rc1</version>
+            <version>2.1.0.rc5</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
                 <war.bundle>true</war.bundle>
@@ -638,7 +638,7 @@
         <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-webcontainer</artifactId>
-            <version>2.1.0.rc1</version>
+            <version>2.1.0.rc5</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
                 <war.bundle>true</war.bundle>
@@ -647,16 +647,16 @@
         <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-webrender</artifactId>
-            <version>2.1.0.rc1</version>
+            <version>2.1.0.rc5</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
                 <war.bundle>true</war.bundle>
             </properties>
         </dependency>
-        <!--dependency>
+        <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-extras-app</artifactId>
-            <version>0.2.1</version>
+            <version>0.9.1</version>
             <url>http://www.nextapp.com/platform/echo2/extras/</url>
             <properties>
                 <war.bundle>true</war.bundle>
@@ -665,12 +665,12 @@
         <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-extras-webcontainer</artifactId>
-            <version>0.2.1</version>
+            <version>0.9.1</version>
             <url>http://www.nextapp.com/platform/echo2/extras/</url>
             <properties>
                 <war.bundle>true</war.bundle>
             </properties>
-        </dependency-->
+        </dependency>
         <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-filetransfer-app</artifactId>

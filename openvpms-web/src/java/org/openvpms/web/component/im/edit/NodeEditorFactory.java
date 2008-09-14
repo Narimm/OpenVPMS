@@ -245,7 +245,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             List<IMObject> identifiers = ArchetypeQueryHelper.getCandidates(
                     service, property.getDescriptor());
             Palette palette = new BoundPalette(identifiers, property);
-            palette.setCellRenderer(new IMObjectListCellRenderer());
+            palette.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
             editor = createPropertyEditor(property, palette);
         }
         return editor;

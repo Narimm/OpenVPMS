@@ -39,7 +39,6 @@ import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
@@ -203,7 +202,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
         accountType = LookupFieldFactory.create(
                 new ArchetypeLookupQuery("lookup.customerAccountType"),
                 true);
-        accountType.setCellRenderer(new LookupListCellRenderer());
+        accountType.setCellRenderer(LookupListCellRenderer.INSTANCE);
 
         Label accountTypeLabel = LabelFactory.create(
                 "reporting.statements.accountType");
@@ -368,8 +367,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      *         types
      */
     private Lookup getAccountType() {
-        Lookup lookup = accountType.getSelected();
-        return (LookupListModel.ALL == lookup) ? null : lookup;
+        return accountType.getSelected();
     }
 
     /**

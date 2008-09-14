@@ -18,20 +18,12 @@
 
 package org.openvpms.web.app.workflow;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -41,19 +33,15 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.DateSelector;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.select.IMObjectSelectorListener;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import echopointng.DateChooser;
-import echopointng.DateField;
+import java.util.Date;
 
 
 /**
@@ -75,16 +63,9 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     private final ActionListener statusRangeListener;
 
     /**
-     * The date.
+     * The date selector.
      */
-    private DateField date;
-
-    /**
-     * The last date processed by {@link #onDateChanged()}.
-     * todo - this is a workaround for a bug/feature of the EPNG date field
-     * which seems to generate 2 events for the one update to the text field.
-     */
-    private Date lastDate;
+    private DateSelector dateSelector;
 
     /**
      * The clinician selector.
@@ -132,6 +113,7 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
                 onStatusRangeChanged();
             }
         };
+        dateSelector = new DateSelector();
         clinician = new IMObjectSelector<User>(Messages.get("label.clinician"),
                                                "security.user");
         clinician.setListener(new IMObjectSelectorListener<User>() {
@@ -143,29 +125,24 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
                 // no-op
             }
         });
-        // Create the date field
-        date = DateFieldFactory.create();
     }
 
     /**
      * Set the displayed date
-     * 
+     *
      * @param date the date to set
      */
     public void setDate(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        this.date.getDateChooser().setSelectedDate(calendar);
-	}
+        dateSelector.setDate(date);
+    }
 
-	/**
+    /**
      * Returns the selected date.
      *
      * @return the selected date
      */
     public Date getDate() {
-        Date datetime = date.getDateChooser().getSelectedDate().getTime();
-        return DateHelper.getDayMonthYear(datetime);
+        return dateSelector.getDate();
     }
 
     /**
@@ -197,61 +174,20 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
         statusRange.setCellRenderer(new StatusRangeListCellRenderer());
         statusRange.setSelectedItem(INCOMPLETE);
         statusRange.addActionListener(statusRangeListener);
-
-        Button prevWeek = ButtonFactory.create(
-                null, "date.previousWeek", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                addDays(-7);
+        dateSelector.setListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onDateChanged();
             }
         });
-        Button prevDay = ButtonFactory.create(
-                null, "date.previousDay", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                addDays(-1);
-            }
-        });
-        Button currentDay = ButtonFactory.create(
-                null, "date.currentDay", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                addDays(0);
-            }
-        });
-        Button nextDay = ButtonFactory.create(
-                null, "date.nextDay", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                addDays(1);
-            }
-        });
-        Button nextWeek = ButtonFactory.create(
-                null, "date.nextWeek", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                addDays(7);
-            }
-        });
-        date.getDateChooser().addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                        onDateChanged();
-                    }
-                });
-
-        Row row = RowFactory.create("CellSpacing", prevWeek, prevDay, date,
-                                    currentDay, nextDay, nextWeek);
-
         container.add(LabelFactory.create("actquery.status"));
         container.add(statusRange);
-        container.add(row);
+        container.add(dateSelector.getComponent());
         container.add(LabelFactory.create("clinician"));
         container.add(clinician.getComponent());
 
         FocusGroup focus = getFocusGroup();
         focus.add(statusRange);
-        focus.add(prevWeek);
-        focus.add(prevDay);
-        focus.add(date);
-        focus.add(currentDay);
-        focus.add(nextDay);
-        focus.add(nextWeek);
+        focus.add(dateSelector.getFocusGroup());
         focus.add(clinician.getFocusGroup());
     }
 
@@ -272,8 +208,8 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
      */
     @Override
     protected Date getTo() {
-        long end = getFrom().getTime() + DateUtils.MILLIS_IN_DAY
-                - DateUtils.MILLIS_IN_SECOND;
+        long end = getFrom().getTime() + DateUtils.MILLIS_PER_DAY
+                - DateUtils.MILLIS_PER_SECOND;
         return new Date(end);
     }
 
@@ -314,24 +250,6 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     }
 
     /**
-     * Invoked to change the selected date.
-     *
-     * @param days the no. of days to add. <code>0</code> indicates current date
-     */
-    private void addDays(int days) {
-        DateChooser dateChooser = date.getDateChooser();
-        Calendar calendar;
-        if (days == 0) {
-            calendar = new GregorianCalendar();
-            calendar.setTime(new Date());
-        } else {
-            calendar = dateChooser.getSelectedDate();
-            calendar.add(Calendar.DAY_OF_MONTH, days);
-        }
-        date.getDateChooser().setSelectedDate(calendar);
-    }
-
-    /**
      * Invoked when a status range is selected.
      */
     protected void onStatusRangeChanged() {
@@ -348,26 +266,15 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
      */
     protected void onDateChanged() {
         Date date = getDate();
-        if (!date.equals(lastDate)) {
-            Date today = DateHelper.getDayMonthYear(new Date());
-            statusRange.removeActionListener(statusRangeListener);
-            if (date.equals(today)) {
-                statusRange.setSelectedItem(INCOMPLETE);
-            } else {
-                statusRange.setSelectedItem(ALL);
-            }
-            statusRange.addActionListener(statusRangeListener);
-            onQuery();
+        Date today = DateRules.getDate(new Date());
+        statusRange.removeActionListener(statusRangeListener);
+        if (date.equals(today)) {
+            statusRange.setSelectedItem(INCOMPLETE);
+        } else {
+            statusRange.setSelectedItem(ALL);
         }
-    }
-
-    /**
-     * Notify listnerss to perform a query.
-     */
-    @Override
-    protected void onQuery() {
-        lastDate = getDate();
-        super.onQuery();
+        statusRange.addActionListener(statusRangeListener);
+        onQuery();
     }
 
     /**
