@@ -19,6 +19,7 @@
 package org.openvpms.web.component.property;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -59,7 +60,7 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
      * @param date the date. May be <tt>null</tt>
      */
     public void setDate(Date date) {
-        this.date = (date != null) ? DateHelper.getDayMonthYear(date) : null;
+        this.date = (date != null) ? DateRules.getDate(date) : null;
     }
 
     /**

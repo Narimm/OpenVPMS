@@ -24,6 +24,7 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.TimePropertyTransformer;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
 
@@ -54,6 +55,8 @@ public class ScheduleLayoutStrategy extends AbstractLayoutStrategy {
             Component time = TimeFieldFactory.create(property);
             if (!context.isEdit()) {
                 time.setEnabled(false);
+            } else {
+                property.setTransformer(new TimePropertyTransformer(null));
             }
             return new ComponentState(time, property);
         }
