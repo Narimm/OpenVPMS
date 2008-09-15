@@ -53,7 +53,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
      */
     public Component getTableCellRendererComponent(Table table, Object value,
                                                    int column, int row) {
-        Component component = getComponent(value);
+        Component component = getComponent(table, value, column, row);
         String style = getStyle(table, value, column, row);
         mergeStyle(component, style);
         return component;
@@ -62,10 +62,10 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
     /**
      * Returns the style name for a column and row.
      *
-     * @param table  the <code>Table</code> for which the rendering is
+     * @param table  the <tt>Table</tt> for which the rendering is
      *               occurring
-     * @param value  the value retrieved from the <code>TableModel</code> for
-     *               the specified coordinate
+     * @param value  the value retrieved from the <tt>TableModel</tt> for the
+     *               specified coordinate
      * @param column the column
      * @param row    the row
      * @return a style name for the given column and row.
@@ -76,10 +76,16 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
     /**
      * Returns a component for a value.
      *
-     * @param value the value retrieved from the <code>TableModel</code>
+     * @param table  the <tt>Table</tt> for which the rendering is
+     *               occurring
+     * @param value  the value retrieved from the <tt>TableModel</tt> for the
+     *               specified coordinate
+     * @param column the column
+     * @param row    the row
      * @return a component representation of the value
      */
-    protected Component getComponent(Object value) {
+    protected Component getComponent(Table table, Object value, int column,
+                                     int row) {
         Component component;
         if (value instanceof Component) {
             component = (Component) value;

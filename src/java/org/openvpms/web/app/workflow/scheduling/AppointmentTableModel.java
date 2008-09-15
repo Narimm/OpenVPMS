@@ -21,7 +21,6 @@ package org.openvpms.web.app.workflow.scheduling;
 import echopointng.BalloonHelp;
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.table.TableColumnEx;
-import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
@@ -37,18 +36,13 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.util.ColourHelper;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -57,7 +51,6 @@ import org.openvpms.web.resource.util.Messages;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +63,11 @@ import java.util.Map;
  */
 public class AppointmentTableModel extends AbstractTableModel {
 
-    private Date day = new Date();
+    public enum Availability {
+        FREE, BUSY, UNAVAILABLE
+    }
+
+    private Date day;
 
     private TableColumnModel model = new DefaultTableColumnModel();
 
@@ -82,20 +79,16 @@ public class AppointmentTableModel extends AbstractTableModel {
 
     private int startTime = DEFAULT_START;
 
-    private int endTime = DEFAULT_END;
-
     private int slotSize = DEFAULT_SLOT_SIZE;
 
     private int rows = (DEFAULT_END - DEFAULT_START) / DEFAULT_SLOT_SIZE;
 
     private final AppointmentRules rules;
 
-    private Map<IMObjectReference, String> appointmentColours;
-
     /**
      * The start time index.
      */
-    private static final int START_TIME_INDEX = 0;
+    public static final int START_TIME_INDEX = 0;
 
     /**
      * The status index.
@@ -154,10 +147,15 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     private Map<String, String> reasons;
 
+    /**
+     * Cell renderer.
+     */
+    private TableCellRenderer cellRenderer;
+
 
     public AppointmentTableModel() {
         rules = new AppointmentRules();
-        loadAppointmentColours();
+        cellRenderer = new AppointmentTableCellRenderer();
 
         columnNames = new String[NODE_NAMES.length];
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
@@ -171,6 +169,7 @@ public class AppointmentTableModel extends AbstractTableModel {
                 }
             }
         }
+        day = DateRules.getDate(new Date());
     }
 
     /**
@@ -188,6 +187,11 @@ public class AppointmentTableModel extends AbstractTableModel {
         return result;
     }
 
+    public Availability getAvailability(int column, int row) {
+        Column col = getColumn(column);
+        return col.getAvailability(getStartTime(row));
+    }
+
     /**
      * Sets the schedules to display.
      *
@@ -195,29 +199,23 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     public void setSchedules(List<Party> schedules) {
         startTime = -1;
-        endTime = -1;
+        int endTime = -1;
         slotSize = -1;
         model = createColumnModel(schedules);
         singleScheduleView = schedules.size() == 1;
-        for (Party schedule : schedules) {
-            EntityBean bean = new EntityBean(schedule);
-            Date start = bean.getDate("startTime");
-            if (start != null) {
-                int time = getTime(start);
-                if (startTime == -1 || time < startTime) {
-                    startTime = time;
-                }
+        Iterator iter = model.getColumns();
+        while (iter.hasNext()) {
+            Column column = (Column) iter.next();
+            int start = column.getStartMins();
+            if (startTime == -1 || start < startTime) {
+                startTime = start;
             }
-            Date end = bean.getDate("endTime");
-            if (end != null) {
-                int time = getTime(end);
-                if (time > endTime) {
-                    endTime = time;
-                }
+            int end = column.getEndMins();
+            if (end > endTime) {
+                endTime = end;
             }
-            int mins = rules.getSlotSize(schedule);
-            if (mins < slotSize) {
-                slotSize = mins;
+            if (column.getSlotSize() < slotSize) {
+                slotSize = column.getSlotSize();
             }
         }
         if (startTime == -1) {
@@ -240,12 +238,12 @@ public class AppointmentTableModel extends AbstractTableModel {
 
     public void setAppointments(Date day,
                                 Map<Party, List<ObjectSet>> appointments) {
-        this.day = day;
+        this.day = DateRules.getDate(day);
         for (Column column : getColumns()) {
             Party schedule = column.getSchedule();
             if (schedule != null) {
                 List<ObjectSet> sets = appointments.get(schedule);
-                column.setAppointments(sets);
+                column.setAppointments(day, sets);
             }
         }
         fireTableDataChanged();
@@ -321,6 +319,11 @@ public class AppointmentTableModel extends AbstractTableModel {
         return DateRules.getDate(day, time, DateUnits.MINUTES);
     }
 
+    public int getHour(int row) {
+        int time = startTime + row * slotSize;
+        return time / 60;
+    }
+
 
     /**
      * Returns the appointment at the specified column and row.
@@ -333,25 +336,9 @@ public class AppointmentTableModel extends AbstractTableModel {
         return getAppointment(getColumn(column), row);
     }
 
-    private ObjectSet getAppointment(Column col, int row) {
-        ObjectSet result = null;
+    private ObjectSet getAppointment(Column column, int row) {
         Date startTime = getStartTime(row);
-        List<ObjectSet> sets = col.getAppointments();
-        if (sets != null) {
-            for (ObjectSet set : sets) {
-                Date date = set.getDate(Appointment.ACT_START_TIME);
-                if (date != null) {
-                    int compare = DateRules.compareTo(startTime, date);
-                    if (compare == 0) {
-                        result = set;
-                        break;
-                    } else if (compare < 0) {
-                        break;
-                    }
-                }
-            }
-        }
-        return result;
+        return column.getAppointment(startTime);
     }
 
     public Party getSchedule(int column) {
@@ -405,23 +392,6 @@ public class AppointmentTableModel extends AbstractTableModel {
                                    Appointment.PATIENT_NAME, true);
                 break;
         }
-        if (!(result instanceof Component)) {
-            Label label = LabelFactory.create();
-            if (result != null) {
-                label.setText(result.toString());
-            }
-            result = label;
-        }
-        int span = getRowSpan(set.getDate(Appointment.ACT_START_TIME),
-                              set.getDate(Appointment.ACT_END_TIME));
-
-        if (span > 1) {
-            Component component = (Component) result;
-            TableLayoutDataEx layout = new TableLayoutDataEx();
-            layout.setRowSpan(span);
-            component.setLayoutData(layout);
-        }
-
         return result;
     }
 
@@ -446,28 +416,17 @@ public class AppointmentTableModel extends AbstractTableModel {
             result = label;
         }
 
-        TableLayoutDataEx layout = new TableLayoutDataEx();
-        result.setLayoutData(layout);
-
-        Color color = getAppointmentColour(set);
-        if (color != null) {
-            layout.setBackground(color);
-        }
-
         int span = getRowSpan(set.getDate(Appointment.ACT_START_TIME),
                               set.getDate(Appointment.ACT_END_TIME));
 
         if (span > 1) {
+            TableLayoutDataEx layout = new TableLayoutDataEx();
+            result.setLayoutData(layout);
             layout.setRowSpan(span);
         }
         return result;
     }
 
-    private Color getAppointmentColour(ObjectSet set) {
-        String colour = appointmentColours.get(
-                set.getReference(Appointment.APPOINTMENT_TYPE_REFERENCE));
-        return ColourHelper.getColor(colour);
-    }
 
     private int getRowSpan(Date startTime, Date endTime) {
         long duration = (endTime.getTime() - startTime.getTime()) / 1000 / 60;
@@ -559,10 +518,8 @@ public class AppointmentTableModel extends AbstractTableModel {
         int index = START_TIME_INDEX;
         if (schedules.size() == 1) {
             Party schedule = schedules.get(0);
-            TableCellRenderer renderer = new AppointmentTableCellRenderer();
             for (int i = 0; i < columnNames.length; ++i) {
                 Column column = new Column(i, schedule, columnNames[i]);
-                column.setCellRenderer(renderer);
                 result.addColumn(column);
             }
         } else {
@@ -576,14 +533,6 @@ public class AppointmentTableModel extends AbstractTableModel {
         return result;
     }
 
-    private int getTime(Date startTime) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startTime);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int mins = calendar.get(Calendar.MINUTE);
-        return (hour * 60) + mins;
-    }
-
     private List<Column> getColumns() {
         List<Column> result = new ArrayList<Column>();
         Iterator iterator = model.getColumns();
@@ -593,24 +542,35 @@ public class AppointmentTableModel extends AbstractTableModel {
         return result;
     }
 
-    private void loadAppointmentColours() {
-        appointmentColours = new HashMap<IMObjectReference, String>();
-        ArchetypeQuery query = new ArchetypeQuery("entity.appointmentType",
-                                                  true, true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        Iterator<Entity> iter = new IMObjectQueryIterator<Entity>(query);
-        while (iter.hasNext()) {
-            Entity type = iter.next();
-            IMObjectBean bean = new IMObjectBean(type);
-            appointmentColours.put(type.getObjectReference(),
-                                   bean.getString("colour"));
-        }
+    private static int getMinutes(Date startTime) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startTime);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int mins = calendar.get(Calendar.MINUTE);
+        return (hour * 60) + mins;
     }
 
 
-    private static class Column extends TableColumnEx {
+    private static Date getTime(Date day, int mins) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(day);
+        calendar.add(Calendar.MINUTE, mins);
+        return calendar.getTime();
+    }
+
+    private class Column extends TableColumnEx {
 
         private Party schedule;
+
+        private int startMins = -1;
+
+        private Date startTime;
+
+        private int endMins = -1;
+
+        private Date endTime;
+
+        private int slotSize;
 
         private List<ObjectSet> appointments;
 
@@ -623,8 +583,30 @@ public class AppointmentTableModel extends AbstractTableModel {
             this.schedule = schedule;
             setHeaderValue(heading);
             setHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
-            setCellRenderer(AppointmentGridCellRenderer.INSTANCE);
+            setCellRenderer(cellRenderer);
             setWidth(new Extent(100));
+            if (schedule != null) {
+                EntityBean bean = new EntityBean(schedule);
+                Date start = bean.getDate("startTime");
+                if (start != null) {
+                    startMins = getMinutes(start);
+                } else {
+                    startMins = DEFAULT_START;
+                }
+                startTime = getTime(day, startMins);
+
+                Date end = bean.getDate("endTime");
+                if (end != null) {
+                    endMins = getMinutes(end);
+                } else {
+                    endMins = DEFAULT_END;
+                }
+                endTime = getTime(day, endMins);
+                slotSize = rules.getSlotSize(schedule);
+                if (slotSize <= 0) {
+                    slotSize = DEFAULT_SLOT_SIZE;
+                }
+            }
         }
 
         public Column(int modelIndex, String heading) {
@@ -635,12 +617,64 @@ public class AppointmentTableModel extends AbstractTableModel {
             return schedule;
         }
 
-        public void setAppointments(List<ObjectSet> appointments) {
+        public void setAppointments(Date day, List<ObjectSet> appointments) {
+            startTime = getTime(day, startMins);
+            endTime = getTime(day, endMins);
             this.appointments = appointments;
         }
 
         public List<ObjectSet> getAppointments() {
             return appointments;
+        }
+
+        public Date getStartTime() {
+            return startTime;
+        }
+
+        public int getStartMins() {
+            return startMins;
+        }
+
+        public Date getEndTime() {
+            return endTime;
+        }
+
+        public int getEndMins() {
+            return endMins;
+        }
+
+        public int getSlotSize() {
+            return slotSize;
+        }
+
+        private ObjectSet getAppointment(Date time) {
+            ObjectSet result = null;
+            if (appointments != null) {
+                for (ObjectSet set : appointments) {
+                    Date date = set.getDate(Appointment.ACT_START_TIME);
+                    if (date != null) {
+                        int compare = DateRules.compareTo(time, date);
+                        if (compare == 0) {
+                            result = set;
+                            break;
+                        } else if (compare < 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public Availability getAvailability(Date time) {
+            if (startTime == null || DateRules.compareTo(time, startTime) < 0
+                    || DateRules.compareTo(time, endTime) >= 0) {
+                return Availability.UNAVAILABLE;
+            }
+            if (getAppointment(time) != null) {
+                return Availability.BUSY;
+            }
+            return Availability.FREE;
         }
 
     }

@@ -18,15 +18,23 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import echopointng.layout.TableLayoutDataEx;
+import nextapp.echo2.app.Color;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Table;
 import org.openvpms.archetype.rules.workflow.Appointment;
-import org.openvpms.archetype.rules.workflow.WorkflowStatus;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
+import org.openvpms.web.component.util.ColourHelper;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * TableCellRender that assigns blocks of appointments in different hours a
@@ -39,31 +47,47 @@ import java.util.GregorianCalendar;
  */
 public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
 
-    /**
-     * The previous rendered row.
-     */
-    private int previousRow = -1;
+
+    private Map<IMObjectReference, String> appointmentColours;
 
     /**
-     * The previous rendered row hour.
+     * Default constructor.
      */
-    private int previousHour;
+    public AppointmentTableCellRenderer() {
+        loadAppointmentColours();
+    }
 
     /**
-     * The previous rendered row style.
+     * Returns a component for a value.
+     *
+     * @param table  the <tt>Table</tt> for which the rendering is
+     *               occurring
+     * @param value  the value retrieved from the <tt>TableModel</tt> for the
+     *               specified coordinate
+     * @param column the column
+     * @param row    the row
+     * @return a component representation of the value
      */
-    private String previousStyle;
-
-    /**
-     * The style of the first block of hours.
-     */
-    private static final String BLOCK_STYLE1 = "TaskTable.EvenRow";
-
-    /**
-     * The style of the second block of hours.
-     */
-    private static final String BLOCK_STYLE2 = "TaskTable.OddRow";
-
+    @Override
+    protected Component getComponent(Table table, Object value, int column,
+                                     int row) {
+        Component component = super.getComponent(table, value, column, row);
+        if (column != AppointmentTableModel.START_TIME_INDEX) {
+            AppointmentTableModel model = (AppointmentTableModel) table.getModel();
+            ObjectSet appointment = model.getAppointment(column, row);
+            Color colour = getAppointmentColour(appointment);
+            if (colour != null) {
+                TableLayoutDataEx layout
+                        = (TableLayoutDataEx) component.getLayoutData();
+                if (layout == null) {
+                    layout = new TableLayoutDataEx();
+                    component.setLayoutData(layout);
+                }
+                layout.setBackground(colour);
+            }
+        }
+        return component;
+    }
 
     /**
      * Returns the style name for a column and row.
@@ -76,43 +100,56 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
      * @param row    the row
      * @return a style name for the given column and row.
      */
-    @SuppressWarnings("unchecked")
     protected String getStyle(Table table, Object value, int column, int row) {
-        String style = BLOCK_STYLE1;
+        String result;
         AppointmentTableModel model = (AppointmentTableModel) table.getModel();
-        ObjectSet set = model.getAppointment(column, row);
-        String status = null;
-        if (set != null) {
-            status = set.getString(Appointment.ACT_STATUS);
-        }
-        if (status != null && !status.equals(WorkflowStatus.PENDING)) {
-            style = "TaskTable." + status;
+        if (column == AppointmentTableModel.START_TIME_INDEX) {
+            result = getFreeStyle(model, row);
         } else {
-            if (row == previousRow) {
-                style = previousStyle;
-            } else {
-                Date startTime = model.getStartTime(row);
-                if (startTime != null) {
-                    Calendar calendar = new GregorianCalendar();
-                    calendar.setTime(startTime);
-                    int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    if (row == (previousRow + 1)) {
-                        if (hour == previousHour) {
-                            style = previousStyle;
-                        } else if (BLOCK_STYLE1.equals(previousStyle)) {
-                            style = BLOCK_STYLE2;
-                        }
-                    } else {
-                        if (hour % 2 == 1) {
-                            style = BLOCK_STYLE2;
-                        }
-                    }
-                    previousHour = hour;
-                }
-                previousRow = row;
-                previousStyle = style;
+            AppointmentTableModel.Availability avail
+                    = model.getAvailability(column, row);
+
+            switch (avail) {
+                case BUSY:
+                    result = "Appointment.Busy";
+                    break;
+                case FREE:
+                    result = getFreeStyle(model, row);
+                    break;
+                default:
+                    result = "Appointment.Unavailable";
+                    break;
             }
         }
-        return style;
+        return result;
     }
+
+    private String getFreeStyle(AppointmentTableModel model, int row) {
+        int hour = model.getHour(row);
+        return (hour % 2 == 0) ? "Appointment.Even" : "Appointment.Odd";
+    }
+
+    private Color getAppointmentColour(ObjectSet set) {
+        if (set != null) {
+            String colour = appointmentColours.get(
+                    set.getReference(Appointment.APPOINTMENT_TYPE_REFERENCE));
+            return ColourHelper.getColor(colour);
+        }
+        return null;
+    }
+
+    private void loadAppointmentColours() {
+        appointmentColours = new HashMap<IMObjectReference, String>();
+        ArchetypeQuery query = new ArchetypeQuery("entity.appointmentType",
+                                                  true, true);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        Iterator<Entity> iter = new IMObjectQueryIterator<Entity>(query);
+        while (iter.hasNext()) {
+            Entity type = iter.next();
+            IMObjectBean bean = new IMObjectBean(type);
+            appointmentColours.put(type.getObjectReference(),
+                                   bean.getString("colour"));
+        }
+    }
+
 }

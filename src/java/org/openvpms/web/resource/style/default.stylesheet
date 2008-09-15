@@ -493,6 +493,60 @@
         </properties>
     </style>
 
+
+    <!--  Appointment table styles. -->
+    <style name="Appointment.Busy" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="8px 2px"/>
+                        <property name="background" value="#ccff66"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="Appointment.Unavailable" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="8px 2px"/>
+                        <property name="background" value="#000000"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="Appointment.Even" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="8px 2px"/>
+                        <property name="background" value="#d1d1d1"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="Appointment.Odd" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="8px 2px"/>
+                        <property name="background" value="#ffffff"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <!--  Task table styles. -->
     <style name="TaskTable.EvenRow" type="nextapp.echo2.app.Component">
         <properties>
