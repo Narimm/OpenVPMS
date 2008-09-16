@@ -20,15 +20,18 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import echopointng.TableEx;
 import echopointng.table.TableActionEventEx;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
+import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
+import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Availability.UNAVAILABLE;
 import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -57,29 +60,52 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      */
     private Label selectedDate;
 
-    private ScheduleQuery query;
+    /**
+     * The query.
+     */
+    private AppointmentQuery query;
 
+    /**
+     * The appointments, keyed on schedule.
+     */
     private Map<Party, List<ObjectSet>> results;
 
+    /**
+     * The browser component.
+     */
     private Component component;
 
+    /**
+     * The appointment table.
+     */
     private TableEx table;
 
+    /**
+     * The appointment table model.
+     */
     private AppointmentTableModel model;
 
+    /**
+     * The selected appointment.
+     */
     private ObjectSet selected;
 
+    /**
+     * The selected time. May be <tt>null</tt>.
+     */
     private Date selectedTime;
 
+    /**
+     * The selected schedule. May be <tt>null</tt>
+     */
     private Party selectedSchedule;
 
 
     /**
-     * Construct a new <tt>AppointmentBrowser</tt> that queries ObjectSets using
-     * the specified query.
+     * Creates a new <tt>AppointmentBrowser</tt>.
      */
     public AppointmentBrowser() {
-        query = new ScheduleQuery();
+        query = new AppointmentQuery();
         query.setListener(new QueryListener() {
             public void query() {
                 onQuery();
@@ -101,18 +127,6 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
                 onSelected(event);
             }
         });
-    }
-
-    public Date getDate() {
-        return query.getDate();
-    }
-
-    public void setScheduleView(Entity view) {
-        query.setScheduleView(view);
-    }
-
-    public Entity getScheduleView() {
-        return query.getScheduleView();
     }
 
     /**
@@ -153,6 +167,33 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      */
     public void setSelected(ObjectSet object) {
         selected = object;
+    }
+
+    /**
+     * Returns the query date.
+     *
+     * @return the query date
+     */
+    public Date getDate() {
+        return query.getDate();
+    }
+
+    /**
+     * Sets the schedule view.
+     *
+     * @param view the schedule view. May be <tt>null</tt>
+     */
+    public void setScheduleView(Entity view) {
+        query.setScheduleView(view);
+    }
+
+    /**
+     * Returns the schedule view.
+     *
+     * @return the schedule view. May be <tt>null</tt>
+     */
+    public Entity getScheduleView() {
+        return query.getScheduleView();
     }
 
     /**
@@ -203,32 +244,46 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         return component;
     }
 
+    /**
+     * Performs a query and notifies registered listeners.
+     */
     private void onQuery() {
         query();
         notifyQueryListeners();
     }
 
+    /**
+     * Lays out the component.
+     */
     private void doLayout() {
         selectedDate = LabelFactory.create(null, "bold");
-/*
         ColumnLayoutData layout = new ColumnLayoutData();
         layout.setAlignment(Alignment.ALIGN_CENTER);
         selectedDate.setLayoutData(layout);
-
-*/
         component = ColumnFactory.create("WideCellSpacing", selectedDate,
                                          query.getComponent(), table);
     }
 
+    /**
+     * Invoked when a cell is selected.
+     * <p/>
+     * Notifies listeners of the selection.
+     *
+     * @param event the event
+     */
     private void onSelected(ActionEvent event) {
         TableActionEventEx action = (TableActionEventEx) event;
-        if (action.getColumn() != 0) {
-            selected = model.getAppointment(action.getColumn(),
-                                            action.getRow());
-            selectedTime = model.getStartTime(action.getRow());
-            selectedSchedule = model.getSchedule(action.getColumn());
-            notifySelected(selected);
+        int column = action.getColumn();
+        int row = action.getRow();
+        selected = model.getAppointment(column, row);
+        if (model.getAvailability(column, row) != UNAVAILABLE) {
+            selectedTime = model.getStartTime(row);
+            selectedSchedule = model.getSchedule(column);
+        } else {
+            selectedTime = null;
+            selectedSchedule = null;
         }
+        notifySelected(selected);
     }
 
 }

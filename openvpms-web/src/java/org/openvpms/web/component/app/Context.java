@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.app;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -87,6 +88,12 @@ public interface Context {
      * Clinician short name.
      */
     public static final String CLINICIAN_SHORTNAME = "security.user";
+
+    /**
+     * Schedule view short name.
+     */
+    public static final String SCHEDULE_VIEW_SHORTNAME
+            = "entity.scheduleViewType";
 
     /**
      * Schedule short name.
@@ -267,7 +274,7 @@ public interface Context {
     /**
      * Sets the current clinician.
      *
-     * @param clinician the current clinician.
+     * @param clinician the current clinician. May be <tt>null</tt>
      */
     void setClinician(User clinician);
 
@@ -278,6 +285,20 @@ public interface Context {
      *         clinician
      */
     User getClinician();
+
+    /**
+     * Sets the current schedule view.
+     *
+     * @param view the current schedule view. May be <tt>null</tt>
+     */
+    void setScheduleView(Entity view);
+
+    /**
+     * Returns the current schedule view.
+     *
+     * @return the current schedule view. May be <tt>null</tt>
+     */
+    Entity getScheduleView();
 
     /**
      * Sets the current schedule.

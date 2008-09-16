@@ -36,8 +36,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+
 /**
- * Add description here.
+ * A date selector that provides:
+ * <ul>
+ * <li>an editable date field</li>
+ * <li>buttons to add/subtract 1 and 7 days from the displayed date</li>
+ * <li>a button to jump to the current date</li>
+ * </ul>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -56,18 +62,32 @@ public class DateSelector {
      */
     private Date lastDate;
 
-
-    private FocusGroup focus;
-
+    /**
+     * Listener to notify of date change events.
+     */
     private ActionListener listener;
 
+    /**
+     * The component.
+     */
     private Component component;
 
+    /**
+     * The focus group.
+     */
+    private FocusGroup focus;
+
+
+    /**
+     * Creates a new <tt>DateSelector</tt>.
+     */
     public DateSelector() {
         date = DateFieldFactory.create();
         date.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
-                onDateChanged();
+                if ("selectedDate".equals(event.getPropertyName())) {
+                    onDateChanged();
+                }
             }
         });
         focus = new FocusGroup("dateSelector");
@@ -94,11 +114,20 @@ public class DateSelector {
         return DateRules.getDate(datetime);
     }
 
+    /**
+     * Sets a listener to be notified of date change events.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
     public void setListener(ActionListener listener) {
         this.listener = listener;
     }
 
-
+    /**
+     * Returns the component representing the date selector.
+     *
+     * @return the component
+     */
     public Component getComponent() {
         if (component == null) {
             doLayout();
@@ -115,7 +144,9 @@ public class DateSelector {
         return focus;
     }
 
-
+    /**
+     * Lays out the component.
+     */
     private void doLayout() {
         Button prevWeek = ButtonFactory.create(
                 null, "date.previousWeek", new ActionListener() {
@@ -174,6 +205,7 @@ public class DateSelector {
             calendar.add(Calendar.DAY_OF_MONTH, days);
         }
         date.getDateChooser().setSelectedDate(calendar);
+        onDateChanged();
     }
 
     /**

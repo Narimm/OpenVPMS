@@ -63,32 +63,70 @@ import java.util.Map;
  */
 public class AppointmentTableModel extends AbstractTableModel {
 
+    /**
+     * Slot availability.
+     */
     public enum Availability {
         FREE, BUSY, UNAVAILABLE
     }
 
+    /**
+     * The day being displayed.
+     */
     private Date day;
 
     private TableColumnModel model = new DefaultTableColumnModel();
 
+    /**
+     * Determines if a single schedule is being displayed.
+     */
     private boolean singleScheduleView;
 
-    private static final int DEFAULT_SLOT_SIZE = 15;
-    private static final int DEFAULT_START = 9 * 60;
-    private static final int DEFAULT_END = 18 * 60;
-
+    /**
+     * The start time, as minutes from midnight.
+     */
     private int startTime = DEFAULT_START;
 
+    /**
+     * The end time, as minutes from midnight.
+     */
+    private int endTime = DEFAULT_END;
+
+    /**
+     * The slot size, in minutes.
+     */
     private int slotSize = DEFAULT_SLOT_SIZE;
 
+    /**
+     * The no. of rows being displayed.
+     */
     private int rows = (DEFAULT_END - DEFAULT_START) / DEFAULT_SLOT_SIZE;
 
+    /**
+     * Appointment rules.
+     */
     private final AppointmentRules rules;
 
     /**
      * The start time index.
      */
-    public static final int START_TIME_INDEX = 0;
+    protected static final int START_TIME_INDEX = 0;
+
+
+    /**
+     * The default slot size, in minutes.
+     */
+    private static final int DEFAULT_SLOT_SIZE = 15;
+
+    /**
+     * The default start time, as minutes from midnight.
+     */
+    private static final int DEFAULT_START = 9 * 60;
+
+    /**
+     * The default end time, as minutes from midnight.
+     */
+    private static final int DEFAULT_END = 18 * 60;
 
     /**
      * The status index.
@@ -153,6 +191,9 @@ public class AppointmentTableModel extends AbstractTableModel {
     private TableCellRenderer cellRenderer;
 
 
+    /**
+     * Creates a new <tt>AppointmentTableModel</tt>.
+     */
     public AppointmentTableModel() {
         rules = new AppointmentRules();
         cellRenderer = new AppointmentTableCellRenderer();
@@ -187,9 +228,19 @@ public class AppointmentTableModel extends AbstractTableModel {
         return result;
     }
 
+    /**
+     * Returns the availability of a slot, given its column and row.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the availability
+     */
     public Availability getAvailability(int column, int row) {
         Column col = getColumn(column);
-        return col.getAvailability(getStartTime(row));
+        if (col.getModelIndex() == START_TIME_INDEX) {
+            return Availability.UNAVAILABLE;
+        }
+        return col.getAvailability(row);
     }
 
     /**
@@ -199,7 +250,7 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     public void setSchedules(List<Party> schedules) {
         startTime = -1;
-        int endTime = -1;
+        endTime = -1;
         slotSize = -1;
         model = createColumnModel(schedules);
         singleScheduleView = schedules.size() == 1;
@@ -236,6 +287,12 @@ public class AppointmentTableModel extends AbstractTableModel {
         fireTableStructureChanged();
     }
 
+    /**
+     * Sets the appointments for each schedule.
+     *
+     * @param day          the day being displayed
+     * @param appointments the appointments, keyed on schedule
+     */
     public void setAppointments(Date day,
                                 Map<Party, List<ObjectSet>> appointments) {
         this.day = DateRules.getDate(day);
@@ -260,6 +317,11 @@ public class AppointmentTableModel extends AbstractTableModel {
         return getColumn(column).getHeaderValue().toString();
     }
 
+    /**
+     * Returns the column model.
+     *
+     * @return the column model
+     */
     public TableColumnModel getColumnModel() {
         return model;
     }
@@ -309,21 +371,45 @@ public class AppointmentTableModel extends AbstractTableModel {
                 } else {
                     result = getAppointment(set);
                 }
+            } else {
+                int startMins = getMinutes(row);
+                int span = 0;
+                if (startMins < col.getStartMins()) {
+                    span = getRowSpan(startMins, col.getStartMins());
+                } else if (col.getEndMins() <= startMins) {
+                    span = getRowSpan(col.getEndMins(), endTime);
+                }
+                if (span > 1) {
+                    Label label = LabelFactory.create();
+                    setRowSpan(label, span);
+                    result = label;
+                }
             }
         }
         return result;
     }
 
+    /**
+     * Returns the start time at the specified row.
+     *
+     * @param row the row
+     * @return the start time
+     */
     public Date getStartTime(int row) {
-        int time = startTime + row * slotSize;
-        return DateRules.getDate(day, time, DateUnits.MINUTES);
+        return DateRules.getDate(day, getMinutes(row),
+                                 DateUnits.MINUTES);
     }
 
+    /**
+     * Returns the hour at the specified row.
+     *
+     * @param row the row
+     * @return the hour
+     */
     public int getHour(int row) {
         int time = startTime + row * slotSize;
         return time / 60;
     }
-
 
     /**
      * Returns the appointment at the specified column and row.
@@ -336,11 +422,13 @@ public class AppointmentTableModel extends AbstractTableModel {
         return getAppointment(getColumn(column), row);
     }
 
-    private ObjectSet getAppointment(Column column, int row) {
-        Date startTime = getStartTime(row);
-        return column.getAppointment(startTime);
-    }
-
+    /**
+     * Returns the schedule at the given column.
+     *
+     * @param column the column
+     * @return the schedule, or <tt>null</tt> if there is no schedule associated
+     *         with the column
+     */
     public Party getSchedule(int column) {
         Column col = getColumn(column);
         return col.getSchedule();
@@ -395,6 +483,25 @@ public class AppointmentTableModel extends AbstractTableModel {
         return result;
     }
 
+    /**
+     * Returns the appointment at the specified column and starting at the
+     * specified row.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the appointment, or <tt>null</tt> if none is found
+     */
+    private ObjectSet getAppointment(Column column, int row) {
+        Date startTime = getStartTime(row);
+        return column.getAppointment(startTime);
+    }
+
+    /**
+     * Returns a component representing an appointment.
+     *
+     * @param set the appointment
+     * @return a new component
+     */
     private Component getAppointment(ObjectSet set) {
         Component result;
         String customer = set.getString(Appointment.CUSTOMER_NAME);
@@ -402,9 +509,9 @@ public class AppointmentTableModel extends AbstractTableModel {
         String notes = set.getString(Appointment.ACT_DESCRIPTION);
         String text;
         if (patient == null) {
-            text = Messages.get("workflow.scheduling.grid.customer", customer);
+            text = Messages.get("workflow.scheduling.table.customer", customer);
         } else {
-            text = Messages.get("workflow.scheduling.grid.customerpatient",
+            text = Messages.get("workflow.scheduling.table.customerpatient",
                                 customer, patient);
         }
         Label label = LabelFactory.create();
@@ -418,16 +525,53 @@ public class AppointmentTableModel extends AbstractTableModel {
 
         int span = getRowSpan(set.getDate(Appointment.ACT_START_TIME),
                               set.getDate(Appointment.ACT_END_TIME));
-
         if (span > 1) {
-            TableLayoutDataEx layout = new TableLayoutDataEx();
-            result.setLayoutData(layout);
-            layout.setRowSpan(span);
+            setRowSpan(result, span);
         }
         return result;
     }
 
+    /**
+     * Returns the minutes, from midnight, of the specified row.
+     *
+     * @param row the row
+     * @return the no. of minutes, from midnight
+     */
+    private int getMinutes(int row) {
+        return startTime + row * slotSize;
+    }
 
+
+    /**
+     * Sets the row span of a component.
+     *
+     * @param component the component
+     * @param span      the row span
+     */
+    private void setRowSpan(Component component, int span) {
+        TableLayoutDataEx layout = new TableLayoutDataEx();
+        layout.setRowSpan(span);
+        component.setLayoutData(layout);
+    }
+
+    /**
+     * Determines how many rows are spanned by a time range.
+     *
+     * @param startMins the start time
+     * @param endMins   the end time
+     * @return the no. of rows spanned
+     */
+    private int getRowSpan(int startMins, int endMins) {
+        return (endMins - startMins) / slotSize;
+    }
+
+    /**
+     * Determines how many rows are spanned by a time range.
+     *
+     * @param startTime the start time
+     * @param endTime   the end time
+     * @return the no. of rows spanned
+     */
     private int getRowSpan(Date startTime, Date endTime) {
         long duration = (endTime.getTime() - startTime.getTime()) / 1000 / 60;
         return (int) duration / slotSize;
@@ -513,6 +657,15 @@ public class AppointmentTableModel extends AbstractTableModel {
         return viewer.getComponent();
     }
 
+    /**
+     * Creates a column model to display a list of schedules. If there is only
+     * a single schedule, a column will be created for each of the nodes
+     * indicated by {@link #NODE_NAMES}, otherwise a column will be created for
+     * each schedule.
+     *
+     * @param schedules the schedules
+     * @return a new column model
+     */
     private TableColumnModel createColumnModel(List<Party> schedules) {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
         int index = START_TIME_INDEX;
@@ -533,6 +686,11 @@ public class AppointmentTableModel extends AbstractTableModel {
         return result;
     }
 
+    /**
+     * Returns the columns.
+     *
+     * @return the columns
+     */
     private List<Column> getColumns() {
         List<Column> result = new ArrayList<Column>();
         Iterator iterator = model.getColumns();
@@ -542,15 +700,27 @@ public class AppointmentTableModel extends AbstractTableModel {
         return result;
     }
 
-    private static int getMinutes(Date startTime) {
+    /**
+     * Returns the minutes from midnight for the specified time.
+     *
+     * @param time the time
+     * @return the minutes from midnight for <tt>time</tt>
+     */
+    private static int getMinutes(Date time) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startTime);
+        calendar.setTime(time);
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int mins = calendar.get(Calendar.MINUTE);
         return (hour * 60) + mins;
     }
 
-
+    /**
+     * Returns a date-time given a date and minutes from midnight.
+     *
+     * @param day  the date
+     * @param mins minutes from midnight
+     * @return a new date-time
+     */
     private static Date getTime(Date day, int mins) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(day);
@@ -558,6 +728,9 @@ public class AppointmentTableModel extends AbstractTableModel {
         return calendar.getTime();
     }
 
+    /**
+     * Schedule column.
+     */
     private class Column extends TableColumnEx {
 
         private Party schedule;
@@ -647,7 +820,7 @@ public class AppointmentTableModel extends AbstractTableModel {
             return slotSize;
         }
 
-        private ObjectSet getAppointment(Date time) {
+        public ObjectSet getAppointment(Date time) {
             ObjectSet result = null;
             if (appointments != null) {
                 for (ObjectSet set : appointments) {
@@ -666,17 +839,16 @@ public class AppointmentTableModel extends AbstractTableModel {
             return result;
         }
 
-        public Availability getAvailability(Date time) {
-            if (startTime == null || DateRules.compareTo(time, startTime) < 0
-                    || DateRules.compareTo(time, endTime) >= 0) {
+        public Availability getAvailability(int row) {
+            int mins = getMinutes(row);
+            if (mins < startMins || mins >= endMins) {
                 return Availability.UNAVAILABLE;
             }
-            if (getAppointment(time) != null) {
+            if (getAppointment(getTime(day, mins)) != null) {
                 return Availability.BUSY;
             }
             return Availability.FREE;
         }
-
     }
 
 }

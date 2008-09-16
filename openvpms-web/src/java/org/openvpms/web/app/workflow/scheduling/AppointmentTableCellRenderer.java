@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+
 /**
  * TableCellRender that assigns blocks of appointments in different hours a
  * different style.
@@ -47,8 +48,11 @@ import java.util.Map;
  */
 public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
 
-
+    /**
+     * Cache of appointment colours.
+     */
     private Map<IMObjectReference, String> appointmentColours;
+
 
     /**
      * Default constructor.
