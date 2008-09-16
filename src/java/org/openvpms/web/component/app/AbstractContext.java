@@ -21,6 +21,7 @@ package org.openvpms.web.component.app;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -65,8 +66,8 @@ public abstract class AbstractContext implements Context {
     private static final String[] SHORT_NAMES = {
             CUSTOMER_SHORTNAME, PATIENT_SHORTNAME, SUPPLIER_SHORTNAME,
             PRODUCT_SHORTNAME, TILL_SHORTNAME, CLINICIAN_SHORTNAME,
-            SCHEDULE_SHORTNAME, WORKLIST_SHORTNAME, LOCATION_SHORTNAME,
-            STOCK_LOCATION_SHORTNAME, DEPOSIT_SHORTNAME};
+            SCHEDULE_VIEW_SHORTNAME, SCHEDULE_SHORTNAME, WORKLIST_SHORTNAME,
+            LOCATION_SHORTNAME, STOCK_LOCATION_SHORTNAME, DEPOSIT_SHORTNAME};
 
     /**
      * The current schedule date.
@@ -304,6 +305,24 @@ public abstract class AbstractContext implements Context {
      */
     public User getClinician() {
         return (User) getObject(CLINICIAN_SHORTNAME);
+    }
+
+    /**
+     * Sets the current schedule view.
+     *
+     * @param view the current schedule view. May be <tt>null</tt>
+     */
+    public void setScheduleView(Entity view) {
+        setObject(SCHEDULE_VIEW_SHORTNAME, view);
+    }
+
+    /**
+     * Returns the current schedule view.
+     *
+     * @return the current schedule view. May be <tt>null</tt>
+     */
+    public Entity getScheduleView() {
+        return (Entity) getObject(SCHEDULE_VIEW_SHORTNAME);
     }
 
     /**

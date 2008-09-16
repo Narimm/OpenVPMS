@@ -24,6 +24,7 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -171,7 +172,7 @@ public abstract class ContextApplicationInstance
     private void updateLocation(Party location) {
         Party deposit = null;
         Party till = null;
-        Party schedule = null;
+        Entity scheduleView = null;
         Party workList = null;
         Party stockLocation = null;
 
@@ -180,13 +181,14 @@ public abstract class ContextApplicationInstance
             LocationRules rules = new LocationRules();
             deposit = rules.getDefaultDepositAccount(location);
             till = rules.getDefaultTill(location);
-            schedule = rules.getDefaultSchedule(location);
+            scheduleView = rules.getDefaultScheduleView(location);
             workList = rules.getDefaultWorkList(location);
             stockLocation = getStockLocation(rules, location);
         }
         context.setDeposit(deposit);
         context.setTill(till);
-        context.setSchedule(schedule);
+        context.setScheduleView(scheduleView);
+        context.setSchedule(null);
         context.setWorkList(workList);
         context.setStockLocation(stockLocation);
     }

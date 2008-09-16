@@ -38,8 +38,6 @@ import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
-import java.util.List;
-
 
 /**
  * Scheduling workspace.
@@ -82,7 +80,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
     @Override
     public void setObject(Entity object) {
         super.setObject(object);
-        // GlobalContext.getInstance().setSchedule(object);
+        GlobalContext.getInstance().setScheduleView(object);
         layoutWorkspace(object);
         initQuery(object);
     }
@@ -103,14 +101,14 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
     }
 
     /**
-     * Returns the latest version of the current schedule context object.
+     * Returns the latest version of the current schedule view context object.
      *
-     * @return the latest version of the schedule context object, or
+     * @return the latest version of the schedule view context object, or
      *         {@link #getObject()} if they are the same
      */
-    /*   protected Party getLatest() {
-        return getLatest(GlobalContext.getInstance().getSchedule());
-    }*/
+    protected Entity getLatest() {
+        return getLatest(GlobalContext.getInstance().getScheduleView());
+    }
 
     /**
      * Determines if the workspace should be refreshed.
@@ -187,23 +185,12 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
     }
 
     /**
-     * Returns a component representing the acts.
-     * This implementation returns the acts displayed in a group box.
-     *
-     * @param acts the act browser
-     * @return a component representing the acts
-     */
-    protected Component getActs(Browser acts) {
-        return GroupBoxFactory.create(this.browser.getComponent());
-    }
-
-    /**
      * Creates the workspace split pane.
      *
      * @return a new workspace split pane
      */
     protected Component createWorkspace() {
-        Component acts = getActs(getBrowser());
+        Component acts = GroupBoxFactory.create(browser.getComponent());
         Component window = getCRUDWindow().getComponent();
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
@@ -296,17 +283,16 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
     /**
      * Returns the workspace.
      *
-     * @return the workspace. May be <code>null</code>
+     * @return the workspace. May be <tt>null</tt>
      */
     protected Component getWorkspace() {
         return workspace;
     }
 
     /**
-     * Invoked when acts are queried. Selects the first available act, if any.
+     * Invoked when acts are queried.
      */
     protected void onQuery() {
-        selectFirst();
         GlobalContext context = GlobalContext.getInstance();
         context.setScheduleDate(browser.getDate());
         context.setSchedule(browser.getSelectedSchedule());
@@ -334,21 +320,6 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
             if (workspace != null) {
                 container.add(workspace);
             }
-        }
-    }
-
-    /**
-     * Selects the first available act, if any.
-     */
-    private void selectFirst() {
-        List<ObjectSet> objects = browser.getObjects();
-        if (!objects.isEmpty()) {
-            ObjectSet current = objects.get(0);
-            browser.setSelected(current);
-            actSelected(current);
-        } else {
-            window.setObject(null);
-            firePropertyChange(SUMMARY_PROPERTY, null, null);
         }
     }
 

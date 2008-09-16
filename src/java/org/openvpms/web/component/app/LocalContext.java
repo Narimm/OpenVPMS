@@ -19,6 +19,7 @@
 package org.openvpms.web.component.app;
 
 import org.apache.commons.beanutils.MethodUtils;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -305,6 +306,24 @@ public class LocalContext implements Context {
      */
     public User getClinician() {
         return get("getClinician");
+    }
+
+    /**
+     * Sets the current schedule view.
+     *
+     * @param view the current schedule view. May be <tt>null</tt>
+     */
+    public void setScheduleView(Entity view) {
+        local.setScheduleView(view);
+    }
+
+    /**
+     * Returns the current schedule view.
+     *
+     * @return the current schedule view. May be <tt>null</tt>
+     */
+    public Entity getScheduleView() {
+        return get("getScheduleView");
     }
 
     /**
