@@ -53,7 +53,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     public void testGetFullName() {
         Party customer = (Party) create("party.customerperson");
         IMObjectBean bean = new IMObjectBean(customer);
-        Lookup mr = TestHelper.getClassification("lookup.personTitle", "MR");
+        Lookup mr = TestHelper.getLookup("lookup.personTitle", "MR");
         bean.setValue("title", mr.getCode());
         bean.setValue("firstName", "Foo");
         bean.setValue("lastName", "Bar");
@@ -92,13 +92,18 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         locationBean.setValue("preferred", false);
         phoneBean.setValue("preferred", false);
 
+        Lookup state = TestHelper.getLookup("lookup.state", "VIC");
+        Lookup suburb = TestHelper.getLookup("lookup.suburb", "BAR", state,
+                                             "lookupRelationship.stateSuburb");
+
         // expect no preferred contacts to result in empty string
         assertEquals("", rules.getPreferredContacts(party));
 
         // now make the location a preferred contact
         locationBean.setValue("preferred", true);
         locationBean.setValue("address", "1 Foo St");
-        locationBean.setValue("suburb", "Bar");
+        locationBean.setValue("suburb", suburb.getCode());
+        locationBean.setValue("state", state.getCode());
         locationBean.setValue("postcode", "3071");
         location.addClassification(getContactPurpose("HOME"));
         final String address = "1 Foo St Bar 3071 (Home)";
@@ -347,7 +352,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      * @return the lookup
      */
     private Lookup getContactPurpose(String purpose) {
-        return TestHelper.getClassification("lookup.contactPurpose", purpose);
+        return TestHelper.getLookup("lookup.contactPurpose", purpose);
     }
 
     /**

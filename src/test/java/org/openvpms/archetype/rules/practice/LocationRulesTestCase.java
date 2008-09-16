@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.rules.workflow.AppointmentTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -86,49 +87,52 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
         assertEquals(till2, rules.getDefaultTill(location));
     }
 
-     /**
-     * Tests the {@link LocationRules#getDefaultSchedule} method.
+    /**
+     * Tests the {@link LocationRules#getDefaultScheduleView} method.
      */
-    public void testGetDefaultSchedule() {
+    public void testGetDefaultScheduleView() {
         Party location = TestHelper.createLocation();
-        assertNull(rules.getDefaultSchedule(location));
+        assertNull(rules.getDefaultScheduleView(location));
 
         Party schedule1 = AppointmentTestHelper.createSchedule();
         Party schedule2 = AppointmentTestHelper.createSchedule();
+        Entity view1 = AppointmentTestHelper.createScheduleView(schedule1);
+        Entity view2 = AppointmentTestHelper.createScheduleView(schedule1,
+                                                                schedule2);
         EntityBean bean = new EntityBean(location);
-        bean.addRelationship("entityRelationship.locationSchedule", schedule1);
+        bean.addRelationship("entityRelationship.locationView", view1);
 
-        assertEquals(schedule1, rules.getDefaultSchedule(location));
+        assertEquals(view1, rules.getDefaultScheduleView(location));
 
         EntityRelationship rel2 = bean.addRelationship(
-                "entityRelationship.locationSchedule", schedule2);
-        EntityRelationshipHelper.setDefault(location, "schedules", rel2,
+                "entityRelationship.locationView", view2);
+        EntityRelationshipHelper.setDefault(location, "scheduleViews", rel2,
                                             getArchetypeService());
 
-        assertEquals(schedule2, rules.getDefaultSchedule(location));
+        assertEquals(view2, rules.getDefaultScheduleView(location));
     }
 
     /**
-    * Tests the {@link LocationRules#getDefaultWorkList} method.
-    */
-   public void testGetDefaultWorkList() {
-       Party location = TestHelper.createLocation();
-       assertNull(rules.getDefaultWorkList(location));
+     * Tests the {@link LocationRules#getDefaultWorkList} method.
+     */
+    public void testGetDefaultWorkList() {
+        Party location = TestHelper.createLocation();
+        assertNull(rules.getDefaultWorkList(location));
 
-       Party worklist1 = AppointmentTestHelper.createWorkList();
-       Party worklist2 = AppointmentTestHelper.createWorkList();
-       EntityBean bean = new EntityBean(location);
-       bean.addRelationship("entityRelationship.locationWorkList", worklist1);
+        Party worklist1 = AppointmentTestHelper.createWorkList();
+        Party worklist2 = AppointmentTestHelper.createWorkList();
+        EntityBean bean = new EntityBean(location);
+        bean.addRelationship("entityRelationship.locationWorkList", worklist1);
 
-       assertEquals(worklist1, rules.getDefaultWorkList(location));
+        assertEquals(worklist1, rules.getDefaultWorkList(location));
 
-       EntityRelationship rel2 = bean.addRelationship(
-               "entityRelationship.locationWorkList", worklist2);
-       EntityRelationshipHelper.setDefault(location, "workLists", rel2,
-                                           getArchetypeService());
+        EntityRelationship rel2 = bean.addRelationship(
+                "entityRelationship.locationWorkList", worklist2);
+        EntityRelationshipHelper.setDefault(location, "workLists", rel2,
+                                            getArchetypeService());
 
-       assertEquals(worklist2, rules.getDefaultWorkList(location));
-   }
+        assertEquals(worklist2, rules.getDefaultWorkList(location));
+    }
 
     /**
      * Sets up the test case.

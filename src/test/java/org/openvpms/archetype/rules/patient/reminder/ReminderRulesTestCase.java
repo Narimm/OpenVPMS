@@ -269,8 +269,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         // add a REMINDER classification to the email contact and verify it is
         // returned instead of the preferred location contact
         email = get(email);
-        Lookup reminder = TestHelper.getClassification("lookup.contactPurpose",
-                                                       "REMINDER");
+        Lookup reminder = TestHelper.getLookup("lookup.contactPurpose",
+                                               "REMINDER");
         email.addClassification(reminder);
         save(email);
         owner = get(owner);
@@ -448,7 +448,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);
         Lookup alertType
-                = TestHelper.getClassification("lookup.alertType", "OTHER");
+                = TestHelper.getLookup("lookup.alertType", "OTHER");
         bean.setValue("alertType", alertType.getCode());
         bean.save();
         return act;

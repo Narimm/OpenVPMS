@@ -57,7 +57,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
         User user = TestHelper.createUser();
         assertFalse(rules.isClinician(user));
         Lookup clinicianClassification
-                = TestHelper.getClassification("lookup.userType", "CLINICIAN");
+                = TestHelper.getLookup("lookup.userType", "CLINICIAN");
         user.addClassification(clinicianClassification);
         assertTrue(rules.isClinician(user));
     }

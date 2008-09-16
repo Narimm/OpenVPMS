@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
+import java.sql.Time;
 import java.util.Date;
 
 
@@ -39,6 +40,23 @@ import java.util.Date;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class AppointmentTestHelper extends TestHelper {
+
+    /**
+     * Helper to create and save an <em>entity.scheduleViewType</em>,
+     * with associated <em>party.organisationSchedule</em>s.
+     *
+     * @param schedules the schedules
+     */
+    public static Entity createScheduleView(Party ... schedules) {
+        Entity view = (Entity) create("entity.scheduleViewType");
+        view.setName("XScheduleView");
+        EntityBean bean = new EntityBean(view);
+        for (Party schedule  : schedules) {
+            bean.addRelationship("entityRelationship.locationView", schedule);
+        }
+        bean.save();
+        return view;
+    }
 
     /**
      * Helper to create and save a new <em>entity.appointmentType</em>.
@@ -77,6 +95,8 @@ public class AppointmentTestHelper extends TestHelper {
         bean.setValue("name", "XSchedule");
         bean.setValue("slotSize", slotSize);
         bean.setValue("slotUnits", slotUnits);
+        bean.setValue("startTime", Time.valueOf("09:00:00"));
+        bean.setValue("endTime", Time.valueOf("18:00:00"));
         if (appointmentType != null) {
             addAppointmentType(schedule, appointmentType, noSlots, true);
         }

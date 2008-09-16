@@ -167,8 +167,8 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         bean.setValue("telephoneNumber", number);
         bean.setValue("preferred", preferred);
         if (purpose != null) {
-            Lookup lookup = TestHelper.getClassification(
-                    "lookup.contactPurpose", purpose);
+            Lookup lookup = TestHelper.getLookup("lookup.contactPurpose",
+                                                 purpose);
             contact.addClassification(lookup);
         }
         return contact;

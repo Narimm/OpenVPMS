@@ -163,7 +163,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Counts IN_PROGRESS reminders for patients with patient-owner relationships.
+     * Counts IN_PROGRESS reminders for patients with patient-owner
+     * relationships.
      *
      * @param dueFrom the start due date. May be <code>null</code>
      * @param dueTo   to end due date. May be <code>null</code>
@@ -179,25 +180,17 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             query.add(new NodeConstraint("endTime", RelationalOp.BTW, dueFrom,
                                          dueTo));
         }
-        int pageIndex = 0;
-        int rowsPerPage = 100;
-        query.setFirstResult(0);
-        query.setMaxResults(rowsPerPage);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         IPage<IMObject> page = getArchetypeService().get(query);
-        while (!page.getResults().isEmpty()) {
-            for (IMObject object : page.getResults()) {
-                ActBean bean = new ActBean((Act) object);
-                Party patient = (Party) bean.getParticipant(
-                        "participation.patient");
-                if (patient != null) {
-                    if (rules.getOwner(patient) != null) {
-                        result++;
-                    }
+        for (IMObject object : page.getResults()) {
+            ActBean bean = new ActBean((Act) object);
+            Party patient = (Party) bean.getParticipant(
+                    "participation.patient");
+            if (patient != null) {
+                if (rules.getOwner(patient) != null) {
+                    result++;
                 }
             }
-            pageIndex++;
-            query.setFirstResult(pageIndex * rowsPerPage);
-            page = getArchetypeService().get(query);
         }
         return result;
     }

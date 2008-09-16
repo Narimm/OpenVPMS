@@ -19,10 +19,14 @@
 package org.openvpms.archetype.rules.practice;
 
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+
+import java.util.List;
 
 
 /**
@@ -78,14 +82,25 @@ public class LocationRules {
     }
 
     /**
-     * Returns the default schedule associated with a location.
+     * Returns the default schedule view associated with a location.
      *
      * @param location the location
      * @return the default schedule or <tt>null</tt> if none is found
      */
-    public Party getDefaultSchedule(Party location) {
-        return (Party) EntityRelationshipHelper.getDefaultTarget(
-                location, "schedules", service);
+    public Entity getDefaultScheduleView(Party location) {
+        return EntityRelationshipHelper.getDefaultTarget(
+                location, "scheduleViews", service);
+    }
+
+    /**
+     * Returns the <em>entity.scheduleViewType</em>s associated location.
+     *
+     * @param location the location
+     * @return the schedules views
+     */
+    public List<Entity> getScheduleViews(Party location) {
+        EntityBean bean = new EntityBean(location, service);
+        return bean.getNodeTargetEntities("scheduleViews");
     }
 
     /**
