@@ -100,7 +100,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         super.onSetUp();
         initPractice();
 
-        TestHelper.getClassification("lookup.uom", PACKAGE_UNITS);
+        TestHelper.getLookup("lookup.uom", PACKAGE_UNITS);
     }
 
     /**

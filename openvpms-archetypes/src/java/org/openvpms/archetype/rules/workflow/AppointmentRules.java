@@ -42,6 +42,7 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.RelationalOp;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -74,6 +75,23 @@ public class AppointmentRules {
      */
     public AppointmentRules(IArchetypeService service) {
         this.service = service;
+    }
+
+    /**
+     * Returns the <em>party.organisationSchedule</em>s associated with a
+     * <em>entity.scheduleViewType</em>.
+     *
+     * @param scheduleView the schedule view
+     * @return the schedules associated with the view
+     */
+    public List<Party> getSchedules(Entity scheduleView) {
+        List<Party> result = new ArrayList<Party>();
+        EntityBean bean = new EntityBean(scheduleView, service);
+        for (Entity entity : bean.getNodeTargetEntities("schedules")) {
+            Party schedule = (Party) entity;
+            result.add(schedule);
+        }
+        return result;
     }
 
     /**

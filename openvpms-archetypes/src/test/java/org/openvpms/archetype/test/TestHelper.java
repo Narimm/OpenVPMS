@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -40,6 +41,7 @@ import org.openvpms.component.system.common.query.QueryIterator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -229,7 +231,7 @@ public class TestHelper extends Assert {
     public static User createClinician(boolean save) {
         User user = createUser("zvet" + System.currentTimeMillis(), false);
         user.addClassification(
-                getClassification("lookup.userType", "CLINICIAN"));
+                getLookup("lookup.userType", "CLINICIAN"));
         if (save) {
             save(user);
         }
@@ -272,7 +274,7 @@ public class TestHelper extends Assert {
         bean.setValue("name", name);
         if (species != null) {
             Lookup classification
-                    = getClassification("lookup.species", species);
+                    = getLookup("lookup.species", species);
             bean.addValue("species", classification);
         }
         bean.save();
@@ -357,7 +359,7 @@ public class TestHelper extends Assert {
      * @return the currency
      */
     public static Lookup getCurrency(String code) {
-        Lookup currency = getClassification("lookup.currency", code, false);
+        Lookup currency = getLookup("lookup.currency", code, false);
         IMObjectBean ccyBean = new IMObjectBean(currency);
         ccyBean.setValue("minDenomination", new BigDecimal("0.05"));
         ccyBean.save();
@@ -379,14 +381,14 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Gets a classification lookup, creating and saving it if it doesn't exist.
+     * Returns a lookup, creating and saving it if it doesn't exist.
      *
-     * @param shortName the clasification short name
-     * @param code      the classification code
-     * @return the classification
+     * @param shortName the lookup short name
+     * @param code      the lookup code
+     * @return the lookup
      */
-    public static Lookup getClassification(String shortName, String code) {
-        return getClassification(shortName, code, true);
+    public static Lookup getLookup(String shortName, String code) {
+        return getLookup(shortName, code, true);
     }
 
     /**
@@ -397,8 +399,8 @@ public class TestHelper extends Assert {
      * @param save      if <tt>true</tt>, save the classification
      * @return the classification
      */
-    public static Lookup getClassification(String shortName, String code,
-                                           boolean save) {
+    public static Lookup getLookup(String shortName, String code,
+                                   boolean save) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
         query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);
@@ -406,12 +408,40 @@ public class TestHelper extends Assert {
         if (iter.hasNext()) {
             return iter.next();
         }
-        Lookup classification = (Lookup) create(shortName);
-        classification.setCode(code);
+        Lookup lookup = (Lookup) create(shortName);
+        lookup.setCode(code);
         if (save) {
-            save(classification);
+            save(lookup);
         }
-        return classification;
+        return lookup;
+    }
+
+    /**
+     * Returns a lookup that is the target in a lookup relationship, creating
+     * and saving it if it doesn't exist.
+     *
+     * @param shortName the target lookup short name
+     * @param code the lookup code
+     * @param source the source lookup
+     * @param relationshipShortName the lookup relationship short name
+     */
+    public static Lookup getLookup(String shortName, String code, Lookup source,
+                                   String relationshipShortName) {
+        Lookup target = getLookup(shortName, code);
+        for (LookupRelationship relationship
+                : source.getLookupRelationships()) {
+            if (relationship.getTarget().equals(target.getObjectReference())) {
+                return target;
+            }
+        }
+        LookupRelationship relationship
+                = (LookupRelationship) create(relationshipShortName);
+        relationship.setSource(source.getObjectReference());
+        relationship.setTarget(target.getObjectReference());
+        source.addLookupRelationship(relationship);
+        target.addLookupRelationship(relationship);
+        save(Arrays.asList(source, target));
+        return target;
     }
 
     /**

@@ -95,20 +95,20 @@
                 <errorMessage>Duplicate active deposit account relationship</errorMessage>
             </assertion>
 		</node>
-		<node name="schedules" path="/entityRelationships"
+		<node name="scheduleViews" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
-			filter="entityRelationship.locationSchedule" >
+			filter="entityRelationship.locationView" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.locationSchedule" />
+							value="entityRelationship.locationView" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
             <assertion name="uniqueEntityRelationship">
-                <errorMessage>Duplicate active location schedule relationship</errorMessage>
+                <errorMessage>Duplicate active schedule view relationship</errorMessage>
             </assertion>
 		</node>
 		<node name="workLists" path="/entityRelationships"

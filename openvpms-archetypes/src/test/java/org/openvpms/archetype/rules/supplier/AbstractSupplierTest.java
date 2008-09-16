@@ -104,7 +104,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         pracBean.save();
 
         supplier = TestHelper.createSupplier();
-        TestHelper.getClassification("lookup.uom", PACKAGE_UNITS);
+        TestHelper.getLookup("lookup.uom", PACKAGE_UNITS);
     }
 
     /**
