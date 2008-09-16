@@ -55,8 +55,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+
 /**
- * Add description here.
+ * Appointment table model.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -75,6 +76,9 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     private Date day;
 
+    /**
+     * The column model.
+     */
     private TableColumnModel model = new DefaultTableColumnModel();
 
     /**
@@ -365,25 +369,32 @@ public class AppointmentTableModel extends AbstractTableModel {
         } else {
             Column col = getColumn(column);
             ObjectSet set = getAppointment(col, row);
+            int span = 0;
             if (set != null) {
                 if (singleScheduleView) {
                     result = getValue(set, col);
                 } else {
                     result = getAppointment(set);
                 }
+                span = getRowSpan(set.getDate(Appointment.ACT_START_TIME),
+                                  set.getDate(Appointment.ACT_END_TIME));
             } else {
                 int startMins = getMinutes(row);
-                int span = 0;
                 if (startMins < col.getStartMins()) {
                     span = getRowSpan(startMins, col.getStartMins());
                 } else if (col.getEndMins() <= startMins) {
                     span = getRowSpan(col.getEndMins(), endTime);
                 }
-                if (span > 1) {
+            }
+            if (span > 1) {
+                if (!(result instanceof Component)) {
                     Label label = LabelFactory.create();
-                    setRowSpan(label, span);
+                    if (result != null) {
+                        label.setText(result.toString());
+                    }
                     result = label;
                 }
+                setRowSpan((Component) result, span);
             }
         }
         return result;
