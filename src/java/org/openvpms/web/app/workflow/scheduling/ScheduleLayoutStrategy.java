@@ -56,7 +56,7 @@ public class ScheduleLayoutStrategy extends AbstractLayoutStrategy {
             if (!context.isEdit()) {
                 time.setEnabled(false);
             } else {
-                property.setTransformer(new TimePropertyTransformer(null));
+                property.setTransformer(new TimePropertyTransformer(property));
             }
             return new ComponentState(time, property);
         }
