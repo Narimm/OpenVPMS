@@ -71,6 +71,10 @@ public class AppointmentTableModel extends AbstractTableModel {
         FREE, BUSY, UNAVAILABLE
     }
 
+    public enum View {
+        CUSTOMER, CLINICIAN, STATUS
+    }
+
     /**
      * The day being displayed.
      */
@@ -110,6 +114,31 @@ public class AppointmentTableModel extends AbstractTableModel {
      * Appointment rules.
      */
     private final AppointmentRules rules;
+
+    /**
+     * The cell view.
+     */
+    private View view = View.CUSTOMER;
+
+    /**
+     * The column names, for single schedule view.
+     */
+    private String[] columnNames;
+
+    /**
+     * Cached status lookup names.
+     */
+    private Map<String, String> statuses;
+
+    /**
+     * Cached reason lookup names.
+     */
+    private Map<String, String> reasons;
+
+    /**
+     * Cell renderer.
+     */
+    private TableCellRenderer cellRenderer;
 
     /**
      * The start time index.
@@ -165,7 +194,7 @@ public class AppointmentTableModel extends AbstractTableModel {
     /**
      * The nodes to display.
      */
-    public static final String[][] NODE_NAMES = new String[][]{
+    private static final String[][] NODE_NAMES = new String[][]{
             {"startTime", Appointment.ACT_START_TIME},
             {"status", Appointment.ACT_STATUS},
             {"appointmentType", Appointment.APPOINTMENT_TYPE_REFERENCE},
@@ -173,26 +202,6 @@ public class AppointmentTableModel extends AbstractTableModel {
             {"patient", Appointment.PATIENT_REFERENCE},
             {"reason", Appointment.ACT_REASON},
             {"description", Appointment.ACT_DESCRIPTION}};
-
-    /**
-     * The column names, for single schedule view.
-     */
-    private String[] columnNames;
-
-    /**
-     * Cached status lookup names.
-     */
-    private Map<String, String> statuses;
-
-    /**
-     * Cached reason lookup names.
-     */
-    private Map<String, String> reasons;
-
-    /**
-     * Cell renderer.
-     */
-    private TableCellRenderer cellRenderer;
 
 
     /**
@@ -308,6 +317,22 @@ public class AppointmentTableModel extends AbstractTableModel {
             }
         }
         fireTableDataChanged();
+    }
+
+    /**
+     * Sets the view when multiple schedules are being displayed.
+     * <p/>
+     * Defaults to {@link View#CUSTOMER}.
+     *
+     * @param view the view
+     */
+    public void setView(View view) {
+        if (view != this.view) {
+            this.view = view;
+            if (!singleScheduleView) {
+                fireTableDataChanged();
+            }
+        }
     }
 
     /**
@@ -508,23 +533,43 @@ public class AppointmentTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns a component representing an appointment.
+     * Returns a component representing an appointment, based on the current
+     * {@link View}.
      *
      * @param set the appointment
      * @return a new component
      */
     private Component getAppointment(ObjectSet set) {
         Component result;
-        String customer = set.getString(Appointment.CUSTOMER_NAME);
-        String patient = set.getString(Appointment.PATIENT_NAME);
-        String notes = set.getString(Appointment.ACT_DESCRIPTION);
         String text;
-        if (patient == null) {
-            text = Messages.get("workflow.scheduling.table.customer", customer);
-        } else {
-            text = Messages.get("workflow.scheduling.table.customerpatient",
-                                customer, patient);
+        switch (view) {
+            case CUSTOMER:
+                String customer = set.getString(Appointment.CUSTOMER_NAME);
+                String patient = set.getString(Appointment.PATIENT_NAME);
+                if (patient == null) {
+                    text = Messages.get("workflow.scheduling.table.customer",
+                                        customer);
+                } else {
+                    text = Messages.get(
+                            "workflow.scheduling.table.customerpatient",
+                            customer, patient);
+                }
+                break;
+            case CLINICIAN:
+                String clinician = set.getString(Appointment.CLINICIAN_NAME);
+                if (clinician != null) {
+                    text = Messages.get("workflow.scheduling.table.clinician",
+                                        clinician);
+                } else {
+                    text = Messages.get(
+                            "workflow.scheduling.table.noclinician");
+                }
+                break;
+            default:
+                String status = set.getString(Appointment.ACT_STATUS);
+                text = getStatus(set, status);
         }
+        String notes = set.getString(Appointment.ACT_DESCRIPTION);
         Label label = LabelFactory.create();
         label.setText(text);
         if (notes != null) {
@@ -532,12 +577,6 @@ public class AppointmentTableModel extends AbstractTableModel {
             result = RowFactory.create("CellSpacing", label, help);
         } else {
             result = label;
-        }
-
-        int span = getRowSpan(set.getDate(Appointment.ACT_START_TIME),
-                              set.getDate(Appointment.ACT_END_TIME));
-        if (span > 1) {
-            setRowSpan(result, span);
         }
         return result;
     }
@@ -621,7 +660,8 @@ public class AppointmentTableModel extends AbstractTableModel {
             Date arrival = set.getDate(Appointment.ARRIVAL_TIME);
             if (arrival != null) {
                 String diff = DateHelper.formatTimeDiff(arrival, new Date());
-                status = Messages.get("appointmenttablemodel.waiting", diff);
+                status = Messages.get("workflow.scheduling.table.waiting",
+                                      diff);
             }
         }
         if (status == null) {

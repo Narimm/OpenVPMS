@@ -23,6 +23,8 @@ import echopointng.table.TableActionEventEx;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.TableModelEvent;
@@ -32,11 +34,15 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
 import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Availability.UNAVAILABLE;
+import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.View;
 import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -100,6 +106,13 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      */
     private Party selectedSchedule;
 
+    private String[] viewSelectorItems;
+
+    /**
+     * View selector, to change grid display items.
+     */
+    private SelectField viewSelector;
+
 
     /**
      * Creates a new <tt>AppointmentBrowser</tt>.
@@ -127,6 +140,11 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
                 onSelected(event);
             }
         });
+
+        viewSelectorItems = new String[]{
+                Messages.get("workflow.scheduling.view.customer"),
+                Messages.get("workflow.scheduling.view.clinician"),
+                Messages.get("workflow.scheduling.view.status")};
     }
 
     /**
@@ -260,8 +278,38 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         ColumnLayoutData layout = new ColumnLayoutData();
         layout.setAlignment(Alignment.ALIGN_CENTER);
         selectedDate.setLayoutData(layout);
-        component = ColumnFactory.create("WideCellSpacing", selectedDate,
-                                         query.getComponent(), table);
+
+        viewSelector = SelectFieldFactory.create(viewSelectorItems);
+        viewSelector.setSelectedItem(viewSelectorItems[0]);
+        viewSelector.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onViewChanged();
+            }
+        });
+
+        Label viewLabel = LabelFactory.create("workflow.scheduling.view");
+        Row row = RowFactory.create("CellSpacing", query.getComponent(),
+                                    viewLabel, viewSelector);
+        component = ColumnFactory.create("WideCellSpacing", selectedDate, row,
+                                         table);
+    }
+
+    /**
+     * Invoked when the view changes.
+     */
+    private void onViewChanged() {
+        int index = viewSelector.getSelectedIndex();
+        switch (index) {
+            case 0:
+                model.setView(View.CUSTOMER);
+                break;
+            case 1:
+                model.setView(View.CLINICIAN);
+                break;
+            default:
+                model.setView(View.STATUS);
+
+        }
     }
 
     /**
