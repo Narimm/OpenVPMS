@@ -106,6 +106,20 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
      * @param styleName the stylesheet style name
      */
     protected void mergeStyle(Component component, String styleName) {
+        mergeStyle(component, styleName, false);
+    }
+
+    /**
+     * Merges the style of a component with that defined by the stylesheet.
+     *
+     * @param component the component
+     * @param styleName the stylesheet style name
+     * @param overwrite if <tt>true</tt> overwrite existing component properties
+     *                  if the specified style has non-null corresponding
+     *                  properties
+     */
+    protected void mergeStyle(Component component, String styleName,
+                              boolean overwrite) {
         if (component.getLayoutData() == null
                 && component.getStyleName() == null) {
             component.setStyleName(styleName);
@@ -113,7 +127,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
             Style style = ApplicationInstance.getActive().getStyle(
                     Component.class, styleName);
             if (style != null) {
-                mergeStyle(style, component);
+                mergeStyle(style, component, overwrite);
             }
         }
     }
@@ -123,8 +137,12 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
      *
      * @param style     the style
      * @param component the component
+     * @param overwrite if <tt>true</tt> overwrite existing component properties
+     *                  if the specified style has non-null corresponding
+     *                  properties
      */
-    private void mergeStyle(Style style, Component component) {
+    private void mergeStyle(Style style, Component component,
+                            boolean overwrite) {
         Iterator names = style.getPropertyNames();
         while (names.hasNext()) {
             String name = (String) names.next();
@@ -136,14 +154,16 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
                 from = (TableLayoutData) style.getProperty(name);
                 to = (TableLayoutData) component.getLayoutData();
                 if (to != null) {
-                    mergeLayoutData(from, to);
+                    mergeLayoutData(from, to, overwrite);
                 }
-            } else if (component.getProperty(name) == null) {
-                try {
-                    BeanUtils.setProperty(component, name,
-                                          style.getProperty(name));
-                } catch (Throwable ignore) {
-                    // no-op
+            } else if (overwrite || component.getProperty(name) == null) {
+                Object value = style.getProperty(name);
+                if (value != null) {
+                    try {
+                        BeanUtils.setProperty(component, name, value);
+                    } catch (Throwable ignore) {
+                        // no-op
+                    }
                 }
             }
         }
@@ -152,20 +172,28 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
     /**
      * Merge layout data.
      *
-     * @param from the layout data to merge from
-     * @param to   the layout data to merge to
+     * @param from      the layout data to merge from
+     * @param to        the layout data to merge to
+     * @param overwrite if <tt>true</tt> overwrite existing component properties
+     *                  if the specified style has non-null corresponding
+     *                  properties
      */
-    private void mergeLayoutData(TableLayoutData from, TableLayoutData to) {
-        if (to.getAlignment() == null) {
+    private void mergeLayoutData(TableLayoutData from, TableLayoutData to,
+                                 boolean overwrite) {
+        if (from.getAlignment() != null
+                && (overwrite || to.getAlignment() == null)) {
             to.setAlignment(from.getAlignment());
         }
-        if (to.getBackground() == null) {
+        if (from.getBackground() != null
+                && (overwrite || to.getBackground() == null)) {
             to.setBackground(from.getBackground());
         }
-        if (to.getBackgroundImage() == null) {
+        if (from.getBackgroundImage() != null
+                && (overwrite || to.getBackgroundImage() == null)) {
             to.setBackgroundImage(from.getBackgroundImage());
         }
-        if (to.getInsets() == null) {
+        if (from.getInsets() != null
+                && (overwrite || to.getInsets() == null)) {
             to.setInsets(from.getInsets());
         }
     }

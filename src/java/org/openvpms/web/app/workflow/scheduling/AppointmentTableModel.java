@@ -71,8 +71,8 @@ public class AppointmentTableModel extends AbstractTableModel {
         FREE, BUSY, UNAVAILABLE
     }
 
-    public enum View {
-        CUSTOMER, CLINICIAN, STATUS
+    public enum Highlight {
+        APPOINTMENT, CLINICIAN, STATUS
     }
 
     /**
@@ -116,9 +116,19 @@ public class AppointmentTableModel extends AbstractTableModel {
     private final AppointmentRules rules;
 
     /**
-     * The cell view.
+     * Determines cell colour.
      */
-    private View view = View.CUSTOMER;
+    private Highlight highlight = Highlight.APPOINTMENT;
+
+    /**
+     * The selected column.
+     */
+    private int selectedColumn = -1;
+
+    /**
+     * The selected cell.
+     */
+    private int selectedRow = -1;
 
     /**
      * The column names, for single schedule view.
@@ -250,7 +260,7 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     public Availability getAvailability(int column, int row) {
         Column col = getColumn(column);
-        if (col.getModelIndex() == START_TIME_INDEX) {
+        if (col.getModelIndex() == START_TIME_INDEX && !singleScheduleView) {
             return Availability.UNAVAILABLE;
         }
         return col.getAvailability(row);
@@ -320,19 +330,62 @@ public class AppointmentTableModel extends AbstractTableModel {
     }
 
     /**
-     * Sets the view when multiple schedules are being displayed.
-     * <p/>
-     * Defaults to {@link View#CUSTOMER}.
+     * Determines if a single schedule is being displayed.
      *
-     * @param view the view
+     * @return <tt>true</tt> if a single schedule is being displayed
      */
-    public void setView(View view) {
-        if (view != this.view) {
-            this.view = view;
-            if (!singleScheduleView) {
-                fireTableDataChanged();
-            }
+    public boolean isSingleScheduleView() {
+        return singleScheduleView;
+    }
+
+    /**
+     * Determines the scheme to colour cells.
+     * <p/>
+     * Defaults to {@link Highlight#APPOINTMENT}.
+     *
+     * @param highlight the highlight
+     */
+    public void setHighlight(Highlight highlight) {
+        this.highlight = highlight;
+        fireTableDataChanged();
+    }
+
+    /**
+     * Determines the scheme to colour cells.
+     *
+     * @return the highlight
+     */
+    public Highlight getHighlight() {
+        return highlight;
+    }
+
+    /**
+     * Sets the selected cell.
+     *
+     * @param column the selected column
+     * @param row    the selected row
+     */
+    public void setSelectedCell(int column, int row) {
+        int oldColumn = selectedColumn;
+        int oldRow = selectedRow;
+        selectedColumn = column;
+        selectedRow = row;
+        if (oldColumn != -1 && oldRow != -1) {
+            fireTableCellUpdated(oldColumn, oldRow);
         }
+        if (selectedColumn != -1 && selectedRow != -1) {
+            fireTableCellUpdated(selectedColumn, selectedRow);
+        }
+    }
+
+    /**
+     * Determines if a cell is selected.
+     *
+     * @param column the column
+     * @param row    the row
+     */
+    public boolean isSelectedCell(int column, int row) {
+        return selectedColumn == column && selectedRow == row;
     }
 
     /**
@@ -533,8 +586,7 @@ public class AppointmentTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns a component representing an appointment, based on the current
-     * {@link View}.
+     * Returns a component representing an appointment.
      *
      * @param set the appointment
      * @return a new component
@@ -542,34 +594,17 @@ public class AppointmentTableModel extends AbstractTableModel {
     private Component getAppointment(ObjectSet set) {
         Component result;
         String text;
-        switch (view) {
-            case CUSTOMER:
-                String customer = set.getString(Appointment.CUSTOMER_NAME);
-                String patient = set.getString(Appointment.PATIENT_NAME);
-                if (patient == null) {
-                    text = Messages.get("workflow.scheduling.table.customer",
-                                        customer);
-                } else {
-                    text = Messages.get(
-                            "workflow.scheduling.table.customerpatient",
-                            customer, patient);
-                }
-                break;
-            case CLINICIAN:
-                String clinician = set.getString(Appointment.CLINICIAN_NAME);
-                if (clinician != null) {
-                    text = Messages.get("workflow.scheduling.table.clinician",
-                                        clinician);
-                } else {
-                    text = Messages.get(
-                            "workflow.scheduling.table.noclinician");
-                }
-                break;
-            default:
-                String status = set.getString(Appointment.ACT_STATUS);
-                text = getStatus(set, status);
-        }
+        String customer = set.getString(Appointment.CUSTOMER_NAME);
+        String patient = set.getString(Appointment.PATIENT_NAME);
         String notes = set.getString(Appointment.ACT_DESCRIPTION);
+        if (patient == null) {
+            text = Messages.get("workflow.scheduling.table.customer",
+                                customer);
+        } else {
+            text = Messages.get(
+                    "workflow.scheduling.table.customerpatient",
+                    customer, patient);
+        }
         Label label = LabelFactory.create();
         label.setText(text);
         if (notes != null) {

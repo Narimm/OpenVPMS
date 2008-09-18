@@ -553,6 +553,16 @@
         </properties>
     </style>
 
+    <style name="Appointment.Selected" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="font">
+                <font size="9pt" bold="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
     <!--  Task table styles. -->
     <style name="TaskTable.EvenRow" type="nextapp.echo2.app.Component">
         <properties>
@@ -1887,6 +1897,16 @@
             <property name="width" value="100%"/>
         </properties>
     </style>
+
+    <style name="bold" base-name="default"
+           type="nextapp.echo2.app.Table">
+        <properties>
+            <property name="font">
+                <font bold="true"/>
+            </property>
+        </properties>
+    </style>
+
 
     <style name="default-1024x768" base-name="default"
            type="nextapp.echo2.app.Table">

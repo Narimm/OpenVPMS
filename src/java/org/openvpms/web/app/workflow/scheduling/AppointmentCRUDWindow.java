@@ -50,6 +50,9 @@ import java.util.Date;
  */
 public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
 
+    /**
+     * The appointment start time.
+     */
     private Date startTime;
 
     /**
@@ -73,12 +76,12 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
     }
 
     /**
-     * Invoked when the 'new' button is pressed.
+     * Creates and edits a new object.
      */
     @Override
-    public void onCreate() {
+    public void create() {
         if (GlobalContext.getInstance().getSchedule() != null) {
-            super.onCreate();
+            super.create();
         }
     }
 

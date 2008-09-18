@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.admin;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
@@ -30,14 +31,15 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OrganisationWorkspace extends BasicCRUDWorkspace<Party> {
+public class OrganisationWorkspace extends BasicCRUDWorkspace<Entity> {
 
     /**
      * Constructs a new <tt>OrganisationWorkspace</tt>.
      */
     public OrganisationWorkspace() {
         super("admin", "organisation");
-        setArchetypes(Party.class, "party.organisation*");
+        setArchetypes(Entity.class, "party.organisation*",
+                      "entity.organisation*");
     }
 
     /**
@@ -46,18 +48,18 @@ public class OrganisationWorkspace extends BasicCRUDWorkspace<Party> {
      * @param object the object. May be <tt>null</tt>
      */
     @Override
-    public void setObject(Party object) {
+    public void setObject(Entity object) {
         super.setObject(object);
         // need to update the global context in case organisations have changed.
         // May need to refine this so that the context is only updated if the
         // organisation is a newer version of that currently in the context
         // (i,e don't change for different organisations).
         if (TypeHelper.isA(object, "party.organisationSchedule")) {
-            GlobalContext.getInstance().setSchedule(object);
+            GlobalContext.getInstance().setSchedule((Party) object);
         } else if (TypeHelper.isA(object, "party.organisationWorkList")) {
-            GlobalContext.getInstance().setWorkList(object);
+            GlobalContext.getInstance().setWorkList((Party) object);
         } else if (TypeHelper.isA(object, "party.organisationTill")) {
-            GlobalContext.getInstance().setTill(object);
+            GlobalContext.getInstance().setTill((Party) object);
         }
     }
 

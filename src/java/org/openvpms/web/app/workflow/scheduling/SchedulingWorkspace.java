@@ -31,7 +31,6 @@ import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
@@ -68,8 +67,8 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
      */
     public SchedulingWorkspace() {
         super("workflow", "scheduling",
-              Archetypes.create("entity.scheduleViewType", Entity.class),
-              false);
+              Archetypes.create("entity.organisationScheduleView",
+                                Entity.class), false);
     }
 
     /**
@@ -158,19 +157,38 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
      * @param appointment the appointment. May be <tt>null</tt>
      */
     protected void actSelected(ObjectSet appointment) {
+        // update the context schedule
+        GlobalContext.getInstance().setSchedule(browser.getSelectedSchedule());
+
         if (appointment != null) {
             IMObjectReference actRef = appointment.getReference(
                     Appointment.ACT_REFERENCE);
-            Act object = (Act) IMObjectHelper.getObject(actRef);
-            window.setObject(object);
+            Act act = (Act) IMObjectHelper.getObject(actRef);
+            window.setObject(act);
             firePropertyChange(SUMMARY_PROPERTY, null, null);
         } else {
             window.setObject(null);
         }
         window.setStartTime(browser.getSelectedTime());
+    }
 
+    /**
+     * Invoked to edit an appointment.
+     *
+     * @param appointment the appointment
+     */
+    protected void onEdit(ObjectSet appointment) {
         // update the context schedule
         GlobalContext.getInstance().setSchedule(browser.getSelectedSchedule());
+        IMObjectReference actRef = appointment.getReference(
+                Appointment.ACT_REFERENCE);
+        Act act = (Act) IMObjectHelper.getObject(actRef);
+        window.setObject(act);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+        window.setStartTime(browser.getSelectedTime());
+        if (act != null) {
+            window.edit();
+        }
     }
 
     /**
@@ -204,13 +222,21 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
      */
     protected void setBrowser(AppointmentBrowser browser) {
         this.browser = browser;
-        this.browser.addQueryListener(new QueryBrowserListener<ObjectSet>() {
+        browser.addAppointmentListener(new AppointmentListener() {
             public void query() {
                 onQuery();
             }
 
             public void selected(ObjectSet object) {
                 actSelected(object);
+            }
+
+            public void edit(ObjectSet set) {
+                onEdit(set);
+            }
+
+            public void create() {
+                window.create();
             }
         });
     }

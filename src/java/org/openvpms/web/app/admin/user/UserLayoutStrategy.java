@@ -21,7 +21,7 @@ package org.openvpms.web.app.admin.user;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ColourNodeLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -31,7 +31,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class UserLayoutStrategy extends AbstractLayoutStrategy {
+public class UserLayoutStrategy extends ColourNodeLayoutStrategy {
 
     /**
      * Returns a node filter to filter nodes. This implementation filters

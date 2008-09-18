@@ -16,22 +16,21 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.scheduling;
+package org.openvpms.web.component.im.layout;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundColorSelect;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 
+
 /**
- * Add description here.
+ * Layout strategy that uses a {@link BoundColorSelect} for any "colour" node.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentTypeLayoutStrategy extends AbstractLayoutStrategy {
+public class ColourNodeLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
      * Creates a component for a property.

@@ -90,6 +90,25 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
     }
 
     /**
+     * Invoked when the edit button is pressed. This edits the current
+     * <em>act.patientClinicalEvent</em>.
+     */
+    @Override
+    public void edit() {
+        Act event = getEvent();
+        if (event != null) {
+            // make sure the latest instance is being used.
+            Act current = IMObjectHelper.reload(event);
+            if (current == null) {
+                ErrorDialog.show(Messages.get("imobject.noexist"),
+                                 DescriptorHelper.getDisplayName(event));
+            } else {
+                edit(current);
+            }
+        }
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -145,22 +164,4 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
         }
     }
 
-    /**
-     * Invoked when the edit button is pressed. This edits the current
-     * <em>act.patientClinicalEvent</em>.
-     */
-    @Override
-    protected void onEdit() {
-        Act event = getEvent();
-        if (event != null) {
-            // make sure the latest instance is being used.
-            Act current = IMObjectHelper.reload(event);
-            if (current == null) {
-                ErrorDialog.show(Messages.get("imobject.noexist"),
-                                 DescriptorHelper.getDisplayName(event));
-            } else {
-                edit(current);
-            }
-        }
-    }
 }

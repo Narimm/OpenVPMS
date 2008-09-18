@@ -66,9 +66,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      * Notifies any registered query listeners.
      */
     protected void notifyQueryListeners() {
-        QueryBrowserListener[] listeners
-                = this.listeners.toArray(new QueryBrowserListener[0]);
-        for (QueryBrowserListener listener : listeners) {
+        for (QueryBrowserListener<T> listener : getQueryListeners()) {
             listener.query();
         }
     }
@@ -78,14 +76,21 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      *
      * @param selected the selected object
      */
-    @SuppressWarnings("unchecked")
     protected void notifySelected(T selected) {
-        QueryBrowserListener<T>[] listeners
-                = (QueryBrowserListener<T>[]) this.listeners.toArray(
-                new QueryBrowserListener[0]);
-        for (QueryBrowserListener<T> listener : listeners) {
+        for (QueryBrowserListener<T> listener : getQueryListeners()) {
             listener.selected(selected);
         }
+    }
+
+    /**
+     * Returns the listeners.
+     *
+     * @return the listeners
+     */
+    @SuppressWarnings("unchecked")
+    protected QueryBrowserListener<T>[] getQueryListeners() {
+        return (QueryBrowserListener<T>[]) this.listeners.toArray(
+                new QueryBrowserListener[0]);
     }
 
 }

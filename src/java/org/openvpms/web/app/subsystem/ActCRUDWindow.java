@@ -101,6 +101,23 @@ public abstract class ActCRUDWindow<T extends Act>
         super.setObject(object);
     }
 
+
+    /**
+     * Invoked when the edit button is pressed. This popups up an {@link
+     * EditDialog}.
+     */
+    @Override
+    public void edit() {
+        Act act = getObject();
+        if (act != null) {
+            if (canEdit(act)) {
+                super.edit();
+            } else {
+                showStatusError(act, "act.noedit.title", "act.noedit.message");
+            }
+        }
+    }
+
     /**
      * Determines if an act can be edited.
      *
@@ -123,22 +140,6 @@ public abstract class ActCRUDWindow<T extends Act>
     protected boolean canDelete(Act act) {
         String status = act.getStatus();
         return !POSTED.equals(status);
-    }
-
-    /**
-     * Invoked when the edit button is pressed. This popups up an {@link
-     * EditDialog}.
-     */
-    @Override
-    protected void onEdit() {
-        Act act = getObject();
-        if (act != null) {
-            if (canEdit(act)) {
-                super.onEdit();
-            } else {
-                showStatusError(act, "act.noedit.title", "act.noedit.message");
-            }
-        }
     }
 
     /**
