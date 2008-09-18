@@ -31,7 +31,7 @@
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entity.scheduleViewType"/>
+                                  value="entity.organisationScheduleView"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>

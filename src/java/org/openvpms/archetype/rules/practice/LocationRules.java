@@ -93,7 +93,8 @@ public class LocationRules {
     }
 
     /**
-     * Returns the <em>entity.scheduleViewType</em>s associated location.
+     * Returns the <em>entity.organisationScheduleView</em>s associated
+     * location.
      *
      * @param location the location
      * @return the schedules views

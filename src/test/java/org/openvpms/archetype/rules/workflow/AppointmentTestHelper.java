@@ -48,7 +48,7 @@ public class AppointmentTestHelper extends TestHelper {
      * @param schedules the schedules
      */
     public static Entity createScheduleView(Party ... schedules) {
-        Entity view = (Entity) create("entity.scheduleViewType");
+        Entity view = (Entity) create("entity.organisationScheduleView");
         view.setName("XScheduleView");
         EntityBean bean = new EntityBean(view);
         for (Party schedule  : schedules) {
