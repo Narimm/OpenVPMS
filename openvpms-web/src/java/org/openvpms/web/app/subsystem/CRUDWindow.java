@@ -75,7 +75,12 @@ public interface CRUDWindow<T extends IMObject> {
     ArchetypeDescriptor getArchetypeDescriptor();
 
     /**
-     * Invoked to create a new object.
+     * Creates and edits a new object.
      */
-    void onCreate();
+    void create();
+
+    /**
+     * Edits the current object.
+     */
+    void edit();
 }

@@ -57,7 +57,8 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
+public abstract class AbstractCRUDWindow<T extends IMObject>
+        implements CRUDWindow<T> {
 
     /**
      * The object.
@@ -205,10 +206,31 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     }
 
     /**
-     * Invoked when the 'new' button is pressed.
+     * Creates and edits a new object.
      */
-    public void onCreate() {
+    public void create() {
         onCreate(getArchetypes());
+    }
+
+    /**
+     * Edits the current object.
+     */
+    public void edit() {
+        T object = getObject();
+        if (object != null) {
+            if (object.isNew()) {
+                edit(object);
+            } else {
+                // make sure the latest instance is being used.
+                object = IMObjectHelper.reload(object);
+                if (object == null) {
+                    ErrorDialog.show(Messages.get("imobject.noexist"),
+                                     archetypes.getDisplayName());
+                } else {
+                    edit(object);
+                }
+            }
+        }
     }
 
     /**
@@ -251,7 +273,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
         if (edit == null) {
             edit = ButtonFactory.create(EDIT_ID, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
-                    onEdit();
+                    edit();
                 }
             });
         }
@@ -267,7 +289,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
         if (create == null) {
             create = ButtonFactory.create(NEW_ID, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
-                    onCreate();
+                    create();
                 }
             });
         }
@@ -362,28 +384,6 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     protected void onCreated(T object) {
         edit(object);
-    }
-
-    /**
-     * Invoked when the edit button is pressed. This popups up an {@link
-     * EditDialog}.
-     */
-    protected void onEdit() {
-        T object = getObject();
-        if (object != null) {
-            if (object.isNew()) {
-                edit(object);
-            } else {
-                // make sure the latest instance is being used.
-                object = IMObjectHelper.reload(object);
-                if (object == null) {
-                    ErrorDialog.show(Messages.get("imobject.noexist"),
-                                     archetypes.getDisplayName());
-                } else {
-                    edit(object);
-                }
-            }
-        }
     }
 
     /**

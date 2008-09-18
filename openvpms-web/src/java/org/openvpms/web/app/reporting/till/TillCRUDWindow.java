@@ -133,6 +133,25 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     }
 
     /**
+     * Invoked when the edit button is pressed This popups up an {@link
+     * EditDialog} if the act is an <em>act.tillBalanceAdjustment</em>.
+     */
+    @Override
+    public void edit() {
+        if (TypeHelper.isA(childAct, "act.tillBalanceAdjustment")) {
+            LayoutContext context = new DefaultLayoutContext(true);
+            final IMObjectEditor editor = createEditor(childAct, context);
+            EditDialog dialog = new EditDialog(editor);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    onEditCompleted(editor, false);
+                }
+            });
+            dialog.show();
+        }
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -246,7 +265,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * Invoked when the 'adjust' button is pressed.
      */
     protected void onAdjust() {
-        onCreate();
+        create();
     }
 
     /**
@@ -297,25 +316,6 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             adjBean.setParticipant("participation.till", till);
         }
         super.onCreated(adjustment);
-    }
-
-    /**
-     * Invoked when the edit button is pressed This popups up an {@link
-     * EditDialog} if the act is an <em>act.tillBalanceAdjustment</em>.
-     */
-    @Override
-    protected void onEdit() {
-        if (TypeHelper.isA(childAct, "act.tillBalanceAdjustment")) {
-            LayoutContext context = new DefaultLayoutContext(true);
-            final IMObjectEditor editor = createEditor(childAct, context);
-            EditDialog dialog = new EditDialog(editor);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    onEditCompleted(editor, false);
-                }
-            });
-            dialog.show();
-        }
     }
 
     /**

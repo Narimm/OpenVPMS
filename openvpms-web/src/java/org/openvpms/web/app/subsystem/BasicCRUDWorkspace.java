@@ -118,7 +118,7 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     if (popup.createNew()) {
-                        getCRUDWindow().onCreate();
+                        getCRUDWindow().create();
                     } else {
                         T object = popup.getSelected();
                         if (object != null) {

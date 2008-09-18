@@ -34,8 +34,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
 import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Availability.UNAVAILABLE;
-import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.View;
+import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Highlight;
 import org.openvpms.web.component.im.query.AbstractBrowser;
+import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.DateHelper;
@@ -106,12 +107,10 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      */
     private Party selectedSchedule;
 
-    private String[] viewSelectorItems;
-
     /**
-     * View selector, to change grid display items.
+     * Highlight selector, to change colour of display items.
      */
-    private SelectField viewSelector;
+    private SelectField highlightSelector;
 
 
     /**
@@ -140,11 +139,6 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
                 onSelected(event);
             }
         });
-
-        viewSelectorItems = new String[]{
-                Messages.get("workflow.scheduling.view.customer"),
-                Messages.get("workflow.scheduling.view.clinician"),
-                Messages.get("workflow.scheduling.view.status")};
     }
 
     /**
@@ -263,6 +257,15 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
     }
 
     /**
+     * Adds an appointment listener.
+     *
+     * @param listener the listener to add
+     */
+    public void addAppointmentListener(AppointmentListener listener) {
+        addQueryListener(listener);
+    }
+
+    /**
      * Performs a query and notifies registered listeners.
      */
     private void onQuery() {
@@ -279,17 +282,22 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         layout.setAlignment(Alignment.ALIGN_CENTER);
         selectedDate.setLayoutData(layout);
 
-        viewSelector = SelectFieldFactory.create(viewSelectorItems);
-        viewSelector.setSelectedItem(viewSelectorItems[0]);
-        viewSelector.addActionListener(new ActionListener() {
+        String[] highlightSelectorItems = {
+                Messages.get("workflow.scheduling.highlight.appointment"),
+                Messages.get("workflow.scheduling.highlight.clinician"),
+                Messages.get("workflow.scheduling.highlight.status")};
+
+        highlightSelector = SelectFieldFactory.create(highlightSelectorItems);
+        highlightSelector.setSelectedItem(highlightSelectorItems[0]);
+        highlightSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                onViewChanged();
+                onHighlightChanged();
             }
         });
 
-        Label viewLabel = LabelFactory.create("workflow.scheduling.view");
+        Label viewLabel = LabelFactory.create("workflow.scheduling.highlight");
         Row row = RowFactory.create("CellSpacing", query.getComponent(),
-                                    viewLabel, viewSelector);
+                                    viewLabel, highlightSelector);
         component = ColumnFactory.create("WideCellSpacing", selectedDate, row,
                                          table);
     }
@@ -297,17 +305,17 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
     /**
      * Invoked when the view changes.
      */
-    private void onViewChanged() {
-        int index = viewSelector.getSelectedIndex();
+    private void onHighlightChanged() {
+        int index = highlightSelector.getSelectedIndex();
         switch (index) {
             case 0:
-                model.setView(View.CUSTOMER);
+                model.setHighlight(Highlight.APPOINTMENT);
                 break;
             case 1:
-                model.setView(View.CLINICIAN);
+                model.setHighlight(Highlight.CLINICIAN);
                 break;
             default:
-                model.setView(View.STATUS);
+                model.setHighlight(Highlight.STATUS);
 
         }
     }
@@ -323,6 +331,11 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         TableActionEventEx action = (TableActionEventEx) event;
         int column = action.getColumn();
         int row = action.getRow();
+        boolean doubleClick = false;
+        if (model.isSelectedCell(column, row)) {
+            doubleClick = true;
+        }
+        model.setSelectedCell(column, row);
         selected = model.getAppointment(column, row);
         if (model.getAvailability(column, row) != UNAVAILABLE) {
             selectedTime = model.getStartTime(row);
@@ -331,7 +344,25 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
             selectedTime = null;
             selectedSchedule = null;
         }
-        notifySelected(selected);
+        if (doubleClick) {
+            if (selected == null) {
+                for (QueryBrowserListener<ObjectSet> listener
+                        : getQueryListeners()) {
+                    if (listener instanceof AppointmentListener) {
+                        ((AppointmentListener) listener).create();
+                    }
+                }
+            } else {
+                for (QueryBrowserListener<ObjectSet> listener
+                        : getQueryListeners()) {
+                    if (listener instanceof AppointmentListener) {
+                        ((AppointmentListener) listener).edit(selected);
+                    }
+                }
+            }
+        } else {
+            notifySelected(selected);
+        }
     }
 
 }

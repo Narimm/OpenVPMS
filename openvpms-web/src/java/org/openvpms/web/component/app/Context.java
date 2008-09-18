@@ -93,7 +93,7 @@ public interface Context {
      * Schedule view short name.
      */
     public static final String SCHEDULE_VIEW_SHORTNAME
-            = "entity.scheduleViewType";
+            = "entity.organisationScheduleView";
 
     /**
      * Schedule short name.

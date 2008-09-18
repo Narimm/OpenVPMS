@@ -53,7 +53,8 @@ public class LocalContextTestCase extends AbstractAppTest {
         checkContext("party.patientpet", "getPatient", context);
         checkContext("party.organisationPractice", "getPractice", context);
         checkContext("product.medication", "getProduct", context);
-        checkContext("entity.scheduleViewType", "getScheduleViewType", context);
+        checkContext("entity.organisationScheduleView", "getScheduleView",
+                     context);
         checkContext("party.organisationSchedule", "getSchedule", context);
         checkContext(new Date(), new Date(), "getScheduleDate", context);
         checkContext("party.organisationStockLocation", "getStockLocation",
