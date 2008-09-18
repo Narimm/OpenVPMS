@@ -42,13 +42,13 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="target" displayName="Schedule" path="/target"
+        <node name="target" displayName="Schedule View" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entity.scheduleViewType"/>
+                                  value="entity.organisationScheduleView"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>

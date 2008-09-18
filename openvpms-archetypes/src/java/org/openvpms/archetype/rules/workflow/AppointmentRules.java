@@ -79,7 +79,7 @@ public class AppointmentRules {
 
     /**
      * Returns the <em>party.organisationSchedule</em>s associated with a
-     * <em>entity.scheduleViewType</em>.
+     * <em>entity.organisationScheduleView</em>.
      *
      * @param scheduleView the schedule view
      * @return the schedules associated with the view
