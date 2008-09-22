@@ -500,8 +500,14 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 2px"/>
-                        <property name="background" value="#ccff66"/>
+                        <property name="backgroundImage">
+                            <fill-image>
+                                <image type="nextapp.echo2.app.ResourceImageReference">
+                                    <resource-image-reference
+                                            resource="/org/openvpms/web/resource/image/check-alpha.png"/>
+                                </image>
+                            </fill-image>
+                        </property>
                     </properties>
                 </layout-data>
             </property>

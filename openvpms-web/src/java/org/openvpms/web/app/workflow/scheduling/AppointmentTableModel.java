@@ -29,6 +29,7 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableCellRenderer;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.Appointment;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -94,6 +95,12 @@ public class AppointmentTableModel extends AbstractTableModel {
      * Determines cell colour.
      */
     private Highlight highlight = Highlight.APPOINTMENT;
+
+    /**
+     * The clinician to display appointments for.
+     * If <tt>null</tt> indicates to display appointments for all clinicians.
+     */
+    private IMObjectReference clinician;
 
     /**
      * Determines the time range to display.
@@ -281,6 +288,27 @@ public class AppointmentTableModel extends AbstractTableModel {
     }
 
     /**
+     * Sets the clinician to display appointments for.
+     *
+     * @param clinician the clinician, or <tt>null</tt> to display appointments
+     *                  for all clinicians
+     */
+    public void setClinician(IMObjectReference clinician) {
+        this.clinician = clinician;
+        fireTableDataChanged();
+    }
+
+    /**
+     * Returns the clinician to display appointments for.
+     *
+     * @return the clinician, or <tt>null</tt> to display appointments
+     *         for all clinicians
+     */
+    public IMObjectReference getClinician() {
+        return clinician;
+    }
+
+    /**
      * Determines the time range to display.
      * <p/>
      * Defaults to {@link TimeRange#ALL}.
@@ -381,23 +409,23 @@ public class AppointmentTableModel extends AbstractTableModel {
         } else {
             Column col = getColumn(column);
             ObjectSet set = col.getAppointment(row);
-            int span = 0;
+            int rowSpan = 1;
             if (set != null) {
                 if (singleScheduleView) {
                     result = getValue(set, col);
                 } else {
                     result = getAppointment(set);
                 }
-                span = view.getSlots(set, row);
+                rowSpan = view.getSlots(set, row);
             } else {
                 Schedule schedule = col.getSchedule();
                 if (schedule != null) {
                     if (view.getAvailability(schedule, row) == UNAVAILABLE) {
-                        span = view.getUnavailableSlots(schedule, row);
+                        rowSpan = view.getUnavailableSlots(schedule, row);
                     }
                 }
             }
-            if (span > 1) {
+            if (rowSpan > 1) {
                 if (!(result instanceof Component)) {
                     Label label = LabelFactory.create();
                     if (result != null) {
@@ -405,7 +433,7 @@ public class AppointmentTableModel extends AbstractTableModel {
                     }
                     result = label;
                 }
-                setRowSpan((Component) result, span);
+                setSpan((Component) result, rowSpan);
             }
         }
         return result;
@@ -538,11 +566,11 @@ public class AppointmentTableModel extends AbstractTableModel {
      * Sets the row span of a component.
      *
      * @param component the component
-     * @param span      the row span
+     * @param rowSpan   the row span
      */
-    private void setRowSpan(Component component, int span) {
+    private void setSpan(Component component, int rowSpan) {
         TableLayoutDataEx layout = new TableLayoutDataEx();
-        layout.setRowSpan(span);
+        layout.setRowSpan(rowSpan);
         component.setLayoutData(layout);
     }
 
@@ -689,9 +717,18 @@ public class AppointmentTableModel extends AbstractTableModel {
         } else {
             result.addColumn(new Column(index, columnNames[index]));
             ++index;
+            Column lastColumn = null;
+            Party lastSchedule = null;
             for (Schedule schedule : schedules) {
                 Column column = new Column(index++, schedule);
                 result.addColumn(column);
+                if (lastColumn != null
+                        && ObjectUtils.equals(lastSchedule,
+                                              schedule.getSchedule())) {
+                    lastColumn.setNextColumn(column);
+                }
+                lastColumn = column;
+                lastSchedule = schedule.getSchedule();
             }
         }
         return result;
@@ -717,6 +754,11 @@ public class AppointmentTableModel extends AbstractTableModel {
     private class Column extends TableColumnEx {
 
         private Schedule schedule;
+
+        /**
+         * The next column with the same schedule.
+         */
+        private Column nextColumn;
 
         public Column(int modelIndex, Schedule schedule) {
             this(modelIndex, schedule, schedule.getName());
@@ -756,6 +798,14 @@ public class AppointmentTableModel extends AbstractTableModel {
                 return view.getAvailability(schedule, row);
             }
             return UNAVAILABLE;
+        }
+
+        public void setNextColumn(Column column) {
+            nextColumn = column;
+        }
+
+        public Column getNextColumn() {
+            return nextColumn;
         }
     }
 

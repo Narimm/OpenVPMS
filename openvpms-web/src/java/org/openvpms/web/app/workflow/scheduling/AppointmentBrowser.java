@@ -30,12 +30,19 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.layout.ColumnLayoutData;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectSet;
 import static org.openvpms.web.app.workflow.scheduling.AppointmentGrid.Availability.UNAVAILABLE;
 import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Highlight;
 import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.TimeRange;
+import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
+import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.QueryListener;
@@ -49,6 +56,7 @@ import org.openvpms.web.resource.util.Messages;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -116,6 +124,11 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      * Time range selector.
      */
     private SelectField timeSelector;
+
+    /**
+     * Clinician selector.
+     */
+    private SelectField clinicianSelector;
 
 
     /**
@@ -299,6 +312,9 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
 
         Label viewLabel = LabelFactory.create("workflow.scheduling.highlight");
 
+        clinicianSelector = createClinicianSelector();
+        Label clinicianLabel = LabelFactory.create("clinician");
+
         String[] timeSelectorItems = {
                 Messages.get("workflow.scheduling.time.all"),
                 Messages.get("workflow.scheduling.time.morning"),
@@ -317,6 +333,7 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
 
         Row row = RowFactory.create("CellSpacing", query.getComponent(),
                                     viewLabel, highlightSelector,
+                                    clinicianLabel, clinicianSelector,
                                     timeLabel, timeSelector);
 
         component = ColumnFactory.create("WideCellSpacing", selectedDate,
@@ -337,7 +354,18 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
                 break;
             default:
                 model.setHighlight(Highlight.STATUS);
+        }
+    }
 
+    /**
+     * Invoked when the clinician changes.
+     */
+    private void onClinicianChanged() {
+        User clinician = (User) clinicianSelector.getSelectedItem();
+        if (clinician != null) {
+            model.setClinician(clinician.getObjectReference());
+        } else {
+            model.setClinician(null);
         }
     }
 
@@ -405,6 +433,32 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         } else {
             notifySelected(selected);
         }
+    }
+
+    private SelectField createClinicianSelector() {
+        UserRules rules = new UserRules();
+        List<IMObject> clinicians = new ArrayList<IMObject>();
+        ArchetypeQuery query = new ArchetypeQuery("security.user", true, true);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        Iterator<User> iter = new IMObjectQueryIterator<User>(query);
+        while (iter.hasNext()) {
+            User user = iter.next();
+            if (rules.isClinician(user)) {
+                clinicians.add(user);
+            }
+        }
+        IMObjectListModel model
+                = new IMObjectListModel(clinicians, true, false);
+        SelectField result = SelectFieldFactory.create(model);
+        result.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+
+        result.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onClinicianChanged();
+            }
+        });
+
+        return result;
     }
 
 }
