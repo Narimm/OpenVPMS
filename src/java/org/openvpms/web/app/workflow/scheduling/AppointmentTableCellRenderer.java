@@ -23,6 +23,7 @@ import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Font;
 import nextapp.echo2.app.Table;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.Appointment;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -86,8 +87,7 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(Table table, Object value,
                                                    int column, int row) {
-        Component component = super.getTableCellRendererComponent(
-                table, value, column, row);
+        Component component = getComponent(table, value, column, row);
         if (column != AppointmentTableModel.START_TIME_INDEX) {
             AppointmentTableModel model
                     = (AppointmentTableModel) table.getModel();
@@ -142,72 +142,77 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
             component = super.getComponent(table, value, column, row);
         }
 
-        if (column != AppointmentTableModel.START_TIME_INDEX) {
-            // highlight the cell
+        if (column == AppointmentTableModel.START_TIME_INDEX) {
+            mergeStyle(component, getFreeStyle(model, row));
+        } else {
             ObjectSet appointment = model.getAppointment(column, row);
-            AppointmentTableModel.Highlight highlight = model.getHighlight();
-            Color colour = getAppointmentColour(appointment, highlight);
-            if (colour != null) {
-                TableLayoutDataEx layout
-                        = (TableLayoutDataEx) component.getLayoutData();
-                if (layout == null) {
-                    layout = new TableLayoutDataEx();
-                    component.setLayoutData(layout);
-                }
-                layout.setBackground(colour);
+            if (appointment != null) {
+                highlightAppointment(model, appointment, component);
+            } else {
+                highlightCell(model, component, column, row);
             }
         }
         return component;
     }
 
-    /**
-     * Returns the style name for a column and row.
-     *
-     * @param table  the <code>Table</code> for which the rendering is
-     *               occurring
-     * @param value  the value retrieved from the <tt>TableModel</tt> for
-     *               the specified coordinate
-     * @param column the column
-     * @param row    the row
-     * @return a style name for the given column and row.
-     */
-    protected String getStyle(Table table, Object value, int column, int row) {
-        String result = null;
-        AppointmentTableModel model = (AppointmentTableModel) table.getModel();
-        if (column == AppointmentTableModel.START_TIME_INDEX) {
-            result = getFreeStyle(model, row);
-        } else {
-            if (model.getHighlight() == STATUS) {
-                result = getStatusStyle(model, column, row);
-            }
-            if (result == null) {
-                AppointmentGrid.Availability avail
-                        = model.getAvailability(column, row);
+    private void highlightCell(AppointmentTableModel model,
+                               Component component, int column, int row) {
+        AppointmentGrid.Availability avail
+                = model.getAvailability(column, row);
+        String style;
 
-                switch (avail) {
-                    case BUSY:
-                        result = "Appointment.Busy";
-                        break;
-                    case FREE:
-                        result = getFreeStyle(model, row);
-                        break;
-                    default:
-                        result = "Appointment.Unavailable";
-                        break;
+        switch (avail) {
+            case BUSY:
+                style = "Appointment.Busy";
+                break;
+            case FREE:
+                style = getFreeStyle(model, row);
+                break;
+            default:
+                style = "Appointment.Unavailable";
+                break;
+        }
+        mergeStyle(component, style);
+    }
+
+    private void highlightAppointment(AppointmentTableModel model,
+                                      ObjectSet appointment,
+                                      Component component) {
+        if (!isSelectedClinician(appointment, model)) {
+            mergeStyle(component, "Appointment.Busy");
+        } else {
+            AppointmentTableModel.Highlight highlight = model.getHighlight();
+
+            if (model.getHighlight() == STATUS) {
+                String style = getStatusStyle(appointment);
+                mergeStyle(component, style);
+            } else {
+                Color colour = getAppointmentColour(appointment, highlight);
+                if (colour != null) {
+                    TableLayoutDataEx layout
+                            = (TableLayoutDataEx) component.getLayoutData();
+                    if (layout == null) {
+                        layout = new TableLayoutDataEx();
+                        component.setLayoutData(layout);
+                    }
+                    layout.setBackground(colour);
                 }
             }
         }
-        return result;
     }
 
-    private String getStatusStyle(AppointmentTableModel model, int column,
-                                  int row) {
-        String result = null;
-        ObjectSet set = model.getAppointment(column, row);
-        if (set != null) {
-            result = "TaskTable." + set.getString(Appointment.ACT_STATUS);
+    private String getStatusStyle(ObjectSet appointment) {
+        return "TaskTable." + appointment.getString(Appointment.ACT_STATUS);
+    }
+
+    private boolean isSelectedClinician(ObjectSet appointment,
+                                        AppointmentTableModel model) {
+        IMObjectReference clinician = model.getClinician();
+        if (clinician == null) {
+            return true;
         }
-        return result;
+        return ObjectUtils.equals(clinician, appointment.getReference(
+                Appointment.CLINICIAN_REFERENCE));
     }
 
     private String getFreeStyle(AppointmentTableModel model, int row) {

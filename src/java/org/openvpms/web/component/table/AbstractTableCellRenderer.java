@@ -55,12 +55,15 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
                                                    int column, int row) {
         Component component = getComponent(table, value, column, row);
         String style = getStyle(table, value, column, row);
-        mergeStyle(component, style);
+        if (style != null) {
+            mergeStyle(component, style);
+        }
         return component;
     }
 
     /**
      * Returns the style name for a column and row.
+     * <p/>This implementation returns <tt>null</tt>
      *
      * @param table  the <tt>Table</tt> for which the rendering is
      *               occurring
@@ -68,10 +71,11 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
      *               specified coordinate
      * @param column the column
      * @param row    the row
-     * @return a style name for the given column and row.
+     * @return a style name for the given column and row. May be <tt>null</tt>
      */
-    protected abstract String getStyle(Table table, Object value, int column,
-                                       int row);
+    protected String getStyle(Table table, Object value, int column, int row) {
+        return null;
+    }
 
     /**
      * Returns a component for a value.
