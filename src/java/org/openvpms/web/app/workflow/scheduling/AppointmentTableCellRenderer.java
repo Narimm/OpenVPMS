@@ -30,7 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectSet;
-import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Availability.FREE;
+import static org.openvpms.web.app.workflow.scheduling.AppointmentGrid.Availability.FREE;
 import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Highlight.STATUS;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
 import org.openvpms.web.component.util.ColourHelper;
@@ -94,7 +94,7 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
             if (!model.isSingleScheduleView()
                     && model.isSelectedCell(column, row)
                     && model.getAvailability(column, row)
-                    != AppointmentTableModel.Availability.UNAVAILABLE) {
+                    != AppointmentGrid.Availability.UNAVAILABLE) {
                 // highlight the selected cell.
                 // Ideally, this would be done by the table, however none of
                 // the tables support cell selection.
@@ -181,7 +181,7 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
                 result = getStatusStyle(model, column, row);
             }
             if (result == null) {
-                AppointmentTableModel.Availability avail
+                AppointmentGrid.Availability avail
                         = model.getAvailability(column, row);
 
                 switch (avail) {

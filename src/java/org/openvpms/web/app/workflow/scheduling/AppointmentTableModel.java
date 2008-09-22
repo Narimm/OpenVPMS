@@ -29,18 +29,15 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableCellRenderer;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.Appointment;
-import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ObjectSet;
+import static org.openvpms.web.app.workflow.scheduling.AppointmentGrid.Availability.UNAVAILABLE;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.DateHelper;
@@ -49,11 +46,12 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -64,21 +62,23 @@ import java.util.Map;
  */
 public class AppointmentTableModel extends AbstractTableModel {
 
-    /**
-     * Slot availability.
-     */
-    public enum Availability {
-        FREE, BUSY, UNAVAILABLE
-    }
-
     public enum Highlight {
         APPOINTMENT, CLINICIAN, STATUS
     }
 
+    public enum TimeRange {
+        ALL, MORNING, AFTERNOON, EVENING
+    }
+
     /**
-     * The day being displayed.
+     * Appointment grid.
      */
-    private Date day;
+    private AppointmentGrid grid;
+
+    /**
+     * The current view.
+     */
+    private AppointmentGrid view;
 
     /**
      * The column model.
@@ -91,34 +91,14 @@ public class AppointmentTableModel extends AbstractTableModel {
     private boolean singleScheduleView;
 
     /**
-     * The start time, as minutes from midnight.
-     */
-    private int startTime = DEFAULT_START;
-
-    /**
-     * The end time, as minutes from midnight.
-     */
-    private int endTime = DEFAULT_END;
-
-    /**
-     * The slot size, in minutes.
-     */
-    private int slotSize = DEFAULT_SLOT_SIZE;
-
-    /**
-     * The no. of rows being displayed.
-     */
-    private int rows = (DEFAULT_END - DEFAULT_START) / DEFAULT_SLOT_SIZE;
-
-    /**
-     * Appointment rules.
-     */
-    private final AppointmentRules rules;
-
-    /**
      * Determines cell colour.
      */
     private Highlight highlight = Highlight.APPOINTMENT;
+
+    /**
+     * Determines the time range to display.
+     */
+    private TimeRange timeRange = TimeRange.ALL;
 
     /**
      * The selected column.
@@ -154,22 +134,6 @@ public class AppointmentTableModel extends AbstractTableModel {
      * The start time index.
      */
     protected static final int START_TIME_INDEX = 0;
-
-
-    /**
-     * The default slot size, in minutes.
-     */
-    private static final int DEFAULT_SLOT_SIZE = 15;
-
-    /**
-     * The default start time, as minutes from midnight.
-     */
-    private static final int DEFAULT_START = 9 * 60;
-
-    /**
-     * The default end time, as minutes from midnight.
-     */
-    private static final int DEFAULT_END = 18 * 60;
 
     /**
      * The status index.
@@ -218,7 +182,6 @@ public class AppointmentTableModel extends AbstractTableModel {
      * Creates a new <tt>AppointmentTableModel</tt>.
      */
     public AppointmentTableModel() {
-        rules = new AppointmentRules();
         cellRenderer = new AppointmentTableCellRenderer();
 
         columnNames = new String[NODE_NAMES.length];
@@ -233,7 +196,6 @@ public class AppointmentTableModel extends AbstractTableModel {
                 }
             }
         }
-        day = DateRules.getDate(new Date());
     }
 
     /**
@@ -242,13 +204,13 @@ public class AppointmentTableModel extends AbstractTableModel {
      * @return the schedules
      */
     public List<Party> getSchedules() {
-        List<Party> result = new ArrayList<Party>();
+        Set<Party> result = new HashSet<Party>();
         for (Column column : getColumns()) {
             if (column.getSchedule() != null) {
-                result.add(column.getSchedule());
+                result.add(column.getSchedule().getSchedule());
             }
         }
-        return result;
+        return new ArrayList<Party>(result);
     }
 
     /**
@@ -258,56 +220,12 @@ public class AppointmentTableModel extends AbstractTableModel {
      * @param row    the row
      * @return the availability
      */
-    public Availability getAvailability(int column, int row) {
+    public AppointmentGrid.Availability getAvailability(int column, int row) {
         Column col = getColumn(column);
         if (col.getModelIndex() == START_TIME_INDEX && !singleScheduleView) {
-            return Availability.UNAVAILABLE;
+            return UNAVAILABLE;
         }
         return col.getAvailability(row);
-    }
-
-    /**
-     * Sets the schedules to display.
-     *
-     * @param schedules the schedules
-     */
-    public void setSchedules(List<Party> schedules) {
-        startTime = -1;
-        endTime = -1;
-        slotSize = -1;
-        model = createColumnModel(schedules);
-        singleScheduleView = schedules.size() == 1;
-        Iterator iter = model.getColumns();
-        while (iter.hasNext()) {
-            Column column = (Column) iter.next();
-            int start = column.getStartMins();
-            if (startTime == -1 || start < startTime) {
-                startTime = start;
-            }
-            int end = column.getEndMins();
-            if (end > endTime) {
-                endTime = end;
-            }
-            if (column.getSlotSize() < slotSize) {
-                slotSize = column.getSlotSize();
-            }
-        }
-        if (startTime == -1) {
-            startTime = DEFAULT_START;
-        }
-        if (endTime == -1) {
-            endTime = DEFAULT_END;
-        }
-        if (slotSize == -1) {
-            slotSize = DEFAULT_SLOT_SIZE;
-        }
-        int timeRange = endTime - startTime;
-        if (timeRange > 0 && slotSize > 0) {
-            rows = timeRange / slotSize;
-        } else {
-            rows = 0;
-        }
-        fireTableStructureChanged();
     }
 
     /**
@@ -318,15 +236,18 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     public void setAppointments(Date day,
                                 Map<Party, List<ObjectSet>> appointments) {
-        this.day = DateRules.getDate(day);
-        for (Column column : getColumns()) {
-            Party schedule = column.getSchedule();
-            if (schedule != null) {
-                List<ObjectSet> sets = appointments.get(schedule);
-                column.setAppointments(day, sets);
-            }
+        Set<Party> schedules = appointments.keySet();
+        singleScheduleView = schedules.size() == 1;
+        if (singleScheduleView) {
+            Party schedule = schedules.iterator().next();
+            grid = new SingleScheduleGrid(day, schedule,
+                                          appointments.get(schedule));
+        } else {
+            grid = new MultiScheduleGrid(day, appointments);
         }
-        fireTableDataChanged();
+        view = createGridView(grid, timeRange);
+        model = createColumnModel(grid);
+        fireTableStructureChanged();
     }
 
     /**
@@ -357,6 +278,19 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     public Highlight getHighlight() {
         return highlight;
+    }
+
+    /**
+     * Determines the time range to display.
+     * <p/>
+     * Defaults to {@link TimeRange#ALL}.
+     *
+     * @param timeRange the time range
+     */
+    public void setTimeRange(TimeRange timeRange) {
+        this.timeRange = timeRange;
+        view = createGridView(grid, timeRange);
+        fireTableStructureChanged();
     }
 
     /**
@@ -423,7 +357,7 @@ public class AppointmentTableModel extends AbstractTableModel {
      * @return the row count
      */
     public int getRowCount() {
-        return rows;
+        return view.getSlots();
     }
 
     /**
@@ -446,7 +380,7 @@ public class AppointmentTableModel extends AbstractTableModel {
             result = label;
         } else {
             Column col = getColumn(column);
-            ObjectSet set = getAppointment(col, row);
+            ObjectSet set = col.getAppointment(row);
             int span = 0;
             if (set != null) {
                 if (singleScheduleView) {
@@ -454,14 +388,13 @@ public class AppointmentTableModel extends AbstractTableModel {
                 } else {
                     result = getAppointment(set);
                 }
-                span = getRowSpan(set.getDate(Appointment.ACT_START_TIME),
-                                  set.getDate(Appointment.ACT_END_TIME));
+                span = view.getSlots(set, row);
             } else {
-                int startMins = getMinutes(row);
-                if (startMins < col.getStartMins()) {
-                    span = getRowSpan(startMins, col.getStartMins());
-                } else if (col.getEndMins() <= startMins) {
-                    span = getRowSpan(col.getEndMins(), endTime);
+                Schedule schedule = col.getSchedule();
+                if (schedule != null) {
+                    if (view.getAvailability(schedule, row) == UNAVAILABLE) {
+                        span = view.getUnavailableSlots(schedule, row);
+                    }
                 }
             }
             if (span > 1) {
@@ -485,8 +418,7 @@ public class AppointmentTableModel extends AbstractTableModel {
      * @return the start time
      */
     public Date getStartTime(int row) {
-        return DateRules.getDate(day, getMinutes(row),
-                                 DateUnits.MINUTES);
+        return view.getStartTime(row);
     }
 
     /**
@@ -496,8 +428,7 @@ public class AppointmentTableModel extends AbstractTableModel {
      * @return the hour
      */
     public int getHour(int row) {
-        int time = startTime + row * slotSize;
-        return time / 60;
+        return view.getHour(row);
     }
 
     /**
@@ -508,7 +439,7 @@ public class AppointmentTableModel extends AbstractTableModel {
      * @return the appointment, or <tt>null</tt> if none is found
      */
     public ObjectSet getAppointment(int column, int row) {
-        return getAppointment(getColumn(column), row);
+        return getColumn(column).getAppointment(row);
     }
 
     /**
@@ -520,7 +451,8 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     public Party getSchedule(int column) {
         Column col = getColumn(column);
-        return col.getSchedule();
+        Schedule schedule = col.getSchedule();
+        return (schedule != null) ? schedule.getSchedule() : null;
     }
 
     /**
@@ -573,19 +505,6 @@ public class AppointmentTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the appointment at the specified column and starting at the
-     * specified row.
-     *
-     * @param column the column
-     * @param row    the row
-     * @return the appointment, or <tt>null</tt> if none is found
-     */
-    private ObjectSet getAppointment(Column column, int row) {
-        Date startTime = getStartTime(row);
-        return column.getAppointment(startTime);
-    }
-
-    /**
      * Returns a component representing an appointment.
      *
      * @param set the appointment
@@ -598,8 +517,7 @@ public class AppointmentTableModel extends AbstractTableModel {
         String patient = set.getString(Appointment.PATIENT_NAME);
         String notes = set.getString(Appointment.ACT_DESCRIPTION);
         if (patient == null) {
-            text = Messages.get("workflow.scheduling.table.customer",
-                                customer);
+            text = Messages.get("workflow.scheduling.table.customer", customer);
         } else {
             text = Messages.get(
                     "workflow.scheduling.table.customerpatient",
@@ -617,17 +535,6 @@ public class AppointmentTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the minutes, from midnight, of the specified row.
-     *
-     * @param row the row
-     * @return the no. of minutes, from midnight
-     */
-    private int getMinutes(int row) {
-        return startTime + row * slotSize;
-    }
-
-
-    /**
      * Sets the row span of a component.
      *
      * @param component the component
@@ -637,29 +544,6 @@ public class AppointmentTableModel extends AbstractTableModel {
         TableLayoutDataEx layout = new TableLayoutDataEx();
         layout.setRowSpan(span);
         component.setLayoutData(layout);
-    }
-
-    /**
-     * Determines how many rows are spanned by a time range.
-     *
-     * @param startMins the start time
-     * @param endMins   the end time
-     * @return the no. of rows spanned
-     */
-    private int getRowSpan(int startMins, int endMins) {
-        return (endMins - startMins) / slotSize;
-    }
-
-    /**
-     * Determines how many rows are spanned by a time range.
-     *
-     * @param startTime the start time
-     * @param endTime   the end time
-     * @return the no. of rows spanned
-     */
-    private int getRowSpan(Date startTime, Date endTime) {
-        long duration = (endTime.getTime() - startTime.getTime()) / 1000 / 60;
-        return (int) duration / slotSize;
     }
 
     /**
@@ -744,19 +628,60 @@ public class AppointmentTableModel extends AbstractTableModel {
     }
 
     /**
+     * Creates a new view of the appointments.
+     *
+     * @param grid      the underlying appointment grid
+     * @param timeRange the time range to view
+     * @return view a new grid view, based on the time range
+     */
+    private AppointmentGrid createGridView(AppointmentGrid grid,
+                                           TimeRange timeRange) {
+        int startMins;
+        int endMins;
+        switch (timeRange) {
+            case MORNING:
+                startMins = 8 * 60;
+                endMins = 12 * 60;
+                break;
+            case AFTERNOON:
+                startMins = 12 * 60;
+                endMins = 17 * 60;
+                break;
+            case EVENING:
+                startMins = 17 * 60;
+                endMins = 24 * 60;
+                break;
+            default:
+                startMins = 0;
+                endMins = 24 * 60;
+        }
+        if (startMins < grid.getStartMins()) {
+            startMins = grid.getStartMins();
+        }
+        if (endMins > grid.getEndMins()) {
+            endMins = grid.getEndMins();
+        }
+        if (startMins > endMins) {
+            startMins = endMins;
+        }
+        return new AppointmentGridView(grid, startMins, endMins);
+    }
+
+    /**
      * Creates a column model to display a list of schedules. If there is only
      * a single schedule, a column will be created for each of the nodes
      * indicated by {@link #NODE_NAMES}, otherwise a column will be created for
      * each schedule.
      *
-     * @param schedules the schedules
+     * @param grid the appointment grid
      * @return a new column model
      */
-    private TableColumnModel createColumnModel(List<Party> schedules) {
+    private TableColumnModel createColumnModel(AppointmentGrid grid) {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
+        List<Schedule> schedules = grid.getSchedules();
         int index = START_TIME_INDEX;
         if (schedules.size() == 1) {
-            Party schedule = schedules.get(0);
+            Schedule schedule = schedules.get(0);
             for (int i = 0; i < columnNames.length; ++i) {
                 Column column = new Column(i, schedule, columnNames[i]);
                 result.addColumn(column);
@@ -764,7 +689,7 @@ public class AppointmentTableModel extends AbstractTableModel {
         } else {
             result.addColumn(new Column(index, columnNames[index]));
             ++index;
-            for (Party schedule : schedules) {
+            for (Schedule schedule : schedules) {
                 Column column = new Column(index++, schedule);
                 result.addColumn(column);
             }
@@ -787,153 +712,50 @@ public class AppointmentTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the minutes from midnight for the specified time.
-     *
-     * @param time the time
-     * @return the minutes from midnight for <tt>time</tt>
-     */
-    private static int getMinutes(Date time) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(time);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int mins = calendar.get(Calendar.MINUTE);
-        return (hour * 60) + mins;
-    }
-
-    /**
-     * Returns a date-time given a date and minutes from midnight.
-     *
-     * @param day  the date
-     * @param mins minutes from midnight
-     * @return a new date-time
-     */
-    private static Date getTime(Date day, int mins) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(day);
-        calendar.add(Calendar.MINUTE, mins);
-        return calendar.getTime();
-    }
-
-    /**
      * Schedule column.
      */
     private class Column extends TableColumnEx {
 
-        private Party schedule;
+        private Schedule schedule;
 
-        private int startMins = -1;
-
-        private Date startTime;
-
-        private int endMins = -1;
-
-        private Date endTime;
-
-        private int slotSize;
-
-        private List<ObjectSet> appointments;
-
-        public Column(int modelIndex, Party schedule) {
+        public Column(int modelIndex, Schedule schedule) {
             this(modelIndex, schedule, schedule.getName());
         }
 
-        public Column(int modelIndex, Party schedule, String heading) {
+        public Column(int modelIndex, Schedule schedule, String heading) {
             super(modelIndex);
             this.schedule = schedule;
             setHeaderValue(heading);
             setHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
             setCellRenderer(cellRenderer);
             setWidth(new Extent(100));
-            if (schedule != null) {
-                EntityBean bean = new EntityBean(schedule);
-                Date start = bean.getDate("startTime");
-                if (start != null) {
-                    startMins = getMinutes(start);
-                } else {
-                    startMins = DEFAULT_START;
-                }
-                startTime = getTime(day, startMins);
-
-                Date end = bean.getDate("endTime");
-                if (end != null) {
-                    endMins = getMinutes(end);
-                } else {
-                    endMins = DEFAULT_END;
-                }
-                endTime = getTime(day, endMins);
-                slotSize = rules.getSlotSize(schedule);
-                if (slotSize <= 0) {
-                    slotSize = DEFAULT_SLOT_SIZE;
-                }
-            }
         }
 
         public Column(int modelIndex, String heading) {
             this(modelIndex, null, heading);
         }
 
-        public Party getSchedule() {
+        public Schedule getSchedule() {
             return schedule;
         }
 
-        public void setAppointments(Date day, List<ObjectSet> appointments) {
-            startTime = getTime(day, startMins);
-            endTime = getTime(day, endMins);
-            this.appointments = appointments;
-        }
-
-        public List<ObjectSet> getAppointments() {
-            return appointments;
-        }
-
-        public Date getStartTime() {
-            return startTime;
+        public ObjectSet getAppointment(int slot) {
+            if (schedule != null) {
+                return view.getAppointment(schedule, slot);
+            }
+            return null;
         }
 
         public int getStartMins() {
-            return startMins;
+            return (schedule != null)
+                    ? schedule.getStartMins() : view.getStartMins();
         }
 
-        public Date getEndTime() {
-            return endTime;
-        }
-
-        public int getEndMins() {
-            return endMins;
-        }
-
-        public int getSlotSize() {
-            return slotSize;
-        }
-
-        public ObjectSet getAppointment(Date time) {
-            ObjectSet result = null;
-            if (appointments != null) {
-                for (ObjectSet set : appointments) {
-                    Date date = set.getDate(Appointment.ACT_START_TIME);
-                    if (date != null) {
-                        int compare = DateRules.compareTo(time, date);
-                        if (compare == 0) {
-                            result = set;
-                            break;
-                        } else if (compare < 0) {
-                            break;
-                        }
-                    }
-                }
+        public AppointmentGrid.Availability getAvailability(int row) {
+            if (schedule != null) {
+                return view.getAvailability(schedule, row);
             }
-            return result;
-        }
-
-        public Availability getAvailability(int row) {
-            int mins = getMinutes(row);
-            if (mins < startMins || mins >= endMins) {
-                return Availability.UNAVAILABLE;
-            }
-            if (getAppointment(getTime(day, mins)) != null) {
-                return Availability.BUSY;
-            }
-            return Availability.FREE;
+            return UNAVAILABLE;
         }
     }
 

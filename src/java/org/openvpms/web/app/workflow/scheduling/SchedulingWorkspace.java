@@ -165,11 +165,11 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
                     Appointment.ACT_REFERENCE);
             Act act = (Act) IMObjectHelper.getObject(actRef);
             window.setObject(act);
-            firePropertyChange(SUMMARY_PROPERTY, null, null);
         } else {
             window.setObject(null);
         }
         window.setStartTime(browser.getSelectedTime());
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**

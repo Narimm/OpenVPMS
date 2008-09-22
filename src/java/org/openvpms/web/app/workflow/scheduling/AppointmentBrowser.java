@@ -33,8 +33,9 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
-import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Availability.UNAVAILABLE;
+import static org.openvpms.web.app.workflow.scheduling.AppointmentGrid.Availability.UNAVAILABLE;
 import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Highlight;
+import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.TimeRange;
 import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.QueryListener;
@@ -47,7 +48,6 @@ import org.openvpms.web.resource.util.Messages;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -112,6 +112,11 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      */
     private SelectField highlightSelector;
 
+    /**
+     * Time range selector.
+     */
+    private SelectField timeSelector;
+
 
     /**
      * Creates a new <tt>AppointmentBrowser</tt>.
@@ -147,19 +152,16 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
     public void query() {
         getComponent();
         results = query.query();
-        List<Party> schedules;
-        selectedSchedule = query.getSchedule();
-        if (selectedSchedule != null) {
-            schedules = Arrays.asList(selectedSchedule);
-        } else {
-            schedules = query.getSchedules();
-        }
-        if (!schedules.equals(model.getSchedules())) {
-            model.setSchedules(schedules);
-        }
         model.setAppointments(query.getDate(), results);
         DateFormat format = DateHelper.getFullDateFormat();
         selectedDate.setText(format.format(query.getDate()));
+        boolean singleScheduleView = model.isSingleScheduleView();
+        table.setRolloverEnabled(singleScheduleView);
+        Highlight highlight = (singleScheduleView)
+                ? Highlight.STATUS : Highlight.APPOINTMENT;
+        if (highlightSelector.getSelectedIndex() != highlight.ordinal()) {
+            highlightSelector.setSelectedIndex(highlight.ordinal());
+        }
     }
 
     /**
@@ -296,10 +298,29 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         });
 
         Label viewLabel = LabelFactory.create("workflow.scheduling.highlight");
+
+        String[] timeSelectorItems = {
+                Messages.get("workflow.scheduling.time.all"),
+                Messages.get("workflow.scheduling.time.morning"),
+                Messages.get("workflow.scheduling.time.afternoon"),
+                Messages.get("workflow.scheduling.time.evening")};
+
+        timeSelector = SelectFieldFactory.create(timeSelectorItems);
+        timeSelector.setSelectedItem(timeSelectorItems[0]);
+        timeSelector.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onTimeRangeChanged();
+            }
+        });
+
+        Label timeLabel = LabelFactory.create("workflow.scheduling.time");
+
         Row row = RowFactory.create("CellSpacing", query.getComponent(),
-                                    viewLabel, highlightSelector);
-        component = ColumnFactory.create("WideCellSpacing", selectedDate, row,
-                                         table);
+                                    viewLabel, highlightSelector,
+                                    timeLabel, timeSelector);
+
+        component = ColumnFactory.create("WideCellSpacing", selectedDate,
+                                         row, table);
     }
 
     /**
@@ -317,6 +338,27 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
             default:
                 model.setHighlight(Highlight.STATUS);
 
+        }
+    }
+
+    /**
+     * Invoked when the time range changed.
+     */
+    private void onTimeRangeChanged() {
+        int index = timeSelector.getSelectedIndex();
+        switch (index) {
+            case 0:
+                model.setTimeRange(TimeRange.ALL);
+                break;
+            case 1:
+                model.setTimeRange(TimeRange.MORNING);
+                break;
+            case 2:
+                model.setTimeRange(TimeRange.AFTERNOON);
+                break;
+            case 3:
+                model.setTimeRange(TimeRange.EVENING);
+                break;
         }
     }
 

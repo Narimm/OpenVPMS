@@ -18,11 +18,13 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import echopointng.layout.TableLayoutDataEx;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
-import nextapp.echo2.app.table.TableCellRenderer;
-import org.openvpms.web.component.util.LabelFactory;
+import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.table.AbstractTableCellRenderer;
 
 
 /**
@@ -31,7 +33,7 @@ import org.openvpms.web.component.util.LabelFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-09-06 07:52:23Z $
  */
-public class AppointmentTableHeaderRenderer implements TableCellRenderer {
+class AppointmentTableHeaderRenderer extends AbstractTableCellRenderer {
 
     /**
      * The singleton instance.
@@ -46,30 +48,65 @@ public class AppointmentTableHeaderRenderer implements TableCellRenderer {
 
 
     /**
-     * Construct a new <code>AppointmentGridHeaderRenderer</code>, with the
-     * default style.
+     * Default constructor.
      */
-    protected AppointmentTableHeaderRenderer() {
+    private AppointmentTableHeaderRenderer() {
     }
 
     /**
-     * Returns a component that will be displayed at the specified coordinate in
-     * the table.
+     * Returns the style name for a column and row.
      *
-     * @param table  the <code>Table</code> for which the rendering is
+     * @param table  the <tt>Table</tt> for which the rendering is
      *               occurring
-     * @param value  the value retrieved from the <code>TableModel</code> for
-     *               the specified coordinate
-     * @param column the column index to render
-     * @param row    the row index to render
-     * @return a component representation  of the value
+     * @param value  the value retrieved from the <tt>TableModel</tt> for the
+     *               specified coordinate
+     * @param column the column
+     * @param row    the row
+     * @return a style name for the given column and row.
      */
-    public Component getTableCellRendererComponent(Table table, Object value,
-                                                   int column, int row) {
-        String text = (String) value;
-        Label label = LabelFactory.create(null, STYLE);
-        label.setText(text);
-        return label;
+    protected String getStyle(Table table, Object value, int column, int row) {
+        return STYLE;
     }
+
+    /**
+     * Returns a component for a value.
+     *
+     * @param table  the <tt>Table</tt> for which the rendering is
+     *               occurring
+     * @param value  the value retrieved from the <tt>TableModel</tt> for the
+     *               specified coordinate
+     * @param column the column
+     * @param row    the row
+     * @return a component representation of the value
+     */
+    @Override
+    protected Component getComponent(Table table, Object value, int column,
+                                     int row) {
+        Component component = super.getComponent(table, value, column, row);
+        AppointmentTableModel model = (AppointmentTableModel) table.getModel();
+        if (!model.isSingleScheduleView()) {
+            Party schedule = model.getSchedule(column);
+            if (schedule != null) {
+                ++column;
+                int span = 1;
+                while (column < model.getColumnCount()) {
+                    if (!ObjectUtils.equals(schedule,
+                                            model.getSchedule(column))) {
+                        break;
+                    }
+                    ++column;
+                    ++span;
+                }
+                if (span > 1) {
+                    TableLayoutDataEx layout = new TableLayoutDataEx();
+                    layout.setColSpan(span);
+                    layout.setAlignment(Alignment.ALIGN_CENTER);
+                    component.setLayoutData(layout);
+                }
+            }
+        }
+        return component;
+    }
+
 
 }
