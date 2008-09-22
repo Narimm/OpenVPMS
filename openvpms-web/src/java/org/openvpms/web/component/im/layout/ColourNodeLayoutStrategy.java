@@ -18,10 +18,13 @@
 
 package org.openvpms.web.component.im.layout;
 
+import nextapp.echo2.app.Color;
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundColorSelect;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.ColourHelper;
 
 
 /**
@@ -44,13 +47,23 @@ public class ColourNodeLayoutStrategy extends AbstractLayoutStrategy {
     protected ComponentState createComponent(Property property,
                                              IMObject parent,
                                              LayoutContext context) {
+        ComponentState state;
         if ("colour".equals(property.getName())) {
-            BoundColorSelect colour = new BoundColorSelect(property);
-            if (!context.isEdit()) {
-                colour.setEnabled(false);
+            if (context.isEdit()) {
+                Component component = new BoundColorSelect(property);
+                state = new ComponentState(component, property);
+            } else {
+                state = super.createComponent(property, parent, context);
+                String value = (String) property.getValue();
+                if (value != null) {
+                    Color color = ColourHelper.getColor(value);
+                    state.getComponent().setBackground(color);
+                }
             }
-            return new ComponentState(colour, property);
+        } else {
+            state = super.createComponent(property, parent, context);
         }
-        return super.createComponent(property, parent, context);
+        return state;
     }
+
 }

@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -145,7 +144,7 @@ public class UserEditor extends AbstractIMObjectEditor {
     /**
      * Layout strategy that adds a 'confirm password' field after the password.
      */
-    private class LayoutStrategy extends AbstractLayoutStrategy {
+    private class LayoutStrategy extends UserLayoutStrategy {
 
         @Override
         protected ComponentSet createComponentSet(

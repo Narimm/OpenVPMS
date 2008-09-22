@@ -124,8 +124,8 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
                 && component.getStyleName() == null) {
             component.setStyleName(styleName);
         } else {
-            Style style = ApplicationInstance.getActive().getStyle(
-                    Component.class, styleName);
+            ApplicationInstance app = ApplicationInstance.getActive();
+            Style style = app.getStyle(component.getClass(), styleName);
             if (style != null) {
                 mergeStyle(style, component, overwrite);
             }

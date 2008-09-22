@@ -35,7 +35,7 @@ public class UserLayoutStrategy extends ColourNodeLayoutStrategy {
 
     /**
      * Returns a node filter to filter nodes. This implementation filters
-     * the "password" node.
+     * the "password" node when in view mode.
      *
      * @param object
      * @param context the context
@@ -43,7 +43,10 @@ public class UserLayoutStrategy extends ColourNodeLayoutStrategy {
      */
     @Override
     protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-        NodeFilter filter = new NamedNodeFilter("password");
-        return getNodeFilter(context, filter);
+        if (!context.isEdit()) {
+            NodeFilter filter = new NamedNodeFilter("password");
+            return getNodeFilter(context, filter);
+        }
+        return super.getNodeFilter(object, context);
     }
 }

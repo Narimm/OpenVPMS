@@ -40,6 +40,7 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -213,7 +214,14 @@ class AppointmentQuery {
         Date date = getDate();
         Map<Party, List<ObjectSet>> result
                 = new HashMap<Party, List<ObjectSet>>();
-        for (Party schedule : getSchedules()) {
+        Party selected = (Party) scheduleField.getSelectedItem();
+        List<Party> schedules;
+        if (selected != null) {
+            schedules = Arrays.asList(selected);
+        } else {
+            schedules = getSchedules();
+        }
+        for (Party schedule : schedules) {
             List<ObjectSet> appointments = service.getAppointments(
                     schedule, date);
             result.put(schedule, appointments);
