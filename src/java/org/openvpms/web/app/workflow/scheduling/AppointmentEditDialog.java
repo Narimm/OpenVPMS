@@ -31,6 +31,7 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -70,7 +71,7 @@ public class AppointmentEditDialog extends EditDialog {
      */
     @Override
     protected void onApply() {
-        if (!timesModified()) {
+        if (canSave()) {
             save();
         } else if (!checkForOverlappingAppointment(false)) {
             if (save()) {
@@ -84,22 +85,11 @@ public class AppointmentEditDialog extends EditDialog {
      */
     @Override
     protected void onOK() {
-        if (!timesModified()) {
+        if (canSave()) {
             super.onOK();
         } else if (!checkForOverlappingAppointment(true)) {
             super.onOK();
         }
-    }
-
-    /**
-     * No-op at the moment, until overlapping appointment checks can be
-     * done more efficiently.
-     *
-     * @param close parameter ignored
-     * @return <tt>falks</tt>
-     */
-    private boolean checkForOverlappingAppointment(final boolean close) {
-        return false;
     }
 
     /**
@@ -113,7 +103,7 @@ public class AppointmentEditDialog extends EditDialog {
      * @return <code>true</code> if there are overlapping appointments, otherwise
      *         <code>false</code>
      */
-    private boolean checkForOverlappingAppointmentX(final boolean close) {
+    private boolean checkForOverlappingAppointment(final boolean close) {
         final IMObjectEditor editor = getEditor();
         IMObject object = editor.getObject();
         boolean overlap = false;
@@ -121,7 +111,8 @@ public class AppointmentEditDialog extends EditDialog {
             Act act = (Act) object;
             ActBean appointment = new ActBean(act);
             AppointmentRules rules = new AppointmentRules();
-            overlap = rules.hasOverlappingAppointments(act);
+            overlap = rules.hasOverlappingAppointments(
+                    act, ServiceHelper.getAppointmentService());
             if (overlap) {
                 if (!allowDoubleBooking(appointment)) {
                     String title = Messages.get(
@@ -175,6 +166,16 @@ public class AppointmentEditDialog extends EditDialog {
             result = false;
         }
         return result;
+    }
+
+    /**
+     * Determines if the appointment can be saved without checking for overlaps.
+     *
+     * @return <tt>true</tt> if the appointment can be saved
+     */
+    private boolean canSave() {
+        Act appointment = getAppointment();
+        return !appointment.isNew() && !timesModified();
     }
 
     /**

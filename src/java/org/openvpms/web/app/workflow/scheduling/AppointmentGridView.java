@@ -87,7 +87,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
 
     @Override
     public int getSlots(ObjectSet appointment, int slot) {
-        return grid.getSlots(appointment, slot);
+        return grid.getSlots(appointment, startSlot + slot);
     }
 
     public int getFirstSlot(int mins) {

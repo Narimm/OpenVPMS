@@ -495,6 +495,21 @@
 
 
     <!--  Appointment table styles. -->
+
+    <style name="AppointmentTable" type="nextapp.echo2.app.Table">
+        <properties>
+            <property name="border">
+                <border size="2px" style="groove" color="#cfdfff"/>
+            </property>
+            <property name="insets" value="8px 2px"/>
+            <property name="rolloverBackground" value="#85c1ff"/>
+            <property name="rolloverEnabled" value="false"/>
+            <property name="selectionBackground" value="#ffffff"/>
+            <property name="selectionEnabled" value="true"/>
+            <property name="width" value="100%"/>
+        </properties>
+    </style>
+
     <style name="Appointment.Busy" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
@@ -538,7 +553,6 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 2px"/>
                         <property name="background" value="#d1d1d1"/>
                     </properties>
                 </layout-data>
@@ -551,7 +565,6 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 2px"/>
                         <property name="background" value="#ffffff"/>
                     </properties>
                 </layout-data>

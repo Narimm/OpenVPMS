@@ -20,6 +20,9 @@ package org.openvpms.web.component.im.query;
 
 import echopointng.DateChooser;
 import echopointng.DateField;
+import echopointng.model.CalendarEvent;
+import echopointng.model.CalendarSelectionListener;
+import echopointng.model.CalendarSelectionModel;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
@@ -30,8 +33,6 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.RowFactory;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -77,19 +78,26 @@ public class DateSelector {
      */
     private FocusGroup focus;
 
+    /**
+     * Listener for calendar events.
+     */
+    private CalendarSelectionListener calendarListener;
+
 
     /**
      * Creates a new <tt>DateSelector</tt>.
      */
     public DateSelector() {
         date = DateFieldFactory.create();
-        date.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                if ("selectedDate".equals(event.getPropertyName())) {
-                    onDateChanged();
-                }
+        calendarListener = new CalendarSelectionListener() {
+            public void selectedDateChange(CalendarEvent event) {
+                onDateChanged();
             }
-        });
+
+            public void displayedDateChange(CalendarEvent event) {
+            }
+        };
+        date.getModel().addListener(calendarListener);
         focus = new FocusGroup("dateSelector");
     }
 
@@ -101,7 +109,10 @@ public class DateSelector {
     public void setDate(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
+        CalendarSelectionModel model = this.date.getModel();
+        model.removeListener(calendarListener);
         this.date.getDateChooser().setSelectedDate(calendar);
+        model.addListener(calendarListener);
     }
 
     /**
