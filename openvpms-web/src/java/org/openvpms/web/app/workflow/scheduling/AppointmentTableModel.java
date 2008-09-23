@@ -68,7 +68,7 @@ public class AppointmentTableModel extends AbstractTableModel {
     }
 
     public enum TimeRange {
-        ALL, MORNING, AFTERNOON, EVENING
+        ALL, MORNING, AFTERNOON, EVENING, AM, PM
     }
 
     /**
@@ -677,6 +677,14 @@ public class AppointmentTableModel extends AbstractTableModel {
                 break;
             case EVENING:
                 startMins = 17 * 60;
+                endMins = 24 * 60;
+                break;
+            case AM:
+                startMins = 0;
+                endMins = 12 * 60;
+                break;
+            case PM:
+                startMins = 12 * 60;
                 endMins = 24 * 60;
                 break;
             default:

@@ -143,7 +143,7 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         });
         model = new AppointmentTableModel();
         table = new TableEx(model, model.getColumnModel());
-        table.setStyleName("default");
+        table.setStyleName("AppointmentTable");
         //table.setResizeable(true);
         model.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent event) {
@@ -319,7 +319,9 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
                 Messages.get("workflow.scheduling.time.all"),
                 Messages.get("workflow.scheduling.time.morning"),
                 Messages.get("workflow.scheduling.time.afternoon"),
-                Messages.get("workflow.scheduling.time.evening")};
+                Messages.get("workflow.scheduling.time.evening"),
+                Messages.get("workflow.scheduling.time.AM"),
+                Messages.get("workflow.scheduling.time.PM")};
 
         timeSelector = SelectFieldFactory.create(timeSelectorItems);
         timeSelector.setSelectedItem(timeSelectorItems[0]);
@@ -387,6 +389,12 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
             case 3:
                 model.setTimeRange(TimeRange.EVENING);
                 break;
+            case 4:
+                model.setTimeRange(TimeRange.AM);
+                break;
+            case 5:
+                model.setTimeRange(TimeRange.PM);
+                break;
         }
     }
 
@@ -433,6 +441,7 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         } else {
             notifySelected(selected);
         }
+        table.getSelectionModel().clearSelection();
     }
 
     private SelectField createClinicianSelector() {

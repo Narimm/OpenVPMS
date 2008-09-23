@@ -135,10 +135,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
             if (startMins <= mins && endMins > mins) {
                 result = i;
                 break;
-            } else if (startMins > mins) {
-                break;
             }
-
         }
         return result;
     }

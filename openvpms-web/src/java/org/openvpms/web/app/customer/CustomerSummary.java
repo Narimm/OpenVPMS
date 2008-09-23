@@ -35,6 +35,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.ParticipationConstraint;
+import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -167,6 +169,8 @@ public class CustomerSummary {
                 = new ParticipantConstraint("customer",
                                             "participation.customer",
                                             customer);
+        participant.add(new ParticipationConstraint(ActShortName,
+                                                    "act.customerNote"));
         query.add(participant);
         IMObjectQueryIterator<Act> iter = new IMObjectQueryIterator<Act>(query);
         while (iter.hasNext()) {

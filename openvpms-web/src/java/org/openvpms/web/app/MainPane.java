@@ -244,10 +244,12 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      * @param value the context value. May be <tt>null</tt>
      */
     public void changed(String key, IMObject value) {
-        if (value != null) {
-            if (workspace.canHandle(value.getArchetypeId().getShortName())) {
-                workspace.setIMObject(value);
-            }
+        if ((value != null
+                && workspace.canHandle(value.getArchetypeId().getShortName()))
+                || workspace.canHandle(key)) {
+            // the key may be a short name. Use in the instance that the value
+            // is null
+            workspace.setIMObject(value);
         }
     }
 
