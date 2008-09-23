@@ -18,7 +18,9 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -35,7 +37,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
@@ -134,27 +135,42 @@ public class AppointmentRules {
         EntityBean schedBean = new EntityBean(schedule, service);
         int noSlots = getSlots(schedBean, appointmentType);
         int minutes = getSlotSize(schedBean) * noSlots;
-        long millis = minutes * DateUtils.MILLIS_PER_MINUTE;
-        return new Date(startTime.getTime() + millis);
+        return DateRules.getDate(startTime, minutes, DateUnits.MINUTES);
     }
 
     /**
      * Determines if there are acts that overlap with an appointment.
      *
-     * @param appointment the appointment
-     * @return a list of acts that overlap with the appointment
+     * @param appointment        the appointment
+     * @param appointmentService the appointment service
+     * @return <tt>true</tt> if there are overlapping appointments
      * @throws OpenVPMSException for any error
      */
-    public boolean hasOverlappingAppointments(Act appointment) {
+    public boolean hasOverlappingAppointments(
+            Act appointment, AppointmentService appointmentService) {
         ActBean bean = new ActBean(appointment, service);
-        IMObjectReference schedule
-                = bean.getParticipantRef("participation.schedule");
+        Party schedule = (Party) bean.getNodeParticipant("schedule");
         Date startTime = appointment.getActivityStartTime();
         Date endTime = appointment.getActivityEndTime();
 
         if (startTime != null && endTime != null && schedule != null) {
-            return hasOverlappingAppointments(appointment, startTime, endTime,
-                                              schedule);
+            List<ObjectSet> appointments = appointmentService.getAppointments(
+                    schedule, startTime, endTime);
+            if (!appointments.isEmpty()) {
+                if (appointment.isNew()) {
+                    return true;
+                } else {
+                    IMObjectReference actRef = appointment.getObjectReference();
+                    for (ObjectSet set : appointments) {
+                        IMObjectReference ref
+                                = set.getReference(Appointment.ACT_REFERENCE);
+                        if (!ObjectUtils.equals(ref, actRef)) {
+                            return true;
+                        }
+                    }
+                }
+
+            }
         }
         return false;
     }
@@ -219,94 +235,6 @@ public class AppointmentRules {
                 = new IMObjectQueryIterator<Act>(service, query);
         return (iter.hasNext()) ? iter.next() : null;
     }
-
-    /**
-     * Determines if there are acts that overlap with an appointment.
-     *
-     * @param appointment the appointment
-     * @param startTime   the appointment start time
-     * @param endTime     the appointment end time
-     * @param schedule    the schedule
-     * @return a list of acts that overlap with the appointment
-     * @throws OpenVPMSException for any error
-     */
-    private boolean hasOverlappingAppointments(Act appointment, Date startTime,
-                                               Date endTime,
-                                               IMObjectReference schedule) {
-        String name = (appointment.isNew())
-                ? "act.customerAppointment-overlapNew"
-                : "act.customerAppointment-overlap";
-        NamedQuery query = new NamedQuery(name);
-        query.setParameter("startTime", startTime);
-        query.setParameter("endTime", endTime);
-        query.setParameter("scheduleId", schedule.getId());
-        if (!appointment.isNew()) {
-            query.setParameter("actId", appointment.getId());
-        }
-        List<ObjectSet> overlaps = service.getObjects(query).getResults();
-        return !overlaps.isEmpty();
-/*
-        // Commented out as under the 1.0-rc1 schema, mysql doesn't select the
-        // fastest index. Re-implemented as a named query in order to avoid
-        // specifying participation.schedule in the where clause which
-        // causes mysql to perform a slow index-merge
-
-        ShortNameConstraint shortName
-                = new ShortNameConstraint("act", APPOINTMENT, true);
-        ArchetypeQuery query = new ArchetypeQuery(shortName);
-        query.setFirstResult(0);
-        query.setMaxResults(1);
-
-        // Create the query:
-        //   act.uid != uid
-        //   && act.schedule = schedule
-        //   && ((act.startTime < startTime && act.endTime > startTime)
-        //   || (act.startTime < endTime && act.endTime > endTime)
-        //   || (act.startTime >= startTime && act.endTime <= endTime))
-        query.add(new NodeConstraint("id", RelationalOp.NE, uid));
-        CollectionNodeConstraint participations = new CollectionNodeConstraint(
-                "schedule", "participation.schedule", false, true)
-                .add(new ObjectRefNodeConstraint("entity", schedule))
-                .add(new ObjectRefNodeConstraint("act", new ArchetypeId(
-                        APPOINTMENT)));
-        // re-specify the act short name. to force utilisation of the
-        // (faster) participation index. Ideally would only need to specify
-        // the act short name on participations, but this isn't supported
-        // by ArchetypeQuery.
-        query.add(participations);
-        OrConstraint or = new OrConstraint();
-        IConstraint overlapStart = createOverlapConstraint(startTime);
-        IConstraint overlapEnd = createOverlapConstraint(endTime);
-        AndConstraint overlapIn = new AndConstraint();
-        overlapIn.add(new NodeConstraint("startTime", RelationalOp.GTE,
-                                         startTime));
-        overlapIn.add(new NodeConstraint("endTime", RelationalOp.LTE, endTime));
-
-        or.add(overlapStart);
-        or.add(overlapEnd);
-        or.add(overlapIn);
-        query.add(or);
-
-        query.add(new NodeSelectConstraint("act.uid"));
-        List<ObjectSet> overlaps = service.getObjects(query).getResults();
-        return !overlaps.isEmpty();
-*/
-    }
-
-    /**
-     * Helper to create a constraint of the form:
-     * <code>act.startTime < time && act.endTime > time</code>
-     *
-     * @param time the time
-     * @return a new constraint
-     */
-    /*   private IConstraint createOverlapConstraint(Date time) {
-            AndConstraint and = new AndConstraint();
-            and.add(new NodeConstraint("startTime", RelationalOp.LT, time));
-            and.add(new NodeConstraint("endTime", RelationalOp.GT, time));
-            return and;
-        }
-    */
 
     /**
      * Returns the schedule slot size in minutes.

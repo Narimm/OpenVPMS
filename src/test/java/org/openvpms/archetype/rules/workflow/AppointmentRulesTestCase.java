@@ -47,6 +47,11 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      */
     private AppointmentRules rules;
 
+    /**
+     * The appointment service.
+     */
+    private AppointmentService appointmentService;
+
 
     /**
      * Tests the {@link AppointmentRules#getSlotSize(Party)} method.
@@ -123,31 +128,39 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         save(schedule2);
 
         Act appointment = createAppointment(start, end, schedule1);
-        assertFalse(rules.hasOverlappingAppointments(appointment));
+        assertFalse(rules.hasOverlappingAppointments(appointment,
+                                                     appointmentService));
         save(appointment);
-        assertFalse(rules.hasOverlappingAppointments(appointment));
+        assertFalse(rules.hasOverlappingAppointments(appointment,
+                                                     appointmentService));
 
         Act exactOverlap = createAppointment(start, end, schedule1);
-        assertTrue(rules.hasOverlappingAppointments(exactOverlap));
+        assertTrue(rules.hasOverlappingAppointments(exactOverlap,
+                                                    appointmentService));
 
         Act overlap = createAppointment(createTime(9, 5), createTime(9, 10),
                                         schedule1);
-        assertTrue(rules.hasOverlappingAppointments(overlap));
+        assertTrue(rules.hasOverlappingAppointments(overlap,
+                                                    appointmentService));
 
         Act after = createAppointment(createTime(9, 15), createTime(9, 30),
                                       schedule1);
-        assertFalse(rules.hasOverlappingAppointments(after));
+        assertFalse(rules.hasOverlappingAppointments(after,
+                                                     appointmentService));
 
         Act before = createAppointment(createTime(8, 45), createTime(9, 0),
                                        schedule1);
-        assertFalse(rules.hasOverlappingAppointments(before));
+        assertFalse(rules.hasOverlappingAppointments(before,
+                                                     appointmentService));
 
         // now verify there are no overlaps for the same time but different
         // schedule
         Act appointment2 = createAppointment(start, end, schedule2);
-        assertFalse(rules.hasOverlappingAppointments(appointment2));
+        assertFalse(rules.hasOverlappingAppointments(appointment2,
+                                                     appointmentService));
         save(appointment2);
-        assertFalse(rules.hasOverlappingAppointments(appointment2));
+        assertFalse(rules.hasOverlappingAppointments(appointment2,
+                                                     appointmentService));
     }
 
     /**
@@ -166,7 +179,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         empty.setActivityStartTime(null);
         empty.setActivityEndTime(null);
 
-        assertFalse(rules.hasOverlappingAppointments(empty));
+        assertFalse(rules.hasOverlappingAppointments(empty,
+                                                     appointmentService));
     }
 
     /**
@@ -250,6 +264,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         super.onSetUp();
         removeActs();
         rules = new AppointmentRules();
+        appointmentService = (AppointmentService) applicationContext.getBean(
+                "appointmentService");
     }
 
     /**

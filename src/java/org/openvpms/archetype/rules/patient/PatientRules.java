@@ -20,6 +20,8 @@ package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.party.MergeException;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PARTICIPATION;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -39,6 +41,8 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.component.system.common.query.ParticipationConstraint;
+import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Calendar;
@@ -55,12 +59,6 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PatientRules {
-
-    /**
-     * Patient owner relationship short name.
-     */
-    public static final String PATIENT_OWNER
-            = "entityRelationship.patientOwner";
 
     /**
      * The archetype service.
@@ -99,8 +97,8 @@ public class PatientRules {
     public EntityRelationship addPatientOwnerRelationship(Party customer,
                                                           Party patient) {
         EntityBean bean = new EntityBean(customer, service);
-        EntityRelationship relationship = bean.addRelationship(PATIENT_OWNER,
-                                                               patient);
+        EntityRelationship relationship = bean.addRelationship(
+                PatientArchetypes.PATIENT_OWNER, patient);
         relationship.setActiveStartTime(new Date());
         return relationship;
     }
@@ -124,13 +122,13 @@ public class PatientRules {
         if (patient != null && startTime != null) {
             EntityBean patientBean = new EntityBean(patient, service);
             owner = (Party) patientBean.getSourceEntity(
-                    PATIENT_OWNER, startTime, false);
+                    PatientArchetypes.PATIENT_OWNER, startTime, false);
             if (owner == null) {
                 // no match for the start time, so try and find an owner close
                 // to the start time
                 EntityRelationship match = null;
                 List<EntityRelationship> relationships
-                        = patientBean.getRelationships(PATIENT_OWNER, false);
+                        = patientBean.getRelationships(PatientArchetypes.PATIENT_OWNER, false);
 
                 for (EntityRelationship relationship : relationships) {
                     if (match == null) {
@@ -276,7 +274,7 @@ public class PatientRules {
             Calendar calendar = new GregorianCalendar();
             calendar.setTime(birthDate);
             long diffMs = currentDate.getTime() - calendar.getTimeInMillis();
-            long diffdays = diffMs / DateUtils.MILLIS_IN_DAY;
+            long diffdays = diffMs / DateUtils.MILLIS_PER_DAY;
             if (diffdays < 90) {
                 long weeks = diffdays / 7;
                 if (weeks == 0) {
@@ -327,15 +325,17 @@ public class PatientRules {
     public String getPatientWeight(Party patient) {
         String result = null;
         ShortNameConstraint shortName
-                = new ShortNameConstraint("act", "act.patientWeight");
+                = new ShortNameConstraint("act", PATIENT_WEIGHT);
         ArchetypeQuery query = new ArchetypeQuery(shortName);
         query.add(new NodeSelectConstraint("act.description"));
         CollectionNodeConstraint participation
                 = new CollectionNodeConstraint("patient",
-                                               "participation.patient", true,
+                                               PATIENT_PARTICIPATION, true,
                                                true);
         participation.add(new ObjectRefNodeConstraint(
                 "entity", patient.getObjectReference()));
+        participation.add(new ParticipationConstraint(ActShortName,
+                                                      PATIENT_WEIGHT));
         query.add(participation);
         query.add(new NodeSortConstraint("startTime", false));
         query.setMaxResults(1);

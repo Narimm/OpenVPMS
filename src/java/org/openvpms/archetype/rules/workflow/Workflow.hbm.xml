@@ -224,34 +224,4 @@ order by p.activityStartTime, act.id
       ]]>
     </query>
 
-    <query name="act.customerAppointment-overlap">
-        <![CDATA[
-select act.id
-from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act
-      join act.participations as p
-where act.archetypeId.shortName = 'act.customerAppointment'
-      and p.actShortName = 'act.customerAppointment'
-      and act.id <> :actId
-      and p.entity.id = :scheduleId
-      and act.active = 1
-      and ((p.activityStartTime < :startTime and p.activityEndTime > :startTime)
-           or (p.activityStartTime < :endTime and  p.activityEndTime > :endTime)
-           or (p.activityStartTime >= :startTime and p.activityEndTime <= :endTime))
-      ]]>
-    </query>
-
-    <query name="act.customerAppointment-overlapNew">
-        <![CDATA[
-from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act
-      join act.participations as p
-where act.archetypeId.shortName = 'act.customerAppointment'
-      and p.actShortName = 'act.customerAppointment'
-      and p.entity.id = :scheduleId
-      and act.active = 1
-      and ((p.activityStartTime < :startTime and p.activityEndTime > :startTime)
-           or (p.activityStartTime < :endTime and  p.activityEndTime > :endTime)
-           or (p.activityStartTime >= :startTime and p.activityEndTime <= :endTime))
-      ]]>
-    </query>
-
 </hibernate-mapping>

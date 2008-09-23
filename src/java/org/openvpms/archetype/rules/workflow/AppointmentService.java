@@ -26,7 +26,7 @@ import java.util.List;
 
 
 /**
- * Add description here.
+ * Appointment service.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -35,10 +35,20 @@ public interface AppointmentService {
 
     /**
      * Returns all appointments for the specified schedule and day.
+     * Appointments are represented by {@link ObjectSet ObjectSets}, the
+     * keys for which are 
      *
      * @param schedule an <em>party.organisationSchedule</em>
-     * @param day the day
+     * @param day      the day
      * @return a list of appointments
      */
     List<ObjectSet> getAppointments(Party schedule, Date day);
+
+    /**
+     * Returns all appointments for the specified schedule, and time range.
+     *
+     * @param schedule an <em>party.organisationSchedule</em>
+     * @return a list of appointments
+     */
+    List<ObjectSet> getAppointments(Party schedule, Date from, Date to);
 }
