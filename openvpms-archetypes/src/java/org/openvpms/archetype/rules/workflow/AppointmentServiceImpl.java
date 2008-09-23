@@ -21,12 +21,14 @@ package org.openvpms.archetype.rules.workflow;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.io.Serializable;
@@ -42,7 +44,7 @@ import java.util.Map;
 
 
 /**
- * Add description here.
+ * Implementation of the {@link AppointmentService} that provides caching.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -61,7 +63,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 
     /**
-     * Creates a new <tt>CachingLookupService</tt>.
+     * Creates a new <tt>AppointmentServiceImpl</tt>.
      *
      * @param service the archetype service
      * @param cache   the cache
@@ -108,24 +110,40 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     /**
+     * Returns all appointments for the specified schedule, and time range.
+     *
+     * @param schedule an <em>party.organisationSchedule</em>
+     * @return a list of appointments
+     */
+    public List<ObjectSet> getAppointments(Party schedule, Date from, Date to) {
+        Date fromDay = getStart(from);
+        Date toDay = getStart(to);
+        List<ObjectSet> results = new ArrayList<ObjectSet>();
+        while (fromDay.compareTo(toDay) <= 0) {
+            for (ObjectSet appointment : getAppointments(schedule, fromDay)) {
+                Date startTime = appointment.getDate(
+                        Appointment.ACT_START_TIME);
+                Date endTime = appointment.getDate(Appointment.ACT_END_TIME);
+                if (DateRules.intersects(startTime, endTime, from, to)) {
+                    results.add(appointment);
+                } else if (DateRules.compareTo(startTime, to) >= 0) {
+                    break;
+                }
+            }
+            fromDay = DateRules.getDate(fromDay, 1, DateUnits.DAYS);
+        }
+
+        return results;
+    }
+
+    /**
      * Adds an appointment to the cache.
      *
      * @param appointment the appointment to add
      */
     private void addAppointment(Act appointment) {
-        updateCache(appointment, true);
-    }
+        removeAppointment(appointment);
 
-    /**
-     * Removes an appointment from the cache.
-     *
-     * @param appointment the appointment to remove
-     */
-    private void removeAppointment(Act appointment) {
-        updateCache(appointment, false);
-    }
-
-    private void updateCache(Act appointment, boolean add) {
         ObjectSet set = Appointment.createObjectSet(appointment, service);
         IMObjectReference schedule
                 = set.getReference(Appointment.SCHEDULE_REFERENCE);
@@ -137,13 +155,50 @@ public class AppointmentServiceImpl implements AppointmentService {
             if (element != null) {
                 synchronized (element) {
                     Value value = (Value) element.getObjectValue();
-                    if (add) {
-                        value.put(act, set);
-                    } else {
-                        value.remove(act);
+                    value.put(act, set);
+                }
+            }
+        }
+    }
+
+    /**
+     * Removes an appointment from the cache.
+     *
+     * @param appointment the appointment to remove
+     */
+    private void removeAppointment(Act appointment) {
+        ActBean bean = new ActBean(appointment, service);
+        Date date = getStart(appointment.getActivityStartTime());
+        IMObjectReference schedule = bean.getNodeParticipantRef("schedule");
+        removeAppointment(schedule, appointment.getObjectReference(), date);
+    }
+
+    private void removeAppointment(IMObjectReference schedule,
+                                   IMObjectReference act,
+                                   Date date) {
+        boolean removed = false;
+        Element element = getElement(schedule, date);
+        if (element != null && remove(element, act)) {
+            removed = true;
+        }
+        if (!removed) {
+            List keys = cache.getKeysNoDuplicateCheck();
+            for (Object key : keys) {
+                Key k = (Key) key;
+                if (k.getSchedule().equals(schedule)) {
+                    element = cache.get(key);
+                    if (element != null && remove(element, act)) {
+                        break;
                     }
                 }
             }
+        }
+    }
+
+    private boolean remove(Element element, IMObjectReference act) {
+        synchronized (element) {
+            Value value = (Value) element.getObjectValue();
+            return value.remove(act);
         }
     }
 
@@ -174,6 +229,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         query.setSchedule(schedule);
         return query.query().getResults();
     }
+
 
     private static class Key implements Serializable {
 
@@ -211,6 +267,15 @@ public class AppointmentServiceImpl implements AppointmentService {
         public int hashCode() {
             return hashCode;
         }
+
+        /**
+         * Returns the schedule reference.
+         *
+         * @return the schedule reference
+         */
+        public IMObjectReference getSchedule() {
+            return schedule;
+        }
     }
 
     private static class Value implements Serializable {
@@ -231,9 +296,12 @@ public class AppointmentServiceImpl implements AppointmentService {
             sort();
         }
 
-        public void remove(IMObjectReference act) {
-            map.remove(act);
-            sort();
+        public boolean remove(IMObjectReference act) {
+            boolean result = (map.remove(act) != null);
+            if (result) {
+                sort();
+            }
+            return result;
         }
 
         public Collection<ObjectSet> getAppointments() {
@@ -248,6 +316,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     private static class SetComparator implements Comparator<ObjectSet> {
+
         /**
          * Compares its two arguments for order.  Returns a negative integer,
          * zero, or a positive integer as the first argument is less than, equal

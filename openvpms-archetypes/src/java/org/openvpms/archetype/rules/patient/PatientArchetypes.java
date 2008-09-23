@@ -18,8 +18,9 @@
 
 package org.openvpms.archetype.rules.patient;
 
+
 /**
- * Add description here.
+ * Patient archetypes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -40,4 +41,16 @@ public class PatientArchetypes {
      * Patient participation archetype.
      */
     public static final String PATIENT_PARTICIPATION = "participation.patient";
+
+    /**
+     * Patient owner relationship short name.
+     */
+    public static final String PATIENT_OWNER
+            = "entityRelationship.patientOwner";
+
+    /**
+     * Patient weight act short name.
+     */
+    public static final String PATIENT_WEIGHT = "act.patientWeight";
+
 }

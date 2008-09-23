@@ -104,4 +104,22 @@ public class DateRules {
         long rhsTime = rhs.getTime();
         return (lhsTime < rhsTime ? -1 : (lhsTime == rhsTime ? 0 : 1));
     }
+
+    /**
+     * Determines if two date ranges intersect.
+     *
+     * @param from1 the start of the first date range
+     * @param to1   the end of the first date range
+     * @param from2 the start of the second date range
+     * @param to2   the end of the second date range
+     * @return <tt>true</tt> if the date ranges intersect
+     */
+    public static boolean intersects(Date from1, Date to1,
+                                     Date from2, Date to2) {
+        int f1f2 = compareTo(from1, from2);
+        int t1t2 = compareTo(to1, to2);
+        return (f1f2 < 0 && compareTo(to1, from2) > 0)
+                || (compareTo(from1, to2) < 0 && t1t2 > 0)
+                || (f1f2 >= 0 && t1t2 <= 0);
+    }
 }

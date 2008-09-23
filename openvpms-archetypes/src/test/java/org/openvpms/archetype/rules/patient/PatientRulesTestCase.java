@@ -227,7 +227,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     private void deactivateOwnerRelationship(Party patient) {
         EntityBean bean = new EntityBean(patient);
         for (EntityRelationship relationship
-                : bean.getRelationships(PatientRules.PATIENT_OWNER)) {
+                : bean.getRelationships(PatientArchetypes.PATIENT_OWNER)) {
             relationship.setActive(false);
         }
         try {
