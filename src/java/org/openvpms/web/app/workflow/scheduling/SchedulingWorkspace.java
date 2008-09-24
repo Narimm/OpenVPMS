@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.workflow.Appointment;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -34,6 +35,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
+import org.openvpms.web.component.subsystem.Refreshable;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
@@ -44,7 +46,8 @@ import org.openvpms.web.component.util.SplitPaneFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
+public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
+        implements Refreshable {
 
     /**
      * The workspace.
@@ -60,6 +63,11 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
      * The CRUD window.
      */
     private AppointmentCRUDWindow window;
+
+    /**
+     * The last query time, used to determine if a refresh is necessary.
+     */
+    private long lastQueryTime = -1;
 
 
     /**
@@ -100,6 +108,27 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
     }
 
     /**
+     * Determines if a refresh is required.
+     *
+     * @return <tt>true</tt> if at least a minute has elapsed since the last
+     *         refresh
+     */
+    public boolean needsRefresh() {
+        if (lastQueryTime == -1) {
+            return true;
+        }
+        long now = System.currentTimeMillis();
+        return (now - lastQueryTime) >= DateUtils.MILLIS_PER_MINUTE;
+    }
+
+    /**
+     * Refreshes the workspace.
+     */
+    public void refresh() {
+        doQuery();
+    }
+
+    /**
      * Returns the latest version of the current schedule view context object.
      *
      * @return the latest version of the schedule view context object, or
@@ -127,7 +156,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
      * @param isNew  determines if the object is a new instance
      */
     protected void onSaved(IMObject object, boolean isNew) {
-        browser.query();
+        doQuery();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -137,7 +166,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
      * @param object the object
      */
     protected void onDeleted(IMObject object) {
-        browser.query();
+        doQuery();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -147,7 +176,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
      * @param object the object
      */
     protected void onRefresh(IMObject object) {
-        browser.query();
+        doQuery();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -302,7 +331,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
      */
     protected void initQuery(Entity view) {
         browser.setScheduleView(view);
-        browser.query();
+        doQuery();
         onQuery();
     }
 
@@ -339,7 +368,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
             latest = browser.getScheduleView();
             setObject(latest);
         } else {
-            browser.query();
+            doQuery();
 
             // need to add the existing workspace to the container
             Component workspace = getWorkspace();
@@ -347,6 +376,14 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
                 container.add(workspace);
             }
         }
+    }
+
+    /**
+     * Queries the appointments, recording the query time.
+     */
+    private void doQuery() {
+        browser.query();
+        lastQueryTime = System.currentTimeMillis();
     }
 
 }

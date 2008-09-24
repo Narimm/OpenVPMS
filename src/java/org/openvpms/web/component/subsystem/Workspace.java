@@ -25,7 +25,7 @@ import java.beans.PropertyChangeListener;
 
 
 /**
- * Manages the user interface for a set of related actions. Rach action
+ * Manages the user interface for a set of related actions. Each action
  * typically corresponds to a use case.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
