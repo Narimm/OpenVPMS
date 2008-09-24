@@ -31,10 +31,14 @@ alter table act_relationships
     drop column source_linkId,
     drop column target_linkId;
 
-delete r, d
+delete d
 from act_relationships r, act_relationship_details d
 where r.act_relationship_id = d.act_relationship_id
     and (r.source_id is null or r.target_id is null);
+
+delete r
+from act_relationships r
+where r.source_id is null or r.target_id is null;
 
 # action_type_descriptors
 
@@ -96,7 +100,7 @@ alter table entity_identities
 # entity_relationships
 
 alter table entity_relationships
-    add column sequence integer after active_end_time,
+    add column sequence integer not null after active_end_time,
     add column source_id bigint(20) after sequence,
     add column target_id bigint(20) after source_id,
     drop column source_arch_short_name,
@@ -333,3 +337,16 @@ where source.arch_short_name = "lookup.state"
 group by suburb.code;
 
 drop table suburb;
+
+#
+# Remove redundant location schedule relationships for OVPMS-792
+#
+
+delete d
+from entity_relationships r, entity_relationship_details d
+where r.entity_relationship_id = d.entity_relationship_id
+    and r.arch_short_name = "entityRelationship.locationSchedule";
+
+delete r
+from entity_relationships r
+where r.arch_short_name = "entityRelationship.locationSchedule";
