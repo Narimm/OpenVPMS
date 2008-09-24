@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipAssembler;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 
 
@@ -65,6 +66,26 @@ public class EntityRelationshipAssembler
             state.addState(identityState);
         }
         target.setIdentity(identity);
+        target.setSequence(source.getSequence());
+    }
+
+    /**
+     * Assembles an object from a data object.
+     *
+     * @param target  the object to assemble
+     * @param source  the object to assemble from
+     * @param context the assembly context
+     */
+    @Override
+    protected void assembleObject(EntityRelationship target,
+                                  EntityRelationshipDO source,
+                                  Context context) {
+        super.assembleObject(target, source,context);
+        EntityIdentity identity = getObject(source.getIdentity(),
+                                            EntityIdentity.class,
+                                            context);
+        target.setIdentity(identity);
+        target.setSequence(source.getSequence());
     }
 
     /**

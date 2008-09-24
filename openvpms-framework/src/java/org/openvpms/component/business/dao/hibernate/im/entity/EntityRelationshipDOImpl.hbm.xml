@@ -42,6 +42,7 @@
                   type="timestamp"/>
         <property name="activeEndTime" column="active_end_time"
                   type="timestamp"/>
+        <property name="sequence" column="sequence" type="integer"/>
         <many-to-one name="source"
                      class="org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl"
                      column="source_id"/>
