@@ -444,6 +444,11 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         table.getSelectionModel().clearSelection();
     }
 
+    /**
+     * Creates a new dropdown to select clinicians.
+     *
+     * @return a new clinician selector
+     */
     private SelectField createClinicianSelector() {
         UserRules rules = new UserRules();
         List<IMObject> clinicians = new ArrayList<IMObject>();

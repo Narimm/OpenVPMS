@@ -27,7 +27,7 @@ import java.util.Date;
 
 
 /**
- * Add description here.
+ * Relationship state for {@link PeriodRelationship PeriodRelationships}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

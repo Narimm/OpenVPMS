@@ -68,8 +68,7 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
      * Default constructor.
      */
     public AppointmentTableCellRenderer() {
-        appointmentColours = getColours("entity.appointmentType");
-        clinicianColours = getColours("security.user");
+        refresh();
     }
 
     /**
@@ -147,16 +146,32 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
         } else {
             ObjectSet appointment = model.getAppointment(column, row);
             if (appointment != null) {
-                highlightAppointment(model, appointment, component);
+                highlightAppointment(component, appointment, model);
             } else {
-                highlightCell(model, component, column, row);
+                highlightCell(component, column, row, model);
             }
         }
         return component;
     }
 
-    private void highlightCell(AppointmentTableModel model,
-                               Component component, int column, int row) {
+    /**
+     * Refreshes the cached data.
+     */
+    public void refresh() {
+        appointmentColours = getColours("entity.appointmentType");
+        clinicianColours = getColours("security.user");
+    }
+
+    /**
+     * Highlights a cell based on its availability.
+     *
+     * @param component a component representing the cell
+     * @param column    the cell column
+     * @param row       the cell row
+     * @param model     the appointment model
+     */
+    private void highlightCell(Component component, int column, int row,
+                               AppointmentTableModel model) {
         AppointmentGrid.Availability avail
                 = model.getAvailability(column, row);
         String style;
@@ -175,9 +190,16 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
         mergeStyle(component, style);
     }
 
-    private void highlightAppointment(AppointmentTableModel model,
+    /**
+     * Highlights an appointment.
+     *
+     * @param component   the component representing the appointment
+     * @param appointment the appointment
+     * @param model       the appointment table model
+     */
+    private void highlightAppointment(Component component,
                                       ObjectSet appointment,
-                                      Component component) {
+                                      AppointmentTableModel model) {
         if (!isSelectedClinician(appointment, model)) {
             mergeStyle(component, "Appointment.Busy");
         } else {
@@ -201,10 +223,25 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
         }
     }
 
+    /**
+     * Returns the stye of an appointment based on its status.
+     *
+     * @param appointment the appointment
+     * @return the style
+     */
     private String getStatusStyle(ObjectSet appointment) {
         return "TaskTable." + appointment.getString(Appointment.ACT_STATUS);
     }
 
+    /**
+     * Determines if an appointment has the same clinician as that specified
+     * by the table model.
+     *
+     * @param appointment the appointment
+     * @param model       the appointment table model
+     * @return <tt>true</tt> if they have the same clinician, or the model
+     *         indicates to display all clincians
+     */
     private boolean isSelectedClinician(ObjectSet appointment,
                                         AppointmentTableModel model) {
         IMObjectReference clinician = model.getClinician();
@@ -215,11 +252,25 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
                 Appointment.CLINICIAN_REFERENCE));
     }
 
+    /**
+     * Returns the style for a free row.
+     *
+     * @param model the appointment table model
+     * @param row   the row
+     * @return a style for the row
+     */
     private String getFreeStyle(AppointmentTableModel model, int row) {
         int hour = model.getHour(row);
         return (hour % 2 == 0) ? "Appointment.Even" : "Appointment.Odd";
     }
 
+    /**
+     * Returns a colour for an appointment, for the given highlight style.
+     *
+     * @param set       the appointment. May be <tt>null</tt>
+     * @param highlight the highlight style
+     * @return the colour, or <tt>null</tt> if none is found
+     */
     private Color getAppointmentColour(
             ObjectSet set, AppointmentTableModel.Highlight highlight) {
         Color result = null;
@@ -274,6 +325,13 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
         return result;
     }
 
+    /**
+     * Helper to return a font for a component, navigating up the component
+     * heirarchy if one isn't found on the specified component.
+     *
+     * @param component the component
+     * @return the font, or <tt>null</tt> if none is found
+     */
     private Font getFont(Component component) {
         Font font = component.getFont();
         if (font == null) {

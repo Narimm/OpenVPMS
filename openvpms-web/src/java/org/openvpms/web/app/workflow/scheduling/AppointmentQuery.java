@@ -43,7 +43,7 @@ import org.openvpms.web.system.ServiceHelper;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -149,6 +149,7 @@ class AppointmentQuery {
     public void setScheduleView(Entity view) {
         viewField.setSelectedItem(view);
         schedules = null;
+        updateScheduleField();
     }
 
     /**
@@ -213,7 +214,7 @@ class AppointmentQuery {
     private Map<Party, List<ObjectSet>> getAppointments() {
         Date date = getDate();
         Map<Party, List<ObjectSet>> result
-                = new HashMap<Party, List<ObjectSet>>();
+                = new LinkedHashMap<Party, List<ObjectSet>>();
         Party selected = (Party) scheduleField.getSelectedItem();
         List<Party> schedules;
         if (selected != null) {
@@ -293,13 +294,9 @@ class AppointmentQuery {
      * @return a new select field
      */
     private SelectField createScheduleField() {
-        List<Party> schedules = getSchedules();
-        IMObjectListModel model = new IMObjectListModel(schedules, true, false);
+        IMObjectListModel model = createScheduleModel();
         SelectField result = SelectFieldFactory.create(model);
         result.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
-        if (model.size() > 0) {
-            result.setSelectedIndex(0); // select All
-        }
         result.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onScheduleChanged();
@@ -309,12 +306,34 @@ class AppointmentQuery {
     }
 
     /**
+     * Updates the schedule selector.
+     */
+    private void updateScheduleField() {
+        IMObjectListModel model = createScheduleModel();
+        scheduleField.setModel(model);
+        if (model.size() > 0) {
+            scheduleField.setSelectedIndex(0); // select All
+        }
+    }
+
+    /**
+     * Creates a model containing <em>party.organisationSchedule</em>.
+     *
+     * @return a new schedule model
+     */
+    private IMObjectListModel createScheduleModel() {
+        List<Party> schedules = getSchedules();
+        return new IMObjectListModel(schedules, true, false);
+    }
+
+    /**
      * Invoked when the schedule view changes.
      * <p/>
      * Notifies any listener to perform a query.
      */
     private void onViewChanged() {
         schedules = null;
+        updateScheduleField();
         onQuery();
     }
 
