@@ -37,6 +37,11 @@ public class EntityRelationshipDOImpl extends PeriodRelationshipDOImpl
      */
     private EntityIdentityDO identity;
 
+    /**
+     * The relationship sequence.
+     */
+    private int sequence;
+
 
     /**
      * Default constructor.
@@ -70,6 +75,28 @@ public class EntityRelationshipDOImpl extends PeriodRelationshipDOImpl
      */
     public void setIdentity(EntityIdentityDO identity) {
         this.identity = identity;
+    }
+
+    /**
+     * Returns the relationship sequence.
+     * <p/>
+     * This may be used to order relationships.
+     *
+     * @return the relationship sequence
+     */
+    public int getSequence() {
+        return sequence;
+    }
+
+    /**
+     * Sets the relationship sequence.
+     * <p/>
+     * This may be used to order relationships.
+     *
+     * @param sequence the relationship sequence
+     */
+    public void setSequence(int sequence) {
+        this.sequence = sequence;
     }
 
     /**

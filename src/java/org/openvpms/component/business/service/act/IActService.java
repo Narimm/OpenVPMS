@@ -29,7 +29,9 @@ import org.openvpms.component.business.domain.im.act.Act;
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-09-27 09:07:52 +1000 (Tue, 27 Sep 2005) $
+ * @deprecated no replacement
  */
+@Deprecated
 public interface IActService {
     /**
      * Create an act using the specified shortName. The short name is a 

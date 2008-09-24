@@ -46,7 +46,8 @@ public class EntityRelationship extends PeriodRelationship {
     private String reason;
 
     /**
-     * TODO Definition for sequence
+     * An optional sequence for the relationship, used to order similar
+     * relationships.
      */
     private int sequence;
 
@@ -89,12 +90,25 @@ public class EntityRelationship extends PeriodRelationship {
     }
 
     /**
-     * @return Returns the sequence.
-     * @deprecated no replacement
+     * Returns the relationship sequence.
+     * <p/>
+     * This may be used to order relationships.
+     *
+     * @return the sequence
      */
-    @Deprecated
     public int getSequence() {
         return sequence;
+    }
+
+    /**
+     * Sets the relationship sequence.
+     * <p/>
+     * This may be used to order relationships.
+     *
+     * @param sequence the sequence
+     */
+    public void setSequence(int sequence) {
+        this.sequence = sequence;
     }
 
     /**
@@ -111,15 +125,6 @@ public class EntityRelationship extends PeriodRelationship {
     @Deprecated
     public void setReason(String reason) {
         this.reason = reason;
-    }
-
-    /**
-     * @param sequence The sequence to set.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public void setSequence(int sequence) {
-        this.sequence = sequence;
     }
 
     /* (non-Javadoc)

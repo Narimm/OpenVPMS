@@ -44,4 +44,22 @@ public interface EntityRelationshipDO extends PeriodRelationshipDO {
      * @param identity the identity. May be <tt>null</tt>
      */
     void setIdentity(EntityIdentityDO identity);
+
+    /**
+     * Returns the relationship sequence.
+     * <p/>
+     * This may be used to help order relationships.
+     *
+     * @return the relationship sequence
+     */
+    int getSequence();
+
+    /**
+     * Sets the relationship sequence.
+     * <p/>
+     * This may be used to help order relationships.
+     *
+     * @param sequence the relationship sequence
+     */
+    void setSequence(int sequence);
 }
