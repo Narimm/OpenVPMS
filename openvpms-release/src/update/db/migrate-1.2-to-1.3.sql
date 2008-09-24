@@ -96,7 +96,8 @@ alter table entity_identities
 # entity_relationships
 
 alter table entity_relationships
-    add column source_id bigint(20) after active_end_time,
+    add column sequence integer after active_end_time,
+    add column source_id bigint(20) after sequence,
     add column target_id bigint(20) after source_id,
     drop column source_arch_short_name,
     drop column target_arch_short_name;
@@ -120,10 +121,14 @@ alter table entity_relationships
     add constraint FK861BFDDF3EFA2333 foreign key (target_id)
         references entities (entity_id) on delete cascade;
 
-delete r, d
+delete d
 from entity_relationships r, entity_relationship_details d
 where r.entity_relationship_id = d.entity_relationship_id
     and (source_id is null or target_id is null);
+
+delete r
+from entity_relationships r
+where source_id is null or target_id is null;
 
 # granted_authorities
 
@@ -229,3 +234,102 @@ alter table entities
 
 drop table if exists etl_log;
 
+#
+# migrate postcodes, for OVPMS-501
+#
+
+# Create a temporary table for suburb information
+
+drop table if exists suburb;
+create table suburb (
+    code varchar(255) not null,
+    name varchar(255) not null,
+    postcode varchar(255) not null,
+    state varchar(255) not null);
+
+# populate suburb table based on current suburb, postcode and state information
+# in contacts
+
+insert into suburb (code, name, postcode, state)
+select distinct concat(upper(suburb.value), "_", postcode.value) as code,
+       suburb.value suburb, postcode.value postcode, state.value state
+from contacts c
+join contact_details suburb on c.contact_id = suburb.contact_id and suburb.name="suburb"
+join contact_details postcode on c.contact_id = postcode.contact_id and postcode.name="postcode"
+join contact_details state on c.contact_id = state.contact_id and state.name="state";
+
+# generate valid codes
+
+update suburb
+  set code = replace(code, " ", "_");
+
+update suburb
+  set code = replace(code, ".", "_");
+
+update suburb
+  set code = replace(code, "&", "_");
+
+update suburb
+  set code = replace(code, "/", "_");
+
+update suburb
+  set code = replace(code, "\\", "_");
+
+update suburb
+  set code = replace(code, "(", "_");
+
+update suburb
+  set code = replace(code, ")", "_");
+
+update suburb
+  set code = replace(code, "*", "_");
+
+update suburb
+  set code = replace(code, ",", "_");
+
+update suburb
+  set code = replace(code, "-", "_");
+
+update suburb
+  set code = replace(code, "[", "_");
+
+update suburb
+  set code = replace(code, "]", "_");
+
+update suburb
+  set code = replace(code, "__", "_");
+
+# update contacts suburb value to code
+update contact_details c1, contact_details c2, suburb s
+set c1.value = s.code
+where c1.value  = s.name and c2.value = s.postcode
+and c1.name="suburb" and c2.name="postcode"
+and c1.contact_id = c2.contact_id;
+
+# create suburb lookup
+insert into lookups (version, linkId, arch_short_name, active, arch_version,
+    code, name, description, default_lookup)
+select 0, UUID(), "lookup.suburb", 1, "1.0", code, name, null, 0
+from suburb
+group by code;
+
+insert into lookup_details (lookup_id, name, value, type)
+select lookup_id, "postCode", s.postcode, "string"
+from lookups l, suburb s
+where l.code = s.code
+group by s.code;
+
+# link suburbs to states
+insert into lookup_relationships (version, linkId, arch_short_name,
+    arch_version, active, source_id, target_id)
+select 0 as version, UUID() as linkId, "lookupRelationship.stateSuburb" as arch_short_name,
+       "1.0" as arch_version, 1 as active, source.lookup_id as source_id,
+       target.lookup_id as target_id
+from suburb
+join lookups source on suburb.state = source.code
+join lookups target on suburb.code = target.code
+where source.arch_short_name = "lookup.state"
+    and target.arch_short_name = "lookup.suburb"
+group by suburb.code;
+
+drop table suburb;
