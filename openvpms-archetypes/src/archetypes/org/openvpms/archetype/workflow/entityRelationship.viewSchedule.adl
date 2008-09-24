@@ -24,7 +24,7 @@
               hidden="true" minCardinality="0"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" minCardinality="0"/>
-        <!--node name="sequence" type="java.lang.Integer" path="/sequence" hidden="true" minCardinality="0"/-->
+        <node name="sequence" type="java.lang.Integer" path="/sequence" hidden="true" minCardinality="0"/>
         <node name="source" displayName="View" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">

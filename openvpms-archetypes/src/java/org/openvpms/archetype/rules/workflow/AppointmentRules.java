@@ -44,6 +44,8 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -80,7 +82,8 @@ public class AppointmentRules {
 
     /**
      * Returns the <em>party.organisationSchedule</em>s associated with a
-     * <em>entity.organisationScheduleView</em>.
+     * <em>entity.organisationScheduleView</em>, in order of their relationship
+     * sequence.
      *
      * @param scheduleView the schedule view
      * @return the schedules associated with the view
@@ -88,9 +91,20 @@ public class AppointmentRules {
     public List<Party> getSchedules(Entity scheduleView) {
         List<Party> result = new ArrayList<Party>();
         EntityBean bean = new EntityBean(scheduleView, service);
-        for (Entity entity : bean.getNodeTargetEntities("schedules")) {
-            Party schedule = (Party) entity;
-            result.add(schedule);
+        List<EntityRelationship> relationships
+                = bean.getNodeRelationships("schedules");
+        Collections.sort(relationships, new Comparator<EntityRelationship>() {
+            public int compare(EntityRelationship o1, EntityRelationship o2) {
+                return o1.getSequence() - o2.getSequence();
+            }
+        });
+        for (EntityRelationship relationship : relationships) {
+            if (relationship.getTarget() != null) {
+                Party schedule = (Party) service.get(relationship.getTarget());
+                if (schedule != null) {
+                    result.add(schedule);
+                }
+            }
         }
         return result;
     }
