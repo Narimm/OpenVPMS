@@ -271,11 +271,6 @@ public abstract class IMTableCollectionEditor<T>
         container = ColumnFactory.create(COLUMN_STYLE);
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
 
-        if (!isCardinalityReadOnly()) {
-            Row row = createControls(focusGroup);
-            container.add(row);
-        }
-
         table = new PagedIMTable<T>(createTableModel(context));
         table.getTable().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -283,11 +278,26 @@ public abstract class IMTableCollectionEditor<T>
             }
         });
 
+        doLayout(container, context);
+        return container;
+    }
+
+    /**
+     * Lays out the component in the specified container.
+     *
+     * @param container the container
+     * @param context   the layout context
+     */
+    protected void doLayout(Component container, LayoutContext context) {
+        if (!isCardinalityReadOnly()) {
+            Row row = createControls(focusGroup);
+            container.add(row);
+        }
+
         populateTable();
 
         focusGroup.add(table);
         container.add(table);
-        return container;
     }
 
     /**

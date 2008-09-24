@@ -26,7 +26,6 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
-import nextapp.echo2.app.table.TableCellRenderer;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.apache.commons.lang.ObjectUtils;
@@ -135,7 +134,7 @@ public class AppointmentTableModel extends AbstractTableModel {
     /**
      * Cell renderer.
      */
-    private TableCellRenderer cellRenderer;
+    private AppointmentTableCellRenderer cellRenderer;
 
     /**
      * The start time index.
@@ -243,6 +242,8 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     public void setAppointments(Date day,
                                 Map<Party, List<ObjectSet>> appointments) {
+        cellRenderer.refresh();
+
         Set<Party> schedules = appointments.keySet();
         singleScheduleView = schedules.size() == 1;
         if (singleScheduleView) {
@@ -761,6 +762,10 @@ public class AppointmentTableModel extends AbstractTableModel {
      */
     private class Column extends TableColumnEx {
 
+        /**
+         * The schedule, or <tt>null</tt> if the column isn't associated with
+         * a schedule.
+         */
         private Schedule schedule;
 
         /**
@@ -768,10 +773,24 @@ public class AppointmentTableModel extends AbstractTableModel {
          */
         private Column nextColumn;
 
+
+        /**
+         * Creates a new <tt>Column</tt>.
+         *
+         * @param modelIndex the model index
+         * @param schedule   the schedule
+         */
         public Column(int modelIndex, Schedule schedule) {
             this(modelIndex, schedule, schedule.getName());
         }
 
+        /**
+         * Creates a new <tt>Column</tt>.
+         *
+         * @param modelIndex the model index
+         * @param schedule   the schedule
+         * @param heading    the column heading
+         */
         public Column(int modelIndex, Schedule schedule, String heading) {
             super(modelIndex);
             this.schedule = schedule;
@@ -781,14 +800,31 @@ public class AppointmentTableModel extends AbstractTableModel {
             setWidth(new Extent(100));
         }
 
+        /**
+         * Creates a new <tt>Column</tt>.
+         *
+         * @param modelIndex the model index
+         * @param heading    the column heading
+         */
         public Column(int modelIndex, String heading) {
             this(modelIndex, null, heading);
         }
 
+        /**
+         * Returns the schedule.
+         *
+         * @return the schedule. May be <tt>null</tt>
+         */
         public Schedule getSchedule() {
             return schedule;
         }
 
+        /**
+         * Returns the appointment at the specified slot.
+         *
+         * @param slot the slot
+         * @return the appointment, or <tt>null</tt> if none is found
+         */
         public ObjectSet getAppointment(int slot) {
             if (schedule != null) {
                 return view.getAppointment(schedule, slot);
@@ -796,11 +832,12 @@ public class AppointmentTableModel extends AbstractTableModel {
             return null;
         }
 
-        public int getStartMins() {
-            return (schedule != null)
-                    ? schedule.getStartMins() : view.getStartMins();
-        }
-
+        /**
+         * Returns the schedule availability of the specified row.
+         *
+         * @param row the row
+         * @return the availability
+         */
         public AppointmentGrid.Availability getAvailability(int row) {
             if (schedule != null) {
                 return view.getAvailability(schedule, row);
@@ -808,10 +845,20 @@ public class AppointmentTableModel extends AbstractTableModel {
             return UNAVAILABLE;
         }
 
+        /**
+         * Sets the next column with the same schedule.
+         *
+         * @param column the next column
+         */
         public void setNextColumn(Column column) {
             nextColumn = column;
         }
 
+        /**
+         * Returns the next column with the same schedule
+         *
+         * @return the next column. May be <tt>null</tt>
+         */
         public Column getNextColumn() {
             return nextColumn;
         }

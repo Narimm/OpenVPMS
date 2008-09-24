@@ -20,9 +20,7 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.Appointment;
-import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.ArrayList;
@@ -33,82 +31,144 @@ import java.util.List;
 
 
 /**
- * Schedule column.
+ * Appointment schedule.
  */
 class Schedule {
 
+    /**
+     * The <em>party.organisationSchedule</em>.
+     */
     private final Party schedule;
 
-    private int startMins = -1;
+    /**
+     * The schedule start time, as minutes since midnight.
+     */
+    private int startMins;
 
-    private int endMins = -1;
+    /**
+     * The schedule end time, as minutes since midnight.
+     */
+    private int endMins;
 
+    /**
+     * The schedule slot size, in minutes.
+     */
     private int slotSize;
 
+    /**
+     * The appointments.
+     */
     private List<ObjectSet> appointments = new ArrayList<ObjectSet>();
 
-    public Schedule(Party schedule, AppointmentRules rules) {
+
+    /**
+     * Creates a new <tt>Schedule</tt>.
+     *
+     * @param schedule  the <em>party.organisationSchedule</em>
+     * @param startMins the schedule start time, as minutes since midnight
+     * @param endMins   the schedule end time, as minutes since midnight
+     */
+    public Schedule(Party schedule, int startMins, int endMins, int slotSize) {
         this.schedule = schedule;
-        EntityBean bean = new EntityBean(schedule);
-        Date start = bean.getDate("startTime");
-        if (start != null) {
-            startMins = SchedulingHelper.getMinutes(start);
-        } else {
-            startMins = MultiScheduleGrid.DEFAULT_START;
-        }
-
-        Date end = bean.getDate("endTime");
-        if (end != null) {
-            endMins = SchedulingHelper.getMinutes(end);
-        } else {
-            endMins = MultiScheduleGrid.DEFAULT_END;
-        }
-        slotSize = rules.getSlotSize(schedule);
-        if (slotSize <= 0) {
-            slotSize = MultiScheduleGrid.DEFAULT_SLOT_SIZE;
-        }
+        this.startMins = startMins;
+        this.endMins = endMins;
+        this.slotSize = slotSize;
     }
 
+    /**
+     * Creates a schedule from an existing schedule.
+     * <p/>
+     * The appointments are not copied.
+     *
+     * @param source the source schedule
+     */
     public Schedule(Schedule source) {
-        this.schedule = source.schedule;
-        startMins = source.startMins;
-        endMins = source.endMins;
-        slotSize = source.slotSize;
+        this(source.getSchedule(), source.getStartMins(), source.getEndMins(),
+             source.getSlotSize());
     }
 
+    /**
+     * Returns the schedule.
+     *
+     * @return the schedule
+     */
     public Party getSchedule() {
         return schedule;
     }
 
+    /**
+     * Returns the schedule name.
+     *
+     * @return the schedule name
+     */
     public String getName() {
         return schedule.getName();
     }
 
-    public int getSlotSize() {
-        return slotSize;
-    }
-
+    /**
+     * Returns the no. of minutes from midnight that the schedule starts at.
+     *
+     * @return the minutes from midnight that the schedule starts at
+     */
     public int getStartMins() {
         return startMins;
     }
 
+    /**
+     * Returns the no. of minutes from midnight that the schedule ends at.
+     *
+     * @return the minutes from midnight that the schedule ends at
+     */
     public int getEndMins() {
         return endMins;
     }
 
+    /**
+     * Returns the slot size.
+     *
+     * @return the slot size, in minutes
+     */
+    public int getSlotSize() {
+        return slotSize;
+    }
+
+    /**
+     * Adds an appointment.
+     *
+     * @param set an object set representing the appointment
+     */
     public void addAppointment(ObjectSet set) {
         appointments.add(set);
     }
 
+    /**
+     * Returns the appointments.
+     *
+     * @return the appointments
+     */
     public List<ObjectSet> getAppointments() {
         return appointments;
     }
 
+    /**
+     * Determines if the schedule has an appointment that intersects the
+     * specified appointment.
+     *
+     * @param appointment the appointment
+     * @return <tt>true</tt> if the schedule has an intersecting appointment
+     */
     public boolean hasAppointment(ObjectSet appointment) {
         return Collections.binarySearch(appointments, appointment,
                                         IntersectComparator.INSTANCE) >= 0;
     }
 
+    /**
+     * Returns the appointment starting at the specified time.
+     *
+     * @param time     the time
+     * @param slotSize the slot size
+     * @return the corresponding appintment, or <tt>null</tt> if none is found
+     */
     public ObjectSet getAppointment(Date time, int slotSize) {
         ObjectSet set = new ObjectSet();
         set.set(Appointment.ACT_START_TIME, time);
@@ -118,6 +178,12 @@ class Schedule {
         return (index < 0) ? null : appointments.get(index);
     }
 
+    /**
+     * Returns the appointment intersecting the specified time.
+     *
+     * @param time the time
+     * @return the corresponding appintment, or <tt>null</tt> if none is found
+     */
     public ObjectSet getIntersectingAppointment(Date time) {
         ObjectSet set = new ObjectSet();
         set.set(Appointment.ACT_START_TIME, time);

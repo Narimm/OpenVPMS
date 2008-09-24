@@ -28,6 +28,7 @@ import java.util.Date;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class SchedulingHelper {
+
     /**
      * Returns the minutes from midnight for the specified time.
      *
@@ -42,6 +43,16 @@ public class SchedulingHelper {
         return (hour * 60) + mins;
     }
 
+    /**
+     * Returns the minutes from midnight for the specified time, rounded
+     * up or down to the nearest slot.
+     *
+     * @param time     the time
+     * @param slotSize the slot size
+     * @param roundUp  if <tt>true</tt> round up to the nearest slot, otherwise
+     *                 round down
+     * @return the minutes from midnight for the specified time
+     */
     public static int getSlotMinutes(Date time, int slotSize, boolean roundUp) {
         int mins = getMinutes(time);
         int result = (mins / slotSize) * slotSize;

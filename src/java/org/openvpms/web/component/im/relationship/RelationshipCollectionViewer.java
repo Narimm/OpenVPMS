@@ -121,6 +121,17 @@ public class RelationshipCollectionViewer
      * @return a new result set
      */
     protected ResultSet<RelationshipState> createResultSet() {
+        List<RelationshipState> result = getRelationshipStates();
+        return new RelationshipStateResultSet(result, parentIsSource, ROWS);
+    }
+
+    /**
+     * Returns the relationship states, filtering inactive relationships if
+     * {@link #hideInactive()} is <tt>true</tt>.
+     *
+     * @return the relationships
+     */
+    protected List<RelationshipState> getRelationshipStates() {
         List<RelationshipState> result;
         if (hideInactive()) {
             result = new ArrayList<RelationshipState>();
@@ -132,7 +143,7 @@ public class RelationshipCollectionViewer
         } else {
             result = new ArrayList<RelationshipState>(states.values());
         }
-        return new RelationshipStateResultSet(result, parentIsSource, ROWS);
+        return result;
     }
 
     /**

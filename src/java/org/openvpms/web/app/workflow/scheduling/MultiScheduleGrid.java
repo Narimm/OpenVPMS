@@ -47,18 +47,28 @@ import java.util.Map;
 
 
 /**
- * Add description here.
+ * An {@link AppointmentGrid} for a multiple schedule.
+ * <p/>
+ * This handles overlapping and double booked appointments by creating new
+ * {@link Schedule} instances to contain them.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class MultiScheduleGrid extends AbstractAppointmentGrid {
 
+    /**
+     * The schedules.
+     */
     private List<Schedule> columns;
 
-    private final AppointmentRules rules;
 
-
+    /**
+     * Creates a new <tt>MultiScheduleGrid</tt>.
+     *
+     * @param date         the appointment date
+     * @param appointments the appointments
+     */
     public MultiScheduleGrid(Date date,
                              Map<Party, List<ObjectSet>> appointments) {
         super(date, -1, -1);
@@ -67,10 +77,22 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         setAppointments(appointments);
     }
 
+    /**
+     * Returns the schedules.
+     *
+     * @return the schedules
+     */
     public List<Schedule> getSchedules() {
         return columns;
     }
 
+    /**
+     * Returns the appointment for the specified schedule and slot.
+     *
+     * @param schedule the schedule
+     * @param slot     the slot
+     * @return the corresponding appointment, or <tt>null</tt> if none is found
+     */
     public ObjectSet getAppointment(Schedule schedule, int slot) {
         Date time = getStartTime(slot);
         ObjectSet result = schedule.getAppointment(time, getSlotSize());
@@ -80,24 +102,50 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         return result;
     }
 
-    public int getFirstSlot(int mins) {
-        if (mins < getStartMins() || mins > getEndMins()) {
+    /**
+     * Returns the first slot that has a start time and end time intersecting
+     * the specified minutes.
+     *
+     * @param minutes the minutes
+     * @return the first slot that minutes intersects, or <tt>-1</tt> if no
+     *         slots intersect
+     */
+    public int getFirstSlot(int minutes) {
+        if (minutes < getStartMins() || minutes > getEndMins()) {
             return -1;
         }
-        return (mins - getStartMins()) / getSlotSize();
+        return (minutes - getStartMins()) / getSlotSize();
     }
 
-    public int getLastSlot(int mins) {
-        return getFirstSlot(mins);
+    /**
+     * Returns the last slot that has a start time and end time intersecting
+     * the specified minutes.
+     *
+     * @param minutes the minutes
+     * @return the last slot that minutes intersects, or <tt>-1</tt> if no
+     *         slots intersect
+     */
+    public int getLastSlot(int minutes) {
+        return getFirstSlot(minutes);
     }
 
-
+    /**
+     * Sets the appointments.
+     *
+     * @param appointments the appointments, keyed on schedule
+     */
     private void setAppointments(Map<Party, List<ObjectSet>> appointments) {
         int startMins = -1;
         int endMins = -1;
+        int slotSize = -1;
         setSlotSize(-1);
+
+        // Determine the startMins, endMins and slotSize. The:
+        // . startMins is the minimum startMins of all schedules
+        // . endMins is the minimum endMins of all schedules
+        // . slotSize is the minimum slotSize of all schedules
         for (Party schedule : appointments.keySet()) {
-            Schedule column = new Schedule(schedule, rules);
+            Schedule column = createSchedule(schedule);
             columns.add(column);
             int start = column.getStartMins();
             if (startMins == -1 || start < startMins) {
@@ -107,8 +155,8 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
             if (end > endMins) {
                 endMins = end;
             }
-            if (column.getSlotSize() < getSlotSize()) {
-                setSlotSize(column.getSlotSize());
+            if (slotSize == -1 || column.getSlotSize() < slotSize) {
+                slotSize = column.getSlotSize();
             }
         }
         if (startMins == -1) {
@@ -117,9 +165,14 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         if (endMins == -1) {
             endMins = DEFAULT_END;
         }
+        if (slotSize == -1) {
+            slotSize = DEFAULT_SLOT_SIZE;
+        }
         setStartMins(startMins);
         setEndMins(endMins);
+        setSlotSize(slotSize);
 
+        // add the appointments
         for (Map.Entry<Party, List<ObjectSet>> entry
                 : appointments.entrySet()) {
             Party schedule = entry.getKey();
@@ -129,11 +182,18 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
                 addAppointment(schedule, set);
             }
         }
-        if (getSlotSize() == -1) {
-            setSlotSize(DEFAULT_SLOT_SIZE);
-        }
     }
 
+    /**
+     * Adds an appointment.
+     * <p/>
+     * If the corresponding Schedule already has an appointment that intersects
+     * the appointment, a new Schedule will be created with the same start and
+     * end times, and the appointment added to that.
+     *
+     * @param schedule the schedule to add the appointment to
+     * @param set      the appointment
+     */
     private void addAppointment(Party schedule, ObjectSet set) {
         Date startTime = set.getDate(Appointment.ACT_START_TIME);
         Date endTime = set.getDate(Appointment.ACT_END_TIME);
@@ -141,6 +201,9 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         boolean found = false;
         Schedule column = null;
         Schedule match = null;
+
+        // try and find a corresponding Schedule that has no appointment that
+        // intersects the supplied one
         for (int i = 0; i < columns.size(); ++i) {
             column = columns.get(i);
             if (column.getSchedule().equals(schedule)) {
@@ -154,10 +217,13 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
             }
         }
         if (!found) {
+            // appointment intersects an existing one, so create a new Schedule
             column = new Schedule(match);
             columns.add(index + 1, column);
         }
         column.addAppointment(set);
+
+        // adjust the grid start and end times, if required
         int slotStart = getSlotMinutes(startTime, false);
         int slotEnd = getSlotMinutes(endTime, true);
         if (getStartMins() > slotStart) {
