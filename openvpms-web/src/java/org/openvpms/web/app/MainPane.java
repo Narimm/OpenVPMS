@@ -20,6 +20,7 @@ package org.openvpms.web.app;
 
 import echopointng.GroupBox;
 import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -30,6 +31,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.TaskQueueHandle;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
@@ -48,6 +50,7 @@ import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.util.UserHelper;
+import org.openvpms.web.component.subsystem.Refreshable;
 import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.component.util.ButtonColumn;
@@ -108,12 +111,17 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     /**
      * The pane for the current subsystem.
      */
-    private ContentPane subsystem;
+    private ContentPane currentSubsystem;
 
     /**
      * The current workspace.
      */
-    private Workspace workspace;
+    private Workspace currentWorkspace;
+
+    /**
+     * The task queue, for refreshing {@link Refreshable} workspaces.
+     */
+    private TaskQueueHandle taskQueue;
 
     /**
      * The style name.
@@ -177,7 +185,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         menu.setLayoutData(layout);
         subMenu = new ButtonColumn(BUTTON_COLUMN_STYLE, BUTTON_STYLE);
         leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
-        subsystem = ContentPaneFactory.create(WORKSPACE_STYLE);
+        currentSubsystem = ContentPaneFactory.create(WORKSPACE_STYLE);
 
         Button button = addSubsystem(new CustomerSubsystem());
         addSubsystem(new PatientSubsystem());
@@ -209,7 +217,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         left.add(new Label());
         left.add(leftMenu);
         right.add(menu);
-        right.add(subsystem);
+        right.add(currentSubsystem);
 
         add(left);
         add(right);
@@ -245,11 +253,12 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      */
     public void changed(String key, IMObject value) {
         if ((value != null
-                && workspace.canHandle(value.getArchetypeId().getShortName()))
-                || workspace.canHandle(key)) {
+                && currentWorkspace.canHandle(
+                value.getArchetypeId().getShortName()))
+                || currentWorkspace.canHandle(key)) {
             // the key may be a short name. Use in the instance that the value
             // is null
-            workspace.setIMObject(value);
+            currentWorkspace.setIMObject(value);
         }
     }
 
@@ -259,7 +268,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      * @param subsystem the subsystem
      */
     protected void select(final Subsystem subsystem) {
-        this.subsystem.removeAll();
+        currentSubsystem.removeAll();
         subMenu.removeAll();
 
         List<Workspace> workspaces = subsystem.getWorkspaces();
@@ -289,18 +298,23 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      * @param workspace the workspace within the subsystem to select
      */
     protected void select(Subsystem subsystem, Workspace workspace) {
-        if (this.workspace != null) {
-            this.workspace.removePropertyChangeListener(
+        if (currentWorkspace != null) {
+            currentWorkspace.removePropertyChangeListener(
                     Workspace.SUMMARY_PROPERTY, summaryRefresher);
         }
         subsystem.setWorkspace(workspace);
-        this.subsystem.removeAll();
-        this.subsystem.add(workspace.getComponent());
+        currentSubsystem.removeAll();
+        currentSubsystem.add(workspace.getComponent());
 
-        this.workspace = workspace;
+        currentWorkspace = workspace;
         refreshSummary();
-        this.workspace.addPropertyChangeListener(Workspace.SUMMARY_PROPERTY,
-                                                 summaryRefresher);
+        currentWorkspace.addPropertyChangeListener(Workspace.SUMMARY_PROPERTY,
+                                                   summaryRefresher);
+        if (currentWorkspace instanceof Refreshable) {
+            queueRefresh();
+        } else {
+            removeTaskQueue();
+        }
     }
 
     /**
@@ -356,7 +370,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      */
     private void refreshSummary() {
         leftMenu.remove(summary);
-        Component summary = workspace.getSummary();
+        Component summary = currentWorkspace.getSummary();
         if (summary != null) {
             summary = ColumnFactory.create("MainPane.Left.Menu.Summary",
                                            summary);
@@ -380,7 +394,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      * Invoked when the 'logout' button is pressed.
      */
     private void onLogout() {
-        final OpenVPMSApp app = OpenVPMSApp.getInstance();
+        OpenVPMSApp app = OpenVPMSApp.getInstance();
         int count = app.getActiveWindowCount();
         String msg;
         if (count > 1) {
@@ -393,11 +407,62 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    app.logout();
+                    doLogout();
                 }
             }
         });
         dialog.show();
+    }
+
+    /**
+     * Logs out the application.
+     */
+    private void doLogout() {
+        removeTaskQueue();
+        OpenVPMSApp app = OpenVPMSApp.getInstance();
+        app.logout();
+    }
+
+    /**
+     * Queues a refresh of the current workspace.
+     */
+    private void queueRefresh() {
+        final ApplicationInstance app = ApplicationInstance.getActive();
+        app.enqueueTask(getTaskQueue(), new Runnable() {
+            public void run() {
+                if (currentWorkspace instanceof Refreshable) {
+                    Refreshable refreshable = (Refreshable) currentWorkspace;
+                    if (refreshable.needsRefresh()) {
+                        refreshable.refresh();
+                    }
+                    queueRefresh(); // queue a refresh again
+                }
+            }
+        });
+    }
+
+    /**
+     * Returns the task queue, creating it if it doesn't exist.
+     *
+     * @return the task queue
+     */
+    private TaskQueueHandle getTaskQueue() {
+        if (taskQueue == null) {
+            ApplicationInstance app = ApplicationInstance.getActive();
+            taskQueue = app.createTaskQueue();
+        }
+        return taskQueue;
+    }
+
+    /**
+     * Cleans up the task queue.
+     */
+    private void removeTaskQueue() {
+        if (taskQueue != null) {
+            final ApplicationInstance app = ApplicationInstance.getActive();
+            app.removeTaskQueue(taskQueue);
+            taskQueue = null;
+        }
     }
 
 }
