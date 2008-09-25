@@ -31,6 +31,7 @@ import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -59,6 +60,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -164,16 +166,35 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      */
     public void query() {
         getComponent();
+        Set<Party> lastSchedules = (results != null) ? results.keySet() : null;
         results = query.query();
         model.setAppointments(query.getDate(), results);
         DateFormat format = DateHelper.getFullDateFormat();
         selectedDate.setText(format.format(query.getDate()));
         boolean singleScheduleView = model.isSingleScheduleView();
         table.setRolloverEnabled(singleScheduleView);
-        Highlight highlight = (singleScheduleView)
-                ? Highlight.STATUS : Highlight.APPOINTMENT;
-        if (highlightSelector.getSelectedIndex() != highlight.ordinal()) {
-            highlightSelector.setSelectedIndex(highlight.ordinal());
+
+        // if the schedules have changed, select the appropriate highlight
+        boolean schedulesChanged = false;
+        Set<Party> schedules = results.keySet();
+        if (lastSchedules == null || !schedules.equals(lastSchedules)) {
+            schedulesChanged = true;
+            Highlight highlight = (singleScheduleView)
+                    ? Highlight.STATUS : Highlight.APPOINTMENT;
+            if (highlightSelector.getSelectedIndex() != highlight.ordinal()) {
+                highlightSelector.setSelectedIndex(highlight.ordinal());
+                model.setHighlight(highlight);
+            }
+        }
+
+        // if the schedules or date has changed, deselect the selected cell
+        boolean dateChanged = false;
+        if (selectedTime != null && DateRules.getDate(selectedTime).compareTo(
+                query.getDate()) != 0) {
+            dateChanged = true;
+        }
+        if (schedulesChanged || dateChanged) {
+            clearSelection();
         }
     }
 
@@ -396,6 +417,7 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
                 model.setTimeRange(TimeRange.PM);
                 break;
         }
+        clearSelection();
     }
 
     /**
@@ -441,6 +463,8 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         } else {
             notifySelected(selected);
         }
+
+        // deselect the row
         table.getSelectionModel().clearSelection();
     }
 
@@ -473,6 +497,14 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         });
 
         return result;
+    }
+
+    /**
+     * Deselects the selected cell.
+     */
+    private void clearSelection() {
+        selectedTime = null;
+        model.setSelectedCell(-1, -1);
     }
 
 }

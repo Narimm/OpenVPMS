@@ -219,11 +219,13 @@ public abstract class RelationshipCollectionTargetPropertyEditor
                 }
                 if (deleted) {
                     removed.remove(object);
-                    setSaved(true);
                 } else {
                     saved = false;
                     break;
                 }
+            }
+            if (saved) {
+                setSaved(true);
             }
         }
         if (saved) {
