@@ -23,12 +23,15 @@ import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -66,6 +69,12 @@ public class RelationshipCollectionPropertyEditor
      */
     private Map<IMObjectRelationship, RelationshipState> states
             = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
+
+    /**
+     * The set of removed objects.
+     */
+    private final Set<IMObjectRelationship> removed
+            = new HashSet<IMObjectRelationship>();
 
 
     /**
@@ -181,10 +190,42 @@ public class RelationshipCollectionPropertyEditor
      * @return <tt>true</tt> if the object was removed
      */
     @Override
-    @SuppressWarnings("SuspiciousMethodCalls")
     public boolean remove(IMObject object) {
-        states.remove(object);
-        return super.remove(object);
+        IMObjectRelationship relationship = (IMObjectRelationship) object;
+        states.remove(relationship);
+        if (!relationship.isNew()) {
+            removed.add(relationship);
+        }
+        return super.remove(relationship);
+    }
+
+    /**
+     * Saves the collection.
+     *
+     * @return <tt>true</tt> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        boolean saved = true;
+        if (!removed.isEmpty()) {
+            IMObjectRelationship[] toRemove
+                    = removed.toArray(new IMObjectRelationship[0]);
+            for (IMObjectRelationship relationship : toRemove) {
+                if (SaveHelper.delete(relationship)) {
+                    removed.remove(relationship);
+                } else {
+                    saved = false;
+                    break;
+                }
+            }
+            if (saved) {
+                setSaved(true);
+            }
+        }
+        if (saved) {
+            saved = super.doSave();
+        }
+        return saved;
     }
 
     /**
