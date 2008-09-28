@@ -91,7 +91,12 @@ public class PatientSummary {
         if (patient != null) {
             result = ColumnFactory.create();
             Label patientName = LabelFactory.create(null, "Patient.Name");
-            patientName.setText(patient.getName());
+            if (rules.isDesexed(patient)) {
+                patientName.setText(patient.getName()+ "(" + Messages.get("patient.desexed") + ")");            	
+            }
+            else {
+                patientName.setText(patient.getName());            	
+            }
             result.add(RowFactory.create("Inset.Small", patientName));
             if (rules.isDeceased(patient)) {
                 Label deceased = LabelFactory.create("patient.deceased",
