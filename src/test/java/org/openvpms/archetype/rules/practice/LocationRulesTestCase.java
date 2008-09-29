@@ -20,7 +20,7 @@ package org.openvpms.archetype.rules.practice;
 
 import org.openvpms.archetype.rules.finance.deposit.DepositTestHelper;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
-import org.openvpms.archetype.rules.workflow.AppointmentTestHelper;
+import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -94,11 +94,11 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
         Party location = TestHelper.createLocation();
         assertNull(rules.getDefaultScheduleView(location));
 
-        Party schedule1 = AppointmentTestHelper.createSchedule();
-        Party schedule2 = AppointmentTestHelper.createSchedule();
-        Entity view1 = AppointmentTestHelper.createScheduleView(schedule1);
-        Entity view2 = AppointmentTestHelper.createScheduleView(schedule1,
-                                                                schedule2);
+        Party schedule1 = ScheduleTestHelper.createSchedule();
+        Party schedule2 = ScheduleTestHelper.createSchedule();
+        Entity view1 = ScheduleTestHelper.createScheduleView(schedule1);
+        Entity view2 = ScheduleTestHelper.createScheduleView(schedule1,
+                                                             schedule2);
         EntityBean bean = new EntityBean(location);
         bean.addRelationship("entityRelationship.locationView", view1);
 
@@ -113,25 +113,28 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link LocationRules#getDefaultWorkList} method.
+     * Tests the {@link LocationRules#getDefaultWorkListView(Party)} method.
      */
-    public void testGetDefaultWorkList() {
+    public void testGetDefaultWorkListView() {
         Party location = TestHelper.createLocation();
-        assertNull(rules.getDefaultWorkList(location));
+        assertNull(rules.getDefaultWorkListView(location));
 
-        Party worklist1 = AppointmentTestHelper.createWorkList();
-        Party worklist2 = AppointmentTestHelper.createWorkList();
+        Party worklist1 = ScheduleTestHelper.createWorkList();
+        Party worklist2 = ScheduleTestHelper.createWorkList();
+        Entity view1 = ScheduleTestHelper.createWorkListView(worklist1);
+        Entity view2 = ScheduleTestHelper.createWorkListView(worklist1,
+                                                             worklist2);
         EntityBean bean = new EntityBean(location);
-        bean.addRelationship("entityRelationship.locationWorkList", worklist1);
+        bean.addRelationship("entityRelationship.locationWorkListView", view1);
 
-        assertEquals(worklist1, rules.getDefaultWorkList(location));
+        assertEquals(view1, rules.getDefaultWorkListView(location));
 
         EntityRelationship rel2 = bean.addRelationship(
-                "entityRelationship.locationWorkList", worklist2);
-        EntityRelationshipHelper.setDefault(location, "workLists", rel2,
+                "entityRelationship.locationWorkListView", view2);
+        EntityRelationshipHelper.setDefault(location, "workListViews", rel2,
                                             getArchetypeService());
 
-        assertEquals(worklist2, rules.getDefaultWorkList(location));
+        assertEquals(view2, rules.getDefaultWorkListView(location));
     }
 
     /**

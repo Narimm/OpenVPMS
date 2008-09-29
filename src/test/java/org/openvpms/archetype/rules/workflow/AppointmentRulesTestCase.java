@@ -50,7 +50,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     /**
      * The appointment service.
      */
-    private AppointmentService appointmentService;
+    private ScheduleService appointmentService;
 
 
     /**
@@ -72,14 +72,14 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Party schedule = createSchedule(15, "MINUTES", 2, null);
         assertNull(rules.getDefaultAppointmentType(schedule));
 
-        AppointmentTestHelper.addAppointmentType(schedule, appointmentType1, 2,
+        ScheduleTestHelper.addAppointmentType(schedule, appointmentType1, 2,
                                                  false);
 
         // no default appointment type, so should pick the first available
         assertEquals(rules.getDefaultAppointmentType(schedule),
                      appointmentType1);
 
-        AppointmentTestHelper.addAppointmentType(schedule, appointmentType2, 2,
+        ScheduleTestHelper.addAppointmentType(schedule, appointmentType2, 2,
                                                  true);
         assertEquals(rules.getDefaultAppointmentType(schedule),
                      appointmentType2);
@@ -264,7 +264,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         super.onSetUp();
         removeActs();
         rules = new AppointmentRules();
-        appointmentService = (AppointmentService) applicationContext.getBean(
+        appointmentService = (ScheduleService) applicationContext.getBean(
                 "appointmentService");
     }
 
@@ -278,7 +278,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      */
     protected Act createAppointment(Date startTime, Date endTime,
                                     Party schedule) {
-        return AppointmentTestHelper.createAppointment(startTime, endTime,
+        return ScheduleTestHelper.createAppointment(startTime, endTime,
                                                        schedule);
     }
 
@@ -290,7 +290,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     protected Act createTask() {
         Entity taskType = createTaskType();
         Party customer = TestHelper.createCustomer();
-        Party workList = AppointmentTestHelper.createWorkList();
+        Party workList = ScheduleTestHelper.createWorkList();
         Act act = createAct("act.customerTask");
         ActBean bean = new ActBean(act);
         bean.setStatus(WorkflowStatus.PENDING);
@@ -319,7 +319,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * @return a new appointment type
      */
     protected Entity createAppointmentType() {
-        return AppointmentTestHelper.createAppointmentType();
+        return ScheduleTestHelper.createAppointmentType();
     }
 
     /**
@@ -345,7 +345,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      */
     protected Party createSchedule(int slotSize, String slotUnits,
                                    int noSlots, Entity appointmentType) {
-        return AppointmentTestHelper.createSchedule(slotSize, slotUnits,
+        return ScheduleTestHelper.createSchedule(slotSize, slotUnits,
                                                     noSlots, appointmentType);
     }
 

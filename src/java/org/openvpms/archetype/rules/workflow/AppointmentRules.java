@@ -161,14 +161,14 @@ public class AppointmentRules {
      * @throws OpenVPMSException for any error
      */
     public boolean hasOverlappingAppointments(
-            Act appointment, AppointmentService appointmentService) {
+            Act appointment, ScheduleService appointmentService) {
         ActBean bean = new ActBean(appointment, service);
         Party schedule = (Party) bean.getNodeParticipant("schedule");
         Date startTime = appointment.getActivityStartTime();
         Date endTime = appointment.getActivityEndTime();
 
         if (startTime != null && endTime != null && schedule != null) {
-            List<ObjectSet> appointments = appointmentService.getAppointments(
+            List<ObjectSet> appointments = appointmentService.getEvents(
                     schedule, startTime, endTime);
             if (!appointments.isEmpty()) {
                 if (appointment.isNew()) {
@@ -177,13 +177,12 @@ public class AppointmentRules {
                     IMObjectReference actRef = appointment.getObjectReference();
                     for (ObjectSet set : appointments) {
                         IMObjectReference ref
-                                = set.getReference(Appointment.ACT_REFERENCE);
+                                = set.getReference(ScheduleEvent.ACT_REFERENCE);
                         if (!ObjectUtils.equals(ref, actRef)) {
                             return true;
                         }
                     }
                 }
-
             }
         }
         return false;

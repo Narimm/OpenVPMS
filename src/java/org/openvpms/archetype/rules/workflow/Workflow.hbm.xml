@@ -52,6 +52,35 @@ order by p.activityStartTime, act.id
       ]]>
     </query>
 
+    <query name="act.customerTask">
+        <![CDATA[
+select act.archetypeId, act.id, act.linkId,
+      p.activityStartTime,
+      p.activityEndTime,
+      indices(details), elements(details),
+      act.status,
+      act.reason,
+      act.description,
+      e.archetypeId, e.id, e.linkId,
+      e.name
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act
+      join act.participations as p
+      join p.entity as e
+      join act.participations as schedule
+      left outer join act.details as details
+where act.archetypeId.shortName = 'act.customerTask'
+      and p.actShortName = 'act.customerTask'
+      and (p.activityStartTime <= :to
+          and (p.activityEndTime >= :from or p.activityEndTime is null))
+      and schedule.archetypeId.shortName = 'participation.worklist'
+          and schedule.entity.id = :scheduleId
+          and (schedule.activityStartTime <= :to
+              and (schedule.activityEndTime >= :from
+                   or schedule.activityEndTime is null))
+order by p.activityStartTime, act.id
+      ]]>
+    </query>
+
     <query name="act.customerAppointment-incomplete">
         <![CDATA[
 select act.archetypeId, act.id, act.linkId,
