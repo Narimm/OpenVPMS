@@ -93,7 +93,7 @@ public class LocationRules {
     }
 
     /**
-     * Returns the <em>entity.organisationScheduleView</em>s associated
+     * Returns the <em>entity.organisationScheduleView</em>s associated with a
      * location.
      *
      * @param location the location
@@ -105,14 +105,26 @@ public class LocationRules {
     }
 
     /**
-     * Returns the default schedule associated with a location.
+     * Returns the default work list view associated with a location.
      *
      * @param location the location
-     * @return the default schedule or <tt>null</tt> if none is found
+     * @return the default work list view or <tt>null</tt> if none is found
      */
-    public Party getDefaultWorkList(Party location) {
-        return (Party) EntityRelationshipHelper.getDefaultTarget(
-                location, "workLists", service);
+    public Entity getDefaultWorkListView(Party location) {
+        return EntityRelationshipHelper.getDefaultTarget(
+                location, "workListViews", service);
+    }
+
+    /**
+     * Returns the <em>entity.organisationWorkListView</em>s associated with a
+     * location.
+     *
+     * @param location the location
+     * @return the work list views
+     */
+    public List<Entity> getWorkListViews(Party location) {
+        EntityBean bean = new EntityBean(location, service);
+        return bean.getNodeTargetEntities("workListViews");
     }
 
     /**

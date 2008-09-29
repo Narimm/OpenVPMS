@@ -23,13 +23,17 @@ import net.sf.ehcache.Element;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -39,17 +43,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 
 /**
- * Implementation of the {@link AppointmentService} that provides caching.
+ * Abstract implementation of the {@link ScheduleService}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentServiceImpl implements AppointmentService {
+public abstract class AbstractScheduleService implements ScheduleService {
 
     /**
      * The archetype service.
@@ -62,35 +67,33 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final Cache cache;
 
 
-    /**
-     * Creates a new <tt>AppointmentServiceImpl</tt>.
-     *
-     * @param service the archetype service
-     * @param cache   the cache
-     */
-    public AppointmentServiceImpl(IArchetypeService service, Cache cache) {
-        this.service = service;
-        this.cache = cache;
+    public AbstractScheduleService(String eventShortName,
+                                   IArchetypeService service,
+                                   Cache cache) {
         service.addListener(
-                "act.customerAppointment", new IArchetypeServiceListener() {
+                eventShortName, new IArchetypeServiceListener() {
             public void saved(IMObject object) {
-                addAppointment((Act) object);
+                addEvent((Act) object);
             }
 
             public void removed(IMObject object) {
-                removeAppointment((Act) object);
+                removeEvent((Act) object);
             }
         });
+
+        this.service = service;
+        this.cache = cache;
     }
 
     /**
-     * Returns all appointments for the specified schedule and day.
+     * Returns all events for the specified schedule and day.
+     * Events are represented by {@link ObjectSet ObjectSets}.
      *
-     * @param schedule an <em>party.organisationSchedule</em>
+     * @param schedule the schedule
      * @param day      the day
-     * @return a list of appointments
+     * @return a list of events
      */
-    public List<ObjectSet> getAppointments(Party schedule, Date day) {
+    public List<ObjectSet> getEvents(Entity schedule, Date day) {
         List<ObjectSet> result;
         day = getStart(day);
         Key key = new Key(schedule.getObjectReference(), day);
@@ -98,34 +101,34 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (element != null) {
             synchronized (element) {
                 Value value = (Value) element.getObjectValue();
-                result = new ArrayList<ObjectSet>(value.getAppointments());
+                result = new ArrayList<ObjectSet>(value.getEvents());
             }
         } else {
             List<ObjectSet> sets = query(schedule, day);
             Value value = new Value(sets);
-            result = new ArrayList<ObjectSet>(value.getAppointments());
+            result = new ArrayList<ObjectSet>(value.getEvents());
             cache.put(new Element(key, value));
         }
         return result;
     }
 
     /**
-     * Returns all appointments for the specified schedule, and time range.
+     * Returns all events for the specified schedule, and time range.
      *
-     * @param schedule an <em>party.organisationSchedule</em>
-     * @return a list of appointments
+     * @param schedule the schedule
+     * @return a list of events
      */
-    public List<ObjectSet> getAppointments(Party schedule, Date from, Date to) {
+    public List<ObjectSet> getEvents(Entity schedule, Date from, Date to) {
         Date fromDay = getStart(from);
         Date toDay = getStart(to);
         List<ObjectSet> results = new ArrayList<ObjectSet>();
         while (fromDay.compareTo(toDay) <= 0) {
-            for (ObjectSet appointment : getAppointments(schedule, fromDay)) {
-                Date startTime = appointment.getDate(
-                        Appointment.ACT_START_TIME);
-                Date endTime = appointment.getDate(Appointment.ACT_END_TIME);
+            for (ObjectSet event : getEvents(schedule, fromDay)) {
+                Date startTime = event.getDate(
+                        ScheduleEvent.ACT_START_TIME);
+                Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
                 if (DateRules.intersects(startTime, endTime, from, to)) {
-                    results.add(appointment);
+                    results.add(event);
                 } else if (DateRules.compareTo(startTime, to) >= 0) {
                     break;
                 }
@@ -136,20 +139,37 @@ public class AppointmentServiceImpl implements AppointmentService {
         return results;
     }
 
-    /**
-     * Adds an appointment to the cache.
-     *
-     * @param appointment the appointment to add
-     */
-    private void addAppointment(Act appointment) {
-        removeAppointment(appointment);
 
-        ObjectSet set = Appointment.createObjectSet(appointment, service);
+    protected abstract IMObjectReference getSchedule(Act event);
+
+
+    protected abstract ScheduleEventQuery createQuery(Entity schedule,
+                                                      Date from, Date to);
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
+    }
+
+    /**
+     * Adds an event to the cache.
+     *
+     * @param event the event to add
+     */
+    protected void addEvent(Act event) {
+        removeEvent(event);
+
+        ActBean bean = new ActBean(event, service);
+        ObjectSet set = new ObjectSet();
+        assemble(set, bean);
         IMObjectReference schedule
-                = set.getReference(Appointment.SCHEDULE_REFERENCE);
-        IMObjectReference act
-                = set.getReference(Appointment.ACT_REFERENCE);
-        Date date = set.getDate(Appointment.ACT_START_TIME);
+                = set.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
+        IMObjectReference act = set.getReference(ScheduleEvent.ACT_REFERENCE);
+        Date date = set.getDate(ScheduleEvent.ACT_START_TIME);
         if (schedule != null && act != null && date != null) {
             Element element = getElement(schedule, date);
             if (element != null) {
@@ -162,20 +182,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     /**
-     * Removes an appointment from the cache.
+     * Removes an event from the cache.
      *
-     * @param appointment the appointment to remove
+     * @param event the event to remove
      */
-    private void removeAppointment(Act appointment) {
-        ActBean bean = new ActBean(appointment, service);
-        Date date = getStart(appointment.getActivityStartTime());
-        IMObjectReference schedule = bean.getNodeParticipantRef("schedule");
-        removeAppointment(schedule, appointment.getObjectReference(), date);
-    }
-
-    private void removeAppointment(IMObjectReference schedule,
-                                   IMObjectReference act,
-                                   Date date) {
+    protected void removeEvent(Act event) {
+        Date date = getStart(event.getActivityStartTime());
+        IMObjectReference act = event.getObjectReference();
+        IMObjectReference schedule = getSchedule(event);
         boolean removed = false;
         Element element = getElement(schedule, date);
         if (element != null && remove(element, act)) {
@@ -195,6 +209,57 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
+    protected void assemble(ObjectSet target, ActBean source) {
+        Act event = source.getAct();
+        target.set(ScheduleEvent.ACT_REFERENCE, event.getObjectReference());
+        target.set(ScheduleEvent.ACT_START_TIME, event.getActivityStartTime());
+        target.set(ScheduleEvent.ACT_END_TIME, event.getActivityEndTime());
+        target.set(ScheduleEvent.ACT_STATUS, event.getStatus());
+        target.set(ScheduleEvent.ACT_REASON, event.getReason());
+        target.set(ScheduleEvent.ACT_DESCRIPTION, event.getDescription());
+
+        IMObjectReference customerRef
+                = source.getNodeParticipantRef("customer");
+        String customerName = getName(customerRef);
+        target.set(ScheduleEvent.CUSTOMER_REFERENCE, customerRef);
+        target.set(ScheduleEvent.CUSTOMER_NAME, customerName);
+
+        IMObjectReference patientRef = source.getNodeParticipantRef("patient");
+        String patientName = getName(patientRef);
+        target.set(ScheduleEvent.PATIENT_REFERENCE, patientRef);
+        target.set(ScheduleEvent.PATIENT_NAME, patientName);
+
+
+        IMObjectReference clinicianRef
+                = source.getNodeParticipantRef("clinician");
+        String clinicianName = getName(clinicianRef);
+        target.set(ScheduleEvent.CLINICIAN_REFERENCE, clinicianRef);
+        target.set(ScheduleEvent.CLINICIAN_NAME, clinicianName);
+    }
+
+    /**
+     * Returns the name of an object, given its reference.
+     *
+     * @param reference the object reference. May be <tt>null</tt>
+     * @return the name or <tt>null</tt> if none exists
+     */
+    protected String getName(IMObjectReference reference) {
+        if (reference != null) {
+            ObjectRefConstraint constraint
+                    = new ObjectRefConstraint("o", reference);
+            ArchetypeQuery query = new ArchetypeQuery(constraint);
+            query.add(new NodeSelectConstraint("o.name"));
+            query.setMaxResults(1);
+            Iterator<ObjectSet> iter = new ObjectSetQueryIterator(service,
+                                                                  query);
+            if (iter.hasNext()) {
+                ObjectSet set = iter.next();
+                return set.getString("o.name");
+            }
+        }
+        return null;
+    }
+
     private boolean remove(Element element, IMObjectReference act) {
         synchronized (element) {
             Value value = (Value) element.getObjectValue();
@@ -207,6 +272,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Key key = new Key(schedule, date);
         return cache.get(key);
     }
+
 
     private Date getStart(Date day) {
         return DateRules.getDate(day);
@@ -222,14 +288,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         return calendar.getTime();
     }
 
-    private List<ObjectSet> query(Party schedule, Date start) {
+    private List<ObjectSet> query(Entity schedule, Date start) {
         Date end = getEnd(start);
-        AppointmentQuery query = new AppointmentQuery(service);
-        query.setDateRange(start, end);
-        query.setSchedule(schedule);
+        ScheduleEventQuery query = createQuery(schedule, start, end);
         return query.query().getResults();
     }
-
 
     private static class Key implements Serializable {
 
@@ -283,10 +346,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         private List<ObjectSet> sorted;
         private static final SetComparator COMPARATOR = new SetComparator();
 
-        public Value(List<ObjectSet> appointments) {
+        public Value(List<ObjectSet> events) {
             map = new HashMap<IMObjectReference, ObjectSet>();
-            for (ObjectSet set : appointments) {
-                map.put(set.getReference(Appointment.ACT_REFERENCE), set);
+            for (ObjectSet set : events) {
+                map.put(set.getReference(ScheduleEvent.ACT_REFERENCE), set);
             }
             sort();
         }
@@ -304,7 +367,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             return result;
         }
 
-        public Collection<ObjectSet> getAppointments() {
+        public Collection<ObjectSet> getEvents() {
             return sorted;
         }
 
@@ -332,14 +395,14 @@ public class AppointmentServiceImpl implements AppointmentService {
          *                            being compared by this Comparator.
          */
         public int compare(ObjectSet o1, ObjectSet o2) {
-            Date startTime1 = o1.getDate(Appointment.ACT_START_TIME);
-            Date startTime2 = o2.getDate(Appointment.ACT_START_TIME);
+            Date startTime1 = o1.getDate(ScheduleEvent.ACT_START_TIME);
+            Date startTime2 = o2.getDate(ScheduleEvent.ACT_START_TIME);
             int result = DateRules.compareTo(startTime1, startTime2);
             if (result == 0) {
                 IMObjectReference ref1 = o1.getReference(
-                        Appointment.ACT_REFERENCE);
+                        ScheduleEvent.ACT_REFERENCE);
                 IMObjectReference ref2 = o2.getReference(
-                        Appointment.ACT_REFERENCE);
+                        ScheduleEvent.ACT_REFERENCE);
                 if (ref1.getId() < ref2.getId()) {
                     result = -1;
                 } else if (ref1.getId() == ref2.getId()) {

@@ -34,15 +34,15 @@ import java.util.Date;
 
 
 /**
- * Appointment test helper.
+ * Scheduling test helper.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentTestHelper extends TestHelper {
+public class ScheduleTestHelper extends TestHelper {
 
     /**
-     * Helper to create and save an <em>entity.scheduleViewType</em>,
+     * Helper to create and save an <em>entity.organisationScheduleView</em>,
      * with associated <em>party.organisationSchedule</em>s.
      *
      * @param schedules the schedules
@@ -51,7 +51,7 @@ public class AppointmentTestHelper extends TestHelper {
         Entity view = (Entity) create("entity.organisationScheduleView");
         view.setName("XScheduleView");
         EntityBean bean = new EntityBean(view);
-        for (Party schedule  : schedules) {
+        for (Party schedule : schedules) {
             bean.addRelationship("entityRelationship.locationView", schedule);
         }
         bean.save();
@@ -71,7 +71,7 @@ public class AppointmentTestHelper extends TestHelper {
     }
 
     /**
-     * Helper to create and save a <code>party.organisationSchedule</em>.
+     * Helper to create and save a <tt>party.organisationSchedule</em>.
      *
      * @return a new schedule
      */
@@ -80,7 +80,7 @@ public class AppointmentTestHelper extends TestHelper {
     }
 
     /**
-     * Helper to create and save new <code>party.organisationSchedule</em>.
+     * Helper to create and save new <tt>party.organisationSchedule</em>.
      *
      * @param slotSize        the schedule slot size
      * @param slotUnits       the schedule slot units
@@ -152,7 +152,7 @@ public class AppointmentTestHelper extends TestHelper {
      * @param endTime   the act end time
      * @param schedule  the schedule
      * @param customer  the customer
-     * @param patient   the patient. May be <code>null</code>
+     * @param patient   the patient. May be <tt>null</tt>
      * @return a new act
      */
     public static Act createAppointment(Date startTime, Date endTime,
@@ -169,8 +169,8 @@ public class AppointmentTestHelper extends TestHelper {
      * @param endTime   the act end time
      * @param schedule  the schedule
      * @param customer  the customer
-     * @param patient   the patient. May be <code>null</code>
-     * @param clinician the clinician. May be <code>null</code>
+     * @param patient   the patient. May be <tt>null</tt>
+     * @param clinician the clinician. May be <tt>null</tt>
      * @return a new act
      */
     public static Act createAppointment(Date startTime, Date endTime,
@@ -200,6 +200,36 @@ public class AppointmentTestHelper extends TestHelper {
     }
 
     /**
+     * Helper to create and save an <em>entity.organisationScheduleView</em>,
+     * with associated <em>party.organisationWorkList</em>s.
+     *
+     * @param workLists the work lists
+     */
+    public static Entity createWorkListView(Party ... workLists) {
+        Entity view = (Entity) create("entity.organisationWorkListView");
+        view.setName("XWorkListView");
+        EntityBean bean = new EntityBean(view);
+        for (Party workList : workLists) {
+            bean.addRelationship("entityRelationship.locationWorkListView",
+                                 workList);
+        }
+        bean.save();
+        return view;
+    }
+
+    /**
+     * Helper to create and save a new <em>entity.taskType</em>.
+     *
+     * @return a new appointment type
+     */
+    public static Entity createTaskType() {
+        Entity taskType = (Entity) create("entity.taskType");
+        taskType.setName("XTaskType");
+        save(taskType);
+        return taskType;
+    }
+
+    /**
      * Helper to create a new <em>party.organisationWorkList</em>.
      *
      * @return a new work list
@@ -209,6 +239,71 @@ public class AppointmentTestHelper extends TestHelper {
         workList.setName("XWorkList");
         save(workList);
         return workList;
+    }
+
+    /**
+     * Helper to create an <em>act.customerTask</em>.
+     *
+     * @param startTime the act start time
+     * @param endTime   the act end time
+     * @param workList  the work list
+     * @return a new act
+     */
+    public static Act createTask(Date startTime, Date endTime,
+                                        Party workList) {
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient();
+        return createTask(startTime, endTime, workList, customer, patient);
+    }
+
+    /**
+     * Helper to create an <em>act.customerTask</em>.
+     *
+     * @param startTime the act start time
+     * @param endTime   the act end time
+     * @param schedule  the schedule
+     * @param customer  the customer
+     * @param patient   the patient. May be <tt>null</tt>
+     * @return a new act
+     */
+    public static Act createTask(Date startTime, Date endTime, Party schedule,
+                                 Party customer, Party patient) {
+        return createTask(startTime, endTime, schedule, customer, patient,
+                          null);
+    }
+    /**
+     * Helper to create an <em>act.customerTask</em>.
+     *
+     * @param startTime the act start time
+     * @param endTime   the act end time
+     * @param schedule  the schedule
+     * @param customer  the customer
+     * @param patient   the patient. May be <tt>null</tt>
+     * @param clinician the clinician. May be <tt>null</tt>
+     * @return a new act
+     */
+    public static Act createTask(Date startTime, Date endTime,
+                                 Party schedule, Party customer,
+                                 Party patient, User clinician) {
+        Act act = (Act) create("act.customerTask");
+
+        ActBean bean = new ActBean(act);
+        bean.setValue("startTime", startTime);
+        bean.setValue("endTime", endTime);
+        bean.setValue("status", TaskStatus.IN_PROGRESS);
+        Entity taskType = createTaskType();
+        taskType.setName("XTaskType");
+        save(taskType);
+        bean.setParticipant("participation.customer", customer);
+        if (patient != null) {
+            bean.setParticipant("participation.patient", patient);
+        }
+        bean.setParticipant("participation.worklist", schedule);
+        bean.setParticipant("participation.taskType", taskType);
+        if (clinician != null) {
+            bean.setParticipant("participation.clinician", clinician);
+        }
+        return act;
     }
 
     /**

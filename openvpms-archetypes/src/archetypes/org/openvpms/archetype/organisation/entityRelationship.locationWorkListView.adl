@@ -16,9 +16,9 @@
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="entityRelationship.locationWorkList.1.0"
+    <archetype name="entityRelationship.locationWorkListView.1.0"
                latest="true"
-               type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Location WorkList">
+               type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Location Work List View">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
@@ -42,13 +42,13 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="target" displayName="Work List" path="/target"
+        <node name="target" displayName="Work List View" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="party.organisationWorkList"/>
+                                  value="entity.organisationWorkListView"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>

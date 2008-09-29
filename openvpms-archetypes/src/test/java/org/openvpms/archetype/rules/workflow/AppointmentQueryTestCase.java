@@ -43,12 +43,11 @@ import java.util.List;
 public class AppointmentQueryTestCase extends ArchetypeServiceTest {
 
     /**
-     * Tests the {@link AppointmentQuery#query()} method, when a
-     * schedule and date range have been specified.
+     * Tests the {@link AppointmentQuery#query()} method.
      */
     public void testQuery() {
         final int count = 10;
-        Party schedule = AppointmentTestHelper.createSchedule();
+        Party schedule = ScheduleTestHelper.createSchedule();
         Date from = new Date();
         Act[] appointments = new Act[count];
         Date[] startTimes = new Date[count];
@@ -65,7 +64,7 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
             Party customer = TestHelper.createCustomer();
             Party patient = TestHelper.createPatient();
             User clinician = TestHelper.createClinician();
-            Act appointment = AppointmentTestHelper.createAppointment(
+            Act appointment = ScheduleTestHelper.createAppointment(
                     startTime, endTime, schedule, customer, patient);
             ActBean bean = new ActBean(appointment);
             bean.addParticipation("participation.clinician", clinician);
@@ -82,9 +81,7 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         }
         Date to = new Date();
 
-        AppointmentQuery query = new AppointmentQuery();
-        query.setSchedule(schedule);
-        query.setDateRange(from, to);
+        AppointmentQuery query = new AppointmentQuery(schedule, from, to);
         IPage<ObjectSet> page = query.query();
         assertNotNull(page);
         List<ObjectSet> results = page.getResults();
@@ -92,189 +89,35 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         for (int i = 0; i < results.size(); ++i) {
             ObjectSet set = results.get(i);
             assertEquals(appointments[i].getObjectReference(),
-                         set.get(Appointment.ACT_REFERENCE));
+                         set.get(ScheduleEvent.ACT_REFERENCE));
             assertEquals(startTimes[i],
-                         set.get(Appointment.ACT_START_TIME));
-            assertEquals(endTimes[i], set.get(Appointment.ACT_END_TIME));
-            assertEquals(appointments[i].getStatus() ,
-                         set.get(Appointment.ACT_STATUS));
-            assertEquals(appointments[i].getReason() ,
-                         set.get(Appointment.ACT_REASON));
-            assertEquals(appointments[i].getDescription() ,
-                         set.get(Appointment.ACT_DESCRIPTION));
+                         set.get(ScheduleEvent.ACT_START_TIME));
+            assertEquals(endTimes[i], set.get(ScheduleEvent.ACT_END_TIME));
+            assertEquals(appointments[i].getStatus(),
+                         set.get(ScheduleEvent.ACT_STATUS));
+            assertEquals(appointments[i].getReason(),
+                         set.get(ScheduleEvent.ACT_REASON));
+            assertEquals(appointments[i].getDescription(),
+                         set.get(ScheduleEvent.ACT_DESCRIPTION));
             assertEquals(customers[i].getObjectReference(),
-                         set.get(Appointment.CUSTOMER_REFERENCE));
+                         set.get(ScheduleEvent.CUSTOMER_REFERENCE));
             assertEquals(customers[i].getName(),
-                         set.get(Appointment.CUSTOMER_NAME));
+                         set.get(ScheduleEvent.CUSTOMER_NAME));
             assertEquals(patients[i].getObjectReference(),
-                         set.get(Appointment.PATIENT_REFERENCE));
+                         set.get(ScheduleEvent.PATIENT_REFERENCE));
             assertEquals(patients[i].getName(),
-                         set.get(Appointment.PATIENT_NAME));
+                         set.get(ScheduleEvent.PATIENT_NAME));
             assertEquals(clinicians[i].getObjectReference(),
-                         set.get(Appointment.CLINICIAN_REFERENCE));
+                         set.get(ScheduleEvent.CLINICIAN_REFERENCE));
             assertEquals(clinicians[i].getName(),
-                         set.get(Appointment.CLINICIAN_NAME));
+                         set.get(ScheduleEvent.CLINICIAN_NAME));
             assertEquals(appointmentTypes[i].getObjectReference(),
-                         set.get(Appointment.APPOINTMENT_TYPE_REFERENCE));
+                         set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
             assertEquals(appointmentTypes[i].getName(),
-                         set.get(Appointment.APPOINTMENT_TYPE_NAME));
+                         set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
             assertEquals(arrivalTimes[i],
-                         set.get(Appointment.ARRIVAL_TIME));
+                         set.get(ScheduleEvent.ARRIVAL_TIME));
         }
-    }
-
-    /**
-     * Tests the {@link AppointmentQuery#query()} method, when a schedule,
-     * date range and status range is specified.
-     */
-    public void testStatusQuery() {
-        Party schedule = AppointmentTestHelper.createSchedule();
-        Date from = new Date();
-        Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient();
-        createAppointment(schedule, customer, patient,
-                          AppointmentStatus.PENDING);
-        createAppointment(schedule, customer, patient,
-                          AppointmentStatus.CHECKED_IN);
-        createAppointment(schedule, customer, patient,
-                          AppointmentStatus.IN_PROGRESS);
-        createAppointment(schedule, customer, patient,
-                          AppointmentStatus.CANCELLED);
-        createAppointment(schedule, customer, patient,
-                          AppointmentStatus.COMPLETED);
-        Date to = new Date();
-
-        AppointmentQuery query = new AppointmentQuery();
-        query.setSchedule(schedule);
-        query.setDateRange(from, to);
-        checkQuery(query, 3, 2);
-    }
-
-    /**
-     * Tests the {@link AppointmentQuery#query()} method, when a
-     * schedule, date range and clinician have been specified.
-     */
-    public void testClinicianQuery() {
-        final int count = 10;
-        Party schedule = AppointmentTestHelper.createSchedule();
-        Date from = new Date();
-        Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient();
-        User clinician = TestHelper.createClinician();
-        for (int i = 0; i < count; ++i) {
-            Date startTime = new Date();
-            Date endTime = new Date();
-            User vet = (i % 2 == 0) ? clinician : null;
-            Act appointment = AppointmentTestHelper.createAppointment(
-                    startTime, endTime, schedule, customer, patient, vet);
-            save(appointment);
-        }
-        Date to = new Date();
-
-        AppointmentQuery query = new AppointmentQuery();
-        query.setSchedule(schedule);
-        query.setDateRange(from, to);
-        query.setClinician(clinician);
-        IPage<ObjectSet> page = query.query();
-        assertNotNull(page);
-        List<ObjectSet> results = page.getResults();
-        assertEquals(count / 2, results.size());
-    }
-
-    /**
-     * Tests the {@link AppointmentQuery#query()} method, when a schedule,
-     * date range and status range is specified.
-     */
-    public void testClinicianStatusQuery() {
-        Party schedule = AppointmentTestHelper.createSchedule();
-        Date from = new Date();
-        Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient();
-        User clinician = TestHelper.createClinician();
-        createAppointment(schedule, customer, patient, clinician,
-                          AppointmentStatus.PENDING);
-        createAppointment(schedule, customer, patient,
-                          AppointmentStatus.CHECKED_IN);
-        createAppointment(schedule, customer, patient, clinician,
-                          AppointmentStatus.IN_PROGRESS);
-        createAppointment(schedule, customer, patient,
-                          AppointmentStatus.CANCELLED);
-        createAppointment(schedule, customer, patient, clinician,
-                          AppointmentStatus.COMPLETED);
-        Date to = new Date();
-
-        AppointmentQuery query = new AppointmentQuery();
-        query.setSchedule(schedule);
-        query.setDateRange(from, to);
-        query.setClinician(clinician);
-        checkQuery(query, 2, 1);
-    }
-
-    /**
-     * Verifies that no results are returned if the schedule, or date range
-     * is not specified.
-     */
-    public void testEmptyQuery() {
-        final int count = 10;
-        Party schedule = AppointmentTestHelper.createSchedule();
-        Date from = new Date();
-        for (int i = 0; i < count; ++i) {
-            Date startTime = new Date();
-            Date endTime = new Date();
-            Act appointment = AppointmentTestHelper.createAppointment(
-                    startTime, endTime, schedule);
-            save(appointment);
-        }
-        Date to = new Date();
-        AppointmentQuery query = new AppointmentQuery();
-        IPage<ObjectSet> page = query.query();
-        assertTrue(page.getResults().isEmpty());
-
-        query.setSchedule(schedule);
-        page = query.query();
-        assertTrue(page.getResults().isEmpty());
-
-        query.setDateRange(from, null);
-        page = query.query();
-        assertTrue(page.getResults().isEmpty());
-
-        query.setDateRange(from, to);
-        page = query.query();
-        assertEquals(count, page.getResults().size());
-    }
-
-    /**
-     * Checks an appointment query for different status ranges.
-     *
-     * @param query              the query
-     * @param expectedIncomplete the expected no. of acts returned for an
-     *                           incomplete status range
-     * @param expectedComplete   the expected no. of acts returned for a
-     *                           complete status range
-     */
-    private void checkQuery(AppointmentQuery query,
-                            int expectedIncomplete, int expectedComplete) {
-
-        // expect 3 acts to be returned for the INCOMPLETE status range
-        query.setStatusRange(WorkflowStatus.StatusRange.INCOMPLETE);
-        IPage<ObjectSet> page = query.query();
-        assertNotNull(page);
-        List<ObjectSet> results = page.getResults();
-        assertEquals(expectedIncomplete, results.size());
-
-        // expect 2 acts to be returned for the COMPLETE status range
-        query.setStatusRange(WorkflowStatus.StatusRange.COMPLETE);
-        page = query.query();
-        assertNotNull(page);
-        results = page.getResults();
-        assertEquals(expectedComplete, results.size());
-
-        // expect 5 acts to be returned for the ALL status range
-        query.setStatusRange(WorkflowStatus.StatusRange.ALL);
-        page = query.query();
-        assertNotNull(page);
-        results = page.getResults();
-        assertEquals(expectedIncomplete + expectedComplete, results.size());
     }
 
     /**
@@ -286,39 +129,6 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
      */
     private Date getTimestamp(Date timestamp) {
         return DateUtils.truncate(timestamp, Calendar.SECOND);
-    }
-
-    /**
-     * Helper to create and save a new appointment.
-     *
-     * @param schedule the appointment schedule
-     * @param customer the customer
-     * @param patient  the patient
-     * @param status   the appointment status
-     */
-    private void createAppointment(Party schedule, Party customer,
-                                   Party patient, String status) {
-        createAppointment(schedule, customer, patient, null, status);
-    }
-
-    /**
-     * Helper to create and save a new appointment for a clinician.
-     *
-     * @param schedule  the appointment schedule
-     * @param customer  the customer
-     * @param patient   the patient
-     * @param clinician the clinician. May be <tt>null</tt>
-     * @param status    the appointment status
-     */
-    private void createAppointment(Party schedule, Party customer,
-                                   Party patient, User clinician,
-                                   String status) {
-        Date startTime = new Date();
-        Date endTime = new Date();
-        Act appointment = AppointmentTestHelper.createAppointment(
-                startTime, endTime, schedule, customer, patient, clinician);
-        appointment.setStatus(status);
-        save(appointment);
     }
 
 }

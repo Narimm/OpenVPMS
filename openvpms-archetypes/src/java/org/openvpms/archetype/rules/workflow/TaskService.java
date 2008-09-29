@@ -31,21 +31,21 @@ import java.util.Date;
 
 
 /**
- * Implementation of the {@link ScheduleService} for appointment events.
+ * Implementation of the {@link ScheduleService} for task events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentService extends AbstractScheduleService {
+public class TaskService extends AbstractScheduleService {
 
     /**
-     * Creates a new <tt>AppointmentServiceImpl</tt>.
+     * Creates a new <tt>TaskService</tt>.
      *
      * @param service the archetype service
      * @param cache   the cache
      */
-    public AppointmentService(IArchetypeService service, Cache cache) {
-        super("act.customerAppointment", service, cache);
+    public TaskService(IArchetypeService service, Cache cache) {
+        super("act.customerTask", service, cache);
     }
 
     @Override
@@ -53,28 +53,26 @@ public class AppointmentService extends AbstractScheduleService {
         super.assemble(target, source);
 
         IMObjectReference scheduleRef
-                = source.getNodeParticipantRef("schedule");
+                = source.getNodeParticipantRef("worklist");
         String scheduleName = getName(scheduleRef);
         target.set(ScheduleEvent.SCHEDULE_REFERENCE, scheduleRef);
         target.set(ScheduleEvent.SCHEDULE_NAME, scheduleName);
 
         IMObjectReference typeRef
-                = source.getNodeParticipantRef("appointmentType");
+                = source.getNodeParticipantRef("taskType");
         String typeName = getName(typeRef);
         target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);
         target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
-
-        target.set(ScheduleEvent.ARRIVAL_TIME,
-                   source.getDate(ScheduleEvent.ARRIVAL_TIME));
     }
 
     protected IMObjectReference getSchedule(Act event) {
         ActBean bean = new ActBean(event, getService());
-        return bean.getNodeParticipantRef("schedule");
+        return bean.getNodeParticipantRef("worklist");
     }
 
     protected ScheduleEventQuery createQuery(Entity schedule, Date from,
                                              Date to) {
-        return new AppointmentQuery((Party) schedule, from, to, getService());
+        return new TaskQuery((Party) schedule, from, to, getService());
     }
+
 }
