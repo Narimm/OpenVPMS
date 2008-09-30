@@ -93,8 +93,7 @@ public class PrintService {
                 XPrintable.class, document.getComponent());
 
         PropertyValue[] printerDesc = {newProperty("Name", printer)};
-        PropertyValue[] printOpts = {newProperty("Pages", "1"),
-                                     newProperty("Wait", true)};
+        PropertyValue[] printOpts = {newProperty("Wait", true)};
 
 /*
         todo - replaced asynchronous notification of print completion with
