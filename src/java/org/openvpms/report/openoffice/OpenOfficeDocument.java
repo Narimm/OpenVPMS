@@ -18,24 +18,17 @@
 
 package org.openvpms.report.openoffice;
 
-import com.sun.star.beans.PropertyValue;
-import com.sun.star.beans.XPropertySet;
-import com.sun.star.container.XEnumerationAccess;
-import com.sun.star.container.XNameAccess;
-import com.sun.star.frame.XComponentLoader;
-import com.sun.star.frame.XModel;
-import com.sun.star.frame.XStorable;
-import com.sun.star.io.IOException;
-import com.sun.star.io.XInputStream;
-import com.sun.star.lang.XComponent;
-import com.sun.star.lib.uno.adapter.ByteArrayToXInputStreamAdapter;
-import com.sun.star.lib.uno.adapter.XOutputStreamToByteArrayAdapter;
-import com.sun.star.text.XTextDocument;
-import com.sun.star.text.XTextFieldsSupplier;
-import com.sun.star.uno.UnoRuntime;
-import com.sun.star.util.CloseVetoException;
-import com.sun.star.util.XCloseable;
-import com.sun.star.util.XRefreshable;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToCreateDoc;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToExportDoc;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetField;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToSetField;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,13 +38,28 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import com.sun.star.beans.PropertyValue;
+import com.sun.star.beans.XPropertySet;
+import com.sun.star.container.XEnumeration;
+import com.sun.star.container.XEnumerationAccess;
+import com.sun.star.container.XNameAccess;
+import com.sun.star.frame.XComponentLoader;
+import com.sun.star.frame.XModel;
+import com.sun.star.frame.XStorable;
+import com.sun.star.io.IOException;
+import com.sun.star.io.XInputStream;
+import com.sun.star.lang.XComponent;
+import com.sun.star.lang.XServiceInfo;
+import com.sun.star.lib.uno.adapter.ByteArrayToXInputStreamAdapter;
+import com.sun.star.lib.uno.adapter.XOutputStreamToByteArrayAdapter;
+import com.sun.star.text.XTextDocument;
+import com.sun.star.text.XTextField;
+import com.sun.star.text.XTextFieldsSupplier;
+import com.sun.star.uno.UnoRuntime;
+import com.sun.star.util.CloseVetoException;
+import com.sun.star.util.XCloseable;
+import com.sun.star.util.XRefreshable;
 
 
 /**
@@ -229,6 +237,97 @@ public class OpenOfficeDocument {
         }
     }
 
+    /**
+     * Returns the set of input field names.
+     * Input Field Names are the hint property on the input Field.
+     *
+     * @return the list of input field names.
+     */
+    public List<String> getInputFieldNames() {
+        List<String> result = new ArrayList<String>();
+        XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
+        XEnumeration en = fields.createEnumeration();
+        while (en.hasMoreElements()){
+        	try {
+	        	Object field = en.nextElement();
+                XTextField texert = (XTextField)UnoRuntime.queryInterface(XTextField.class, field);
+                XServiceInfo xServiceInfo = (XServiceInfo)UnoRuntime.queryInterface(XServiceInfo.class, texert);
+                if(xServiceInfo.supportsService("com.sun.star.text.TextField.Input"))
+                {
+                    // query the XPropertySet interface, we need to get the Content property
+                    XPropertySet xPropertySet = (XPropertySet)UnoRuntime.queryInterface(XPropertySet.class, texert);
+                    // get the field name and add to result
+                    String fieldName = (String)xPropertySet.getPropertyValue("Hint");
+    	            result.add(fieldName);
+                }
+        	} catch (Exception e) { 
+        	}
+        }
+        return result;
+    }
+
+    /**
+     * Gets the value of a input field.
+     * The value of a Input Field is it's content.
+     *
+     * @param name the field name
+     * @return the value of the field
+     * @throws OpenOfficeException if the field cannot be accessed
+     */
+    public String getInputField(String name) {
+        XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
+        XEnumeration en = fields.createEnumeration();
+        while (en.hasMoreElements()){
+        	try {
+	        	Object field = en.nextElement();
+                XTextField texert = (XTextField)UnoRuntime.queryInterface(XTextField.class, field);
+                XServiceInfo xServiceInfo = (XServiceInfo)UnoRuntime.queryInterface(XServiceInfo.class, texert);
+                if(xServiceInfo.supportsService("com.sun.star.text.TextField.Input"))
+                {
+                    // query the XPropertySet interface, we need to get the Content property
+                    XPropertySet xPropertySet = (XPropertySet)UnoRuntime.queryInterface(XPropertySet.class, texert);
+                    // get the field name and add to result
+                    String fieldName = (String)xPropertySet.getPropertyValue("Hint");
+		            if (fieldName.equalsIgnoreCase(name)) {
+		            	return (String)xPropertySet.getPropertyValue("Content");
+		            }
+                }
+        	} catch (Exception exception) { 
+        	}
+        }
+
+		return name;
+    }
+
+    /**
+     * Sets the value of a input field.
+     *
+     * @param name  the field name
+     * @param value the value of the field
+     */
+    public void setInputField(String name, String value) {
+        XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
+        XEnumeration en = fields.createEnumeration();
+        while (en.hasMoreElements()){
+        	try {
+	        	Object field = en.nextElement();
+                XTextField texert = (XTextField)UnoRuntime.queryInterface(XTextField.class, field);
+                XServiceInfo xServiceInfo = (XServiceInfo)UnoRuntime.queryInterface(XServiceInfo.class, texert);
+                if(xServiceInfo.supportsService("com.sun.star.text.TextField.Input"))
+                {
+                    // query the XPropertySet interface, we need to get the Content property
+                    XPropertySet xPropertySet = (XPropertySet)UnoRuntime.queryInterface(XPropertySet.class, texert);
+                    // get the field name and add to result
+                    String fieldName = (String)xPropertySet.getPropertyValue("Hint");
+		            if (fieldName.equalsIgnoreCase(name)) {
+		            	xPropertySet.setPropertyValue("Content",value);
+		            }
+                }
+        	} catch (Exception exception) { 
+        	}
+        }
+    }
+    
     /**
      * Refreshes the document fields.
      */
