@@ -90,9 +90,6 @@ public class PartyDOImpl extends EntityDOImpl implements PartyDO {
      * @param contacts the contacts to set
      */
     protected void setContacts(Set<ContactDO> contacts) {
-        for (ContactDO contact : contacts) {
-            contact.setParty(this);
-        }
         this.contacts = contacts;
     }
 
