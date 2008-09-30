@@ -56,6 +56,16 @@ public class FinancialAct extends Act {
     private Money unitAmount;
 
     /**
+     * The fixed cost.
+     */
+    private Money fixedCost;
+
+    /**
+     * The unit cost.
+     */
+    private Money unitCost;
+
+    /**
      * Tax amount.
      */
     private Money taxAmount;
@@ -102,7 +112,7 @@ public class FinancialAct extends Act {
      * Determines if this is a credit or debit transaction.
      *
      * @param credit if <code>true</code> it's a credit. If <code>false</code>
-     * it's a debit
+     *               it's a debit
      */
     public void setCredit(boolean credit) {
         this.credit = credit;
@@ -124,6 +134,42 @@ public class FinancialAct extends Act {
      */
     public void setFixedAmount(Money fixedAmount) {
         this.fixedAmount = fixedAmount;
+    }
+
+    /**
+     * Sets the fixed cost.
+     *
+     * @param fixedCost the fixed cost
+     */
+    public void setFixedCost(Money fixedCost) {
+        this.fixedCost = fixedCost;
+    }
+
+    /**
+     * Returns the fixed cost.
+     *
+     * @return the fixed cost.
+     */
+    public Money getFixedCost() {
+        return fixedCost;
+    }
+
+    /**
+     * Sets the unit cost.
+     *
+     * @param unitCost the unit cost
+     */
+    public void setUnitCost(Money unitCost) {
+        this.unitCost = unitCost;
+    }
+
+    /**
+     * Returns the unit cost.
+     *
+     * @return the unit cost
+     */
+    public Money getUnitCost() {
+        return unitCost;
     }
 
     /**
@@ -249,18 +295,7 @@ public class FinancialAct extends Act {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        FinancialAct copy = (FinancialAct) super.clone();
-
-        copy.credit = this.credit;
-        copy.fixedAmount = this.fixedAmount;
-        copy.printed = this.printed;
-        copy.quantity = this.quantity;
-        copy.taxAmount = this.taxAmount;
-        copy.total = this.total;
-        copy.unitAmount = this.unitAmount;
-        copy.allocatedAmount = this.allocatedAmount;
-
-        return copy;
+        return super.clone();
     }
 
     /* (non-Javadoc)
@@ -274,6 +309,8 @@ public class FinancialAct extends Act {
                 .append("quantity", quantity)
                 .append("fixedAmount", fixedAmount)
                 .append("unitAmount", unitAmount)
+                .append("fixedCost", fixedCost)
+                .append("unitCost", unitCost)
                 .append("taxAmount", taxAmount)
                 .append("total", total)
                 .append("allocatedAmount", allocatedAmount)

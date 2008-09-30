@@ -57,11 +57,13 @@ public class FinancialActAssembler
         target.setAllocatedAmount(source.getAllocatedAmount());
         target.setCredit(source.isCredit());
         target.setFixedAmount(source.getFixedAmount());
+        target.setUnitAmount(source.getUnitAmount());
+        target.setFixedCost(source.getFixedCost());
+        target.setUnitCost(source.getUnitCost());
         target.setPrinted(source.isPrinted());
         target.setQuantity(source.getQuantity());
         target.setTaxAmount(source.getTaxAmount());
         target.setTotal(source.getTotal());
-        target.setUnitAmount(source.getUnitAmount());
     }
 
     /**
@@ -78,11 +80,13 @@ public class FinancialActAssembler
         target.setAllocatedAmount(source.getAllocatedAmount());
         target.setCredit(source.isCredit());
         target.setFixedAmount(source.getFixedAmount());
+        target.setUnitAmount(source.getUnitAmount());
+        target.setFixedCost(source.getFixedCost());
+        target.setUnitCost(source.getUnitCost());
         target.setPrinted(source.isPrinted());
         target.setQuantity(source.getQuantity());
         target.setTaxAmount(source.getTaxAmount());
         target.setTotal(source.getTotal());
-        target.setUnitAmount(source.getUnitAmount());
     }
 
     /**

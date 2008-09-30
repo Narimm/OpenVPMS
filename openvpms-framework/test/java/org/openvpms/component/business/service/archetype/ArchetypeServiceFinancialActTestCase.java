@@ -59,61 +59,73 @@ public class ArchetypeServiceFinancialActTestCase
 
         // set the name node
         ndesc = adesc.getNodeDescriptor("name");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(act, "name.doc");
         assertTrue(act.getName().equals("name.doc"));
 
         // set the quantity node
         ndesc = adesc.getNodeDescriptor("quantity");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(act, new BigDecimal(1));
         assertTrue(act.getQuantity().equals(new BigDecimal(1)));
 
         // set the fixed amount node
         ndesc = adesc.getNodeDescriptor("fixedAmount");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(act, new Money(1));
         assertTrue(act.getFixedAmount().equals(new Money(1)));
 
         // set the unit amount node
         ndesc = adesc.getNodeDescriptor("unitAmount");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(act, new Money(2));
         assertTrue(act.getUnitAmount().equals(new Money(2)));
 
+        // set the fixed cost node
+        ndesc = adesc.getNodeDescriptor("fixedCost");
+        assertNotNull(ndesc);
+        ndesc.setValue(act, new Money(3));
+        assertTrue(act.getFixedCost().equals(new Money(3)));
+
+        // set the unit cost node
+        ndesc = adesc.getNodeDescriptor("unitCost");
+        assertNotNull(ndesc);
+        ndesc.setValue(act, new Money(4));
+        assertTrue(act.getUnitCost().equals(new Money(4)));
+
         // set the tax amount node
         ndesc = adesc.getNodeDescriptor("taxAmount");
-        assertTrue(ndesc != null);
-        ndesc.setValue(act, new Money(3));
-        assertTrue(act.getTaxAmount().equals(new Money(3)));
+        assertNotNull(ndesc);
+        ndesc.setValue(act, new Money(5));
+        assertTrue(act.getTaxAmount().equals(new Money(5)));
 
         // set the total node
         ndesc = adesc.getNodeDescriptor("total");
-        assertTrue(ndesc != null);
-        ndesc.setValue(act, new Money(4));
-        assertTrue(act.getTotal().equals(new Money(4)));
+        assertNotNull(ndesc);
+        ndesc.setValue(act, new Money(6));
+        assertTrue(act.getTotal().equals(new Money(6)));
 
         // set the allocated amount node
         ndesc = adesc.getNodeDescriptor("allocatedAmount");
-        assertTrue(ndesc != null);
-        ndesc.setValue(act, new Money(5));
-        assertTrue(act.getAllocatedAmount().equals(new Money(5)));
+        assertNotNull(ndesc);
+        ndesc.setValue(act, new Money(7));
+        assertTrue(act.getAllocatedAmount().equals(new Money(7)));
 
         // set the credit node
         ndesc = adesc.getNodeDescriptor("credit");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(act, true);
         assertTrue(act.isCredit());
 
         // set the printed node
         ndesc = adesc.getNodeDescriptor("printed");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(act, false);
         assertTrue(!act.isPrinted());
 
         // set the start time node
         ndesc = adesc.getNodeDescriptor("startTime");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(act, "1963-12-20 0:0:0 GMT");
         assertTrue(ndesc.getValue(act) instanceof Date);
 
@@ -129,17 +141,21 @@ public class ArchetypeServiceFinancialActTestCase
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
+                                              new Money(6), new Money(7),
                                               true, false);
         service.save(act);
 
         // now retrieve it
-        FinancialAct act1 = (FinancialAct) service.get(act.getObjectReference());
+        FinancialAct act1 = (FinancialAct) service.get(
+                act.getObjectReference());
         assertTrue(act1 != null);
         assertTrue(act.getName().equals(act1.getName()));
         assertTrue(act.getDescription().equals(act1.getDescription()));
         assertTrue(act.getQuantity().compareTo(act1.getQuantity()) == 0);
         assertTrue(act.getFixedAmount().compareTo(act1.getFixedAmount()) == 0);
         assertTrue(act.getUnitAmount().compareTo(act1.getUnitAmount()) == 0);
+        assertTrue(act.getFixedCost().compareTo(act1.getFixedCost()) == 0);
+        assertTrue(act.getUnitCost().compareTo(act1.getUnitCost()) == 0);
         assertTrue(act.getTaxAmount().compareTo(act1.getTaxAmount()) == 0);
         assertTrue(act.getTotal().compareTo(act1.getTotal()) == 0);
         assertTrue(act.getAllocatedAmount().compareTo(
@@ -157,11 +173,13 @@ public class ArchetypeServiceFinancialActTestCase
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
+                                              new Money(6), new Money(7),
                                               true, false);
         service.save(act);
 
         // now retrieve it
-        FinancialAct act1 = (FinancialAct) service.get(act.getObjectReference());
+        FinancialAct act1 = (FinancialAct) service.get(
+                act.getObjectReference());
         assertTrue(act1 != null);
 
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
@@ -170,55 +188,55 @@ public class ArchetypeServiceFinancialActTestCase
 
         // set the name node
         ndesc = adesc.getNodeDescriptor("name");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         String name = (String) ndesc.getValue(act1);
         assertTrue(act.getName().equals(name));
 
         // set the quantity node
         ndesc = adesc.getNodeDescriptor("quantity");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         BigDecimal quantity = (BigDecimal) ndesc.getValue(act1);
         assertTrue(act.getQuantity().compareTo(quantity) == 0);
 
         // set the fixed amount node
         ndesc = adesc.getNodeDescriptor("fixedAmount");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         Money fixedAmount = (Money) ndesc.getValue(act1);
         assertTrue(act.getFixedAmount().compareTo(fixedAmount) == 0);
 
         // set the unit amount node
         ndesc = adesc.getNodeDescriptor("unitAmount");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         Money unitAmount = (Money) ndesc.getValue(act1);
         assertTrue(act.getUnitAmount().compareTo(unitAmount) == 0);
 
         // set the tax amount node
         ndesc = adesc.getNodeDescriptor("taxAmount");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         Money taxAmount = (Money) ndesc.getValue(act1);
         assertTrue(act.getTaxAmount().compareTo(taxAmount) == 0);
 
         // set the total node
         ndesc = adesc.getNodeDescriptor("total");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         Money total = (Money) ndesc.getValue(act1);
         assertTrue(act.getTotal().compareTo(total) == 0);
 
         // set the total node
         ndesc = adesc.getNodeDescriptor("allocatedAmount");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         Money allocatedAmount = (Money) ndesc.getValue(act1);
         assertTrue(act.getAllocatedAmount().compareTo(allocatedAmount) == 0);
 
         // set the credit node
         ndesc = adesc.getNodeDescriptor("credit");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         Boolean credit = (Boolean) ndesc.getValue(act1);
         assertTrue(act.isCredit() == credit);
 
         // set the printed node
         ndesc = adesc.getNodeDescriptor("printed");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         Boolean printed = (Boolean) ndesc.getValue(act1);
         assertTrue(act.isPrinted() == printed);
     }
@@ -233,6 +251,7 @@ public class ArchetypeServiceFinancialActTestCase
                                                   new Money(1),
                                                   new Money(2), new Money(3),
                                                   new Money(4), new Money(5),
+                                                  new Money(6), new Money(7),
                                                   true, false);
             service.save(act);
         }
@@ -246,6 +265,7 @@ public class ArchetypeServiceFinancialActTestCase
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
+                                              new Money(6), new Money(7),
                                               true, false);
         service.save(act);
 
@@ -269,6 +289,7 @@ public class ArchetypeServiceFinancialActTestCase
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
+                                              new Money(6), new Money(7),
                                               true, false);
         service.save(act);
 
@@ -293,6 +314,7 @@ public class ArchetypeServiceFinancialActTestCase
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
+                                              new Money(6), new Money(7),
                                               true, false);
         service.save(act);
 
@@ -322,6 +344,7 @@ public class ArchetypeServiceFinancialActTestCase
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
+                                              new Money(6), new Money(7),
                                               true, false);
         act.setActivityStartTime(new Date());
         service.save(act);
@@ -350,13 +373,15 @@ public class ArchetypeServiceFinancialActTestCase
     public void testOBF112() {
         Money fixedAmount = null;
         Money unitAmount = null;
+        Money fixedCost = null;
+        Money unitCost = null;
         Money taxAmount = null;
         Money total = new Money(1);
         Money allocatedAmount = null;
         FinancialAct act = createFinancialAct(new BigDecimal(1), fixedAmount,
-                                              unitAmount, taxAmount,
-                                              total, allocatedAmount, true,
-                                              false);
+                                              unitAmount, fixedCost, unitCost,
+                                              taxAmount, total, allocatedAmount,
+                                              true, false);
         service.save(act);
         FinancialAct loaded
                 = (FinancialAct) service.get(act.getObjectReference());
@@ -370,6 +395,8 @@ public class ArchetypeServiceFinancialActTestCase
      * @param quantity        the quantity for this act
      * @param fixedAmount     the fixed amount
      * @param unitAmount      the unit amount
+     * @param fixedCost       the fixed cost
+     * @param unitCost        the unit cost
      * @param taxAmount       the tax amount
      * @param total           the total amount
      * @param allocatedAmount the allocated amount
@@ -379,7 +406,10 @@ public class ArchetypeServiceFinancialActTestCase
      */
     public FinancialAct createFinancialAct(BigDecimal quantity,
                                            Money fixedAmount,
-                                           Money unitAmount, Money taxAmount,
+                                           Money unitAmount,
+                                           Money fixedCost,
+                                           Money unitCost,
+                                           Money taxAmount,
                                            Money total, Money allocatedAmount,
                                            boolean credit, boolean printed) {
         FinancialAct act = (FinancialAct) service.create("financial.act");
@@ -388,6 +418,8 @@ public class ArchetypeServiceFinancialActTestCase
         act.setQuantity(quantity);
         act.setFixedAmount(fixedAmount);
         act.setUnitAmount(unitAmount);
+        act.setFixedCost(fixedCost);
+        act.setUnitCost(unitCost);
         act.setTaxAmount(taxAmount);
         act.setTotal(total);
         act.setAllocatedAmount(allocatedAmount);

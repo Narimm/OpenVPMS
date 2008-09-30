@@ -48,6 +48,16 @@ public class FinancialActDOImpl extends ActDOImpl implements FinancialActDO {
     private Money unitAmount;
 
     /**
+     * The fixed cost.
+     */
+    private Money fixedCost;
+
+    /**
+     * The unit cost.
+     */
+    private Money unitCost;
+
+    /**
      * Tax amount.
      */
     private Money taxAmount;
@@ -207,6 +217,42 @@ public class FinancialActDOImpl extends ActDOImpl implements FinancialActDO {
     }
 
     /**
+     * Returns the fixed cost.
+     *
+     * @return the fixed cost
+     */
+    public Money getFixedCost() {
+        return fixedCost;
+    }
+
+    /**
+     * Sets the fixed cost.
+     *
+     * @param fixedCost the fixed cost
+     */
+    public void setFixedCost(Money fixedCost) {
+        this.fixedCost = fixedCost;
+    }
+
+    /**
+     * Returns the unit cost.
+     *
+     * @return the unit cost
+     */
+    public Money getUnitCost() {
+        return unitCost;
+    }
+
+    /**
+     * Sets the unit cost.
+     *
+     * @param unitCost the unit cost
+     */
+    public void setUnitCost(Money unitCost) {
+        this.unitCost = unitCost;
+    }
+
+    /**
      * Returns the allocated amount.
      * <p>For debits, it is the amount of credits
      * that have been allocated against the total amount. If allocated = total
@@ -246,6 +292,8 @@ public class FinancialActDOImpl extends ActDOImpl implements FinancialActDO {
                 .append("quantity", quantity)
                 .append("fixedAmount", fixedAmount)
                 .append("unitAmount", unitAmount)
+                .append("fixedCost", fixedCost)
+                .append("unitCost", unitCost)
                 .append("taxAmount", taxAmount)
                 .append("total", total)
                 .append("allocatedAmount", allocatedAmount)

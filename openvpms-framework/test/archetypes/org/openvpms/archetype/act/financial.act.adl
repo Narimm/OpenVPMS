@@ -20,6 +20,8 @@
 		<node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
 		<node name="fixedAmount" path="/fixedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
 		<node name="unitAmount" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
+        <node name="fixedCost" path="/fixedCost" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
+        <node name="unitCost" path="/unitCost" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
 		<node name="taxAmount" path="/taxAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
 		<node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
         <node name="allocatedAmount" path="/allocatedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
