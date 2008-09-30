@@ -45,6 +45,7 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -78,9 +79,12 @@ public class CustomerSummary {
         Component result = null;
         if (customer != null) {
             result = ColumnFactory.create();
-            Label customerName = LabelFactory.create(null, "Customer.Name");
-            customerName.setText(customer.getName());
-            result.add(RowFactory.create("Inset.Small", customerName));
+            IMObjectReferenceViewer customerName
+                    = new IMObjectReferenceViewer(customer.getObjectReference(),
+                                                  customer.getName(), true);
+            customerName.setStyleName("hyperlink-bold");
+            result.add(RowFactory.create("Inset.Small",
+                                         customerName.getComponent()));
 
             Label alertTitle = LabelFactory.create("customer.alerts");
             Component alert;

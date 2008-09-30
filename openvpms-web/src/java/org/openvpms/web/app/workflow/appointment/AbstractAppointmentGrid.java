@@ -233,8 +233,8 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
     public int getUnavailableSlots(Schedule schedule, int slot) {
         int slots = getSlots();
         int i = slot;
-        while (getAvailability(schedule, i) == Availability.UNAVAILABLE
-                && i < slots) {
+        while (i < slots
+                && getAvailability(schedule, i) == Availability.UNAVAILABLE) {
             ++i;
         }
         return i - slot;
