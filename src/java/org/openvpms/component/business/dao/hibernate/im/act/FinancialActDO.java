@@ -132,6 +132,34 @@ public interface FinancialActDO extends ActDO {
     void setUnitAmount(Money unitAmount);
 
     /**
+     * Returns the fixed cost.
+     *
+     * @return the fixed cost
+     */
+    Money getFixedCost();
+
+    /**
+     * Sets the fixed cost.
+     *
+     * @param fixedCost the fixed cost
+     */
+    void setFixedCost(Money fixedCost);
+
+    /**
+     * Returns the unit cost.
+     *
+     * @return the unit cost
+     */
+    Money getUnitCost();
+
+    /**
+     * Sets the unit cost.
+     *
+     * @param unitCost the unit cost
+     */
+    void setUnitCost(Money unitCost);
+
+    /**
      * Returns the allocated amount.
      * <p>For debits, it is the amount of credits
      * that have been allocated against the total amount. If allocated = total

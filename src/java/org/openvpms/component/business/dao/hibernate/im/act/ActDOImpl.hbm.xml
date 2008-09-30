@@ -93,6 +93,12 @@
             <property name="unitAmount" column="unit_amount"
                       type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType"
                       precision="18" scale="3"/>
+            <property name="fixedCost" column="fixed_cost"
+                      type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType"
+                      precision="18" scale="3"/>
+            <property name="unitCost" column="unit_cost"
+                      type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType"
+                      precision="18" scale="3"/>
             <property name="taxAmount" column="tax_amount"
                       type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType"
                       precision="18" scale="3"/>
