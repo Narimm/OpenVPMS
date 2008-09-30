@@ -20,12 +20,12 @@ package org.openvpms.component.business.dao.hibernate.im.query;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.*;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
-import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.*;
 import org.openvpms.component.system.common.query.ArchetypeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
@@ -69,18 +69,8 @@ class TypeSet {
     public TypeSet(String alias, Set<ArchetypeDescriptor> descriptors,
                    CompoundAssembler assembler) {
         this.alias = alias;
-        String type = null;
-        for (ArchetypeDescriptor descriptor : descriptors) {
-            if (type == null) {
-                type = descriptor.getClassName();
-            } else if (!type.equals(descriptor.getClassName())) {
-                throw new QueryBuilderException(
-                        CannotQueryAcrossTypes, type,
-                        descriptor.getClassName());
-            }
-
-        }
-        className = assembler.getDOClassName(type);
+        Class baseType = getClass(descriptors);
+        className = assembler.getDOClassName(baseType.getName());
         this.descriptors = descriptors;
     }
 
@@ -302,6 +292,33 @@ class TypeSet {
             result.add(descriptor);
         }
         return result;
+    }
+
+    /**
+     * Returns the common base class for a set of archetype descriptors.
+     *
+     * @param descriptors the archetype descirptors
+     * @return the common base class
+     * @throws QueryBuilderException if the classes don't have a common base
+     *                               class
+     */
+    private Class getClass(Set<ArchetypeDescriptor> descriptors) {
+        Class superType = null;
+        for (ArchetypeDescriptor descriptor : descriptors) {
+            Class type = descriptor.getClazz();
+            if (superType == null) {
+                superType = type;
+            } else if (type.isAssignableFrom(superType)) {
+                superType = type;
+            } else if (!superType.isAssignableFrom(type)) {
+                // doesn't allow > 1 level of subclasses but good enough for
+                // now
+                throw new QueryBuilderException(
+                        CannotQueryAcrossTypes, superType,
+                        descriptor.getClassName());
+            }
+        }
+        return superType;
     }
 
 }
