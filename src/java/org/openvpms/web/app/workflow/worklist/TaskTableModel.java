@@ -18,97 +18,61 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
-import nextapp.echo2.app.table.TableColumn;
+import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.DescriptorTableColumn;
-import org.openvpms.web.component.im.table.act.AbstractActTableModel;
-import org.openvpms.web.component.util.DateHelper;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.workflow.scheduling.Schedule;
+import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
+import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
 
-import java.util.Date;
+import java.util.List;
 
 
 /**
- * Table model for display <em>act.customerTask<em>s.
+ * Table model for display <em>act.customerTask<em>s for multiple schedules.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskTableModel extends AbstractActTableModel {
+public class TaskTableModel extends ScheduleTableModel {
 
     /**
-     * The index of the time column in the model.
+     * Creates a new <tt>TaskTableModel</tt>.
      */
-    private int timeIndex;
-
-
-    /**
-     * Creates a new <code>TaskTableModel</code>.
-     */
-    public TaskTableModel() {
-        String[] shortNames = new String[]{"act.customerTask"};
-        TableColumnModel model
-                = createColumnModel(shortNames, getLayoutContext());
-        timeIndex = getNextModelIndex(model);
-        model.addColumn(createTableColumn(timeIndex, "tasktablemodel.time"));
-        setTableColumnModel(model);
-    }
-
-    /**
-     * Returns a list of descriptor names to include in the table.
-     *
-     * @return the list of descriptor names to include in the table
-     */
-    @Override
-    protected String[] getNodeNames() {
-        return new String[]{"startTime", "status", "taskType", "customer", "patient",
-                            "description"};
-    }
-
-    /**
-     * Returns the value found at the specified descriptor table column.
-     *
-     * @param object the object
-     * @param column the descriptor table column
-     * @return the value at the specified column
-     */
-    @Override
-    protected Object getValue(Act object, DescriptorTableColumn column) {
-        if (column.getName().equals("taskType")) {
-            LayoutContext context
-                    = new DefaultLayoutContext(getLayoutContext());
-            context.setEdit(true);
-            return column.getValue(object, context);
-        } else {
-            return super.getValue(object, column);
-        }
+    public TaskTableModel(TaskGrid grid) {
+        super(grid, "act.customerTask");
     }
 
     /**
      * Returns the value found at the given coordinate within the table.
      *
-     * @param act    the object
-     * @param column the table column
-     * @param row    the table row
-     * @return the value at the specified coordinate
+     * @param column the column
+     * @param row    the row
+     * @return the cell value
      */
-    @Override
-    protected Object getValue(Act act, TableColumn column, int row) {
+    protected Object getValueAt(Column column, int row) {
         Object result = null;
-        if (column.getModelIndex() == timeIndex) {
-            Date start = act.getActivityStartTime();
-            Date end = act.getActivityEndTime();
-            if (start != null) {
-                if (end == null) {
-                    end = new Date();
-                }
-                result = DateHelper.formatTimeDiff(start, end);
-            }
-        } else {
-            result = super.getValue(act, column, row);
+        ObjectSet set = getEvent(column, row);
+        if (set != null) {
+            result = getEvent(set);
         }
         return result;
     }
+
+    /**
+     * Creates a column model to display a list of schedules.
+     *
+     * @param grid the appointment grid
+     * @return a new column model
+     */
+    protected TableColumnModel createColumnModel(ScheduleEventGrid grid) {
+        DefaultTableColumnModel result = new DefaultTableColumnModel();
+        List<Schedule> schedules = grid.getSchedules();
+        int i = 0;
+        for (Schedule schedule : schedules) {
+            result.addColumn(new Column(i++, schedule));
+        }
+        return result;
+    }
+
 }

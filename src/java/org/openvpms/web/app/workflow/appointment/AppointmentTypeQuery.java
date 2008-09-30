@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.scheduling;
+package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;

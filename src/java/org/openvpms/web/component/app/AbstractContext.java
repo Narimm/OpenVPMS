@@ -362,6 +362,24 @@ public abstract class AbstractContext implements Context {
     }
 
     /**
+     * Sets the current work list view.
+     *
+     * @param view the current work list view. May be <tt>null</tt>
+     */
+    public void setWorkListView(Entity view) {
+        setObject(WORKLIST_VIEW_SHORTNAME, view);
+    }
+
+    /**
+     * Returns the current work list view.
+     *
+     * @return the current work list view. May be <tt>null</tt>
+     */
+    public Entity getWorkListView() {
+        return (Entity) getObject(WORKLIST_VIEW_SHORTNAME);
+    }
+
+    /**
      * Sets the current work list.
      *
      * @param workList the current work list

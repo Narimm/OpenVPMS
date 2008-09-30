@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.table;
 
+import echopointng.LabelEx;
+import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -38,6 +40,13 @@ import java.util.Iterator;
  * @version $LastChangedDate$
  */
 public abstract class AbstractTableCellRenderer implements TableCellRenderer {
+
+    /**
+     * Helper to ensure that empty cells render with non-zero height.
+     */
+    private static final XhtmlFragment SPACE
+            = new XhtmlFragment("<p>&#160;</p>");
+
 
     /**
      * Returns a component that will be displayed at the specified coordinate in
@@ -94,11 +103,13 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
         if (value instanceof Component) {
             component = (Component) value;
         } else {
-            Label label = LabelFactory.create();
             if (value != null) {
+                Label label = LabelFactory.create();
                 label.setText(value.toString());
+                component = label;
+            } else {
+                component = new LabelEx(SPACE);
             }
-            component = label;
         }
         return component;
     }

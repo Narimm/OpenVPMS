@@ -16,14 +16,14 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.scheduling;
+package org.openvpms.web.app.workflow.appointment;
 
 import echopointng.layout.TableLayoutDataEx;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Table;
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
 
 
@@ -85,13 +85,13 @@ class AppointmentTableHeaderRenderer extends AbstractTableCellRenderer {
         Component component = super.getComponent(table, value, column, row);
         AppointmentTableModel model = (AppointmentTableModel) table.getModel();
         if (!model.isSingleScheduleView()) {
-            Party schedule = model.getSchedule(column);
+            Entity schedule = model.getScheduleEntity(column);
             if (schedule != null) {
                 ++column;
                 int span = 1;
                 while (column < model.getColumnCount()) {
                     if (!ObjectUtils.equals(schedule,
-                                            model.getSchedule(column))) {
+                                            model.getScheduleEntity(column))) {
                         break;
                     }
                     ++column;
@@ -107,6 +107,5 @@ class AppointmentTableHeaderRenderer extends AbstractTableCellRenderer {
         }
         return component;
     }
-
 
 }

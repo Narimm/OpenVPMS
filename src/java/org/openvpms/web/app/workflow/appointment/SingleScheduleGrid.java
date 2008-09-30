@@ -16,11 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.scheduling;
+package org.openvpms.web.app.workflow.appointment;
 
-import org.openvpms.archetype.rules.workflow.Appointment;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.workflow.scheduling.Schedule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,8 +79,8 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
 
         // adjust the start and end minutes based on the appointments present
         for (ObjectSet set : appointmentSets) {
-            Date startTime = set.getDate(Appointment.ACT_START_TIME);
-            Date endTime = set.getDate(Appointment.ACT_END_TIME);
+            Date startTime = set.getDate(ScheduleEvent.ACT_START_TIME);
+            Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
             int slotStart = getSlotMinutes(startTime, false);
             int slotEnd = getSlotMinutes(endTime, true);
             if (startMins > slotStart) {
@@ -123,7 +124,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      * @param slot     the slot
      * @return the corresponding appointment, or <tt>null</tt> if none is found
      */
-    public ObjectSet getAppointment(Schedule schedule, int slot) {
+    public ObjectSet getEvent(Schedule schedule, int slot) {
         SlotGroup group = slots.get(slot).getGroup();
         return (group != null) ? group.getAppointment() : null;
     }
@@ -271,10 +272,10 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      * @param set the appointment
      */
     private void addAppointment(ObjectSet set) {
-        schedule.addAppointment(set);
+        schedule.addEvent(set);
 
-        Date startTime = set.getDate(Appointment.ACT_START_TIME);
-        Date endTime = set.getDate(Appointment.ACT_END_TIME);
+        Date startTime = set.getDate(ScheduleEvent.ACT_START_TIME);
+        Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
         int startMins = getSlotMinutes(startTime, false);
         int endMins = getSlotMinutes(endTime, true);
         int slotSize = getSlotSize();

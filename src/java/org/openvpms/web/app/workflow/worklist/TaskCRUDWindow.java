@@ -23,7 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
+import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.LocalContext;
@@ -42,7 +42,7 @@ import org.openvpms.web.component.workflow.TaskListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskCRUDWindow extends WorkflowCRUDWindow {
+public class TaskCRUDWindow extends ScheduleCRUDWindow {
 
     /**
      * The transfer button.
@@ -56,12 +56,20 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
 
 
     /**
-     * Constructs a new <tt>TaskCRUDWindow</tt>.
-     *
-     * @param archetypes the archetypes that this may create.
+     * Creates a new <tt>TaskCRUDWindow</tt>.
      */
-    public TaskCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes);
+    public TaskCRUDWindow() {
+        super(Archetypes.create("act.customerTask", Act.class));
+    }
+
+    /**
+     * Creates and edits a new object.
+     */
+    @Override
+    public void create() {
+        if (GlobalContext.getInstance().getWorkList() != null) {
+            super.create();
+        }
     }
 
     /**

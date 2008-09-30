@@ -16,14 +16,14 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.scheduling;
+package org.openvpms.web.app.workflow.appointment;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
+import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.LocalContext;
@@ -48,7 +48,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
+public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
     /**
      * The appointment start time.

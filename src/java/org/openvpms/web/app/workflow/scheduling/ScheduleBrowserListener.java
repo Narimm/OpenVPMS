@@ -23,23 +23,24 @@ import org.openvpms.web.component.im.query.QueryBrowserListener;
 
 
 /**
- * {@link AppointmentBrowser} event listener.
+ * {@link ScheduleBrowser} event listener.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-interface AppointmentListener extends QueryBrowserListener<ObjectSet> {
+public interface ScheduleBrowserListener
+        extends QueryBrowserListener<ObjectSet> {
 
     /**
-     * Invoked to create and edit a new appointment.
+     * Invoked to create and edit a new event.
      */
     void create();
 
     /**
-     * Invoked to edit an appointment.
+     * Invoked to edit an event.
      *
-     * @param set the set representing the appointment
+     * @param event the set representing the event
      */
-    void edit(ObjectSet set);
+    void edit(ObjectSet event);
 
 }

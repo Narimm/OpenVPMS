@@ -16,15 +16,17 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.scheduling;
+package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.archetype.rules.workflow.Appointment;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.workflow.scheduling.Schedule;
+import org.openvpms.web.app.workflow.scheduling.SchedulingHelper;
 
 import java.util.Date;
 
@@ -55,7 +57,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
     /**
      * Appointment rules.
      */
-    AppointmentRules rules;
+    private AppointmentRules rules;
 
     /**
      * The slot size, in minutes.
@@ -152,7 +154,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      */
     public int getSlots(ObjectSet appointment, int slot) {
         Date startTime = getStartTime(slot);
-        Date endTime = appointment.getDate(Appointment.ACT_END_TIME);
+        Date endTime = appointment.getDate(ScheduleEvent.ACT_END_TIME);
         int startSlot = getSlot(startTime);
         int endSlot = getSlot(endTime);
         return endSlot - startSlot;
@@ -167,6 +169,17 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
     public Date getStartTime(int slot) {
         return DateRules.getDate(date, getStartMins(slot),
                                  DateUnits.MINUTES);
+    }
+
+    /**
+     * Returns the time that the specified slot starts at.
+     *
+     * @param schedule the schedule
+     * @param slot     the slot
+     * @return the start time of the specified slot
+     */
+    public Date getStartTime(Schedule schedule, int slot) {
+        return getStartTime(slot);
     }
 
     /**
@@ -200,11 +213,11 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      */
     public Availability getAvailability(Schedule schedule, int slot) {
         int mins = getStartMins(slot);
+        if (getEvent(schedule, slot) != null) {
+            return Availability.BUSY;
+        }
         if (mins < schedule.getStartMins() || mins >= schedule.getEndMins()) {
             return Availability.UNAVAILABLE;
-        }
-        if (getAppointment(schedule, slot) != null) {
-            return Availability.BUSY;
         }
         return Availability.FREE;
     }
@@ -218,14 +231,13 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      * @return the no. of concurrent slots that are unavailable
      */
     public int getUnavailableSlots(Schedule schedule, int slot) {
-        int result = 0;
-        int mins = getStartMins(slot);
-        if (mins < schedule.getStartMins()) {
-            result = getFirstSlot(schedule.getStartMins()) - slot;
-        } else if (mins >= schedule.getEndMins()) {
-            result = getSlots() - slot;
+        int slots = getSlots();
+        int i = slot;
+        while (getAvailability(schedule, i) == Availability.UNAVAILABLE
+                && i < slots) {
+            ++i;
         }
-        return result;
+        return i - slot;
     }
 
     /**

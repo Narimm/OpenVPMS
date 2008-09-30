@@ -19,8 +19,8 @@
 package org.openvpms.web.app.workflow.scheduling;
 
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.workflow.Appointment;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.ArrayList;
@@ -31,14 +31,14 @@ import java.util.List;
 
 
 /**
- * Appointment schedule.
+ * Event schedule.
  */
-class Schedule {
+public class Schedule {
 
     /**
-     * The <em>party.organisationSchedule</em>.
+     * The schedule.
      */
-    private final Party schedule;
+    private final Entity schedule;
 
     /**
      * The schedule start time, as minutes since midnight.
@@ -56,19 +56,28 @@ class Schedule {
     private int slotSize;
 
     /**
-     * The appointments.
+     * The events.
      */
-    private List<ObjectSet> appointments = new ArrayList<ObjectSet>();
+    private List<ObjectSet> events = new ArrayList<ObjectSet>();
 
 
     /**
      * Creates a new <tt>Schedule</tt>.
      *
-     * @param schedule  the <em>party.organisationSchedule</em>
+     * @param schedule the event schedule
+     */
+    public Schedule(Entity schedule) {
+        this(schedule, -1, -1, 0);
+    }
+
+    /**
+     * Creates a new <tt>Schedule</tt>.
+     *
+     * @param schedule  the event schedule
      * @param startMins the schedule start time, as minutes since midnight
      * @param endMins   the schedule end time, as minutes since midnight
      */
-    public Schedule(Party schedule, int startMins, int endMins, int slotSize) {
+    public Schedule(Entity schedule, int startMins, int endMins, int slotSize) {
         this.schedule = schedule;
         this.startMins = startMins;
         this.endMins = endMins;
@@ -78,7 +87,7 @@ class Schedule {
     /**
      * Creates a schedule from an existing schedule.
      * <p/>
-     * The appointments are not copied.
+     * The events are not copied.
      *
      * @param source the source schedule
      */
@@ -92,7 +101,7 @@ class Schedule {
      *
      * @return the schedule
      */
-    public Party getSchedule() {
+    public Entity getSchedule() {
         return schedule;
     }
 
@@ -133,68 +142,68 @@ class Schedule {
     }
 
     /**
-     * Adds an appointment.
+     * Adds an event.
      *
-     * @param set an object set representing the appointment
+     * @param set an object set representing the event
      */
-    public void addAppointment(ObjectSet set) {
-        appointments.add(set);
+    public void addEvent(ObjectSet set) {
+        events.add(set);
     }
 
     /**
-     * Returns the appointments.
+     * Returns the events.
      *
-     * @return the appointments
+     * @return the events
      */
-    public List<ObjectSet> getAppointments() {
-        return appointments;
+    public List<ObjectSet> getEvents() {
+        return events;
     }
 
     /**
-     * Determines if the schedule has an appointment that intersects the
-     * specified appointment.
+     * Determines if the schedule has an event that intersects the specified
+     * event.
      *
-     * @param appointment the appointment
-     * @return <tt>true</tt> if the schedule has an intersecting appointment
+     * @param event the event
+     * @return <tt>true</tt> if the schedule has an intersecting event
      */
-    public boolean hasAppointment(ObjectSet appointment) {
-        return Collections.binarySearch(appointments, appointment,
+    public boolean hasEvent(ObjectSet event) {
+        return Collections.binarySearch(events, event,
                                         IntersectComparator.INSTANCE) >= 0;
     }
 
     /**
-     * Returns the appointment starting at the specified time.
+     * Returns the event starting at the specified time.
      *
      * @param time     the time
      * @param slotSize the slot size
-     * @return the corresponding appintment, or <tt>null</tt> if none is found
+     * @return the corresponding event, or <tt>null</tt> if none is found
      */
-    public ObjectSet getAppointment(Date time, int slotSize) {
+    public ObjectSet getEvent(Date time, int slotSize) {
         ObjectSet set = new ObjectSet();
-        set.set(Appointment.ACT_START_TIME, time);
-        set.set(Appointment.ACT_END_TIME, time);
-        int index = Collections.binarySearch(appointments, set,
+        set.set(ScheduleEvent.ACT_START_TIME, time);
+        set.set(ScheduleEvent.ACT_END_TIME, time);
+        int index = Collections.binarySearch(events, set,
                                              new StartTimeComparator(slotSize));
-        return (index < 0) ? null : appointments.get(index);
+        return (index < 0) ? null : events.get(index);
     }
 
     /**
-     * Returns the appointment intersecting the specified time.
+     * Returns the event intersecting the specified time.
      *
      * @param time the time
-     * @return the corresponding appintment, or <tt>null</tt> if none is found
+     * @return the corresponding event, or <tt>null</tt> if none is found
      */
-    public ObjectSet getIntersectingAppointment(Date time) {
+    public ObjectSet getIntersectingEvent(Date time) {
         ObjectSet set = new ObjectSet();
-        set.set(Appointment.ACT_START_TIME, time);
-        set.set(Appointment.ACT_END_TIME, time);
-        int index = Collections.binarySearch(appointments, set,
+        set.set(ScheduleEvent.ACT_START_TIME, time);
+        set.set(ScheduleEvent.ACT_END_TIME, time);
+        int index = Collections.binarySearch(events, set,
                                              IntersectComparator.INSTANCE);
-        return (index < 0) ? null : appointments.get(index);
+        return (index < 0) ? null : events.get(index);
     }
 
     /**
-     * Comparator used to locate appointments starting at particular time.
+     * Comparator used to locate events starting at particular time.
      */
     private class StartTimeComparator implements Comparator<ObjectSet> {
 
@@ -219,15 +228,15 @@ class Schedule {
          */
         public int compare(ObjectSet o1, ObjectSet o2) {
             int start1 = SchedulingHelper.getSlotMinutes(
-                    o1.getDate(Appointment.ACT_START_TIME), slotSize, false);
+                    o1.getDate(ScheduleEvent.ACT_START_TIME), slotSize, false);
             int start2 = SchedulingHelper.getSlotMinutes(
-                    o2.getDate(Appointment.ACT_START_TIME), slotSize, false);
+                    o2.getDate(ScheduleEvent.ACT_START_TIME), slotSize, false);
             return start1 - start2;
         }
     }
 
     /**
-     * Comparator used to locate intersecting appointments.
+     * Comparator used to locate intersecting events.
      */
     private static class IntersectComparator implements Comparator<ObjectSet> {
 
@@ -247,10 +256,10 @@ class Schedule {
          *                            being compared by this Comparator.
          */
         public int compare(ObjectSet o1, ObjectSet o2) {
-            Date start1 = o1.getDate(Appointment.ACT_START_TIME);
-            Date end1 = o1.getDate(Appointment.ACT_END_TIME);
-            Date start2 = o2.getDate(Appointment.ACT_START_TIME);
-            Date end2 = o2.getDate(Appointment.ACT_END_TIME);
+            Date start1 = o1.getDate(ScheduleEvent.ACT_START_TIME);
+            Date end1 = o1.getDate(ScheduleEvent.ACT_END_TIME);
+            Date start2 = o2.getDate(ScheduleEvent.ACT_START_TIME);
+            Date end2 = o2.getDate(ScheduleEvent.ACT_END_TIME);
             if (DateRules.compareTo(start1, start2) < 0
                     && DateRules.compareTo(end1, start2) <= 0) {
                 return -1;

@@ -20,8 +20,7 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-import org.apache.commons.lang.time.DateUtils;
-import org.openvpms.archetype.rules.workflow.Appointment;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,11 +30,9 @@ import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
-import org.openvpms.web.component.subsystem.Refreshable;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
@@ -46,8 +43,8 @@ import org.openvpms.web.component.util.SplitPaneFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
-        implements Refreshable {
+public abstract class SchedulingWorkspace
+        extends AbstractViewWorkspace<Entity> {
 
     /**
      * The workspace.
@@ -55,28 +52,30 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
     private Component workspace;
 
     /**
-     * The act browser.
+     * The schedule event browser.
      */
-    private AppointmentBrowser browser;
+    private ScheduleBrowser browser;
 
     /**
      * The CRUD window.
      */
-    private AppointmentCRUDWindow window;
-
-    /**
-     * The last query time, used to determine if a refresh is necessary.
-     */
-    private long lastQueryTime = -1;
+    private ScheduleCRUDWindow window;
 
 
     /**
-     * Construct a new <tt>SchedulingWorkspace</tt>.
+     * Creates a new <tt>SchedulingWorkspace</tt>.
+     * <p/>
+     * If no archetypes are supplied, the {@link #setArchetypes} method must
+     * before performing any operations.
+     *
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     * @param archetypes  the archetype that this operates on.
+     *                    May be <tt>null</tt>
      */
-    public SchedulingWorkspace() {
-        super("workflow", "scheduling",
-              Archetypes.create("entity.organisationScheduleView",
-                                Entity.class), false);
+    public SchedulingWorkspace(String subsystemId, String workspaceId,
+                               Archetypes<Entity> archetypes) {
+        super(subsystemId, workspaceId, archetypes, false);
     }
 
     /**
@@ -108,25 +107,18 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
     }
 
     /**
-     * Determines if a refresh is required.
+     * Creates a new browser.
      *
-     * @return <tt>true</tt> if at least a minute has elapsed since the last
-     *         refresh
+     * @return a new browser
      */
-    public boolean needsRefresh() {
-        if (lastQueryTime == -1) {
-            return true;
-        }
-        long now = System.currentTimeMillis();
-        return (now - lastQueryTime) >= DateUtils.MILLIS_PER_MINUTE;
-    }
+    protected abstract ScheduleBrowser createBrowser();
 
     /**
-     * Refreshes the workspace.
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
      */
-    public void refresh() {
-        doQuery();
-    }
+    protected abstract ScheduleCRUDWindow createCRUDWindow();
 
     /**
      * Returns the latest version of the current schedule view context object.
@@ -156,7 +148,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
      * @param isNew  determines if the object is a new instance
      */
     protected void onSaved(IMObject object, boolean isNew) {
-        doQuery();
+        browser.query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -166,7 +158,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
      * @param object the object
      */
     protected void onDeleted(IMObject object) {
-        doQuery();
+        browser.query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -176,45 +168,30 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
      * @param object the object
      */
     protected void onRefresh(IMObject object) {
-        doQuery();
+        browser.query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
-     * Invoked when an appointment is selected.
+     * Invoked when an event is selected.
      *
-     * @param appointment the appointment. May be <tt>null</tt>
+     * @param event the event. May be <tt>null</tt>
      */
-    protected void actSelected(ObjectSet appointment) {
-        // update the context schedule
-        GlobalContext.getInstance().setSchedule(browser.getSelectedSchedule());
-
-        if (appointment != null) {
-            IMObjectReference actRef = appointment.getReference(
-                    Appointment.ACT_REFERENCE);
-            Act act = (Act) IMObjectHelper.getObject(actRef);
-            window.setObject(act);
-        } else {
-            window.setObject(null);
-        }
-        window.setStartTime(browser.getSelectedTime());
-        firePropertyChange(SUMMARY_PROPERTY, null, null);
-    }
-
-    /**
-     * Invoked to edit an appointment.
-     *
-     * @param appointment the appointment
-     */
-    protected void onEdit(ObjectSet appointment) {
-        // update the context schedule
-        GlobalContext.getInstance().setSchedule(browser.getSelectedSchedule());
-        IMObjectReference actRef = appointment.getReference(
-                Appointment.ACT_REFERENCE);
-        Act act = (Act) IMObjectHelper.getObject(actRef);
+    protected void eventSelected(ObjectSet event) {
+        Act act = getAct(event);
         window.setObject(act);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
-        window.setStartTime(browser.getSelectedTime());
+    }
+
+    /**
+     * Invoked to edit an event.
+     *
+     * @param event the event
+     */
+    protected void onEdit(ObjectSet event) {
+        Act act = getAct(event);
+        window.setObject(act);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
         if (act != null) {
             window.edit();
         }
@@ -226,8 +203,8 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
      * @param view the schedule view
      */
     protected void layoutWorkspace(Entity view) {
-        setBrowser(new AppointmentBrowser());
-        setCRUDWindow(new AppointmentCRUDWindow());
+        setBrowser(createBrowser());
+        setCRUDWindow(createCRUDWindow());
         setWorkspace(createWorkspace());
     }
 
@@ -241,7 +218,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
         Component window = getCRUDWindow().getComponent();
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "WorkflowWorkspace.Layout", window, acts);
+                "SchedulingWorkspace.Layout", window, acts);
     }
 
     /**
@@ -249,15 +226,15 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
      *
      * @param browser the new browser
      */
-    protected void setBrowser(AppointmentBrowser browser) {
+    protected void setBrowser(ScheduleBrowser browser) {
         this.browser = browser;
-        browser.addAppointmentListener(new AppointmentListener() {
+        browser.addScheduleBrowserListener(new ScheduleBrowserListener() {
             public void query() {
                 onQuery();
             }
 
             public void selected(ObjectSet object) {
-                actSelected(object);
+                eventSelected(object);
             }
 
             public void edit(ObjectSet set) {
@@ -275,7 +252,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
      *
      * @return the browser
      */
-    protected Browser<ObjectSet> getBrowser() {
+    protected ScheduleBrowser getBrowser() {
         return browser;
     }
 
@@ -298,7 +275,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
      *
      * @param window the window
      */
-    protected void setCRUDWindow(AppointmentCRUDWindow window) {
+    protected void setCRUDWindow(ScheduleCRUDWindow window) {
         this.window = window;
         this.window.setListener(new CRUDWindowListener<Act>() {
             public void saved(Act object, boolean isNew) {
@@ -331,7 +308,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
      */
     protected void initQuery(Entity view) {
         browser.setScheduleView(view);
-        doQuery();
+        browser.query();
         onQuery();
     }
 
@@ -345,12 +322,13 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
     }
 
     /**
-     * Invoked when acts are queried.
+     * Invoked when events are queried.
+     * <p/>
+     * Should be overridden to update the global context.
+     * <p/>
+     * This implementation refreshes the summary.
      */
     protected void onQuery() {
-        GlobalContext context = GlobalContext.getInstance();
-        context.setScheduleDate(browser.getDate());
-        context.setSchedule(browser.getSelectedSchedule());
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -368,7 +346,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
             latest = browser.getScheduleView();
             setObject(latest);
         } else {
-            doQuery();
+            browser.query();
 
             // need to add the existing workspace to the container
             Component workspace = getWorkspace();
@@ -379,11 +357,18 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Entity>
     }
 
     /**
-     * Queries the appointments, recording the query time.
+     * Returns the act associated with an event.
+     *
+     * @param event the event. May be <tt>null</tt>
+     * @return the associated act, or <tt>null</tt> if <tt>event</tt> is null
      */
-    private void doQuery() {
-        browser.query();
-        lastQueryTime = System.currentTimeMillis();
+    private Act getAct(ObjectSet event) {
+        if (event != null) {
+            IMObjectReference actRef = event.getReference(
+                    ScheduleEvent.ACT_REFERENCE);
+            return (Act) IMObjectHelper.getObject(actRef);
+        }
+        return null;
     }
 
 }

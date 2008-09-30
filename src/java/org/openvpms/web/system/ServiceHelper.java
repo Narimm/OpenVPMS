@@ -21,7 +21,7 @@ package org.openvpms.web.system;
 import nextapp.echo2.app.ApplicationInstance;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.math.Currencies;
-import org.openvpms.archetype.rules.workflow.AppointmentService;
+import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.archetype.util.MacroCache;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -123,8 +123,17 @@ public final class ServiceHelper {
      *
      * @return the appointment service
      */
-    public static AppointmentService getAppointmentService() {
-        return (AppointmentService) getContext().getBean("appointmentService");
+    public static ScheduleService getAppointmentService() {
+        return (ScheduleService) getContext().getBean("appointmentService");
+    }
+
+    /**
+     * Helper to return the task service.
+     *
+     * @return the task service
+     */
+    public static ScheduleService getTaskService() {
+        return (ScheduleService) getContext().getBean("taskService");
     }
 
     /**

@@ -363,6 +363,24 @@ public class LocalContext implements Context {
     }
 
     /**
+     * Sets the current work list view.
+     *
+     * @param view the current work list view. May be <tt>null</tt>
+     */
+    public void setWorkListView(Entity view) {
+        local.setWorkListView(view);
+    }
+
+    /**
+     * Returns the current work list view.
+     *
+     * @return the current work list view. May be <tt>null</tt>
+     */
+    public Entity getWorkListView() {
+        return get("getWorkListtView");
+    }
+
+    /**
      * Sets the current work list.
      *
      * @param workList the current work list

@@ -102,6 +102,12 @@ public interface Context {
             = "party.organisationSchedule";
 
     /**
+     * Work list view short name.
+     */
+    public static final String WORKLIST_VIEW_SHORTNAME
+            = "entity.organisationWorkListView";
+
+    /**
      * Work list short name.
      */
     public static final String WORKLIST_SHORTNAME
@@ -327,6 +333,20 @@ public interface Context {
      * @param date the current schedule date
      */
     void setScheduleDate(Date date);
+
+    /**
+     * Sets the current work list view.
+     *
+     * @param view the current work list view. May be <tt>null</tt>
+     */
+    void setWorkListView(Entity view);
+
+    /**
+     * Returns the current work list view.
+     *
+     * @return the current work list view. May be <tt>null</tt>
+     */
+    Entity getWorkListView();
 
     /**
      * Sets the current work list.
