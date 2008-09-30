@@ -34,7 +34,7 @@
         <node name="roundedAmount" path="/details/roundedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" readOnly="true" defaultValue="0.0"/>
         <node name="tendered" path="/details/tendered" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0">
             <assertion name="expression">
-                <property name="expression" value="tendered &gt;= amount"/>
+                <property name="expression" value="tendered &gt;= roundedAmount"/>
                 <errorMessage>The tendered amount must be >= the amount</errorMessage>
             </assertion>
         </node>
