@@ -18,44 +18,67 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.table.IMTable;
-import org.openvpms.web.component.im.table.IMTableModel;
-import org.openvpms.web.component.im.table.PagedIMTable;
+import echopointng.TableEx;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
+import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
+import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 
 /**
- * Task browser. Renders tasks in different colours based on their status.
+ * Task browser.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskBrowser extends IMObjectTableBrowser<Act> {
+public class TaskBrowser extends ScheduleBrowser {
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects using the
-     * specified query.
-     *
-     * @param query the query
+     * Creates a new <tt>TaskBrowser</tt>.
      */
-    public TaskBrowser(Query<Act> query) {
-        super(query, null, new TaskTableModel());
+    public TaskBrowser() {
+        super(new TaskQuery());
     }
 
     /**
-     * Creates a new paged table.
+     * Creates a new grid for a set of events.
      *
-     * @param model the table model
-     * @return a new paged table
+     * @param date   the query date
+     * @param events the events
+     */
+    protected ScheduleEventGrid createEventGrid(
+            Date date, Map<Entity, List<ObjectSet>> events) {
+        return new TaskGrid(date, events);
+    }
+
+    /**
+     * Creates a new table model.
+     *
+     * @param grid the schedule event grid
+     * @return the table model
+     */
+    protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
+        if (grid.getSchedules().size() == 1) {
+            return new SingleScheduleTaskTableModel((TaskGrid) grid);
+        }
+        return new TaskTableModel((TaskGrid) grid);
+    }
+
+    /**
+     * Creates a new table.
+     *
+     * @param model the model
+     * @return a new table
      */
     @Override
-    protected PagedIMTable<Act> createTable(
-            IMTableModel<Act> model) {
-        PagedIMTable<Act> result = super.createTable(model);
-        IMTable<Act> table = result.getTable();
-        table.setDefaultRenderer(Object.class, new TaskTableCellRenderer());
-        return result;
+    protected TableEx createTable(ScheduleTableModel model) {
+        TableEx table = super.createTable(model);
+        table.setDefaultRenderer(new TaskTableCellRenderer());
+        return table;
     }
 }

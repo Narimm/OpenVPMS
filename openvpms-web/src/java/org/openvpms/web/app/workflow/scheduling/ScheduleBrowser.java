@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
@@ -20,41 +20,36 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import echopointng.TableEx;
 import echopointng.table.TableActionEventEx;
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.TableModelEvent;
-import nextapp.echo2.app.event.TableModelListener;
-import nextapp.echo2.app.layout.ColumnLayoutData;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectSet;
-import static org.openvpms.web.app.workflow.scheduling.AppointmentGrid.Availability.UNAVAILABLE;
-import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Highlight;
-import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.TimeRange;
+import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.QueryListener;
+import org.openvpms.web.component.table.DefaultTableHeaderRenderer;
+import org.openvpms.web.component.table.EvenOddTableCellRenderer;
+import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -64,28 +59,22 @@ import java.util.Set;
 
 
 /**
- * Appointment browser. Renders blocks of appointments in different hours a
- * different colour.
+ * Schedule browser.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
-
-    /**
-     * Displays the selected date above the appointments.
-     */
-    private Label selectedDate;
+public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
 
     /**
      * The query.
      */
-    private AppointmentQuery query;
+    private ScheduleQuery query;
 
     /**
-     * The appointments, keyed on schedule.
+     * The schedule events, keyed on schedule.
      */
-    private Map<Party, List<ObjectSet>> results;
+    private Map<Entity, List<ObjectSet>> results;
 
     /**
      * The browser component.
@@ -93,17 +82,17 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
     private Component component;
 
     /**
-     * The appointment table.
+     * The schedule event table.
      */
     private TableEx table;
 
     /**
-     * The appointment table model.
+     * The schedule event table model.
      */
-    private AppointmentTableModel model;
+    private ScheduleTableModel model;
 
     /**
-     * The selected appointment.
+     * The selected event.
      */
     private ObjectSet selected;
 
@@ -115,17 +104,12 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
     /**
      * The selected schedule. May be <tt>null</tt>
      */
-    private Party selectedSchedule;
+    private Entity selectedSchedule;
 
     /**
      * Highlight selector, to change colour of display items.
      */
     private SelectField highlightSelector;
-
-    /**
-     * Time range selector.
-     */
-    private SelectField timeSelector;
 
     /**
      * Clinician selector.
@@ -134,29 +118,13 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
 
 
     /**
-     * Creates a new <tt>AppointmentBrowser</tt>.
+     * Creates a new <tt>ScheduleBrowser</tt>.
      */
-    public AppointmentBrowser() {
-        query = new AppointmentQuery();
+    public ScheduleBrowser(ScheduleQuery query) {
+        this.query = query;
         query.setListener(new QueryListener() {
             public void query() {
                 onQuery();
-            }
-        });
-        model = new AppointmentTableModel();
-        table = new TableEx(model, model.getColumnModel());
-        table.setStyleName("AppointmentTable");
-        //table.setResizeable(true);
-        model.addTableModelListener(new TableModelListener() {
-            public void tableChanged(TableModelEvent event) {
-                if (event.getType() == TableModelEvent.STRUCTURE_CHANGED) {
-                    table.setColumnModel(model.getColumnModel());
-                }
-            }
-        });
-        table.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onSelected(event);
             }
         });
     }
@@ -165,37 +133,7 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      * Query using the specified criteria, and populate the table with matches.
      */
     public void query() {
-        getComponent();
-        Set<Party> lastSchedules = (results != null) ? results.keySet() : null;
-        results = query.query();
-        model.setAppointments(query.getDate(), results);
-        DateFormat format = DateHelper.getFullDateFormat();
-        selectedDate.setText(format.format(query.getDate()));
-        boolean singleScheduleView = model.isSingleScheduleView();
-        table.setRolloverEnabled(singleScheduleView);
-
-        // if the schedules have changed, select the appropriate highlight
-        boolean schedulesChanged = false;
-        Set<Party> schedules = results.keySet();
-        if (lastSchedules == null || !schedules.equals(lastSchedules)) {
-            schedulesChanged = true;
-            Highlight highlight = (singleScheduleView)
-                    ? Highlight.STATUS : Highlight.APPOINTMENT;
-            if (highlightSelector.getSelectedIndex() != highlight.ordinal()) {
-                highlightSelector.setSelectedIndex(highlight.ordinal());
-                model.setHighlight(highlight);
-            }
-        }
-
-        // if the schedules or date has changed, deselect the selected cell
-        boolean dateChanged = false;
-        if (selectedTime != null && DateRules.getDate(selectedTime).compareTo(
-                query.getDate()) != 0) {
-            dateChanged = true;
-        }
-        if (schedulesChanged || dateChanged) {
-            clearSelection();
-        }
+        doQuery(true);
     }
 
     /**
@@ -249,7 +187,7 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      *
      * @return the selected schedule. May be <tt>null</tt>
      */
-    public Party getSelectedSchedule() {
+    public Entity getSelectedSchedule() {
         return selectedSchedule;
     }
 
@@ -287,80 +225,216 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
      */
     public Component getComponent() {
         if (component == null) {
-            doLayout();
+            component = doLayout();
         }
         return component;
     }
 
     /**
-     * Adds an appointment listener.
+     * Adds an schedule browser listener.
      *
      * @param listener the listener to add
      */
-    public void addAppointmentListener(AppointmentListener listener) {
+    public void addScheduleBrowserListener(ScheduleBrowserListener listener) {
         addQueryListener(listener);
     }
 
     /**
-     * Performs a query and notifies registered listeners.
+     * Returns the table model.
+     *
+     * @return the table model. May be <tt>null</tt>
      */
-    private void onQuery() {
-        query();
-        notifyQueryListeners();
+    protected ScheduleTableModel getModel() {
+        return model;
+    }
+
+    /**
+     * Returns the table.
+     *
+     * @return the table. May be <tt>null</tt>
+     */
+    protected TableEx getTable() {
+        return table;
+    }
+
+    /**
+     * Creates a new grid for a set of events.
+     *
+     * @param date   the query date
+     * @param events the events
+     */
+    protected abstract ScheduleEventGrid
+            createEventGrid(Date date, Map<Entity, List<ObjectSet>> events);
+
+    /**
+     * Creates a new table model.
+     *
+     * @param grid the schedule event grid
+     * @return the table model
+     */
+    protected abstract ScheduleTableModel createTableModel(
+            ScheduleEventGrid grid);
+
+    /**
+     * Creates a new table.
+     *
+     * @param model the model
+     * @return a new table
+     */
+    protected TableEx createTable(ScheduleTableModel model) {
+        TableEx table = new TableEx(model, model.getColumnModel());
+        table.setStyleName("ScheduleTable");
+        table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
+        table.setDefaultRenderer(EvenOddTableCellRenderer.INSTANCE);
+        return table;
     }
 
     /**
      * Lays out the component.
      */
-    private void doLayout() {
-        selectedDate = LabelFactory.create(null, "bold");
-        ColumnLayoutData layout = new ColumnLayoutData();
-        layout.setAlignment(Alignment.ALIGN_CENTER);
-        selectedDate.setLayoutData(layout);
+    protected Component doLayout() {
+        Row row = RowFactory.create("CellSpacing");
+        layoutQueryRow(row);
+        addQueryButton(row);
 
+        Component component = ColumnFactory.create("WideCellSpacing", row);
+        if (table != null) {
+            component.add(table);
+        }
+        return component;
+    }
+
+    /**
+     * Lays out the query row, adding highlight and clinician selectors.
+     *
+     * @param row the container
+     */
+    protected void layoutQueryRow(Row row) {
+        FocusGroup group = getFocusGroup();
+
+        SelectField highlight = getHighlightSelector();
+        SelectField clinician = getClinicianSelector();
+
+        row.add(query.getComponent());
+        row.add(LabelFactory.create("workflow.scheduling.highlight"));
+        row.add(highlight);
+        row.add(LabelFactory.create("clinician"));
+        row.add(clinician);
+
+        group.add(query.getFocusGroup());
+        group.add(highlight);
+        group.add(clinician);
+
+    }
+
+    protected void addQueryButton(Row row) {
+        FocusGroup group = getFocusGroup();
+        ButtonRow buttons = new ButtonRow(group);
+        buttons.addButton("query", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onQuery();
+            }
+        });
+        row.add(buttons);
+    }
+
+    /**
+     * Returns the highlight selector.
+     *
+     * @return the highlight selector
+     */
+    protected SelectField getHighlightSelector() {
+        if (highlightSelector == null) {
+            highlightSelector = createHighlightSelector();
+        }
+        return highlightSelector;
+    }
+
+    /**
+     * Returns the clinician selector.
+     *
+     * @return the clinician selector
+     */
+    protected SelectField getClinicianSelector() {
+        if (clinicianSelector == null) {
+            clinicianSelector = createClinicianSelector();
+        }
+        return clinicianSelector;
+    }
+
+    /**
+     * Creates a new highlight selector.
+     *
+     * @return a new highlight selector
+     */
+    protected SelectField createHighlightSelector() {
         String[] highlightSelectorItems = {
-                Messages.get("workflow.scheduling.highlight.appointment"),
+                Messages.get("workflow.scheduling.highlight.event"),
                 Messages.get("workflow.scheduling.highlight.clinician"),
                 Messages.get("workflow.scheduling.highlight.status")};
 
-        highlightSelector = SelectFieldFactory.create(highlightSelectorItems);
-        highlightSelector.setSelectedItem(highlightSelectorItems[0]);
-        highlightSelector.addActionListener(new ActionListener() {
+        SelectField result = SelectFieldFactory.create(highlightSelectorItems);
+        result.setSelectedItem(highlightSelectorItems[0]);
+        result.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onHighlightChanged();
             }
         });
+        return result;
+    }
 
-        Label viewLabel = LabelFactory.create("workflow.scheduling.highlight");
+    /**
+     * Performs a query and notifies registered listeners.
+     */
+    protected void onQuery() {
+        query();
+        notifyQueryListeners();
+    }
 
-        clinicianSelector = createClinicianSelector();
-        Label clinicianLabel = LabelFactory.create("clinician");
+    /**
+     * Performs a query.
+     *
+     * @param reselect if <tt>true</tt> try and reselect the selected cell
+     */
+    protected void doQuery(boolean reselect) {
+        getComponent();
 
-        String[] timeSelectorItems = {
-                Messages.get("workflow.scheduling.time.all"),
-                Messages.get("workflow.scheduling.time.morning"),
-                Messages.get("workflow.scheduling.time.afternoon"),
-                Messages.get("workflow.scheduling.time.evening"),
-                Messages.get("workflow.scheduling.time.AM"),
-                Messages.get("workflow.scheduling.time.PM")};
+        Set<Entity> lastSchedules = (results != null) ? results.keySet() : null;
+        results = query.query();
 
-        timeSelector = SelectFieldFactory.create(timeSelectorItems);
-        timeSelector.setSelectedItem(timeSelectorItems[0]);
-        timeSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onTimeRangeChanged();
+        ScheduleEventGrid grid = createEventGrid(query.getDate(), results);
+        int lastRow = -1;
+        int lastColumn = -1;
+        if (model != null) {
+            lastRow = model.getSelectedRow();
+            lastColumn = model.getSelectedColumn();
+        }
+        model = createTableModel(grid);
+        if (table == null) {
+            table = createTable(model);
+            table.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onSelected((TableActionEventEx) event);
+                }
+            });
+            component.add(table);
+        } else {
+            table.setModel(model);
+            table.setColumnModel(model.getColumnModel());
+        }
+
+        if (reselect) {
+            // if the the schedules and date haven't changed, reselect the
+            // selected cell
+            Date selectedDate = (selectedTime != null)
+                    ? DateRules.getDate(selectedTime) : null;
+            if (lastRow != -1 && lastColumn != -1) {
+                if (ObjectUtils.equals(lastSchedules, results.keySet())
+                        && ObjectUtils.equals(selectedDate, query.getDate())) {
+                    model.setSelectedCell(lastColumn, lastRow);
+                }
             }
-        });
-
-        Label timeLabel = LabelFactory.create("workflow.scheduling.time");
-
-        Row row = RowFactory.create("CellSpacing", query.getComponent(),
-                                    viewLabel, highlightSelector,
-                                    clinicianLabel, clinicianSelector,
-                                    timeLabel, timeSelector);
-
-        component = ColumnFactory.create("WideCellSpacing", selectedDate,
-                                         row, table);
+        }
     }
 
     /**
@@ -370,13 +444,13 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         int index = highlightSelector.getSelectedIndex();
         switch (index) {
             case 0:
-                model.setHighlight(Highlight.APPOINTMENT);
+                model.setHighlight(ScheduleTableModel.Highlight.EVENT);
                 break;
             case 1:
-                model.setHighlight(Highlight.CLINICIAN);
+                model.setHighlight(ScheduleTableModel.Highlight.CLINICIAN);
                 break;
             default:
-                model.setHighlight(Highlight.STATUS);
+                model.setHighlight(ScheduleTableModel.Highlight.STATUS);
         }
     }
 
@@ -393,53 +467,30 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
     }
 
     /**
-     * Invoked when the time range changed.
-     */
-    private void onTimeRangeChanged() {
-        int index = timeSelector.getSelectedIndex();
-        switch (index) {
-            case 0:
-                model.setTimeRange(TimeRange.ALL);
-                break;
-            case 1:
-                model.setTimeRange(TimeRange.MORNING);
-                break;
-            case 2:
-                model.setTimeRange(TimeRange.AFTERNOON);
-                break;
-            case 3:
-                model.setTimeRange(TimeRange.EVENING);
-                break;
-            case 4:
-                model.setTimeRange(TimeRange.AM);
-                break;
-            case 5:
-                model.setTimeRange(TimeRange.PM);
-                break;
-        }
-        clearSelection();
-    }
-
-    /**
      * Invoked when a cell is selected.
      * <p/>
      * Notifies listeners of the selection.
      *
      * @param event the event
      */
-    private void onSelected(ActionEvent event) {
-        TableActionEventEx action = (TableActionEventEx) event;
-        int column = action.getColumn();
-        int row = action.getRow();
+    private void onSelected(TableActionEventEx event) {
+        int column = event.getColumn();
+        int row = event.getRow();
         boolean doubleClick = false;
         if (model.isSelectedCell(column, row)) {
             doubleClick = true;
         }
         model.setSelectedCell(column, row);
-        selected = model.getAppointment(column, row);
-        if (model.getAvailability(column, row) != UNAVAILABLE) {
-            selectedTime = model.getStartTime(row);
-            selectedSchedule = model.getSchedule(column);
+        selected = model.getEvent(column, row);
+        if (model.getAvailability(column, row) != Availability.UNAVAILABLE) {
+            Schedule schedule = model.getSchedule(column);
+            if (schedule != null) {
+                selectedTime = model.getStartTime(schedule, row);
+                selectedSchedule = model.getScheduleEntity(column);
+            } else {
+                selectedTime = null;
+                selectedSchedule = null;
+            }
         } else {
             selectedTime = null;
             selectedSchedule = null;
@@ -448,15 +499,15 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
             if (selected == null) {
                 for (QueryBrowserListener<ObjectSet> listener
                         : getQueryListeners()) {
-                    if (listener instanceof AppointmentListener) {
-                        ((AppointmentListener) listener).create();
+                    if (listener instanceof ScheduleBrowserListener) {
+                        ((ScheduleBrowserListener) listener).create();
                     }
                 }
             } else {
                 for (QueryBrowserListener<ObjectSet> listener
                         : getQueryListeners()) {
-                    if (listener instanceof AppointmentListener) {
-                        ((AppointmentListener) listener).edit(selected);
+                    if (listener instanceof ScheduleBrowserListener) {
+                        ((ScheduleBrowserListener) listener).edit(selected);
                     }
                 }
             }
@@ -466,6 +517,14 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
 
         // deselect the row
         table.getSelectionModel().clearSelection();
+    }
+
+    /**
+     * Deselects the selected cell.
+     */
+    protected void clearSelection() {
+        selectedTime = null;
+        model.setSelectedCell(-1, -1);
     }
 
     /**
@@ -497,14 +556,6 @@ public class AppointmentBrowser extends AbstractBrowser<ObjectSet> {
         });
 
         return result;
-    }
-
-    /**
-     * Deselects the selected cell.
-     */
-    private void clearSelection() {
-        selectedTime = null;
-        model.setSelectedCell(-1, -1);
     }
 
 }

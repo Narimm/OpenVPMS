@@ -19,17 +19,14 @@
 package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.archetype.rules.practice.LocationRules;
-import org.openvpms.archetype.rules.workflow.AppointmentRules;
-import org.openvpms.archetype.rules.workflow.AppointmentService;
+import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
@@ -38,7 +35,6 @@ import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,12 +45,12 @@ import java.util.Map;
 
 
 /**
- * Appointment query.
+ * Schedule query.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class AppointmentQuery {
+public abstract class ScheduleQuery {
 
     /**
      * The schedule view selector.
@@ -69,7 +65,7 @@ class AppointmentQuery {
     /**
      * The list of schedules associated with the selected schedule view.
      */
-    private List<Party> schedules;
+    private List<Entity> schedules;
 
     /**
      * The date selector.
@@ -82,14 +78,9 @@ class AppointmentQuery {
     private Component component;
 
     /**
-     * Appointment service.
+     * Schedule service.
      */
-    private AppointmentService service;
-
-    /**
-     * Appointment rules.
-     */
-    private AppointmentRules rules;
+    private ScheduleService service;
 
     /**
      * Listener to notify of query events.
@@ -103,11 +94,12 @@ class AppointmentQuery {
 
 
     /**
-     * Creates a new <tt>AppointmentQuery</tt>.
+     * Creates a new <tt>ScheduleQuery</tt>.
+     *
+     * @param service the schedule service
      */
-    public AppointmentQuery() {
-        service = ServiceHelper.getAppointmentService();
-        rules = new AppointmentRules();
+    public ScheduleQuery(ScheduleService service) {
+        this.service = service;
     }
 
     /**
@@ -138,6 +130,7 @@ class AppointmentQuery {
      * @return the selected schedule view. May be <tt>null</tt>
      */
     public Entity getScheduleView() {
+        getComponent();
         return (Entity) viewField.getSelectedItem();
     }
 
@@ -147,6 +140,7 @@ class AppointmentQuery {
      * @param view the schedule view
      */
     public void setScheduleView(Entity view) {
+        getComponent();
         viewField.setSelectedItem(view);
         schedules = null;
         updateScheduleField();
@@ -157,14 +151,14 @@ class AppointmentQuery {
      *
      * @return the schedules
      */
-    public List<Party> getSchedules() {
+    public List<Entity> getSchedules() {
         if (schedules == null) {
             Entity view = getScheduleView();
             if (view != null) {
-                schedules = rules.getSchedules(view);
+                schedules = getSchedules(view);
             }
         }
-        return (schedules != null) ? schedules : Collections.<Party>emptyList();
+        return (schedules != null) ? schedules : Collections.<Entity>emptyList();
     }
 
     /**
@@ -178,14 +172,13 @@ class AppointmentQuery {
     }
 
     /**
-     * Performs the query, returning a list of appointments keyed on schedule.
+     * Performs the query, returning a list of events keyed on schedule.
      *
      * @return the query result set. May be <tt>null</tt>
-     * @throws ArchetypeServiceException if the query fails
      */
-    public Map<Party, List<ObjectSet>> query() {
+    public Map<Entity, List<ObjectSet>> query() {
         getComponent();
-        return getAppointments();
+        return getEvents();
     }
 
     /**
@@ -207,25 +200,53 @@ class AppointmentQuery {
     }
 
     /**
-     * Returns the appointments, keyed on schedule.
+     * Returns the schedule views.
      *
-     * @return the appointments
+     * @return the schedule views
      */
-    private Map<Party, List<ObjectSet>> getAppointments() {
+    protected abstract List<Entity> getScheduleViews();
+
+    /**
+     * Returns the default schedule view.
+     *
+     * @return the default schedule view. May be <tt>null</tt>
+     */
+    protected abstract Entity getDefaultScheduleView();
+
+    /**
+     * Returns the schedules for the specified schedule view.
+     *
+     * @param view the schedule view
+     * @return the corresponding schedules
+     */
+    protected abstract List<Entity> getSchedules(Entity view);
+
+    /**
+     * Returns a display name for the schedule selector.
+     *
+     * @return a display name for the schedule selector
+     */
+    protected abstract String getScheduleDisplayName();
+
+    /**
+     * Returns the events, keyed on schedule.
+     *
+     * @return the events
+     */
+    private Map<Entity, List<ObjectSet>> getEvents() {
         Date date = getDate();
-        Map<Party, List<ObjectSet>> result
-                = new LinkedHashMap<Party, List<ObjectSet>>();
-        Party selected = (Party) scheduleField.getSelectedItem();
-        List<Party> schedules;
+        Map<Entity, List<ObjectSet>> result
+                = new LinkedHashMap<Entity, List<ObjectSet>>();
+        Entity selected = (Entity) scheduleField.getSelectedItem();
+        List<Entity> schedules;
         if (selected != null) {
             schedules = Arrays.asList(selected);
         } else {
             schedules = getSchedules();
         }
-        for (Party schedule : schedules) {
-            List<ObjectSet> appointments = service.getAppointments(
-                    schedule, date);
-            result.put(schedule, appointments);
+        for (Entity schedule : schedules) {
+            List<ObjectSet> events = service.getEvents(schedule, date);
+            result.put(schedule, events);
         }
         return result;
     }
@@ -247,8 +268,9 @@ class AppointmentQuery {
         });
         container.add(viewField);
         container.add(date.getComponent());
-        container.add(
-                LabelFactory.create("workflow.scheduling.query.schedule"));
+        Label label = LabelFactory.create();
+        label.setText(getScheduleDisplayName());
+        container.add(label);
         container.add(scheduleField);
 
         focus = new FocusGroup("ScheduleQuery");
@@ -264,16 +286,8 @@ class AppointmentQuery {
      */
     private SelectField createScheduleViewField() {
         SelectField result;
-        Party location = GlobalContext.getInstance().getLocation();
-        List<Entity> views;
-        Entity defaultView = null;
-        if (location != null) {
-            LocationRules locationRules = new LocationRules();
-            views = locationRules.getScheduleViews(location);
-            defaultView = locationRules.getDefaultScheduleView(location);
-        } else {
-            views = Collections.emptyList();
-        }
+        List<Entity> views = getScheduleViews();
+        Entity defaultView = getDefaultScheduleView();
         IMObjectListModel model = new IMObjectListModel(views, false, false);
         result = SelectFieldFactory.create(model);
         result.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
@@ -317,12 +331,12 @@ class AppointmentQuery {
     }
 
     /**
-     * Creates a model containing <em>party.organisationSchedule</em>.
+     * Creates a model containing the schedules.
      *
      * @return a new schedule model
      */
     private IMObjectListModel createScheduleModel() {
-        List<Party> schedules = getSchedules();
+        List<Entity> schedules = getSchedules();
         return new IMObjectListModel(schedules, true, false);
     }
 

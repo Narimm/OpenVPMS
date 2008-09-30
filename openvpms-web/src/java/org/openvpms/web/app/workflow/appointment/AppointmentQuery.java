@@ -11,43 +11,47 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.worklist;
+package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.app.workflow.scheduling.ScheduleQuery;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 
 /**
- * Queries <em>act.customerTask</em> acts.
+ * Appointment query.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskQuery extends ScheduleQuery {
+class AppointmentQuery extends ScheduleQuery {
 
     /**
-     * Creates a new <tt>TaskQuery</tt>.
+     * Appointment rules.
      */
-    public TaskQuery() {
-        super(ServiceHelper.getTaskService());
+    private AppointmentRules rules;
+
+
+    /**
+     * Creates a new <tt>AppointmentQuery</tt>.
+     */
+    public AppointmentQuery() {
+        super(ServiceHelper.getAppointmentService());
+        rules = new AppointmentRules();
     }
 
     /**
@@ -63,7 +67,7 @@ public class TaskQuery extends ScheduleQuery {
         List<Entity> views;
         if (location != null) {
             LocationRules locationRules = new LocationRules();
-            views = locationRules.getWorkListViews(location);
+            views = locationRules.getScheduleViews(location);
         } else {
             views = Collections.emptyList();
         }
@@ -79,7 +83,7 @@ public class TaskQuery extends ScheduleQuery {
         Party location = GlobalContext.getInstance().getLocation();
         if (location != null) {
             LocationRules locationRules = new LocationRules();
-            return locationRules.getDefaultWorkListView(location);
+            return locationRules.getDefaultScheduleView(location);
         }
         return null;
     }
@@ -91,23 +95,8 @@ public class TaskQuery extends ScheduleQuery {
      * @return the corresponding schedules
      */
     protected List<Entity> getSchedules(Entity view) {
-        List<Entity> result = new ArrayList<Entity>();
-        EntityBean bean = new EntityBean(view);
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("workLists");
-        Collections.sort(relationships, new Comparator<EntityRelationship>() {
-            public int compare(EntityRelationship o1, EntityRelationship o2) {
-                return o1.getSequence() - o2.getSequence();
-            }
-        });
-        for (EntityRelationship relationship : relationships) {
-            Entity schedule = (Entity) IMObjectHelper.getObject(
-                    relationship.getTarget());
-            if (schedule != null) {
-                result.add(schedule);
-            }
-        }
-        return result;
+        List<Party> schedules = rules.getSchedules(view);
+        return new ArrayList<Entity>(schedules);
     }
 
     /**
@@ -116,6 +105,6 @@ public class TaskQuery extends ScheduleQuery {
      * @return a display name for the schedule selector
      */
     protected String getScheduleDisplayName() {
-        return Messages.get("workflow.scheduling.query.worklist");
+        return Messages.get("workflow.scheduling.query.schedule");
     }
 }

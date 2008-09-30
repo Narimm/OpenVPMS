@@ -19,6 +19,7 @@
 package org.openvpms.web.component.table;
 
 import nextapp.echo2.app.Table;
+import nextapp.echo2.app.table.TableCellRenderer;
 
 
 /**
@@ -49,13 +50,24 @@ public class EvenOddTableCellRenderer extends AbstractTableCellRenderer {
      */
     public static final String ODD_STYLE_INSET = "Table.OddRow-InsetX";
 
+    /**
+     * The singleton instance.
+     */
+    public static TableCellRenderer INSTANCE = new EvenOddTableCellRenderer();
+
+
+    /**
+     * Default constructor.
+     */
+    private EvenOddTableCellRenderer() {
+    }
 
     /**
      * Returns the style name for a column and row.
      *
-     * @param table  the <code>Table</code> for which the rendering is
+     * @param table  the <tt>Table</tt> for which the rendering is
      *               occurring
-     * @param value  the value retrieved from the <code>TableModel</code> for
+     * @param value  the value retrieved from the <tt>TableModel</tt> for
      *               the specified coordinate
      * @param column the column
      * @param row    the row

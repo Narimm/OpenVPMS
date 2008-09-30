@@ -16,7 +16,7 @@
 *  $Id$
 */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
@@ -39,12 +39,12 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Workflow CRUD window.
+ * Schedule event CRUD window.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
+public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
 
     /**
      * The consult button.
@@ -78,11 +78,11 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
 
 
     /**
-     * Constructs a new <tt>WorkflowCRUDWindow</tt>.
+     * Constructs a new <tt>ScheduleCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
-    public WorkflowCRUDWindow(Archetypes<Act> archetypes) {
+    public ScheduleCRUDWindow(Archetypes<Act> archetypes) {
         super(archetypes);
     }
 

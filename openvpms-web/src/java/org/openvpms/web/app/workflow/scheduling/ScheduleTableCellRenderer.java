@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
@@ -24,15 +24,16 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Font;
 import nextapp.echo2.app.Table;
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.workflow.Appointment;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectSet;
-import static org.openvpms.web.app.workflow.scheduling.AppointmentGrid.Availability.FREE;
-import static org.openvpms.web.app.workflow.scheduling.AppointmentTableModel.Highlight.STATUS;
+import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.FREE;
+import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
+import static org.openvpms.web.app.workflow.scheduling.ScheduleTableModel.Highlight;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
 import org.openvpms.web.component.util.ColourHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -43,20 +44,22 @@ import java.util.Map;
 
 
 /**
- * TableCellRender that assigns blocks of appointments in different hours a
- * different style.
- * Note that for this renderer will not work for partial table renders as
- * it maintains state for the style of the previous row.
+ * TableCellRender for schedule events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-09-06 07:52:23Z $
  */
-public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
+public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
 
     /**
-     * Cache of appointment colours.
+     * The schedule type archetype short name.
      */
-    private Map<IMObjectReference, String> appointmentColours;
+    private final String scheduleTypeShortName;
+
+    /**
+     * Cache of event colours.
+     */
+    private Map<IMObjectReference, String> eventColours;
 
     /**
      * Cache of clinician colours.
@@ -65,9 +68,12 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
 
 
     /**
-     * Default constructor.
+     * Creates a new <tt>ScheduleTableCellRenderer</tt>.
+     *
+     * @param scheduleTypeShortName the schedule type archetype short name
      */
-    public AppointmentTableCellRenderer() {
+    public ScheduleTableCellRenderer(String scheduleTypeShortName) {
+        this.scheduleTypeShortName = scheduleTypeShortName;
         refresh();
     }
 
@@ -87,29 +93,31 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
     public Component getTableCellRendererComponent(Table table, Object value,
                                                    int column, int row) {
         Component component = getComponent(table, value, column, row);
-        if (column != AppointmentTableModel.START_TIME_INDEX) {
-            AppointmentTableModel model
-                    = (AppointmentTableModel) table.getModel();
-            if (!model.isSingleScheduleView()
-                    && model.isSelectedCell(column, row)
-                    && model.getAvailability(column, row)
-                    != AppointmentGrid.Availability.UNAVAILABLE) {
-                // highlight the selected cell.
-                // Ideally, this would be done by the table, however none of
-                // the tables support cell selection.
-                // Also, it would be best if highlighting was done by changing
-                // the cell background, but due to a bug in TableEx, this
-                // results in all similar cells being updated with the highlight
-                // colour.
-                Font font = getFont(table);
-                if (font != null) {
-                    int style = Font.BOLD | Font.ITALIC;
-                    font = new Font(font.getTypeface(), style, font.getSize());
-                    component.setFont(font);
-                }
+        boolean highlight = canHighlightCell(table, column, row);
+        if (highlight) {
+            // highlight the selected cell.
+            // Ideally, this would be done by the table, however none of
+            // the tables support cell selection.
+            // Also, it would be best if highlighting was done by changing
+            // the cell background, but due to a bug in TableEx, this
+            // results in all similar cells being updated with the highlight
+            // colour.
+            Font font = getFont(table);
+            if (font != null) {
+                int style = Font.BOLD | Font.ITALIC;
+                font = new Font(font.getTypeface(), style, font.getSize());
+                component.setFont(font);
             }
         }
         return component;
+    }
+
+    /**
+     * Refreshes the cached data.
+     */
+    public void refresh() {
+        eventColours = getColours(scheduleTypeShortName);
+        clinicianColours = getColours("security.user");
     }
 
     /**
@@ -126,90 +134,123 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
     @Override
     protected Component getComponent(Table table, Object value, int column,
                                      int row) {
-        AppointmentTableModel model = (AppointmentTableModel) table.getModel();
+        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
+        boolean singleScheduleView = model.isSingleScheduleView();
         Component component;
         if (value instanceof Component) {
             // pre-rendered component
             component = (Component) value;
-        } else if (value == null
-                && !model.isSingleScheduleView()
-                && model.isSelectedCell(column, row)
-                && model.getAvailability(column, row) == FREE) {
-            // free slot in multiple schedule view
-            component = LabelFactory.create("workflow.scheduling.table.new");
         } else {
-            component = super.getComponent(table, value, column, row);
+            if (value == null && !singleScheduleView
+                    && model.isSelectedCell(column, row)
+                    && model.getAvailability(column, row) == FREE) {
+                // free slot in multiple schedule view
+                component = LabelFactory.create(
+                        "workflow.scheduling.table.new");
+            } else {
+                component = super.getComponent(table, value, column, row);
+            }
         }
 
-        if (column == AppointmentTableModel.START_TIME_INDEX) {
-            mergeStyle(component, getFreeStyle(model, row));
+        ObjectSet event = model.getEvent(column, row);
+        if (event != null) {
+            highlightEvent(component, event, model);
         } else {
-            ObjectSet appointment = model.getAppointment(column, row);
-            if (appointment != null) {
-                highlightAppointment(component, appointment, model);
-            } else {
-                highlightCell(component, column, row, model);
-            }
+            colourCell(component, column, row, model);
         }
         return component;
     }
 
     /**
-     * Refreshes the cached data.
+     * Determines if the cell can be higlighted.
+     *
+     * @param table  the table
+     * @param column the column
+     * @param row    the row
+     * @return <tt>true</tt> if the cell can be highlighted
      */
-    public void refresh() {
-        appointmentColours = getColours("entity.appointmentType");
-        clinicianColours = getColours("security.user");
+    protected boolean canHighlightCell(Table table, int column, int row) {
+        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
+        boolean highlight = false;
+        if (!model.isSingleScheduleView() && model.isSelectedCell(column, row)
+                && model.getAvailability(column, row) != UNAVAILABLE) {
+            highlight = true;
+        }
+        return highlight;
     }
 
     /**
-     * Highlights a cell based on its availability.
+     * Returns the style for a free row.
+     *
+     * @param model the schedule table model
+     * @param row   the row
+     * @return a style for the row
+     */
+    protected String getFreeStyle(ScheduleTableModel model, int row) {
+        return (row % 2 == 0) ? "ScheduleTable.Even" : "ScheduleTable.Odd";
+    }
+
+    /**
+     * Colours a cell based on its availability.
      *
      * @param component a component representing the cell
      * @param column    the cell column
      * @param row       the cell row
-     * @param model     the appointment model
+     * @param model     the event model
      */
-    private void highlightCell(Component component, int column, int row,
-                               AppointmentTableModel model) {
-        AppointmentGrid.Availability avail
+    protected void colourCell(Component component, int column, int row,
+                              ScheduleTableModel model) {
+        ScheduleEventGrid.Availability avail
                 = model.getAvailability(column, row);
-        String style;
+        colourCell(component, avail, model, row);
+    }
 
+    /**
+     * Colours an event cell based on availability.
+     *
+     * @param component the component representing the cell
+     * @param avail     the cell's availability
+     * @param model     the the event model
+     * @param row       the cell row
+     */
+    protected void colourCell(Component component,
+                              ScheduleEventGrid.Availability avail,
+                              ScheduleTableModel model, int row) {
+        String style;
         switch (avail) {
             case BUSY:
-                style = "Appointment.Busy";
+                style = "ScheduleTable.Busy";
                 break;
             case FREE:
                 style = getFreeStyle(model, row);
                 break;
             default:
-                style = "Appointment.Unavailable";
+                style = "ScheduleTable.Unavailable";
                 break;
         }
         mergeStyle(component, style);
     }
 
     /**
-     * Highlights an appointment.
+     * Highlights an event.
      *
-     * @param component   the component representing the appointment
-     * @param appointment the appointment
-     * @param model       the appointment table model
+     * @param component the component representing the schedule event
+     * @param event     the event
+     * @param model     the schedule table model
      */
-    private void highlightAppointment(Component component,
-                                      ObjectSet appointment,
-                                      AppointmentTableModel model) {
-        if (!isSelectedClinician(appointment, model)) {
-            mergeStyle(component, "Appointment.Busy");
+    private void highlightEvent(Component component,
+                                ObjectSet event,
+                                ScheduleTableModel model) {
+        if (!isSelectedClinician(event, model)) {
+            mergeStyle(component, "ScheduleTable.Busy");
         } else {
-            AppointmentTableModel.Highlight highlight = model.getHighlight();
+            Highlight highlight = model.getHighlight();
 
-            if (model.getHighlight() == STATUS) {
-                String style = getStatusStyle(appointment);
+            if (highlight == Highlight.STATUS) {
+                String style = getStatusStyle(event);
                 mergeStyle(component, style);
             } else {
-                Color colour = getAppointmentColour(appointment, highlight);
+                Color colour = getEventColour(event, highlight);
                 if (colour != null) {
                     TableLayoutDataEx layout
                             = (TableLayoutDataEx) component.getLayoutData();
@@ -224,66 +265,53 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
     }
 
     /**
-     * Returns the stye of an appointment based on its status.
+     * Returns the stye of an event based on its status.
      *
-     * @param appointment the appointment
+     * @param event the event
      * @return the style
      */
-    private String getStatusStyle(ObjectSet appointment) {
-        return "TaskTable." + appointment.getString(Appointment.ACT_STATUS);
+    private String getStatusStyle(ObjectSet event) {
+        return "ScheduleTable." + event.getString(ScheduleEvent.ACT_STATUS);
     }
 
     /**
-     * Determines if an appointment has the same clinician as that specified
+     * Determines if a schedule has the same clinician as that specified
      * by the table model.
      *
-     * @param appointment the appointment
-     * @param model       the appointment table model
+     * @param event the schedule event
+     * @param model the schedule table model
      * @return <tt>true</tt> if they have the same clinician, or the model
      *         indicates to display all clincians
      */
-    private boolean isSelectedClinician(ObjectSet appointment,
-                                        AppointmentTableModel model) {
+    private boolean isSelectedClinician(ObjectSet event,
+                                        ScheduleTableModel model) {
         IMObjectReference clinician = model.getClinician();
         if (clinician == null) {
             return true;
         }
-        return ObjectUtils.equals(clinician, appointment.getReference(
-                Appointment.CLINICIAN_REFERENCE));
+        return ObjectUtils.equals(clinician, event.getReference(
+                ScheduleEvent.CLINICIAN_REFERENCE));
     }
 
     /**
-     * Returns the style for a free row.
+     * Returns a colour for an event, for the given highlight style.
      *
-     * @param model the appointment table model
-     * @param row   the row
-     * @return a style for the row
-     */
-    private String getFreeStyle(AppointmentTableModel model, int row) {
-        int hour = model.getHour(row);
-        return (hour % 2 == 0) ? "Appointment.Even" : "Appointment.Odd";
-    }
-
-    /**
-     * Returns a colour for an appointment, for the given highlight style.
-     *
-     * @param set       the appointment. May be <tt>null</tt>
+     * @param event     the event. May be <tt>null</tt>
      * @param highlight the highlight style
      * @return the colour, or <tt>null</tt> if none is found
      */
-    private Color getAppointmentColour(
-            ObjectSet set, AppointmentTableModel.Highlight highlight) {
+    private Color getEventColour(ObjectSet event, Highlight highlight) {
         Color result = null;
-        if (set != null) {
+        if (event != null) {
             switch (highlight) {
-                case APPOINTMENT:
-                    result = getColour(set,
-                                       Appointment.APPOINTMENT_TYPE_REFERENCE,
-                                       appointmentColours);
+                case EVENT:
+                    result = getColour(event,
+                                       ScheduleEvent.SCHEDULE_TYPE_REFERENCE,
+                                       eventColours);
                     break;
                 case CLINICIAN:
-                    result = getColour(set,
-                                       Appointment.CLINICIAN_REFERENCE,
+                    result = getColour(event,
+                                       ScheduleEvent.CLINICIAN_REFERENCE,
                                        clinicianColours);
             }
         }

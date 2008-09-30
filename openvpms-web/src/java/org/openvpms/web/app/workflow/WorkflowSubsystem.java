@@ -19,9 +19,9 @@
 package org.openvpms.web.app.workflow;
 
 import org.openvpms.web.app.subsystem.DummyWorkspace;
+import org.openvpms.web.app.workflow.appointment.AppointmentWorkspace;
 import org.openvpms.web.app.workflow.messaging.MessagingWorkspace;
-import org.openvpms.web.app.workflow.scheduling.SchedulingWorkspace;
-import org.openvpms.web.app.workflow.worklist.WorkListWorkspace;
+import org.openvpms.web.app.workflow.worklist.TaskWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
@@ -34,12 +34,12 @@ import org.openvpms.web.component.subsystem.AbstractSubsystem;
 public class WorkflowSubsystem extends AbstractSubsystem {
 
     /**
-     * Construct a new <code>WorkflowSubsystem</code>.
+     * Creates a new <tt>WorkflowSubsystem</tt>.
      */
     public WorkflowSubsystem() {
         super("workflow");
-        addWorkspace(new SchedulingWorkspace());
-        addWorkspace(new WorkListWorkspace());
+        addWorkspace(new AppointmentWorkspace());
+        addWorkspace(new TaskWorkspace());
         addWorkspace(new MessagingWorkspace());
         addWorkspace(new DummyWorkspace("workflow", "investigation"));
     }

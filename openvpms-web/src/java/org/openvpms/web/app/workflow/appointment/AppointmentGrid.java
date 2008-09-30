@@ -16,12 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.scheduling;
+package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -30,23 +30,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface AppointmentGrid {
-
-    /**
-     * Slot availability.
-     */
-    enum Availability {
-        FREE, BUSY, UNAVAILABLE
-    }
-
-    /**
-     * Returns the appointment date.
-     * <p/>
-     * All appointments in the grid start or end on this date.
-     *
-     * @return the date, excluding any time
-     */
-    Date getDate();
+public interface AppointmentGrid extends ScheduleEventGrid {
 
     /**
      * Returns the no. of minutes from midnight that the grid starts at.
@@ -63,34 +47,11 @@ public interface AppointmentGrid {
     int getEndMins();
 
     /**
-     * Returns the no. of slots in the grid.
-     *
-     * @return the no. of slots
-     */
-    int getSlots();
-
-    /**
      * Returns the size of each slot, in minutes.
      *
      * @return the slot size, in minutes
      */
     int getSlotSize();
-
-    /**
-     * Returns the schedules.
-     *
-     * @return the schedules
-     */
-    List<Schedule> getSchedules();
-
-    /**
-     * Returns the appointment for the specified schedule and slot.
-     *
-     * @param schedule the schedule
-     * @param slot     the slot
-     * @return the corresponding appointment, or <tt>null</tt> if none is found
-     */
-    ObjectSet getAppointment(Schedule schedule, int slot);
 
     /**
      * Returns the no. of slots at an appointment occupies, from the specified
@@ -149,24 +110,5 @@ public interface AppointmentGrid {
      *         slots intersect
      */
     int getLastSlot(int minutes);
-
-    /**
-     * Determines the availability of a slot for the specified schedule.
-     *
-     * @param schedule the schedule
-     * @param slot     the slot
-     * @return the availability of the schedule
-     */
-    Availability getAvailability(Schedule schedule, int slot);
-
-    /**
-     * Determines how many slots are unavailable from the specified slot, for
-     * a schedule.
-     *
-     * @param schedule the schedule
-     * @param slot     the starting slot
-     * @return the no. of concurrent slots that are unavailable
-     */
-    int getUnavailableSlots(Schedule schedule, int slot);
 
 }

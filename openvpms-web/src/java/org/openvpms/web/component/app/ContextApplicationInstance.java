@@ -173,7 +173,7 @@ public abstract class ContextApplicationInstance
         Party deposit = null;
         Party till = null;
         Entity scheduleView = null;
-        Party workList = null;
+        Entity workListView = null;
         Party stockLocation = null;
 
         if (location != null) {
@@ -182,14 +182,15 @@ public abstract class ContextApplicationInstance
             deposit = rules.getDefaultDepositAccount(location);
             till = rules.getDefaultTill(location);
             scheduleView = rules.getDefaultScheduleView(location);
-            workList = rules.getDefaultWorkList(location);
+            workListView = rules.getDefaultWorkListView(location);
             stockLocation = getStockLocation(rules, location);
         }
         context.setDeposit(deposit);
         context.setTill(till);
         context.setScheduleView(scheduleView);
         context.setSchedule(null);
-        context.setWorkList(workList);
+        context.setWorkListView(workListView);
+        context.setWorkList(null);
         context.setStockLocation(stockLocation);
     }
 

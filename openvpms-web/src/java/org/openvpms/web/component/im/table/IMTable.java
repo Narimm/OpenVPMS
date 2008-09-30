@@ -127,7 +127,7 @@ public class IMTable<T> extends KeyTable {
         setModel(model);
         setColumnModel(model.getColumnModel());
         if (getDefaultRenderer(Object.class) == null) {
-            setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
+            setDefaultRenderer(Object.class, EvenOddTableCellRenderer.INSTANCE);
         }
         if (current != model) {
             // need to add a listener to the model to be notified of column

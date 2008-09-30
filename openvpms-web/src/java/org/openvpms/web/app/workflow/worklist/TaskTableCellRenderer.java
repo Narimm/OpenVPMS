@@ -18,37 +18,21 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
-import nextapp.echo2.app.Table;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.table.IMTable;
-import org.openvpms.web.component.table.AbstractTableCellRenderer;
+import org.openvpms.web.app.workflow.scheduling.ScheduleTableCellRenderer;
 
 
 /**
- * Cell renderer for tasks. Renders tasks a different colour based on their
- * status.
+ * Cell renderer for tasks.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskTableCellRenderer extends AbstractTableCellRenderer {
+public class TaskTableCellRenderer extends ScheduleTableCellRenderer {
 
     /**
-     * Returns the style name for a column and row.
-     *
-     * @param table  the <code>Table</code> for which the rendering is
-     *               occurring
-     * @param value  the value retrieved from the <code>TableModel</code> for
-     *               the specified coordinate
-     * @param column the column
-     * @param row    the row
-     * @return a style name for the given column and row.
+     * Creates a new <tt>TaskTableCellRenderer</tt>.
      */
-    @SuppressWarnings("unchecked")
-    protected String getStyle(Table table, Object value, int column, int row) {
-        IMTable<Act> actTable = (IMTable<Act>) table;
-        Act act = actTable.getObjects().get(row);
-        String status = act.getStatus();
-        return (status != null) ? "TaskTable." + status : null;
+    public TaskTableCellRenderer() {
+        super("entity.taskType");
     }
 }

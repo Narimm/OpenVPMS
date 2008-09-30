@@ -16,9 +16,10 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.scheduling;
+package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.workflow.scheduling.Schedule;
 
 import java.util.Date;
 import java.util.List;
@@ -85,8 +86,8 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      * @param slot     the slot
      * @return the corresponding appointment, or <tt>null</tt> if none is found
      */
-    public ObjectSet getAppointment(Schedule schedule, int slot) {
-        return grid.getAppointment(schedule, startSlot + slot);
+    public ObjectSet getEvent(Schedule schedule, int slot) {
+        return grid.getEvent(schedule, startSlot + slot);
     }
 
     /**
@@ -118,12 +119,13 @@ class AppointmentGridView extends AbstractAppointmentGrid {
     /**
      * Returns the time that the specified slot starts at.
      *
-     * @param slot the slot
+     * @param schedule the schedule
+     * @param slot     the slot
      * @return the start time of the specified slot
      */
     @Override
-    public Date getStartTime(int slot) {
-        return grid.getStartTime(startSlot + slot);
+    public Date getStartTime(Schedule schedule, int slot) {
+        return grid.getStartTime(schedule, startSlot + slot);
     }
 
     /**
