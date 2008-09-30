@@ -42,6 +42,7 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
+import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -90,14 +91,16 @@ public class PatientSummary {
         Component result = null;
         if (patient != null) {
             result = ColumnFactory.create();
-            Label patientName = LabelFactory.create(null, "Patient.Name");
+            String name = patient.getName();
             if (rules.isDesexed(patient)) {
-                patientName.setText(patient.getName()+ "(" + Messages.get("patient.desexed") + ")");            	
+                name += " (" + Messages.get("patient.desexed") + ")";
             }
-            else {
-                patientName.setText(patient.getName());            	
-            }
-            result.add(RowFactory.create("Inset.Small", patientName));
+            IMObjectReferenceViewer patientName
+                    = new IMObjectReferenceViewer(patient.getObjectReference(),
+                                                  name, true);
+            patientName.setStyleName("hyperlink-bold");
+            result.add(RowFactory.create("Inset.Small",
+                                         patientName.getComponent()));
             if (rules.isDeceased(patient)) {
                 Label deceased = LabelFactory.create("patient.deceased",
                                                      "Patient.Deceased");

@@ -41,7 +41,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
     /**
      * The starting slot to view from.
      */
-    private final int startSlot;
+    private int startSlot;
 
     /**
      * The no. of slots from startSlot.
@@ -61,6 +61,13 @@ class AppointmentGridView extends AbstractAppointmentGrid {
         super(grid.getDate(), startMins, endMins);
         this.grid = grid;
         startSlot = grid.getFirstSlot(startMins);
+        if (startSlot == -1) {
+            if (grid.getSlots() > 0) {
+                startSlot = grid.getSlots() - 1;
+            } else {
+                startSlot = 0;
+            }
+        }
         int endSlot;
         if (grid.getEndMins() == endMins) {
             endSlot = grid.getLastSlot(endMins - getSlotSize());

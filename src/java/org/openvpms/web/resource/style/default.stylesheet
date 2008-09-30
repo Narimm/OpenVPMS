@@ -353,22 +353,6 @@
             <property name="foreground" value="#ff0000"/>
         </properties>
     </style>
-    <style name="Patient.Name" type="nextapp.echo2.app.Label">
-        <properties>
-            <property name="foreground" value="#0000ff"/>
-            <property name="font">
-                <font size="10pt" bold="true"/>
-            </property>
-        </properties>
-    </style>
-    <style name="Customer.Name" type="nextapp.echo2.app.Label">
-        <properties>
-            <property name="foreground" value="#0000ff"/>
-            <property name="font">
-                <font size="10pt" bold="true"/>
-            </property>
-        </properties>
-    </style>
 
     <style name="MedicalRecordSummary.act.patientClinicalEvent"
            type="nextapp.echo2.app.Component">
@@ -1319,6 +1303,42 @@
     <!-- =================================================================== -->
     <!--  Hyperlink Button                                                   -->
     <!-- =================================================================== -->
+
+    <style name="hyperlink-bold" base-name="hyperlink"
+           type="echopointng.ButtonEx">
+        <properties>
+            <property name="foreground" value="#0000ff"/>
+            <property name="font">
+                <font size="10pt" bold="true" underline="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="hyperlink-bold-1024x768" base-name="hyperlink-1024x768"
+           type="echopointng.ButtonEx">
+        <properties>
+            <property name="foreground" value="#0000ff"/>
+            <property name="font">
+                <font size="9pt" bold="true" underline="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="hyperlink-bold-800x600" base-name="hyperlink-800x600"
+           type="echopointng.ButtonEx">
+        <properties>
+            <property name="foreground" value="#0000ff"/>
+            <property name="font">
+                <font size="8pt" bold="true" underline="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
 
     <style name="hyperlink" type="echopointng.ButtonEx">
         <properties>

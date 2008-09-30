@@ -57,6 +57,11 @@ public class IMObjectReferenceViewer {
      */
     private final boolean link;
 
+    /**
+     * The style name.
+     */
+    private String style;
+
 
     /**
      * Construct a new <code>IMObjectReferenceViewer</code>.
@@ -83,6 +88,15 @@ public class IMObjectReferenceViewer {
     }
 
     /**
+     * Sets the style name.
+     *
+     * @param style name
+     */
+    public void setStyleName(String style) {
+        this.style = style;
+    }
+
+    /**
      * Returns the component.
      *
      * @return the component
@@ -100,7 +114,10 @@ public class IMObjectReferenceViewer {
         }
         if (text != null) {
             if (link) {
-                Button button = ButtonFactory.create(null, "hyperlink", false);
+                if (style == null) {
+                    style = "hyperlink";
+                }
+                Button button = ButtonFactory.create(null, style, false);
                 button.setText(text);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
@@ -111,7 +128,9 @@ public class IMObjectReferenceViewer {
                 // wrap in a row so the button renders to its minimum width
                 result = RowFactory.create(button);
             } else {
-                Label label = LabelFactory.create();
+                Label label = (style != null)
+                        ? LabelFactory.create(null, style)
+                        : LabelFactory.create();
                 label.setText(text);
                 result = label;
             }
