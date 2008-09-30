@@ -350,3 +350,16 @@ where r.entity_relationship_id = d.entity_relationship_id
 delete r
 from entity_relationships r
 where r.arch_short_name = "entityRelationship.locationSchedule";
+
+#
+# Remove redundant location work list relationships for OVPMS-793
+#
+
+delete d
+from entity_relationships r, entity_relationship_details d
+where r.entity_relationship_id = d.entity_relationship_id
+    and r.arch_short_name = "entityRelationship.locationWorkList";
+
+delete r
+from entity_relationships r
+where r.arch_short_name = "entityRelationship.locationWorkList";
