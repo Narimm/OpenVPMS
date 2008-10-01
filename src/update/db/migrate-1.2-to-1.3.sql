@@ -370,3 +370,9 @@ where r.arch_short_name = "entityRelationship.locationWorkList";
 alter table financial_acts
     add column fixed_cost decimal(18, 3) after unit_amount,
     add column unit_cost decimal(18, 3) after fixed_cost;
+
+update financial_acts
+    set fixed_cost = 0.0 where fixed_cost is null;
+
+update financial_acts
+    set unit_cost = 0.0 where unit_cost is null;
