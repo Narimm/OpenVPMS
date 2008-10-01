@@ -68,6 +68,7 @@ public class FinancialActEditor extends ActEditor {
     /**
      * Updates the amount and tax when an act item changes.
      */
+    @Override
     protected void onItemsChanged() {
         Property amount = getProperty("amount");
         BigDecimal value = ActHelper.sum((Act) getObject(),

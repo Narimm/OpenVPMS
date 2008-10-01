@@ -21,8 +21,12 @@ package org.openvpms.web.app.customer.charge;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.Property;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -48,6 +52,32 @@ public class CustomerChargeActEditor extends FinancialActEditor {
         super(act, parent, context);
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("location", context.getContext().getLocation());
+    }
+
+    /**
+     * Updates the amount and tax when an act item changes.
+     */
+    @Override
+    protected void onItemsChanged() {
+        super.onItemsChanged();
+        calculateCosts();
+    }
+
+    /**
+     * Calculates the fixed and unit costs.
+     */
+    private void calculateCosts() {
+        Property fixedCost = getProperty("fixedCost");
+        BigDecimal fixed = ActHelper.sum((Act) getObject(),
+                                         getEditor().getCurrentActs(),
+                                         "fixedCost");
+        fixedCost.setValue(fixed);
+
+        Property unitCost = getProperty("unitCost");
+        BigDecimal unit = ActHelper.sum((Act) getObject(),
+                                        getEditor().getCurrentActs(),
+                                        "unitCost");
+        unitCost.setValue(unit);
     }
 
 }

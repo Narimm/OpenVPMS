@@ -290,8 +290,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
             Property fixedPrice = getProperty("fixedPrice");
             Property unitPrice = getProperty("unitPrice");
+            Property fixedCost = getProperty("fixedCost");
+            Property unitCost = getProperty("unitCost");
             fixedPrice.setValue(BigDecimal.ZERO);
             unitPrice.setValue(BigDecimal.ZERO);
+            fixedCost.setValue(BigDecimal.ZERO);
+            unitCost.setValue(BigDecimal.ZERO);
         } else {
             if (TypeHelper.isA(product, MEDICATION)) {
                 if (getFilter() != null) {
@@ -305,14 +309,21 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
             Property fixedPrice = getProperty("fixedPrice");
             Property unitPrice = getProperty("unitPrice");
-            ProductPrice fixed = getDefaultFixedProductPrice(product);
-            ProductPrice unit = getDefaultUnitProductPrice(product);
+            Property fixedCost = getProperty("fixedCost");
+            Property unitCost = getProperty("unitCost");
 
-            if (fixed != null) {
-                fixedPrice.setValue(fixed.getPrice());
+            ProductPrice fixedProductPrice
+                    = getDefaultFixedProductPrice(product);
+            ProductPrice unitProductPrice
+                    = getDefaultUnitProductPrice(product);
+
+            if (fixedProductPrice != null) {
+                fixedPrice.setValue(fixedProductPrice.getPrice());
+                fixedCost.setValue(getCost(fixedProductPrice));
             }
-            if (unit != null) {
-                unitPrice.setValue(unit.getPrice());
+            if (unitProductPrice != null) {
+                unitPrice.setValue(unitProductPrice.getPrice());
+                unitCost.setValue(getCost(unitProductPrice));
             }
             updateStockLocation(product);
         }
@@ -582,6 +593,17 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         } else {
             bean.removeParticipation(STOCK_LOCATION_PARTICIPATION);
         }
+    }
+
+    /**
+     * Returns the value of the cost node of a price.
+     *
+     * @param price the product price
+     * @return the cost
+     */
+    private BigDecimal getCost(ProductPrice price) {
+        IMObjectBean bean = new IMObjectBean(price);
+        return bean.getBigDecimal("cost", BigDecimal.ZERO);
     }
 
 }
