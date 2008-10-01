@@ -57,7 +57,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
 
 
     /**
-     * Create a new <code>DocumentCRUDWindow</code>.
+     * Create a new <tt>DocumentCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
@@ -145,7 +145,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     /**
      * Refreshes the current document act.
      *
-     * @return <code>true</code> if the document was refreshed
+     * @return <tt>true</tt> if the document was refreshed
      */
     private boolean refresh() {
         boolean refreshed = false;
@@ -161,15 +161,16 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     /**
      * Determines if a document can be refreshed.
      *
-     * @return <code>true</code> if the document can be refreshed, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the document can be refreshed, otherwise
+     *         <tt>false</tt>
      */
     private boolean canRefresh() {
         boolean refresh = false;
         Act act = getObject();
         if (!ActStatus.POSTED.equals(act.getStatus())) {
             ActBean bean = new ActBean(getObject());
-            if (bean.hasNode("documentTemplate") && bean.hasNode("document")) {
+            if (bean.hasNode("documentTemplate")
+                    && bean.hasNode("docReference")) {
                 refresh = true;
             }
         }
