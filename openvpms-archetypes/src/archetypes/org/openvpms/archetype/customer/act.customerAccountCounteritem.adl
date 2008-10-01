@@ -41,6 +41,20 @@
         <node name="fixedPrice" path="/fixedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
         <node name="unitPrice" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
         <node name="discount" path="/details/discount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
+        <node name="fixedCost" path="/fixedCost"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" hidden="true">
+            <!-- assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion-->
+        </node>
+        <node name="unitCost" path="/unitCost"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" hidden="true">
+            <!-- assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion-->
+        </node>
         <node name="tax" path="/taxAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true"/>

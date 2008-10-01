@@ -36,6 +36,20 @@
         <node name="allocatedAmount" path="/allocatedAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" hidden="true"/>
+        <node name="fixedCost" path="/fixedCost"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" hidden="true">
+            <!-- assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion-->
+        </node>
+        <node name="unitCost" path="/unitCost"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" hidden="true">
+            <!-- assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion-->
+        </node>
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'IN_PROGRESS'">
             <assertion name="lookup.local">
