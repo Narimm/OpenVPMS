@@ -363,3 +363,10 @@ where r.entity_relationship_id = d.entity_relationship_id
 delete r
 from entity_relationships r
 where r.arch_short_name = "entityRelationship.locationWorkList";
+
+#
+# Add fixed_cost and unit_cost to financial_acts for OBF-192
+#
+alter table financial_acts
+    add column fixed_cost decimal(18, 3) after unit_amount,
+    add column unit_cost decimal(18, 3) after fixed_cost;
