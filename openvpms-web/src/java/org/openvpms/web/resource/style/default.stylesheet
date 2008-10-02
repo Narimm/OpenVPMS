@@ -10,7 +10,7 @@
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="width" value="450px"/>
+            <property name="width" value="450px"/>admin	
             <property name="height" value="160px"/>
         </properties>
     </style>
@@ -1451,6 +1451,16 @@
                       type="nextapp.echo2.app.ResourceImageReference">
                 <resource-image-reference
                         resource="/org/openvpms/web/resource/image/buttons/gif.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.tif" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/tif.gif"/>
             </property>
         </properties>
     </style>
