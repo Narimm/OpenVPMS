@@ -88,6 +88,28 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns a specified node for a customer.
+     *
+     * @param customer the customer
+     * @param nodeName to node to return
+     * @return the node Object, or <tt>null</tt> if none can be found
+     */
+    public Object getCustomerNode(Party customer, String nodeName) {
+        return getPartyRules().getCustomerNode(customer, nodeName);
+    }
+
+    /**
+     * Returns the specified node of a customer associated with an act.
+     *
+     * @param act the act
+     * @param nodeName to node to return
+     * @return the node Object, or <tt>null</tt>
+     */
+    public Object getCustomerNode(Act act, String nodeName) {
+        return getPartyRules().getCustomerNode(act, nodeName);
+    }
+
+    /**
      * Returns a set of default Contacts for a party.
      *
      * @param context the expression context. Expected to reference a party.
@@ -324,6 +346,22 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns a formatted correspondence name and address for a customer associated with
+     * an act via an <em>participation.customer</em> participation.
+     *
+     * @return a formatted name and billing address for a party. May be empty if
+     *         the act has no customer party or the party has no corresponding
+     *         <em>contact.location</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getCorrespondenceNameAddress(Act act) {
+        if (act != null) {
+            return getPartyRules().getCorrespondenceNameAddress(act);
+        }
+        return "";
+    }
+
+    /**
      * Retuurns a formatted home telephone number for a customer.
      *
      * @param party the customer
@@ -400,6 +438,9 @@ public class PartyFunctions {
         if (value instanceof Party) {
             return getFaxNumber((Party) value);
         }
+        else if(value instanceof Act) {
+        	return getFaxNumber((Act) value);
+        }
         return "";
     }
 
@@ -417,6 +458,79 @@ public class PartyFunctions {
         return "";
     }
 
+    /**
+     * Returns a formatted fax number for an act.
+     *
+     * @return a formatted fax number for a party. May be empty if
+     *         there is no corresponding <em>contact.faxNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getFaxNumber(Act act) {
+        if (act != null) {
+            Party party = getPartyRules().getCustomer(act);
+            if (party == null) {
+                party = getPatientRules().getOwner(act);
+            }
+	        if (party != null) {
+	            return getPartyRules().getFaxNumber(party);
+	        }
+        }
+        return "";
+    }
+    
+    /**
+     * Returns a formatted email address for a party.
+     *
+     * @param context the expression context. Expected to reference a party
+     * @return a formatted email address. party. May be empty if
+     *         there is no corresponding <em>contact.email</em> contact
+     */
+    public String getEmailAddress(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        if (value instanceof Party) {
+            return getEmailAddress((Party) value);
+        }
+        else if(value instanceof Act) {
+        	return getEmailAddress((Act) value);
+        }
+        return "";
+    }
+
+    /**
+     * Returns a formatted email address for a party.
+     *
+     * @return a formatted email address for a party. May be empty if
+     *         there is no corresponding <em>contact.email</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getEmailAddress(Party party) {
+        if (party != null) {
+            return getPartyRules().getEmailAddress(party);
+        }
+        return "";
+    }
+
+    /**
+     * Returns a formatted email Address for an act.
+     *
+     * @return a formatted email Address for a party. May be empty if
+     *         there is no corresponding <em>contact.email</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getEmailAddress(Act act) {
+        if (act != null) {
+            Party party = getPartyRules().getCustomer(act);
+            if (party == null) {
+                party = getPatientRules().getOwner(act);
+            }
+	        if (party != null) {
+	            return getPartyRules().getEmailAddress(party);
+	        }
+        }
+        return "";
+    }
+    
     /**
      * Returns a formatted contact purpose string for the Contact.
      *
