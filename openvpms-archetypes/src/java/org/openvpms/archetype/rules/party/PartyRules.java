@@ -18,6 +18,12 @@
 
 package org.openvpms.archetype.rules.party;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -28,6 +34,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -36,12 +43,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 
 /**
@@ -75,6 +76,45 @@ public class PartyRules {
      */
     public PartyRules(IArchetypeService service) {
         this.service = service;
+    }
+
+    /**
+     * Returns a specified node for a customer associated with an
+     * act via an <em>participation.customer</em> or an
+     * <em>participation.patient</em> participation.
+     *
+     * @param act the act
+     * @param nodeName the name of the node
+     * @return a node object may be null if no customer or invalid node
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Object getCustomerNode(Act act, String nodeName) {
+        Party party = getCustomer(act);
+        if (party == null) {
+            party = new PatientRules(service).getOwner(act);
+        }
+        return getCustomerNode(party, nodeName);
+    }
+
+    /**
+     * Returns a specified node for a specified customer.
+     *
+     * @param party the party
+     * @param nodeName the name of the node
+     * @return a node object may be null if no customer or invalid node
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Object getCustomerNode(Party party, String nodeName) {
+    	if (party != null) {
+        	IMObjectBean bean = new IMObjectBean(party);
+        	NodeDescriptor descriptor = bean.getDescriptor(nodeName);
+            if (descriptor != null && descriptor.isLookup()) {
+                return ArchetypeServiceFunctions.lookup(party, nodeName);
+            } else {
+            	return bean.getValue(nodeName);    		
+            }
+    	}
+    	return null;
     }
 
     /**
@@ -203,6 +243,22 @@ public class PartyRules {
     }
 
     /**
+     * Returns a formatted correspondence name and address for a party.
+     *
+     * @return a formatted correspondence name and address for a party. May be empty if
+     *         there is no corresponding <em>contact.location</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getCorrespondenceNameAddress(Party party) {
+        StringBuffer result = new StringBuffer();
+        result.append(getFullName(party));
+        result.append("\n");
+        result.append(getAddress(party, "CORRESPONDENCE"));
+        
+        return result.toString();
+    }
+
+    /**
      * Returns a formatted correspondence address for a customer associated with
      * an act via an <em>participation.customer</em> or an
      * <em>participation.patient</em> participation.
@@ -221,6 +277,25 @@ public class PartyRules {
         return (party != null) ? getCorrespondenceAddress(party) : "";
     }
 
+    /**
+     * Returns a formatted correspondence name and address for a customer associated with
+     * an act via an <em>participation.customer</em> or an
+     * <em>participation.patient</em> participation.
+     *
+     * @param act the act
+     * @return a formatted name and billing address for a party. May be empty if
+     *         the act has no customer party or the party has no corresponding
+     *         <em>contact.location</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getCorrespondenceNameAddress(Act act) {
+        Party party = getCustomer(act);
+        if (party == null) {
+            party = new PatientRules().getOwner(act);
+        }
+        return (party != null) ? getCorrespondenceNameAddress(party) : "";
+    }
+    
     /**
      * Returns a formatted <em>contact.location</em> address with the
      * specified purpose, for a party if one exists.
@@ -313,6 +388,23 @@ public class PartyRules {
             } else {
                 return "(" + areaCode + ")" + faxNumber;
             }
+        }
+        return "";
+    }
+
+    /**
+     * Returns a formatted email address for a party.
+     *
+     * @param party the party
+     * @return a formatted email address for a party. May be empty if
+     *         there is no corresponding <em>contact.email</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getEmailAddress(Party party) {
+        Contact contact = getContact(party, "contact.email", null);
+        if (contact != null) {
+            IMObjectBean bean = new IMObjectBean(contact, service);
+            return bean.getString("emailAddress");
         }
         return "";
     }
@@ -448,7 +540,7 @@ public class PartyRules {
             result.append(bean.getString("address", ""));
             result.append("\n");
         }
-        result.append(bean.getString("suburb", ""));
+        result.append(ArchetypeServiceFunctions.lookup(contact, "suburb"));
         result.append(" ");
         result.append(bean.getString("state", ""));
         result.append(" ");
