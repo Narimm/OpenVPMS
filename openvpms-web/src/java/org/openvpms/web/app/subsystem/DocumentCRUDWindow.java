@@ -26,11 +26,11 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.doc.DocumentActEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -48,7 +48,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     /**
      * The refresh button.
      */
-    private Button _refresh;
+    private Button refresh;
 
     /**
      * Refresh button identifier.
@@ -72,7 +72,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        _refresh = ButtonFactory.create(REFRESH_ID, new ActionListener() {
+        refresh = ButtonFactory.create(REFRESH_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onRefresh();
             }
@@ -98,7 +98,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
             buttons.add(getDeleteButton());
             buttons.add(getPrintButton());
             if (canRefresh()) {
-                buttons.add(_refresh);
+                buttons.add(refresh);
             }
         } else {
             buttons.add(getCreateButton());
@@ -110,16 +110,12 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     @Override
     protected void onPrint() {
-        boolean print = true;
         DocumentAct act = getObject();
         if (act.getDocument() == null) {
             if (canRefresh()) {
-                if (!refresh()) {
-                    print = false;
-                }
+                refresh(true);
             }
-        }
-        if (print) {
+        } else {
             super.onPrint();
         }
     }
@@ -135,7 +131,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    refresh();
+                    refresh(false);
                 }
             }
         });
@@ -143,19 +139,22 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     }
 
     /**
-     * Refreshes the current document act.
+     * Refreshes the current document act, optionally printing it.
      *
-     * @return <tt>true</tt> if the document was refreshed
+     * @param print if <tt>true</tt> print it
      */
-    private boolean refresh() {
-        boolean refreshed = false;
-        DocumentAct act = getObject();
-        DocumentActEditor editor = new DocumentActEditor(act, null, null);
-        if (editor.refresh()) {
-            refreshed = SaveHelper.save(editor);
-            onSaved(act, false);
-        }
-        return refreshed;
+    private void refresh(final boolean print) {
+        final DocumentAct act = getObject();
+        DocumentGenerator generator
+                = new DocumentGenerator(act, new DocumentGenerator.Listener() {
+            public void generated(Document document) {
+                onSaved(act, false);
+                if (print) {
+                    print(act);
+                }
+            }
+        });
+        generator.generate(true);
     }
 
     /**

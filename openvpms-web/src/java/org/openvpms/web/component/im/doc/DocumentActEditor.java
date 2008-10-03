@@ -25,10 +25,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -38,8 +36,6 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,7 +53,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * The last document template.
      */
-    private IMObjectReference _lastTemplate;
+    private IMObjectReference lastTemplate;
 
     /**
      * The document template node.
@@ -68,6 +64,11 @@ public class DocumentActEditor extends AbstractActEditor {
      * The document reference node.
      */
     private static final String DOC_REFERENCE = "docReference";
+
+    /**
+     * The document listener.
+     */
+    private ModifiableListener listener;
 
 
     /**
@@ -80,39 +81,25 @@ public class DocumentActEditor extends AbstractActEditor {
     public DocumentActEditor(DocumentAct act, IMObject parent,
                              LayoutContext context) {
         super(act, parent, context);
-        Editor editor = getEditor(DOC_REFERENCE);
+        Editor editor = getDocumentEditor();
         if (editor != null) {
-            editor.addModifiableListener(
-                    new ModifiableListener() {
-                        public void modified(Modifiable modifiable) {
-                            onDocumentUpdate();
-                        }
-                    }
-            );
+            listener = new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onDocumentUpdate();
+                }
+            };
+            editor.addModifiableListener(listener);
         }
         IMObjectCollectionEditor template
                 = (IMObjectCollectionEditor) getEditor(DOC_TEMPLATE);
         if (template != null) {
-            _lastTemplate = getTemplate();
+            lastTemplate = getTemplate();
             template.addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     onTemplateUpdate();
                 }
             });
         }
-    }
-
-    /**
-     * Regenerates the document from the template.
-     *
-     * @return <tt>true</tt> if the document was regenerated
-     */
-    public boolean refresh() {
-        boolean refreshed = false;
-        if (_lastTemplate != null) {
-            refreshed = generateDoc(_lastTemplate);
-        }
-        return refreshed;
     }
 
     /**
@@ -141,10 +128,10 @@ public class DocumentActEditor extends AbstractActEditor {
      */
     private void onTemplateUpdate() {
         IMObjectReference template = getTemplate();
-        if ((template != null && _lastTemplate != null
-                && !template.equals(_lastTemplate))
-                || (template != null && _lastTemplate == null)) {
-            _lastTemplate = template;
+        if ((template != null && lastTemplate != null
+                && !template.equals(lastTemplate))
+                || (template != null && lastTemplate == null)) {
+            lastTemplate = template;
             generateDoc(template);
         }
     }
@@ -153,26 +140,33 @@ public class DocumentActEditor extends AbstractActEditor {
      * Generates the document.
      *
      * @param template the document template
-     * @return <tt>true</tt> if the document was regenerated,
-     *         otherwise <tt>false</tt>
      */
-    private boolean generateDoc(IMObjectReference template) {
-        boolean result = false;
-        try {
-            ReportGenerator gen = new ReportGenerator(template);
-            Document doc = gen.generate(getObject());
-            if (SaveHelper.save(doc)) {
-                Property property = getProperty(DOC_REFERENCE);
-                if (property != null) {
-                    property.setValue(doc.getObjectReference());
-                    updateFileProperties(doc);
-                }
-                result = true;
+    private void generateDoc(IMObjectReference template) {
+        DocumentAct act = (DocumentAct) getObject();
+        final DocumentGenerator generator = new DocumentGenerator(
+                act, template, new DocumentGenerator.Listener() {
+            public void generated(Document document) {
+                updateDocument(document);
             }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+        });
+        generator.generate(false);
+    }
+
+    /**
+     * Updates the document reference.
+     *
+     * @param document the new document
+     */
+    private void updateDocument(Document document) {
+        DocumentEditor editor = getDocumentEditor();
+        editor.removeModifiableListener(listener);
+        try {
+            editor.setDocument(document);
+            getProperty("fileName").refresh();
+            getProperty("mimeType").refresh();
+        } finally {
+            editor.addModifiableListener(listener);
         }
-        return result;
     }
 
     /**
@@ -190,6 +184,16 @@ public class DocumentActEditor extends AbstractActEditor {
         }
         getProperty("fileName").setValue(name);
         getProperty("mimeType").setValue(mimeType);
+    }
+
+    /**
+     * Returns the document editor.
+     *
+     * @return the document editor or <tt>null</tt> if there is no
+     *         <tt>docReference</tt> node
+     */
+    private DocumentEditor getDocumentEditor() {
+        return (DocumentEditor) getEditor(DOC_REFERENCE);
     }
 
     /**
@@ -236,8 +240,9 @@ public class DocumentActEditor extends AbstractActEditor {
             if (!found) {
                 NodeDescriptor node = archetype.getNodeDescriptor(
                         DOC_REFERENCE);
-                if (node != null)
+                if (node != null) {
                     nodes.add(archetype.getNodeDescriptor(DOC_REFERENCE));
+                }
             }
             return nodes;
         }

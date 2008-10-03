@@ -29,6 +29,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 
@@ -96,7 +97,17 @@ public class SaveHelper {
      * @param objects the objects to save
      * @return <tt>true</tt> if the objects were saved; otherwise <tt>false</tt>
      */
-    public static boolean save(Collection<IMObject> objects) {
+    public static boolean save(IMObject ... objects) {
+        return save(Arrays.asList(objects));
+    }
+
+    /**
+     * Saves a collection of objects.
+     *
+     * @param objects the objects to save
+     * @return <tt>true</tt> if the objects were saved; otherwise <tt>false</tt>
+     */
+    public static boolean save(Collection<? extends IMObject> objects) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         return save(objects, service);
     }
@@ -108,7 +119,7 @@ public class SaveHelper {
      * @param service the archetype service
      * @return <tt>true</tt> if the objects were saved; otherwise <tt>false</tt>
      */
-    public static boolean save(Collection<IMObject> objects,
+    public static boolean save(Collection<? extends IMObject> objects,
                                IArchetypeService service) {
         boolean saved = false;
         try {
