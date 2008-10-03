@@ -48,7 +48,9 @@ public class OpenOfficeException extends OpenVPMSException {
         FailedToPrint,
         FailedToGetField,
         FailedToSetField,
-        FailedToExportDoc
+        FailedToExportDoc,
+        FailedToGetUserFields,
+        FailedToGetInputFields
     }
 
     /**
