@@ -141,7 +141,7 @@ public abstract class AbstractPrinter implements Printer {
 
     /**
      * Helper to return the default printer for a template for the current
-     * practice.
+     * practice or location.
      *
      * @param template an <em>entity.documentTemplate</em>
      */
@@ -157,7 +157,7 @@ public abstract class AbstractPrinter implements Printer {
         if (printer != null) {
             result = helper.getPrinter(printer);
         } else {
-            result = PrintHelper.getDefaultPrinter();
+            result = getDefaultLocationPrinter(context.getLocation());
         }
         return result;
     }
@@ -300,4 +300,20 @@ public abstract class AbstractPrinter implements Printer {
 
     }
 
+    /**
+     * Helper to return the default printer for an organisation.
+     * If no default printer set than returns system default printer.
+     *
+     * @param organisation the organisation.
+     * @return the printer name
+     */
+    private String getDefaultLocationPrinter(Party location) {
+        if (location != null) {
+        	IMObjectBean bean = new IMObjectBean(location);
+        	if (bean != null && bean.hasNode("defaultPrinter")) {
+        		return bean.getString("defaultPrinter", PrintHelper.getDefaultPrinter());
+        	}
+        }
+        return PrintHelper.getDefaultPrinter();
+    }
 }
