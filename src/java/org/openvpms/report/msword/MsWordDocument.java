@@ -18,23 +18,26 @@
 
 package org.openvpms.report.msword;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.sun.star.beans.XPropertySet;
+import com.sun.star.container.XEnumeration;
+import com.sun.star.container.XEnumerationAccess;
+import com.sun.star.lang.XComponent;
+import com.sun.star.lang.XServiceInfo;
+import com.sun.star.uno.UnoRuntime;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OpenOfficeDocument;
 import org.openvpms.report.openoffice.OpenOfficeException;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetField;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetUserFields;
 
-import com.sun.star.beans.XPropertySet;
-import com.sun.star.container.XEnumeration;
-import com.sun.star.container.XEnumerationAccess;
-import com.sun.star.lang.XComponent;
-import com.sun.star.uno.UnoRuntime;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 
 /**
- * Thin wrapper around an Microsft Word document.
+ * Thin wrapper around a Microsft Word document.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -44,102 +47,143 @@ public class MsWordDocument extends OpenOfficeDocument {
     /**
      * Prefix for Merge code fields.
      */
-    private static final String FIELD_CODE_PREFIX
-            = "MERGEFIELD";
+    private static final String FIELD_CODE_PREFIX = "MERGEFIELD";
+
 
     /**
-     * Constructs a new <code>MsWordDocument</code>.
+     * Creates a new <tt>MsWordDocument</tt>.
      *
      * @param document the document
+     * @param handlers the document handlers
      */
-	public MsWordDocument(XComponent document, DocumentHandlers handlers) {
-		super(document, handlers);
-	}
+    public MsWordDocument(XComponent document, DocumentHandlers handlers) {
+        super(document, handlers);
+    }
 
     /**
-     * Constructs a new <code>MsWordDocument</code>.
+     * Constructs a new <tt>MsWordDocument</tt>.
      *
      * @param document   the source document
      * @param connection the connection to the OpenOffice service
+     * @param handlers   the document handlers
      * @throws OpenOfficeException for any error
      */
-	public MsWordDocument(Document document, OOConnection connection,
-			DocumentHandlers handlers) {
-		super(document, connection, handlers);
-	}
+    public MsWordDocument(Document document, OOConnection connection,
+                          DocumentHandlers handlers) {
+        super(document, connection, handlers);
+    }
+
 
     /**
-     * Gets the value of a user field.
+     * Returns the content of a field.
+     * <p/>
+     * This implementation uses the 'FieldCode' property value if the field
+     * hasn't been changed.
      *
-     * @param name the field name
-     * @return the value of the field
+     * @param field the field
+     * @return the field content
      * @throws OpenOfficeException if the field cannot be accessed
      */
-	@Override
-	public String getUserField(String name) {
-        XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
-        XEnumeration en = fields.createEnumeration();
-        while (en.hasMoreElements()){
-        	try {
-	        	Object field = en.nextElement();
-	            XPropertySet xPropertySet = (XPropertySet)UnoRuntime.queryInterface(XPropertySet.class, field);
-	            String fieldCode = (String)xPropertySet.getPropertyValue("FieldCode");
-	            String fieldName = fieldCode.trim().substring(FIELD_CODE_PREFIX.length()).trim();
-	            if (fieldName.equalsIgnoreCase(name)) {
-	            	return (String)xPropertySet.getPropertyValue("Content");
-	            }
-        	} catch (Exception exception) { 
-        	}
+    @Override
+    protected String getContent(Field field) {
+        if (!field.isChanged()) {
+            // use the original value derived from the FieldCode property
+            return field.getValue();
         }
-
-		return name;
-	}
+        return super.getContent(field);
+    }
 
     /**
-     * Returns the set of user field names.
+     * Returns the user text fields.
+     * <p/>
+     * This implementation uses the FieldCode property as the field value.
      *
-     * @return the list of user field names.
+     * @return the user text fields, keyed on name
+     * @throws OpenOfficeException if the fields can't be accessed
      */
-	@Override
-	public List<String> getUserFieldNames() {
-        List<String> result = new ArrayList<String>();
+    @Override
+    protected Map<String, Field> getUserTextFields() {
+        Map<String, Field> result = new LinkedHashMap<String, Field>();
         XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
         XEnumeration en = fields.createEnumeration();
-        while (en.hasMoreElements()){
-        	try {
-	        	Object field = en.nextElement();
-	            XPropertySet xPropertySet = (XPropertySet)UnoRuntime.queryInterface(XPropertySet.class, field);
-	            String fieldCode = (String)xPropertySet.getPropertyValue("FieldCode");
-	            String fieldName = fieldCode.trim().substring(FIELD_CODE_PREFIX.length()).trim();
-	            result.add(fieldName);
-        	} catch (Exception e) { 
-        	}
+        int seed = 0;
+        while (en.hasMoreElements()) {
+            Object field;
+            try {
+                field = en.nextElement();
+            } catch (Exception exception) {
+                throw new OpenOfficeException(exception, FailedToGetUserFields);
+            }
+            if (isDatabaseField(field)) {
+                XPropertySet set = (XPropertySet) UnoRuntime.queryInterface(
+                        XPropertySet.class, field);
+                String name = "userField" + (++seed);
+                String value = getFieldCode(name, set);
+                result.put(name, new Field(name, value, set));
+            }
         }
         return result;
-	}
+    }
 
-	/**
-     * Sets the value of a user field.
-     * 
-     * @param name  the field name
-     * @param value the value of the field
-     * @throws OpenOfficeException if the field cannot be updated
+    /**
+     * Returns the input text fields.
+     *
+     * @return the input text fields, keyed on name
+     * @throws OpenOfficeException if the fields can't be accessed
      */
-	@Override
-	public void setUserField(String name, String value) {
+    @Override
+    protected Map<String, Field> getInputTextFields() {
+        Map<String, Field> result = new LinkedHashMap<String, Field>();
         XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
         XEnumeration en = fields.createEnumeration();
-        while (en.hasMoreElements()){
-        	try {
-	        	Object field = en.nextElement();
-	            XPropertySet xPropertySet = (XPropertySet)UnoRuntime.queryInterface(XPropertySet.class, field);
-	            String fieldCode = (String)xPropertySet.getPropertyValue("FieldCode");
-	            String fieldName = fieldCode.trim().substring(FIELD_CODE_PREFIX.length()).trim();
-	            if (fieldName.equalsIgnoreCase(name)) {
-	            	xPropertySet.setPropertyValue("Content", value);
-	            }
-        	} catch (Exception exception) { 
-        	}
+        int seed = 0;
+        try {
+            while (en.hasMoreElements()) {
+                Object field = en.nextElement();
+                if (isInputField(field)) {
+                    XPropertySet set = (XPropertySet) UnoRuntime.queryInterface(
+                            XPropertySet.class, field);
+                    String name = "inputField" + (++seed);
+                    String value = (String) set.getPropertyValue("Content");
+                    result.put(name, new Field(name, value, set));
+                }
+            }
+        } catch (Exception exception) {
+            throw new OpenOfficeException(exception, FailedToGetUserFields);
         }
-	}
+        return result;
+    }
+
+    /**
+     * Returns the value of the FieldCode property.
+     *
+     * @param name the field name
+     * @param set  the property set
+     * @return the value of the FieldCode property
+     */
+    protected String getFieldCode(String name, XPropertySet set) {
+        try {
+            String value = (String) set.getPropertyValue("FieldCode");
+            value = value.trim().substring(FIELD_CODE_PREFIX.length()).trim();
+            return value;
+        } catch (Exception exception) {
+            throw new OpenOfficeException(exception, FailedToGetField, name);
+        }
+    }
+
+    /**
+     * Determines if a field is a database (or merge) field .
+     *
+     * @param field the field
+     * @return <tt>true</tt> if the field is a database field
+     */
+    private boolean isDatabaseField(Object field) {
+        XServiceInfo info = (XServiceInfo) UnoRuntime.queryInterface(
+                XServiceInfo.class, field);
+        if (info != null) {
+            return info.supportsService("com.sun.star.text.TextField.Database");
+        }
+        return false;
+    }
+
 }

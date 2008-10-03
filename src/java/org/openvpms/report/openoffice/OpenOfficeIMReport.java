@@ -35,8 +35,8 @@ import org.openvpms.report.ReportException;
 import static org.openvpms.report.ReportException.ErrorCode.*;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,14 +62,12 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
 
 
     /**
-     * Creates a new <code>OpenOfficeIMReport</code>.
+     * Creates a new <tt>OpenOfficeIMReport</tt>.
      *
      * @param template the document template
      * @param handlers the document handlers
-     * @throws ReportException if the mime-type is invalid
      */
-    public OpenOfficeIMReport(Document template,
-                              DocumentHandlers handlers) {
+    public OpenOfficeIMReport(Document template, DocumentHandlers handlers) {
         this.template = template;
         this.handlers = handlers;
     }
@@ -80,7 +78,22 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @return the parameter types
      */
     public Set<ParameterType> getParameterTypes() {
-        return new HashSet<ParameterType>();
+        Set<ParameterType> result;
+        OpenOfficeDocument doc = null;
+        OOConnection connection = null;
+        try {
+            OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
+            connection = pool.getConnection();
+            doc = createDocument(template, connection, handlers);
+            Map<String, ParameterType> fields = doc.getInputFields();
+            result = new LinkedHashSet<ParameterType>(fields.values());
+        } finally {
+            if (doc != null) {
+                doc.close();
+            }
+            OpenOfficeHelper.close(connection);
+        }
+        return result;
     }
 
     /**
@@ -204,7 +217,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
         try {
             OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
             connection = pool.getConnection();
-            doc = create(objects, connection);
+            doc = create(objects, parameters, connection);
             return export(doc, mimeType);
         } finally {
             if (doc != null) {
@@ -284,19 +297,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void print(Iterator<T> objects, PrintProperties properties) {
-        OOConnection connection = null;
-        try {
-            PrintService service = OpenOfficeHelper.getPrintService();
-            connection = OpenOfficeHelper.getConnectionPool().getConnection();
-            OpenOfficeDocument doc = create(objects, connection);
-            service.print(doc, properties.getPrinterName(), true);
-        } catch (OpenOfficeException exception) {
-            throw new ReportException(exception,
-                                      FailedToPrintReport,
-                                      exception.getMessage());
-        } finally {
-            OpenOfficeHelper.close(connection);
-        }
+        print(objects, Collections.<String, Object>emptyMap(), properties);
     }
 
     /**
@@ -312,7 +313,19 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      */
     public void print(Iterator<T> objects, Map<String, Object> parameters,
                       PrintProperties properties) {
-        print(objects, properties);
+        OOConnection connection = null;
+        try {
+            PrintService service = OpenOfficeHelper.getPrintService();
+            connection = OpenOfficeHelper.getConnectionPool().getConnection();
+            OpenOfficeDocument doc = create(objects, parameters, connection);
+            service.print(doc, properties.getPrinterName(), true);
+        } catch (OpenOfficeException exception) {
+            throw new ReportException(exception,
+                                      FailedToPrintReport,
+                                      exception.getMessage());
+        } finally {
+            OpenOfficeHelper.close(connection);
+        }
     }
 
     /**
@@ -326,6 +339,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected OpenOfficeDocument create(Iterator<T> objects,
+                                        Map<String, Object> parameters,
                                         OOConnection connection) {
         OpenOfficeDocument doc = null;
         T object = null;
@@ -337,19 +351,12 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
                     FailedToGenerateReport,
                     "Can only report on single objects");
         }
-        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(
-                object, ArchetypeServiceHelper.getArchetypeService());
 
         try {
-            doc = new OpenOfficeDocument(template, connection, handlers);
-            List<String> fieldNames = doc.getUserFieldNames();
-            for (String name : fieldNames) {
-                String value = doc.getUserField(name);
-                if (value != null) {
-                    value = eval.getFormattedValue(value);
-                    doc.setUserField(name, value);
-                }
-            }
+            doc = createDocument(template, connection, handlers);
+            populateInputFields(doc, parameters);
+            populateUserFields(doc, object);
+
             // refresh the text fields
             doc.refresh();
         } catch (OpenVPMSException exception) {
@@ -359,6 +366,67 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             throw exception;
         }
         return doc;
+    }
+
+    /**
+     * Returns the name of the user fields that should be prompted for.
+     *
+     * @param document the document
+     * @return the user field names
+     */
+    protected Set<String> getInputFields(OpenOfficeDocument document) {
+        Map<String, ParameterType> fields = document.getInputFields();
+        return fields.keySet();
+    }
+
+    /**
+     * Creates a new document.
+     *
+     * @param template   the document template
+     * @param connection the connection to the OpenOffice service
+     * @param handlers   the document handlers
+     * @return a new document
+     * @throws OpenOfficeException for any error
+     */
+    protected OpenOfficeDocument createDocument(Document template,
+                                                OOConnection connection,
+                                                DocumentHandlers handlers) {
+        return new OpenOfficeDocument(template, connection, handlers);
+    }
+
+    /**
+     * Populates input fields with parameters of the same name.
+     *
+     * @param document   the document
+     * @param parameters the parameters
+     */
+    protected void populateInputFields(OpenOfficeDocument document,
+                                       Map<String, Object> parameters) {
+        for (Map.Entry<String, Object> p : parameters.entrySet()) {
+            String name = p.getKey();
+            String value = (p.getValue() != null)
+                    ? p.getValue().toString() : null;
+            document.setInputField(name, value);
+        }
+    }
+
+    /**
+     * Populates user fields in a document.
+     *
+     * @param document the document
+     * @param object   the object to evaluate expressions with
+     */
+    protected void populateUserFields(OpenOfficeDocument document, T object) {
+        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(
+                object, ArchetypeServiceHelper.getArchetypeService());
+        List<String> userFields = document.getUserFieldNames();
+        for (String name : userFields) {
+            String value = document.getUserField(name);
+            if (value != null) {
+                value = eval.getFormattedValue(value);
+                document.setUserField(name, value);
+            }
+        }
     }
 
     /**

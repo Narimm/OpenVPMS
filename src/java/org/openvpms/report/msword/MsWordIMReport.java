@@ -18,73 +18,45 @@
 
 package org.openvpms.report.msword;
 
-import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
-
-import java.util.Iterator;
-import java.util.List;
-
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.report.ExpressionEvaluator;
-import org.openvpms.report.ExpressionEvaluatorFactory;
-import org.openvpms.report.ReportException;
 import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OpenOfficeDocument;
+import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.report.openoffice.OpenOfficeIMReport;
 
+
 /**
- * @author tony
+ * Generates a report using an MS Word document as the template.
  *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  */
 public class MsWordIMReport<T> extends OpenOfficeIMReport<T> {
 
     /**
-     * Creates a new <code>MsWordIMReport</code>.
+     * Creates a new <tt>MsWordIMReport</tt>.
      *
      * @param template the document template
      * @param handlers the document handlers
-     * @throws ReportException if the mime-type is invalid
      */
-    public MsWordIMReport(Document template,
-                              DocumentHandlers handlers) {
-    	super(template,handlers);
+    public MsWordIMReport(Document template, DocumentHandlers handlers) {
+        super(template, handlers);
     }
 
-	@Override
-	protected OpenOfficeDocument create(Iterator<T> objects, OOConnection connection) {
-        MsWordDocument doc = null;
-        T object = null;
-        if (objects.hasNext()) {
-            object = objects.next();
-        }
-        if (object == null || objects.hasNext()) {
-            throw new ReportException(
-                    FailedToGenerateReport,
-                    "Can only report on single objects");
-        }
-        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(
-                object, ArchetypeServiceHelper.getArchetypeService());
+    /**
+     * Creates a new document.
+     *
+     * @param template   the document template
+     * @param connection the connection to the OpenOffice service
+     * @param handlers   the document handlers
+     * @return a new document
+     * @throws OpenOfficeException for any error
+     */
+    @Override
+    protected OpenOfficeDocument createDocument(Document template,
+                                                OOConnection connection,
+                                                DocumentHandlers handlers) {
+        return new MsWordDocument(template, connection, handlers);
+    }
 
-        try {
-            doc = new MsWordDocument(template, connection, handlers);
-            List<String> fieldNames = doc.getUserFieldNames();
-            // Field names in OpenVPMS Word documents are the expressions we need to evaluate.
-            for (String name : fieldNames) {
-                if (name != null) {
-                    String value = eval.getFormattedValue(name);
-                    doc.setUserField(name, value);
-                }
-            }
-            // refresh the text fields
-            doc.refresh();
-        } catch (OpenVPMSException exception) {
-            if (doc != null) {
-                doc.close();
-            }
-            throw exception;
-        }
-        return doc;
-	}
 }

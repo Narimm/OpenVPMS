@@ -18,23 +18,21 @@
 
 package org.openvpms.report.openoffice;
 
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.report.ArchetypeServiceTest;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
+import org.openvpms.report.ParameterType;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -43,24 +41,19 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OpenOfficeIMReportTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The document handlers.
-     */
-    private DocumentHandlers handlers;
-
+public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeTest {
 
     /**
      * Tests reporting.
      */
     public void testReport() throws IOException {
-        File file = new File("src/test/reports/act.customerEstimation.odt");
-        Document doc = DocumentHelper.create(file, DocFormats.ODT_TYPE,
-                                             handlers);
+        Document doc = getDocument(
+                "src/test/reports/act.customerEstimation.odt",
+                DocFormats.ODT_TYPE);
 
-        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc,
-                                                                     handlers);
+        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(
+                doc, getHandlers());
+
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setValue("startTime", java.sql.Date.valueOf("2006-08-04"));
@@ -82,6 +75,41 @@ public class OpenOfficeIMReportTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verfies that input fields are returned as parameters, and that
+     * by specifying it as a parameter updates the corresponding user field.
+     */
+    public void testParameters() {
+        Document doc = getDocument(
+                "src/test/reports/act.customerEstimation.odt",
+                DocFormats.ODT_TYPE);
+
+        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(
+                doc, getHandlers());
+
+        Set<ParameterType> parameterTypes = report.getParameterTypes();
+        Map<String, ParameterType> types = new HashMap<String, ParameterType>();
+        for (ParameterType type : parameterTypes) {
+            types.put(type.getName(), type);
+        }
+        assertTrue(types.containsKey("inputUserField1"));
+
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        parameters.put("inputUserField1", "the input value");
+
+        Party party = createCustomer();
+        ActBean act = createAct("act.customerEstimation");
+        act.setParticipant("participation.customer", party);
+
+        List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
+        Document result = report.generate(objects.iterator(),
+                                          parameters,
+                                          DocFormats.ODT_TYPE);
+        Map<String, String> fields = getFields(result);
+
+        assertEquals("the input value", fields.get("inputUserField1"));
+    }
+
+    /**
      * Returns the user fields in a document.
      *
      * @param document an OpenOffice document
@@ -93,7 +121,7 @@ public class OpenOfficeIMReportTestCase extends ArchetypeServiceTest {
         OOConnection connection = pool.getConnection();
         try {
             OpenOfficeDocument doc = new OpenOfficeDocument(
-                    document, connection, handlers);
+                    document, connection, getHandlers());
             for (String name : doc.getUserFieldNames()) {
                 fields.put(name, doc.getUserField(name));
             }
@@ -101,34 +129,6 @@ public class OpenOfficeIMReportTestCase extends ArchetypeServiceTest {
             OpenOfficeHelper.close(connection);
         }
         return fields;
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        handlers = (DocumentHandlers) applicationContext.getBean(
-                "documentHandlers");
-        assertNotNull(handlers);
-    }
-
-    /**
-     * Tears down the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onTearDown() throws Exception {
-        super.onTearDown();
-        OOBootstrapService service
-                = (OOBootstrapService) applicationContext.getBean(
-                "OOSocketBootstrapService");
-        service.stop();
     }
 
 }
