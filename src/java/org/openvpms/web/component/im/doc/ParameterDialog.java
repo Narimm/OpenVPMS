@@ -11,30 +11,27 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting;
+package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.report.ParameterType;
-import org.openvpms.web.component.dialog.PrintDialog;
-import org.openvpms.web.component.im.doc.ReportParameters;
-import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.component.dialog.PopupDialog;
 
 import java.util.Map;
 import java.util.Set;
 
 
 /**
- * Reporting dialog for SQL reports that accept parameters.
+ * Dialog to prompt for report parameters.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SQLReportDialog extends PrintDialog {
+public class ParameterDialog extends PopupDialog {
 
     /**
      * The report parameters.
@@ -48,10 +45,10 @@ public class SQLReportDialog extends PrintDialog {
      * @param title      the dialog title
      * @param parameters the report parameter types
      */
-    public SQLReportDialog(String title, Set<ParameterType> parameters) {
-        super(title);
-        setStyleName("SQLReportDialog");
+    public ParameterDialog(String title, Set<ParameterType> parameters) {
+        super(title, "ParameterDialog", OK_CANCEL);
         this.parameters = new ReportParameters(parameters);
+        getLayout().add(this.parameters.getComponent());
     }
 
     /**
@@ -70,47 +67,8 @@ public class SQLReportDialog extends PrintDialog {
     @Override
     protected void onOK() {
         if (parameters.validate()) {
-            doPrint();
             super.onOK();
         }
-    }
-
-    /**
-     * Invoked when the the report should be printed.
-     * This implementation does nothing.
-     */
-    protected void doPrint() {
-    }
-
-    /**
-     * Invoked when the preview button is pressed. If the parameters are valid,
-     * invokes {@link #doPreview}.
-     */
-    @Override
-    protected void onPreview() {
-        if (parameters.validate()) {
-            doPreview();
-        }
-    }
-
-    /**
-     * Invoked when the report should be previewed.
-     * This implementation does nothing.
-     */
-    protected void doPreview() {
-    }
-
-    /**
-     * Lays out the dialog.
-     *
-     * @param container the container
-     */
-    @Override
-    protected void doLayout(Component container) {
-        super.doLayout(container);
-        Component component = GroupBoxFactory.create("reporting.run.parameters",
-                                                     parameters.getComponent());
-        container.add(component);
     }
 
 }

@@ -78,7 +78,7 @@ public class DocumentEditor extends AbstractPropertyEditor
 
 
     /**
-     * Construct a new <code>DocumentEditor</code>.
+     * Construct a new <tt>DocumentEditor</tt>.
      *
      * @param property the property being edited
      * @throws ArchetypeServiceException for any archetype service error
@@ -118,9 +118,23 @@ public class DocumentEditor extends AbstractPropertyEditor
     }
 
     /**
+     * Sets the document.
+     *
+     * @param document the new document
+     * @throws ArchetypeServiceException for any error
+     */
+    public void setDocument(Document document) {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        service.save(document);
+        replaceDocReference(document);
+        selector.setObject(document);
+    }
+
+    /**
      * Save any edits.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     public boolean save() {
         boolean result;
@@ -138,7 +152,7 @@ public class DocumentEditor extends AbstractPropertyEditor
     /**
      * Determines if any edits have been saved.
      *
-     * @return <code>true</code> if edits have been saved.
+     * @return <tt>true</tt> if edits have been saved.
      */
     public boolean isSaved() {
         return saved;
@@ -205,14 +219,11 @@ public class DocumentEditor extends AbstractPropertyEditor
      */
     private void upload(String fileName, InputStream stream, String contentType,
                         int size) {
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
         try {
             DocumentHandler handler = handlers.get(fileName, contentType);
             Document doc = handler.create(fileName, stream, contentType, size);
-            service.save(doc);
-            replaceDocReference(doc);
-            selector.setObject(doc);
+            setDocument(doc);
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }

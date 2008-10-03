@@ -18,15 +18,9 @@
 
 package org.openvpms.web.app.reporting;
 
-import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.print.InteractivePrinter;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -55,7 +49,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
     @Override
     protected PrintDialog createDialog() {
         final SQLReportPrinter printer = getPrinter();
-        return new SQLReportDialog(getTitle(), getProperties()) {
+        return new SQLReportDialog(getTitle(), printer.getParameterTypes()) {
 
             @Override
             protected void doPrint() {
@@ -87,31 +81,6 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
     @Override
     protected String getTitle() {
         return Messages.get("reporting.run.title", getPrinter().getName());
-    }
-
-    /**
-     * Returns the user-configurable report properties.
-     *
-     * @return the corresponding list of user-configurable properties
-     */
-    private List<Property> getProperties() {
-        List<Property> result = new ArrayList<Property>();
-        for (ParameterType type : getPrinter().getParameterTypes()) {
-            if (!type.isSystem()) {
-                SimpleProperty property = new SimpleProperty(type.getName(),
-                                                             type.getType());
-                property.setDescription(type.getDescription());
-                if (property.isBoolean() || property.isString()
-                        || property.isNumeric() || property.isDate()) {
-                    Object defaultValue = type.getDefaultValue();
-                    if (defaultValue != null) {
-                        property.setValue(defaultValue);
-                    }
-                    result.add(property);
-                }
-            }
-        }
-        return result;
     }
 
 }

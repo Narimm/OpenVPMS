@@ -16,24 +16,26 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting;
+package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.property.DefaultPropertyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyComponentFactory;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.resource.util.Messages;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -56,13 +58,12 @@ public class ReportParameters {
 
 
     /**
-     * Constructs a new <tt>ReportParameters</tt>.
+     * Creates a new <tt>ReportParameters</tt>.
      *
-     * @param properties the customisable properties
+     * @param parameters the parameters
      */
-    public ReportParameters(List<Property> properties) {
-        this.properties = properties;
-        Component child;
+    public ReportParameters(Set<ParameterType> parameters) {
+        properties = createProperties(parameters);
         if (properties.size() > 0) {
             Grid grid;
             if (properties.size() <= 4) {
@@ -82,13 +83,10 @@ public class ReportParameters {
                     grid.add(component);
                 }
             }
-            child = grid;
+            component = grid;
         } else {
-            Label label = LabelFactory.create();
-            label.setText(Messages.get("reporting.run.noparameters"));
-            child = label;
+            component = LabelFactory.create("reporting.run.noparameters");
         }
-        component = GroupBoxFactory.create("reporting.run.parameters", child);
     }
 
     /**
@@ -131,6 +129,34 @@ public class ReportParameters {
         for (Property property : properties) {
             result.put(property.getName(), property.getValue());
 
+        }
+        return result;
+    }
+
+    /**
+     * Creates a list of properties for a set of report parameters.
+     *
+     * @param parameters the parameters
+     * @return the properties
+     */
+    private List<Property> createProperties(Set<ParameterType> parameters) {
+        List<Property> result = new ArrayList<Property>();
+        for (ParameterType type : parameters) {
+            if (!type.isSystem()) {
+                SimpleProperty property = new SimpleProperty(type.getName(),
+                                                             type.getType());
+                if (type.getDescription() != null) {
+                    property.setDisplayName(type.getDescription());
+                }
+                if (property.isBoolean() || property.isString()
+                        || property.isNumeric() || property.isDate()) {
+                    Object defaultValue = type.getDefaultValue();
+                    if (defaultValue != null) {
+                        property.setValue(defaultValue);
+                    }
+                    result.add(property);
+                }
+            }
         }
         return result;
     }

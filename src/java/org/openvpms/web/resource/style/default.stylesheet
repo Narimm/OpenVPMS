@@ -10,7 +10,8 @@
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="width" value="450px"/>admin	
+            <property name="width" value="450px"/>
+            admin
             <property name="height" value="160px"/>
         </properties>
     </style>
@@ -665,6 +666,15 @@
         <properties>
             <property name="width" value="680px"/>
             <property name="height" value="380px"/>
+        </properties>
+    </style>
+
+    <style name="ParameterDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="680px"/>
+            <property name="height" value="380px"/>
+            <property name="insets" value="5px"/>
         </properties>
     </style>
 
