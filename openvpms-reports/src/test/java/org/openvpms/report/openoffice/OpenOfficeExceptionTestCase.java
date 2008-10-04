@@ -35,7 +35,7 @@ public class OpenOfficeExceptionTestCase extends TestCase {
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     10, OpenOfficeException.ErrorCode.values().length);
+                     12, OpenOfficeException.ErrorCode.values().length);
         checkException(InvalidURL, "Invalid OpenOffice URL: foo", "foo");
         checkException(FailedToConnect, "Failed to connect to OpenOffice");
         checkException(FailedToGetService,
@@ -52,6 +52,8 @@ public class OpenOfficeExceptionTestCase extends TestCase {
                        "foo");
         checkException(FailedToExportDoc, "Failed to export document: foo",
                        "foo");
+        checkException(FailedToGetInputFields, "Failed to get input fields");
+        checkException(FailedToGetUserFields, "Failed to get user fields");
     }
 
     /**

@@ -42,6 +42,7 @@ import com.sun.star.util.XRefreshable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -55,7 +56,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -399,15 +399,19 @@ public class OpenOfficeDocument {
      * @throws OpenOfficeException if the fields can't be accessed
      */
     protected Map<String, Field> getInputTextFields() {
-        Map<String, Field> result = new HashMap<String, Field>();
+        Map<String, Field> result = new LinkedHashMap<String, Field>();
         XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
         XEnumeration en = fields.createEnumeration();
+        int seed = 0;
         try {
             while (en.hasMoreElements()) {
                 XPropertySet set = getInputFieldPropertySet(en.nextElement());
                 if (set != null) {
-                    String name = (String) set.getPropertyValue("Content");
+                    String name = "inputField" + (++seed);
                     String value = (String) set.getPropertyValue("Hint");
+                    if (StringUtils.isEmpty(value)) {
+                        value = (String) set.getPropertyValue("Content");
+                    }
                     result.put(name, new Field(name, value, set));
                 }
             }

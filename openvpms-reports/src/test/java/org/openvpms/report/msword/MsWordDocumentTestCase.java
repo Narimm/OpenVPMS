@@ -21,19 +21,20 @@ package org.openvpms.report.msword;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
-import org.openvpms.report.openoffice.AbstractOpenOfficeTest;
+import org.openvpms.report.openoffice.AbstractOpenOfficeDocumentTest;
 import org.openvpms.report.openoffice.OpenOfficeDocument;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+
 /**
- * Add description here.
+ * Tests the {@link MsWordDocument} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MsWordDocumentTestCase extends AbstractOpenOfficeTest {
+public class MsWordDocumentTestCase extends AbstractOpenOfficeDocumentTest {
 
     /**
      * Tests the {@link MsWordDocument#getUserFieldNames()},
@@ -65,40 +66,22 @@ public class MsWordDocumentTestCase extends AbstractOpenOfficeTest {
         checkUpdateUserField(doc, "userField7", "Still invalid");
     }
 
+    /**
+     * Tests the {@link MsWordDocument#getInputFields()},
+     * {@link MsWordDocument#getInputField(String)} and
+     * {@link MsWordDocument#setInputField(String, String)} methods.
+     */
     public void testInputFields() {
         OpenOfficeDocument doc = getDocument();
         Map<String, ParameterType> input = doc.getInputFields();
         assertEquals(3, input.size());
-        checkParameter("inputField1", "Enter Field 1", input);
-        checkParameter("inputField2", "Enter Field 3", input);
-        checkParameter("inputField3", "Enter Field 2", input);
+        String input1= checkParameter("Enter Field 1", input);
+        String input2 = checkParameter("Enter Field 2", input);
+        String input3 =checkParameter("Enter Field 3", input);
 
-        checkUpdateInputField(doc, "inputField1", "input 1 new value");
-        checkUpdateInputField(doc, "inputField2", "input 3 new value");
-        checkUpdateInputField(doc, "inputField3", "input 2 new value");
-    }
-
-    private void checkUpdateUserField(OpenOfficeDocument doc,
-                                      String name, String value) {
-        doc.setUserField(name, value);
-        assertEquals(value, doc.getUserField(name));
-    }
-
-    private void checkUpdateInputField(OpenOfficeDocument doc,
-                                      String name, String value) {
-        doc.setInputField(name, value);
-        assertEquals(value, doc.getInputField(name));
-    }
-
-    private void checkParameter(String name, String description,
-                                Map<String, ParameterType> input) {
-        ParameterType param = input.get(name);
-        assertNotNull(param);
-        assertEquals(name, param.getName());
-        assertEquals(String.class, param.getType());
-        assertEquals(description, param.getDescription());
-        assertNull(param.getDefaultValue());
-    }
+        checkUpdateInputField(doc, input1, "input1 new value");
+        checkUpdateInputField(doc, input2, "input2 new value");
+        checkUpdateInputField(doc, input3, "input3 new value");    }
 
     /**
      * Loads the document to test agaisnt.
