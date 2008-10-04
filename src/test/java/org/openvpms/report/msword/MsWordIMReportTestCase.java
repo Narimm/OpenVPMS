@@ -24,12 +24,17 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.openoffice.AbstractOpenOfficeTest;
+import org.openvpms.report.ParameterType;
+import org.openvpms.report.openoffice.AbstractOpenOfficeDocumentTest;
+import org.openvpms.report.openoffice.OpenOfficeDocument;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -38,7 +43,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-01-11 17:21:23 +1100 (Thu, 11 Jan 2007) $
  */
-public class MsWordIMReportTestCase extends AbstractOpenOfficeTest {
+public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
     /**
      * Tests reporting.
@@ -63,7 +68,51 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeTest {
         // maintain fields in generated document.
 
         report.generate(objects.iterator(), DocFormats.DOC_TYPE);
-
     }
 
+    /**
+     * Verfies that input fields are returned as parameters, and that
+     * by specifying it as a parameter updates the corresponding input field.
+     */
+    public void testParameters() {
+        Document doc = getDocument(
+                "src/test/reports/act.customerEstimation.doc",
+                DocFormats.DOC_TYPE);
+
+        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc,
+                                                                 getHandlers());
+
+        Set<ParameterType> parameterTypes = report.getParameterTypes();
+        Map<String, ParameterType> types = new HashMap<String, ParameterType>();
+        for (ParameterType type : parameterTypes) {
+            types.put(type.getName(), type);
+        }
+        assertTrue(types.containsKey("inputField1"));
+
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        parameters.put("inputField1", "the input value");
+
+        Party party = createCustomer();
+        ActBean act = createAct("act.customerEstimation");
+        act.setParticipant("participation.customer", party);
+
+        List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
+        Document result = report.generate(objects.iterator(),
+                                          parameters,
+                                          DocFormats.ODT_TYPE);
+
+        Map<String, String> inputFields = getInputFields(result);
+        assertEquals("the input value", inputFields.get("inputField1"));
+    }
+
+    /**
+     * Creates a new {@link OpenOfficeDocument} wrapping a {@link Document}.
+     *
+     * @param document the document
+     * @return a new OpenOffice document
+     */
+    @Override
+    protected OpenOfficeDocument getDocument(Document document) {
+        return new MsWordDocument(document, getConnection(), getHandlers());
+    }
 }

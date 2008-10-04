@@ -41,7 +41,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeTest {
+public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
     /**
      * Tests reporting.
@@ -63,7 +63,7 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeTest {
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
         Document result = report.generate(objects.iterator(),
                                           DocFormats.ODT_TYPE);
-        Map<String, String> fields = getFields(result);
+        Map<String, String> fields = getUserFields(result);
         assertEquals("4/08/2006", fields.get("startTime"));  // @todo localise
         assertEquals("$100.00", fields.get("lowTotal"));
         assertEquals("J", fields.get("firstName"));
@@ -76,7 +76,7 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeTest {
 
     /**
      * Verfies that input fields are returned as parameters, and that
-     * by specifying it as a parameter updates the corresponding user field.
+     * by specifying it as a parameter updates the corresponding input field.
      */
     public void testParameters() {
         Document doc = getDocument(
@@ -91,10 +91,10 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeTest {
         for (ParameterType type : parameterTypes) {
             types.put(type.getName(), type);
         }
-        assertTrue(types.containsKey("inputUserField1"));
+        assertTrue(types.containsKey("inputField1"));
 
         Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("inputUserField1", "the input value");
+        parameters.put("inputField1", "the input value");
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -104,31 +104,9 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeTest {
         Document result = report.generate(objects.iterator(),
                                           parameters,
                                           DocFormats.ODT_TYPE);
-        Map<String, String> fields = getFields(result);
 
-        assertEquals("the input value", fields.get("inputUserField1"));
-    }
-
-    /**
-     * Returns the user fields in a document.
-     *
-     * @param document an OpenOffice document
-     * @return a map of user field names and their corresponding values
-     */
-    private Map<String, String> getFields(Document document) {
-        Map<String, String> fields = new HashMap<String, String>();
-        OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
-        OOConnection connection = pool.getConnection();
-        try {
-            OpenOfficeDocument doc = new OpenOfficeDocument(
-                    document, connection, getHandlers());
-            for (String name : doc.getUserFieldNames()) {
-                fields.put(name, doc.getUserField(name));
-            }
-        } finally {
-            OpenOfficeHelper.close(connection);
-        }
-        return fields;
+        Map<String, String> inputFields = getInputFields(result);
+        assertEquals("the input value", inputFields.get("inputField1"));
     }
 
 }

@@ -78,7 +78,7 @@ public class MsWordDocument extends OpenOfficeDocument {
      * Returns the content of a field.
      * <p/>
      * This implementation uses the 'FieldCode' property value if the field
-     * hasn't been changed.
+     * is a user field that hasn't been changed.
      *
      * @param field the field
      * @return the field content
@@ -86,7 +86,7 @@ public class MsWordDocument extends OpenOfficeDocument {
      */
     @Override
     protected String getContent(Field field) {
-        if (!field.isChanged()) {
+        if (!isInputField(field.getPropertySet()) && !field.isChanged()) {
             // use the original value derived from the FieldCode property
             return field.getValue();
         }
@@ -96,7 +96,7 @@ public class MsWordDocument extends OpenOfficeDocument {
     /**
      * Returns the user text fields.
      * <p/>
-     * This implementation uses the FieldCode property as the field value.
+     * This implementation uses the 'FieldCode' property as the field value.
      *
      * @return the user text fields, keyed on name
      * @throws OpenOfficeException if the fields can't be accessed
@@ -144,7 +144,7 @@ public class MsWordDocument extends OpenOfficeDocument {
                     XPropertySet set = (XPropertySet) UnoRuntime.queryInterface(
                             XPropertySet.class, field);
                     String name = "inputField" + (++seed);
-                    String value = (String) set.getPropertyValue("Content");
+                    String value = (String) set.getPropertyValue("Hint");
                     result.put(name, new Field(name, value, set));
                 }
             }
