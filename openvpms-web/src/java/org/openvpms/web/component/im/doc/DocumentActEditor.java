@@ -159,13 +159,15 @@ public class DocumentActEditor extends AbstractActEditor {
      */
     private void updateDocument(Document document) {
         DocumentEditor editor = getDocumentEditor();
-        editor.removeModifiableListener(listener);
-        try {
-            editor.setDocument(document);
-            getProperty("fileName").refresh();
-            getProperty("mimeType").refresh();
-        } finally {
-            editor.addModifiableListener(listener);
+        if (editor != null) {
+            editor.removeModifiableListener(listener);
+            try {
+                editor.setDocument(document);
+                getProperty("fileName").refresh();
+                getProperty("mimeType").refresh();
+            } finally {
+                editor.addModifiableListener(listener);
+            }
         }
     }
 
