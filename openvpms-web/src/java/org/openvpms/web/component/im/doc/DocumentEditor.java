@@ -76,6 +76,16 @@ public class DocumentEditor extends AbstractPropertyEditor
      */
     private boolean saved = false;
 
+    /**
+     * Cached file name.
+     */
+    private String name;
+
+    /**
+     * Cached mime type.
+     */
+    private String mimeType;
+
 
     /**
      * Construct a new <tt>DocumentEditor</tt>.
@@ -94,7 +104,7 @@ public class DocumentEditor extends AbstractPropertyEditor
         });
         IMObjectReference original = (IMObjectReference) property.getValue();
         if (original != null) {
-            initSelector(original);
+            init(original);
         }
         refMgr = new DocReferenceMgr(original);
     }
@@ -127,8 +137,38 @@ public class DocumentEditor extends AbstractPropertyEditor
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         service.save(document);
-        replaceDocReference(document);
+
+        // update cached properties
+        name = document.getName();
+        mimeType = document.getMimeType();
+
+        // update the reference. This will notify any registered listeners
+        IMObjectReference ref = document.getObjectReference();
+        getProperty().setValue(ref);
+
+        // queue for addition
+        refMgr.add(ref);
+
+        // update the selector
         selector.setObject(document);
+    }
+
+    /**
+     * Returns the document file name.
+     *
+     * @return the file name. May be <tt>null</tt>
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns the document mime type.
+     *
+     * @return the mime type. May be <tt>null</tt>
+     */
+    public String getMimeType() {
+        return mimeType;
     }
 
     /**
@@ -230,32 +270,23 @@ public class DocumentEditor extends AbstractPropertyEditor
     }
 
     /**
-     * Replaces the existing document reference with that of a new document.
-     * The existing document is queued for deletion.
-     *
-     * @param document the new document
-     */
-    private void replaceDocReference(Document document) {
-        IMObjectReference ref = document.getObjectReference();
-        getProperty().setValue(ref);
-        refMgr.add(ref);
-    }
-
-    /**
-     * Initialise the selector, without loading the document content.
+     * Initialise the selector and cached document properties, without loading
+     * the document content.
      *
      * @param reference the document reference
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void initSelector(IMObjectReference reference) {
+    private void init(IMObjectReference reference) {
         ArchetypeQuery query = new ArchetypeQuery(
                 new ObjectRefConstraint("doc", reference));
         query.add(new NodeSelectConstraint("doc.name"));
         query.add(new NodeSelectConstraint("doc.description"));
+        query.add(new NodeSelectConstraint("doc.mimeType"));
         Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
         if (iter.hasNext()) {
             ObjectSet set = iter.next();
-            String name = set.getString("doc.name");
+            name = set.getString("doc.name");
+            mimeType = set.getString("doc.mimeType");
             String description = set.getString("doc.description");
             selector.setObject(name, description, true);
         }

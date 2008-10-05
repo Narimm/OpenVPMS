@@ -40,13 +40,14 @@ public class ParameterDialog extends PopupDialog {
 
 
     /**
-     * Constructs a new <tt>ReportDialog</tt>.
+     * Constructs a new <tt>ParameterDialog</tt>.
      *
      * @param title      the dialog title
      * @param parameters the report parameter types
      */
     public ParameterDialog(String title, Set<ParameterType> parameters) {
         super(title, "ParameterDialog", OK_CANCEL);
+        setModal(true);
         this.parameters = new ReportParameters(parameters);
         getLayout().add(this.parameters.getComponent());
     }
