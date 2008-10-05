@@ -201,7 +201,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Performs the query using the default sort constraint (if any).
      *
-     * @return the query result set
+     * @return the query result set. May be <tt>null</tt>
      * @throws ArchetypeServiceException for any error
      */
     public ResultSet<T> query() {

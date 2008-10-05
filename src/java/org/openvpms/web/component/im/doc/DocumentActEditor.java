@@ -25,14 +25,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -65,11 +63,6 @@ public class DocumentActEditor extends AbstractActEditor {
      */
     private static final String DOC_REFERENCE = "docReference";
 
-    /**
-     * The document listener.
-     */
-    private ModifiableListener listener;
-
 
     /**
      * Construct a new <tt>DocumentActEditor</tt>.
@@ -81,11 +74,11 @@ public class DocumentActEditor extends AbstractActEditor {
     public DocumentActEditor(DocumentAct act, IMObject parent,
                              LayoutContext context) {
         super(act, parent, context);
-        Editor editor = getDocumentEditor();
+        DocumentEditor editor = getDocumentEditor();
         if (editor != null) {
-            listener = new ModifiableListener() {
+            ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
-                    onDocumentUpdate();
+                    updateFileProperties();
                 }
             };
             editor.addModifiableListener(listener);
@@ -103,6 +96,34 @@ public class DocumentActEditor extends AbstractActEditor {
     }
 
     /**
+     * Save any edits.
+     *
+     * @return <tt>true</tt> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        boolean saved = saveObject();
+        if (saved) {
+            saved = saveChildren();
+        }
+        return saved;
+    }
+
+    /**
+     * Deletes the object.
+     *
+     * @return <tt>true</tt> if the delete was successful
+     */
+    @Override
+    protected boolean doDelete() {
+        boolean deleted = deleteObject();
+        if (deleted) {
+            deleted = deleteChildren();
+        }
+        return deleted;
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -114,13 +135,13 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Invoked when the document reference is updated.
-     * Invokes {@link #updateFileProperties} with the related document.
+     * </p>
+     * Updates the fileName and mimeType properties.
      */
-    private void onDocumentUpdate() {
-        DocumentAct act = (DocumentAct) getObject();
-        IMObjectReference docRef = act.getDocument();
-        Document document = (Document) IMObjectHelper.getObject(docRef);
-        updateFileProperties(document);
+    private void updateFileProperties() {
+        DocumentEditor editor = getDocumentEditor();
+        getProperty("fileName").setValue(editor.getName());
+        getProperty("mimeType").setValue(editor.getMimeType());
     }
 
     /**
@@ -160,32 +181,8 @@ public class DocumentActEditor extends AbstractActEditor {
     private void updateDocument(Document document) {
         DocumentEditor editor = getDocumentEditor();
         if (editor != null) {
-            editor.removeModifiableListener(listener);
-            try {
-                editor.setDocument(document);
-                getProperty("fileName").refresh();
-                getProperty("mimeType").refresh();
-            } finally {
-                editor.addModifiableListener(listener);
-            }
+            editor.setDocument(document);
         }
-    }
-
-    /**
-     * Duplicates the document's name and mime-type to the fileName and mimeType
-     * properties respectively to the {@link DocumentAct}.
-     *
-     * @param document the document
-     */
-    private void updateFileProperties(Document document) {
-        String name = null;
-        String mimeType = null;
-        if (document != null) {
-            name = document.getName();
-            mimeType = document.getMimeType();
-        }
-        getProperty("fileName").setValue(name);
-        getProperty("mimeType").setValue(mimeType);
     }
 
     /**

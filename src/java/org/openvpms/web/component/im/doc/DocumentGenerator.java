@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -125,9 +126,11 @@ public class DocumentGenerator {
         ReportGenerator gen = new ReportGenerator(template);
         IMReport<IMObject> report = gen.createReport();
         Set<ParameterType> parameters = report.getParameterTypes();
-        if (parameters.isEmpty()) {
+        boolean isLetter = TypeHelper.isA(act, "act.*Letter");
+        if (parameters.isEmpty() || !isLetter) {
             generate(report, Collections.<String, Object>emptyMap(), save);
         } else {
+            // only support parameter prompting for letters
             promptParameters(report, save);
         }
     }
@@ -143,11 +146,11 @@ public class DocumentGenerator {
                           Map<String, Object> parameters, boolean save) {
         List<IMObject> objects = Arrays.asList((IMObject) act);
         document = report.generate(objects.iterator(), parameters);
-        act.setDocument(document.getObjectReference());
         act.setFileName(document.getName());
         act.setMimeType(document.getMimeType());
 
         if (save) {
+            act.setDocument(document.getObjectReference());
             if (SaveHelper.save(act, document)) {
                 listener.generated(document);
             }

@@ -292,24 +292,13 @@ public abstract class AbstractIMObjectEditor
     /**
      * Delete the current object.
      *
-     * @return <code>true</code> if the object was deleted successfully
+     * @return <tt>true</tt> if the object was deleted successfully
      */
     public boolean delete() {
         if (cancelled) {
             return false;
         }
-        boolean result;
-        for (Deletable deletable : editors.getDeletable()) {
-            if (!deletable.delete()) {
-                return false;
-            }
-        }
-        IMObject object = getObject();
-        if (object.isNew()) {
-            result = true;
-        } else {
-            result = SaveHelper.delete(object);
-        }
+        boolean result = doDelete();
         deleted |= result;
         return result;
     }
@@ -484,8 +473,11 @@ public abstract class AbstractIMObjectEditor
 
     /**
      * Save any edits.
+     * <p/>
+     * This uses {@link #saveChildren()} to save the children prior to
+     * invoking {@link #saveObject()}.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     protected boolean doSave() {
         boolean saved = saveChildren();
@@ -496,9 +488,19 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
+     * Saves the object.
+     *
+     * @return <tt>true</tt> if the save was successful
+     */
+    protected boolean saveObject() {
+        IMObject object = getObject();
+        return SaveHelper.save(object);
+    }
+
+    /**
      * Save any modified child Saveable instances.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     protected boolean saveChildren() {
         for (Saveable saveable : editors.getModifiedSaveable()) {
@@ -510,13 +512,49 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Save the object.
+     * Deletes the object.
+     * <p/>
+     * This uses {@link #deleteChildren()} to delete the children prior to
+     * invoking {@link #deleteObject()}.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the delete was successful
      */
-    protected boolean saveObject() {
+    protected boolean doDelete() {
+        boolean result = deleteChildren();
+        if (result) {
+            result = deleteObject();
+        }
+        return result;
+    }
+
+    /**
+     * Deletes the object.
+     *
+     * @return <tt>true</tt> if the delete was successfule
+     */
+    protected boolean deleteObject() {
+        boolean result;
         IMObject object = getObject();
-        return SaveHelper.save(object);
+        if (object.isNew()) {
+            result = true;
+        } else {
+            result = SaveHelper.delete(object);
+        }
+        return result;
+    }
+
+    /**
+     * Deletes any child Deletable instances.
+     *
+     * @return <tt>true</tt> if the delete was successful
+     */
+    protected boolean deleteChildren() {
+        for (Deletable deletable : editors.getDeletable()) {
+            if (!deletable.delete()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

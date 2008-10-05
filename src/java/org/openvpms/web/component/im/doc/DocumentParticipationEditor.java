@@ -138,25 +138,6 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Delete the current object.
-     *
-     * @return <code>true</code> if the object was deleted successfully
-     */
-    @Override
-    public boolean delete() {
-        boolean result = false;
-        if (super.delete()) {
-            try {
-                refMgr.delete();
-                result = true;
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
-        return result;
-    }
-
-    /**
      * Save any modified child Saveable instances.
      *
      * @return <code>true</code> if the save was successful
@@ -185,6 +166,25 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
             }
         }
         return saved;
+    }
+
+    /**
+     * Deletes any child Deletable instances.
+     *
+     * @return <tt>true</tt> if the delete was successful
+     */
+    @Override
+    protected boolean deleteChildren() {
+        boolean result = super.deleteChildren();
+        if (result) {
+            try {
+                refMgr.delete();
+                result = true;
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
+        return result;
     }
 
     /**

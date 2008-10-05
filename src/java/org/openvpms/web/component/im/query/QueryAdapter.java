@@ -118,7 +118,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      * @throws ArchetypeServiceException for any error
      */
     public ResultSet<T> query() {
-        return convert(query.query());
+        ResultSet<A> set = query.query();
+        return (set != null) ? convert(set) : null;
     }
 
     /**
@@ -129,7 +130,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      * @throws ArchetypeServiceException if the query fails
      */
     public ResultSet<T> query(SortConstraint[] sort) {
-        return convert(query.query(sort));
+        ResultSet<A> set = query.query(sort);
+        return (set != null) ? convert(set) : null;
     }
 
     /**
