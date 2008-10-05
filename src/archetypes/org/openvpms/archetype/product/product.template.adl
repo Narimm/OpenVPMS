@@ -26,6 +26,8 @@
         <node name="printedName" path="/details/printedName" type="java.lang.String"
               minCardinality="0"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="invoiceNote" path="/details/invoiceNote" type="java.lang.String" maxLength="300"/>
+        <node name="visitNote" path="/details/visitNote" type="java.lang.String" maxLength="1000"/>
         <node name="includes" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
