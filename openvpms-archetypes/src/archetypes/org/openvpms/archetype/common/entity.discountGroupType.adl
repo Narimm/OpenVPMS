@@ -29,7 +29,7 @@
               defaultValue="true()"/>
         <node name="discounts" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="1" maxCardinality="*">
+              minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
