@@ -19,10 +19,13 @@
 package org.openvpms.web.app.workflow.scheduling;
 
 import echopointng.layout.TableLayoutDataEx;
+import echopointng.table.TableCellRendererEx;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Font;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
+import nextapp.echo2.app.layout.TableLayoutData;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,10 +34,11 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.FREE;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleTableModel.Highlight;
-import org.openvpms.web.component.table.AbstractTableCellRenderer;
+import org.openvpms.web.component.table.TableHelper;
 import org.openvpms.web.component.util.ColourHelper;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -49,7 +53,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-09-06 07:52:23Z $
  */
-public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
+public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
 
     /**
      * The schedule type archetype short name.
@@ -66,6 +70,15 @@ public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
      */
     private Map<IMObjectReference, String> clinicianColours;
 
+    /**
+     * The previous rendered row.
+     */
+    private int previousRow = -1;
+
+    /**
+     * Determines if the 'New' indicator has been rendered.
+     */
+    private boolean newPrompt = false;
 
     /**
      * Creates a new <tt>ScheduleTableCellRenderer</tt>.
@@ -81,33 +94,20 @@ public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
      * Returns a component that will be displayed at the specified coordinate in
      * the table.
      *
-     * @param table  the <code>Table</code> for which the rendering is
+     * @param table  the <tt>Table</tt> for which the rendering is
      *               occurring
-     * @param value  the value retrieved from the <code>TableModel</code> for
+     * @param value  the value retrieved from the <tt>TableModel</tt> for
      *               the specified coordinate
      * @param column the column index to render
      * @param row    the row index to render
      * @return a component representation  of the value.
      */
-    @Override
     public Component getTableCellRendererComponent(Table table, Object value,
                                                    int column, int row) {
         Component component = getComponent(table, value, column, row);
-        boolean highlight = canHighlightCell(table, column, row);
-        if (highlight) {
+        if (component != null && canHighlightCell(table, column, row)) {
             // highlight the selected cell.
-            // Ideally, this would be done by the table, however none of
-            // the tables support cell selection.
-            // Also, it would be best if highlighting was done by changing
-            // the cell background, but due to a bug in TableEx, this
-            // results in all similar cells being updated with the highlight
-            // colour.
-            Font font = getFont(table);
-            if (font != null) {
-                int style = Font.BOLD | Font.ITALIC;
-                font = new Font(font.getTypeface(), style, font.getSize());
-                component.setFont(font);
-            }
+            highlightCell(table, component);
         }
         return component;
     }
@@ -121,6 +121,43 @@ public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
     }
 
     /**
+     * This method allows you to "restrict" the cells (within a row) that will
+     * cause selection of the row to occur. By default any cell will cause
+     * selection of a row. If this methods returns false then only certain cells
+     * within the row will cause selection when clicked on.
+     *
+     * @param table  the table
+     * @param column the column
+     * @param row    the row
+     * @return <tt>true<t/tt> if the cell causes selection
+     */
+    public boolean isSelectionCausingCell(Table table, int column, int row) {
+        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
+        return model.getAvailability(column, row) != UNAVAILABLE;
+    }
+
+    /**
+     * This method is called to determine which cells within a row can cause an
+     * action to be raised on the server when clicked.
+     * <p/>
+     * By default if a Table has attached actionListeners then any click on any
+     * cell within a row will cause the action to fire.
+     * <p/>
+     * This method allows this to be overrriden and only certain cells within a
+     * row can cause an action event to be raise.
+     *
+     * @param table  the Table in question
+     * @param column the column in question
+     * @param row    the row in quesiton
+     * @return - Return true means that the cell can cause actions while false
+     *         means the cells can not cause action events.
+     */
+    public boolean isActionCausingCell(Table table, int column, int row) {
+        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
+        return model.getAvailability(column, row) != UNAVAILABLE;
+    }
+
+    /**
      * Returns a component for a value.
      *
      * @param table  the <tt>Table</tt> for which the rendering is
@@ -129,35 +166,56 @@ public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
      *               specified coordinate
      * @param column the column
      * @param row    the row
-     * @return a component representation of the value
+     * @return a component representation of the value. May be <tt>null</tt>
      */
-    @Override
     protected Component getComponent(Table table, Object value, int column,
                                      int row) {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
-        boolean singleScheduleView = model.isSingleScheduleView();
-        Component component;
+
+        if (previousRow != row) {
+            newPrompt = false;
+        }
+
+        Component component = null;
         if (value instanceof Component) {
             // pre-rendered component
             component = (Component) value;
         } else {
-            if (value == null && !singleScheduleView
-                    && model.isSelectedCell(column, row)
-                    && model.getAvailability(column, row) == FREE) {
-                // free slot in multiple schedule view
-                component = LabelFactory.create(
-                        "workflow.scheduling.table.new");
-            } else {
-                component = super.getComponent(table, value, column, row);
+            Availability availability = model.getAvailability(column, row);
+            if (availability != UNAVAILABLE) {
+                if (value == null && availability == FREE) {
+                    // free slot.
+                    if (row == model.getSelectedRow() && !newPrompt) {
+                        // render a 'New' prompt if required
+                        if (renderNewPrompt(model, column, row)) {
+                            component = LabelFactory.create(
+                                    "workflow.scheduling.table.new");
+                            highlightCell(table, component);
+                            newPrompt = true;
+                        }
+                    }
+                } else {
+                    Label label = LabelFactory.create();
+                    if (value != null) {
+                        label.setText(value.toString());
+                    }
+                    component = label;
+                }
             }
         }
 
-        ObjectSet event = model.getEvent(column, row);
-        if (event != null) {
-            highlightEvent(component, event, model);
-        } else {
-            colourCell(component, column, row, model);
+        if (component != null) {
+            ObjectSet event = model.getEvent(column, row);
+            if (event != null) {
+                TableLayoutData layout = getEventLayoutData(event, model);
+                if (layout != null) {
+                    TableHelper.mergeStyle(component, layout, true);
+                }
+            } else {
+                colourCell(component, column, row, model);
+            }
         }
+        previousRow = row;
         return component;
     }
 
@@ -173,10 +231,31 @@ public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
         boolean highlight = false;
         if (!model.isSingleScheduleView() && model.isSelectedCell(column, row)
-                && model.getAvailability(column, row) != UNAVAILABLE) {
+                && model.getAvailability(column, row) == Availability.BUSY) {
             highlight = true;
         }
         return highlight;
+    }
+
+    /**
+     * Highlights a cell component, used to highlight the selected cell.
+     * <p/>
+     * Ideally, this would be done by the table, however none of
+     * the tables support cell selection.
+     * Also, it would be best if highlighting was done by changing
+     * the cell background, but due to a bug in TableEx, this
+     * results in all similar cells being updated with the highlight colour.
+     *
+     * @param table     the table
+     * @param component the cell component
+     */
+    protected void highlightCell(Table table, Component component) {
+        Font font = getFont(table);
+        if (font != null) {
+            int style = Font.BOLD | Font.ITALIC;
+            font = new Font(font.getTypeface(), style, font.getSize());
+            component.setFont(font);
+        }
     }
 
     /**
@@ -210,11 +289,26 @@ public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
      *
      * @param component the component representing the cell
      * @param avail     the cell's availability
-     * @param model     the the event model
+     * @param model     the event model
      * @param row       the cell row
      */
     protected void colourCell(Component component,
                               ScheduleEventGrid.Availability avail,
+                              ScheduleTableModel model, int row) {
+        String style;
+        style = getStyle(avail, model, row);
+        TableHelper.mergeStyle(component, style);
+    }
+
+    /**
+     * Returns the style of a cell based on availability.
+     *
+     * @param avail the cell's availability
+     * @param model the event model
+     * @param row   the cell row
+     * @return the style name
+     */
+    protected String getStyle(Availability avail,
                               ScheduleTableModel model, int row) {
         String style;
         switch (avail) {
@@ -228,40 +322,37 @@ public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
                 style = "ScheduleTable.Unavailable";
                 break;
         }
-        mergeStyle(component, style);
+        return style;
     }
 
     /**
-     * Highlights an event.
+     * Returns table layout data for an event.
      *
-     * @param component the component representing the schedule event
-     * @param event     the event
-     * @param model     the schedule table model
+     * @param event the event
+     * @param model the model
+     * @return layout data for the event, or <tt>null</tt> if no style
+     *         information exists
      */
-    private void highlightEvent(Component component,
-                                ObjectSet event,
-                                ScheduleTableModel model) {
+    protected TableLayoutDataEx getEventLayoutData(ObjectSet event,
+                                                   ScheduleTableModel model) {
+        TableLayoutDataEx result = null;
         if (!isSelectedClinician(event, model)) {
-            mergeStyle(component, "ScheduleTable.Busy");
+            result = TableHelper.getTableLayoutDataEx("ScheduleTable.Busy");
         } else {
             Highlight highlight = model.getHighlight();
 
             if (highlight == Highlight.STATUS) {
                 String style = getStatusStyle(event);
-                mergeStyle(component, style);
+                result = TableHelper.getTableLayoutDataEx(style);
             } else {
                 Color colour = getEventColour(event, highlight);
                 if (colour != null) {
-                    TableLayoutDataEx layout
-                            = (TableLayoutDataEx) component.getLayoutData();
-                    if (layout == null) {
-                        layout = new TableLayoutDataEx();
-                        component.setLayoutData(layout);
-                    }
-                    layout.setBackground(colour);
+                    result = new TableLayoutDataEx();
+                    result.setBackground(colour);
                 }
             }
         }
+        return result;
     }
 
     /**
@@ -291,6 +382,35 @@ public class ScheduleTableCellRenderer extends AbstractTableCellRenderer {
         }
         return ObjectUtils.equals(clinician, event.getReference(
                 ScheduleEvent.CLINICIAN_REFERENCE));
+    }
+
+    /**
+     * Invoked to determine if the 'New' prompt should be rendered for a cell.
+     * <p/>
+     * Only invoked when a new prompt hasn't already been rendered for the
+     * selected row, and the specified cell is empty.
+     *
+     * @param model  the table model
+     * @param column the column
+     * @param row    the row
+     * @return <tt>true</tt> if the 'New' prompt shouldbe rendered for the cell
+     */
+    private boolean renderNewPrompt(ScheduleTableModel model, int column,
+                                    int row) {
+        boolean result = false;
+        int selectedColumn = model.getSelectedColumn();
+        if (selectedColumn == column) {
+            result = true;
+        } else if (column == selectedColumn - 1
+                || column == selectedColumn + 1) {
+            // if the column is adjacent to the selected column
+            if (model.getValueAt(selectedColumn, row) != null) {
+                // render the prompt in the current column if the selected
+                // column isn't empty
+                result = true;
+            }
+        }
+        return result;
     }
 
     /**

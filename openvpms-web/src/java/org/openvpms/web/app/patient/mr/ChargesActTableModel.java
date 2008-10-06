@@ -46,7 +46,7 @@ public class ChargesActTableModel extends AbstractActTableModel {
      */
     @Override
     protected String[] getNodeNames() {
-        return new String[]{"startTime", "product", "clinician", "qty",
+        return new String[]{"startTime", "product", "clinician", "quantity",
                             "fixedPrice", "unitPrice", "discount", "tax",
                             "total"};
     }

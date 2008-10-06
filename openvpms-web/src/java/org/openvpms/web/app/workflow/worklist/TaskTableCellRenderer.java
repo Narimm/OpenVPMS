@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import echopointng.xhtml.XhtmlFragment;
+import nextapp.echo2.app.Table;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableCellRenderer;
 
 
@@ -34,5 +36,21 @@ public class TaskTableCellRenderer extends ScheduleTableCellRenderer {
      */
     public TaskTableCellRenderer() {
         super("entity.taskType");
+    }
+
+    /**
+     * Returns a <tt>XhtmlFragment</tt> that will be displayed as the
+     * content at the specified co'ordinate in the table.
+     *
+     * @param table  the <tt>Table</tt> for which the rendering is occurring
+     * @param value  the value retrieved from the <tt>TableModel</tt> for the
+     *               specified coordinate
+     * @param column the column index to render
+     * @param row    the row index to render
+     * @return a <tt>XhtmlFragment</tt> representation of the value
+     */
+    public XhtmlFragment getTableCellRendererContent(Table table, Object value,
+                                                     int column, int row) {
+        return null;
     }
 }

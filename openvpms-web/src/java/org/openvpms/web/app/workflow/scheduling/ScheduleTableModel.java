@@ -18,16 +18,12 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import echopointng.BalloonHelp;
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.table.TableColumnEx;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -36,9 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -314,6 +307,13 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         return getValueAt(getColumn(column), row);
     }
 
+    /**
+     * Returns the availability of the specified cell.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the availability of the cell
+     */
     public ScheduleEventGrid.Availability getAvailability(int column, int row) {
         Column col = getColumn(column);
         Schedule schedule = col.getSchedule();
@@ -352,36 +352,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     protected ObjectSet getEvent(Column column, int row) {
         Schedule schedule = column.getSchedule();
         return (schedule != null) ? grid.getEvent(schedule, row) : null;
-    }
-
-    /**
-     * Returns a component representing an event.
-     *
-     * @param event the event
-     * @return a new component
-     */
-    protected Component getEvent(ObjectSet event) {
-        Component result;
-        String text;
-        String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
-        String patient = event.getString(ScheduleEvent.PATIENT_NAME);
-        String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        if (patient == null) {
-            text = Messages.get("workflow.scheduling.table.customer", customer);
-        } else {
-            text = Messages.get(
-                    "workflow.scheduling.table.customerpatient",
-                    customer, patient);
-        }
-        Label label = LabelFactory.create();
-        label.setText(text);
-        if (notes != null) {
-            BalloonHelp help = new BalloonHelp("<p>" + notes + "</p>");
-            result = RowFactory.create("CellSpacing", label, help);
-        } else {
-            result = label;
-        }
-        return result;
     }
 
     /**
@@ -530,7 +500,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
             setHeaderValue(heading);
             setHeaderRenderer(null);
             setCellRenderer(null);
-            setWidth(new Extent(100));
         }
 
         /**

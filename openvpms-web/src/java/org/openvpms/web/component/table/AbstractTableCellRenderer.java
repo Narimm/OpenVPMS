@@ -20,17 +20,11 @@ package org.openvpms.web.component.table;
 
 import echopointng.LabelEx;
 import echopointng.xhtml.XhtmlFragment;
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Style;
 import nextapp.echo2.app.Table;
-import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.TableCellRenderer;
-import org.apache.commons.beanutils.BeanUtils;
 import org.openvpms.web.component.util.LabelFactory;
-
-import java.util.Iterator;
 
 
 /**
@@ -135,81 +129,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
      */
     protected void mergeStyle(Component component, String styleName,
                               boolean overwrite) {
-        if (component.getLayoutData() == null
-                && component.getStyleName() == null) {
-            component.setStyleName(styleName);
-        } else {
-            ApplicationInstance app = ApplicationInstance.getActive();
-            Style style = app.getStyle(component.getClass(), styleName);
-            if (style != null) {
-                mergeStyle(style, component, overwrite);
-            }
-        }
+        TableHelper.mergeStyle(component, styleName, overwrite);
     }
 
-    /**
-     * Merge style from a stylessheet with a component's properties
-     *
-     * @param style     the style
-     * @param component the component
-     * @param overwrite if <tt>true</tt> overwrite existing component properties
-     *                  if the specified style has non-null corresponding
-     *                  properties
-     */
-    private void mergeStyle(Style style, Component component,
-                            boolean overwrite) {
-        Iterator names = style.getPropertyNames();
-        while (names.hasNext()) {
-            String name = (String) names.next();
-            if (name.equals("layoutData")
-                    && component.getLayoutData() != null) {
-                TableLayoutData from;
-                TableLayoutData to;
-
-                from = (TableLayoutData) style.getProperty(name);
-                to = (TableLayoutData) component.getLayoutData();
-                if (to != null) {
-                    mergeLayoutData(from, to, overwrite);
-                }
-            } else if (overwrite || component.getProperty(name) == null) {
-                Object value = style.getProperty(name);
-                if (value != null) {
-                    try {
-                        BeanUtils.setProperty(component, name, value);
-                    } catch (Throwable ignore) {
-                        // no-op
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Merge layout data.
-     *
-     * @param from      the layout data to merge from
-     * @param to        the layout data to merge to
-     * @param overwrite if <tt>true</tt> overwrite existing component properties
-     *                  if the specified style has non-null corresponding
-     *                  properties
-     */
-    private void mergeLayoutData(TableLayoutData from, TableLayoutData to,
-                                 boolean overwrite) {
-        if (from.getAlignment() != null
-                && (overwrite || to.getAlignment() == null)) {
-            to.setAlignment(from.getAlignment());
-        }
-        if (from.getBackground() != null
-                && (overwrite || to.getBackground() == null)) {
-            to.setBackground(from.getBackground());
-        }
-        if (from.getBackgroundImage() != null
-                && (overwrite || to.getBackgroundImage() == null)) {
-            to.setBackgroundImage(from.getBackgroundImage());
-        }
-        if (from.getInsets() != null
-                && (overwrite || to.getInsets() == null)) {
-            to.setInsets(from.getInsets());
-        }
-    }
 }

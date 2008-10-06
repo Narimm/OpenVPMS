@@ -23,7 +23,6 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -31,14 +30,11 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
-import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -53,16 +49,6 @@ class SingleScheduleTableModel extends AppointmentTableModel {
      * The column names.
      */
     private String[] columnNames;
-
-    /**
-     * Cached reason lookup names.
-     */
-    private Map<String, String> reasons;
-
-    /**
-     * The start time index.
-     */
-    protected static final int START_TIME_INDEX = 0;
 
     /**
      * The status index.
@@ -103,7 +89,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
 
 
     /**
-     * Creates a new <tt>AppointmentTableModel</tt>.
+     * Creates a new <tt>SingleScheduleTableModel</tt>.
      */
     public SingleScheduleTableModel(AppointmentGrid grid) {
         super(grid);
@@ -120,12 +106,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         Object result = null;
         AppointmentGrid grid = getGrid();
         if (column.getModelIndex() == START_TIME_INDEX) {
-            Date date = grid.getStartTime(row);
-            Label label = LabelFactory.create();
-            if (date != null) {
-                label.setText(DateHelper.formatTime(date, false));
-            }
-            result = label;
+            result = grid.getStartTime(row);
         } else {
             ObjectSet set = getEvent(column, row);
             int rowSpan = 1;
@@ -174,11 +155,10 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                 result = label;
                 break;
             case STATUS_INDEX:
-                String code = set.getString(ScheduleEvent.ACT_STATUS);
-                result = getStatus(set, code);
+                result = getStatus(set);
                 break;
             case REASON_INDEX:
-                result = getReason(set.getString(ScheduleEvent.ACT_REASON));
+                result = getReason(set);
                 break;
             case DESCRIPTION_INDEX:
                 result = set.getString(ScheduleEvent.ACT_DESCRIPTION);
@@ -215,44 +195,6 @@ class SingleScheduleTableModel extends AppointmentTableModel {
             result.addColumn(column);
         }
         return result;
-    }
-
-    /**
-     * Returns a status name given its code.
-     *
-     * @param set  the object set
-     * @param code the status code
-     * @return the status name
-     */
-    private String getStatus(ObjectSet set, String code) {
-        String status = null;
-
-        if (AppointmentStatus.CHECKED_IN.equals(code)) {
-            Date arrival = set.getDate(ScheduleEvent.ARRIVAL_TIME);
-            if (arrival != null) {
-                String diff = DateHelper.formatTimeDiff(arrival, new Date());
-                status = Messages.get("workflow.scheduling.table.waiting",
-                                      diff);
-            }
-        }
-        if (status == null) {
-            status = getStatus(code);
-        }
-        return status;
-    }
-
-    /**
-     * Returns a reason name given its code.
-     *
-     * @param code the reason code
-     * @return the reason name
-     */
-    private String getReason(String code) {
-        if (reasons == null) {
-            reasons = LookupNameHelper.getLookupNames("act.customerAppointment",
-                                                      "reason");
-        }
-        return (reasons != null) ? reasons.get(code) : null;
     }
 
     /**
