@@ -258,6 +258,15 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
     }
 
     /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    protected ScheduleQuery getQuery() {
+        return query;
+    }
+
+    /**
      * Creates a new grid for a set of events.
      *
      * @param date   the query date
@@ -286,6 +295,12 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
         table.setStyleName("ScheduleTable");
         table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
         table.setDefaultRenderer(EvenOddTableCellRenderer.INSTANCE);
+/*
+        table.setScrollable(true);
+        table.setResizeable(true);
+        table.setResizeGrowsTable(true);
+        table.setResizeDragBarUsed(true);
+*/
         return table;
     }
 
@@ -477,8 +492,16 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
         int column = event.getColumn();
         int row = event.getRow();
         boolean doubleClick = false;
-        if (model.isSelectedCell(column, row)) {
-            doubleClick = true;
+        if (model.isSingleScheduleView()) {
+            // click the same row to get double click in single schedule view
+            if (model.getSelectedRow() == row) {
+                doubleClick = true;
+            }
+        } else {
+            // click the same cell to get double click in multi schedule view
+            if (model.isSelectedCell(column, row)) {
+                doubleClick = true;
+            }
         }
         model.setSelectedCell(column, row);
         selected = model.getEvent(column, row);

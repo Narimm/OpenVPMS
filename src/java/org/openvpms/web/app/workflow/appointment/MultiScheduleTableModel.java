@@ -18,18 +18,19 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
+import echopointng.BalloonHelp;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
-import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.resource.util.Messages;
 
-import java.util.Date;
 import java.util.List;
 
 
@@ -58,12 +59,7 @@ class MultiScheduleTableModel extends AppointmentTableModel {
     protected Object getValueAt(Column column, int row) {
         Object result = null;
         if (column.getModelIndex() == START_TIME_INDEX) {
-            Date date = getGrid().getStartTime(row);
-            Label label = LabelFactory.create();
-            if (date != null) {
-                label.setText(DateHelper.formatTime(date, false));
-            }
-            result = label;
+            result = getGrid().getStartTime(row);
         } else {
             ObjectSet set = getEvent(column, row);
             AppointmentGrid grid = getGrid();
@@ -71,13 +67,6 @@ class MultiScheduleTableModel extends AppointmentTableModel {
             if (set != null) {
                 result = getEvent(set);
                 rowSpan = grid.getSlots(set, row);
-            } else {
-                Schedule schedule = column.getSchedule();
-                if (schedule != null) {
-                    if (grid.getAvailability(schedule, row) == UNAVAILABLE) {
-                        rowSpan = grid.getUnavailableSlots(schedule, row);
-                    }
-                }
             }
             if (rowSpan > 1) {
                 if (!(result instanceof Component)) {
@@ -89,6 +78,42 @@ class MultiScheduleTableModel extends AppointmentTableModel {
                 }
                 setSpan((Component) result, rowSpan);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a component representing an event.
+     *
+     * @param event the event
+     * @return a new component
+     */
+    private Component getEvent(ObjectSet event) {
+        Component result;
+        String text;
+        String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
+        String patient = event.getString(ScheduleEvent.PATIENT_NAME);
+        String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
+        String status = getStatus(event);
+        String reason = getReason(event);
+
+        if (patient == null) {
+            text = Messages.get(
+                    "workflow.scheduling.appointment.table.customer",
+                    customer, reason, status);
+        } else {
+            text = Messages.get(
+                    "workflow.scheduling.appointment.table.customerpatient",
+                    customer, patient, reason, status);
+        }
+
+        Label label = LabelFactory.create(true);
+        label.setText(text);
+        if (notes != null) {
+            BalloonHelp help = new BalloonHelp("<p>" + notes + "</p>");
+            result = RowFactory.create("CellSpacing", label, help);
+        } else {
+            result = label;
         }
         return result;
     }

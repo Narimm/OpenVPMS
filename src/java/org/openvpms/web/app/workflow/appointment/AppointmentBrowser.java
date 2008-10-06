@@ -57,9 +57,10 @@ import java.util.Set;
 public class AppointmentBrowser extends ScheduleBrowser {
 
     /**
-     * Displays the selected date above the appointments.
+     * Displays the selected schedule view, schedule and date above the
+     * appointments.
      */
-    private Label selectedDate;
+    private Label title;
 
     /**
      * Time range selector.
@@ -79,8 +80,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     public void query() {
         super.query();
-        DateFormat format = DateHelper.getFullDateFormat();
-        selectedDate.setText(format.format(getDate()));
+        updateTitle();
     }
 
     /**
@@ -134,17 +134,17 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     @Override
     protected Component doLayout() {
-        selectedDate = LabelFactory.create(null, "bold");
+        title = LabelFactory.create(null, "bold");
         ColumnLayoutData layout = new ColumnLayoutData();
         layout.setAlignment(Alignment.ALIGN_CENTER);
-        selectedDate.setLayoutData(layout);
+        title.setLayoutData(layout);
 
         Row row = RowFactory.create("CellSpacing");
         layoutQueryRow(row);
         addQueryButton(row);
 
         Component component = ColumnFactory.create("WideCellSpacing",
-                                                   selectedDate, row);
+                                                   title, row);
         TableEx table = getTable();
         if (table != null) {
             component.add(table);
@@ -180,6 +180,31 @@ public class AppointmentBrowser extends ScheduleBrowser {
         Label timeLabel = LabelFactory.create("workflow.scheduling.time");
         row.add(timeLabel);
         row.add(timeSelector);
+    }
+
+    /**
+     * Updates the title based on the current selection.
+     */
+    private void updateTitle() {
+        DateFormat format = DateHelper.getFullDateFormat();
+        String date = format.format(getDate());
+        Entity view = getScheduleView();
+        Entity schedule = getQuery().getSchedule();
+        String viewName = (view != null) ? view.getName() : null;
+        String schedName = (schedule != null) ? schedule.getName() : null;
+
+        String text;
+        if (viewName != null && schedName != null) {
+            text = Messages.get(
+                    "workflow.scheduling.appointment.viewscheduledate",
+                    viewName, schedName, date);
+        } else if (viewName != null) {
+            text = Messages.get(
+                    "workflow.scheduling.appointment.viewdate", viewName, date);
+        } else {
+            text = Messages.get("workflow.scheduling.appointment.date", date);
+        }
+        title.setText(text);
     }
 
     /**
