@@ -177,6 +177,8 @@ public class CustomerAccountQueryFactory {
 
     /**
      * Creates an account balance participation query.
+     * <p/>
+     * This sorts acts on ascending startTime and id.
      *
      * @param customer   the customer
      * @param shortNames the act archetype short names
@@ -197,7 +199,7 @@ public class CustomerAccountQueryFactory {
                     "act", RelationalOp.NE, exclude.getObjectReference()));
         }
         query.add(constraint);
-        query.add(new NodeSortConstraint("startTime", false));
+        query.add(new NodeSortConstraint("startTime", true));
         query.add(new NodeSortConstraint("id", true));
         return query;
     }
