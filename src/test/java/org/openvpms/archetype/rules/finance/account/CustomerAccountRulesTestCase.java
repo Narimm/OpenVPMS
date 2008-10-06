@@ -656,6 +656,50 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     }
 
     /**
+     * Verifies that older unallocated balances are allocated prior to more
+     * recent ones for OVPMS-794.
+     */
+    public void testAllocationOrder() {
+        Money sixty = new Money(60);
+        Money forty = new Money(40);
+        Money twenty = new Money(20);
+        Date chargeTime1 = java.sql.Date.valueOf("2007-1-1");
+        Date chargeTime2 = java.sql.Date.valueOf("2007-3-30");
+
+        List<FinancialAct> invoice1 = createChargesInvoice(sixty, chargeTime1);
+        save(invoice1);
+        List<FinancialAct> invoice2 = createChargesInvoice(forty,chargeTime2);
+        save(invoice2);
+
+        java.sql.Date payTime1 = java.sql.Date.valueOf("2007-4-1");
+        FinancialAct payment1 = createPayment(forty, payTime1);
+        save(payment1);
+
+        FinancialAct reload1 = get(invoice1.get(0));
+        FinancialAct reload2 = get(invoice2.get(0));
+        assertEquals(forty, reload1.getAllocatedAmount());
+        assertEquals(BigDecimal.ZERO, reload2.getAllocatedAmount());
+
+        java.sql.Date payTime2 = java.sql.Date.valueOf("2007-4-2");
+        FinancialAct payment2 = createPayment(twenty, payTime2);
+        save(payment2);
+
+        reload1 = get(invoice1.get(0));
+        reload2 = get(invoice2.get(0));
+        assertEquals(sixty, reload1.getAllocatedAmount());
+        assertEquals(BigDecimal.ZERO, reload2.getAllocatedAmount());
+
+        java.sql.Date payTime3 = java.sql.Date.valueOf("2007-4-3");
+        FinancialAct payment3 = createPayment(forty, payTime3);
+        save(payment3);
+
+        reload1 = get(invoice1.get(0));
+        reload2 = get(invoice2.get(0));
+        assertEquals(sixty, reload1.getAllocatedAmount());
+        assertEquals(forty, reload2.getAllocatedAmount());
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
