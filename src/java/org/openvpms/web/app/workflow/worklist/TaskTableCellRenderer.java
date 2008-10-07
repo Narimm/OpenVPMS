@@ -18,9 +18,15 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import echopointng.layout.TableLayoutDataEx;
 import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Table;
+import org.openvpms.web.app.workflow.scheduling.Schedule;
+import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
+import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableCellRenderer;
+import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+import org.openvpms.web.component.table.TableHelper;
 
 
 /**
@@ -51,6 +57,20 @@ public class TaskTableCellRenderer extends ScheduleTableCellRenderer {
      */
     public XhtmlFragment getTableCellRendererContent(Table table, Object value,
                                                      int column, int row) {
-        return null;
+        XhtmlFragment result = TableHelper.createFragment(value);
+        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
+
+        ScheduleEventGrid.Availability avail = model.getAvailability(column,
+                                                                     row);
+        String style = getStyle(avail, model, row);
+        TableLayoutDataEx layout = TableHelper.getTableLayoutDataEx(style);
+
+        if (layout != null && avail == UNAVAILABLE) {
+            Schedule schedule = model.getSchedule(column);
+            int span = model.getGrid().getUnavailableSlots(schedule, row);
+            layout.setRowSpan(span);
+        }
+        result.setLayoutData(layout);
+        return result;
     }
 }
