@@ -36,13 +36,6 @@ import org.openvpms.web.component.util.LabelFactory;
 public abstract class AbstractTableCellRenderer implements TableCellRenderer {
 
     /**
-     * Helper to ensure that empty cells render with non-zero height.
-     */
-    private static final XhtmlFragment SPACE
-            = new XhtmlFragment("<p>&#160;</p>");
-
-
-    /**
      * Returns a component that will be displayed at the specified coordinate in
      * the table.
      *
@@ -102,7 +95,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
                 label.setText(value.toString());
                 component = label;
             } else {
-                component = new LabelEx(SPACE);
+                component = new LabelEx(new XhtmlFragment(TableHelper.SPACE));
             }
         }
         return component;

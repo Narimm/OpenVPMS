@@ -19,12 +19,15 @@
 package org.openvpms.web.component.table;
 
 import echopointng.layout.TableLayoutDataEx;
+import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.LayoutData;
 import nextapp.echo2.app.Style;
 import nextapp.echo2.app.layout.TableLayoutData;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Iterator;
 
@@ -36,6 +39,41 @@ import java.util.Iterator;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class TableHelper {
+
+    /**
+     * Helper to ensure that empty cells render with non-zero height.
+     */
+    public static final String SPACE = "<p>&#160;</p>";
+
+    /**
+     * Helper to return an <tt>XhtmlFragment</tt> for text.
+     * <p/>
+     * Any XML characters are escaped.
+     *
+     * @param text the text. May be <tt>null</tt>
+     * @return a new fragment
+     */
+    public static XhtmlFragment createFragment(String text) {
+        if (StringUtils.isEmpty(text)) {
+            return new XhtmlFragment(SPACE);
+        }
+
+        text = StringEscapeUtils.escapeXml(text);
+        return new XhtmlFragment("<p>" + text + "</p>");
+    }
+
+    /**
+     * Helper to return an <tt>XhtmlFragment</tt> for an object, using its
+     * <tt>toString()</tt> method.
+     * <p/>
+     * Any XML characters are escaped.
+     *
+     * @param object the object. May be <tt>null</tt>
+     * @return a new fragment
+     */
+    public static XhtmlFragment createFragment(Object object) {
+        return createFragment(object != null ? object.toString() : null);
+    }
 
     /**
      * Returns the table layout data associated with a style.

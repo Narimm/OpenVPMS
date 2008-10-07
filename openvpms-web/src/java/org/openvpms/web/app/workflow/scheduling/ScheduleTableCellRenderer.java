@@ -398,13 +398,13 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     private boolean renderNewPrompt(ScheduleTableModel model, int column,
                                     int row) {
         boolean result = false;
-        int selectedColumn = model.getSelectedColumn();
-        if (selectedColumn == column) {
+        int selected = model.getSelectedColumn();
+        if (selected == column) {
             result = true;
-        } else if (column == selectedColumn - 1
-                || column == selectedColumn + 1) {
+        } else if (model.isSingleScheduleView()
+                && (column == selected - 1 || column == selected + 1)) {
             // if the column is adjacent to the selected column
-            if (model.getValueAt(selectedColumn, row) != null) {
+            if (model.getValueAt(selected, row) != null) {
                 // render the prompt in the current column if the selected
                 // column isn't empty
                 result = true;

@@ -22,7 +22,6 @@ import echopointng.layout.TableLayoutDataEx;
 import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Table;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
@@ -71,9 +70,7 @@ public class AppointmentTableCellRenderer extends ScheduleTableCellRenderer {
             Date date = (Date) value;
             String text = DateHelper.formatTime(date, false);
 
-            // escape the text for any unusual locales
-            text = StringEscapeUtils.escapeXml(text);
-            result = new XhtmlFragment("<p>" + text + "</p>");
+            result = TableHelper.createFragment(text);
 
             ObjectSet event = model.getEvent(column, row);
             if (event != null) {

@@ -110,6 +110,7 @@ public abstract class ScheduleQuery {
     public Component getComponent() {
         if (component == null) {
             component = RowFactory.create("ControlRow");
+            focus = new FocusGroup("ScheduleQuery");
             doLayout(component);
         }
         return component;
@@ -158,7 +159,8 @@ public abstract class ScheduleQuery {
                 schedules = getSchedules(view);
             }
         }
-        return (schedules != null) ? schedules : Collections.<Entity>emptyList();
+        return (schedules != null) ? schedules
+                : Collections.<Entity>emptyList();
     }
 
     /**
@@ -229,6 +231,62 @@ public abstract class ScheduleQuery {
     protected abstract String getScheduleDisplayName();
 
     /**
+     * Returns the events for a schedule and date.
+     *
+     * @param schedule the schedule
+     * @param date     the date
+     * @return the events
+     */
+    protected List<ObjectSet> getEvents(Entity schedule, Date date) {
+        return service.getEvents(schedule, date);
+    }
+
+    /**
+     * Lays out the component.
+     *
+     * @param container the container
+     */
+    protected void doLayout(Component container) {
+        viewField = createScheduleViewField();
+        scheduleField = createScheduleField();
+
+        date = new DateSelector();
+        date.setListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onDateChanged();
+            }
+        });
+        container.add(viewField);
+        container.add(date.getComponent());
+        Label label = LabelFactory.create();
+        label.setText(getScheduleDisplayName());
+        container.add(label);
+        container.add(scheduleField);
+
+        focus.add(viewField);
+        focus.add(date.getFocusGroup());
+        focus.add(scheduleField);
+    }
+
+    /**
+     * Notifies any listener to perform a query.
+     */
+    protected void onQuery() {
+        if (listener != null) {
+            listener.query();
+        }
+    }
+
+    /**
+     * Invoked when the date changes.
+     * <p/>
+     * This implementation invokes {@link #onQuery()}.
+     */
+    protected void onDateChanged() {
+        onQuery();
+    }
+
+    /**
      * Returns the events, keyed on schedule.
      *
      * @return the events
@@ -245,38 +303,10 @@ public abstract class ScheduleQuery {
             schedules = getSchedules();
         }
         for (Entity schedule : schedules) {
-            List<ObjectSet> events = service.getEvents(schedule, date);
+            List<ObjectSet> events = getEvents(schedule, date);
             result.put(schedule, events);
         }
         return result;
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    private void doLayout(Component container) {
-        viewField = createScheduleViewField();
-        scheduleField = createScheduleField();
-
-        date = new DateSelector();
-        date.setListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onQuery();
-            }
-        });
-        container.add(viewField);
-        container.add(date.getComponent());
-        Label label = LabelFactory.create();
-        label.setText(getScheduleDisplayName());
-        container.add(label);
-        container.add(scheduleField);
-
-        focus = new FocusGroup("ScheduleQuery");
-        focus.add(viewField);
-        focus.add(date.getFocusGroup());
-        focus.add(scheduleField);
     }
 
     /**
@@ -358,15 +388,6 @@ public abstract class ScheduleQuery {
      */
     private void onScheduleChanged() {
         onQuery();
-    }
-
-    /**
-     * Notifies any listener to perform a query.
-     */
-    private void onQuery() {
-        if (listener != null) {
-            listener.query();
-        }
     }
 
 }

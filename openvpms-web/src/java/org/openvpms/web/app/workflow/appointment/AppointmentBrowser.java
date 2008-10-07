@@ -271,7 +271,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
     }
 
     private enum TimeRange {
-        ALL(0, 34), MORNING(8, 12), AFTERNOON(12, 17), EVENING(17, 24),
+        ALL(0, 24), MORNING(8, 12), AFTERNOON(12, 17), EVENING(17, 24),
         AM(0, 12), PM(12, 24);
 
         TimeRange(int startHour, int endHour) {

@@ -18,20 +18,32 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleQuery;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.DateHelper;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 
@@ -44,10 +56,76 @@ import java.util.List;
 public class TaskQuery extends ScheduleQuery {
 
     /**
+     * The status range selector.
+     */
+    private SelectField statusRange;
+
+    /**
+     * Listener for status range listener.
+     */
+    private final ActionListener statusRangeListener;
+
+    /**
+     * Act status range.
+     */
+    private enum StatusRange {
+        ALL,         // All acts
+        INCOMPLETE,  // Incomplete acts
+        COMPLETE     // Complete acts
+    }
+
+
+    /**
      * Creates a new <tt>TaskQuery</tt>.
      */
     public TaskQuery() {
         super(ServiceHelper.getTaskService());
+        statusRangeListener = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onQuery();
+            }
+        };
+
+    }
+
+    /**
+     * Lays out the component.
+     *
+     * @param container the container
+     */
+    @Override
+    protected void doLayout(Component container) {
+        statusRange = SelectFieldFactory.create(StatusRange.values());
+        statusRange.setCellRenderer(new StatusRangeListCellRenderer());
+        statusRange.setSelectedItem(StatusRange.INCOMPLETE);
+        statusRange.addActionListener(statusRangeListener);
+
+        container.add(LabelFactory.create("actquery.status"));
+        container.add(statusRange);
+        getFocusGroup().add(statusRange);
+        super.doLayout(container);
+    }
+
+    /**
+     * Invoked when the date is updated.
+     * Updates the status range selector to:
+     * <ul>
+     * <li>select INCOMPLETE appointments for the current date; or</li>
+     * <li>ALL appointments for any other date</li>
+     * </ul>
+     * and then invokes {@link #onQuery()}.
+     */
+    protected void onDateChanged() {
+        Date date = getDate();
+        Date today = DateHelper.getDayMonthYear(new Date());
+        statusRange.removeActionListener(statusRangeListener);
+        if (date.equals(today)) {
+            statusRange.setSelectedItem(StatusRange.INCOMPLETE);
+        } else {
+            statusRange.setSelectedItem(StatusRange.ALL);
+        }
+        statusRange.addActionListener(statusRangeListener);
+        onQuery();
     }
 
     /**
@@ -117,5 +195,101 @@ public class TaskQuery extends ScheduleQuery {
      */
     protected String getScheduleDisplayName() {
         return Messages.get("workflow.scheduling.query.worklist");
+    }
+
+    /**
+     * Returns the events for a schedule and date.
+     *
+     * @param schedule the schedule
+     * @param date     the date
+     * @return the events
+     */
+    @Override
+    protected List<ObjectSet> getEvents(Entity schedule, Date date) {
+        List<ObjectSet> events = super.getEvents(schedule, date);
+        List<ObjectSet> result;
+        StatusRange range = getStatusRange();
+        if (!events.isEmpty() && range != StatusRange.ALL) {
+            boolean complete = range == StatusRange.COMPLETE;
+            result = new ArrayList<ObjectSet>();
+            for (ObjectSet event : events) {
+                String status = event.getString(ScheduleEvent.ACT_STATUS);
+                if (complete) {
+                    if (TaskStatus.isComplete(status)) {
+                        result.add(event);
+                    }
+                } else {
+                    if (TaskStatus.isIncomplete(status)) {
+                        result.add(event);
+                    }
+                }
+            }
+        } else {
+            result = events;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the selected status range.
+     *
+     * @return the selected status range
+     */
+    private StatusRange getStatusRange() {
+        return (StatusRange) statusRange.getSelectedItem();
+    }
+
+    /**
+     * Cell renderer for the status range combo.
+     */
+    private static class StatusRangeListCellRenderer
+            extends AbstractListCellRenderer<StatusRange> {
+
+
+        /**
+         * Constructs a new <tt>StatusRangeListCellRenderer</tt>.
+         */
+        public StatusRangeListCellRenderer() {
+            super(StatusRange.class);
+        }
+
+        /**
+         * Renders an object.
+         *
+         * @param list   the list component
+         * @param object the object to render. May be <tt>null</tt>
+         * @param index  the object index
+         * @return the rendered object
+         */
+        protected Object getComponent(Component list, StatusRange object,
+                                      int index) {
+            return Messages.get("workflow.scheduling.statusrange."
+                    + object.name());
+        }
+
+        /**
+         * Determines if an object represents 'All'.
+         *
+         * @param list   the list component
+         * @param object the object. May be <tt>null</tt>
+         * @param index  the object index
+         * @return <code>true</code> if the object represents 'All'.
+         */
+        protected boolean isAll(Component list, StatusRange object, int index) {
+            return StatusRange.ALL == object;
+        }
+
+        /**
+         * Determines if an object represents 'None'.
+         *
+         * @param list   the list component
+         * @param object the object. May be <tt>null</tt>
+         * @param index  the object index
+         * @return <code>true</code> if the object represents 'None'.
+         */
+        protected boolean isNone(Component list, StatusRange object,
+                                 int index) {
+            return false;
+        }
     }
 }
