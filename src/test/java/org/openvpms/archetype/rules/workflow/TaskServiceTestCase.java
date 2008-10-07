@@ -41,74 +41,174 @@ import java.util.List;
 public class TaskServiceTestCase extends ArchetypeServiceTest {
 
     /**
+     * The task service.
+     */
+    private ScheduleService service;
+
+    /**
+     * The work list.
+     */
+    private Party workList;
+
+
+    /**
+     * Tests addition of a task.
+     */
+    public void testAddEvent() {
+        Date date = java.sql.Date.valueOf("2008-1-1");
+
+        List<ObjectSet> results = service.getEvents(workList, date);
+        assertEquals(0, results.size());
+
+        Act task = createTask(date);
+
+        results = service.getEvents(workList, date);
+        assertEquals(1, results.size());
+        ObjectSet set = results.get(0);
+        checkTask(task, set);
+    }
+
+    /**
+     * Tests removal of an event.
+     */
+    public void testRemoveEvent() {
+        Date date = java.sql.Date.valueOf("2008-1-1");
+
+        List<ObjectSet> results = service.getEvents(workList, date);
+        assertEquals(0, results.size());
+
+        Act task = createTask(date);
+
+        results = service.getEvents(workList, date);
+        assertEquals(1, results.size());
+
+        getArchetypeService().remove(task);
+
+        assertEquals(0, service.getEvents(workList, date).size());
+    }
+
+    /**
+     * Tests moving of an event from one date to another.
+     */
+    public void testMoveEvent() {
+        Date date1 = java.sql.Date.valueOf("2008-1-1");
+        Date date2 = java.sql.Date.valueOf("2008-3-1");
+
+        service.getEvents(workList, date1);
+        assertEquals(0, service.getEvents(workList, date1).size());
+        assertEquals(0, service.getEvents(workList, date2).size());
+
+        Act task = createTask(date1);
+
+        assertEquals(1, service.getEvents(workList, date1).size());
+        assertEquals(0, service.getEvents(workList, date2).size());
+
+        task.setActivityStartTime(date2); // move it to date2
+        getArchetypeService().save(task);
+
+        assertEquals(0, service.getEvents(workList, date1).size());
+        assertEquals(1, service.getEvents(workList, date2).size());
+    }
+
+    /**
      * Tests the {@link TaskService#getEvents(Entity, Date)} method.
      */
-    public void test() {
+    public void testGetEvents() {
         final int count = 10;
         Party schedule = ScheduleTestHelper.createWorkList();
         Act[] tasks = new Act[count];
-        Date[] startTimes = new Date[count];
-        Date[] endTimes = new Date[count];
-        Party[] customers = new Party[count];
-        Party[] patients = new Party[count];
-        User[] clinicians = new User[count];
         Date date = java.sql.Date.valueOf("2007-1-1");
-        Entity[] taskTypes = new Entity[count];
         for (int i = 0; i < count; ++i) {
             Date startTime = DateRules.getDate(date, 15 * count,
                                                DateUnits.MINUTES);
             Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
-            Party customer = TestHelper.createCustomer();
-            Party patient = TestHelper.createPatient();
-            User clinician = TestHelper.createClinician();
-            Act task = ScheduleTestHelper.createTask(
-                    startTime, endTime, schedule, customer, patient);
-            ActBean bean = new ActBean(task);
-            bean.addParticipation("participation.clinician", clinician);
-            tasks[i] = task;
-            startTimes[i] = startTime;
-            endTimes[i] = endTime;
-            taskTypes[i] = bean.getNodeParticipant("taskType");
-            customers[i] = customer;
-            patients[i] = patient;
-            clinicians[i] = clinician;
-            bean.save();
+
+            tasks[i] = createTask(startTime, endTime, schedule);
         }
 
-        TaskService service = (TaskService) applicationContext.getBean(
-                "taskService");
         List<ObjectSet> results = service.getEvents(schedule, date);
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
-            ObjectSet set = results.get(i);
-            assertEquals(tasks[i].getObjectReference(),
-                         set.get(ScheduleEvent.ACT_REFERENCE));
-            assertEquals(startTimes[i],
-                         set.get(ScheduleEvent.ACT_START_TIME));
-            assertEquals(endTimes[i], set.get(ScheduleEvent.ACT_END_TIME));
-            assertEquals(tasks[i].getStatus(),
-                         set.get(ScheduleEvent.ACT_STATUS));
-            assertEquals(tasks[i].getReason(),
-                         set.get(ScheduleEvent.ACT_REASON));
-            assertEquals(tasks[i].getDescription(),
-                         set.get(ScheduleEvent.ACT_DESCRIPTION));
-            assertEquals(customers[i].getObjectReference(),
-                         set.get(ScheduleEvent.CUSTOMER_REFERENCE));
-            assertEquals(customers[i].getName(),
-                         set.get(ScheduleEvent.CUSTOMER_NAME));
-            assertEquals(patients[i].getObjectReference(),
-                         set.get(ScheduleEvent.PATIENT_REFERENCE));
-            assertEquals(patients[i].getName(),
-                         set.get(ScheduleEvent.PATIENT_NAME));
-            assertEquals(clinicians[i].getObjectReference(),
-                         set.get(ScheduleEvent.CLINICIAN_REFERENCE));
-            assertEquals(clinicians[i].getName(),
-                         set.get(ScheduleEvent.CLINICIAN_NAME));
-            assertEquals(taskTypes[i].getObjectReference(),
-                         set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
-            assertEquals(taskTypes[i].getName(),
-                         set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
+            checkTask(tasks[i], results.get(i));
         }
+    }
+
+    /**
+     * Creates and saves a new task.
+     *
+     * @param date the date to create the task on
+     * @return a new task
+     */
+    private Act createTask(Date date) {
+        Date startTime = DateRules.getDate(date, 15, DateUnits.MINUTES);
+        return createTask(startTime, null, workList);
+    }
+
+    /**
+     * Creates and saves a new task.
+     *
+     * @param startTime the start time
+     * @param endTime   the end time
+     * @param workList  the work list
+     * @return a new task
+     */
+    private Act createTask(Date startTime, Date endTime, Party workList) {
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient();
+        User clinician = TestHelper.createClinician();
+        Act task = ScheduleTestHelper.createTask(
+                startTime, endTime, workList, customer, patient, clinician);
+        save(task);
+        return task;
+    }
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        service = (ScheduleService) applicationContext.getBean("taskService");
+        workList = ScheduleTestHelper.createWorkList();
+    }
+
+
+    /**
+     * Verifies that a task matches the {@link ObjectSet} representing it.
+     *
+     * @param task the task
+     * @param set  the set
+     */
+    private void checkTask(Act task, ObjectSet set) {
+        ActBean bean = new ActBean(task);
+        assertEquals(task.getObjectReference(),
+                     set.get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(task.getActivityStartTime(),
+                     set.get(ScheduleEvent.ACT_START_TIME));
+        assertEquals(task.getActivityEndTime(),
+                     set.get(ScheduleEvent.ACT_END_TIME));
+        assertEquals(task.getStatus(), set.get(ScheduleEvent.ACT_STATUS));
+        assertEquals(task.getReason(), set.get(ScheduleEvent.ACT_REASON));
+        assertEquals(task.getDescription(),
+                     set.get(ScheduleEvent.ACT_DESCRIPTION));
+        assertEquals(bean.getNodeParticipantRef("customer"),
+                     set.get(ScheduleEvent.CUSTOMER_REFERENCE));
+        assertEquals(bean.getNodeParticipant("customer").getName(),
+                     set.get(ScheduleEvent.CUSTOMER_NAME));
+        assertEquals(bean.getNodeParticipantRef("patient"),
+                     set.get(ScheduleEvent.PATIENT_REFERENCE));
+        assertEquals(bean.getNodeParticipant("patient").getName(),
+                     set.get(ScheduleEvent.PATIENT_NAME));
+        assertEquals(bean.getNodeParticipantRef("clinician"),
+                     set.get(ScheduleEvent.CLINICIAN_REFERENCE));
+        assertEquals(bean.getNodeParticipant("clinician").getName(),
+                     set.get(ScheduleEvent.CLINICIAN_NAME));
+        assertEquals(bean.getNodeParticipantRef("taskType"),
+                     set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
+        assertEquals(bean.getNodeParticipant("taskType").getName(),
+                     set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
     }
 
 }

@@ -31,7 +31,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskQuery extends ScheduleEventQuery {
+class TaskQuery extends ScheduleEventQuery {
 
     /**
      * Creates a new <tt>TaskQuery</tt>.
