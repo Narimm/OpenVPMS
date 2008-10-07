@@ -250,7 +250,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @return a new act
      */
     public static Act createTask(Date startTime, Date endTime,
-                                        Party workList) {
+                                 Party workList) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         return createTask(startTime, endTime, workList, customer, patient);
@@ -271,6 +271,7 @@ public class ScheduleTestHelper extends TestHelper {
         return createTask(startTime, endTime, schedule, customer, patient,
                           null);
     }
+
     /**
      * Helper to create an <em>act.customerTask</em>.
      *

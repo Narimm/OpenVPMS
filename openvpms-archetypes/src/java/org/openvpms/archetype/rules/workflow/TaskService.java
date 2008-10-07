@@ -48,6 +48,12 @@ public class TaskService extends AbstractScheduleService {
         super("act.customerTask", service, cache);
     }
 
+    /**
+     * Assembles an {@link ObjectSet ObjectSet} from a source act.
+     *
+     * @param target the target set
+     * @param source the source act
+     */
     @Override
     protected void assemble(ObjectSet target, ActBean source) {
         super.assemble(target, source);
@@ -65,11 +71,26 @@ public class TaskService extends AbstractScheduleService {
         target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
     }
 
+    /**
+     * Returns the schedule reference from an event.
+     *
+     * @param event the event
+     * @return a reference to the schedule. May be <tt>null</tt>
+     */
     protected IMObjectReference getSchedule(Act event) {
         ActBean bean = new ActBean(event, getService());
         return bean.getNodeParticipantRef("worklist");
     }
 
+    /**
+     * Creates a new query to query events for the specified schedule and date
+     * range.
+     *
+     * @param schedule the schedule
+     * @param from     the start time
+     * @param to       the end time
+     * @return a new query
+     */
     protected ScheduleEventQuery createQuery(Entity schedule, Date from,
                                              Date to) {
         return new TaskQuery((Party) schedule, from, to, getService());

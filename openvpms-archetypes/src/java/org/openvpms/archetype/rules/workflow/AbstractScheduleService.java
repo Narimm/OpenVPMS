@@ -67,9 +67,17 @@ public abstract class AbstractScheduleService implements ScheduleService {
     private final Cache cache;
 
 
+    /**
+     * Creates a new <tt>AbstractScheduleService</tt>.
+     *
+     * @param eventShortName the event act archetype short name
+     * @param service        the archetype service
+     * @param cache          the event cache
+     */
     public AbstractScheduleService(String eventShortName,
                                    IArchetypeService service,
                                    Cache cache) {
+        // add a listener to receive notifications from the archetype service
         service.addListener(
                 eventShortName, new IArchetypeServiceListener() {
             public void saved(IMObject object) {
@@ -139,10 +147,23 @@ public abstract class AbstractScheduleService implements ScheduleService {
         return results;
     }
 
-
+    /**
+     * Returns the schedule reference from an event.
+     *
+     * @param event the event
+     * @return a reference to the schedule. May be <tt>null</tt>
+     */
     protected abstract IMObjectReference getSchedule(Act event);
 
-
+    /**
+     * Creates a new query to query events for the specified schedule and date
+     * range.
+     *
+     * @param schedule the schedule
+     * @param from     the start time
+     * @param to       the end time
+     * @return a new query
+     */
     protected abstract ScheduleEventQuery createQuery(Entity schedule,
                                                       Date from, Date to);
 
@@ -209,6 +230,12 @@ public abstract class AbstractScheduleService implements ScheduleService {
         }
     }
 
+    /**
+     * Assembles an {@link ObjectSet ObjectSet} from a source act.
+     *
+     * @param target the target set
+     * @param source the source act
+     */
     protected void assemble(ObjectSet target, ActBean source) {
         Act event = source.getAct();
         target.set(ScheduleEvent.ACT_REFERENCE, event.getObjectReference());
@@ -260,6 +287,13 @@ public abstract class AbstractScheduleService implements ScheduleService {
         return null;
     }
 
+    /**
+     * Removes an act from the cache.
+     *
+     * @param element the cache element
+     * @param act     the act reference
+     * @return <Tt>true</tt> if the act was removed
+     */
     private boolean remove(Element element, IMObjectReference act) {
         synchronized (element) {
             Value value = (Value) element.getObjectValue();
@@ -267,20 +301,40 @@ public abstract class AbstractScheduleService implements ScheduleService {
         }
     }
 
+    /**
+     * Returns the cache element for the specified schedule and date.
+     *
+     * @param schedule the schedule reference
+     * @param date     the date
+     * @return the corresponding cache element, or <tt>null</tt> if none is
+     *         found
+     */
     private Element getElement(IMObjectReference schedule, Date date) {
         date = getStart(date);
         Key key = new Key(schedule, date);
         return cache.get(key);
     }
 
-
-    private Date getStart(Date day) {
-        return DateRules.getDate(day);
+    /**
+     * Returns the start of the specified date-time.
+     *
+     * @param datetime the date-time
+     * @return the date part of <tt>datetime</tt>, zero-ing out any time
+     *         component.
+     */
+    private Date getStart(Date datetime) {
+        return DateRules.getDate(datetime);
     }
 
-    private Date getEnd(Date day) {
+    /**
+     * Returns the end of the day for the specified date-time.
+     *
+     * @param datetime the date-time
+     * @return one millisecond to midnight for the specified date
+     */
+    private Date getEnd(Date datetime) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(day);
+        calendar.setTime(datetime);
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
@@ -288,12 +342,22 @@ public abstract class AbstractScheduleService implements ScheduleService {
         return calendar.getTime();
     }
 
+    /**
+     * Queries all events for the specified date.
+     *
+     * @param schedule the schedule
+     * @param start the start date
+     * @return all events for the date
+     */
     private List<ObjectSet> query(Entity schedule, Date start) {
         Date end = getEnd(start);
         ScheduleEventQuery query = createQuery(schedule, start, end);
         return query.query().getResults();
     }
 
+    /**
+     * Cache key.
+     */
     private static class Key implements Serializable {
 
         private IMObjectReference schedule;
@@ -341,9 +405,15 @@ public abstract class AbstractScheduleService implements ScheduleService {
         }
     }
 
+    /**
+     * Cache value.
+     */
     private static class Value implements Serializable {
+
         private final Map<IMObjectReference, ObjectSet> map;
+
         private List<ObjectSet> sorted;
+
         private static final SetComparator COMPARATOR = new SetComparator();
 
         public Value(List<ObjectSet> events) {

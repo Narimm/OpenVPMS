@@ -37,4 +37,44 @@ public class TaskStatus extends WorkflowStatus {
      */
     public static final String[] INCOMPLETE = {PENDING, IN_PROGRESS, BILLED};
 
+
+    /**
+     * Helper to determine if a status is in the 'COMPLETE' range.
+     *
+     * @param status the status
+     * @return <tt>true</tt> if the status is in the 'COMPLETE' range, otherwise
+     *         <tt>false</tt>
+     */
+    public static boolean isComplete(String status) {
+        return inRange(status, COMPLETE);
+    }
+
+    /**
+     * Helper to determine if a status is in the 'INCOMPLETE' range.
+     *
+     * @param status the status
+     * @return <tt>true</tt> if the status is in the 'INCOMPLETE' range,
+     *         otherwise <tt>false</tt>
+     */
+    public static boolean isIncomplete(String status) {
+        return inRange(status, INCOMPLETE);
+    }
+
+    /**
+     * Determines if a status falls in a status range.
+     *
+     * @param status the status
+     * @param range  the status range
+     * @return <tt>true</tt> if the status is in the range, otherwise
+     *         <tt>false</tt>
+     */
+    private static boolean inRange(String status, String[] range) {
+        for (String str : range) {
+            if (str.equals(status)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
