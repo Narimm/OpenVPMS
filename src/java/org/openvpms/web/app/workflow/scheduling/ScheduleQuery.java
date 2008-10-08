@@ -23,22 +23,31 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectSet;
+import static org.openvpms.web.app.workflow.scheduling.ScheduleTableModel.Highlight;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.DateSelector;
 import org.openvpms.web.component.im.query.QueryListener;
+import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.resource.util.Messages;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +80,16 @@ public abstract class ScheduleQuery {
      * The date selector.
      */
     private DateSelector date;
+
+    /**
+     * Highlight selector, to change colour of display items.
+     */
+    private SelectField highlightSelector;
+
+    /**
+     * Clinician selector.
+     */
+    private SelectField clinicianSelector;
 
     /**
      * The query component.
@@ -109,7 +128,7 @@ public abstract class ScheduleQuery {
      */
     public Component getComponent() {
         if (component == null) {
-            component = RowFactory.create("ControlRow");
+            component = GridFactory.create(6);
             focus = new FocusGroup("ScheduleQuery");
             doLayout(component);
         }
@@ -184,6 +203,37 @@ public abstract class ScheduleQuery {
     }
 
     /**
+     * Returns the selected clinician.
+     *
+     * @return the selected clinician, or <tt>null</tt> if no clinician is
+     *         selected
+     */
+    public User getClinician() {
+        return (User) clinicianSelector.getSelectedItem();
+    }
+
+    /**
+     * Returns the selected highlight.
+     *
+     * @return the selected highlight
+     */
+    public Highlight getHighlight() {
+        Highlight result;
+        int index = highlightSelector.getSelectedIndex();
+        switch (index) {
+            case 0:
+                result = Highlight.EVENT;
+                break;
+            case 1:
+                result = Highlight.CLINICIAN;
+                break;
+            default:
+                result = Highlight.STATUS;
+        }
+        return result;
+    }
+
+    /**
      * Returns the focus group for the component.
      *
      * @return the focus group
@@ -242,6 +292,27 @@ public abstract class ScheduleQuery {
     }
 
     /**
+     * Creates a new highlight selector.
+     *
+     * @return a new highlight selector
+     */
+    protected SelectField createHighlightSelector() {
+        String[] highlightSelectorItems = {
+                Messages.get("workflow.scheduling.highlight.event"),
+                Messages.get("workflow.scheduling.highlight.clinician"),
+                Messages.get("workflow.scheduling.highlight.status")};
+
+        SelectField result = SelectFieldFactory.create(highlightSelectorItems);
+        result.setSelectedItem(highlightSelectorItems[0]);
+        result.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onQuery();
+            }
+        });
+        return result;
+    }
+
+    /**
      * Lays out the component.
      *
      * @param container the container
@@ -249,23 +320,37 @@ public abstract class ScheduleQuery {
     protected void doLayout(Component container) {
         viewField = createScheduleViewField();
         scheduleField = createScheduleField();
+        clinicianSelector = createClinicianSelector();
+
+        Label scheduleLabel = LabelFactory.create();
+        scheduleLabel.setText(getScheduleDisplayName());
+
+        container.add(LabelFactory.create("workflow.scheduling.query.view"));
+        container.add(viewField);
+        container.add(scheduleLabel);
+        container.add(scheduleField);
+        container.add(LabelFactory.create("clinician"));
+        container.add(clinicianSelector);
+        focus.add(viewField);
+        focus.add(scheduleField);
+        focus.add(clinicianSelector);
 
         date = new DateSelector();
         date.setListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent event) {
                 onDateChanged();
             }
         });
-        container.add(viewField);
-        container.add(date.getComponent());
-        Label label = LabelFactory.create();
-        label.setText(getScheduleDisplayName());
-        container.add(label);
-        container.add(scheduleField);
+        highlightSelector = createHighlightSelector();
 
-        focus.add(viewField);
+
+        component.add(LabelFactory.create("workflow.scheduling.query.date"));
+        component.add(date.getComponent());
+        component.add(LabelFactory.create("workflow.scheduling.highlight"));
+        component.add(highlightSelector);
+
         focus.add(date.getFocusGroup());
-        focus.add(scheduleField);
+        focus.add(highlightSelector);
     }
 
     /**
@@ -343,7 +428,7 @@ public abstract class ScheduleQuery {
         result.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
         result.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                onScheduleChanged();
+                onQuery();
             }
         });
         return result;
@@ -371,6 +456,37 @@ public abstract class ScheduleQuery {
     }
 
     /**
+     * Creates a new dropdown to select clinicians.
+     *
+     * @return a new clinician selector
+     */
+    private SelectField createClinicianSelector() {
+        UserRules rules = new UserRules();
+        List<IMObject> clinicians = new ArrayList<IMObject>();
+        ArchetypeQuery query = new ArchetypeQuery("security.user", true, true);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        Iterator<User> iter = new IMObjectQueryIterator<User>(query);
+        while (iter.hasNext()) {
+            User user = iter.next();
+            if (rules.isClinician(user)) {
+                clinicians.add(user);
+            }
+        }
+        IMObjectListModel model
+                = new IMObjectListModel(clinicians, true, false);
+        SelectField result = SelectFieldFactory.create(model);
+        result.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+
+        result.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onQuery();
+            }
+        });
+
+        return result;
+    }
+
+    /**
      * Invoked when the schedule view changes.
      * <p/>
      * Notifies any listener to perform a query.
@@ -378,15 +494,6 @@ public abstract class ScheduleQuery {
     private void onViewChanged() {
         schedules = null;
         updateScheduleField();
-        onQuery();
-    }
-
-    /**
-     * Invoked when the schedule changes.
-     * <p/>
-     * Notifies any listener to perform a query.
-     */
-    private void onScheduleChanged() {
         onQuery();
     }
 

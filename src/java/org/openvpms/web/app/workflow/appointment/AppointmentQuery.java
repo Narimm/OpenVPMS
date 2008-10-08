@@ -18,12 +18,18 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.workflow.scheduling.ScheduleQuery;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -40,10 +46,36 @@ import java.util.List;
  */
 class AppointmentQuery extends ScheduleQuery {
 
+    public enum TimeRange {
+        ALL(0, 24), MORNING(8, 12), AFTERNOON(12, 17), EVENING(17, 24),
+        AM(0, 12), PM(12, 24);
+
+        TimeRange(int startHour, int endHour) {
+            this.startMins = startHour * 60;
+            this.endMins = endHour * 60;
+        }
+
+        public int getStartMins() {
+            return startMins;
+        }
+
+        public int getEndMins() {
+            return endMins;
+        }
+
+        private final int startMins;
+        private final int endMins;
+    }
+
     /**
      * Appointment rules.
      */
     private AppointmentRules rules;
+
+    /**
+     * Time range selector.
+     */
+    private SelectField timeSelector;
 
 
     /**
@@ -52,6 +84,39 @@ class AppointmentQuery extends ScheduleQuery {
     public AppointmentQuery() {
         super(ServiceHelper.getAppointmentService());
         rules = new AppointmentRules();
+    }
+
+    /**
+     * Returns the selected time range.
+     *
+     * @return the selected time range
+     */
+    public TimeRange getTimeRange() {
+        int index = timeSelector.getSelectedIndex();
+        TimeRange range;
+        switch (index) {
+            case 0:
+                range = TimeRange.ALL;
+                break;
+            case 1:
+                range = TimeRange.MORNING;
+                break;
+            case 2:
+                range = TimeRange.AFTERNOON;
+                break;
+            case 3:
+                range = TimeRange.EVENING;
+                break;
+            case 4:
+                range = TimeRange.AM;
+                break;
+            case 5:
+                range = TimeRange.PM;
+                break;
+            default:
+                range = TimeRange.ALL;
+        }
+        return range;
     }
 
     /**
@@ -106,5 +171,33 @@ class AppointmentQuery extends ScheduleQuery {
      */
     protected String getScheduleDisplayName() {
         return Messages.get("workflow.scheduling.query.schedule");
+    }
+
+    /**
+     * Lays out the component.
+     *
+     * @param container the container
+     */
+    @Override
+    protected void doLayout(Component container) {
+        super.doLayout(container);
+        String[] timeSelectorItems = {
+                Messages.get("workflow.scheduling.time.all"),
+                Messages.get("workflow.scheduling.time.morning"),
+                Messages.get("workflow.scheduling.time.afternoon"),
+                Messages.get("workflow.scheduling.time.evening"),
+                Messages.get("workflow.scheduling.time.AM"),
+                Messages.get("workflow.scheduling.time.PM")};
+
+        timeSelector = SelectFieldFactory.create(timeSelectorItems);
+        timeSelector.setSelectedItem(timeSelectorItems[0]);
+        timeSelector.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onQuery();
+            }
+        });
+        container.add(LabelFactory.create("workflow.scheduling.time"));
+        container.add(timeSelector);
+        getFocusGroup().add(timeSelector);
     }
 }
