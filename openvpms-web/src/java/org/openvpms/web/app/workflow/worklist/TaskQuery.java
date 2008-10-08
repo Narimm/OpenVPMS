@@ -95,6 +95,7 @@ public class TaskQuery extends ScheduleQuery {
      */
     @Override
     protected void doLayout(Component container) {
+        super.doLayout(container);
         statusRange = SelectFieldFactory.create(StatusRange.values());
         statusRange.setCellRenderer(new StatusRangeListCellRenderer());
         statusRange.setSelectedItem(StatusRange.INCOMPLETE);
@@ -103,7 +104,6 @@ public class TaskQuery extends ScheduleQuery {
         container.add(LabelFactory.create("actquery.status"));
         container.add(statusRange);
         getFocusGroup().add(statusRange);
-        super.doLayout(container);
     }
 
     /**

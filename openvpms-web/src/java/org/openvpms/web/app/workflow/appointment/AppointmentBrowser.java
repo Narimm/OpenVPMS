@@ -23,9 +23,6 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -37,7 +34,6 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.text.DateFormat;
@@ -63,10 +59,9 @@ public class AppointmentBrowser extends ScheduleBrowser {
     private Label title;
 
     /**
-     * Time range selector.
+     * The last time range.
      */
-    private SelectField timeSelector;
-
+    private AppointmentQuery.TimeRange lastTimeRange;
 
     /**
      * Creates a new <tt>AppointmentBrowser</tt>.
@@ -79,8 +74,35 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * Query using the specified criteria, and populate the table with matches.
      */
     public void query() {
-        super.query();
+        AppointmentQuery.TimeRange timeRange = getQuery().getTimeRange();
+        boolean reselect = true;
+        if (lastTimeRange == null || !timeRange.equals(lastTimeRange)) {
+            reselect = false;
+        }
+        lastTimeRange = timeRange;
+        doQuery(reselect);
         updateTitle();
+    }
+
+    /**
+     * Performs a query.
+     *
+     * @param reselect if <tt>true</tt> try and reselect the selected cell
+     */
+    @Override
+    protected void doQuery(boolean reselect) {
+        getComponent();
+        super.doQuery(reselect);
+    }
+
+    /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    @Override
+    protected AppointmentQuery getQuery() {
+        return (AppointmentQuery) super.getQuery();
     }
 
     /**
@@ -99,7 +121,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         } else {
             grid = new MultiScheduleGrid(date, events);
         }
-        TimeRange range = getSelectedTimeRange();
+        AppointmentQuery.TimeRange range = getQuery().getTimeRange();
         return createGridView(grid, range);
     }
 
@@ -141,7 +163,6 @@ public class AppointmentBrowser extends ScheduleBrowser {
 
         Row row = RowFactory.create("CellSpacing");
         layoutQueryRow(row);
-        addQueryButton(row);
 
         Component component = ColumnFactory.create("WideCellSpacing",
                                                    title, row);
@@ -150,36 +171,6 @@ public class AppointmentBrowser extends ScheduleBrowser {
             component.add(table);
         }
         return component;
-    }
-
-    /**
-     * Lays out the query row, adding highlight and clinician selectors.
-     *
-     * @param row the container
-     */
-    @Override
-    protected void layoutQueryRow(Row row) {
-        super.layoutQueryRow(row);
-
-        String[] timeSelectorItems = {
-                Messages.get("workflow.scheduling.time.all"),
-                Messages.get("workflow.scheduling.time.morning"),
-                Messages.get("workflow.scheduling.time.afternoon"),
-                Messages.get("workflow.scheduling.time.evening"),
-                Messages.get("workflow.scheduling.time.AM"),
-                Messages.get("workflow.scheduling.time.PM")};
-
-        timeSelector = SelectFieldFactory.create(timeSelectorItems);
-        timeSelector.setSelectedItem(timeSelectorItems[0]);
-        timeSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onTimeRangeChanged();
-            }
-        });
-
-        Label timeLabel = LabelFactory.create("workflow.scheduling.time");
-        row.add(timeLabel);
-        row.add(timeSelector);
     }
 
     /**
@@ -208,54 +199,15 @@ public class AppointmentBrowser extends ScheduleBrowser {
     }
 
     /**
-     * Invoked when the time range changed.
-     */
-    private void onTimeRangeChanged() {
-        doQuery(false); // don't reselect the cell
-    }
-
-    /**
-     * Returns the selected time range.
-     *
-     * @return the selected time range
-     */
-    private TimeRange getSelectedTimeRange() {
-        int index = timeSelector.getSelectedIndex();
-        TimeRange range;
-        switch (index) {
-            case 0:
-                range = TimeRange.ALL;
-                break;
-            case 1:
-                range = TimeRange.MORNING;
-                break;
-            case 2:
-                range = TimeRange.AFTERNOON;
-                break;
-            case 3:
-                range = TimeRange.EVENING;
-                break;
-            case 4:
-                range = TimeRange.AM;
-                break;
-            case 5:
-                range = TimeRange.PM;
-                break;
-            default:
-                range = TimeRange.ALL;
-        }
-        return range;
-    }
-
-    /**
      * Creates a new view of the appointments.
      *
      * @param grid      the underlying appointment grid
      * @param timeRange the time range to view
      * @return view a new grid view, based on the time range
      */
-    private AppointmentGrid createGridView(AppointmentGrid grid,
-                                           TimeRange timeRange) {
+    private AppointmentGrid createGridView(
+            AppointmentGrid grid,
+            AppointmentQuery.TimeRange timeRange) {
         int startMins = timeRange.getStartMins();
         int endMins = timeRange.getEndMins();
         if (startMins < grid.getStartMins()) {
@@ -270,24 +222,4 @@ public class AppointmentBrowser extends ScheduleBrowser {
         return new AppointmentGridView(grid, startMins, endMins);
     }
 
-    private enum TimeRange {
-        ALL(0, 24), MORNING(8, 12), AFTERNOON(12, 17), EVENING(17, 24),
-        AM(0, 12), PM(12, 24);
-
-        TimeRange(int startHour, int endHour) {
-            this.startMins = startHour * 60;
-            this.endMins = endHour * 60;
-        }
-
-        public int getStartMins() {
-            return startMins;
-        }
-
-        public int getEndMins() {
-            return endMins;
-        }
-
-        private final int startMins;
-        private final int endMins;
-    }
 }

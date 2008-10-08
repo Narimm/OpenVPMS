@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.appointment;
 
 import echopointng.BalloonHelp;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -131,10 +132,16 @@ class MultiScheduleTableModel extends AppointmentTableModel {
         int index = START_TIME_INDEX;
         String startTime = getDisplayName("act.customerAppointment",
                                           "startTime");
-        result.addColumn(new Column(index, startTime));
+        Column startCol = new Column(index, startTime);
+        startCol.setWidth(new Extent(100));
+        result.addColumn(startCol);
         ++index;
+        int percent = (!schedules.isEmpty()) ? 100 / schedules.size() : 0;
         for (Schedule schedule : schedules) {
             Column column = new Column(index++, schedule);
+            if (percent != 0) {
+                column.setWidth(new Extent(percent, Extent.PERCENT));
+            }
             result.addColumn(column);
         }
         return result;

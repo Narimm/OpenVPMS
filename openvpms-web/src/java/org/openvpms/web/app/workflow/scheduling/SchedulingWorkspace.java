@@ -86,7 +86,6 @@ public abstract class SchedulingWorkspace
     @Override
     public void setObject(Entity object) {
         super.setObject(object);
-        GlobalContext.getInstance().setScheduleView(object);
         layoutWorkspace(object);
         initQuery(object);
     }

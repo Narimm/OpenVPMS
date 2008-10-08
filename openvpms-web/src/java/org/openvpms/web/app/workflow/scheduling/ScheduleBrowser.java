@@ -22,22 +22,15 @@ import echopointng.TableEx;
 import echopointng.table.TableActionEventEx;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectSet;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.QueryListener;
@@ -45,14 +38,10 @@ import org.openvpms.web.component.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,16 +94,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
      * The selected schedule. May be <tt>null</tt>
      */
     private Entity selectedSchedule;
-
-    /**
-     * Highlight selector, to change colour of display items.
-     */
-    private SelectField highlightSelector;
-
-    /**
-     * Clinician selector.
-     */
-    private SelectField clinicianSelector;
 
 
     /**
@@ -310,7 +289,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
     protected Component doLayout() {
         Row row = RowFactory.create("CellSpacing");
         layoutQueryRow(row);
-        addQueryButton(row);
 
         Component component = ColumnFactory.create("WideCellSpacing", row);
         if (table != null) {
@@ -320,30 +298,14 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
     }
 
     /**
-     * Lays out the query row, adding highlight and clinician selectors.
+     * Lays out the query row.
      *
-     * @param row the container
+     * @param row the row
      */
     protected void layoutQueryRow(Row row) {
         FocusGroup group = getFocusGroup();
-
-        SelectField highlight = getHighlightSelector();
-        SelectField clinician = getClinicianSelector();
-
         row.add(query.getComponent());
-        row.add(LabelFactory.create("workflow.scheduling.highlight"));
-        row.add(highlight);
-        row.add(LabelFactory.create("clinician"));
-        row.add(clinician);
-
         group.add(query.getFocusGroup());
-        group.add(highlight);
-        group.add(clinician);
-
-    }
-
-    protected void addQueryButton(Row row) {
-        FocusGroup group = getFocusGroup();
         ButtonRow buttons = new ButtonRow(group);
         buttons.addButton("query", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -351,51 +313,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
             }
         });
         row.add(buttons);
-    }
-
-    /**
-     * Returns the highlight selector.
-     *
-     * @return the highlight selector
-     */
-    protected SelectField getHighlightSelector() {
-        if (highlightSelector == null) {
-            highlightSelector = createHighlightSelector();
-        }
-        return highlightSelector;
-    }
-
-    /**
-     * Returns the clinician selector.
-     *
-     * @return the clinician selector
-     */
-    protected SelectField getClinicianSelector() {
-        if (clinicianSelector == null) {
-            clinicianSelector = createClinicianSelector();
-        }
-        return clinicianSelector;
-    }
-
-    /**
-     * Creates a new highlight selector.
-     *
-     * @return a new highlight selector
-     */
-    protected SelectField createHighlightSelector() {
-        String[] highlightSelectorItems = {
-                Messages.get("workflow.scheduling.highlight.event"),
-                Messages.get("workflow.scheduling.highlight.clinician"),
-                Messages.get("workflow.scheduling.highlight.status")};
-
-        SelectField result = SelectFieldFactory.create(highlightSelectorItems);
-        result.setSelectedItem(highlightSelectorItems[0]);
-        result.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onHighlightChanged();
-            }
-        });
-        return result;
     }
 
     /**
@@ -437,6 +354,13 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
             table.setModel(model);
             table.setColumnModel(model.getColumnModel());
         }
+        User clinician = query.getClinician();
+        if (clinician != null) {
+            model.setClinician(clinician.getObjectReference());
+        } else {
+            model.setClinician(null);
+        }
+        model.setHighlight(query.getHighlight());
 
         if (reselect) {
             // if the the schedules and date haven't changed, reselect the
@@ -452,34 +376,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
         }
     }
 
-    /**
-     * Invoked when the view changes.
-     */
-    private void onHighlightChanged() {
-        int index = highlightSelector.getSelectedIndex();
-        switch (index) {
-            case 0:
-                model.setHighlight(ScheduleTableModel.Highlight.EVENT);
-                break;
-            case 1:
-                model.setHighlight(ScheduleTableModel.Highlight.CLINICIAN);
-                break;
-            default:
-                model.setHighlight(ScheduleTableModel.Highlight.STATUS);
-        }
-    }
-
-    /**
-     * Invoked when the clinician changes.
-     */
-    private void onClinicianChanged() {
-        User clinician = (User) clinicianSelector.getSelectedItem();
-        if (clinician != null) {
-            model.setClinician(clinician.getObjectReference());
-        } else {
-            model.setClinician(null);
-        }
-    }
 
     /**
      * Invoked when a cell is selected.
@@ -548,37 +444,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
     protected void clearSelection() {
         selectedTime = null;
         model.setSelectedCell(-1, -1);
-    }
-
-    /**
-     * Creates a new dropdown to select clinicians.
-     *
-     * @return a new clinician selector
-     */
-    private SelectField createClinicianSelector() {
-        UserRules rules = new UserRules();
-        List<IMObject> clinicians = new ArrayList<IMObject>();
-        ArchetypeQuery query = new ArchetypeQuery("security.user", true, true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        Iterator<User> iter = new IMObjectQueryIterator<User>(query);
-        while (iter.hasNext()) {
-            User user = iter.next();
-            if (rules.isClinician(user)) {
-                clinicians.add(user);
-            }
-        }
-        IMObjectListModel model
-                = new IMObjectListModel(clinicians, true, false);
-        SelectField result = SelectFieldFactory.create(model);
-        result.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
-
-        result.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onClinicianChanged();
-            }
-        });
-
-        return result;
     }
 
 }
