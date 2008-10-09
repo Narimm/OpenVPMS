@@ -154,8 +154,13 @@ public class ReportParameters {
                     if (defaultValue != null) {
                         property.setValue(defaultValue);
                     }
-                    result.add(property);
                 }
+                if (property.isString()) {
+                    // a largish value which will force the component factory
+                    // to create a TextArea, as opposed to a TextField
+                    property.setMaxLength(300);
+                }
+                result.add(property);
             }
         }
         return result;
