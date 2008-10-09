@@ -113,7 +113,14 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         DocumentAct act = getObject();
         if (act.getDocument() == null) {
             if (canRefresh()) {
+                // regenerate the document, and print
                 refresh(true);
+            } else {
+                ActBean bean = new ActBean(act);
+                if (bean.hasNode("documentTemplate")) {
+                    // document is generated on the fly
+                    super.onPrint();
+                }
             }
         } else {
             super.onPrint();
