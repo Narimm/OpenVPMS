@@ -157,11 +157,17 @@ public class DocumentActDownloader extends Downloader {
         OOConnection connection = null;
         try {
             Document source = getDocument();
-            DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-            connection = OpenOfficeHelper.getConnectionPool().getConnection();
-            Converter converter = new Converter(connection, handlers);
-            Document target = converter.convert(source, DocFormats.PDF_TYPE);
-            DownloadServlet.startDownload(target);
+            if (DocFormats.PDF_TYPE.equals(source.getMimeType())) {
+                DownloadServlet.startDownload(source);
+            } else {
+                DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+                connection
+                        = OpenOfficeHelper.getConnectionPool().getConnection();
+                Converter converter = new Converter(connection, handlers);
+                Document target = converter.convert(source,
+                                                    DocFormats.PDF_TYPE);
+                DownloadServlet.startDownload(target);
+            }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         } finally {
