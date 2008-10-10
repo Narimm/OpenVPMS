@@ -133,20 +133,8 @@ class LookupCache {
         relationships.add(relationship);
         if (lookupService instanceof CachingLookupService) {
             // need to update the cached lookups with the relationship.
-            // todo. Cleaner if done via the service
             CachingLookupService cache = (CachingLookupService) lookupService;
-            Lookup source = null;
-            Lookup target = null;
-            if (relationship.getSource() != null) {
-                source = cache.getLookup(relationship.getSource());
-            }
-            if (relationship.getTarget() != null) {
-                target = cache.getLookup(relationship.getTarget());
-            }
-            if (source != null && target != null) {
-                source.addSourceLookupRelationship(relationship);
-                target.addTargetLookupRelationship(relationship);
-            }
+            cache.add(relationship);
         }
     }
 
