@@ -80,6 +80,10 @@
                         <property name="shortName"
                                   value="act.customerAccountPayment"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="act.customerAccountInitialBalance"/>
+                    </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
