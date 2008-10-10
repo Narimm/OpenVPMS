@@ -30,12 +30,12 @@
      sum(if(credit,-(financial_acts.total - financial_acts.tax_amount),(financial_acts.total - financial_acts.tax_amount)))as total
 FROM
      `acts` acts INNER JOIN `financial_acts` financial_acts ON acts.`act_id` = financial_acts.`financial_act_id`
-     LEFT OUTER JOIN `participations` participations ON acts.`linkId` = participations.`act_linkId`
-     INNER JOIN `entities` entities ON participations.`entity_linkId` = entities.`linkId`
+     LEFT OUTER JOIN `participations` participations ON acts.`act_id` = participations.`act_id`
+     INNER JOIN `entities` entities ON participations.`entity_id` = entities.`entity_id`
 WHERE
      participations.arch_short_name = "participation.clinician"
- AND activity_start_time >= $P{startDate}
- AND activity_start_time <= date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
+ AND acts.activity_start_time >= $P{startDate}
+ AND acts.activity_start_time <= date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
  AND (acts.arch_short_name LIKE "act.customerAccount%item")
 GROUP BY
      clinician_name
@@ -338,7 +338,8 @@ ORDER BY
 				<sectionHyperlink >
 				</sectionHyperlink>
 					</pieDataset>
-					<piePlot>
+					<piePlot 
+isCircular="true" >
 						<plot />
 					</piePlot>
 				</pieChart>
