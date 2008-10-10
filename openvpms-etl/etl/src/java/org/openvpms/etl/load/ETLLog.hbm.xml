@@ -36,6 +36,6 @@
         <property name="id" type="long" precision="20" scale="0" column="id"/>
         <property name="linkId" type="string" length="36" column="linkId"/>        
         <property name="errors" column="error_messages" type="string"
-                  length="1024"/>
+                  length="1536"/>
     </class>
 </hibernate-mapping>
