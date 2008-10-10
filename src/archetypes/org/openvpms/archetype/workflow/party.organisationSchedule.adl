@@ -34,8 +34,8 @@
         <node name="maxSlots" path="/details/maximumSlots" type="java.lang.Integer" defaultValue="'100'" minCardinality="1"/>
         <node name="allowDoubleBooking" path="/details/allowDoubleBooking" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
-        <node name="startTime" path="/details/startTime" type="java.util.Date" minCardinality="1" />
-        <node name="endTime" path="/details/endTime" type="java.util.Date" minCardinality="1" />
+        <node name="startTime" path="/details/startTime" type="java.util.Date" minCardinality="0" />
+        <node name="endTime" path="/details/endTime" type="java.util.Date" minCardinality="0" />
         <node name="views" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.viewSchedule">
