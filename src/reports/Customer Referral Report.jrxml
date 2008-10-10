@@ -27,8 +27,7 @@
 from entities e left join entity_details d on e.entity_id = d.entity_id and d.name ="referral"
 where
 e.arch_short_name like "party.customer%"
-group by d.value
-]]></queryString>
+group by d.value]]></queryString>
 
 	<field name="Referral" class="java.lang.String"/>
 	<field name="total" class="java.lang.Long"/>
@@ -232,7 +231,7 @@ group by d.value
 				</sectionHyperlink>
 					</pieDataset>
 					<piePlot 
->
+isCircular="true" >
 						<plot />
 					</piePlot>
 				</pieChart>

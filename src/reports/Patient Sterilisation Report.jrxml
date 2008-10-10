@@ -33,8 +33,8 @@
   d2.value as desexed,
   d3.value as deceased
 from entities p
-  join entity_relationships r on r.target_linkId=p.linkId
-  join entities c on r.source_linkId = c.linkId
+  join entity_relationships r on r.target_id=p.entity_id
+  join entities c on r.source_id = c.entity_id
   join entity_details d1 on d1.entity_id = p.entity_id and d1.name = "dateOfBirth"
   join entity_details d2 on d2.entity_id = p.entity_id and d2.name = "desexed"
   join entity_details d3 on d3.entity_id = p.entity_id and d3.name = "deceased"

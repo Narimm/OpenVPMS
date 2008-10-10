@@ -28,15 +28,15 @@
 		<defaultValueExpression ><![CDATA[new Boolean("true")]]></defaultValueExpression>
 	</parameter>
 	<queryString><![CDATA[SELECT
-     activity_start_time as date,
+     acts.activity_start_time as date,
      if(credit,-financial_acts.total,financial_acts.total)as total,
      entities.`name` AS customer
 FROM
      `acts` acts INNER JOIN `financial_acts` financial_acts ON acts.`act_id` = financial_acts.`financial_act_id`
-     INNER JOIN `participations` participations ON acts.`linkId` = participations.`act_linkId`
-     INNER JOIN `entities` entities ON participations.`entity_linkId` = entities.`linkId`
+     INNER JOIN `participations` participations ON acts.`act_id` = participations.`act_id`
+     INNER JOIN `entities` entities ON participations.`entity_id` = entities.`entity_id`
 WHERE
-     date(activity_start_time) = $P{balanceDate}
+     date(acts.activity_start_time) = $P{balanceDate}
  AND (participations.arch_short_name = "participation.customer")
  AND (acts.arch_short_name = "act.customerAccountOpeningBalance")
  AND (total <> 0.00)

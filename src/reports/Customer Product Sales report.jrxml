@@ -45,14 +45,14 @@
 	parent.activity_start_time as date,
 	if(credit,-f.quantity, f.quantity) as quantity,
 	if(credit,-f.total,f.total)as total
-from acts parent join act_relationships r on parent.linkId = r.source_linkId
-    join acts child on r.target_linkId = child.linkId and child.arch_short_name like "act.customerAccount%Item"
-    join participations product_partic on child.linkId = product_partic.act_linkId
-    join entities product on product.linkId = product_partic.entity_linkId and product.arch_short_name like "product.%"
-    join participations patient_partic on child.linkId = patient_partic.act_linkId
-    join entities patient on patient.linkId = patient_partic.entity_linkId and patient.arch_short_name like "party.patient%"
-    join participations cust_partic on parent.linkId = cust_partic.act_linkId
-    join entities customer on customer.linkId = cust_partic.entity_linkId and customer.arch_short_name like "party.customer%"
+from acts parent join act_relationships r on parent.act_id = r.source_id
+    join acts child on r.target_id = child.act_id and child.arch_short_name like "act.customerAccount%Item"
+    join participations product_partic on child.act_id = product_partic.act_id
+    join entities product on product.entity_id = product_partic.entity_id and product.arch_short_name like "product.%"
+    join participations patient_partic on child.act_id = patient_partic.act_id
+    join entities patient on patient.entity_id = patient_partic.entity_id and patient.arch_short_name like "party.patient%"
+    join participations cust_partic on parent.act_id = cust_partic.act_id
+    join entities customer on customer.entity_id = cust_partic.entity_id and customer.arch_short_name like "party.customer%"
     join financial_acts f on f.financial_act_id = child.act_id
 where parent.activity_start_time between $P{startDate} and date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
     and product.name like $P{productName}

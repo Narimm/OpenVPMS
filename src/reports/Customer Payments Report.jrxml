@@ -28,23 +28,23 @@
 	<parameter name="printDetail" isForPrompting="true" class="java.lang.Boolean"/>
 	<queryString><![CDATA[SELECT
      acts.arch_short_name as archetype,
-     activity_start_time as date,
+     acts.activity_start_time as date,
      if(credit,financial_acts.total,-financial_acts.total)as total,
      entities.`name` AS customer_name
 FROM
      `acts` acts INNER JOIN `financial_acts` financial_acts ON acts.`act_id` = financial_acts.`financial_act_id`
-     INNER JOIN `participations` participations ON acts.`linkId` = participations.`act_linkId`
-     INNER JOIN `entities` entities ON participations.`entity_linkId` = entities.`linkId`
+     INNER JOIN `participations` participations ON acts.`act_id` = participations.`act_id`
+     INNER JOIN `entities` entities ON participations.`entity_id` = entities.`entity_id`
 WHERE
-     activity_start_time >= $P{startDate}
- AND activity_start_time <= date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
+     acts.activity_start_time >= $P{startDate}
+ AND acts.activity_start_time <= date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
  AND (Status = "POSTED")
  AND (participations.arch_short_name = "participation.customer")
  AND ((acts.arch_short_name = "act.customerAccountPayment")
   OR (acts.arch_short_name = "act.customerAccountRefund")
      )
 ORDER BY
-     activity_start_time ASC]]></queryString>
+     acts.activity_start_time ASC]]></queryString>
 
 	<field name="archetype" class="java.lang.String"/>
 	<field name="date" class="java.sql.Timestamp"/>
