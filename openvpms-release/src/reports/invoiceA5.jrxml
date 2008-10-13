@@ -31,7 +31,7 @@
 	<field name="customer.entity.name" class="java.lang.String"/>
 	<field name="customer.entity" class="org.openvpms.component.business.domain.im.party.Party"/>
 	<field name="startTime" class="java.util.Date"/>
-	<field name="uid" class="java.lang.Long"/>
+	<field name="id" class="java.lang.Long"/>
 	<field name="tax" class="java.math.BigDecimal"/>
 	<field name="notes" class="java.lang.String"/>
 	<field name="[party:getBillingAddress(openvpms:get(.,'customer.entity'))]" class="java.lang.String"/>
@@ -116,7 +116,7 @@
 					<textElement>
 						<font size="10"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.Long"><![CDATA[$F{uid}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.Long"><![CDATA[$F{id}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
