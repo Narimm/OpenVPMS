@@ -44,6 +44,8 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
 import static org.openvpms.report.ReportException.ErrorCode.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.HashPrintServiceAttributeSet;
@@ -86,7 +88,18 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * Cached expression evaluator.
      */
     private JREvaluator evaluator;
-    private static final String[] MIME_TYPES = new String[]{DocFormats.PDF_TYPE, DocFormats.RTF_TYPE};
+
+    /**
+     * The supported mime types.
+     */
+    private static final String[] MIME_TYPES = {DocFormats.PDF_TYPE,
+                                                DocFormats.RTF_TYPE};
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(
+            AbstractJasperIMReport.class);
 
 
     /**
@@ -534,6 +547,10 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     private void print(JasperPrint print, PrintProperties properties)
             throws JRException {
+        if (log.isDebugEnabled()) {
+            log.debug("PrinterName: " + properties.getPrinterName());
+        }
+
         JRPrintServiceExporter exporter = new JRPrintServiceExporter();
         exporter.setParameter(JRPrintServiceExporterParameter.JASPER_PRINT,
                               print);
@@ -545,12 +562,21 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         OrientationRequested orientation = properties.getOrientation();
         MediaTray tray = properties.getMediaTray();
         if (mediaSize != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("MediaSizeName: " + tray);
+            }
             aset.add(mediaSize);
         }
         if (orientation != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Orientation: " + orientation);
+            }
             aset.add(orientation);
         }
         if (tray != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("MediaTray: " + tray);
+            }
             aset.add(tray);
         }
         exporter.setParameter(
@@ -565,6 +591,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         exporter.setParameter(
                 JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET,
                 serviceAttributeSet);
+
         // print it
         exporter.exportReport();
     }
