@@ -106,7 +106,7 @@ public class LookupListModel extends AbstractIMObjectListModel<Lookup> {
     /**
      * Returns the index of the specified lookup.
      *
-     * @param lookup the lookup
+     * @param lookup the lookup. May be <tt>null</tt>
      * @return the index of <tt>lookup</tt>, or <tt>-1</tt> if it
      *         doesn't exist
      */
@@ -115,7 +115,8 @@ public class LookupListModel extends AbstractIMObjectListModel<Lookup> {
         List<Lookup> lookups = getObjects();
         for (int i = 0; i < lookups.size(); ++i) {
             Lookup other = lookups.get(i);
-            if (other != null && StringUtils.equals(lookup, other.getCode())) {
+            if ((other != null && StringUtils.equals(lookup, other.getCode()))
+                    || (other == null && lookup == null)) {
                 result = i;
                 break;
             }
