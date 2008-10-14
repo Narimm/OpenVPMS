@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+import org.openvpms.web.component.util.BalloonHelpFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -91,7 +92,7 @@ public class TaskTableModel extends ScheduleTableModel {
         Label label = LabelFactory.create(true);
         label.setText(text);
         if (notes != null) {
-            BalloonHelp help = new BalloonHelp("<p>" + notes + "</p>");
+            BalloonHelp help = BalloonHelpFactory.create(notes);
             result = RowFactory.create("CellSpacing", label, help);
         } else {
             result = ColumnFactory.create(label);
