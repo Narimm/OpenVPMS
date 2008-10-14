@@ -68,7 +68,7 @@ public class BoundLookupField extends LookupField {
      */
     public BoundLookupField(Property property, LookupQuery source,
                             boolean all) {
-        super(source, all, property.isRequired());
+        super(source, all, !property.isRequired());
         binder = new SelectFieldBinder(this, property);
         binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
