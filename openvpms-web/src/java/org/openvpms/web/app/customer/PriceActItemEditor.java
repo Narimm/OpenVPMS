@@ -172,7 +172,8 @@ public class PriceActItemEditor extends ActItemEditor {
         Party patient = (Party) IMObjectHelper.getObject(getPatient());
         Product product = getProduct();
 
-        if (customer != null && product != null) {
+        if (customer != null && product != null
+                && !TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
             BigDecimal fixedPrice = getFixedPrice();
             BigDecimal unitPrice = getUnitPrice();
             BigDecimal quantity = getQuantity();
