@@ -53,10 +53,12 @@ public abstract class AbstractReadOnlyComponentFactory
      *
      * @param context    the layout context
      * @param strategies the layout strategy factory
+     * @param style      the style name to use
      */
     public AbstractReadOnlyComponentFactory(
-            LayoutContext context, IMObjectLayoutStrategyFactory strategies) {
-        super(context);
+            LayoutContext context, IMObjectLayoutStrategyFactory strategies,
+            String style) {
+        super(context, style);
         this.strategies = strategies;
     }
 

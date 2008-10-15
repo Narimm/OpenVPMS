@@ -19,7 +19,10 @@
 package org.openvpms.web.app.customer.charge;
 
 
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
@@ -32,6 +35,8 @@ import org.openvpms.web.component.workflow.PrintActTask;
 import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.Tasks;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -93,7 +98,11 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         Tasks tasks = new Tasks();
         TaskContext context = new DefaultTaskContext();
         context.addObject(act);
-        PaymentWorkflow payment = new PaymentWorkflow();
+        BigDecimal total = BigDecimal.ZERO;
+        if (TypeHelper.isA(act, INVOICE, COUNTER)) {
+            total = act.getTotal();
+        }
+        PaymentWorkflow payment = new PaymentWorkflow(total);
         payment.setRequired(false);
         tasks.addTask(payment);
 

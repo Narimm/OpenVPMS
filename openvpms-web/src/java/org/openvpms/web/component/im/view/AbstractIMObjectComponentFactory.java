@@ -40,12 +40,16 @@ public abstract class AbstractIMObjectComponentFactory
      */
     private final LayoutContext context;
 
+
     /**
-     * Construct a new <code>AbstractIMObjectComponentFactory</code>.
+     * Creates a new <tt>AbstractIMObjectComponentFactory</tt>.
      *
      * @param context the layout context.
+     * @param style   the style name to use
      */
-    public AbstractIMObjectComponentFactory(LayoutContext context) {
+    public AbstractIMObjectComponentFactory(LayoutContext context,
+                                            String style) {
+        super(style);
         if (context == null) {
             throw new IllegalArgumentException("Argument 'context' is null");
         }

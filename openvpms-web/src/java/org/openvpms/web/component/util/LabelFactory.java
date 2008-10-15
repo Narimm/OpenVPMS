@@ -19,8 +19,12 @@
 package org.openvpms.web.component.util;
 
 import echopointng.LabelEx;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.layout.CellLayoutData;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -124,4 +128,18 @@ public final class LabelFactory extends ComponentFactory {
         return label;
     }
 
+    /**
+     * Creates a new label for a numeric value, to be right aligned in a cell.
+     *
+     * @param value  the value
+     * @param layout the layout to assign the label
+     * @return a new label
+     */
+    public static Label create(BigDecimal value, CellLayoutData layout) {
+        Label label = create();
+        label.setText(NumberFormatter.format(value));
+        layout.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
+        label.setLayoutData(layout);
+        return label;
+    }
 }

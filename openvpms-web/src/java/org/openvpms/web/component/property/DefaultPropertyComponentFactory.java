@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.property;
 
+import org.openvpms.web.resource.util.Styles;
+
 
 /**
  * Default implementation of the {@link PropertyComponentFactory} interface.
@@ -38,5 +40,6 @@ public final class DefaultPropertyComponentFactory
      * Prevent construction.
      */
     private DefaultPropertyComponentFactory() {
+        super(Styles.DEFAULT);
     }
 }

@@ -2298,6 +2298,26 @@
         </properties>
     </style>
 
+    <style name="edit" base-name="default" type="nextapp.echo2.app.TextArea">
+        <properties>
+            <property name="disabledBackground" value="#d1d1d1"/>
+        </properties>
+    </style>
+
+    <style name="edit-1024x768" base-name="default-1024x768"
+           type="nextapp.echo2.app.TextArea">
+        <properties>
+            <property name="disabledBackground" value="#d1d1d1"/>
+        </properties>
+    </style>
+
+    <style name="edit-800x600" base-name="default-800x600"
+           type="nextapp.echo2.app.TextArea">
+        <properties>
+            <property name="disabledBackground" value="#d1d1d1"/>
+        </properties>
+    </style>
+
     <style name="default" type="nextapp.echo2.app.text.TextComponent">
         <properties>
             <property name="background" value="#ffff99"/>
@@ -2334,6 +2354,27 @@
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
+        </properties>
+    </style>
+
+    <style name="edit" base-name="default"
+           type="nextapp.echo2.app.text.TextComponent">
+        <properties>
+            <property name="disabledBackground" value="#d1d1d1"/>
+        </properties>
+    </style>
+
+    <style name="edit-1024x768" base-name="default-1024x768"
+           type="nextapp.echo2.app.text.TextComponent">
+        <properties>
+            <property name="disabledBackground" value="#d1d1d1"/>
+        </properties>
+    </style>
+
+    <style name="edit-800x600" base-name="default-800x600"
+           type="nextapp.echo2.app.text.TextComponent">
+        <properties>
+            <property name="disabledBackground" value="#d1d1d1"/>
         </properties>
     </style>
 

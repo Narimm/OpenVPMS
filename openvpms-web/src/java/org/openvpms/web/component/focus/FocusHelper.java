@@ -22,7 +22,6 @@ import echopointng.DateField;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.table.KeyTable;
@@ -91,7 +90,6 @@ public class FocusHelper {
     private static boolean isFocusable(Component component) {
         return (component instanceof TextComponent
                 || component instanceof CheckBox
-                || component instanceof SelectField
                 || component instanceof DateField
                 || component instanceof AbstractButton
                 || component instanceof KeyTable);

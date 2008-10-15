@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -26,8 +27,10 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.ComponentFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.resource.util.Styles;
 
 import java.text.DateFormat;
 
@@ -41,12 +44,22 @@ import java.text.DateFormat;
 public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
 
     /**
-     * Construct a new <code>ReadOnlyComponentFactory</code>.
+     * Creates a new <tt>ReadOnlyComponentFactory</tt>.
      *
-     * @param context the layout context.
+     * @param context the layout context
      */
     public ReadOnlyComponentFactory(LayoutContext context) {
-        super(context, new ViewLayoutStrategyFactory());
+        this(context, Styles.DEFAULT);
+    }
+
+    /**
+     * Creates a new <tt>ReadOnlyComponentFactory</tt>.
+     *
+     * @param context the layout context
+     * @param style   the style name to use
+     */
+    public ReadOnlyComponentFactory(LayoutContext context, String style) {
+        super(context, new ViewLayoutStrategyFactory(), style);
     }
 
     /**
@@ -66,6 +79,7 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
         if (descriptor != null) {
             result.setText(LookupNameHelper.getLookupName(descriptor, context));
         }
+        ComponentFactory.setStyle(result, getStyle());
         return result;
     }
 
@@ -73,12 +87,15 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * Returns a component to display a date.
      *
      * @param property
-     * @return a component to display the datge
+     * @return a component to display the date
      */
     protected Component createDate(Property property) {
         DateFormat format = DateHelper.getDateFormat(false);
         int maxColumns = DateHelper.getLength(format);
-        return TextComponentFactory.create(property, maxColumns, format);
+        TextField result = TextComponentFactory.create(property, maxColumns,
+                                                       format);
+        ComponentFactory.setStyle(result, getStyle());
+        return result;
     }
 
 }

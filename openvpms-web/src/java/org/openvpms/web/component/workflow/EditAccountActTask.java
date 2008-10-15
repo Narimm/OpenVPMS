@@ -56,12 +56,15 @@ public class EditAccountActTask extends EditIMObjectTask {
     /**
      * Creates a new edit dialog.
      *
-     * @param editor the editor
-     * @param skip   if <tt>true</tt>, editing may be skipped
+     * @param editor  the editor
+     * @param context the task context
+     * @param skip    if <tt>true</tt>, editing may be skipped
      * @return a new edit dialog
      */
     @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip) {
+    protected EditDialog createEditDialog(IMObjectEditor editor,
+                                          TaskContext context,
+                                          boolean skip) {
         return new ActEditDialog(editor, true, skip);
     }
 

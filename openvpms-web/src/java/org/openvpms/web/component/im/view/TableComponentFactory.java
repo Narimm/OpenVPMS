@@ -32,6 +32,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
+import org.openvpms.web.resource.util.Styles;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -52,7 +53,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param context the layout context.
      */
     public TableComponentFactory(LayoutContext context) {
-        super(context, new TableLayoutStrategyFactory());
+        super(context, new TableLayoutStrategyFactory(), Styles.DEFAULT);
     }
 
     /**

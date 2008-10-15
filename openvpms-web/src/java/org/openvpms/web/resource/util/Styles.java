@@ -42,6 +42,11 @@ public final class Styles {
     public static final String DEFAULT = "default";
 
     /**
+     * Edit style name.
+     */
+    public static final String EDIT = "edit";
+
+    /**
      * Error style name.
      */
     public static final String ERROR = "error";

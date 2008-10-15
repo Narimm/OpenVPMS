@@ -285,6 +285,33 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
+     * Lays out a component grid.
+     *
+     * @param grid      the grid
+     * @param container the container to add the grid to
+     */
+    protected void doGridLayout(ComponentGrid grid, Component container) {
+        Grid g = GridFactory.create(grid.getColumns() * 2);
+        for (int row = 0; row < grid.getRows(); ++row) {
+            for (int col = 0; col < grid.getColumns(); ++col) {
+                ComponentState state = grid.get(row, col);
+                if (state != null) {
+                    setFocusTraversal(state);
+                    Component component = state.getComponent();
+                    if (component instanceof SelectField) {
+                        // workaround for render bug in firefox. See OVPMS-239
+                        component = RowFactory.create(component);
+                    }
+                    add(g, state.getDisplayName(), component);
+                } else {
+                    add(g, null, LabelFactory.create());
+                }
+            }
+        }
+        container.add(g);
+    }
+
+    /**
      * Lays out child components in a tab model.
      *
      * @param object      the parent object
@@ -417,7 +444,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * Creates a grid with the no. of columns determined by the no. of
      * node descriptors.
      *
-     * @param descriptors the node descriptor
+     * @param descriptors the node descriptors
      * @return a new grid
      */
     protected Grid createGrid(List<NodeDescriptor> descriptors) {

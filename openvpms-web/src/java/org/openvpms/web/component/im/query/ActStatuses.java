@@ -27,7 +27,7 @@ import java.util.List;
 
 
 /**
- * Helper to retrieve act status lookups for selection by {2link ActQuery}.
+ * Helper to retrieve act status lookups for selection by {@link ActQuery}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
