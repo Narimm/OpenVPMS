@@ -198,6 +198,8 @@ public class ActRelationshipCollectionEditor
                     // the editor
                     copy.setActivityStartTime(startTime);
                 }
+                editor.setProductRef(product);
+
                 IMObjectBean relationshipBean = new IMObjectBean(relationship);
                 if (relationshipBean.hasNode("includeQty")) {
                     BigDecimal quantity = relationshipBean.getBigDecimal(
@@ -206,8 +208,6 @@ public class ActRelationshipCollectionEditor
                         editor.setQuantity(quantity);
                     }
                 }
-
-                editor.setProductRef(product);
 
                 collection.add(copy);
                 collection.setEditor(copy, editor);
