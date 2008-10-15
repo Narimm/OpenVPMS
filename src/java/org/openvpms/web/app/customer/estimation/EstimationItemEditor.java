@@ -123,10 +123,15 @@ public class EstimationItemEditor extends PriceActItemEditor {
 
             if (fixed != null) {
                 fixedPrice.setValue(fixed.getPrice());
+            } else {
+                fixedPrice.setValue(BigDecimal.ZERO);
             }
             if (unit != null) {
                 lowUnitPrice.setValue(unit.getPrice());
                 highUnitPrice.setValue(unit.getPrice());
+            } else {
+                lowUnitPrice.setValue(BigDecimal.ZERO);
+                highUnitPrice.setValue(BigDecimal.ZERO);
             }
         }
     }
