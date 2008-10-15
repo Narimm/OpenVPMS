@@ -92,6 +92,26 @@ public abstract class ActEditor extends AbstractActEditor {
     }
 
     /**
+     * Save any edits.
+     * <p/>
+     * This uses {@link #saveObject()} to save the object prior to saving
+     * any children with {@link #saveChildren()}.
+     * <p/>
+     * This is necessary to avoid stale object exceptions when related acts
+     * are deleted.
+     *
+     * @return <tt>true</tt> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        boolean saved = saveObject();
+        if (saved) {
+            saved = saveChildren();
+        }
+        return saved;
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
