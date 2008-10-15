@@ -320,10 +320,14 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (fixedProductPrice != null) {
                 fixedPrice.setValue(fixedProductPrice.getPrice());
                 fixedCost.setValue(getCost(fixedProductPrice));
+            } else {
+                fixedPrice.setValue(BigDecimal.ZERO);
             }
             if (unitProductPrice != null) {
                 unitPrice.setValue(unitProductPrice.getPrice());
                 unitCost.setValue(getCost(unitProductPrice));
+            } else {
+                unitPrice.setValue(BigDecimal.ZERO);
             }
             updateStockLocation(product);
         }
