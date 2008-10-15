@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 
 import java.math.BigDecimal;
@@ -62,9 +63,20 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private Date date;
 
     /**
-     * The component.
+     * The wrapper component, containing either the text field or the prices
+     * dropdown.
      */
-    private DropDown component;
+    private Component container;
+
+    /**
+     * The text field for editing the price.
+     */
+    private TextField field;
+
+    /**
+     * The price drop down component. May be <tt>null</tt>
+     */
+    private DropDown priceDropDown;
 
     /**
      * The component focus group.
@@ -92,13 +104,10 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
 
         date = new Date();
 
-        TextField field = TextComponentFactory.createNumeric(property, 10);
-        component = new DropDown();
-        component.setTarget(field);
-        component.setPopUpAlwaysOnTop(true);
-        component.setFocusOnExpand(true);
+        field = TextComponentFactory.createNumeric(property, 10);
         focus = new FocusGroup(property.getDisplayName());
         focus.add(field);
+        container = RowFactory.create(field);
     }
 
     /**
@@ -108,9 +117,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      */
     public void setProduct(Product product) {
         this.product = product;
-        Component prices = getPrices();
-        component.setPopUp(prices);
-        component.setFocusComponent(prices);
+        updatePrices();
     }
 
     /**
@@ -138,7 +145,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      * @return the edit component
      */
     public Component getComponent() {
-        return component;
+        return container;
     }
 
     /**
@@ -178,16 +185,18 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
         if (price != null) {
             getProperty().setValue(price.getPrice());
         }
-        component.setExpanded(false);
+        priceDropDown.setExpanded(false);
     }
 
     /**
-     * Returns a component containing the product prices.
-     *
-     * @return the price component, or <tt>null</tt> if there are no prices
+     * Updates the product prices.
+     * <p/>
+     * If there are fixed prices associated with the product, renders a drop
+     * down containing the prices, beside the text field.
      */
-    private Component getPrices() {
-        Component result = null;
+    private void updatePrices() {
+        Component component = field;
+        Component table = null;
         if (product != null) {
             if (rules == null) {
                 rules = new ProductPriceRules();
@@ -195,10 +204,22 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
             Set<ProductPrice> prices = rules.getProductPrices(
                     product, FIXED_PRICE, date);
             if (!prices.isEmpty()) {
-                result = createPriceTable(prices);
+                table = createPriceTable(prices);
             }
         }
-        return result;
+        if (table != null) {
+            priceDropDown = new DropDown();
+            priceDropDown.setTarget(field);
+            priceDropDown.setPopUpAlwaysOnTop(true);
+            priceDropDown.setFocusOnExpand(true);
+            priceDropDown.setPopUp(table);
+            priceDropDown.setFocusComponent(table);
+            component = priceDropDown;
+        } else {
+            priceDropDown = null;
+        }
+        container.removeAll();
+        container.add(component);
     }
 
     /**
