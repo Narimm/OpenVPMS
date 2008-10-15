@@ -18,17 +18,18 @@
 
 package org.openvpms.web.app.workflow.payment;
 
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.web.app.workflow.checkout.PaymentEditTask;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
-import org.openvpms.web.component.workflow.EditAccountActTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -45,23 +46,50 @@ public class PaymentWorkflow extends WorkflowImpl {
      */
     private final TaskContext initial;
 
+    /**
+     * The charge amount that triggered the payment workflow.
+     */
+    private BigDecimal chargeAmount;
+
 
     /**
      * Creates a new <tt>PaymentWorkflow</tt>.
      */
     public PaymentWorkflow() {
-        this(new DefaultTaskContext(false));
+        this(new DefaultTaskContext(false), BigDecimal.ZERO);
     }
 
     /**
      * Creates a new <tt>PaymentWorkflow</tt>.
-     * <p/>
+     *
+     * @param chargeAmount the charge amount that triggered the payment
+     *                     workflow. If <tt>0</tt>, the context will be examined
+     *                     for an invoice to determine the amount
+     */
+    public PaymentWorkflow(BigDecimal chargeAmount) {
+        this(new DefaultTaskContext(false), chargeAmount);
+    }
+
+    /**
+     * Creates a new <tt>PaymentWorkflow</tt>.
      *
      * @param context the task context
      */
     public PaymentWorkflow(TaskContext context) {
+        this(context, BigDecimal.ZERO);
+    }
+
+    /**
+     * Creates a new <tt>PaymentWorkflow</tt>.
+     *
+     * @param context      the task context
+     * @param chargeAmount the charge amount that triggered the payment workflow
+     */
+    public PaymentWorkflow(TaskContext context, BigDecimal chargeAmount) {
         GlobalContext global = GlobalContext.getInstance();
         initial = context;
+        this.chargeAmount = chargeAmount;
+
         if (initial.getCustomer() == null) {
             initial.setCustomer(global.getCustomer());
         }
@@ -107,8 +135,7 @@ public class PaymentWorkflow extends WorkflowImpl {
     public void start(TaskContext context) {
         String payTitle = Messages.get("workflow.payment.payaccount.title");
         String payMsg = Messages.get("workflow.payment.payaccount.message");
-        Task edit = new EditAccountActTask(CustomerAccountArchetypes.PAYMENT,
-                                           true);
+        Task edit = new PaymentEditTask(chargeAmount);
         boolean displayNo = !isRequired();
         addTask(new ConditionalTask(
                 new ConfirmationTask(payTitle, payMsg, displayNo),

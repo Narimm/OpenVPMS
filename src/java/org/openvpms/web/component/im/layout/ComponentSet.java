@@ -68,6 +68,16 @@ public class ComponentSet {
     }
 
     /**
+     * Adds a component.
+     *
+     * @param index     index at which the component is to be inserted.
+     * @param component the component to add
+     */
+    public void add(int index, ComponentState component) {
+        add(index, component, component.getDisplayName());
+    }
+
+    /**
      * Adds a component at the specified index.
      *
      * @param index     index at which the component is to be inserted.

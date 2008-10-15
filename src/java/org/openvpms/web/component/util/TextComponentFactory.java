@@ -106,7 +106,7 @@ public class TextComponentFactory extends ComponentFactory {
      * @return a new bound text field
      */
     public static TextField createNumeric(Property property, int columns) {
-        boolean edit = !property.isReadOnly() || property.isDerived();
+        boolean edit = !property.isReadOnly() && !property.isDerived();
         Format format = NumberFormatter.getFormat(property, edit);
         TextField text = create(property, columns, format);
         if (!edit) {

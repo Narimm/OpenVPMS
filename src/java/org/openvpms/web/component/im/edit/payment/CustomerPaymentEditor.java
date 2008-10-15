@@ -18,22 +18,35 @@
 
 package org.openvpms.web.component.im.edit.payment;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.act.ActHelper;
+import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
+import org.openvpms.web.component.im.layout.ComponentGrid;
+import org.openvpms.web.component.im.layout.ComponentSet;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
+import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -52,6 +65,26 @@ public class CustomerPaymentEditor extends PaymentEditor {
      */
     private BigDecimal expectedAmount;
 
+    /**
+     * The amount of the invoice that this payment relates to.
+     */
+    private final SimpleProperty invoiceAmount;
+
+    /**
+     * The previous balance.
+     */
+    private final SimpleProperty previousBalance;
+
+    /**
+     * The overdue amount.
+     */
+    private final SimpleProperty overdueAmount;
+
+    /**
+     * The total balance.
+     */
+    private final SimpleProperty totalBalance;
+
 
     /**
      * Constructs a new <tt>CustomerPaymentEditor</tt>.
@@ -62,12 +95,44 @@ public class CustomerPaymentEditor extends PaymentEditor {
      */
     public CustomerPaymentEditor(Act act, IMObject parent,
                                  LayoutContext context) {
+        this(act, parent, context, BigDecimal.ZERO);
+    }
+
+    /**
+     * Creates a new <tt>CustomerPaymentEditor</tt>.
+     *
+     * @param act     the act to edit
+     * @param parent  the parent object. May be <tt>null</tt>
+     * @param context the layout context
+     * @param invoice the invoice amount
+     */
+    public CustomerPaymentEditor(Act act, IMObject parent,
+                                 LayoutContext context,
+                                 BigDecimal invoice) {
         super(act, parent, context);
+        invoiceAmount = createProperty("invoiceAmount",
+                                       "customer.payment.currentInvoice");
+        invoiceAmount.setValue(invoice);
+        previousBalance = createProperty("previousBalance",
+                                         "customer.payment.previousBalance");
+        overdueAmount = createProperty("overdueAmount",
+                                       "customer.payment.overdue");
+        totalBalance = createProperty("totalBalance",
+                                      "customer.payment.totalBalance");
+
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("location", context.getContext().getLocation());
         getEditor().setCreationListener(new IMObjectCreationListener() {
             public void created(IMObject object) {
                 onCreated((FinancialAct) object);
+            }
+        });
+
+        updateSummary();
+
+        getProperty("customer").addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateSummary();
             }
         });
     }
@@ -107,6 +172,16 @@ public class CustomerPaymentEditor extends PaymentEditor {
     }
 
     /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new LayoutStrategy(getEditor());
+    }
+
+    /**
      * Invoked when a child act is created. This sets the total to the:
      * <ul>
      * <li>outstanding balance +/- the running total, if there is no expected
@@ -142,6 +217,27 @@ public class CustomerPaymentEditor extends PaymentEditor {
     }
 
     /**
+     * Updates the balance summary for the current customer.
+     */
+    private void updateSummary() {
+        Party customer = (Party) getParticipant("customer");
+        BigDecimal overdue = BigDecimal.ZERO;
+        BigDecimal previous = BigDecimal.ZERO;
+        BigDecimal total = BigDecimal.ZERO;
+        if (customer != null) {
+            CustomerAccountRules rules = new CustomerAccountRules();
+
+            total = rules.getBalance(customer);
+            overdue = rules.getOverdueBalance(customer, new Date());
+            BigDecimal invoice = (BigDecimal) invoiceAmount.getValue();
+            previous = total.subtract(overdue).subtract(invoice);
+        }
+        previousBalance.setValue(previous);
+        overdueAmount.setValue(overdue);
+        totalBalance.setValue(total);
+    }
+
+    /**
      * Returns the running total. This is the current total of the act
      * minus any committed child acts which are already included in the balance.
      *
@@ -154,4 +250,51 @@ public class CustomerPaymentEditor extends PaymentEditor {
         return total.subtract(committed);
     }
 
+    private SimpleProperty createProperty(String name,
+                                          String key) {
+        SimpleProperty property = new SimpleProperty(name, BigDecimal.class);
+        property.setDisplayName(Messages.get(key));
+        property.setReadOnly(true);
+        return property;
+    }
+
+    private class LayoutStrategy extends ActLayoutStrategy {
+
+        /**
+         * Creates a new <tt>LayoutStrategy</tt>.
+         *
+         * @param editor the act items editor
+         */
+        public LayoutStrategy(IMObjectCollectionEditor editor) {
+            super(editor);
+        }
+
+        /**
+         * Lays out child components in a grid.
+         *
+         * @param object      the parent object
+         * @param descriptors the property descriptors
+         * @param properties  the properties
+         * @param container   the container to use
+         * @param context     the layout context
+         */
+        @Override
+        protected void doSimpleLayout(IMObject object,
+                                      List<NodeDescriptor> descriptors,
+                                      PropertySet properties,
+                                      Component container,
+                                      LayoutContext context) {
+            ComponentSet set = createComponentSet(object, descriptors,
+                                                  properties,
+                                                  context);
+            ComponentGrid grid = new ComponentGrid();
+            grid.set(0, 0, createComponent(invoiceAmount, object, context));
+            grid.set(0, 1, createComponent(previousBalance, object, context));
+            grid.set(1, 0, createComponent(overdueAmount, object, context));
+            grid.set(1, 1, createComponent(totalBalance, object, context));
+            grid.add(set);
+            doGridLayout(grid, container);
+        }
+
+    }
 }

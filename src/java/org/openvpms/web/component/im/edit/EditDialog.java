@@ -99,7 +99,6 @@ public class EditDialog extends PopupDialog {
         this.save = save;
         setModal(true);
 
-        getLayout().add(editor.getComponent());
         this.editor.addPropertyChangeListener(
                 IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
                 new PropertyChangeListener() {
@@ -107,7 +106,6 @@ public class EditDialog extends PopupDialog {
                         onComponentChange(event);
                     }
                 });
-        getFocusGroup().add(0, editor.getFocusGroup());
     }
 
     /**
@@ -161,6 +159,15 @@ public class EditDialog extends PopupDialog {
             result = SaveHelper.save(editor);
         }
         return result;
+    }
+
+    /**
+     * Lays out the component prior to display.
+     */
+    @Override
+    protected void doLayout() {
+        getLayout().add(editor.getComponent());
+        getFocusGroup().add(0, editor.getFocusGroup());
     }
 
     /**

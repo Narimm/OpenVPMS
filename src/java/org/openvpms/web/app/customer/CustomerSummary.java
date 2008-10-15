@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.customer;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
@@ -51,7 +50,6 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -145,18 +143,13 @@ public class CustomerSummary {
     }
 
     /**
-     * Helper to create a label for a numeric value.
+     * Creates a new label for a numeric value, to be right aligned in a cell.
      *
      * @param value the value
      * @return a new label
      */
     private static Label create(BigDecimal value) {
-        Label label = LabelFactory.create();
-        label.setText(NumberFormatter.format(value));
-        GridLayoutData layout = new GridLayoutData();
-        layout.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
-        label.setLayoutData(layout);
-        return label;
+        return LabelFactory.create(value, new GridLayoutData());
     }
 
     /**

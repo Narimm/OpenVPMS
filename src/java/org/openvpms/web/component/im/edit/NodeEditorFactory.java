@@ -43,6 +43,7 @@ import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.resource.util.Styles;
 
 import java.util.List;
 
@@ -73,7 +74,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @param context the layout context
      */
     public NodeEditorFactory(Editors editors, LayoutContext context) {
-        super(context);
+        super(context, Styles.EDIT);
         this.editors = editors;
     }
 
@@ -279,7 +280,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      */
     private IMObjectComponentFactory getReadOnlyFactory() {
         if (readOnly == null) {
-            readOnly = new ReadOnlyComponentFactory(getLayoutContext());
+            readOnly = new ReadOnlyComponentFactory(getLayoutContext(),
+                                                    Styles.EDIT);
         }
         return readOnly;
     }

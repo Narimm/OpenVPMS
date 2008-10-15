@@ -296,7 +296,7 @@ public class EditIMObjectTask extends AbstractTask {
     protected void interactiveEdit(final IMObjectEditor editor,
                                    TaskContext context) {
         GlobalContext.getInstance().setCurrent(object);
-        final EditDialog dialog = createEditDialog(editor, skip);
+        final EditDialog dialog = createEditDialog(editor, context, skip);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 if (EditDialog.SKIP_ID.equals(dialog.getAction())) {
@@ -356,11 +356,14 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Creates a new edit dialog.
      *
-     * @param editor the editor
-     * @param skip   if <tt>true</tt>, editing may be skipped
+     * @param editor  the editor
+     * @param context the task context
+     * @param skip    if <tt>true</tt>, editing may be skipped
      * @return a new edit dialog
      */
-    protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip) {
+    protected EditDialog createEditDialog(IMObjectEditor editor,
+                                          TaskContext context,
+                                          boolean skip) {
         return new EditDialog(editor, true, skip);
     }
 

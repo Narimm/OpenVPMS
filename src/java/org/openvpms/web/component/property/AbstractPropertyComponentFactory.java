@@ -19,8 +19,10 @@
 package org.openvpms.web.component.property;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.bound.BoundCheckBox;
+import org.openvpms.web.component.util.ComponentFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 
@@ -33,6 +35,21 @@ import org.openvpms.web.component.util.TextComponentFactory;
  */
 public abstract class AbstractPropertyComponentFactory
         implements PropertyComponentFactory {
+
+    /**
+     * The style name to use.
+     */
+    private final String style;
+
+
+    /**
+     * Creates a new <tt>AbstractPropertyComponentFactory</tt>.
+     *
+     * @param style the style name to use
+     */
+    public AbstractPropertyComponentFactory(String style) {
+        this.style = style;
+    }
 
     /**
      * Creates components for boolean, string, numeric and date properties.
@@ -98,6 +115,7 @@ public abstract class AbstractPropertyComponentFactory
         } else {
             result = TextComponentFactory.create(property, columns);
         }
+        ComponentFactory.setStyle(result, getStyle());
         return result;
     }
 
@@ -109,7 +127,10 @@ public abstract class AbstractPropertyComponentFactory
      */
     protected Component createNumeric(Property property) {
         int maxColumns = 10;
-        return TextComponentFactory.createNumeric(property, maxColumns);
+        TextField result = TextComponentFactory.createNumeric(property,
+                                                              maxColumns);
+        ComponentFactory.setStyle(result, getStyle());
+        return result;
     }
 
     /**
@@ -120,5 +141,14 @@ public abstract class AbstractPropertyComponentFactory
      */
     protected Component createDate(Property property) {
         return DateFieldFactory.create(property);
+    }
+
+    /**
+     * Returns the component style name.
+     *
+     * @return the component style name
+     */
+    protected String getStyle() {
+        return style;
     }
 }
