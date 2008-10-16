@@ -19,10 +19,13 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.archetype.rules.act.ActCopyHandler;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.PRODUCT_PARTICIPATION;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -231,6 +234,7 @@ public class ActRelationshipCollectionEditor
 
     private class ActItemCopyHandler extends ActCopyHandler {
 
+
         /**
          * Determines how {@link IMObjectCopier} should treat an object.
          *
@@ -252,6 +256,33 @@ public class ActRelationshipCollectionEditor
                 }
             } else {
                 result = super.getObject(object, service);
+            }
+            return result;
+        }
+
+        /**
+         * Helper to determine if a node is copyable.
+         * <p/>
+         * For charge items, this only copies the <em>quantity</em>,
+         * <em>patient</em>, <em>product</em>, <em>author</em> and
+         * <em>clinician<em> nodes.
+         *
+         * @param archetype the archetype descriptor
+         * @param node      the node descriptor
+         * @param source    if <tt>true</tt> the node is the source; otherwise its
+         *                  the target
+         * @return <tt>true</tt> if the node is copyable; otherwise <tt>false</tt>
+         */
+        @Override
+        protected boolean isCopyable(ArchetypeDescriptor archetype,
+                                     NodeDescriptor node, boolean source) {
+            boolean result = super.isCopyable(archetype, node, source);
+            if (result && TypeHelper.isA(archetype, INVOICE_ITEM, CREDIT_ITEM,
+                                         COUNTER_ITEM)) {
+                String name = node.getName();
+                result = "quantity".equals(name) || "patient".equals(name)
+                        || "product".equals(name) || "author".equals(name)
+                        || "clinician".equals(name);
             }
             return result;
         }
