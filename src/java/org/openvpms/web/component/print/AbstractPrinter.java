@@ -123,7 +123,9 @@ public abstract class AbstractPrinter implements Printer {
      * @param printer  the printer
      */
     protected void print(Document document, String printer) {
-        if (DocFormats.ODT_TYPE.equals(document.getMimeType())) {
+        String mimeType = document.getMimeType();
+        if (DocFormats.ODT_TYPE.equals(mimeType)
+                || DocFormats.DOC_TYPE.equals(mimeType)) {
             OpenOfficeHelper.getPrintService().print(document, printer);
         } else {
             DownloadServlet.startDownload(document);
@@ -297,22 +299,22 @@ public abstract class AbstractPrinter implements Printer {
             return helper.getDocumentTemplatePrinter(template, organisation);
         }
         return null;
-
     }
 
     /**
-     * Helper to return the default printer for an organisation.
+     * Helper to return the default printer for a location.
      * If no default printer set than returns system default printer.
      *
-     * @param organisation the organisation.
+     * @param location the location
      * @return the printer name
      */
     private String getDefaultLocationPrinter(Party location) {
         if (location != null) {
-        	IMObjectBean bean = new IMObjectBean(location);
-        	if (bean != null && bean.hasNode("defaultPrinter")) {
-        		return bean.getString("defaultPrinter", PrintHelper.getDefaultPrinter());
-        	}
+            IMObjectBean bean = new IMObjectBean(location);
+            if (bean.hasNode("defaultPrinter")) {
+                return bean.getString("defaultPrinter",
+                                      PrintHelper.getDefaultPrinter());
+            }
         }
         return PrintHelper.getDefaultPrinter();
     }
