@@ -21,6 +21,7 @@ package org.openvpms.web.app.customer.charge;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -74,10 +75,25 @@ public class CustomerChargeActEditor extends FinancialActEditor {
         fixedCost.setValue(fixed);
 
         Property unitCost = getProperty("unitCost");
-        BigDecimal unit = ActHelper.sum((Act) getObject(),
-                                        getEditor().getCurrentActs(),
-                                        "unitCost");
-        unitCost.setValue(unit);
+        BigDecimal cost = BigDecimal.ZERO;
+        for (Act act : getEditor().getCurrentActs()) {
+            cost = cost.add(calcTotalUnitCost(act));
+        }
+        unitCost.setValue(cost);
+    }
+
+    /**
+     * Calculates the total unit cost for an act, based on its <em>unitCost</em>
+     * and <em>quantity</em>.
+     *
+     * @param act the act
+     * @return the total unit cost
+     */
+    private BigDecimal calcTotalUnitCost(Act act) {
+        IMObjectBean bean = new IMObjectBean(act);
+        BigDecimal unitCost = bean.getBigDecimal("unitCost", BigDecimal.ZERO);
+        BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
+        return unitCost.multiply(quantity);
     }
 
 }
