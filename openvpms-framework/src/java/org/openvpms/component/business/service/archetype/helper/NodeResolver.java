@@ -154,6 +154,8 @@ public class NodeResolver {
                     value = archetype.getDisplayName();
                 } else if ("shortName".equals(name)) {
                     value = object.getArchetypeId().getShortName();
+                } else if ("uid".equals(name)) {
+                    value = object.getId();
                 } else {
                     throw new NodeResolverException(InvalidNode, name);
                 }

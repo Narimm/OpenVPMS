@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -116,6 +117,29 @@ public class NodeResolverTestCase
             assertEquals(NodeResolverException.ErrorCode.InvalidObject,
                          exception.getErrorCode());
         }
+    }
+
+    /**
+     * Verifies that the name <em>uid</em> can be used to access the id of an
+     * object, in order to support legacy users.
+     */
+    public void testUid() {
+        Party party = createCustomer();
+        ActBean act = createAct("act.customerEstimation");
+
+        // verify the archetypes have no uid node.
+        ArchetypeDescriptor custDesc = service.getArchetypeDescriptor(
+                party.getArchetypeId());
+        ArchetypeDescriptor estimationDesc = service.getArchetypeDescriptor(
+                act.getAct().getArchetypeId());
+        assertNull(custDesc.getNodeDescriptor("uid"));
+        assertNull(estimationDesc.getNodeDescriptor("uid"));
+
+        // now verify that using uid as a node name returns the id of the object
+        act.setParticipant("participation.customer", party);
+        NodeResolver resolver = new NodeResolver(act.getAct(), service);
+        assertEquals(act.getAct().getId(), resolver.getObject("uid"));
+        assertEquals(party.getId(), resolver.getObject("customer.entity.uid"));
     }
 
     /**
