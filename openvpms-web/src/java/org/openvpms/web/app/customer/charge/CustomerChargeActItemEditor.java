@@ -45,11 +45,15 @@ import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
+import org.openvpms.web.component.im.edit.medication.PatientMedicationActLayoutStrategy;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -60,7 +64,6 @@ import org.openvpms.web.component.util.ErrorHelper;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -114,6 +117,13 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Stock rules.
      */
     private StockRules rules;
+
+    /**
+     * Layout strategy factory that returns customized instances of
+     * {@link PatientMedicationActLayoutStrategy}.
+     */
+    private static final IMObjectLayoutStrategyFactory FACTORY
+            = new MedicationLayoutStrategyFactory();
 
 
     /**
@@ -208,7 +218,6 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         medicationMgr = manager;
     }
 
-
     /**
      * Save any edits.
      *
@@ -254,7 +263,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
             });
         }
-        final ActRelationshipCollectionEditor editors = getMedicationEditors();
+        final ActRelationshipCollectionEditor editors
+                = getDispensingCollection();
         if (editors != null) {
             editors.addModifiableListener(medicationQuantityListener);
         }
@@ -371,28 +381,13 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates any medication acts with the start time.
      */
     private void updateMedicationStartTime() {
-        ActRelationshipCollectionEditor editors = getMedicationEditors();
+        Act parent = (Act) getObject();
+        for (PatientMedicationActEditor editor : getMedicationActEditors()) {
+            editor.setStartTime(parent.getActivityStartTime());
+        }
+        ActRelationshipCollectionEditor editors = getDispensingCollection();
         if (editors != null) {
-            List<Act> acts = editors.getActs();
-            PatientMedicationActEditor current
-                    = (PatientMedicationActEditor) editors.getCurrentEditor();
-            if (!acts.isEmpty() || current != null) {
-                Act parent = (Act) getObject();
-                Date startTime = parent.getActivityStartTime();
-                for (Act a : editors.getActs()) {
-                    PatientMedicationActEditor editor
-                            = (PatientMedicationActEditor) editors.getEditor(a);
-                    editor.setStartTime(startTime);
-                }
-                editors.refresh();
-
-                if (current != null) {
-                    // update the current editor as well. If this refers to a
-                    // new object, it may not be in the list of 'committed' acts
-                    // returned by the above.
-                    current.setStartTime(startTime);
-                }
-            }
+            editors.refresh();
         }
     }
 
@@ -402,51 +397,63 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @param product the product
      */
     private void updateMedicationProduct(Product product) {
-        final ActRelationshipCollectionEditor editors = getMedicationEditors();
+        ActRelationshipCollectionEditor editors = getDispensingCollection();
         if (editors != null) {
-            List<Act> acts = editors.getActs();
-            PatientMedicationActEditor current
-                    = (PatientMedicationActEditor) editors.getCurrentEditor();
-            if (!acts.isEmpty() || current != null) {
-                for (Act a : acts) {
-                    PatientMedicationActEditor editor
-                            = (PatientMedicationActEditor) editors.getEditor(a);
+            Set<PatientMedicationActEditor> medicationEditors
+                    = getMedicationActEditors();
+            if (!medicationEditors.isEmpty()) {
+                // set the product on the existing acts
+                for (PatientMedicationActEditor editor : medicationEditors) {
                     editor.setProduct(product.getObjectReference());
                 }
                 editors.refresh();
-
-                if (current != null) {
-                    // update the current editor as well. If this refers to a
-                    // new object, it may not be in the list of 'committed' acts
-                    // returned by the above.
-                    current.setProduct(product.getObjectReference());
-                }
-            } else if (hasDispensingLabel(product)) {
-                // queue editing of a new medication act
-                ++medicationPopups;
-                medicationMgr.queue(editors, new MedicationManager.Listener() {
-                    public void completed() {
-                        --medicationPopups;
-                    }
-                });
             } else {
-                // add a new medication act directly
-                IMObject object = editors.create();
-                if (object != null) {
-                    LayoutContext context = new DefaultLayoutContext(true);
-                    final IMObjectEditor editor = editors.createEditor(
-                            object, context);
-                    editors.addEdited(editor);
+                // add a new medication act
+                Act act = (Act) editors.create();
+                if (act != null) {
+                    boolean dispensingLabel = hasDispensingLabel(product);
+                    IMObjectEditor editor = createMedicationEditor(
+                            act, dispensingLabel);
+                    if (dispensingLabel) {
+                        // queue editing of the act
+                        ++medicationPopups;
+                        medicationMgr.queue(
+                                editor, new MedicationManager.Listener() {
+                            public void completed() {
+                                --medicationPopups;
+                            }
+                        });
+                    }
                 }
             }
         }
     }
 
     /**
+     * Creates a new editor for a medication act.
+     *
+     * @param act             the medication act
+     * @param dispensingLabel <tt>true</tt> if a dispensing label is required
+     * @return a new editor for the act
+     */
+    private IMObjectEditor createMedicationEditor(Act act,
+                                                  boolean dispensingLabel) {
+        ActRelationshipCollectionEditor editors = getDispensingCollection();
+
+        LayoutContext context = new DefaultLayoutContext(true);
+        if (dispensingLabel) {
+            context.setLayoutStrategyFactory(FACTORY);
+        }
+        IMObjectEditor editor = editors.createEditor(act, context);
+        editors.addEdited(editor);
+        return editor;
+    }
+
+    /**
      * Updates the medication quantity from the invoice.
      */
     private void updateMedicationQuantity() {
-        ActRelationshipCollectionEditor editors = getMedicationEditors();
+        ActRelationshipCollectionEditor editors = getDispensingCollection();
         BigDecimal quantity = (BigDecimal) getProperty("quantity").getValue();
         if (editors != null && quantity != null) {
             editors.removeModifiableListener(medicationQuantityListener);
@@ -479,7 +486,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         Property property = getProperty("quantity");
         property.removeModifiableListener(quantityListener);
         try {
-            ActRelationshipCollectionEditor editors = getMedicationEditors();
+            ActRelationshipCollectionEditor editors = getDispensingCollection();
             if (editors != null) {
                 Set<Act> acts = new HashSet<Act>(editors.getActs());
                 PatientMedicationActEditor current
@@ -509,22 +516,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates any medication acts with the patient.
      */
     private void updateMedicationPatient() {
-        ActRelationshipCollectionEditor editors = getMedicationEditors();
-        if (editors != null) {
-            for (Act act : editors.getActs()) {
-                PatientMedicationActEditor editor
-                        = (PatientMedicationActEditor) editors.getEditor(act);
-                editor.setPatient(getPatient());
-            }
-
-            // update any current editor as well. If this refers to a new
-            // object, it may not be in the list of 'committed' acts
-            // returned by the above.
-            PatientMedicationActEditor current
-                    = (PatientMedicationActEditor) editors.getCurrentEditor();
-            if (current != null) {
-                current.setPatient(getPatient());
-            }
+        for (PatientMedicationActEditor editor : getMedicationActEditors()) {
+            editor.setPatient(getPatient());
         }
     }
 
@@ -532,23 +525,37 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates any medication acts with the clinician.
      */
     private void updateMedicationClinician() {
-        ActRelationshipCollectionEditor editors = getMedicationEditors();
+        for (PatientMedicationActEditor editor : getMedicationActEditors()) {
+            editor.setClinician(getClinician());
+        }
+    }
+
+    /**
+     * Returns editors for each of the <em>act.patientMedication</em> acts.
+     *
+     * @return the editors
+     */
+    private Set<PatientMedicationActEditor> getMedicationActEditors() {
+        Set<PatientMedicationActEditor> result
+                = new HashSet<PatientMedicationActEditor>();
+        ActRelationshipCollectionEditor editors = getDispensingCollection();
         if (editors != null) {
             for (Act act : editors.getActs()) {
                 PatientMedicationActEditor editor
                         = (PatientMedicationActEditor) editors.getEditor(act);
-                editor.setClinician(getClinician());
+                result.add(editor);
             }
 
-            // update any current editor as well. If this refers to a new
+            // add current editor as well. If this refers to a new
             // object, it may not be in the list of 'committed' acts
             // returned by the above.
             PatientMedicationActEditor current
                     = (PatientMedicationActEditor) editors.getCurrentEditor();
             if (current != null) {
-                current.setClinician(getClinician());
+                result.add(current);
             }
         }
+        return result;
     }
 
     /**
@@ -568,14 +575,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the dispensing items collection editor, or <tt>null</tt>
      *         if none is found
      */
-    private ActRelationshipCollectionEditor getMedicationEditors() {
+    private ActRelationshipCollectionEditor getDispensingCollection() {
         return (ActRelationshipCollectionEditor) getEditor("dispensing");
     }
 
-
     /**
      * Updates the stock location associated with the product.
-     * <p/>
      *
      * @param product the new product
      */
@@ -610,4 +615,28 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         return bean.getBigDecimal("cost", BigDecimal.ZERO);
     }
 
+    /**
+     * Factory that invokes <code>setProductReadOnly(true)</code> on
+     * {@link PatientMedicationActLayoutStrategy} instances.
+     */
+    private static class MedicationLayoutStrategyFactory
+            extends EditLayoutStrategyFactory {
+
+        /**
+         * Creates a new layout strategy for an object.
+         *
+         * @param object the object to create the layout strategy for
+         * @param parent the parent object. May be <code>null</code>
+         */
+        @Override
+        public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {
+            IMObjectLayoutStrategy result = super.create(object, parent);
+            if (result instanceof PatientMedicationActLayoutStrategy) {
+                PatientMedicationActLayoutStrategy strategy
+                        = ((PatientMedicationActLayoutStrategy) result);
+                strategy.setProductReadOnly(true);
+            }
+            return result;
+        }
+    }
 }

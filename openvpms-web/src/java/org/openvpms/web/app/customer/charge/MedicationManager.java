@@ -18,22 +18,13 @@
 
 package org.openvpms.web.app.customer.charge;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
-import org.openvpms.web.component.im.edit.medication.PatientMedicationActLayoutStrategy;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.LinkedList;
@@ -69,22 +60,14 @@ class MedicationManager {
      */
     private boolean editing;
 
-    /**
-     * Layout strategy factory that returns customized instances of
-     * {@link PatientMedicationActLayoutStrategy}.
-     */
-    private static final IMObjectLayoutStrategyFactory FACTORY
-            = new MedicationLayoutStrategyFactory();
-
 
     /**
      * Queue an edit.
      *
-     * @param editor   the medication act collection editor
+     * @param editor   the medication act editor
      * @param listener the listener to notify on completion
      */
-    public void queue(ActRelationshipCollectionEditor editor,
-                      Listener listener) {
+    public void queue(IMObjectEditor editor, Listener listener) {
         queue.addLast(new Pair(editor, listener));
         if (!editing) {
             editNext();
@@ -99,35 +82,29 @@ class MedicationManager {
             return;
         }
         Pair pair = queue.removeFirst();
-        final ActRelationshipCollectionEditor collectionEditor = pair.editor;
+        IMObjectEditor editor = pair.editor;
         final Listener listener = pair.listener;
-        IMObject object = collectionEditor.create();
-        if (object != null) {
-            LayoutContext context = new DefaultLayoutContext(true);
-            context.setLayoutStrategyFactory(FACTORY);
-            final IMObjectEditor editor = collectionEditor.createEditor(
-                    object, context);
-            final EditDialog dialog = new EditDialog(editor, false);
-            dialog.setTitle(getTitle(editor));
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    editing = false;
-                    if (EditDialog.OK_ID.equals(dialog.getAction())) {
-                        collectionEditor.addEdited(editor);
-                        listener.completed();
-                        editNext();
-                    } else {
-                        listener.completed();
-                        cancel();
-                    }
-                }
+        // create an edit dialog with OK and Skip buttons 
+        EditDialog dialog = new EditDialog(editor, false, false, false, true);
+        dialog.setTitle(getTitle(editor));
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                editing = false;
+                listener.completed();
+                editNext();
+            }
 
-            });
-            editing = true;
-            dialog.show();
-        } else {
-            listener.completed();
-        }
+            @Override
+            public void onSkip() {
+                editing = false;
+                listener.completed();
+                cancel();
+            }
+
+        });
+        editing = true;
+        dialog.show();
     }
 
     /**
@@ -168,43 +145,16 @@ class MedicationManager {
     }
 
     /**
-     * Helper to associate an {@link ActRelationshipCollectionEditor} and
-     * {@link Listener}.
+     * Helper to associate an {@link IMObjectEditor} and {@link Listener}.
      */
     private static class Pair {
-        final ActRelationshipCollectionEditor editor;
+        final IMObjectEditor editor;
         final Listener listener;
 
-        public Pair(ActRelationshipCollectionEditor editor,
-                    Listener listener) {
+        public Pair(IMObjectEditor editor, Listener listener) {
             this.editor = editor;
             this.listener = listener;
         }
     }
 
-    /**
-     * Factory that invokes <code>setProductReadOnly(true)</code> on
-     * {@link PatientMedicationActLayoutStrategy} instances.
-     */
-    private static class MedicationLayoutStrategyFactory
-            extends EditLayoutStrategyFactory {
-
-        /**
-         * Creates a new layout strategy for an object.
-         *
-         * @param object the object to create the layout strategy for
-         * @param parent the parent object. May be <code>null</code>
-         */
-        @Override
-        public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {
-            IMObjectLayoutStrategy result = super.create(object, parent);
-            if (result instanceof PatientMedicationActLayoutStrategy) {
-                PatientMedicationActLayoutStrategy strategy
-                        = ((PatientMedicationActLayoutStrategy) result);
-                strategy.setProductReadOnly(true);
-            }
-            return result;
-        }
-
-    }
 }
