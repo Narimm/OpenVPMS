@@ -378,10 +378,13 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     private void populateLocation(Contact contact, String address,
                                   String purpose) {
         IMObjectBean bean = new IMObjectBean(contact);
+        Lookup state = TestHelper.getLookup("lookup.state", "VIC");
+        Lookup suburb = TestHelper.getLookup("lookup.suburb", "COBURG", state,
+                                             "lookupRelationship.stateSuburb");
         bean.setValue("address", address);
-        bean.setValue("suburb", "Coburg");
+        bean.setValue("suburb", suburb.getCode());
         bean.setValue("postcode", "3071");
-        bean.setValue("state", "VIC");
+        bean.setValue("state", state.getCode());
         if (purpose != null) {
             contact.addClassification(getContactPurpose(purpose));
         }
