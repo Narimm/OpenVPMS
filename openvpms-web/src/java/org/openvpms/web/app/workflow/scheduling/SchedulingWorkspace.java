@@ -20,15 +20,19 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -61,6 +65,16 @@ public abstract class SchedulingWorkspace
      */
     private ScheduleCRUDWindow window;
 
+    /**
+     * The current practice location.
+     */
+    private Party location;
+
+    /**
+     * Listener for practice location changes whilst the workspace is visible.
+     */
+    private ContextListener locationListener;
+
 
     /**
      * Creates a new <tt>SchedulingWorkspace</tt>.
@@ -76,6 +90,13 @@ public abstract class SchedulingWorkspace
     public SchedulingWorkspace(String subsystemId, String workspaceId,
                                Archetypes<Entity> archetypes) {
         super(subsystemId, workspaceId, archetypes, false);
+        locationListener = new ContextListener() {
+            public void changed(String key, IMObject value) {
+                if (Context.LOCATION_SHORTNAME.equals(key)) {
+                    locationChanged((Party) value);
+                }
+            }
+        };
     }
 
     /**
@@ -85,6 +106,7 @@ public abstract class SchedulingWorkspace
      */
     @Override
     public void setObject(Entity object) {
+        location = GlobalContext.getInstance().getLocation();
         super.setObject(object);
         layoutWorkspace(object);
         initQuery(object);
@@ -106,6 +128,23 @@ public abstract class SchedulingWorkspace
     }
 
     /**
+     * Invoked when the workspace is displayed.
+     */
+    @Override
+    public void show() {
+        // listen for context change events
+        GlobalContext.getInstance().addListener(locationListener);
+    }
+
+    /**
+     * Invoked when the workspace is hidden.
+     */
+    @Override
+    public void hide() {
+        GlobalContext.getInstance().removeListener(locationListener);
+    }
+
+    /**
      * Creates a new browser.
      *
      * @return a new browser
@@ -120,14 +159,13 @@ public abstract class SchedulingWorkspace
     protected abstract ScheduleCRUDWindow createCRUDWindow();
 
     /**
-     * Returns the latest version of the current schedule view context object.
+     * Returns the default schedule view for the specified practice location.
      *
-     * @return the latest version of the schedule view context object, or
-     *         {@link #getObject()} if they are the same
+     * @param location the practice location
+     * @return the default schedule view, or <tt>null</tt> if there is no
+     *         default
      */
-    protected Entity getLatest() {
-        return getLatest(GlobalContext.getInstance().getScheduleView());
-    }
+    protected abstract Entity getDefaultView(Party location);
 
     /**
      * Determines if the workspace should be refreshed.
@@ -352,6 +390,19 @@ public abstract class SchedulingWorkspace
             if (workspace != null) {
                 container.add(workspace);
             }
+        }
+    }
+
+    /**
+     * Invoked when the practice location changes. Updates the schedule view.
+     *
+     * @param newLocation the new location. May be <tt>null</tt>
+     */
+    private void locationChanged(Party newLocation) {
+        if (newLocation == null) {
+            setObject(null);
+        } else if (!ObjectUtils.equals(location, newLocation)) {
+            setObject(getDefaultView(newLocation));
         }
     }
 

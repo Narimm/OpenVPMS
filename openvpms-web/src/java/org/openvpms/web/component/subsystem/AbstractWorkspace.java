@@ -95,6 +95,22 @@ public abstract class AbstractWorkspace<T extends IMObject>
     }
 
     /**
+     * Invoked when the workspace is displayed.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    public void show() {
+    }
+
+    /**
+     * Invoked when the workspace is hidden.
+     * <p/>
+     * This implementation is a no-op
+     */
+    public void hide() {
+    }
+
+    /**
      * Renders the workspace summary.
      *
      * @return the component representing the workspace summary, or

@@ -54,6 +54,16 @@ public interface Workspace<T extends IMObject> {
     Component getComponent();
 
     /**
+     * Invoked when the workspace is displayed.
+     */
+    void show();
+
+    /**
+     * Invoked when the workspace is hidden.
+     */
+    void hide();
+
+    /**
      * Renders the workspace summary.
      *
      * @return the component representing the workspace summary, or

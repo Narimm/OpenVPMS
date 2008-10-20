@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -121,6 +122,18 @@ public class TaskWorkspace extends SchedulingWorkspace {
     @Override
     protected Entity getLatest() {
         return getLatest(GlobalContext.getInstance().getWorkListView());
+    }
+
+    /**
+     * Returns the default schedule view for the specified practice location.
+     *
+     * @param location the practice location
+     * @return the default schedule view, or <tt>null</tt> if there is no
+     *         default
+     */
+    protected Entity getDefaultView(Party location) {
+        LocationRules locationRules = new LocationRules();
+        return locationRules.getDefaultWorkListView(location);
     }
 
     /**
