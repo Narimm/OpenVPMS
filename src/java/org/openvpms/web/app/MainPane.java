@@ -301,6 +301,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         if (currentWorkspace != null) {
             currentWorkspace.removePropertyChangeListener(
                     Workspace.SUMMARY_PROPERTY, summaryRefresher);
+            currentWorkspace.hide();
         }
         subsystem.setWorkspace(workspace);
         currentSubsystem.removeAll();
@@ -310,6 +311,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         refreshSummary();
         currentWorkspace.addPropertyChangeListener(Workspace.SUMMARY_PROPERTY,
                                                    summaryRefresher);
+        currentWorkspace.show();
         if (currentWorkspace instanceof Refreshable) {
             queueRefresh();
         } else {
