@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -171,7 +172,6 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * @return a count of reminders in the specified date range
      */
     private int countReminders(Date dueFrom, Date dueTo) {
-        PatientRules rules = new PatientRules();
         int result = 0;
         ArchetypeQuery query = new ArchetypeQuery("act.patientReminder", false,
                                                   true);
@@ -187,7 +187,9 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             Party patient = (Party) bean.getParticipant(
                     "participation.patient");
             if (patient != null) {
-                if (rules.getOwner(patient) != null) {
+                EntityBean entityBean = new EntityBean(patient);
+                if (entityBean.getSourceEntity(PatientArchetypes.PATIENT_OWNER)
+                        != null) {
                     result++;
                 }
             }
