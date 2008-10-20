@@ -67,7 +67,7 @@ public class LocationRules {
      */
     public Party getDefaultDepositAccount(Party location) {
         return (Party) EntityRelationshipHelper.getDefaultTarget(
-                location, "depositAccounts", service);
+                location, "depositAccounts", false, service);
     }
 
     /**
@@ -78,7 +78,7 @@ public class LocationRules {
      */
     public Party getDefaultTill(Party location) {
         return (Party) EntityRelationshipHelper.getDefaultTarget(
-                location, "tills", service);
+                location, "tills", false, service);
     }
 
     /**
@@ -89,7 +89,7 @@ public class LocationRules {
      */
     public Entity getDefaultScheduleView(Party location) {
         return EntityRelationshipHelper.getDefaultTarget(
-                location, "scheduleViews", service);
+                location, "scheduleViews", false, service);
     }
 
     /**
@@ -112,7 +112,7 @@ public class LocationRules {
      */
     public Entity getDefaultWorkListView(Party location) {
         return EntityRelationshipHelper.getDefaultTarget(
-                location, "workListViews", service);
+                location, "workListViews", false, service);
     }
 
     /**
@@ -135,7 +135,7 @@ public class LocationRules {
      */
     public IMObjectReference getDefaultStockLocationRef(Party location) {
         return EntityRelationshipHelper.getDefaultTargetRef(
-                location, "stockLocations", service);
+                location, "stockLocations", false, service);
     }
 
     /**
@@ -149,7 +149,7 @@ public class LocationRules {
      */
     public Party getDefaultStockLocation(Party location) {
         return (Party) EntityRelationshipHelper.getDefaultTarget(
-                location, "stockLocations", service);
+                location, "stockLocations", false, service);
     }
 
 }
