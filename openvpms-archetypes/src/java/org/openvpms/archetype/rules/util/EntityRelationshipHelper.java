@@ -52,9 +52,31 @@ public class EntityRelationshipHelper {
      */
     public static IMObjectReference getDefaultTargetRef(
             Entity entity, String node, IArchetypeService service) {
+        return getDefaultTargetRef(entity, node, true, service);
+    }
+
+    /**
+     * Returns the target from the default entity relationship from the
+     * specified relationship node.
+     *
+     * @param entity  the parent entity
+     * @param node    the relationship node
+     * @param useNonDefault if <tt>true</tt> use a non-default relationship if
+     *                      no default can be found
+     * @param service the archetype service
+     * @return the default target, or the the first target if there is no
+     *         default, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the node does't exist or an element
+     *                                   is of the wrong type
+     */
+    public static IMObjectReference getDefaultTargetRef(
+            Entity entity, String node, boolean useNonDefault,
+            IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(entity, service);
         return getDefaultTargetRef(
-                bean.getValues(node, EntityRelationship.class), service);
+                bean.getValues(node, EntityRelationship.class), useNonDefault,
+                service);
     }
 
     /**
@@ -72,9 +94,31 @@ public class EntityRelationshipHelper {
      */
     public static Entity getDefaultTarget(Entity entity, String node,
                                           IArchetypeService service) {
+        return getDefaultTarget(entity, node, true, service);
+    }
+
+    /**
+     * Returns the active target from the default entity relationship from the
+     * specified relationship node.
+     *
+     * @param entity        the parent entity
+     * @param node          the relationship node
+     * @param useNonDefault if <tt>true</tt> use a non-default relationship if
+     *                      no default can be found
+     * @param service       the archetype service
+     * @return the default target, or the the first target if there is no
+     *         default and <tt>useNonDefault</tt> is <tt>true</tt>,
+     *         or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the node does't exist or an element
+     *                                   is of the wrong type
+     */
+    public static Entity getDefaultTarget(Entity entity, String node,
+                                          boolean useNonDefault,
+                                          IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(entity, service);
         return getDefaultTarget(bean.getValues(node, EntityRelationship.class),
-                                service);
+                                useNonDefault, service);
     }
 
     /**
@@ -89,10 +133,29 @@ public class EntityRelationshipHelper {
      */
     public static Entity getDefaultTarget(
             List<EntityRelationship> relationships, IArchetypeService service) {
+        return getDefaultTarget(relationships, true, service);
+    }
+
+    /**
+     * Returns the active target from the default entity relationship from the
+     * supplied relationship list.
+     *
+     * @param relationships a list of relationship objects
+     * @param useNonDefault if <tt>true</tt> use a non-default relationship if
+     *                      no default can be found
+     * @param service       the archetype service
+     * @return the default target, or the the first target if there is no
+     *         default and <tt>useNonDefault</tt> is <tt>true</tt>,
+     *         or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static Entity getDefaultTarget(
+            List<EntityRelationship> relationships, boolean useNonDefault,
+            IArchetypeService service) {
         Entity result = null;
         for (EntityRelationship relationship : relationships) {
             if (relationship.isActive()) {
-                if (result == null) {
+                if (result == null && useNonDefault) {
                     result = getEntity(relationship.getTarget(), service);
                 } else {
                     IMObjectBean bean = new IMObjectBean(relationship);
@@ -113,17 +176,21 @@ public class EntityRelationshipHelper {
      * from the supplied relationship list.
      *
      * @param relationships a list of relationship objects
+     * @return the default target, or the the first target if there is no
+     *         default and <tt>useNonDefault</tt> is <tt>true</tt>,
+     *         or <tt>null</tt> if none is found
      * @param service       the archetype service
      * @return the default target, or the the first target if there is no
      *         default, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMObjectReference getDefaultTargetRef(
-            List<EntityRelationship> relationships, IArchetypeService service) {
+            List<EntityRelationship> relationships, boolean useNonDefault,
+            IArchetypeService service) {
         IMObjectReference result = null;
         for (EntityRelationship relationship : relationships) {
             if (relationship.isActive()) {
-                if (result == null) {
+                if (result == null && useNonDefault) {
                     result = relationship.getTarget();
                 } else {
                     IMObjectBean bean = new IMObjectBean(relationship, service);

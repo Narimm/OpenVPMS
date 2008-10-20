@@ -55,7 +55,7 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(location);
         bean.addRelationship("entityRelationship.locationDeposit", account1);
 
-        assertEquals(account1, rules.getDefaultDepositAccount(location));
+        assertNull(rules.getDefaultDepositAccount(location));
 
         EntityRelationship rel2 = bean.addRelationship(
                 "entityRelationship.locationDeposit", account2);
@@ -77,7 +77,7 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(location);
         bean.addRelationship("entityRelationship.locationTill", till1);
 
-        assertEquals(till1, rules.getDefaultTill(location));
+        assertNull(rules.getDefaultTill(location));
 
         EntityRelationship rel2 = bean.addRelationship(
                 "entityRelationship.locationTill", till2);
@@ -102,7 +102,7 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(location);
         bean.addRelationship("entityRelationship.locationView", view1);
 
-        assertEquals(view1, rules.getDefaultScheduleView(location));
+        assertNull(rules.getDefaultScheduleView(location));
 
         EntityRelationship rel2 = bean.addRelationship(
                 "entityRelationship.locationView", view2);
@@ -127,7 +127,7 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(location);
         bean.addRelationship("entityRelationship.locationWorkListView", view1);
 
-        assertEquals(view1, rules.getDefaultWorkListView(location));
+        assertNull(rules.getDefaultWorkListView(location));
 
         EntityRelationship rel2 = bean.addRelationship(
                 "entityRelationship.locationWorkListView", view2);
