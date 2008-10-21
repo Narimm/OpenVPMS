@@ -1,24 +1,36 @@
 <archetype>
 	<data id="OS1" archetype="party.organisationSchedule" name="Main Appointment Schedule" slotSize="15" 
-		slotUnits="MINUTES" maxSlots="100" allowDoubleBooking="true" startTime="23/08/2008 08:00" endTime="23/08/2008 18:00"/>
+		slotUnits="MINUTES" maxSlots="100" allowDoubleBooking="true"/>
 	<data id="OS2" archetype="party.organisationSchedule" name="Branch Appointment Schedule" slotSize="15" 
-		slotUnits="MINUTES" maxSlots="30" allowDoubleBooking="true" startTime="23/08/2008 08:00" endTime="23/08/2008 17:00" />
+		slotUnits="MINUTES" maxSlots="30" allowDoubleBooking="true"/>
 	<data id="OS3" archetype="party.organisationSchedule" name="Main Surgery Schedule" slotSize="30" 
-		slotUnits="MINUTES" maxSlots="10" allowDoubleBooking="false" startTime="23/08/2008 08:00" endTime="23/08/2008 17:00" />
+		slotUnits="MINUTES" maxSlots="10" allowDoubleBooking="false"/>
 	<data id="OS4" archetype="party.organisationSchedule" name="Branch Surgery Schedule" slotSize="30" 
-		slotUnits="MINUTES" maxSlots="5" allowDoubleBooking="false" startTime="23/08/2008 08:00" endTime="23/08/2008 13:00" />
-	<data archetype="entityRelationship.locationSchedule" source="id:OL1" target="id:OS1" />
-	<data archetype="entityRelationship.locationSchedule" source="id:OL1" target="id:OS2" />
-	<data archetype="entityRelationship.locationSchedule" source="id:OL2" target="id:OS3" />
-	<data archetype="entityRelationship.locationSchedule" source="id:OL2" target="id:OS4" />
-	<data id="OW1" archetype="party.organisationWorkList" name="Main Waiting List" maxSlots="100" />
+		slotUnits="MINUTES" maxSlots="5" allowDoubleBooking="false"/>
+    <data id="VS1" archetype="entity.organisationScheduleView" name="Main Schedule View">
+        <data archetype="entityRelationship.viewSchedule" source="id:VS1" target="id:OS1" />
+        <data archetype="entityRelationship.viewSchedule" source="id:VS1" target="id:OS3" />
+        <data archetype="entityRelationship.locationView" source="id:OL1" target="id:VS1" />
+    </data>
+    <data id="VS2" archetype="entity.organisationScheduleView" name="Branch Schedule View">
+        <data archetype="entityRelationship.viewSchedule" source="id:VS2" target="id:OS2" />
+        <data archetype="entityRelationship.viewSchedule" source="id:VS2" target="id:OS4" />
+        <data archetype="entityRelationship.locationView" source="id:OL2" target="id:VS2" />
+    </data>
+    <data id="OW1" archetype="party.organisationWorkList" name="Main Waiting List" maxSlots="100" />
 	<data id="OW2" archetype="party.organisationWorkList" name="Main Hospital List" maxSlots="50" />
 	<data id="OW3" archetype="party.organisationWorkList" name="Branch Waiting List" maxSlots="100" />
 	<data id="OW4" archetype="party.organisationWorkList" name="Branch Hospital List" maxSlots="50" />
-	<data archetype="entityRelationship.locationWorkList" source="id:OL1" target="id:OW1" />
-	<data archetype="entityRelationship.locationWorkList" source="id:OL1" target="id:OW2" />
-	<data archetype="entityRelationship.locationWorkList" source="id:OL2" target="id:OW3" />
-	<data archetype="entityRelationship.locationWorkList" source="id:OL2" target="id:OW4" />		
+    <data id="VW1" archetype="entity.organisationWorkListView" name="Main Work List View">
+        <data archetype="entityRelationship.viewWorkList" source="id:VW1" target="id:OW1" />
+        <data archetype="entityRelationship.viewWorkList" source="id:VW1" target="id:OW3" />
+        <data archetype="entityRelationship.locationWorkListView" source="id:OL1" target="id:VW1" />
+    </data>
+    <data id="VW2" archetype="entity.organisationWorkListView" name="Branch Work List View">
+        <data archetype="entityRelationship.viewWorkList" source="id:VW2" target="id:OW2" />
+        <data archetype="entityRelationship.viewWorkList" source="id:VW2" target="id:OW4" />
+        <data archetype="entityRelationship.locationWorkListView" source="id:OL2" target="id:VW2" />
+    </data>
 	<data id="AT1" archetype="entity.appointmentType" name="Standard Consult" description="Standard Consultation"/>
 	<data id="AT2" archetype="entity.appointmentType" name="Long Consult" description="Long Consultation"/>
 	<data id="AT3" archetype="entity.appointmentType" name="New Patient" description="New Patient"/>

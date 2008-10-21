@@ -15,7 +15,7 @@
 <data id="User Eight" archetype="lookup.customerAccountType" code="USER_EIGHT"  />
 <data id="C1" archetype="party.customerperson" title="MR" firstName="Alan" initials="A" lastName="Lawson" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="98754312" preferred="True"  />
-    <data collection="contacts" archetype="contact.location" address="12 Station Road" suburb="Black Rock" state="VIC" postcode="3456" preferred="True"  />
+    <data collection="contacts" archetype="contact.location" address="12 Station Road" suburb="BLACK_ROCK_5431" state="VIC" postcode="5431" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
     <data collection="identities" archetype="entityIdentity.code" code="LAWS4312"  />
     <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C1" target="id:A1"  />
@@ -23,7 +23,7 @@
 <data id="A1" archetype="party.patientpet" name="Fredy" species="CANINE" breed="GERMAN_SHEPHERD_DOG" colour="Black" sex="MALE" dateOfBirth="01/06/1993" desexed="False" deceased="False" active="True"/>
 <data id="C2" archetype="party.customerperson" title="SIR" firstName="Jo" initials="J" lastName="Peterson" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="08" telephoneNumber="98761234" preferred="True"  />
-    <data collection="contacts" archetype="contact.location" address="Box2" suburb="Currie" state="TAS" postcode="7256" preferred="True"  />
+    <data collection="contacts" archetype="contact.location" address="Box2" suburb="CURRIE_7256" state="TAS" postcode="7256" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
     <data collection="identities" archetype="entityIdentity.code" code="PETE1234"  />
     <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C2" target="id:A2"  />
@@ -36,7 +36,7 @@
 <data id="C3" archetype="party.customerperson" title="LADY" firstName="Judith" initials="J" lastName="Bourke" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="07" telephoneNumber="34561234" preferred="True"  />
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="04" telephoneNumber="18976543" preferred="False"  />
-    <data collection="contacts" archetype="contact.location" address="123 Gilrown Avenue" suburb="Kenmore" state="QLD" postcode="4069" preferred="True"  />
+    <data collection="contacts" archetype="contact.location" address="123 Gilrown Avenue" suburb="KENMORE_4069" state="QLD" postcode="4069" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
     <data collection="identities" archetype="entityIdentity.code" code="BOUR1234"  />
     <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C3" target="id:A5"  />
@@ -48,7 +48,7 @@
 <data id="C4" archetype="party.customerperson" title="MS" firstName="Susy" initials="S" lastName="Smith" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97235656" preferred="True"  />
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="04" telephoneNumber="11987156" preferred="False"  />
-    <data collection="contacts" archetype="contact.location" address="18 Harvey Court" suburb="Croydon" state="VIC" postcode="3136" preferred="True"  />
+    <data collection="contacts" archetype="contact.location" address="18 Harvey Court" suburb="CROYDON_3136" state="VIC" postcode="3136" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
     <data collection="identities" archetype="entityIdentity.code" code="SMIT5656"  />
     <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C4" target="id:A6"  />
@@ -56,7 +56,7 @@
 <data id="A6" archetype="party.patientpet" name="Fido" species="CANINE" breed="PUG" colour="White" sex="FEMALE" dateOfBirth="23/05/1987" desexed="True" deceased="False" active="True" />
 <data id="C5" archetype="party.customerperson" title="MR" firstName="Fred" initials="F" lastName="Jones" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="54675123" preferred="True"  />
-    <data collection="contacts" archetype="contact.location" address="56 Power Avenue" suburb="Killroy" state="VIC" postcode="3412" preferred="True"  />
+    <data collection="contacts" archetype="contact.location" address="56 Power Avenue" suburb="KILMORE_3764" state="VIC" postcode="3764" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Valued"  />
     <data collection="identities" archetype="entityIdentity.code" code="JONE5123"  />
     <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C5" target="id:A7"  />
@@ -64,7 +64,7 @@
 <data id="A7" archetype="party.patientpet" name="Bozo" species="CANINE" breed="GERMAN_SHEPHERD_DOG" colour="Black" sex="FEMALE" dateOfBirth="01/01/1993" desexed="False" deceased="False" active="True" />
 <data id="C6" archetype="party.customerorganisation" name="Kiora Park Stud" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="52341123" preferred="True"  />
-    <data collection="contacts" archetype="contact.location" address="Lot 36 Brocks Road" suburb="Doreen" state="VIC" postcode="3754" preferred="True"  />
+    <data collection="contacts" archetype="contact.location" address="Lot 36 Brocks Road" suburb="DOREEN_3754" state="VIC" postcode="3754" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
     <data collection="identities" archetype="entityIdentity.code" code="KIOR1123"  />
     <data collection="patients" archetype="entityRelationship.patientLocation" source="id:C6" target="id:A8"  />
@@ -72,7 +72,7 @@
 <data id="A8" archetype="party.patientpet" name="False Start ( 890-56)" species="EQUINE" breed="THOROUGHBRED" colour="Brown" sex="FEMALE" dateOfBirth="01/01/1986" desexed="False" deceased="False" active="True" />
 <data id="C7" archetype="party.customerorganisation" name="Strathmore Gallopers Stud" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9876 5678" preferred="True"  />
-    <data collection="contacts" archetype="contact.location" address="Cherry Drive" suburb="Strathmore" state="VIC" postcode="3578" preferred="True"  />
+    <data collection="contacts" archetype="contact.location" address="Cherry Drive" suburb="STRATHMORE_3041" state="VIC" postcode="3041" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
     <data collection="identities" archetype="entityIdentity.code" code="STRA5678"  />
     <data collection="patients" archetype="entityRelationship.patientLocation" source="id:C7" target="id:A9"  />
@@ -82,22 +82,22 @@
 <data id="A10" archetype="party.patientpet" name="Wishful Thinking" species="EQUINE" breed="ARAB" colour="Chestnut" sex="MALE" dateOfBirth="01/01/1970" desexed="True" deceased="False" active="True" />
 <data id="C8" archetype="party.customerorganisation" name="Williams Way Stud" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9712 0965" preferred="True"  />
-    <data collection="contacts" archetype="contact.location" address="Pretty Lane" suburb="Kangaroo Ground" state="VIC" postcode="3089" preferred="True"  />
+    <data collection="contacts" archetype="contact.location" address="Pretty Lane" suburb="KANGAROO_GROUND_3097" state="VIC" postcode="3097" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
     <data collection="identities" archetype="entityIdentity.code" code="WILL0965"  />
     <data collection="patients" archetype="entityRelationship.patientLocation" source="id:C8" target="id:A11"  />
 </data>
 <data id="A11" archetype="party.patientpet" name="Ballantyne" species="EQUINE" breed="THOROUGHBRED" colour="Chestnut" sex="MALE" dateOfBirth="01/01/1990" desexed="True" deceased="False" active="True" >
 </data>
-    <data archetype="entityRelationship.patientOwner" source="id:C9" target="id:A9"  />
-    <data archetype="entityRelationship.patientOwner" source="id:C9" target="id:A10"  />
-<data archetype="entityRelationship.patientOwner" source="id:C9" target="id:A11"  />
 <data id="C9" archetype="party.customerperson" title="MRS" firstName="Melanie" initials="M" lastName="Broke" >
 <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9724 5609" preferred="True"  />
-<data collection="contacts" archetype="contact.location" address="Lot 1 Grants Road" suburb="Upwey" state="VIC" postcode="3890" preferred="True"  />
+<data collection="contacts" archetype="contact.location" address="Lot 1 Grants Road" suburb="UPWEY_3158" state="VIC" postcode="3158" preferred="True"  />
 <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
 <data collection="identities" archetype="entityIdentity.code" code="BROK5609"  />
     <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C9" target="id:A8"  />
+    <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C9" target="id:A9"  />
+    <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C9" target="id:A10"  />
+    <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C9" target="id:A11"  />
 </data>
 <data id="A12" archetype="party.patientpet" name="Peter" species="OTHER" breed="NO_BREED" colour="White" sex="MALE" dateOfBirth="29/02/1992" desexed="True" deceased="True" active="False" >
 </data>
@@ -107,7 +107,7 @@
 <data archetype="entityRelationship.patientOwner" source="id:C9" target="id:A13"  />
 <data id="C10" archetype="party.customerperson" title="MR" firstName="Harry" initials="H" lastName="Dowling" >
 <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9730 8907" preferred="True"  />
-<data collection="contacts" archetype="contact.location" address="Po Box 56" suburb="Pakenham" state="VIC" postcode="3098" preferred="True"  />
+<data collection="contacts" archetype="contact.location" address="Po Box 56" suburb="PAKENHAM_3810" state="VIC" postcode="3810" preferred="True"  />
 <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
 <data collection="identities" archetype="entityIdentity.code" code="DOWL8907"  />
 </data>
@@ -116,7 +116,7 @@
 <data archetype="entityRelationship.patientOwner" source="id:C10" target="id:A14"  />
 <data id="C11" archetype="party.customerorganisation" name="Gainsway Stud" >
 <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9716 4329" preferred="True"  />
-<data collection="contacts" archetype="contact.location" address="Lot 21 Plenty Road" suburb="Whittlesea" state="VIC" postcode="3078" preferred="True"  />
+<data collection="contacts" archetype="contact.location" address="Lot 21 Plenty Road" suburb="WHITTLESEA_3757" state="VIC" postcode="3757" preferred="True"  />
 <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
 <data collection="identities" archetype="entityIdentity.code" code="GAIN4329"  />
 </data>
@@ -134,7 +134,7 @@
 <data archetype="entityRelationship.patientLocation" source="id:C11" target="id:A17"  />
 <data id="C12" archetype="party.customerperson" title="MS" firstName="Melyssa" initials="M" lastName="Casbolt" >
 <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9458 2013" preferred="True"  />
-<data collection="contacts" archetype="contact.location" address="34 Grantham Road" suburb="Viewbank" state="VIC" postcode="3084" preferred="True"  />
+<data collection="contacts" archetype="contact.location" address="34 Grantham Road" suburb="VIEWBANK_3084" state="VIC" postcode="3084" preferred="True"  />
 <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
 <data collection="identities" archetype="entityIdentity.code" code="CASB2013"  />
 </data>
@@ -146,7 +146,7 @@
 <data archetype="entityRelationship.patientOwner" source="id:C12" target="id:A19"  />
 <data id="C13" archetype="party.customerperson" title="DR" firstName="S" initials="S" lastName="Craddock" >
 <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9714 8242" preferred="True"  />
-<data collection="contacts" archetype="contact.location" address="Sunshine Valley" suburb="Doreen" state="VIC" postcode="3754" preferred="True"  />
+<data collection="contacts" archetype="contact.location" address="Sunshine Valley" suburb="DOREEN_3754" state="VIC" postcode="3754" preferred="True"  />
 <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
 <data collection="identities" archetype="entityIdentity.code" code="CRAD8242"  />
 </data>
@@ -158,7 +158,7 @@
 <data archetype="entityRelationship.patientOwner" source="id:C13" target="id:A21"  />
 <data id="C14" archetype="party.customerperson" title="MISS" firstName="Sharyn" initials="S" lastName="Scott" >
 <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9435 5458" preferred="True"  />
-<data collection="contacts" archetype="contact.location" address="158 Nell Street" suburb="Greensborough" state="VIC" postcode="3088" preferred="True"  />
+<data collection="contacts" archetype="contact.location" address="158 Nell Street" suburb="GREENSBOROUGH_3088" state="VIC" postcode="3088" preferred="True"  />
 <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
 <data collection="identities" archetype="entityIdentity.code" code="SCOT5458"  />
 </data>

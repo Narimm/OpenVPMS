@@ -33,6 +33,33 @@
     <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:TAS" />
     <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ACT" />
     <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:QLD" />
+    <data id="BLACK_ROCK_5431" archetype="lookup.suburb" code="BLACK_ROCK_5431" name="Black Rock" postCode="5431"/>
+    <data id="CROYDON_3136" archetype="lookup.suburb" code="CROYDON_3136" name="Croydon" postCode="3136"/>
+    <data id="CURRIE_7256" archetype="lookup.suburb" code="CURRIE_7256" name="Currie" postCode="7256"/>
+    <data id="DOREEN_3754" archetype="lookup.suburb" code="DOREEN_3754" name="Doreen" postCode="3754"/>
+    <data id="GREENSBOROUGH_3088" archetype="lookup.suburb" code="GREENSBOROUGH_3088" name="Greensborough" postCode="3088"/>
+    <data id="KANGAROO_GROUND_3097" archetype="lookup.suburb" code="KANGAROO_GROUND_3097" name="Kangaroo Ground" postCode="3097"/>
+    <data id="KENMORE_4069" archetype="lookup.suburb" code="KENMORE_4069" name="Kenmore" postCode="4069"/>
+    <data id="KILMORE_3764" archetype="lookup.suburb" code="KILMORE_3764" name="Kilmore" postCode="3764"/>
+    <data id="PAKENHAM_3810" archetype="lookup.suburb" code="PAKENHAM_3810" name="Pakenham" postCode="3810"/>
+    <data id="STRATHMORE_3041" archetype="lookup.suburb" code="STRATHMORE_3041" name="Strathmore" postCode="3041"/>
+    <data id="UPWEY_3158" archetype="lookup.suburb" code="UPWEY_3158" name="Upwey" postCode="3158"/>
+    <data id="VIEWBANK_3084" archetype="lookup.suburb" code="VIEWBANK_3084" name="Viewbank" postCode="3084"/>
+    <data id="WHITTLESEA_3757" archetype="lookup.suburb" code="WHITTLESEA_3757" name="Whittlesea" postCode="3757"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:SA" target="id:BLACK_ROCK_5431"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:CROYDON_3136"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:TAS" target="id:CURRIE_7256"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:DOREEN_3754"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:GREENSBOROUGH_3088"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:KANGAROO_GROUND_3097"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:QLD" target="id:KENMORE_4069"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:KILMORE_3764"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:PAKENHAM_3810"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:STRATHMORE_3041"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:VIEWBANK_3084"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:WHITTLESEA_3757"/>
     <data archetype="lookup.currency" code="AUD" name="Australian Dollar" defaultLookup="true" roundingMode="HALF_UP" minDenomination="0.05"/>
     <data archetype="lookup.currency" code="NZD" name="New Zealand Dollar" roundingMode="HALF_UP" minDenomination="0.10"/>
 	<data archetype="lookup.appointmentReason" code="CHECKUP" defaultLookup="true" />
