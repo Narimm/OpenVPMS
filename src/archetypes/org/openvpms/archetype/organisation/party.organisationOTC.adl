@@ -35,5 +35,67 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="patients" path="/sourceEntityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="0"
+              filter="entityRelationship.patient*" hidden="true">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityRelationship.patientLocation"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityRelationship.patientOwner"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active patient relationship</errorMessage>
+            </assertion>
+        </node>
+        <node name="contacts" path="/contacts"
+              type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="0"
+              defaultValue="party:getDefaultContacts()" hidden="true">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.location"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.phoneNumber"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.email"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.faxNumber"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.mobileNumber"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="identities" path="/identities"
+              type="java.util.HashSet" baseName="Identity" minCardinality="0"
+              maxCardinality="0" hidden="true">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityIdentity.code"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>
