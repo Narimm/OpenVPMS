@@ -49,6 +49,7 @@
 					<property name="IN_PROGRESS" value="In Progress" />
                     <property name="BILLED" value="Billed" />
                     <property name="COMPLETED" value="Completed" />
+                    <property name="ADMITTED" value="Admitted" />
 				</propertyList>
 				<errorMessage>Invalid Appointment Status</errorMessage>
 			</assertion>
