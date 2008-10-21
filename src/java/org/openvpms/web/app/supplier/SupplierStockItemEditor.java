@@ -142,6 +142,7 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
     @Override
     protected boolean doSave() {
         if (getObject().isNew()) {
+            getComponent(); // ensure the component has been laid out
             ProductParticipationEditor editor = getProductEditor();
             Party supplier = editor.getSupplier();
             Product product = editor.getEntity();
