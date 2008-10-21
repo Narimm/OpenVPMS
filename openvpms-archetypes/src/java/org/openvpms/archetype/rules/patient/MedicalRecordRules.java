@@ -18,11 +18,23 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -39,15 +51,6 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -78,6 +81,11 @@ public class MedicalRecordRules {
      * Patient participation short name.
      */
     private static final String PARTICIPATION_PATIENT = "participation.patient";
+
+    /**
+     * Clinician participation short name.
+     */
+    private static final String PARTICIPATION_CLINICIAN = "participation.clinician";
 
     /**
      * Start time node name.
@@ -171,21 +179,25 @@ public class MedicalRecordRules {
      */
     public void addToEvents(List<Act> acts, Date startTime) {
         Map<IMObjectReference, List<Act>> map = getByPatient(acts);
+        // Get Date component of start time so not comparing time components
+    	Date startTimeDate = DateRules.getDate(startTime);
         for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
             IMObjectReference patient = entry.getKey();
             Act event = getEvent(patient);
             if (event != null) {
-                Date eventStart = event.getActivityStartTime();
-                Date eventEnd = event.getActivityEndTime();
+            	// get date component of event start and end datetimes           	
+                Date eventStart = DateRules.getDate(event.getActivityStartTime());
+                Date eventEnd = DateRules.getDate(event.getActivityEndTime());
                 if (ActStatus.IN_PROGRESS.equals(event.getStatus())) {
-                    Date date = DateRules.getDate(startTime,
+                    Date date = DateRules.getDate(startTimeDate,
                                                   -1, DateUnits.WEEKS);
                     if (eventStart.before(date)) {
                         event = null; // need to create a new event
                     }
                 } else {  // COMPLETED
-                    if (startTime.before(eventStart)
-                            || (eventEnd != null && startTime.after(eventEnd)))
+                    if (startTimeDate.before(eventStart)
+                            || (eventEnd != null && startTimeDate.after(eventEnd))
+                            || (eventEnd == null && startTimeDate.after(eventStart)))
                     {
                         event = null; // need to create a new event
                     }
@@ -196,6 +208,10 @@ public class MedicalRecordRules {
                 event.setActivityStartTime(startTime);
                 ActBean eventBean = new ActBean(event, service);
                 eventBean.addParticipation(PARTICIPATION_PATIENT, patient);
+                Entity clinician = getClinician(entry.getValue());
+                if (clinician != null) {
+                	eventBean.addParticipation(PARTICIPATION_CLINICIAN, clinician);
+                }
                 event.setStatus(ActStatus.COMPLETED);
             }
             boolean save = false;
@@ -428,5 +444,22 @@ public class MedicalRecordRules {
     private Act get(IMObjectReference ref) {
         return (Act) service.get(ref);
     }
-
+    
+    /**
+     * Returns the first clinician found in a Collection of Acts.
+     *
+     * @param acts a collection of Acts
+     * @return the Entity object for the clinician found or null if none found
+     * @throws ArchetypeServiceException for any error
+     */
+    private Entity getClinician(Collection<Act> acts) {
+    	for (Act act : acts) {
+    	     ActBean bean = new ActBean(act, service);
+    	     Entity clinician = bean.getParticipant(UserArchetypes.CLINICIAN_PARTICIPATION);
+    	     if (clinician != null) {
+    	        return clinician;
+    	     }
+    	}
+    	return null;
+    }
 }
