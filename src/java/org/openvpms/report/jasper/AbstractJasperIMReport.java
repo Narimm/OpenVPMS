@@ -563,7 +563,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         MediaTray tray = properties.getMediaTray();
         if (mediaSize != null) {
             if (log.isDebugEnabled()) {
-                log.debug("MediaSizeName: " + tray);
+                log.debug("MediaSizeName: " + mediaSize);
             }
             aset.add(mediaSize);
         }

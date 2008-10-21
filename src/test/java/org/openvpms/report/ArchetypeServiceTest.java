@@ -20,14 +20,21 @@ package org.openvpms.report;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.QueryIterator;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -114,14 +121,81 @@ public abstract class ArchetypeServiceTest
         assertNotNull(contact);
         IMObjectBean contactBean = new IMObjectBean(contact);
         contactBean.setValue("address", "1234 Foo St");
-        contactBean.setValue("suburb", "Melbourne");
-        contactBean.setValue("state", "VIC");
+        Lookup state = getLookup("lookup.state", "VIC");
+        Lookup suburb = getLookup("lookup.suburb", "MELBOURNE",
+                                  state, "lookupRelationship.stateSuburb");
+        contactBean.setValue("suburb", suburb.getCode());
+        contactBean.setValue("state", state.getCode());
         contactBean.setValue("postcode", "3001");
         contactBean.setValue("preferred", "true");
         bean.addValue("contacts", contactBean.getObject());
         bean.save();
         return (Party) bean.getObject();
     }
+
+    /**
+     * Returns a lookup, creating and saving it if it doesn't exist.
+     *
+     * @param shortName the lookup short name
+     * @param code      the lookup code
+     * @return the lookup
+     */
+    protected Lookup getLookup(String shortName, String code) {
+        return getLookup(shortName, code, true);
+    }
+
+    /**
+     * Gets a classification lookup, creating it if it doesn't exist.
+     *
+     * @param shortName the clasification short name
+     * @param code      the classification code
+     * @param save      if <tt>true</tt>, save the classification
+     * @return the classification
+     */
+    protected Lookup getLookup(String shortName, String code, boolean save) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
+        query.add(new NodeConstraint("code", code));
+        query.setMaxResults(1);
+        QueryIterator<Lookup> iter = new IMObjectQueryIterator<Lookup>(query);
+        if (iter.hasNext()) {
+            return iter.next();
+        }
+        Lookup lookup = (Lookup) create(shortName);
+        lookup.setCode(code);
+        if (save) {
+            getArchetypeService().save(lookup);
+        }
+        return lookup;
+    }
+
+    /**
+     * Returns a lookup that is the target in a lookup relationship, creating
+     * and saving it if it doesn't exist.
+     *
+     * @param shortName             the target lookup short name
+     * @param code                  the lookup code
+     * @param source                the source lookup
+     * @param relationshipShortName the lookup relationship short name
+     */
+    protected Lookup getLookup(String shortName, String code, Lookup source,
+                               String relationshipShortName) {
+        Lookup target = getLookup(shortName, code);
+        for (LookupRelationship relationship
+                : source.getLookupRelationships()) {
+            if (relationship.getTarget().equals(target.getObjectReference())) {
+                return target;
+            }
+        }
+        LookupRelationship relationship
+                = (LookupRelationship) create(relationshipShortName);
+        relationship.setSource(source.getObjectReference());
+        relationship.setTarget(target.getObjectReference());
+        source.addLookupRelationship(relationship);
+        target.addLookupRelationship(relationship);
+        getArchetypeService().save(Arrays.asList(source, target));
+        return target;
+    }
+
 
     /**
      * Returns the archetype service.
