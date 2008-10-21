@@ -58,7 +58,7 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
             act.setActivityStartTime(parent.getActivityStartTime());
         }
         if (getProperty("roundedAmount") != null) {
-            // need to derive the rounded amount from the amount
+            // need to derive the rounded and tendered amounts from the amount
             Property amount = getProperty("amount");
             amount.addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
@@ -72,7 +72,8 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Invoked when the amount changes, to update the rounded amount.
+     * Invoked when the amount changes, to update the rounded and tendered
+     * amount.
      * Only applies to cash payments.
      */
     private void onAmountChanged() {
@@ -80,12 +81,14 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
             BigDecimal amount = (BigDecimal) getProperty("amount").getValue();
             BigDecimal rounded = amount;
             Property roundedAmount = getProperty("roundedAmount");
+            Property tenderedAmount = getProperty("tendered");
             Currency currency = ContextHelper.getPracticeCurrency(
                     getLayoutContext().getContext());
             if (currency != null) {
                 rounded = currency.roundCash(amount);
             }
             roundedAmount.setValue(rounded);
+            tenderedAmount.setValue(rounded);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
