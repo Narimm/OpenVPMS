@@ -171,8 +171,8 @@ public class CachingLookupService extends AbstractLookupService {
             target = getLookup(relationship.getTarget());
         }
         if (source != null && target != null) {
-            source.addSourceLookupRelationship(relationship);
-            target.addTargetLookupRelationship(relationship);
+            source.addLookupRelationship(relationship);
+            target.addLookupRelationship(relationship);
             RelatedLookups related = getTargets(source);
             related.add(relationship.getArchetypeId().getShortName(), target);
         }
