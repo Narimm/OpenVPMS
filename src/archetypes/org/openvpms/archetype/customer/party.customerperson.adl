@@ -38,6 +38,8 @@
         <node name="initials" path="/details/initials" type="java.lang.String" maxLength="10"/>
         <node name="firstName" path="/details/firstName" type="java.lang.String"
               minCardinality="0" maxLength="30"/>
+        <node name="companyName" path="/details/companyName" type="java.lang.String"
+              minCardinality="0" maxLength="50"/>
         <node displayName="Referred By" name="referral" path="/details/referral" type="java.lang.String"
               minCardinality="0" maxLength="20">
             <assertion name="lookup">
