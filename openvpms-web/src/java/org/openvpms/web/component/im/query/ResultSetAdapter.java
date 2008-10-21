@@ -70,7 +70,8 @@ public abstract class ResultSetAdapter<A, T> implements ResultSet<T> {
      * @return the page corresponding to <tt>page</tt>. May be <tt>null</tt>
      */
     public IPage<T> getPage(int page) {
-        return convert(set.getPage(page));
+        IPage<A> set = this.set.getPage(page);
+        return (set != null) ? convert(set) : null;
     }
 
 
