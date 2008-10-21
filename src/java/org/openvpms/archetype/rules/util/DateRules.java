@@ -79,7 +79,10 @@ public class DateRules {
      * @return the date part of <tt>datetime</tt>
      */
     public static Date getDate(Date datetime) {
-        return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
+    	if(datetime == null) {
+    		return null;
+    	}
+   		return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);    		
     }
 
     /**
