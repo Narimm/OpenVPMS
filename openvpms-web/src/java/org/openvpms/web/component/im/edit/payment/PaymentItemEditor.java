@@ -81,14 +81,16 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
             BigDecimal amount = (BigDecimal) getProperty("amount").getValue();
             BigDecimal rounded = amount;
             Property roundedAmount = getProperty("roundedAmount");
-            Property tenderedAmount = getProperty("tendered");
             Currency currency = ContextHelper.getPracticeCurrency(
                     getLayoutContext().getContext());
             if (currency != null) {
                 rounded = currency.roundCash(amount);
             }
             roundedAmount.setValue(rounded);
-            tenderedAmount.setValue(rounded);
+            Property tenderedAmount = getProperty("tendered");
+            if (tenderedAmount != null) {
+                tenderedAmount.setValue(rounded);
+            }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
