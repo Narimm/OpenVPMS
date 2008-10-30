@@ -75,6 +75,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
             endSlot = grid.getLastSlot(endMins);
         }
         slots = (endSlot - startSlot) + 1;
+        setSlotSize(grid.getSlotSize());
     }
 
     /**
