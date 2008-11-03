@@ -231,16 +231,17 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
                                        metaData.getMappings(),
                                        dao, service);
             loader.setErrorListener(new ErrorListener() {
-                public void error(String legacyId, Throwable exception) {
+                public void error(String legacyId, String message,
+                                  Throwable exception) {
                     String msg = Messages.get("LoaderPlugin.FailedToProcessRow",
-                                              legacyId, exception);
+                                              legacyId, message);
                     logBasic(msg);
                     log.error(msg, exception);
                 }
 
-                public void error(Throwable exception) {
+                public void error(String message, Throwable exception) {
                     String msg = Messages.get("LoaderPlugin.FailedToProcess",
-                                              exception);
+                                              message);
                     logBasic(msg);
                     log.error(msg, exception);
                 }

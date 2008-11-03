@@ -31,14 +31,16 @@ public interface ErrorListener {
      * Invoked when an error occurs for a particular row.
      *
      * @param rowId     the identifier of the row that triggered the error
+     * @param message   the error message
      * @param exception the exception
      */
-    void error(String rowId, Throwable exception);
+    void error(String rowId, String message, Throwable exception);
 
     /**
      * Invoked when an error occurs.
      *
+     * @param message   the error message
      * @param exception the exception
      */
-    void error(Throwable exception);
+    void error(String message, Throwable exception);
 }
