@@ -76,6 +76,11 @@ class LookupHandler {
      */
     private LookupCache cache;
 
+    /**
+     * Exception messages.
+     */
+    private final ExceptionHelper messages;
+
 
     /**
      * Creates a new <tt>LookupHandler</tt>.
@@ -87,6 +92,7 @@ class LookupHandler {
         this.service = service;
         ILookupService lookupService = LookupServiceHelper.getLookupService();
         cache = new LookupCache(service, lookupService);
+        messages = new ExceptionHelper(service);
 
         // cache of lookups of type 'targetLookup'
         Map<NodeDescriptor, ArchetypeDescriptor> targets
@@ -506,7 +512,7 @@ class LookupHandler {
      */
     private void notifyListener(Throwable exception) {
         if (listener != null) {
-            listener.error(exception);
+            listener.error(messages.getMessage(exception), exception);
         }
     }
 }

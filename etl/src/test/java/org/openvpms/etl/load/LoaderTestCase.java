@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
@@ -382,6 +383,53 @@ public class LoaderTestCase
     }
 
     /**
+     * Verifies that a formatted error message is logged and that the registered
+     * error handler is invoked if an object fails to be processed.
+     */
+    public void testError() {
+        final String expectedError
+                = "Failed to validate Last Name of Customer(Person): "
+                + "value is required";
+
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("LEGACY_ID");
+
+        Mapping firstNameMap = createMapping("FIRST_NAME",
+                                             "<party.customerperson>firstName");
+        Mapping lastNameMap = createMapping("LAST_NAME",
+                                            "<party.customerperson>lastName");
+        mappings.addMapping(firstNameMap);
+        mappings.addMapping(lastNameMap);
+
+        String loaderName = "CUSTLOAD";
+        Loader loader = new Loader(loaderName, mappings, dao, service,
+                                   new DefaultObjectHandler(loaderName,
+                                                            mappings, dao,
+                                                            service));
+        final String legacyId = "ID1";
+        ETLRow row = new ETLRow(legacyId);
+        row.add("FIRST_NAME", "Foo");
+        row.add("LAST_NAME", null);
+
+        // register an error listener
+        Listener listener = new Listener(legacyId, expectedError,
+                                         ValidationException.class);
+        loader.setErrorListener(listener);
+
+        loader.load(row);
+        loader.close();
+
+        // verify the error listener was invoked once
+        assertEquals(1, listener.getCount());
+
+        // verify there is a single log, with the expected error message
+        List<ETLLog> logs = dao.get(loaderName, legacyId, null);
+        assertEquals(1, logs.size());
+        ETLLog log = logs.get(0);
+        assertEquals(expectedError, log.getErrors());
+    }
+
+    /**
      * Returns the location of the spring config files.
      *
      * @return an array of config locations
@@ -570,6 +618,49 @@ public class LoaderTestCase
                 dao.remove(errorLog.getLoader(), errorLog.getRowId());
             }
             dao.save(errorLogs);
+        }
+    }
+
+    private class Listener implements ErrorListener {
+
+        private String expectedRowId;
+        private String expectedMessage;
+        private Class expectedException;
+        private int count;
+
+        public Listener(String rowId, String message, Class exception) {
+            this.expectedRowId = rowId;
+            this.expectedMessage = message;
+            this.expectedException = exception;
+
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        /**
+         * Invoked when an error occurs for a particular row.
+         *
+         * @param rowId     the identifier of the row that triggered the error
+         * @param message   the error message
+         * @param exception the exception
+         */
+        public void error(String rowId, String message, Throwable exception) {
+            ++count;
+            assertEquals(expectedRowId, rowId);
+            assertEquals(expectedMessage, message);
+            assertEquals(expectedException, exception.getClass());
+        }
+
+        /**
+         * Invoked when an error occurs.
+         *
+         * @param message   the error message
+         * @param exception the exception
+         */
+        public void error(String message, Throwable exception) {
+            fail("Don't expect this to be invoked");
         }
     }
 }

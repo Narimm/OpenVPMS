@@ -272,24 +272,41 @@ public class ETLLog {
         this.errors = errors;
     }
 
+    /**
+     * Returns the target object's identifier.
+     *
+     * @return the target object's identifier
+     */
     protected long getId() {
         return id;
     }
 
+    /**
+     * Sets the target object's identifier.
+     *
+     * @param id the target object's identifier
+     */
     protected void setId(long id) {
         this.id = id;
     }
 
     /**
-     * Sets the link id.
+     * Returns the target object's link identifier.
+     *
+     * @return the target object's link identifier
+     */
+    protected String getLinkId() {
+        return linkId;
+    }
+
+    /**
+     * Sets the target object's link identifier.
+     *
+     * @param linkId the target object's link identifier
      *
      */
     protected void setLinkId(String linkId) {
         this.linkId = linkId;
-    }
-
-    protected String getLinkId() {
-        return linkId;
     }
 
 }

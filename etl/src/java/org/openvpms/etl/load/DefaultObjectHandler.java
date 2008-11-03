@@ -114,6 +114,11 @@ public class DefaultObjectHandler implements ObjectHandler {
      */
     private int batchSize = 1000;
 
+    /**
+     * Used for formatting exception messages.
+     */
+    private final ExceptionHelper messages;
+
 
     /**
      * Constructs a new <tt>DefaultObjectHandler</tt>.
@@ -133,6 +138,7 @@ public class DefaultObjectHandler implements ObjectHandler {
         }
         this.service = service;
         this.cache = new IMObjectCache(service);
+        messages = new ExceptionHelper(service);
     }
 
     /**
@@ -225,9 +231,10 @@ public class DefaultObjectHandler implements ObjectHandler {
      */
     public void error(String rowId, Throwable exception) {
         ETLLog log = new ETLLog(loaderName, rowId, null);
-        log.setErrors(exception.getMessage());
+        String message = messages.getMessage(exception);
+        log.setErrors(message);
         errorLogs.add(log);
-        notifyListener(rowId, exception);
+        notifyListener(rowId, message, exception);
     }
 
     /**
@@ -352,11 +359,12 @@ public class DefaultObjectHandler implements ObjectHandler {
             }
         } catch (OpenVPMSException exception) {
             ETLLog first = logs.get(0);
+            String message = messages.getMessage(exception);
             for (ETLLog log : logs) {
-                log.setErrors(exception.getMessage());
+                log.setErrors(message);
                 log.setReference(null);
             }
-            notifyListener(first.getRowId(), exception);
+            notifyListener(first.getRowId(), message, exception);
         }
         dao.save(logs);
     }
@@ -497,11 +505,13 @@ public class DefaultObjectHandler implements ObjectHandler {
      * Notifies any registered listener of an error.
      *
      * @param rowId     the identifier of the row that triggered the error
+     * @param message the error message
      * @param exception the exception
      */
-    private void notifyListener(String rowId, Throwable exception) {
+    private void notifyListener(String rowId, String message,
+                                Throwable exception) {
         if (listener != null) {
-            listener.error(rowId, exception);
+            listener.error(rowId, message, exception);
         }
     }
 
