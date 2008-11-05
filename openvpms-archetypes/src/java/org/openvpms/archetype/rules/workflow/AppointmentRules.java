@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -296,14 +297,16 @@ public class AppointmentRules {
      */
     private void updateStatus(Act act, Act linked) {
         String status = act.getStatus();
-        // Only update the linked appointment status if workflow status not pending.
+        // Only update the linked act status if workflow status not pending.
         if (WorkflowStatus.IN_PROGRESS.equals(status)
                 || WorkflowStatus.COMPLETED.equals(status)
                 || WorkflowStatus.CANCELLED.equals(status)) {
             if (!status.equals(linked.getStatus())) {
                 linked.setStatus(status);
-                if (WorkflowStatus.COMPLETED.equals(status)) {
-                    linked.setActivityEndTime(act.getActivityEndTime());
+                if (TypeHelper.isA(linked, "act.customerTask")
+                        && WorkflowStatus.COMPLETED.equals(status)) {
+                    // update the task's end time to now
+                    linked.setActivityEndTime(new Date());
                 }
                 service.save(linked);
             }

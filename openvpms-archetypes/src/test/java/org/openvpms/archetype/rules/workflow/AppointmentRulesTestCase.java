@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 import java.util.Calendar;
@@ -373,6 +374,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     private void checkStatus(Act source, String status, Act linked,
                              String expectedStatus) {
         source.setStatus(status);
+        linked = get(linked);    // ensure using the latest version
+        Date endTime = linked.getActivityEndTime();
         save(source);
 
         // reload the linked act to get any new status
@@ -380,10 +383,15 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         assertNotNull(linked);
         assertEquals(expectedStatus, linked.getStatus());
 
-        // for completed acts, expect the endTimes to be the same
-        if (WorkflowStatus.COMPLETED.equals(expectedStatus)) {
-            assertEquals(source.getActivityEndTime(),
-                         linked.getActivityEndTime());
+        // for completed acts where the linked act is a task, expect the
+        // endTimes to be different
+        if (TypeHelper.isA(linked, "act.customerTask")) {
+            if (WorkflowStatus.COMPLETED.equals(expectedStatus)) {
+                // end time shoud be greater than before
+                assertTrue(linked.getActivityEndTime().compareTo(endTime) > 0);
+            } else {
+                assertEquals(endTime, linked.getActivityEndTime());
+            }
         }
     }
 
