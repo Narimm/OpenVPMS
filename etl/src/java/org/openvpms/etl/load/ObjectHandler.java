@@ -40,7 +40,7 @@ public interface ObjectHandler {
      * Commits any unsaved objects.
      *
      * @throws LoaderException           for any loader exception
-     * @throws ArchetypeServiceException for any archetyype service error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     void commit();
 
@@ -48,7 +48,7 @@ public interface ObjectHandler {
      * Indicates end of a load.
      *
      * @throws LoaderException           for any loader exception
-     * @throws ArchetypeServiceException for any archetyype service error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     void end();
 
@@ -87,7 +87,7 @@ public interface ObjectHandler {
      * @param reference the reference
      * @return the object corresponding to <tt>reference</tt>
      * @throws LoaderException           for any loader exception
-     * @throws ArchetypeServiceException for any archetyype service error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     IMObject getObject(String reference);
 
@@ -97,7 +97,7 @@ public interface ObjectHandler {
      * @param reference the reference
      * @return the object reference corresponding to <tt>reference</tt>
      * @throws LoaderException           for any loader exception
-     * @throws ArchetypeServiceException for any archetyype service error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     IMObjectReference getReference(String reference);
 
