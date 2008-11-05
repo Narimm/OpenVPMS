@@ -83,7 +83,7 @@ public class DefaultObjectHandler implements ObjectHandler {
 
     /**
      * The set of incomplete objects, keyed on their references. These
-     * are moved to {@link #batch} on commit.
+     * are added to {@link #batch} and {@link #batchGroups} on commit.
      */
     private Map<IMObjectReference, IMObject> incomplete
             = new HashMap<IMObjectReference, IMObject>();
@@ -98,6 +98,11 @@ public class DefaultObjectHandler implements ObjectHandler {
      */
     private Map<IMObjectReference, IMObject> batch
             = new LinkedHashMap<IMObjectReference, IMObject>();
+
+    /**
+     * All objects in the batch, in the groups that they were committed in.
+     */
+    private List<List<IMObject>> batchGroups = new ArrayList<List<IMObject>>();
 
     /**
      * The error listener, to notify of processing errors. May be <tt>null</tt>
@@ -159,8 +164,11 @@ public class DefaultObjectHandler implements ObjectHandler {
             dao.remove(loaderName, rowId);
         }
         rowIds.clear();
-        batch.putAll(incomplete);
-        incomplete.clear();
+        if (!incomplete.isEmpty()) {
+            batch.putAll(incomplete);
+            batchGroups.add(new ArrayList<IMObject>(incomplete.values()));
+            incomplete.clear();
+        }
         if (batch.size() > batchSize) {
             save();
         }
@@ -304,12 +312,15 @@ public class DefaultObjectHandler implements ObjectHandler {
      * Saves a set of mapped objects.
      *
      * @param objects   the objects to save
-     * @param logs      the object logs
-     * @param errorLogs any error logs
+     * @param logs      the logs for each object, keyed on link identifier
+     * @param saveError if <tt>true</tt>, save any error in the supplied logs,
+     *                  otherwise just notify if an error occurs
+     * @return <tt>true</tt> if the save was successful, otherwise
+     *         <tt>false</tt>
      */
-    protected void save(Collection<IMObject> objects,
-                        Map<String, List<ETLLog>> logs,
-                        Collection<ETLLog> errorLogs) {
+    protected boolean save(Collection<IMObject> objects,
+                           Map<String, List<ETLLog>> logs, boolean saveError) {
+        boolean result = false;
         try {
             service.save(objects);
             for (IMObject object : objects) {
@@ -324,49 +335,49 @@ public class DefaultObjectHandler implements ObjectHandler {
                 }
                 dao.save(objectLogs);
             }
+            result = true;
         } catch (OpenVPMSException exception) {
-            // can't process as a batch. Process individual objects.
-            for (IMObject object : objects) {
-                List<ETLLog> objectLogs = logs.get(object.getLinkId());
-                if (objectLogs == null) {
-                    throw new IllegalArgumentException(
-                            "No logs corresponding to object: "
-                                    + object.getLinkId());
+            String message = messages.getMessage(exception);
+            String rowId = null;
+            boolean singleRowId = true;
+
+            if (saveError) {
+                for (Collection<ETLLog> list : logs.values()) {
+                    for (ETLLog log : list) {
+                        if (rowId == null) {
+                            rowId = log.getRowId();
+                        } else if (!rowId.equals(log.getRowId())) {
+                            singleRowId = false;
+                        }
+                        log.setErrors(message);
+                        log.setReference(null);
+                    }
+                    dao.save(list);
                 }
-                save(object, objectLogs);
+            }
+            if (rowId != null && singleRowId) {
+                // only notify with rowId if all of the logs refer to the same
+                // row.
+                notifyListener(rowId, message, exception);
+            } else {
+                notifyListener(message, exception);
             }
         }
-        if (!errorLogs.isEmpty()) {
-            for (ETLLog errorLog : errorLogs) {
-                dao.remove(errorLog.getLoader(), errorLog.getRowId());
-            }
-            dao.save(errorLogs);
-        }
+        return result;
     }
 
     /**
-     * Save an object.
+     * Saves the error logs.
      *
-     * @param object the object to save
-     * @param logs   the logs associated with the object
+     * @param logs the error logs
      */
-    protected void save(IMObject object, List<ETLLog> logs) {
-        try {
-            service.save(object);
-            // update the reference for each log prior to save
-            for (ETLLog log : logs) {
-                log.setReference(object.getObjectReference());
+    protected void saveErrorLogs(Collection<ETLLog> logs) {
+        if (!logs.isEmpty()) {
+            for (ETLLog errorLog : logs) {
+                dao.remove(errorLog.getLoader(), errorLog.getRowId());
             }
-        } catch (OpenVPMSException exception) {
-            ETLLog first = logs.get(0);
-            String message = messages.getMessage(exception);
-            for (ETLLog log : logs) {
-                log.setErrors(message);
-                log.setReference(null);
-            }
-            notifyListener(first.getRowId(), message, exception);
+            dao.save(logs);
         }
-        dao.save(logs);
     }
 
     /**
@@ -376,8 +387,26 @@ public class DefaultObjectHandler implements ObjectHandler {
      */
     private void save() {
         if (!batch.isEmpty()) {
-            save(batch.values(), logs, errorLogs);
+            if (!save(batch.values(), logs, false)) {
+                // can't process as a batch. Process each batch group instead
+                for (List<IMObject> group : batchGroups) {
+                    Map<String, List<ETLLog>> logMap
+                            = new HashMap<String, List<ETLLog>>();
+                    for (IMObject object : group) {
+                        List<ETLLog> list = logs.get(object.getLinkId());
+                        if (list == null) {
+                            throw new IllegalArgumentException(
+                                    "No logs corresponding to object: "
+                                            + object.getLinkId());
+                        }
+                        logMap.put(object.getLinkId(), list);
+                    }
+                    save(group, logMap, true);
+                }
+            }
+            saveErrorLogs(errorLogs);
             batch.clear();
+            batchGroups.clear();
             logs.clear();
             errorLogs.clear();
         }
@@ -389,7 +418,6 @@ public class DefaultObjectHandler implements ObjectHandler {
      * @param ref the parsed reference
      * @return the corresponding object reference
      * @throws LoaderException           for any loader exception
-     * @throws ArchetypeServiceException for any archetyype service error
      */
     private IMObjectReference getMappedReference(Reference ref) {
         // NOTE: this previously invoked 2 queries. The first queried on loader
@@ -504,8 +532,20 @@ public class DefaultObjectHandler implements ObjectHandler {
     /**
      * Notifies any registered listener of an error.
      *
+     * @param message   the error message
+     * @param exception the exception
+     */
+    private void notifyListener(String message, Throwable exception) {
+        if (listener != null) {
+            listener.error(message, exception);
+        }
+    }
+
+    /**
+     * Notifies any registered listener of an error.
+     *
      * @param rowId     the identifier of the row that triggered the error
-     * @param message the error message
+     * @param message   the error message
      * @param exception the exception
      */
     private void notifyListener(String rowId, String message,
@@ -523,6 +563,7 @@ public class DefaultObjectHandler implements ObjectHandler {
         incomplete.clear();
         rowIds.clear();
         batch.clear();
+        batchGroups.clear();
     }
 
 }

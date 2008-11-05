@@ -82,9 +82,7 @@ public class LoaderTestCase
         String loaderName = "CUSTLOAD";
         Loader loader = createLoader(loaderName, mappings);
         String legacyId = "ID1";
-        ETLRow row = new ETLRow(legacyId);
-        row.add("FIRST_NAME", "Foo");
-        row.add("LAST_NAME", "Bar");
+        ETLRow row = createCustomerRow(legacyId, "Foo", "Bar");
 
         List<IMObject> objects = loader.load(row);
         loader.close();
@@ -168,10 +166,7 @@ public class LoaderTestCase
         mappings.addMapping(suburbMap);
 
         Loader loader = createLoader("CUSTLOAD", mappings);
-        ETLRow row = new ETLRow("ID1");
-        row.add("FIRST_NAME", "Foo");
-        row.add("LAST_NAME", "Bar");
-        row.add("LEGACY_ID", "ID1");
+        ETLRow row = createCustomerRow("ID1", "Foo", "Bar");
         row.add("ADDRESS", "49 Foo St Bar");
         List<IMObject> objects = loader.load(row);
         loader.close();
@@ -386,7 +381,7 @@ public class LoaderTestCase
      * Verifies that a formatted error message is logged and that the registered
      * error handler is invoked if an object fails to be processed.
      */
-    public void testError() {
+    public void testErrorLogging() {
         final String expectedError
                 = "Failed to validate Last Name of Customer(Person): "
                 + "value is required";
@@ -407,9 +402,7 @@ public class LoaderTestCase
                                                             mappings, dao,
                                                             service));
         final String legacyId = "ID1";
-        ETLRow row = new ETLRow(legacyId);
-        row.add("FIRST_NAME", "Foo");
-        row.add("LAST_NAME", null);
+        ETLRow row = createCustomerRow(legacyId, "Foo", null);
 
         // register an error listener
         Listener listener = new Listener(legacyId, expectedError,
@@ -420,13 +413,60 @@ public class LoaderTestCase
         loader.close();
 
         // verify the error listener was invoked once
-        assertEquals(1, listener.getCount());
+        assertEquals(1, listener.getRowErrorCount());
 
         // verify there is a single log, with the expected error message
-        List<ETLLog> logs = dao.get(loaderName, legacyId, null);
-        assertEquals(1, logs.size());
-        ETLLog log = logs.get(0);
-        assertEquals(expectedError, log.getErrors());
+        checkLogError(loaderName, legacyId, expectedError);
+    }
+
+    /**
+     * Verifies that failure processing one row doesn't prevent processing of
+     * other rows.
+     */
+    public void testPartialFailure() {
+        final String expectedError
+                = "Failed to validate Last Name of Customer(Person): "
+                + "value is required";
+
+        Mappings mappings = new Mappings();
+        mappings.setBatchSize(50);
+        mappings.setIdColumn("LEGACY_ID");
+
+        Mapping firstNameMap = createMapping("FIRST_NAME",
+                                             "<party.customerperson>firstName");
+        Mapping lastNameMap = createMapping("LAST_NAME",
+                                            "<party.customerperson>lastName");
+        mappings.addMapping(firstNameMap);
+        mappings.addMapping(lastNameMap);
+
+        String loaderName = "CUSTLOAD";
+        Loader loader = new Loader(loaderName, mappings, dao, service,
+                                   new DefaultObjectHandler(loaderName,
+                                                            mappings, dao,
+                                                            service));
+        ETLRow row1 = createCustomerRow("ID1", "Foo", "Bar");
+        ETLRow row2 = createCustomerRow("ID2", "Pippi", null);
+        ETLRow row3 = createCustomerRow("ID3", "Rin", "Bar");
+
+        // register an error listener that checks for failure of row ID2
+        Listener listener = new Listener("ID2", expectedError,
+                                         ValidationException.class);
+        loader.setErrorListener(listener);
+
+        // load the rows
+        loader.load(row1);
+        loader.load(row2);
+        loader.load(row3);
+        loader.close();
+
+        // verify the error listener was invoked once
+        assertEquals(1, listener.getRowErrorCount());
+
+        // verify there is a single log present for each row, with expected
+        // values for error message
+        checkLogError(loaderName, "ID1", null);
+        checkLogError(loaderName, "ID2", expectedError);
+        checkLogError(loaderName, "ID3", null);
     }
 
     /**
@@ -477,6 +517,30 @@ public class LoaderTestCase
     }
 
     /**
+     * Verifies that a single log exists for a loader and legacyId,
+     * with the specified error message (or null if it isn't in error).
+     *
+     * @param loaderName the loader name
+     * @param legacyId   the legacy row identifier
+     * @param message    the expected error message. May be <tt>null</tt>
+     */
+    private void checkLogError(String loaderName, String legacyId,
+                               String message) {
+        // verify there is a single log, with the expected error message
+        List<ETLLog> logs = dao.get(loaderName, legacyId, null);
+        assertEquals(1, logs.size());
+        ETLLog log = logs.get(0);
+        assertEquals(message, log.getErrors());
+
+        if (message != null) {
+            assertEquals(-1, log.getId());
+        } else {
+            assertTrue(log.getId() != -1);
+        }
+    }
+
+
+    /**
      * Verifies that species and breed lookups have been created, with a
      * relationship between each
      *
@@ -508,6 +572,22 @@ public class LoaderTestCase
     }
 
     /**
+     * Helper to create a row containing a customer first name and last name.
+     *
+     * @param legacyId  the customer legacy id
+     * @param firstName the first name
+     * @param lastName  the last name
+     * @return a new row
+     */
+    private ETLRow createCustomerRow(String legacyId, String firstName,
+                                     String lastName) {
+        ETLRow row = new ETLRow(legacyId);
+        row.add("FIRST_NAME", firstName);
+        row.add("LAST_NAME", lastName);
+        return row;
+    }
+
+    /**
      * Helper to create a row containing a patient id, species and breed.
      *
      * @param rowId   the patient id
@@ -517,7 +597,7 @@ public class LoaderTestCase
      */
     private ETLRow createPatientRow(String rowId, String species,
                                     String breed) {
-        ETLRow row = new ETLRow("PATIENTID");
+        ETLRow row = new ETLRow(rowId);
         row.add("PATIENTID", rowId);
         row.add("SPECIES", species);
         row.add("BREED", breed);
@@ -605,19 +685,21 @@ public class LoaderTestCase
         /**
          * Saves a set of mapped objects.
          *
-         * @param objects the objects to save
+         * @param objects   the objects to save
+         * @param logs      the logs for each object, keyed on link identifier
+         * @param saveError if <tt>true</tt>, save any error in the supplied
+         *                  logs otherwise just notify if an error occurs
+         * @return <tt>true</tt> if the save was successful, otherwise
+         *         <tt>false</tt>
          */
         @Override
-        protected void save(Collection<IMObject> objects,
-                            Map<String, List<ETLLog>> logs,
-                            Collection<ETLLog> errorLogs) {
+        protected boolean save(Collection<IMObject> objects,
+                               Map<String, List<ETLLog>> logs,
+                               boolean saveError) {
             for (List<ETLLog> logList : logs.values()) {
                 dao.save(logList);
             }
-            for (ETLLog errorLog : errorLogs) {
-                dao.remove(errorLog.getLoader(), errorLog.getRowId());
-            }
-            dao.save(errorLogs);
+            return true;
         }
     }
 
@@ -635,7 +717,12 @@ public class LoaderTestCase
 
         }
 
-        public int getCount() {
+        /**
+         * Returns the no. of times an error occurred for a row.
+         *
+         * @return the error count
+         */
+        public int getRowErrorCount() {
             return count;
         }
 
@@ -660,7 +747,8 @@ public class LoaderTestCase
          * @param exception the exception
          */
         public void error(String message, Throwable exception) {
-            fail("Don't expect this to be invoked");
+            assertEquals(expectedMessage, message);
+            assertEquals(expectedException, exception.getClass());
         }
     }
 }
