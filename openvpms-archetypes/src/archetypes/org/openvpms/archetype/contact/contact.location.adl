@@ -38,7 +38,7 @@
             </assertion>
         </node>
         <node name="postcode" path="/details/postCode"
-              type="java.lang.String" minCardinality="0" readOnly="true">
+              type="java.lang.String" minCardinality="0" readOnly="false">
         </node>
         <node name="state" path="/details/state"
               type="java.lang.String" minCardinality="0">
