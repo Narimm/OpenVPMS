@@ -66,8 +66,12 @@
               derivedValue="party:getPatientAge()"/>
         <node name="deceased" path="/details/deceased" type="java.lang.Boolean"
               defaultValue="false()"/>
+        <node name="deceasedDate" path="/details/deceasedDate"
+              type="java.util.Date" minCardinality="0"/>
         <node name="active" path="/active" type="java.lang.Boolean"
               defaultValue="true()"/>
+        <node name="createdDate" path="/details/createdDate" type="java.util.Date" 
+        	minCardinality="0" defaultValue="java.util.Date.new()" hidden="true"/>
         <node name="customers" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship"
               minCardinality="0" maxCardinality="*"
