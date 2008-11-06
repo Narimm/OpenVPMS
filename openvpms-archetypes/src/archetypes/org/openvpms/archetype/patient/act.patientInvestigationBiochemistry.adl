@@ -23,7 +23,7 @@
               hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true"
               minCardinality="1" derived="true"
-              derivedValue="'Patient Attachment'"/>
+              derivedValue="'Patient Biochemistry'"/>
         <node name="startTime" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="description" type="java.lang.String" path="/description"/>
