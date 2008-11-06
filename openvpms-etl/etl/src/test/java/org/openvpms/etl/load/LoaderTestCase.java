@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
@@ -428,16 +429,38 @@ public class LoaderTestCase
                 = "Failed to validate Last Name of Customer(Person): "
                 + "value is required";
 
+        // create a patient
+        Party patient = (Party) service.create("party.patientpet");
+        IMObjectBean bean = new IMObjectBean(patient, service);
+        bean.setValue("species", "Foo");
+        bean.setValue("breed", "Bar");
+        patient.setName("XLoaderTestCasePatient" + System.currentTimeMillis());
+        service.save(patient);
+
+        // add a log for the patientt, so it can be referenced
+        ETLLog patientLog = new ETLLog("PATIENTLOADER", "PATIENT1",
+                                       "party.patientpet");
+        patientLog.setReference(patient.getObjectReference());
+        dao.save(patientLog);
+
         Mappings mappings = new Mappings();
         mappings.setBatchSize(50);
-        mappings.setIdColumn("LEGACY_ID");
+        mappings.setIdColumn("CUSTOMERID");
 
         Mapping firstNameMap = createMapping("FIRST_NAME",
                                              "<party.customerperson>firstName");
         Mapping lastNameMap = createMapping("LAST_NAME",
                                             "<party.customerperson>lastName");
+        Mapping sourceMap = createMapping("CUSTOMERID",
+                                          "<entityRelationship.patientOwner>source",
+                                          "<party.customerperson>$value");
+        Mapping targetMap = createMapping("PATIENTID",
+                                          "<entityRelationship.patientOwner>target",
+                                          "<party.patientpet>$value");
         mappings.addMapping(firstNameMap);
         mappings.addMapping(lastNameMap);
+        mappings.addMapping(sourceMap);
+        mappings.addMapping(targetMap);
 
         String loaderName = "CUSTLOAD";
         Loader loader = new Loader(loaderName, mappings, dao, service,
@@ -445,8 +468,11 @@ public class LoaderTestCase
                                                             mappings, dao,
                                                             service));
         ETLRow row1 = createCustomerRow("ID1", "Foo", "Bar");
+        row1.add("PATIENTID", "PATIENT1");
         ETLRow row2 = createCustomerRow("ID2", "Pippi", null);
+        row2.add("PATIENTID", "PATIENT1");
         ETLRow row3 = createCustomerRow("ID3", "Rin", "Bar");
+        row3.add("PATIENTID", "PATIENT1");
 
         // register an error listener that checks for failure of row ID2
         Listener listener = new Listener("ID2", expectedError,
@@ -462,11 +488,11 @@ public class LoaderTestCase
         // verify the error listener was invoked once
         assertEquals(1, listener.getRowErrorCount());
 
-        // verify there is a single log present for each row, with expected
+        // verify there is a 2 logs present for each row, with expected
         // values for error message
-        checkLogError(loaderName, "ID1", null);
-        checkLogError(loaderName, "ID2", expectedError);
-        checkLogError(loaderName, "ID3", null);
+        checkLogError(loaderName, "ID1", null, 2);
+        checkLogError(loaderName, "ID2", expectedError, 2);
+        checkLogError(loaderName, "ID3", null, 2);
     }
 
     /**
@@ -526,19 +552,33 @@ public class LoaderTestCase
      */
     private void checkLogError(String loaderName, String legacyId,
                                String message) {
-        // verify there is a single log, with the expected error message
-        List<ETLLog> logs = dao.get(loaderName, legacyId, null);
-        assertEquals(1, logs.size());
-        ETLLog log = logs.get(0);
-        assertEquals(message, log.getErrors());
-
-        if (message != null) {
-            assertEquals(-1, log.getId());
-        } else {
-            assertTrue(log.getId() != -1);
-        }
+        checkLogError(loaderName, legacyId, message, 1);
     }
 
+    /**
+     * Verifies that a the expected no. of logs exists for a loader and
+     * legacyId, with the specified error message (or null if it isn't in
+     * error).
+     *
+     * @param loaderName the loader name
+     * @param legacyId   the legacy row identifier
+     * @param message    the expected error message. May be <tt>null</tt>
+     * @param count      the expected no. of logs
+     */
+    private void checkLogError(String loaderName, String legacyId,
+                               String message, int count) {
+        // verify there is a single log, with the expected error message
+        List<ETLLog> logs = dao.get(loaderName, legacyId, null);
+        assertEquals(count, logs.size());
+        for (ETLLog log : logs) {
+            assertEquals(message, log.getErrors());
+            if (message != null) {
+                assertEquals(-1, log.getId());
+            } else {
+                assertTrue(log.getId() != -1);
+            }
+        }
+    }
 
     /**
      * Verifies that species and breed lookups have been created, with a
@@ -582,6 +622,7 @@ public class LoaderTestCase
     private ETLRow createCustomerRow(String legacyId, String firstName,
                                      String lastName) {
         ETLRow row = new ETLRow(legacyId);
+        row.add("CUSTOMERID", legacyId);
         row.add("FIRST_NAME", firstName);
         row.add("LAST_NAME", lastName);
         return row;
