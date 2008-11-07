@@ -84,6 +84,54 @@ class Notifier {
     }
 
     /**
+     * Notifies listeners of an object about to be saved.
+     *
+     * @param object the object being saved
+     * @param list   the listeners to notify
+     */
+    public void notifySaving(IMObject object,
+                             List<IArchetypeServiceListener> list) {
+        for (IArchetypeServiceListener listener : list) {
+            if (syncActive) {
+                // there is a transaction in progress, so register the object
+                // in order to notify listeners on commit or rollback
+                saved.add(object);
+            }
+            try {
+                listener.save(object);
+            } catch (Throwable exception) {
+                log.warn("Caught unhandled exception from "
+                        + "IArchetypeServiceListener.save() implementation ",
+                         exception);
+            }
+        }
+    }
+
+    /**
+     * Notifies listeners of an object about to be removed.
+     *
+     * @param object the object being removed
+     * @param list   the listeners to notify
+     */
+    public void notifyRemoving(IMObject object,
+                               List<IArchetypeServiceListener> list) {
+        for (IArchetypeServiceListener listener : list) {
+            if (syncActive) {
+                // there is a transaction in progress, so register the object
+                // in order to notify listeners on commit or rollback
+                removed.add(object);
+            }
+            try {
+                listener.remove(object);
+            } catch (Throwable exception) {
+                log.warn("Caught unhandled exception from "
+                        + "IArchetypeServiceListener.remove() implementation ",
+                         exception);
+            }
+        }
+    }
+
+    /**
      * Notifies listeners of an object being saved.
      * <p/>
      * If there is a transaction active, notification will be delayed and
@@ -128,9 +176,9 @@ class Notifier {
     }
 
     /**
-     * Notifies listeners of any pending events.
+     * Notifies listeners of any pending events on commit.
      */
-    public void notifyEvents() {
+    public void notifyCommit() {
         for (IMObject object : saved) {
             synchronized (listeners) {
                 List<IArchetypeServiceListener> list
@@ -150,6 +198,58 @@ class Notifier {
             }
         }
         destroy();
+    }
+
+    /**
+     * Notifies listeners of any pending events on rollback.
+     */
+    public void notifyRollback() {
+        for (IMObject object : saved) {
+            synchronized (listeners) {
+                List<IArchetypeServiceListener> list
+                        = listeners.get(object.getArchetypeId().getShortName());
+                if (list != null) {
+                    doNotifyRollback(object, list);
+                }
+            }
+        }
+        for (IMObject object : removed) {
+            synchronized (listeners) {
+                List<IArchetypeServiceListener> list
+                        = listeners.get(object.getArchetypeId().getShortName());
+                if (list != null) {
+                    doNotifyRollback(object, list);
+                }
+            }
+        }
+        destroy();
+    }
+
+    /**
+     * Returns the notifier for the given service and current thread.
+     * <p/>
+     * If one does not exist, it will be created.
+     *
+     * @param service the archetype service
+     * @return the context
+     */
+    public static Notifier getNotifier(ArchetypeService service) {
+        Notifier notifier;
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            if (!TransactionSynchronizationManager.hasResource(service)) {
+                notifier = new Notifier(service, true);
+                TransactionSynchronizationManager.bindResource(
+                        service, notifier);
+                TransactionSynchronizationManager.registerSynchronization(
+                        new NotifierSynchronization(notifier));
+            } else {
+                notifier = (Notifier)
+                        TransactionSynchronizationManager.getResource(service);
+            }
+        } else {
+            notifier = new Notifier(service, false);
+        }
+        return notifier;
     }
 
     /**
@@ -192,37 +292,29 @@ class Notifier {
                 listener.removed(object);
             } catch (Throwable exception) {
                 log.warn("Caught unhandled exception from "
-                        + "IArchetypeServiceListener implementation ",
+                        + "IArchetypeServiceListener.removed() implementation ",
                          exception);
             }
         }
     }
 
     /**
-     * Returns the notifier for the given service and current thread.
-     * <p/>
-     * If one does not exist, it will be created.
+     * Notifies listeners of an object being rolled back.
      *
-     * @param service the archetype service
-     * @return the context
+     * @param object    the removed object
+     * @param listeners the listeners to notify
      */
-    public static Notifier getNotifier(ArchetypeService service) {
-        Notifier notifier;
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            if (!TransactionSynchronizationManager.hasResource(service)) {
-                notifier = new Notifier(service, true);
-                TransactionSynchronizationManager.bindResource(
-                        service, notifier);
-                TransactionSynchronizationManager.registerSynchronization(
-                        new NotifierSynchronization(notifier));
-            } else {
-                notifier = (Notifier)
-                        TransactionSynchronizationManager.getResource(service);
+    private void doNotifyRollback(IMObject object,
+                                  List<IArchetypeServiceListener> listeners) {
+        for (IArchetypeServiceListener listener : listeners) {
+            try {
+                listener.rollback(object);
+            } catch (Throwable exception) {
+                log.warn("Caught unhandled exception from "
+                        + "IArchetypeServiceListener.rollback() "
+                        + "implementation ", exception);
             }
-        } else {
-            notifier = new Notifier(service, false);
         }
-        return notifier;
     }
 
     /**
@@ -252,7 +344,9 @@ class Notifier {
         public void afterCompletion(int status) {
             TransactionSynchronizationManager.unbindResource(notifier.service);
             if (status == STATUS_COMMITTED) {
-                notifier.notifyEvents();
+                notifier.notifyCommit();
+            } else if (status == STATUS_ROLLED_BACK) {
+                notifier.notifyRollback();
             }
             notifier.destroy();
         }

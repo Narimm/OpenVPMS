@@ -24,8 +24,8 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import java.io.Serializable;
@@ -59,7 +59,7 @@ public class CachingLookupService extends AbstractLookupService {
         super(service);
         this.cache = cache;
         service.addListener(
-                "lookup.*", new IArchetypeServiceListener() {
+                "lookup.*", new AbstractArchetypeServiceListener() {
             public void saved(IMObject object) {
                 addLookup((Lookup) object);
             }

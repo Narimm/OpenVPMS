@@ -488,9 +488,11 @@ public class ArchetypeService implements IArchetypeService {
                     new Object[]{});
         }
 
+        notifyRemove(entity, true);
+
         try {
             dao.delete(entity);
-            removed(entity);
+            notifyRemove(entity, false);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
@@ -510,12 +512,12 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    public void save(IMObject entity, boolean validate) {
+    public void save(IMObject object, boolean validate) {
         if (log.isDebugEnabled()) {
             log.debug("ArchetypeService.save: Saving object of type "
-                    + entity.getArchetypeId().getShortName()
-                    + " with id " + entity.getId()
-                    + " and version " + entity.getVersion());
+                    + object.getArchetypeId().getShortName()
+                    + " with id " + object.getId()
+                    + " and version " + object.getVersion());
         }
 
         if (dao == null) {
@@ -524,19 +526,20 @@ public class ArchetypeService implements IArchetypeService {
                     new Object[]{});
         }
 
+        notifySave(object, true);
         if (validate)
-            validateObject(entity);
+            validateObject(object);
         try {
-            dao.save(entity);
-            if (entity instanceof ArchetypeDescriptor
-                    || entity instanceof AssertionTypeDescriptor) {
-                updateCache(entity);
+            dao.save(object);
+            if (object instanceof ArchetypeDescriptor
+                    || object instanceof AssertionTypeDescriptor) {
+                updateCache(object);
             }
-            saved(entity);
+            notifySave(object, false);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToSaveObject,
-                    exception, entity);
+                    exception, object);
         }
     }
 
@@ -566,6 +569,8 @@ public class ArchetypeService implements IArchetypeService {
                     new Object[]{});
         }
 
+        notifySave(objects, true);
+
         // first validate each object
         if (validate) {
             for (IMObject object : objects) {
@@ -576,7 +581,7 @@ public class ArchetypeService implements IArchetypeService {
         // now issue a call to save the objects
         try {
             dao.save(objects);
-            saved(objects);
+            notifySave(objects, false);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects,
@@ -1088,41 +1093,29 @@ public class ArchetypeService implements IArchetypeService {
     /**
      * Notifies any listeners when an object is saved.
      *
-     * @param object the saved object
+     * @param object  the object
+     * @param preSave if <tt>true</tt> the object is about to be saved,
+     *                otherwise it has been saved
      */
-    private void saved(IMObject object) {
+    private void notifySave(IMObject object, boolean preSave) {
         synchronized (listeners) {
-            notifySaved(object, null);
+            notifySave(object, null, preSave);
         }
     }
 
     /**
      * Notifies any listeners when a collection of objects is saved.
      *
-     * @param objects the saved objects
+     * @param objects the objects
+     * @param preSave if <tt>true</tt> the objects are about to be saved,
+     *                otherwise they have been saved
      */
-    private void saved(Collection<? extends IMObject> objects) {
+    private void notifySave(Collection<? extends IMObject> objects,
+                            boolean preSave) {
         synchronized (listeners) {
             Notifier notifier = null;
             for (IMObject object : objects) {
-                notifier = notifySaved(object, notifier);
-            }
-        }
-    }
-
-    /**
-     * Notifies any listeners when an object is removed.
-     *
-     * @param object removed saved object
-     */
-    private void removed(IMObject object) {
-        synchronized (listeners) {
-            ArchetypeId id = object.getArchetypeId();
-            String shortName = id.getShortName();
-            List<IArchetypeServiceListener> list = listeners.get(shortName);
-            if (list != null) {
-                Notifier notifier = Notifier.getNotifier(this);
-                notifier.notifyRemoved(object, list);
+                notifier = notifySave(object, notifier, preSave);
             }
         }
     }
@@ -1133,9 +1126,12 @@ public class ArchetypeService implements IArchetypeService {
      * @param object   the saved object
      * @param notifier the notifier to use. If <tt>null</tt> indicates to create
      *                 a new notifier
+     * @param preSave  if <tt>true</tt> the object is about to be saved,
+     *                 otherwise it has been saved
      * @return the notifier
      */
-    private Notifier notifySaved(IMObject object, Notifier notifier) {
+    private Notifier notifySave(IMObject object, Notifier notifier,
+                                boolean preSave) {
         ArchetypeId id = object.getArchetypeId();
         String shortName = id.getShortName();
         List<IArchetypeServiceListener> list = listeners.get(shortName);
@@ -1143,10 +1139,36 @@ public class ArchetypeService implements IArchetypeService {
             if (notifier == null) {
                 notifier = Notifier.getNotifier(this);
             }
-            notifier.notifySaved(object, list);
+            if (preSave) {
+                notifier.notifySaving(object, list);
+            } else {
+                notifier.notifySaved(object, list);
+            }
         }
         return notifier;
     }
 
+    /**
+     * Notifies any listeners when an object is removed.
+     *
+     * @param object    removed saved object
+     * @param preRemove if <tt>true</tt> the object is about to be removed,
+     *                  otherwise it has been removed
+     */
+    private void notifyRemove(IMObject object, boolean preRemove) {
+        synchronized (listeners) {
+            ArchetypeId id = object.getArchetypeId();
+            String shortName = id.getShortName();
+            List<IArchetypeServiceListener> list = listeners.get(shortName);
+            if (list != null) {
+                Notifier notifier = Notifier.getNotifier(this);
+                if (preRemove) {
+                    notifier.notifyRemoving(object, list);
+                } else {
+                    notifier.notifyRemoved(object, list);
+                }
+            }
+        }
+    }
 
 }
