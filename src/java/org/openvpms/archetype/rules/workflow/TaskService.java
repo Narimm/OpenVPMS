@@ -19,6 +19,8 @@
 package org.openvpms.archetype.rules.workflow;
 
 import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -46,6 +48,41 @@ public class TaskService extends AbstractScheduleService {
      */
     public TaskService(IArchetypeService service, Cache cache) {
         super("act.customerTask", service, cache);
+    }
+
+    /**
+     * Adds an event to the cache.
+     *
+     * @param schedule the event schedule
+     * @param act      the event act reference
+     * @param set      the <tt>ObjectSet</tt> representation of the event
+     */
+    @Override
+    protected void addEvent(IMObjectReference schedule, IMObjectReference act,
+                            ObjectSet set) {
+        Date from = set.getDate(ScheduleEvent.ACT_START_TIME);
+        Date to = set.getDate(ScheduleEvent.ACT_END_TIME);
+        from = DateRules.getDate(from);
+        to = DateRules.getDate(to);
+        for (Element element : getElements(schedule, from, to)) {
+            add(element, act, set);
+        }
+    }
+
+    /**
+     * Removes an event from the cache.
+     *
+     * @param event    the event to remove
+     * @param schedule the schedule to remove the event from
+     */
+    @Override
+    protected void removeEvent(Act event, IMObjectReference schedule) {
+        Date from = DateRules.getDate(event.getActivityStartTime());
+        Date to = DateRules.getDate(event.getActivityEndTime());
+        IMObjectReference act = event.getObjectReference();
+        for (Element element : getElements(schedule, from, to)) {
+            remove(element, act);
+        }
     }
 
     /**

@@ -26,8 +26,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -66,6 +66,13 @@ public abstract class AbstractScheduleService implements ScheduleService {
      */
     private final Cache cache;
 
+    /**
+     * The set of acts pending removal from the cache. These will be
+     * removed on transaction commit.
+     */
+    private Map<Long, Act> pending
+            = Collections.synchronizedMap(new HashMap<Long, Act>());
+
 
     /**
      * Creates a new <tt>AbstractScheduleService</tt>.
@@ -79,13 +86,31 @@ public abstract class AbstractScheduleService implements ScheduleService {
                                    Cache cache) {
         // add a listener to receive notifications from the archetype service
         service.addListener(
-                eventShortName, new IArchetypeServiceListener() {
+                eventShortName, new AbstractArchetypeServiceListener() {
+
+            @Override
+            public void save(IMObject object) {
+                addPending((Act) object);
+            }
+
+            @Override
+            public void remove(IMObject object) {
+                addPending((Act) object);
+            }
+
+            @Override
             public void saved(IMObject object) {
                 addEvent((Act) object);
             }
 
+            @Override
             public void removed(IMObject object) {
                 removeEvent((Act) object);
+            }
+
+            @Override
+            public void rollback(IMObject object) {
+                removePending((Act) object);
             }
         });
 
@@ -182,7 +207,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
      * @param event the event to add
      */
     protected void addEvent(Act event) {
-        removeEvent(event);
+        removeEvent(event); // remove the prior instance, if any
 
         ActBean bean = new ActBean(event, service);
         ObjectSet set = new ObjectSet();
@@ -190,44 +215,121 @@ public abstract class AbstractScheduleService implements ScheduleService {
         IMObjectReference schedule
                 = set.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
         IMObjectReference act = set.getReference(ScheduleEvent.ACT_REFERENCE);
+        addEvent(schedule, act, set);
+    }
+
+    /**
+     * Adds an event to the cache.
+     *
+     * @param schedule the event schedule
+     * @param act      the event act reference
+     * @param set      the <tt>ObjectSet</tt> representation of the event
+     */
+    protected void addEvent(IMObjectReference schedule, IMObjectReference act,
+                            ObjectSet set) {
         Date date = set.getDate(ScheduleEvent.ACT_START_TIME);
+        addEvent(schedule, act, date, set);
+    }
+
+    /**
+     * Adds an event to the cache.
+     *
+     * @param schedule the event schedule
+     * @param act      the event act reference
+     * @param date     the date
+     * @param set      the <tt>ObjectSet</tt> representation of the event
+     */
+    protected void addEvent(IMObjectReference schedule, IMObjectReference act,
+                            Date date, ObjectSet set) {
         if (schedule != null && act != null && date != null) {
             Element element = getElement(schedule, date);
             if (element != null) {
-                synchronized (element) {
-                    Value value = (Value) element.getObjectValue();
-                    value.put(act, set);
-                }
+                add(element, act, set);
             }
         }
     }
 
     /**
      * Removes an event from the cache.
+     * <p/>
+     * This invokes {@link #removeEvent(Act, IMObjectReference)} with the
+     * original version of the event, if present.
      *
      * @param event the event to remove
      */
     protected void removeEvent(Act event) {
-        Date date = getStart(event.getActivityStartTime());
-        IMObjectReference act = event.getObjectReference();
-        IMObjectReference schedule = getSchedule(event);
-        boolean removed = false;
-        Element element = getElement(schedule, date);
-        if (element != null && remove(element, act)) {
-            removed = true;
+        Act original = pending.remove(event.getId());
+        if (original != null) {
+            IMObjectReference schedule = getSchedule(original);
+            removeEvent(original, schedule);
         }
-        if (!removed) {
-            List keys = cache.getKeysNoDuplicateCheck();
-            for (Object key : keys) {
-                Key k = (Key) key;
-                if (k.getSchedule().equals(schedule)) {
-                    element = cache.get(key);
-                    if (element != null && remove(element, act)) {
-                        break;
-                    }
+    }
+
+    /**
+     * Removes an event from the cache.
+     *
+     * @param event    the event to remove
+     * @param schedule the schedule to remove the event from
+     */
+    protected void removeEvent(Act event, IMObjectReference schedule) {
+        IMObjectReference act = event.getObjectReference();
+        Date date = getStart(event.getActivityStartTime());
+        Element element = getElement(schedule, date);
+        if (element != null) {
+            remove(element, act);
+        }
+    }
+
+    /**
+     * Adds an act to the cache.
+     *
+     * @param element the cache element
+     * @param act     the act reference
+     * @param set     the object set representing the act
+     */
+    protected void add(Element element, IMObjectReference act, ObjectSet set) {
+        synchronized (element) {
+            Value value = (Value) element.getObjectValue();
+            value.put(act, set);
+        }
+    }
+
+    /**
+     * Removes an act from the cache.
+     *
+     * @param element the cache element
+     * @param act     the act reference
+     * @return <tt>true</tt> if the act was removed
+     */
+    protected boolean remove(Element element, IMObjectReference act) {
+        synchronized (element) {
+            Value value = (Value) element.getObjectValue();
+            return value.remove(act);
+        }
+    }
+
+    /**
+     * Returns all cache elements for the given schedule and date range.
+     *
+     * @param schedule the reference to the schedule
+     * @param from     the start date
+     * @param to       the end date. May be <tt>null</tt>
+     * @return cache elements matching the schedule and date range
+     */
+    protected List<Element> getElements(IMObjectReference schedule,
+                                        Date from, Date to) {
+        List keys = cache.getKeysNoDuplicateCheck();
+        List<Element> result = new ArrayList<Element>();
+        for (Object key : keys) {
+            Key k = (Key) key;
+            if (k.getSchedule().equals(schedule) && k.dayInRange(from, to)) {
+                Element element = cache.get(key);
+                if (element != null) {
+                    result.add(element);
                 }
             }
         }
+        return result;
     }
 
     /**
@@ -288,17 +390,32 @@ public abstract class AbstractScheduleService implements ScheduleService {
     }
 
     /**
-     * Removes an act from the cache.
+     * Invoked prior to an event being added or removed from the cache.
+     * <p/>
+     * If the event is already persistent, the persistent instance will be
+     * added to the map of acts that need to be removed prior to any new
+     * instance being cached.
      *
-     * @param element the cache element
-     * @param act     the act reference
-     * @return <Tt>true</tt> if the act was removed
+     * @param event the event
      */
-    private boolean remove(Element element, IMObjectReference act) {
-        synchronized (element) {
-            Value value = (Value) element.getObjectValue();
-            return value.remove(act);
+    private void addPending(Act event) {
+        if (!event.isNew() && !pending.containsKey(event.getId())) {
+            Act original = (Act) service.get(event.getObjectReference());
+            if (original != null) {
+                pending.put(event.getId(), original);
+            }
         }
+    }
+
+    /**
+     * Invoked on transaction rollback.
+     * <p/>
+     * This removes the associated event from the map of acts pending removal.
+     *
+     * @param event the rolled back event
+     */
+    private void removePending(Act event) {
+        pending.remove(event.getId());
     }
 
     /**
@@ -346,7 +463,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
      * Queries all events for the specified date.
      *
      * @param schedule the schedule
-     * @param start the start date
+     * @param start    the start date
      * @return all events for the date
      */
     private List<ObjectSet> query(Entity schedule, Date start) {
@@ -402,6 +519,26 @@ public abstract class AbstractScheduleService implements ScheduleService {
          */
         public IMObjectReference getSchedule() {
             return schedule;
+        }
+
+        /**
+         * Returns the day.
+         *
+         * @return the day
+         */
+        public Date getDay() {
+            return day;
+        }
+
+        /**
+         * Determines if the day falls in the specified date range.
+         *
+         * @param from the from date
+         * @param to   the to date. May be <tt>null</tt>
+         */
+        public boolean dayInRange(Date from, Date to) {
+            return (DateRules.compareTo(from, day) <= 0
+                    && (to == null || DateRules.compareTo(day, to) <= 0));
         }
     }
 

@@ -75,14 +75,15 @@ public class DateRules {
      * Returns the date part of a date-time, zero-ing out any time
      * component.
      *
-     * @param datetime the date/time
-     * @return the date part of <tt>datetime</tt>
+     * @param datetime the date/time. May be <tt>null</tt>
+     * @return the date part of <tt>datetime</tt>, or <tt>null</tt> if
+     *         <tt>datetime</tt> is null
      */
     public static Date getDate(Date datetime) {
-    	if(datetime == null) {
-    		return null;
-    	}
-   		return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);    		
+        if (datetime == null) {
+            return null;
+        }
+        return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
     }
 
     /**
