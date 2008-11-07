@@ -49,6 +49,8 @@
             </assertion>
         </node>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="createdDate" path="/details/createdDate" type="java.util.Date" 
+        	minCardinality="0" defaultValue="java.util.Date.new()" hidden="true"/>
         <node name="patients" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.patient*">
