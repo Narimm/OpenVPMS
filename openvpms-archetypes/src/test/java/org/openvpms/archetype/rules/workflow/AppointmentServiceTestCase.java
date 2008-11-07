@@ -42,21 +42,91 @@ import java.util.List;
 public class AppointmentServiceTestCase extends ArchetypeServiceTest {
 
     /**
-     * Tests the {@link AppointmentQuery#query()} method, when a
-     * schedule and date range have been specified.
+     * The appointment service.
      */
-    public void test() {
+    private ScheduleService service;
+
+    /**
+     * The schedule.
+     */
+    private Party schedule;
+
+
+    /**
+     * Tests addition of an appointment.
+     */
+    public void testAddEvent() {
+        Date date1 = java.sql.Date.valueOf("2008-1-1");
+        Date date2 = java.sql.Date.valueOf("2008-1-2");
+        Date date3 = java.sql.Date.valueOf("2008-1-3");
+
+        // retrieve the appointments for date1 and date2 and verify they are
+        // empty.
+        // This caches the appointments for each date.
+        List<ObjectSet> results = service.getEvents(schedule, date1);
+        assertEquals(0, results.size());
+
+        results = service.getEvents(schedule, date2);
+        assertEquals(0, results.size());
+
+        // create and save appointment for date1
+        Act appointment = createAppointment(date1);
+
+        results = service.getEvents(schedule, date1);
+        assertEquals(1, results.size());
+        ObjectSet set = results.get(0);
+        checkAppointment(appointment, set);
+
+        results = service.getEvents(schedule, date2);
+        assertEquals(0, results.size());
+
+        results = service.getEvents(schedule, date3);
+        assertEquals(0, results.size());
+    }
+
+    /**
+     * Tests removal of an event.
+     */
+    public void testRemoveEvent() {
+        Date date1 = java.sql.Date.valueOf("2008-1-1");
+        Date date2 = java.sql.Date.valueOf("2008-1-2");
+        Date date3 = java.sql.Date.valueOf("2008-1-3");
+
+       // retrieve the appointments for date1 and date2 and verify they are
+        // empty.
+        // This caches the appointments for each date.
+        List<ObjectSet> results = service.getEvents(schedule, date1);
+        assertEquals(0, results.size());
+
+        results = service.getEvents(schedule, date2);
+        assertEquals(0, results.size());
+
+        // create and save appointment for date1
+        Act appointment = createAppointment(date1);
+
+        results = service.getEvents(schedule, date1);
+        assertEquals(1, results.size());
+
+        results = service.getEvents(schedule, date2);
+        assertEquals(0, results.size());
+
+        // now remove it
+        getArchetypeService().remove(appointment);
+
+        // verify it has been removed
+        assertEquals(0, service.getEvents(schedule, date1).size());
+        assertEquals(0, service.getEvents(schedule, date2).size());
+        assertEquals(0, service.getEvents(schedule, date3).size());
+    }
+
+    /**
+     * Tests the {@link AppointmentService#getEvents(Entity, Date)} ()} method.
+     */
+    public void testGetEvents() {
         final int count = 10;
         Party schedule = ScheduleTestHelper.createSchedule();
         Act[] appointments = new Act[count];
-        Date[] startTimes = new Date[count];
-        Date[] endTimes = new Date[count];
-        Date[] arrivalTimes = new Date[count];
-        Party[] customers = new Party[count];
-        Party[] patients = new Party[count];
-        User[] clinicians = new User[count];
         Date date = java.sql.Date.valueOf("2007-1-1");
-        Entity[] appointmentTypes = new Entity[count];
         for (int i = 0; i < count; ++i) {
             Date startTime = DateRules.getDate(date, 15 * count,
                                                DateUnits.MINUTES);
@@ -71,13 +141,6 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
             bean.addParticipation("participation.clinician", clinician);
             bean.setValue("arrivalTime", arrivalTime);
             appointments[i] = appointment;
-            startTimes[i] = startTime;
-            arrivalTimes[i] = arrivalTime;
-            endTimes[i] = endTime;
-            appointmentTypes[i] = bean.getNodeParticipant("appointmentType");
-            customers[i] = customer;
-            patients[i] = patient;
-            clinicians[i] = clinician;
             bean.save();
         }
 
@@ -87,36 +150,151 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
             ObjectSet set = results.get(i);
-            assertEquals(appointments[i].getObjectReference(),
-                         set.get(ScheduleEvent.ACT_REFERENCE));
-            assertEquals(startTimes[i],
-                         set.get(ScheduleEvent.ACT_START_TIME));
-            assertEquals(endTimes[i], set.get(ScheduleEvent.ACT_END_TIME));
-            assertEquals(appointments[i].getStatus(),
-                         set.get(ScheduleEvent.ACT_STATUS));
-            assertEquals(appointments[i].getReason(),
-                         set.get(ScheduleEvent.ACT_REASON));
-            assertEquals(appointments[i].getDescription(),
-                         set.get(ScheduleEvent.ACT_DESCRIPTION));
-            assertEquals(customers[i].getObjectReference(),
-                         set.get(ScheduleEvent.CUSTOMER_REFERENCE));
-            assertEquals(customers[i].getName(),
-                         set.get(ScheduleEvent.CUSTOMER_NAME));
-            assertEquals(patients[i].getObjectReference(),
-                         set.get(ScheduleEvent.PATIENT_REFERENCE));
-            assertEquals(patients[i].getName(),
-                         set.get(ScheduleEvent.PATIENT_NAME));
-            assertEquals(clinicians[i].getObjectReference(),
-                         set.get(ScheduleEvent.CLINICIAN_REFERENCE));
-            assertEquals(clinicians[i].getName(),
-                         set.get(ScheduleEvent.CLINICIAN_NAME));
-            assertEquals(appointmentTypes[i].getObjectReference(),
-                         set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
-            assertEquals(appointmentTypes[i].getName(),
-                         set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
-            assertEquals(arrivalTimes[i],
-                         set.get(ScheduleEvent.ARRIVAL_TIME));
+            checkAppointment(appointments[i], set);
         }
     }
+
+    /**
+     * Tests moving of an event from one date to another.
+     */
+    public void testChangeEventDate() {
+        Date date1 = java.sql.Date.valueOf("2008-1-1");
+        Date date2 = java.sql.Date.valueOf("2008-3-1");
+
+        service.getEvents(schedule, date1);
+        assertEquals(0, service.getEvents(schedule, date1).size());
+        assertEquals(0, service.getEvents(schedule, date2).size());
+
+        Act act = createAppointment(date1);
+
+        assertEquals(1, service.getEvents(schedule, date1).size());
+        assertEquals(0, service.getEvents(schedule, date2).size());
+
+        act.setActivityStartTime(date2); // move it to date2
+        act.setActivityEndTime(DateRules.getDate(date2, 15, DateUnits.MINUTES));
+        getArchetypeService().save(act);
+
+        assertEquals(0, service.getEvents(schedule, date1).size());
+        assertEquals(1, service.getEvents(schedule, date2).size());
+    }
+
+    /**
+     * Tests moving of an event from one schedule to another.
+     */
+    public void testChangeEventSchedule() {
+        Date date = java.sql.Date.valueOf("2008-1-1");
+
+        service.getEvents(schedule, date);
+        assertEquals(0, service.getEvents(schedule, date).size());
+
+        Act act = createAppointment(date);
+        assertEquals(1, service.getEvents(schedule, date).size());
+
+        Party schedule2 = ScheduleTestHelper.createSchedule();
+        ActBean bean = new ActBean(act);
+        bean.setParticipant("participation.schedule", schedule2);
+
+        getArchetypeService().save(act);
+
+        assertEquals(0, service.getEvents(schedule, date).size());
+        assertEquals(1, service.getEvents(schedule2, date).size());
+    }
+
+
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        service = (ScheduleService) applicationContext.getBean(
+                "appointmentService");
+        schedule = ScheduleTestHelper.createSchedule();
+    }
+
+    /**
+     * Verifies that an appointment matches the {@link ObjectSet} representing
+     * it.
+     *
+     * @param act the appointment
+     * @param set the set
+     */
+    private void checkAppointment(Act act, ObjectSet set) {
+        ActBean bean = new ActBean(act);
+        assertEquals(act.getObjectReference(),
+                     set.get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(act.getActivityStartTime(),
+                     set.get(ScheduleEvent.ACT_START_TIME));
+        assertEquals(act.getActivityEndTime(),
+                     set.get(ScheduleEvent.ACT_END_TIME));
+        assertEquals(act.getStatus(), set.get(ScheduleEvent.ACT_STATUS));
+        assertEquals(act.getReason(), set.get(ScheduleEvent.ACT_REASON));
+        assertEquals(act.getDescription(),
+                     set.get(ScheduleEvent.ACT_DESCRIPTION));
+        assertEquals(bean.getNodeParticipantRef("customer"),
+                     set.get(ScheduleEvent.CUSTOMER_REFERENCE));
+        assertEquals(bean.getNodeParticipant("customer").getName(),
+                     set.get(ScheduleEvent.CUSTOMER_NAME));
+        assertEquals(bean.getNodeParticipantRef("patient"),
+                     set.get(ScheduleEvent.PATIENT_REFERENCE));
+        assertEquals(bean.getNodeParticipant("patient").getName(),
+                     set.get(ScheduleEvent.PATIENT_NAME));
+        assertEquals(bean.getNodeParticipantRef("clinician"),
+                     set.get(ScheduleEvent.CLINICIAN_REFERENCE));
+        assertEquals(bean.getNodeParticipant("clinician").getName(),
+                     set.get(ScheduleEvent.CLINICIAN_NAME));
+        assertEquals(bean.getNodeParticipantRef("appointmentType"),
+                     set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
+        assertEquals(bean.getNodeParticipant("appointmentType").getName(),
+                     set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
+        assertEquals(bean.getDate("arrivalTime"),
+                     set.get(ScheduleEvent.ARRIVAL_TIME));
+    }
+
+    /**
+     * Creates and saves a new appointment.
+     *
+     * @param date the date to create the appointment on
+     * @return a new appointment
+     */
+    private Act createAppointment(Date date) {
+        return createAppointment(date, schedule);
+    }
+
+    /**
+     * Creates and saves a new appointment.
+     *
+     * @param date     the date to create the appointment on
+     * @param schedule the schedule
+     * @return a new appointment
+     */
+    private Act createAppointment(Date date, Party schedule) {
+        Date startTime = DateRules.getDate(date, 15, DateUnits.MINUTES);
+        Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
+        return createAppointment(startTime, endTime, schedule);
+    }
+
+    /**
+     * Creates and saves a new appointment.
+     *
+     * @param startTime the start time
+     * @param endTime   the end time
+     * @param schedule  the schedule
+     * @return a new appointment
+     */
+    private Act createAppointment(Date startTime, Date endTime,
+                                  Party schedule) {
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient();
+        User clinician = TestHelper.createClinician();
+        Act appointment = ScheduleTestHelper.createAppointment(
+                startTime, endTime, schedule, customer, patient, clinician);
+        save(appointment);
+        return appointment;
+    }
+
 
 }

@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import java.util.Date;
 import java.util.List;
 
+
 /**
  * Tests the {@link TaskService}.
  *
@@ -55,16 +56,35 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
      * Tests addition of a task.
      */
     public void testAddEvent() {
-        Date date = java.sql.Date.valueOf("2008-1-1");
+        Date date1 = java.sql.Date.valueOf("2008-1-1");
+        Date date2 = java.sql.Date.valueOf("2008-1-2");
+        Date date3 = java.sql.Date.valueOf("2008-1-3");
 
-        List<ObjectSet> results = service.getEvents(workList, date);
+        // retrieve the tasks for date1 and date2 and verify they are empty.
+        // This caches the tasks for each date.
+        List<ObjectSet> results = service.getEvents(workList, date1);
         assertEquals(0, results.size());
 
-        Act task = createTask(date);
+        results = service.getEvents(workList, date2);
+        assertEquals(0, results.size());
 
-        results = service.getEvents(workList, date);
+        // create and save task for date1. As it has no end time, it should
+        // appear for the 3 dates.
+        Act task = createTask(date1);
+
+        results = service.getEvents(workList, date1);
         assertEquals(1, results.size());
         ObjectSet set = results.get(0);
+        checkTask(task, set);
+
+        results = service.getEvents(workList, date2);
+        assertEquals(1, results.size());
+        set = results.get(0);
+        checkTask(task, set);
+
+        results = service.getEvents(workList, date3);
+        assertEquals(1, results.size());
+        set = results.get(0);
         checkTask(task, set);
     }
 
@@ -72,25 +92,35 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
      * Tests removal of an event.
      */
     public void testRemoveEvent() {
-        Date date = java.sql.Date.valueOf("2008-1-1");
+        Date date1 = java.sql.Date.valueOf("2008-1-1");
+        Date date2 = java.sql.Date.valueOf("2008-1-2");
+        Date date3 = java.sql.Date.valueOf("2008-1-3");
 
-        List<ObjectSet> results = service.getEvents(workList, date);
+        List<ObjectSet> results = service.getEvents(workList, date1);
         assertEquals(0, results.size());
 
-        Act task = createTask(date);
+        results = service.getEvents(workList, date2);
+        assertEquals(0, results.size());
 
-        results = service.getEvents(workList, date);
+        Act task = createTask(date1);
+
+        results = service.getEvents(workList, date1);
+        assertEquals(1, results.size());
+
+        results = service.getEvents(workList, date2);
         assertEquals(1, results.size());
 
         getArchetypeService().remove(task);
 
-        assertEquals(0, service.getEvents(workList, date).size());
+        assertEquals(0, service.getEvents(workList, date1).size());
+        assertEquals(0, service.getEvents(workList, date2).size());
+        assertEquals(0, service.getEvents(workList, date3).size());
     }
 
     /**
      * Tests moving of an event from one date to another.
      */
-    public void testMoveEvent() {
+    public void testChangeEventDate() {
         Date date1 = java.sql.Date.valueOf("2008-1-1");
         Date date2 = java.sql.Date.valueOf("2008-3-1");
 
@@ -101,13 +131,35 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         Act task = createTask(date1);
 
         assertEquals(1, service.getEvents(workList, date1).size());
-        assertEquals(0, service.getEvents(workList, date2).size());
+        assertEquals(1, service.getEvents(workList, date2).size());
 
         task.setActivityStartTime(date2); // move it to date2
         getArchetypeService().save(task);
 
         assertEquals(0, service.getEvents(workList, date1).size());
         assertEquals(1, service.getEvents(workList, date2).size());
+    }
+
+    /**
+     * Tests moving of an event from one worklist to another.
+     */
+    public void testChangeEventWorkList() {
+        Date date = java.sql.Date.valueOf("2008-1-1");
+
+        service.getEvents(workList, date);
+        assertEquals(0, service.getEvents(workList, date).size());
+
+        Act task = createTask(date);
+        assertEquals(1, service.getEvents(workList, date).size());
+
+        Party workList2 = ScheduleTestHelper.createWorkList();
+        ActBean bean = new ActBean(task);
+        bean.setParticipant("participation.worklist", workList2);
+
+        getArchetypeService().save(task);
+
+        assertEquals(0, service.getEvents(workList, date).size());
+        assertEquals(1, service.getEvents(workList2, date).size());
     }
 
     /**
@@ -140,6 +192,17 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
      * @return a new task
      */
     private Act createTask(Date date) {
+        return createTask(date, workList);
+    }
+
+    /**
+     * Creates and saves a new task.
+     *
+     * @param date     the date to create the task on
+     * @param workList the work list
+     * @return a new task
+     */
+    private Act createTask(Date date, Party workList) {
         Date startTime = DateRules.getDate(date, 15, DateUnits.MINUTES);
         return createTask(startTime, null, workList);
     }
