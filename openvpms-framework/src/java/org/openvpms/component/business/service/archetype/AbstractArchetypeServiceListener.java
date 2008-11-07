@@ -22,45 +22,53 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Listener for {@link IArchetypeService} events.
+ * Abstract implementation of the {@link IArchetypeServiceListener} interface.
+ * <p/>
+ * This provides empty implementations for each method.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IArchetypeServiceListener {
+public abstract class AbstractArchetypeServiceListener
+        implements IArchetypeServiceListener {
 
     /**
      * Invoked prior to an object being saved.
      *
      * @param object the object being saved
      */
-    void save(IMObject object);
+    public void save(IMObject object) {
+    }
 
     /**
      * Invoked prior to an object being removed.
      *
      * @param object the object being removed
      */
-    void remove(IMObject object);
+    public void remove(IMObject object) {
+    }
 
     /**
      * Invoked after an object has been saved and the transaction committed.
      *
      * @param object the saved object
      */
-    void saved(IMObject object);
+    public void saved(IMObject object) {
+    }
 
     /**
      * Invoked after an object has been removed and the transaction committed.
      *
      * @param object the removed object
      */
-    void removed(IMObject object);
+    public void removed(IMObject object) {
+    }
 
     /**
      * Invoked on transaction rollback.
      *
      * @param object the object that was rolled back
      */
-    void rollback(IMObject object);
+    public void rollback(IMObject object) {
+    }
 }
