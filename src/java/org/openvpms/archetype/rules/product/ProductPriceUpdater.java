@@ -244,7 +244,7 @@ public class ProductPriceUpdater {
         List<ProductPrice> result;
         BigDecimal listPrice = productSupplier.getListPrice();
         int packageSize = productSupplier.getPackageSize();
-        BigDecimal cost = listPrice.divide(BigDecimal.valueOf(packageSize));
+        BigDecimal cost = MathRules.divide(listPrice, packageSize, 3);
         result = rules.updateUnitPrices(product,
                                         cost, getPractice(), getCurrency());
         if (!result.isEmpty()) {

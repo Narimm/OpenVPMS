@@ -288,7 +288,7 @@ public class ProductPriceRules {
      */
     private BigDecimal getRate(BigDecimal percent) {
         if (percent.compareTo(BigDecimal.ZERO) != 0) {
-            return percent.divide(BigDecimal.valueOf(100));
+            return MathRules.divide(percent, 100, 3);
         }
         return BigDecimal.ZERO;
     }
