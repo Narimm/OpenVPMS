@@ -91,6 +91,45 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
+     * Verifies that a product can be saved with a custom unit price
+     * i.e the unit price doesn't get overwritten when the product is saved
+     * despite having an auto-update product-supplier relationship.
+     */
+    public void testCustomUnitPrice() {
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
+                                                   null);
+        Party supplier = TestHelper.createSupplier();
+        BigDecimal initialCost = BigDecimal.ZERO;
+        BigDecimal initialPrice = BigDecimal.ONE;
+
+        // add a new price
+        addUnitPrice(product, initialCost, initialPrice);
+
+        // create a product-supplier relationship to trigger auto price updates
+        int packageSize = 30;
+        ProductSupplier ps = createProductSupplier(product, supplier);
+        ps.setPackageSize(packageSize);
+        ps.setNettPrice(new BigDecimal("10.00"));
+        ps.setListPrice(new BigDecimal("20.00"));
+        ps.setAutoPriceUpdate(true);
+        product.addEntityRelationship(ps.getRelationship());
+        save(product);
+
+        checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.34"));
+
+        // verify that the price has updated
+        product = get(product);
+
+        // now save with a custom unit price, and verify it doesn't get
+        // overwritten when the product saves.
+        Set<ProductPrice> prices = product.getProductPrices();
+        ProductPrice unit = prices.toArray(new ProductPrice[0])[0];
+        unit.setPrice(new BigDecimal("1.35"));
+        save(product);
+        checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.35"));
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -133,8 +172,8 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         ProductSupplier ps = createProductSupplier(product, supplier);
         ps.setPackageSize(packageSize);
         assertFalse(ps.isAutoPriceUpdate());
-        ps.save();
-        product = get(product);
+        product.addEntityRelationship(ps.getRelationship());
+        save(product);
 
         checkPrice(product, initialCost, initialPrice);
 
@@ -144,8 +183,6 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         ps.setNettPrice(new BigDecimal("10.00"));
         ps.setListPrice(new BigDecimal("20.00"));
         ps.setAutoPriceUpdate(true);
-        ps.save();
-        product = get(product);
 
         // now trigger the rule to update prices
         save(product);
@@ -174,20 +211,24 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         ProductSupplier ps = createProductSupplier(product, supplier);
         ps.setPackageSize(packageSize);
         assertFalse(ps.isAutoPriceUpdate());
-        ps.save();
+        supplier.addEntityRelationship(ps.getRelationship());
+        save(supplier);
 
         checkPrice(product, initialCost, initialPrice);
 
         // reload product-supplier relationship and set to auto update prices
+        product = get(product);
         ps = getProductSupplier(product, supplier, packageSize);
         assertNotNull(ps);
         ps.setNettPrice(new BigDecimal("10.00"));
         ps.setListPrice(new BigDecimal("20.00"));
         ps.setAutoPriceUpdate(true);
-        ps.save();
-        supplier = get(supplier);
 
         // now trigger the rule to update prices
+        // NOTE: remove and add as the ps.getRelationship() returns the
+        // relationship from the product
+        supplier.removeEntityRelationship(ps.getRelationship());
+        supplier.addEntityRelationship(ps.getRelationship());
         save(supplier);
 
         // verify that the price has updated
@@ -222,8 +263,6 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
                                                Party supplier,
                                                int packageSize) {
         ProductRules rules = new ProductRules();
-        supplier = get(supplier); // make sure using the latest
-        product = get(product);   // instance of each
         return rules.getProductSupplier(product, supplier, packageSize,
                                         PACKAGE_UNITS);
     }

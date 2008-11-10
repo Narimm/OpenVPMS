@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import static org.openvpms.archetype.rules.product.ProductPriceUpdaterException.ErrorCode.NoPractice;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -37,7 +38,11 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -112,17 +117,21 @@ public class ProductPriceUpdater {
      * @throws ProductPriceUpdaterException if there is no practice
      */
     public List<ProductPrice> update(final Product product, boolean save) {
-        EntityBean bean = new EntityBean(product, service);
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("suppliers");
-        Transformer transformer = new Transformer() {
-            public Object transform(Object object) {
-                ProductSupplier ps = new ProductSupplier(
-                        (EntityRelationship) object, service);
-                return update(product, ps, false);
-            }
-        };
-        return collect(relationships, transformer, save);
+        List<ProductPrice> result = Collections.emptyList();
+        if (needsUpdate(product)) {
+            EntityBean bean = new EntityBean(product, service);
+            List<EntityRelationship> relationships
+                    = bean.getNodeRelationships("suppliers");
+            Transformer transformer = new Transformer() {
+                public Object transform(Object object) {
+                    ProductSupplier ps = new ProductSupplier(
+                            (EntityRelationship) object, service);
+                    return update(product, ps, false);
+                }
+            };
+            result = collect(relationships, transformer, save);
+        }
+        return result;
     }
 
     /**
@@ -212,6 +221,60 @@ public class ProductPriceUpdater {
             result = doUpdate(productSupplier, product, save);
         } else {
             result = Collections.emptyList();
+        }
+        return result;
+    }
+
+    /**
+     * Determines if the prices associated with a product should be updated.
+     *
+     * @param product the product
+     * @return <tt>true</tt> if prices should be updated
+     */
+    private boolean needsUpdate(Product product) {
+        boolean update = true;
+        if (!product.isNew()) {
+            Product prior = (Product) service.get(product.getObjectReference());
+            if (prior != null) {
+                Set<EntityRelationship> oldSuppliers = getProductSuppliers(
+                        prior);
+                Set<EntityRelationship> newSuppliers = getProductSuppliers(
+                        product);
+                if (oldSuppliers.equals(newSuppliers)) {
+                    update = !checkEquals(oldSuppliers, newSuppliers);
+                }
+            }
+        }
+        return update;
+    }
+
+    private boolean checkEquals(Set<EntityRelationship> oldSuppliers,
+                                Set<EntityRelationship> newSuppliers) {
+        Map<IMObjectReference, ProductSupplier> oldMap = getProductSuppliers(
+                oldSuppliers);
+        Map<IMObjectReference, ProductSupplier> newMap = getProductSuppliers(
+                newSuppliers);
+        for (Map.Entry<IMObjectReference, ProductSupplier> entry
+                : newMap.entrySet()) {
+            ProductSupplier supplier = entry.getValue();
+            ProductSupplier old = oldMap.get(entry.getKey());
+            if (old == null
+                    || supplier.getListPrice().compareTo(
+                    old.getListPrice()) != 0
+                    || supplier.getPackageSize() != old.getPackageSize()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Map<IMObjectReference, ProductSupplier> getProductSuppliers(
+            Set<EntityRelationship> suppliers) {
+        Map<IMObjectReference, ProductSupplier> result
+                = new HashMap<IMObjectReference, ProductSupplier>();
+        for (EntityRelationship supplier : suppliers) {
+            result.put(supplier.getObjectReference(),
+                       new ProductSupplier(supplier, service));
         }
         return result;
     }
@@ -327,4 +390,9 @@ public class ProductPriceUpdater {
     }
 
 
+    private Set<EntityRelationship> getProductSuppliers(Product product) {
+        EntityBean bean = new EntityBean(product, service);
+        return new HashSet<EntityRelationship>(
+                bean.getNodeRelationships("suppliers"));
+    }
 }
