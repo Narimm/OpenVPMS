@@ -404,7 +404,6 @@ public abstract class AbstractIMObjectCollectionEditor
             // increase the layout depth for collection items
 
             editor = createEditor(object, context);
-            editor.addModifiableListener(broadcaster);
             collection.setEditor(object, editor);
         }
         return editor;
@@ -419,7 +418,11 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     protected IMObjectEditor createEditor(IMObject object,
                                           LayoutContext context) {
-        return IMObjectEditorFactory.create(object, this.object, context);
+        IMObjectEditor editor = IMObjectEditorFactory.create(object,
+                                                             this.object,
+                                                             context);
+        editor.addModifiableListener(broadcaster);
+        return editor;
     }
 
     /**
@@ -471,15 +474,6 @@ public abstract class AbstractIMObjectCollectionEditor
             addEdited(editor);
         }
         return collection.save();
-    }
-
-    /**
-     * Invoked when a editor changes.
-     *
-     * @param modifiable the modifiable
-     */
-    protected void onEditorChanged(Modifiable modifiable) {
-        // no-op
     }
 
 }
