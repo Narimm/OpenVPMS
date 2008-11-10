@@ -286,7 +286,7 @@ public class DeliveryProcessor {
         if (packageSize != orderedPackSize && orderedPackSize != 0) {
             // need to convert the quantity to the order package quantity
             quantity = quantity.multiply(BigDecimal.valueOf(packageSize));
-            quantity = quantity.divide(BigDecimal.valueOf(orderedPackSize));
+            quantity = MathRules.divide(quantity, orderedPackSize, 3);
         }
         received = received.add(quantity);
         if (received.compareTo(BigDecimal.ZERO) < 0) {

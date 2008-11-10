@@ -129,7 +129,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // create a product-supplier relationship.
         // It should not trigger auto price updates
-        int packageSize = 20;
+        int packageSize = 30;
         ProductSupplier ps = createProductSupplier(product, supplier);
         ps.setPackageSize(packageSize);
         assertFalse(ps.isAutoPriceUpdate());
@@ -151,7 +151,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         save(product);
 
         // verify that the price has updated
-        checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+        checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.34"));
     }
 
     /**
