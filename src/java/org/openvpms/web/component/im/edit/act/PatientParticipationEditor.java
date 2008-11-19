@@ -19,13 +19,16 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
 
@@ -41,24 +44,32 @@ public class PatientParticipationEditor
         extends AbstractParticipationEditor<Party> {
 
     /**
-     * Construct a new <code>PatientParticipationEditor</code>.
+     * Construct a new <tt>PatientParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <code>null</code>
+     * @param layout        the layout context. May be <tt>null</tt>
      */
     public PatientParticipationEditor(Participation participation,
                                       Act parent,
-                                      LayoutContext context) {
-        super(participation, parent, context);
+                                      LayoutContext layout) {
+        super(participation, parent, layout);
         if (!TypeHelper.isA(participation, "participation.patient")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());
         }
-        if (participation.getEntity() == null && parent.isNew()) {
-            Party patient = getLayoutContext().getContext().getPatient();
+        Context context = getLayoutContext().getContext();
+        IMObjectReference patientRef = participation.getEntity();
+        if (patientRef == null && parent.isNew()) {
+            Party patient = context.getPatient();
             getEditor().setObject(patient);
+        } else {
+            // add the existing patient to the context
+            Party patient = (Party) IMObjectHelper.getObject(patientRef);
+            if (patient != null && patient != context.getPatient()) {
+                ContextHelper.setPatient(context, patient);
+            }
         }
     }
 
