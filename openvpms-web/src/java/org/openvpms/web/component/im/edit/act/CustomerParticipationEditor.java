@@ -19,13 +19,16 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
 
@@ -44,19 +47,27 @@ public class CustomerParticipationEditor
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <tt>null</tt>
+     * @param layout        the layout context. May be <tt>null</tt>
      */
     public CustomerParticipationEditor(Participation participation,
-                                       Act parent, LayoutContext context) {
-        super(participation, parent, context);
+                                       Act parent, LayoutContext layout) {
+        super(participation, parent, layout);
         if (!TypeHelper.isA(participation, "participation.customer")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());
         }
-        if (participation.getEntity() == null && parent.isNew()) {
-            Party customer = getLayoutContext().getContext().getCustomer();
+        Context context = getLayoutContext().getContext();
+        IMObjectReference customerRef = participation.getEntity();
+        if (customerRef == null && parent.isNew()) {
+            Party customer = context.getCustomer();
             getEditor().setObject(customer);
+        } else {
+            // add the existing customer to the context
+            Party customer = (Party) IMObjectHelper.getObject(customerRef);
+            if (customer != null && customer != context.getCustomer()) {
+                ContextHelper.setCustomer(context, customer);
+            }
         }
     }
 
