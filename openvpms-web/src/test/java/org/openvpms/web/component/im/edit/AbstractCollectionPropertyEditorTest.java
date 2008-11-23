@@ -178,6 +178,67 @@ public abstract class AbstractCollectionPropertyEditorTest
     }
 
     /**
+     * Tests {@link CollectionPropertyEditor#remove}.
+     */
+    public void testRemoveAndAdd() {
+        final IMObject parent = createParent();
+        CollectionProperty property = getCollectionProperty(parent);
+        assertTrue("Require collection with min cardinality >= 0",
+                   property.getMinCardinality() >= 0);
+        final CollectionPropertyEditor editor = createEditor(property, parent);
+
+        IMObject elt1 = createObject(parent);
+        IMObject elt2 = createObject(parent);
+        editor.add(elt1);
+
+        assertEquals(1, editor.getObjects().size());
+        assertTrue(editor.getObjects().contains(elt1));
+        assertTrue(editor.isValid());
+        assertTrue(editor.isModified());
+
+        execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                assertTrue("Failed to save collection", editor.save());
+                return null;
+            }
+        });
+
+        // make sure the element has saved
+        assertEquals("Retrieved element1 doesnt match that saved",
+                     elt1, get(elt1));
+
+        // now remove elt1, and add elt2
+        // save and verify that it is no longer available
+        editor.remove(elt1);
+        editor.add(elt2);
+        assertEquals(1, editor.getObjects().size());
+        assertFalse(editor.getObjects().contains(elt1));
+        assertTrue(editor.getObjects().contains(elt2));
+
+        execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                assertTrue("Failed to save collection", editor.save());
+                return null;
+            }
+        });
+        assertNull("element1 wasnt deleted", get(elt1));
+
+        // now retrieve parent and verify collection matches the original
+        IMObject savedParent = get(parent);
+        assertNotNull(savedParent);
+        CollectionPropertyEditor saved = createEditor(
+                getCollectionProperty(savedParent), savedParent);
+        assertEquals(1, saved.getObjects().size());
+        assertTrue(saved.getObjects().contains(elt2));
+
+        assertFalse("Collection shouldn't be modified", saved.isModified());
+        assertFalse("Collection not saved", saved.isSaved());
+        assertTrue("Collection should be valid", saved.isValid());
+    }
+
+    /**
      * Tests {@link CollectionPropertyEditor#remove} on a collection that has
      * been saved and reloaded.
      */

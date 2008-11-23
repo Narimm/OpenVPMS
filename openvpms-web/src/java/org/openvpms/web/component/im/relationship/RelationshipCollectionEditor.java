@@ -29,7 +29,6 @@ import org.openvpms.web.component.im.edit.IMTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMTableModel;
-import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -51,20 +50,6 @@ public class RelationshipCollectionEditor
      */
     private CheckBox hideInactive;
 
-
-    /**
-     * Constructs a new <tt>RelationshipCollectionEditor</tt>.
-     *
-     * @param property the collection property
-     * @param object   the object being edited
-     * @param context  the layout context
-     */
-    public RelationshipCollectionEditor(CollectionProperty property,
-                                        IMObject object,
-                                        LayoutContext context) {
-        this(new RelationshipCollectionPropertyEditor(property, object),
-             object, context);
-    }
 
     /**
      * Construct a new <tt>RelationshipCollectionEditor</tt>.

@@ -166,7 +166,8 @@ public abstract class AbstractCollectionPropertyEditor
      * @return <tt>true</tt> if the object was removed
      */
     public boolean remove(IMObject object) {
-        boolean removed = removeEdited(object);
+        boolean removed = property.getValues().contains(object);
+        removed |= removeEdited(object);
         property.remove(object); // will notify listeners, so invoke last
         return removed;
     }
@@ -318,6 +319,7 @@ public abstract class AbstractCollectionPropertyEditor
      * @return <tt>true</tt> if the save was successful
      */
     protected boolean doSave() {
+        saved = false;
         if (!edited.isEmpty() || !editors.isEmpty()) {
             for (IMObjectEditor editor : editors.values()) {
                 boolean result = editor.save();
@@ -366,11 +368,20 @@ public abstract class AbstractCollectionPropertyEditor
     }
 
     /**
+     * Returns the set of edited objects.
+     *
+     * @return the set of edited objects
+     */
+    protected Set<IMObject> getEdited() {
+        return edited;
+    }
+
+    /**
      * Removes an object from the the set of objects to save.
      * This removes any associated editor.
      *
      * @param object the object to remove
-     * @return <tt>true</tt> if the object was removed
+     * @return <tt>true</tt> if the the object was being edited
      */
     protected boolean removeEdited(IMObject object) {
         editors.remove(object);

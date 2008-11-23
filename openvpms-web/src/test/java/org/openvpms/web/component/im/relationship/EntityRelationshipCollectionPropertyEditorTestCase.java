@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.relationship;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -28,12 +29,12 @@ import org.openvpms.web.test.TestHelper;
 
 
 /**
- * Tests the {@link RelationshipCollectionPropertyEditor} class.
+ * Tests the {@link EntityRelationshipCollectionPropertyEditor} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class RelationshipCollectionPropertyEditorTestCase
+public class EntityRelationshipCollectionPropertyEditorTestCase
         extends AbstractCollectionPropertyEditorTest {
 
     /**
@@ -63,7 +64,8 @@ public class RelationshipCollectionPropertyEditorTestCase
      */
     protected CollectionPropertyEditor createEditor(CollectionProperty property,
                                                     IMObject parent) {
-        return new RelationshipCollectionPropertyEditor(property, parent);
+        return new EntityRelationshipCollectionPropertyEditor(property,
+                                                              (Entity) parent);
     }
 
     /**

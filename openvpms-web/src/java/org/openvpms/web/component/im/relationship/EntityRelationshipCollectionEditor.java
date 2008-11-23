@@ -79,7 +79,8 @@ public class EntityRelationshipCollectionEditor
     public EntityRelationshipCollectionEditor(
             CollectionProperty property, Entity object,
             LayoutContext context) {
-        super(property, object, context);
+        super(new EntityRelationshipCollectionPropertyEditor(property, object),
+              object, context);
         sequenced = EntityRelationshipCollectionHelper.hasSequenceNode(
                 property.getArchetypeRange());
     }
