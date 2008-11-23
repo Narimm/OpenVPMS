@@ -19,16 +19,22 @@
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -38,7 +44,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class RelationshipCollectionPropertyEditor
+public abstract class RelationshipCollectionPropertyEditor
         extends AbstractCollectionPropertyEditor {
 
     /**
@@ -66,6 +72,12 @@ public class RelationshipCollectionPropertyEditor
      */
     private Map<IMObjectRelationship, RelationshipState> states
             = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
+
+    private Set<IMObjectRelationship> added
+            = new HashSet<IMObjectRelationship>();
+
+    private Set<IMObjectRelationship> removed
+            = new HashSet<IMObjectRelationship>();
 
 
     /**
@@ -163,14 +175,15 @@ public class RelationshipCollectionPropertyEditor
      */
     @Override
     public boolean add(IMObject object) {
-        boolean added = super.add(object);
+        boolean result = super.add(object);
         IMObjectRelationship relationship = (IMObjectRelationship) object;
-        if (added) {
+        if (result) {
             RelationshipState state = factory.create(getParent(), relationship,
                                                      parentIsSource);
             states.put(relationship, state);
+            added.add(relationship);
         }
-        return added;
+        return result;
     }
 
     /**
@@ -184,6 +197,11 @@ public class RelationshipCollectionPropertyEditor
     public boolean remove(IMObject object) {
         IMObjectRelationship relationship = (IMObjectRelationship) object;
         states.remove(relationship);
+        if (!relationship.isNew()) {
+            removed.add(relationship);
+        } else {
+            added.remove(relationship);
+        }
         return super.remove(relationship);
     }
 
@@ -196,6 +214,102 @@ public class RelationshipCollectionPropertyEditor
     protected RelationshipStateQuery createQuery(IMObject parent) {
         return new RelationshipStateQuery(
                 parent, getObjects(), getProperty().getArchetypeRange());
+    }
+
+    /**
+     * Adds an object to the set of objects to save when the collection is
+     * saved.
+     * <p/>
+     * This implementation is a no-op as the saving of relationship collections
+     * is handled by the parent object.
+     *
+     * @param object the edited object
+     */
+    @Override
+    protected void addEdited(IMObject object) {
+        // no-op
+    }
+
+    /**
+     * Saves the collection.
+     * <p/>
+     * For each removed relationship, this implementation also removes it
+     * from the related object.
+     * For each added relationship, this implementation also adds it to the
+     * related object.
+     *
+     * @return <tt>true</tt> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        boolean saved = false;
+        Map<IMObjectReference, IMObject> toSave
+                = new HashMap<IMObjectReference, IMObject>();
+        for (IMObjectRelationship r : removed) {
+            IMObject object = getObject(r, toSave);
+            if (object != null) {
+                removeRelationship(object, r);
+            }
+        }
+        for (IMObjectRelationship r : added) {
+            IMObject object = getObject(r, toSave);
+            if (object != null) {
+                addRelationship(object, r);
+            }
+        }
+        if (!toSave.isEmpty()) {
+            if (SaveHelper.save(toSave.values())) {
+                removed.clear();
+                added.clear();
+                saved = true;
+            }
+        } else {
+            saved = true;
+        }
+        setSaved(saved);
+        return saved;
+    }
+
+    /**
+     * Adds a relationship to the related object.
+     *
+     * @param object       the related object
+     * @param relationship the relationship to add
+     */
+    protected abstract void addRelationship(IMObject object,
+                                            IMObjectRelationship relationship);
+
+    /**
+     * Removes a relationship from a related object.
+     *
+     * @param object       the related object
+     * @param relationship the relationship to remove
+     */
+    protected abstract void removeRelationship(
+            IMObject object, IMObjectRelationship relationship);
+
+    /**
+     * Helper to return the related object in a relationship, first consulting
+     * the supplied cache.
+     * <p/>
+     * Objects are added to the cache.
+     *
+     * @param relationship the relationship
+     * @param cache        the object cache, keyed on reference
+     * @return the related object, or <tt>null</tt> if not found
+     */
+    private IMObject getObject(IMObjectRelationship relationship,
+                               Map<IMObjectReference, IMObject> cache) {
+        IMObjectReference ref = parentIsSource() ? relationship.getTarget()
+                : relationship.getSource();
+        IMObject object = null;
+        if (!cache.containsKey(ref)) {
+            object = IMObjectHelper.getObject(ref);
+            if (object != null) {
+                cache.put(ref, object);
+            }
+        }
+        return object;
     }
 
 }

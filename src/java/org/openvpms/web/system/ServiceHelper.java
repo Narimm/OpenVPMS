@@ -26,6 +26,7 @@ import org.openvpms.archetype.util.MacroCache;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -62,6 +63,15 @@ public final class ServiceHelper {
             return (IArchetypeRuleService) getArchetypeService();
         }
         return (IArchetypeService) getContext().getBean("archetypeService");
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    public static ILookupService getLookupService() {
+        return (ILookupService) getContext().getBean("lookupService");
     }
 
     /**

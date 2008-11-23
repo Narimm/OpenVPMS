@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionPropertyEditor;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionEditor;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionPropertyEditor;
 import org.openvpms.web.component.im.relationship.RelationshipState;
@@ -74,7 +75,8 @@ public class PatientEntityRelationshipCollectionEditor
      * An {@link RelationshipCollectionPropertyEditor} that excludes
      * inactive/deceased patients if the 'hide inactive' checkbox is selected.
      */
-    private static class Editor extends RelationshipCollectionPropertyEditor {
+    private static class Editor
+            extends EntityRelationshipCollectionPropertyEditor {
 
         /**
          * Construct a new <tt>Editor</tt>.
