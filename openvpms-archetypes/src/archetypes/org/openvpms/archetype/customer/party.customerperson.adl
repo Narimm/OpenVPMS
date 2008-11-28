@@ -21,7 +21,7 @@
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
-              derivedValue="concat(/details/lastName, ',', /details/firstName)"/>
+              derivedValue="concat(/details/companyName,substring(concat(/details/lastName,',',/details/firstName),0,number(not(/details/companyName))*string-length(concat(/details/lastName,',',/details/firstName))+1))"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(party:getBillingAddress(.),' - ',party:getHomeTelephone(.))"/>
@@ -58,11 +58,11 @@
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entityRelationship.patientLocation"/>
+                                  value="entityRelationship.patientOwner"/>
                     </propertyMap>
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entityRelationship.patientOwner"/>
+                                  value="entityRelationship.patientLocation"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
