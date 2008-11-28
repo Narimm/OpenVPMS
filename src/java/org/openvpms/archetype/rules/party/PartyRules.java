@@ -337,6 +337,9 @@ public class PartyRules {
      */
     public String getHomeTelephone(Act act) {
         Party party = getCustomer(act);
+        if (party == null) {
+            party = new PatientRules(service).getOwner(act);
+        }
         return (party != null) ? getHomeTelephone(party) : "";
     }
 
@@ -366,6 +369,9 @@ public class PartyRules {
      */
     public String getWorkTelephone(Act act) {
         Party party = getCustomer(act);
+        if (party == null) {
+            party = new PatientRules(service).getOwner(act);
+        }
         return (party != null) ? getWorkTelephone(party) : "";
     }
 
