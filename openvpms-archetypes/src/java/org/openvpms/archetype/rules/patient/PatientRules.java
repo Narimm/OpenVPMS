@@ -380,6 +380,22 @@ public class PatientRules {
     }
 
     /**
+     * Returns the most recent pet tag for a patient.
+     *
+     * @param patient the patient
+     * @return the most recent pet Tag, or <tt>null<tt> if none is
+     *         found patient
+     */
+    public String getPetTag(Party patient) {
+        for (EntityIdentity identity : patient.getIdentities()) {
+            if (TypeHelper.isA(identity, "entityIdentity.petTag")) {
+                return identity.getIdentity();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Merges two patients.
      *
      * @param from the patient to merge
