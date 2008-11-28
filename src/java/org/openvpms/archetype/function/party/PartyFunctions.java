@@ -748,6 +748,29 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the patient pet tag.
+     *
+     * @param patient the patient
+     * @return the pet tag, or an empty string if none is found
+     */
+    public String getPatientPetTag(Party patient) {
+        String result = getPatientRules().getPetTag(patient);
+        return (result != null) ? result : "";
+    }
+
+    /**
+     * Returns the pet tag of a patient associated with an act.
+     *
+     * @param act the act
+     * @return the pet tag, or an empty string if none is found
+     */
+    public String getPatientPetTag(Act act) {
+        ActBean bean = new ActBean(act, getArchetypeService());
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        return (patient != null) ? getPatientPetTag(patient) : "";
+    }
+
+    /**
      * Returns the most recent weight in string format for a patient.
      *
      * @param context the expression context. Expected to reference a party or
