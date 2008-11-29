@@ -166,16 +166,26 @@ public class DescriptorHelperTestCase
         String[] range = DescriptorHelper.getShortNames(contacts);
         checkEquals(range, "contact.location", "contact.phoneNumber");
 
-        // now check a node with a filter
+           // now check a node with a filter
         ArchetypeDescriptor personFilter
                 = DescriptorHelper.getArchetypeDescriptor("party.personfilter");
         assertNotNull(personFilter);
-        NodeDescriptor patients
+        NodeDescriptor staff
                 = personFilter.getNodeDescriptor("staffClassifications");
+        assertNotNull(staff);
+        assertNotNull(staff.getFilter());
+        String[] staffShortNames = DescriptorHelper.getShortNames(staff);
+        checkEquals(staffShortNames, "lookup.staff");
+
+        // now check a node with a filter and multiple archetypes, and verify
+        // order is preserved
+        NodeDescriptor patients
+                = person.getNodeDescriptor("patients");
         assertNotNull(patients);
         assertNotNull(patients.getFilter());
-        String[] filter = DescriptorHelper.getShortNames(patients);
-        checkEquals(filter, "lookup.staff");
+        String[] relShortNames = DescriptorHelper.getShortNames(patients);
+        checkEquals(relShortNames, true, "entityRelationship.animalOwner",
+                    "entityRelationship.animalCarer");
     }
 
     /**
@@ -337,6 +347,21 @@ public class DescriptorHelperTestCase
                 }
             }
             assertTrue("Shortname not found: " + expected, found);
+        }
+    }
+
+    /**
+     * Verifies that two lists of short names match.
+     */
+    private void checkEquals(String[] actualShortNames, boolean preserveOrder,
+                             String ... expectedShortNames) {
+        if (preserveOrder) {
+        assertEquals(expectedShortNames.length, actualShortNames.length);
+        for (int i = 0; i < actualShortNames.length; ++i) {
+            assertEquals(expectedShortNames[i], actualShortNames[i]);
+        }
+        } else {
+            checkEquals(actualShortNames, expectedShortNames);
         }
     }
 
