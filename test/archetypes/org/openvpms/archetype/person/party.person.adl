@@ -57,11 +57,11 @@
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entityRelationship.animalCarer"/>
+                                  value="entityRelationship.animalOwner"/>
                     </propertyMap>
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entityRelationship.animalOwner"/>
+                                  value="entityRelationship.animalCarer"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>

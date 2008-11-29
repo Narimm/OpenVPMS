@@ -30,7 +30,7 @@
         <node name="lastName" path="/details/lastName" type="java.lang.String"
               minCardinality="1" maxLength="30"/>
         <node name="staffClassifications" path="/classifications"
-              parentChild="false" type="java.util.HashSet" filter="lookup.staf*"
+              parentChild="false" type="java.util.HashSet" filter="lookup.sta*"
               baseName="classification" maxCardinality="*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">

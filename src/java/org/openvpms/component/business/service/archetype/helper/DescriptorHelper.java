@@ -178,10 +178,7 @@ public final class DescriptorHelper {
 
     /**
      * Returns archetype short names from a descriptor.
-     * This expands any wildcards. If the {@link NodeDescriptor#getFilter}
-     * is non-null, matching shortnames are
-     * returned, otherwise matching short names from
-     * {@link NodeDescriptor#getArchetypeRange()} are returned.
+     * This expands any wildcards.
      *
      * @param descriptor the node descriptor
      * @return a list of short names
@@ -195,10 +192,8 @@ public final class DescriptorHelper {
 
     /**
      * Returns archetype short names from a descriptor.
-     * This expands any wildcards. If the {@link NodeDescriptor#getFilter}
-     * is non-null, matching shortnames are
-     * returned, otherwise matching short names from
-     * {@link NodeDescriptor#getArchetypeRange()} are returned.
+     * <p/>
+     * This expands any wildcards.
      *
      * @param descriptor the node descriptor
      * @return a list of short names
@@ -207,12 +202,16 @@ public final class DescriptorHelper {
     public static String[] getShortNames(NodeDescriptor descriptor,
                                          IArchetypeService service) {
         String filter = descriptor.getFilter();
-        String[] names;
-        if (!StringUtils.isEmpty(filter)) {
-            names = getShortNames(filter, false, service);
-        } else {
-            names = getShortNames(descriptor.getArchetypeRange(), false,
-                                  service);
+        String[] names = getShortNames(descriptor.getArchetypeRange(), false,
+                                       service);
+        if (names.length != 0 && !StringUtils.isEmpty(filter)) {
+            List<String> filtered = new ArrayList<String>();
+            for (String name : names) {
+                if (TypeHelper.matches(name, filter)) {
+                    filtered.add(name);
+                }
+            }
+            names = filtered.toArray(new String[0]);
         }
         return names;
     }
