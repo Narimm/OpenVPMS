@@ -197,8 +197,7 @@ public class SaveHelper {
             User user = GlobalContext.getInstance().getUser();
             String userName = (user != null) ? user.getUsername() : null;
             String context = Messages.get("logging.error.editcontext",
-                                          object.getArchetypeId().getShortName(),
-                                          object.getId(),
+                                          object.getObjectReference(),
                                           editor.getClass().getName(),
                                           userName);
             ErrorHelper.show(title, context, exception);
