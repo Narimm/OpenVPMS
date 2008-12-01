@@ -101,8 +101,30 @@ public class ErrorHelper {
      * @param error       the error
      */
     public static void show(String title, String displayName, Throwable error) {
+        show(title, displayName, null, error);
+    }
+
+    /**
+     * Display and log an error. If an error dialog is already displayed,
+     * this method will not pop up a new one, to avoid multiple dialogs
+     * related to the same error.
+     *
+     * @param title       the title
+     * @param displayName the display name to include in the error message.
+     *                    May be <tt>null</tt>
+     * @param context     a context message, for logging purposes.
+     *                    May be <tt>null</tt>
+     * @param error       the error
+     */
+    public static void show(String title, String displayName, String context,
+                            Throwable error) {
         String message = getError(error, displayName);
-        log.error(message, error);
+        String logerror = message;
+        if (context != null) {
+            logerror = Messages.get("logging.error.messageandcontext", message,
+                                    context);
+        }
+        log.error(logerror, error);
         if (!inError()) {
             ErrorDialog.show(title, message);
         }
