@@ -19,9 +19,11 @@
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -57,7 +59,14 @@ public class SaveHelper {
                 }
             });
         } catch (Throwable exception) {
-            error(editor.getDisplayName(), exception);
+            IMObject object = editor.getObject();
+            User user = GlobalContext.getInstance().getUser();
+            String userName = (user != null) ? user.getUsername() : null;
+            String context = Messages.get("logging.error.editcontext",
+                                          object.getObjectReference(),
+                                          editor.getClass().getName(),
+                                          userName);
+            error(editor.getDisplayName(), context, exception);
         }
         return (result != null) && (Boolean) result;
     }
@@ -159,7 +168,9 @@ public class SaveHelper {
         } catch (OpenVPMSException exception) {
             String displayName = DescriptorHelper.getDisplayName(object);
             String title = Messages.get("imobject.delete.failed", displayName);
-            ErrorHelper.show(title, exception);
+            String context = Messages.get(
+                    "imobject.delete.failed", object.getObjectReference());
+            ErrorHelper.show(title, context, exception);
         }
         return removed;
     }
@@ -182,7 +193,15 @@ public class SaveHelper {
             });
         } catch (Throwable exception) {
             String title = Messages.get("imobject.delete.failed.title");
-            ErrorHelper.show(title, exception);
+            IMObject object = editor.getObject();
+            User user = GlobalContext.getInstance().getUser();
+            String userName = (user != null) ? user.getUsername() : null;
+            String context = Messages.get("logging.error.editcontext",
+                                          object.getArchetypeId().getShortName(),
+                                          object.getId(),
+                                          editor.getClass().getName(),
+                                          userName);
+            ErrorHelper.show(title, context, exception);
         }
         return (result != null) && (Boolean) result;
     }
@@ -224,18 +243,22 @@ public class SaveHelper {
      */
     private static void error(IMObject object, Throwable exception) {
         String displayName = DescriptorHelper.getDisplayName(object);
-        error(displayName, exception);
+        String context = Messages.get("imobject.save.failed",
+                                      object.getObjectReference());
+        error(displayName, context, exception);
     }
 
     /**
      * Displays a save error.
      *
      * @param displayName the display name of the object that failed to save
+     * @param context     the context message. May be <tt>null</tt>
      * @param exception   the cause
      */
-    private static void error(String displayName, Throwable exception) {
+    private static void error(String displayName, String context,
+                              Throwable exception) {
         String title = Messages.get("imobject.save.failed", displayName);
-        ErrorHelper.show(title, displayName, exception);
+        ErrorHelper.show(title, displayName, context, exception);
     }
 
 }
