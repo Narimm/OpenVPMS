@@ -657,7 +657,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
     /**
      * Verifies that older unallocated balances are allocated prior to more
-     * recent ones for OVPMS-794.
+     * recent ones for OVPMS-795.
      */
     public void testAllocationOrder() {
         Money sixty = new Money(60);
