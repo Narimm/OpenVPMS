@@ -53,7 +53,7 @@
         </map>
         <set name="classifications" inverse="false"
              table="entity_classifications" lazy="true" batch-size="50"
-             cascade="evict">
+             cascade="none">
             <key column="entity_id" not-null="true"/>
             <many-to-many
                     class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl"

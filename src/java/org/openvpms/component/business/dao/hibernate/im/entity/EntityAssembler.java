@@ -18,12 +18,12 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
+import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -52,7 +52,7 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
      * Assembles sets of lookups.
      */
     private static final SetAssembler<Lookup, LookupDO> LOOKUPS
-            = SetAssembler.create(Lookup.class, LookupDO.class);
+        = SetAssembler.create(Lookup.class, LookupDO.class, true);
 
     /**
      * Assembles sets of entity relationships.

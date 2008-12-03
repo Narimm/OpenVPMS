@@ -41,7 +41,7 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
      * Assembles sets of lookups.
      */
     private static final SetAssembler<Lookup, LookupDO> LOOKUPS
-            = SetAssembler.create(Lookup.class, LookupDOImpl.class);
+            = SetAssembler.create(Lookup.class, LookupDOImpl.class, true);
 
 
     /**

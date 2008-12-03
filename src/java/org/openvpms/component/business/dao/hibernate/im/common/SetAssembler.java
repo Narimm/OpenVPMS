@@ -48,21 +48,31 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
      */
     private final Class<? extends DO> typeDO;
 
+    /**
+     * Determines if objects are referenced, or owned by the set.
+     */
+    private final boolean referenced;
+
 
     /**
      * Creates a new <tt>SetAssembler</tt>.
      *
-     * @param type   the object type
-     * @param typeDO the data object implementation type
+     * @param type       the object type
+     * @param typeDO     the data object implementation type
+     * @param referenced determines if objects are referenced or owned by the
+     *                   set
      */
     @SuppressWarnings("unchecked")
-    public SetAssembler(Class<T> type, Class typeDO) {
+    public SetAssembler(Class<T> type, Class typeDO, boolean referenced) {
         this.type = type;
         this.typeDO = typeDO;
+        this.referenced = referenced;
     }
 
     /**
      * Creates a new assembler.
+     * <p/>
+     * Use this when the set owns the objects it contains.
      *
      * @param type   the object type
      * @param typeDO the data object implementation type
@@ -70,7 +80,22 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
      */
     public static <T extends IMObject, DO extends IMObjectDO>
     SetAssembler<T, DO> create(Class<T> type, Class typeDO) {
-        return new SetAssembler<T, DO>(type, typeDO);
+        return create(type, typeDO, false);
+    }
+
+    /**
+     * Creates a new assembler.
+     *
+     * @param type       the object type
+     * @param typeDO     the data object implementation type
+     * @param referenced if <t>true</tt>, objects are referenced by the set,
+     *                   otherwise they are owned by it
+     * @return a new assembler
+     */
+    public static <T extends IMObject, DO extends IMObjectDO>
+    SetAssembler<T, DO> create(Class<T> type, Class typeDO,
+                               boolean referenced) {
+        return new SetAssembler<T, DO>(type, typeDO, referenced);
     }
 
     /**
@@ -103,7 +128,9 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
             for (DO removed : getRemoved(targetMap, retained)) {
                 target.remove(removed);
                 state.removeState(removed);
-                context.remove(removed);
+                if (!referenced) {
+                    context.remove(removed);
+                }
             }
             for (Map.Entry<IMObjectReference, DO> entry : retained.entrySet()) {
                 DO current = entry.getValue();
