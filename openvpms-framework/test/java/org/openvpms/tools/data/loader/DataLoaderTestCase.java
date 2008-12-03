@@ -256,14 +256,9 @@ public class DataLoaderTestCase
     @Override
     protected void onSetUp() throws Exception {
         service = ArchetypeServiceHelper.getArchetypeService();
-        ArchetypeQuery query = new ArchetypeQuery("party.customerperson", false,
-                                                  false);
-        query.add(new CollectionNodeConstraint("classifications",
-                                               "lookup.staff", false, false));
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        for (IMObject object : service.get(query).getResults()) {
-            service.remove(object);
-        }
+        deleteParties("party.customerperson");
+        deleteParties("party.person");
+        ArchetypeQuery query;
         query = new ArchetypeQuery("lookup.staff", false, false);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         List<IMObject> lookups = service.get(query).getResults();
@@ -283,6 +278,23 @@ public class DataLoaderTestCase
         return new String[]{
                 "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
         };
+    }
+
+    /**
+     * Deletes parties with the specified short name having lookup.staff
+     * classifications.
+     *
+     * @param shortName the party short name
+     */
+    private void deleteParties(String shortName) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false,
+                                                  false);
+        query.add(new CollectionNodeConstraint("classifications",
+                                               "lookup.staff", false, false));
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        for (IMObject object : service.get(query).getResults()) {
+            service.remove(object);
+        }
     }
 
 }
