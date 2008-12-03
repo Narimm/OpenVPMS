@@ -50,9 +50,9 @@ public class ArchetypeServicePartyTestCase
      * Test the creation of a simple contact with a contact classification.
      */
     public void testSimplePartyWithContactCreation() throws Exception {
-        Lookup classification = createLookup("EMAIL");
+        Lookup classification = createContactPurpose("EMAIL");
         service.save(classification);
-        Lookup classification1 = createLookup("HOME");
+        Lookup classification1 = createContactPurpose("HOME");
         service.save(classification1);
 
         Party person = createPerson("MR", "Jim", "Alateras");
@@ -69,7 +69,7 @@ public class ArchetypeServicePartyTestCase
      * Tests party removal.
      */
     public void testRemove() {
-        Lookup classification = createLookup("HOME");
+        Lookup classification = createContactPurpose("HOME");
         service.save(classification);
         Party person = createPerson("MR", "Jim", "Alateras");
         Contact contact = createContact(classification);
@@ -97,13 +97,38 @@ public class ArchetypeServicePartyTestCase
     }
 
     /**
+     * Verifies that classifications can be added and removed from a party,
+     * and that removal doesn't delete the classification itself.
+     */
+    public void testAddRemoveClassifications() {
+        Lookup staff1 = createStaff("STAFF1");
+        Lookup staff2 = createStaff("STAFF2");
+        service.save(staff1);
+        service.save(staff2);
+
+        Party person = createPerson("MR", "Jim", "Alateras");
+        person.addClassification(staff1);
+        service.save(person);
+
+        person.removeClassification(staff1);
+        person.addClassification(staff2);
+        service.save(person);
+
+        person = (Party) get(person.getObjectReference());
+        assertEquals(1, person.getClassifications().size());
+        assertTrue(person.getClassifications().contains(staff2));
+        assertEquals(staff1, get(staff1.getObjectReference()));
+        assertEquals(staff2, get(staff2.getObjectReference()));
+    }
+
+    /**
      * Verifies that multiple parties can be saved via the
      * {@link IArchetypeService#save(Collection<IMObject>)} method.
      */
     public void testSaveCollection() {
-        Lookup classification = createLookup("EMAIL");
+        Lookup classification = createContactPurpose("EMAIL");
         service.save(classification);
-        Lookup classification1 = createLookup("HOME");
+        Lookup classification1 = createContactPurpose("HOME");
         service.save(classification1);
 
         Party person1 = createPerson("MR", "Jim", "Alateras");
@@ -138,6 +163,30 @@ public class ArchetypeServicePartyTestCase
         service.save(col);
         assertEquals(1, person1.getVersion());
         assertEquals(0, person2.getVersion());
+    }
+
+    /**
+     * Verifies that classifications can be added and removed from a contact,
+     * and that removal doesn't delete the classification itself.
+     */
+    public void testAddRemoveContactClassifications() {
+        Lookup email = createContactPurpose("EMAIL");
+        service.save(email);
+        Lookup home = createContactPurpose("HOME");
+        service.save(home);
+
+        Contact contact = createContact(email);
+        service.save(contact);
+
+        contact.removeClassification(email);
+        contact.addClassification(home);
+        service.save(contact);
+
+        contact = (Contact) get(contact.getObjectReference());
+        assertEquals(1, contact.getClassifications().size());
+        assertTrue(contact.getClassifications().contains(home));
+        assertEquals(email, get(email.getObjectReference()));
+        assertEquals(home, get(home.getObjectReference()));
     }
 
     /*
@@ -206,7 +255,19 @@ public class ArchetypeServicePartyTestCase
      * @param code the code of the lookup
      * @return a new lookup
      */
-    private Lookup createLookup(String code) {
+    private Lookup createStaff(String code) {
+        Lookup lookup = LookupUtil.createLookup("lookup.staff", code);
+        lookup.setDescription(code);
+        return lookup;
+    }
+
+    /**
+     * Creates a lookup with the specified code.
+     *
+     * @param code the code of the lookup
+     * @return a new lookup
+     */
+    private Lookup createContactPurpose(String code) {
         return LookupUtil.createLookup("lookup.contactPurpose", code);
     }
 

@@ -38,8 +38,8 @@ public class UserAssembler extends EntityAssembler<User, UserDO> {
      * Assembles sets of roles.
      */
     private static final SetAssembler<SecurityRole, SecurityRoleDO> ROLES
-            = new SetAssembler<SecurityRole, SecurityRoleDO>(
-            SecurityRole.class, SecurityRoleDO.class);
+            = SetAssembler.create(
+            SecurityRole.class, SecurityRoleDO.class, true);
 
 
     /**
