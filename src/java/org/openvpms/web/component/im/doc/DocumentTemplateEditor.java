@@ -77,6 +77,11 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
                     onNameUpdated();
                 }
             });
+
+            // get the participation editor to delete the associated act
+            // when the template is deleted
+            ((DocumentParticipationEditor) participationEditor)
+                    .setDeleteAct(true);
         }
     }
 
