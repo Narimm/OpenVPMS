@@ -322,10 +322,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             Property fixedCost = getProperty("fixedCost");
             Property unitCost = getProperty("unitCost");
 
-            ProductPrice fixedProductPrice
-                    = getDefaultFixedProductPrice(product);
-            ProductPrice unitProductPrice
-                    = getDefaultUnitProductPrice(product);
+            ProductPrice fixedProductPrice = null;
+            ProductPrice unitProductPrice = null;
+            if (product != null) {
+                fixedProductPrice = getDefaultFixedProductPrice(product);
+                unitProductPrice = getDefaultUnitProductPrice(product);
+            }
 
             if (fixedProductPrice != null) {
                 fixedPrice.setValue(fixedProductPrice.getPrice());
