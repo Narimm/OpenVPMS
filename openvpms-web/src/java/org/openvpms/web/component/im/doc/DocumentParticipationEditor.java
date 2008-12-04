@@ -79,6 +79,11 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     private final DocReferenceMgr refMgr;
 
     /**
+     * Determines if the act should be deleted on delete().
+     */
+    private boolean deleteAct = false;
+
+    /**
      * Construct a new <code>DocumentParticipationEditor</code>.
      *
      * @param participation the participation to edit
@@ -102,6 +107,17 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
         });
         selector.setObject(act);
         refMgr = new DocReferenceMgr(act.getDocument());
+    }
+
+    /**
+     * Determines if the associated act should be deleted when
+     * {@link #delete()} is invoked.
+     * Defaults to <tt>false</tt>.
+     *
+     * @param delete if <tt>true</tt> delete the act
+     */
+    public void setDeleteAct(boolean delete) {
+        this.deleteAct = delete;
     }
 
     /**
@@ -166,6 +182,25 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
             }
         }
         return saved;
+    }
+
+    /**
+     * Deletes the object.
+     *
+     * @return <tt>true</tt> if the delete was successful
+     */
+    @Override
+    protected boolean doDelete() {
+        boolean result;
+        if (deleteAct) {
+            result = super.deleteChildren();
+            if (result) {
+                result = SaveHelper.delete(act);
+            }
+        } else {
+            result = super.doDelete();
+        }
+        return result;
     }
 
     /**
