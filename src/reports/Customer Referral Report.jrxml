@@ -230,8 +230,7 @@ group by d.value]]></queryString>
 				<sectionHyperlink >
 				</sectionHyperlink>
 					</pieDataset>
-					<piePlot 
-isCircular="true" >
+					<piePlot>
 						<plot />
 					</piePlot>
 				</pieChart>
