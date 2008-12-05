@@ -338,8 +338,7 @@ ORDER BY
 				<sectionHyperlink >
 				</sectionHyperlink>
 					</pieDataset>
-					<piePlot 
-isCircular="true" >
+					<piePlot>
 						<plot />
 					</piePlot>
 				</pieChart>
