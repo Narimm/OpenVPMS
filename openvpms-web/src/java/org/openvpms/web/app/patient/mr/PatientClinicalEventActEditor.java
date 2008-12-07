@@ -79,14 +79,23 @@ public class PatientClinicalEventActEditor extends AbstractActEditor {
     }
 
     /**
-     * Invoked when the status changes. Sets the end time to today if the
-     * status is 'Completed', or <tt>null</tt> if it is 'Pending'.
+     * Save any edits.
+     * <p/>
+     * This uses {@link #saveObject()} to save the object prior to saving
+     * any children with {@link #saveChildren()}.
+     * <p/>
+     * This is necessary to avoid stale object exceptions when related acts
+     * are deleted.
+     *
+     * @return <tt>true</tt> if the save was successful
      */
-    private void onStatusChanged() {
-        Property status = getProperty("status");
-        String value = (String) status.getValue();
-        Date time = COMPLETED.equals(value) ? new Date() : null;
-        setEndTime(time, false);
+    @Override
+    protected boolean doSave() {
+        boolean saved = saveObject();
+        if (saved) {
+            saved = saveChildren();
+        }
+        return saved;
     }
 
     /**
@@ -97,6 +106,17 @@ public class PatientClinicalEventActEditor extends AbstractActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new LayoutStrategy();
+    }
+
+    /**
+     * Invoked when the status changes. Sets the end time to today if the
+     * status is 'Completed', or <tt>null</tt> if it is 'Pending'.
+     */
+    private void onStatusChanged() {
+        Property status = getProperty("status");
+        String value = (String) status.getValue();
+        Date time = COMPLETED.equals(value) ? new Date() : null;
+        setEndTime(time, false);
     }
 
     class LayoutStrategy extends AbstractLayoutStrategy {
