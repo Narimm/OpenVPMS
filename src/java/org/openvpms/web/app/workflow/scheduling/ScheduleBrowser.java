@@ -26,7 +26,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ObjectSet;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
@@ -118,7 +120,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <code>null</code> if none has been
+     * @return the selected object, or <tt>null</tt> if none has been
      *         selected.
      */
     public ObjectSet getSelected() {
@@ -337,9 +339,17 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
         ScheduleEventGrid grid = createEventGrid(query.getDate(), results);
         int lastRow = -1;
         int lastColumn = -1;
+        IMObjectReference lastEventId = null;
         if (model != null) {
             lastRow = model.getSelectedRow();
             lastColumn = model.getSelectedColumn();
+            if (lastRow != -1 && lastColumn != -1) {
+                ObjectSet event = model.getEvent(lastColumn, lastRow);
+                if (event != null) {
+                    lastEventId = event.getReference(
+                            ScheduleEvent.ACT_REFERENCE);
+                }
+            }
         }
         model = createTableModel(grid);
         if (table == null) {
@@ -363,19 +373,25 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
         model.setHighlight(query.getHighlight());
 
         if (reselect) {
-            // if the the schedules and date haven't changed, reselect the
-            // selected cell
-            Date selectedDate = (selectedTime != null)
-                    ? DateRules.getDate(selectedTime) : null;
+            // if the schedules and date haven't changed and there was no
+            // previously selected object or the object hasn't changed,
+            // reselect the selected cell
             if (lastRow != -1 && lastColumn != -1) {
+                Date selectedDate = (selectedTime != null)
+                        ? DateRules.getDate(selectedTime) : null;
+                ObjectSet event = model.getEvent(lastColumn, lastRow);
+                IMObjectReference eventId = (event != null)
+                        ? event.getReference(ScheduleEvent.ACT_REFERENCE)
+                        : null;
                 if (ObjectUtils.equals(lastSchedules, results.keySet())
-                        && ObjectUtils.equals(selectedDate, query.getDate())) {
+                        && ObjectUtils.equals(selectedDate, query.getDate())
+                        && (lastEventId == null
+                        || ObjectUtils.equals(lastEventId, eventId))) {
                     model.setSelectedCell(lastColumn, lastRow);
                 }
             }
         }
     }
-
 
     /**
      * Invoked when a cell is selected.

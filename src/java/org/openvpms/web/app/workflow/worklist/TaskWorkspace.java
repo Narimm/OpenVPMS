@@ -19,7 +19,9 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
@@ -88,6 +90,45 @@ public class TaskWorkspace extends SchedulingWorkspace {
         context.setWorkListDate(browser.getDate());
         context.setWorkList((Party) browser.getSelectedSchedule());
         super.onQuery();
+    }
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    protected void onSaved(IMObject object, boolean isNew) {
+        TaskBrowser browser = (TaskBrowser) getBrowser();
+        browser.query();
+        browser.setSelected((Act) object);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    protected void onDeleted(IMObject object) {
+        getBrowser().query();
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    protected void onRefresh(IMObject object) {
+        TaskBrowser browser = (TaskBrowser) getBrowser();
+        browser.query();
+        if (!browser.setSelected((Act) object)) {
+            // task no longer visible in the work list view, so remove it
+            // from the CRUD window
+            getCRUDWindow().setObject(null);
+        }
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
