@@ -214,6 +214,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
                     WorkflowStatus.IN_PROGRESS);
         checkStatus(appointment, WorkflowStatus.IN_PROGRESS, task,
                     WorkflowStatus.IN_PROGRESS);
+        checkStatus(appointment, WorkflowStatus.BILLED, task,
+                    WorkflowStatus.BILLED);
         checkStatus(appointment, WorkflowStatus.COMPLETED, task,
                     WorkflowStatus.COMPLETED);
         checkStatus(appointment, WorkflowStatus.CANCELLED, task,
@@ -247,8 +249,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
                     WorkflowStatus.IN_PROGRESS);
         checkStatus(task, WorkflowStatus.IN_PROGRESS, appointment,
                     WorkflowStatus.IN_PROGRESS);
-        checkStatus(task, TaskStatus.BILLED, appointment,
-                    WorkflowStatus.IN_PROGRESS);
+        checkStatus(task, WorkflowStatus.BILLED, appointment,
+                    WorkflowStatus.BILLED);
         checkStatus(task, WorkflowStatus.COMPLETED, appointment,
                     WorkflowStatus.COMPLETED);
         checkStatus(task, WorkflowStatus.CANCELLED, appointment,
@@ -376,6 +378,13 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         source.setStatus(status);
         linked = get(linked);    // ensure using the latest version
         Date endTime = linked.getActivityEndTime();
+        try {
+            // force a sleep to ensure end times are different to check
+            // correct updates
+            Thread.sleep(1000);
+        } catch (InterruptedException ignore) {
+            // do nothing.
+        }
         save(source);
 
         // reload the linked act to get any new status
@@ -387,7 +396,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         // endTimes to be different
         if (TypeHelper.isA(linked, "act.customerTask")) {
             if (WorkflowStatus.COMPLETED.equals(expectedStatus)) {
-                // end time shoud be greater than before
+                // end time should be > than before
                 assertTrue(linked.getActivityEndTime().compareTo(endTime) > 0);
             } else {
                 assertEquals(endTime, linked.getActivityEndTime());
