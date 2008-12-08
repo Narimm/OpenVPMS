@@ -19,8 +19,14 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import echopointng.TableEx;
+import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
@@ -44,6 +50,54 @@ public class TaskBrowser extends ScheduleBrowser {
     public TaskBrowser() {
         super(new TaskQuery());
     }
+
+    /**
+     * Query using the specified criteria, and populate the table with matches.
+     */
+    @Override
+    public void query() {
+        doQuery(false);
+    }
+
+    /**
+     * Attempts to select a task.
+     *
+     * @param task the task
+     * @return <tt>true</tt> if the task was selected, <tt>false</tt> if it was
+     *         not found
+     */
+    public boolean setSelected(Act task) {
+        ActBean bean = new ActBean(task);
+        ObjectSet selected = null;
+        IMObjectReference worklist = bean.getNodeParticipantRef("worklist");
+        if (worklist != null) {
+            IMObjectReference taskRef = task.getObjectReference();
+            ScheduleTableModel model = getModel();
+            List<Schedule> schedules = model.getSchedules();
+            for (int i = 0; i < schedules.size(); ++i) {
+                Schedule schedule = schedules.get(i);
+                IMObjectReference scheduleRef
+                        = schedule.getSchedule().getObjectReference();
+                if (scheduleRef.equals(worklist)) {
+                    List<ObjectSet> events = schedule.getEvents();
+                    for (int j = 0; j < events.size(); ++j) {
+                        ObjectSet event = events.get(j);
+                        IMObjectReference ref = event.getReference(
+                                ScheduleEvent.ACT_REFERENCE);
+                        if (ObjectUtils.equals(taskRef, ref)) {
+                            model.setSelectedCell(i, j);
+                            selected = event;
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+        setSelected(selected);
+        return selected != null;
+    }
+
 
     /**
      * Creates a new grid for a set of events.
@@ -81,4 +135,5 @@ public class TaskBrowser extends ScheduleBrowser {
         table.setDefaultRenderer(new TaskTableCellRenderer());
         return table;
     }
+
 }

@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
+import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.app.workflow.consult.ConsultWorkflow;
 import org.openvpms.web.app.workflow.otc.OverTheCounterWorkflow;
@@ -119,6 +120,22 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
             String title = Messages.get("act.nodelete.title", name);
             String message = Messages.get("act.nodelete.message", name, status);
             ErrorDialog.show(title, message);
+        }
+    }
+
+    /**
+     * Invoked when the object needs to be refreshed.
+     * <p/>
+     * This implementation notifies the registered {@link CRUDWindowListener}
+     * that the object has changed.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onRefresh(Act object) {
+        CRUDWindowListener<Act> listener = getListener();
+        if (listener != null) {
+            listener.refresh(object);
         }
     }
 
