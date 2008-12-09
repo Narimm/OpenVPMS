@@ -268,7 +268,7 @@ public class ReminderRules {
         Party patient = (Party) bean.getParticipant("participation.patient");
         EntityBean patientBean = new EntityBean(patient, service);
         if (patientBean.getBoolean("deceased", false)) {
-        	return true;
+            return true;
         }
         // Otherwise get reminderType and check cancel period
         ReminderType reminderType = getReminderType(bean);
@@ -489,8 +489,12 @@ public class ReminderRules {
      * @param shortName  the archetype shortname of the preferred contact
      * @param anyContact if <tt>true</tt> any contact with a 'REMINDER'
      *                   classification will be returned. If there is
-     *                   no 'REMINDER' contact, and no preferred contact, the
-     *                   first contact will be returned.
+     *                   no 'REMINDER' contact, the first preferred contact
+     *                   with the short name will be returned. If there is
+     *                   no preferred contact then the first contact matching
+     *                   the short name will be returned. If there is no
+     *                   contact matching the short name, the first preferred
+     *                   contact will be returned.
      *                   If <tt>false</tt> only those contacts of type
      *                   <em>shortName</em> will be returned
      * @return a contact, or <tt>null</tt> if none is found
@@ -526,8 +530,23 @@ public class ReminderRules {
                 }
             }
         }
-        return (reminder != null) ? reminder :
-                (preferred != null) ? preferred : fallback;
+        Contact result;
+        if (reminder != null) {
+            result = reminder;
+        } else if (preferred != null && fallback != null) {
+            if (TypeHelper.isA(preferred, shortName)) {
+                result = preferred;
+            } else if (TypeHelper.isA(fallback, shortName)) {
+                result = fallback;
+            } else {
+                result = preferred;
+            }
+        } else if (preferred != null) {
+            result = preferred;
+        } else {
+            result = fallback;
+        }
+        return result;
     }
 
     /**
