@@ -129,7 +129,7 @@ class ReminderListProcessor extends AbstractBatchProcessor
     }
 
     public void restart() {
-        process();
+        // no-op
     }
 
     /**
