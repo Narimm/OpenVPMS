@@ -31,7 +31,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
 import java.util.Set;
@@ -223,13 +222,13 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         checkShouldCancel(reminder, "2007-02-01", false);
         checkShouldCancel(reminder, "2007-02-14", false);
         checkShouldCancel(reminder, "2007-02-15", true);
-        
+
         // Now set patient to deceased
         EntityBean patientBean = new EntityBean(patient);
         patientBean.setValue("deceased", true);
         patientBean.save();
-        checkShouldCancel(reminder,"2007-02-01", true);
-        
+        checkShouldCancel(reminder, "2007-02-01", true);
+
     }
 
     /**
@@ -243,48 +242,36 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         }
 
         // add an email contact to the owner, and verify it is returned
-        owner.addContact(createEmail());
-        Contact email = rules.getContact(owner.getContacts());
-        assertTrue(TypeHelper.isA(email, "contact.email"));
+        Contact email = createEmail();
+        checkContact(owner, email, email);
 
-        // add an preferred phone contact to the owner, and verify it is
-        // returned instead of the email contact
-        owner.addContact(createPhone(true));
-        Contact contact = rules.getContact(owner.getContacts());
-        assertTrue(TypeHelper.isA(contact, "contact.phoneNumber"));
+        // add a location contact to the owner, and verify it is returned
+        // instead of the email contact
+        Contact location = createLocation(false);
+        checkContact(owner, location, location);
 
-        // add a location contact to the owner, and verify the preferred phone
+        // add a preferred phone contact to the owner, and verify the location
         // contact is still returned
-        owner.addContact(createLocation(false));
-        contact = rules.getContact(owner.getContacts());
-        assertTrue(TypeHelper.isA(contact, "contact.phoneNumber"));
+        Contact phone = createPhone(true);
+        checkContact(owner, phone, location);
 
         // add a preferred location contact to the owner, and verify it is
-        // returned instead of the phone contact
-        owner.addContact(createLocation(true));
-        save(owner);
-        Contact location = rules.getContact(owner.getContacts());
-        assertTrue(TypeHelper.isA(location, "contact.location"));
+        // returned instead of the non-preferred location contact
+        Contact preferredLocation = createLocation(true);
+        checkContact(owner, preferredLocation, preferredLocation);
+//        save(owner);
 
         // add a REMINDER classification to the email contact and verify it is
         // returned instead of the preferred location contact
-        email = get(email);
         Lookup reminder = TestHelper.getLookup("lookup.contactPurpose",
                                                "REMINDER");
         email.addClassification(reminder);
-        save(email);
-        owner = get(owner);
-        contact = rules.getContact(owner.getContacts());
-        assertTrue(TypeHelper.isA(contact, "contact.email"));
+        checkContact(owner, email, email);
 
         // add a REMINDER classification to the location contact and verify it
         // is returned instead of the email contact
-        location = get(location);
-        location.addClassification(reminder);
-        save(location);
-        owner = get(owner);
-        contact = rules.getContact(owner.getContacts());
-        assertTrue(TypeHelper.isA(contact, "contact.location"));
+        preferredLocation.addClassification(reminder);
+        checkContact(owner, preferredLocation, preferredLocation);
     }
 
     /**
@@ -296,6 +283,21 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         rules = new ReminderRules();
+    }
+
+    /**
+     * Adds a contact to a customer and verifies the expected contact is
+     * returned by {@link ReminderRules#getContact(Set<Contact>)}.
+     *
+     * @param customer the customer
+     * @param contact  the contact to add
+     * @param expected the expected contact
+     */
+    private void checkContact(Party customer, Contact contact,
+                              Contact expected) {
+        customer.addContact(contact);
+        Contact c = rules.getContact(customer.getContacts());
+        assertEquals(expected, c);
     }
 
     /**
