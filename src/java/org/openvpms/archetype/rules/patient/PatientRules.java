@@ -319,6 +319,17 @@ public class PatientRules {
     }
 
     /**
+     * Returns the sex of the patient.
+     *
+     * @param patient the patient
+     * @return the sex in string format
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getPatientSex(Party patient) {
+        return ArchetypeServiceFunctions.lookup(patient, "sex");
+    }
+
+    /**
      * Returns the description node of the most recent
      * <em>act.patientWeight</em> for a patient.
      *
