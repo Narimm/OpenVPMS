@@ -93,7 +93,10 @@ public class PatientSummary {
             result = ColumnFactory.create();
             String name = patient.getName();
             if (rules.isDesexed(patient)) {
-                name += " (" + Messages.get("patient.desexed") + ")";
+                name += " (" + getPatientSex(patient) + " " + Messages.get("patient.desexed") + ")";
+            }
+            else {
+                name += " (" + getPatientSex(patient) + " " + Messages.get("patient.entire") + ")";            	
             }
             IMObjectReferenceViewer patientName
                     = new IMObjectReferenceViewer(patient.getObjectReference(),
@@ -226,6 +229,16 @@ public class PatientSummary {
      */
     private String getPatientBreed(Party patient) {
         return rules.getPatientBreed(patient);
+    }
+
+    /**
+     * Returns the sex for a patient.
+     *
+     * @param patient the patient
+     * @return a string representing the patient sex
+     */
+    private String getPatientSex(Party patient) {
+        return rules.getPatientSex(patient);
     }
 
     /**
