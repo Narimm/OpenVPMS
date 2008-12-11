@@ -95,21 +95,20 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void onPosted(FinancialAct act) {
+        BigDecimal total = BigDecimal.ZERO;
         Tasks tasks = new Tasks();
         TaskContext context = new DefaultTaskContext();
         context.addObject(act);
-        BigDecimal total = BigDecimal.ZERO;
+        String shortName = act.getArchetypeId().getShortName();
         if (TypeHelper.isA(act, INVOICE, COUNTER)) {
             total = act.getTotal();
+	        PaymentWorkflow payment = new PaymentWorkflow(total);
+	        payment.setRequired(false);
+	        tasks.addTask(payment);	
+	        // need to reload the act as it may be changed via the payment workflow
+	        // as part of the CustomerAccountRules
+	        tasks.addTask(new ReloadTask(shortName));
         }
-        PaymentWorkflow payment = new PaymentWorkflow(total);
-        payment.setRequired(false);
-        tasks.addTask(payment);
-
-        // need to reload the act as it may be changed via the payment workflow
-        // as part of the CustomerAccountRules
-        String shortName = act.getArchetypeId().getShortName();
-        tasks.addTask(new ReloadTask(shortName));
         PrintActTask print = new PrintActTask(shortName);
         print.setRequired(false);
         print.setEnableSkip(false);
