@@ -100,8 +100,8 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         TaskContext context = new DefaultTaskContext();
         context.addObject(act);
         String shortName = act.getArchetypeId().getShortName();
+        total = act.getTotal();
         if (TypeHelper.isA(act, INVOICE, COUNTER)) {
-            total = act.getTotal();
 	        PaymentWorkflow payment = new PaymentWorkflow(total);
 	        payment.setRequired(false);
 	        tasks.addTask(payment);	
