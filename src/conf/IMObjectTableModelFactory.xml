@@ -20,7 +20,7 @@
                     <entry>
                         <string>act.patientInvestigation*</string>
                         <string>concat(/description, " [", openvpms:lookup(.,
-                            "status"), "]")</string>
+                            "status"), "] #",/id)</string>
                     </entry>
                     <entry>
                         <string>act.patientMedication</string>
