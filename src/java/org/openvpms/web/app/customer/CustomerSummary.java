@@ -18,6 +18,13 @@
 
 package org.openvpms.web.app.customer;
 
+import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
@@ -25,9 +32,11 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.GridLayoutData;
+
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -35,7 +44,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ParticipationConstraint;
-import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -52,11 +60,6 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -83,6 +86,10 @@ public class CustomerSummary {
             customerName.setStyleName("hyperlink-bold");
             result.add(RowFactory.create("Inset.Small",
                                          customerName.getComponent()));
+            PartyRules partyRules = new PartyRules();
+            Label phone = LabelFactory.create();
+            phone.setText(partyRules.getHomeTelephone(customer));
+            result.add(RowFactory.create("Inset.Small", phone));
 
             Label alertTitle = LabelFactory.create("customer.alerts");
             Component alert;
