@@ -32,8 +32,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -41,6 +39,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.PriceActItemEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
@@ -227,6 +226,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     protected boolean doSave() {
         CollectionProperty dispensing
                 = (CollectionProperty) getProperty("dispensing");
+        Act medication = null;
         if (dispensing != null && !TypeHelper.isA(getProductRef(), MEDICATION))
         {
             // need to remove any redundant dispensing act
@@ -235,16 +235,19 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 ActRelationship relationship = (ActRelationship) values[0];
                 Act act = (Act) getObject();
                 act.removeActRelationship(relationship);
-                Act medication = (Act) IMObjectHelper.getObject(
+                medication = (Act) IMObjectHelper.getObject(
                         relationship.getTarget());
-                if (medication != null) {
-                    IArchetypeService service
-                            = ArchetypeServiceHelper.getArchetypeService();
-                    service.remove(medication);
-                }
             }
         }
-        return super.doSave();
+        boolean saved = super.doSave();
+        if (saved) {
+            if (medication != null) {
+                // need to delete the medication after the parent act is saved
+                // to avoid stale object exceptions
+                saved = SaveHelper.delete(medication);
+            }
+        }
+        return saved;
     }
 
     /**
