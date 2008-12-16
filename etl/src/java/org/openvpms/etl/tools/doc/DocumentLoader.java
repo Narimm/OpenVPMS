@@ -22,35 +22,26 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.stringparsers.BooleanStringParser;
-import org.apache.commons.lang.StringUtils;
+import com.martiansoftware.jsap.stringparsers.FileStringParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSet;
-import org.openvpms.component.system.common.query.NodeSetQueryIterator;
-import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Date;
 
 
 /**
  * Document loader.
+ * <p/>
+ * This loads documents from the file system for all document acts
+ * matching the specified short name that have a file name specified but no
+ * corresponding document content.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -60,12 +51,7 @@ public class DocumentLoader {
     /**
      * The document creator.
      */
-    private final DocumentFactory factory;
-
-    /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
+    private final Loader loader;
 
     /**
      * Determines if the generator should fail on error.
@@ -85,20 +71,11 @@ public class DocumentLoader {
 
     /**
      * Constructs a new <tt>DocumentLoader</tt>.
-     */
-    public DocumentLoader(IArchetypeService service) {
-        this(service, new FileDocumentFactory());
-    }
-
-    /**
-     * Constructs a new <tt>DocumentLoader</tt>.
      *
-     * @param service the archetype service
-     * @param factory the document creator
+     * @param loader loader
      */
-    public DocumentLoader(IArchetypeService service, DocumentFactory factory) {
-        this.service = service;
-        this.factory = factory;
+    public DocumentLoader(Loader loader) {
+        this.loader = loader;
     }
 
     /**
@@ -112,80 +89,12 @@ public class DocumentLoader {
     }
 
     /**
-     * Loads documents for all document acts that have null docReference nodes
-     * and a non-null file name.
+     * Loads documents.
      */
     public void load() {
-        load(null);
-    }
-
-    /**
-     * Loads documents for all document acts matching the specified short name
-     * that have null docReference nodes and a non-null file name.
-     *
-     * @param shortName the archetype short name. May be <tt>null</tt> or
-     *                  contain wildcards
-     */
-    public void load(String shortName) {
-        ShortNameConstraint shortNames;
-        if (shortName == null) {
-            shortNames = new ShortNameConstraint(getShortNames(), false, true);
-        } else {
-            shortNames = new ShortNameConstraint(shortName, false, true);
-        }
-        ArchetypeQuery query = new ArchetypeQuery(shortNames);
-        if (log.isInfoEnabled()) {
-            StringBuffer buff = new StringBuffer();
-            for (String s : shortNames.getShortNames()) {
-                if (buff.length() != 0) {
-                    buff.append(", ");
-                }
-                buff.append(s);
-            }
-            log.info("Querying archetypes: " + buff);
-        }
-        List<IMObjectReference> refs = new ArrayList<IMObjectReference>();
-        query.add(new NodeConstraint("docReference", RelationalOp.IsNULL));
-        query.setMaxResults(1000);
-        List<String> nodes = Arrays.asList("fileName");
-        Iterator<NodeSet> iter = new NodeSetQueryIterator(query, nodes);
-
-        // need to build up a list of matching references first, as updates
-        // to the document reference will affect paging
-        while (iter.hasNext()) {
-            NodeSet set = iter.next();
-            String fileName = (String) set.get("fileName");
-            if (!StringUtils.isEmpty(fileName)) {
-                refs.add(set.getObjectReference());
-            }
-        }
-        log.info("Found " + refs.size() + " documents");
-        if (!refs.isEmpty()) {
-            int count = 0;
-            int errors = 0;
-            for (IMObjectReference ref : refs) {
-                try {
-                    DocumentAct act = getDocumentAct(ref);
-                    if (act != null) {
-                        Document doc = factory.create(act);
-                        act.setDocument(doc.getObjectReference());
-                        act.setMimeType(doc.getMimeType());
-                        service.save(Arrays.asList(act, doc));
-                    }
-                } catch (OpenVPMSException exception) {
-                    if (failOnError) {
-                        throw exception;
-                    } else {
-                        ++errors;
-                        log.error(exception.getMessage());
-                    }
-                }
-            }
-            log.info("Loaded " + count + " documents");
-            if (errors != 0) {
-                log.warn("There were " + errors + " errors");
-            } else {
-                log.info("There were no errors");
+        while (loader.hasNext()) {
+            if (!loader.loadNext() && failOnError) {
+                break;
             }
         }
     }
@@ -199,23 +108,39 @@ public class DocumentLoader {
         try {
             JSAP parser = createParser();
             JSAPResult config = parser.parse(args);
-            if (!config.success()) {
+            boolean byId = config.getBoolean("byid");
+            boolean byName = config.getBoolean("byname");
+            if (!config.success() || !(byId || byName)) {
                 displayUsage(parser);
             } else {
                 String contextPath = config.getString("context");
-                String type = config.getString("type");
-                String dir = config.getString("dir");
+                File dir = config.getFile("source");
 
+                ApplicationContext context;
                 if (!new File(contextPath).exists()) {
-                    new ClassPathXmlApplicationContext(contextPath);
+                    context = new ClassPathXmlApplicationContext(contextPath);
                 } else {
-                    new FileSystemXmlApplicationContext(contextPath);
+                    context = new FileSystemXmlApplicationContext(contextPath);
                 }
-                DocumentLoader loader = new DocumentLoader(
-                        ArchetypeServiceHelper.getArchetypeService(),
-                        new FileDocumentFactory(dir));
-                loader.setFailOnError(config.getBoolean("failOnError"));
-                loader.load(type);
+                Date start = new Date();
+                Loader loader;
+                IArchetypeService service = (IArchetypeService) context.getBean(
+                        "archetypeService");
+                DocumentFactory factory = new FileDocumentFactory();
+                LoaderListener listener = (config.getBoolean("verbose"))
+                        ? new LoggingLoaderListener(log)
+                        : new DefaultLoaderListener();
+                if (byId) {
+                    loader = new IdLoader(dir, service, factory);
+                } else {
+                    String type = config.getString("type");
+                    loader = new NameLoader(dir, type, service, factory);
+                }
+                loader.setListener(listener);
+                DocumentLoader docLoader = new DocumentLoader(loader);
+                docLoader.setFailOnError(config.getBoolean("failOnError"));
+                docLoader.load();
+                dumpStats(listener, start);
             }
         } catch (Throwable throwable) {
             log.error(throwable, throwable);
@@ -223,31 +148,18 @@ public class DocumentLoader {
         }
     }
 
-    /**
-     * Helper to return a document act given its reference.
-     *
-     * @param reference the document act reference
-     * @return the corresponding act, or <tt>null</tt>
-     */
-    private DocumentAct getDocumentAct(IMObjectReference reference) {
-        return (DocumentAct) service.get(reference);
-    }
-
-    /**
-     * Returns all document act short names with a docReference node.
-     *
-     * @return a list of short names
-     */
-    private String[] getShortNames() {
-        List<String> result = new ArrayList<String>();
-        for (ArchetypeDescriptor archetype
-                : service.getArchetypeDescriptors()) {
-            if (DocumentAct.class.getName().equals(archetype.getClassName())
-                    && archetype.getNodeDescriptor("docReference") != null) {
-                result.add(archetype.getType().getShortName());
-            }
-        }
-        return result.toArray(new String[0]);
+    private static void dumpStats(LoaderListener listener, Date start) {
+        Date end = new Date();
+        double elapsed = (end.getTime() - start.getTime()) / 1000;
+        log.info("\n\n\n[STATISTICS]\n");
+        int total = listener.getProcessed();
+        double rate = (elapsed != 0) ? total / elapsed : 0;
+        log.info("Loaded: " + listener.getLoaded());
+        log.info("Errors: " + listener.getErrors());
+        log.info("Total:  " + total);
+        log.info(String.format(
+                "Processed %d files in %.2f seconds (%.2f files/sec)",
+                total, elapsed, rate));
     }
 
     /**
@@ -258,10 +170,26 @@ public class DocumentLoader {
      */
     private static JSAP createParser() throws JSAPException {
         JSAP parser = new JSAP();
-        parser.registerParameter(new FlaggedOption("dir").setShortFlag('d')
-                .setLongFlag("dir")
+        FileStringParser dirParser = FileStringParser.getParser();
+        dirParser.setMustBeDirectory(true);
+        dirParser.setMustExist(true);
+        parser.registerParameter(new Switch("byid").setShortFlag('i')
+                .setLongFlag("byid")
+                .setHelp("Load files using the identifiers in their names"));
+        parser.registerParameter(new Switch("byname").setShortFlag('n')
+                .setLongFlag("byname")
+                .setHelp(
+                "Load files by matching their names with document acts"));
+        parser.registerParameter(new FlaggedOption("source").setShortFlag('s')
+                .setLongFlag("source")
+                .setStringParser(dirParser)
+                .setDefault("./")
                 .setHelp("The directory to load files from. "
                 + "Defaults to the current directory"));
+        parser.registerParameter(new FlaggedOption("dest").setShortFlag('d')
+                .setLongFlag("dest")
+                .setStringParser(dirParser)
+                .setHelp("The directory to move files to on successful load."));
         parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
                 .setLongFlag("type")
                 .setHelp("The archetype short name. May contain wildcards. "
@@ -269,9 +197,12 @@ public class DocumentLoader {
         parser.registerParameter(new FlaggedOption("failOnError")
                 .setShortFlag('e')
                 .setLongFlag("failOnError")
-                .setDefault("true")
+                .setDefault("false")
                 .setStringParser(BooleanStringParser.getParser())
                 .setHelp("Fail on error"));
+        parser.registerParameter(new Switch("verbose").setShortFlag('v')
+                .setLongFlag("verbose").setDefault("false").setHelp(
+                "Displays verbose info to the console."));
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                 .setLongFlag("context")
                 .setDefault(APPLICATION_CONTEXT)
