@@ -53,11 +53,30 @@ import java.util.List;
  */
 class NameLoader extends AbstractLoader {
 
+    /**
+     * The document act reference iterator.
+     */
     private Iterator<IMObjectReference> iterator;
+
+    /**
+     * The source directory.
+     */
     private final File dir;
 
+    /**
+     * The logger.
+     */
     private static final Log log = LogFactory.getLog(NameLoader.class);
 
+    /**
+     * Creates a new <tt>NameLoader</tt>.
+     *
+     * @param dir       the source directory
+     * @param shortName the shortName. If <tt>null</tt> indicates to query all
+     *                  document acts. May contain wildcards
+     * @param service   the archetype service
+     * @param factory   the document factory
+     */
     public NameLoader(File dir, String shortName, IArchetypeService service,
                       DocumentFactory factory) {
         super(service, factory);
@@ -67,10 +86,21 @@ class NameLoader extends AbstractLoader {
         iterator = refs.iterator();
     }
 
+    /**
+     * Determines if there is a document to load.
+     *
+     * @return <tt>true</tt> if there is a document to load, otherwise
+     *         <tt>false</tt>
+     */
     public boolean hasNext() {
         return iterator.hasNext();
     }
 
+    /**
+     * Loads the next document.
+     *
+     * @return <tt>true</tt> if the document was loaded successfully
+     */
     public boolean loadNext() {
         boolean result = false;
         IMObjectReference ref = iterator.next();
@@ -93,6 +123,13 @@ class NameLoader extends AbstractLoader {
     }
 
 
+    /**
+     * Returns all docuent act references for the specified short names.
+     *
+     * @param shortName the shortName. If <tt>null</tt> indicates to query all
+     *                  document acts. May contain wildcards
+     * @return the matching document act references
+     */
     private List<IMObjectReference> getDocumentActs(String shortName) {
         ShortNameConstraint shortNames;
         if (shortName == null) {

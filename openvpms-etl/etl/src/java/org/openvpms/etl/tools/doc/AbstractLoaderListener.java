@@ -23,42 +23,166 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 
+
 /**
- * Add description here.
+ * Abstract implementation of the {@link LoaderListener} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 abstract class AbstractLoaderListener implements LoaderListener {
 
+    /**
+     * The directory to move loaded files to. May be <tt>null</tt>
+     */
     private final File dir;
 
+    /**
+     * The no. of loaded files.
+     */
     private int loaded = 0;
 
+    /**
+     * The no. of skipped files.
+     */
     private int skipped = 0;
 
+    /**
+     * The no. of missing acts.
+     */
     private int missing = 0;
 
-    private int error = 0;
+    /**
+     * The no. of errors.
+     */
+    private int errors = 0;
 
+
+    /**
+     * Creates a new <tt>AbstractLoaderListener</tt>.
+     */
     public AbstractLoaderListener() {
         this(null);
     }
 
+    /**
+     * Creates a new <tt>AbstractLoaderListener</tt>.
+     *
+     * @param dir if non-null, files will be moved here on successful load
+     */
     public AbstractLoaderListener(File dir) {
         this.dir = dir;
     }
 
+    /**
+     * Notifies when a file is loaded.
+     *
+     * @param file the file
+     */
     public void loaded(File file) {
         doLoaded(file);
     }
 
+    /**
+     * Returns the no. of files loaded.
+     *
+     * @return the no. of files loaded
+     */
+    public int getLoaded() {
+        return loaded;
+    }
+
+    /**
+     * Notifies that a file couldn't be loaded as it or another file had
+     * already been processed.
+     *
+     * @param file the file
+     */
+    public void alreadyLoaded(File file) {
+        ++skipped;
+        ++errors;
+    }
+
+    /**
+     * Returns the no. of files that weren't loaded as the corresponding act
+     * was already associated with a document.
+     *
+     * @return the no. of files that were skipped
+     */
+    public int getAlreadyLoaded() {
+        return skipped;
+    }
+
+    /**
+     * Notifies that a file couldn't be loaded as there was no corresponding
+     * act.
+     *
+     * @param file the file
+     */
+    public void missingAct(File file) {
+        ++missing;
+        ++errors;
+    }
+
+    /**
+     * Returns the no. of files that don't have a corresponding act.
+     *
+     * @return the no. of files with no corresponding act
+     */
+    public int getMissingAct() {
+        return missing;
+    }
+
+    /**
+     * Notifies that a file couldn't be loaded due to error.
+     *
+     * @param file      the file
+     * @param exception the error
+     */
+    public void error(File file, Throwable exception) {
+        ++errors;
+    }
+
+    /**
+     * Returns the no. of files that failed load due to error.
+     *
+     * @return the no. of errors
+     */
+    public int getErrors() {
+        return errors;
+    }
+
+    /**
+     * Returns the no. of files processed.
+     *
+     * @return the no. of files processed
+     */
+    public int getProcessed() {
+        return loaded + errors;
+    }
+
+    /**
+     * Invoked when a file is loaded.
+     * <p/>
+     * If a target directory is configured, the file will be moved to it.
+     *
+     * @param file the file
+     * @return <tt>true</tt> if the file doesn't need to be moved, or was moved
+     *         successfully, otherwise <tt>false</tt>
+     */
     protected boolean doLoaded(File file) {
         boolean result = true;
         if (dir != null) {
             try {
-                FileUtils.copyFileToDirectory(file, dir);
-                file.delete();
+                File target = new File(dir, file.getName());
+                if (target.exists()) {
+                    throw new IOException("Cannot copy " + file.getPath()
+                            + " to " + dir.getPath() + ": file exists");
+                }
+                FileUtils.copyFile(file, target);
+                if (!file.delete()) {
+                    throw new IOException("Failed to delete " + file.getPath());
+                }
                 ++loaded;
             } catch (IOException exception) {
                 result = false;
@@ -70,29 +194,4 @@ abstract class AbstractLoaderListener implements LoaderListener {
         return result;
     }
 
-    public int getLoaded() {
-        return loaded;
-    }
-
-    public int getErrors() {
-        return error;
-    }
-
-    public int getProcessed() {
-        return loaded + error;
-    }
-
-    public void alreadyLoaded(File file) {
-        ++skipped;
-        ++error;
-    }
-
-    public void missingAct(File file) {
-        ++missing;
-        ++error;
-    }
-
-    public void error(File file, Throwable exception) {
-        ++error;
-    }
 }
