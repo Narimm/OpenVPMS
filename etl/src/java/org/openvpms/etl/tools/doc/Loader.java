@@ -18,17 +18,34 @@
 
 package org.openvpms.etl.tools.doc;
 
+
 /**
- * Add description here.
+ * Document loader.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 interface Loader {
 
+    /**
+     * Registers a listener.
+     *
+     * @param listener the listener to register. May be <tt>null</tt>
+     */
     void setListener(LoaderListener listener);
 
+    /**
+     * Determines if there is a document to load.
+     *
+     * @return <tt>true</tt> if there is a document to load, otherwise
+     *         <tt>false</tt>
+     */
     boolean hasNext();
 
+    /**
+     * Loads the next document.
+     *
+     * @return <tt>true</tt> if the document was loaded successfully
+     */
     boolean loadNext();
 }

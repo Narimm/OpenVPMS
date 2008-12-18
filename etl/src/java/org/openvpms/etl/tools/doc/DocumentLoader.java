@@ -61,7 +61,7 @@ public class DocumentLoader {
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(DocumentLoader.class);
+    static final Log log = LogFactory.getLog(DocumentLoader.class);
 
     /**
      * The default application context.
@@ -111,30 +111,38 @@ public class DocumentLoader {
             boolean byId = config.getBoolean("byid");
             boolean byName = config.getBoolean("byname");
             if (!config.success() || !(byId || byName)) {
-                displayUsage(parser);
+                displayUsage(parser, null);
             } else {
+                File source = config.getFile("source");
+                File target = config.getFile("dest");
+                checkDirs(source, target, parser);
                 String contextPath = config.getString("context");
-                File dir = config.getFile("source");
 
                 ApplicationContext context;
                 if (!new File(contextPath).exists()) {
-                    context = new ClassPathXmlApplicationContext(contextPath);
+                    context = new ClassPathXmlApplicationContext(
+                            contextPath);
                 } else {
-                    context = new FileSystemXmlApplicationContext(contextPath);
+                    context = new FileSystemXmlApplicationContext(
+                            contextPath);
                 }
-                Date start = new Date();
                 Loader loader;
                 IArchetypeService service = (IArchetypeService) context.getBean(
                         "archetypeService");
-                DocumentFactory factory = new FileDocumentFactory();
+                DocumentFactory factory = new DefaultDocumentFactory();
                 LoaderListener listener = (config.getBoolean("verbose"))
-                        ? new LoggingLoaderListener(log)
-                        : new DefaultLoaderListener();
+                        ? new LoggingLoaderListener(log, target)
+                        : new DefaultLoaderListener(target);
+
+                Date start = new Date();
+                log.info("Starting load at: " + start);
+
                 if (byId) {
-                    loader = new IdLoader(dir, service, factory);
+                    boolean recurse = config.getBoolean("recurse");
+                    loader = new IdLoader(source, service, factory, recurse);
                 } else {
                     String type = config.getString("type");
-                    loader = new NameLoader(dir, type, service, factory);
+                    loader = new NameLoader(source, type, service, factory);
                 }
                 loader.setListener(listener);
                 DocumentLoader docLoader = new DocumentLoader(loader);
@@ -148,10 +156,48 @@ public class DocumentLoader {
         }
     }
 
+    /**
+     * Verifies that the source and target directories are valid.
+     *
+     * @param source the source directory
+     * @param target the target directory
+     * @param parser the command line parser
+     */
+    private static void checkDirs(File source, File target, JSAP parser) {
+        if (source == null) {
+            displayUsage(parser, "No source directory specified");
+        } else if (!source.isDirectory()) {
+            displayUsage(parser,
+                         "Source is not a directory: " + source.getPath());
+        } else {
+            if (target != null) {
+                if (!target.isDirectory()) {
+                    displayUsage(parser,
+                                 "Destination is not a directory: "
+                                         + target.getPath());
+                }
+                if (target.equals(source)) {
+                    displayUsage(parser, "Destination directory is the same "
+                            + "as the source");
+                }
+                File parent = target.getParentFile();
+                while (parent != null) {
+                    if (parent.equals(source)) {
+                        displayUsage(parser,
+                                     "Destination directory cannot be a child "
+                                             + "of the source directory");
+                    }
+                    parent = parent.getParentFile();
+                }
+            }
+        }
+    }
+
     private static void dumpStats(LoaderListener listener, Date start) {
         Date end = new Date();
+        log.info("Ending load at: " + start);
+
         double elapsed = (end.getTime() - start.getTime()) / 1000;
-        log.info("\n\n\n[STATISTICS]\n");
         int total = listener.getProcessed();
         double rate = (elapsed != 0) ? total / elapsed : 0;
         log.info("Loaded: " + listener.getLoaded());
@@ -184,8 +230,11 @@ public class DocumentLoader {
                 .setLongFlag("source")
                 .setStringParser(dirParser)
                 .setDefault("./")
-                .setHelp("The directory to load files from. "
-                + "Defaults to the current directory"));
+                .setHelp("The directory to load files from. "));
+        parser.registerParameter(new Switch("recurse").setShortFlag('r')
+                .setLongFlag("recurse")
+                .setDefault("false")
+                .setHelp("Recursively scan the source directory"));
         parser.registerParameter(new FlaggedOption("dest").setShortFlag('d')
                 .setLongFlag("dest")
                 .setStringParser(dirParser)
@@ -212,11 +261,17 @@ public class DocumentLoader {
 
     /**
      * Prints usage information.
+     *
+     * @param parser the parser
+     * @param error  the error. May be <tt>null</tt>
      */
-    private static void displayUsage(JSAP parser) {
-        System.err.println();
+    private static void displayUsage(JSAP parser, String error) {
+        if (error != null) {
+            System.err.println(error);
+        }
         System.err.println("Usage: java "
                 + DocumentLoader.class.getName());
+
         System.err.println("                " + parser.getUsage());
         System.err.println();
         System.err.println(parser.getHelp());

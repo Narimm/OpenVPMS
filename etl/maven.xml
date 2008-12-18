@@ -75,29 +75,4 @@
         </copy>
     </goal>
 
-    <goal name="doc:load">
-        <attainGoal name="java:compile"/>
-        <attainGoal name="java:jar-resources"/>
-        <attainGoal name="generate-appcontext"/>
-        <ant:java
-                classname="org.openvpms.etl.tools.doc.DocumentLoader"
-                failonerror="true"
-                fork="true">
-            <ant:classpath>
-                <ant:pathelement path="${maven.build.dir}"/>
-                <ant:pathelement path="${maven.build.dest}"/>
-                <ant:path refid="maven.dependency.classpath"/>
-            </ant:classpath>
-            <j:if test="${!empty(docdir)}">
-                <ant:arg value="-d"/>
-                <ant:arg value="${docdir}"/>
-            </j:if>
-            <j:if test="${!empty(doctype)}">
-                <ant:arg value="-t"/>
-                <ant:arg value="${doctype}"/>
-            </j:if>
-            <ant:arg value="--failOnError=false"/>
-        </ant:java>
-    </goal>
-
 </project>

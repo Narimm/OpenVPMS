@@ -33,10 +33,10 @@ import java.io.File;
 interface DocumentFactory {
 
     /**
-     * Creates a document from the supplied stream.
+     * Creates a document from the supplied file.
      *
-     * @param file
-     * @param mimeType
+     * @param file the file
+     * @param mimeType the file's mime type
      * @return a new document
      * @throws DocumentException for any error
      */

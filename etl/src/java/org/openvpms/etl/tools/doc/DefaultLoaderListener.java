@@ -18,11 +18,29 @@
 
 package org.openvpms.etl.tools.doc;
 
+import java.io.File;
+
+
 /**
- * Add description here.
+ * Default implementation of the {@link LoaderListener} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultLoaderListener extends AbstractLoaderListener {
+class DefaultLoaderListener extends AbstractLoaderListener {
+
+    /**
+     * Creates a new <tt>DefaultLoaderListener</tt>.
+     */
+    public DefaultLoaderListener() {
+    }
+
+    /**
+     * Creates a new <tt>DefaultLoaderListener</tt>.
+     *
+     * @param dir if non-null, files will be moved here on successful load
+     */
+    public DefaultLoaderListener(File dir) {
+        super(dir);
+    }
 }

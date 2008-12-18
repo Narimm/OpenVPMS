@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -52,33 +53,54 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IdLoader extends AbstractLoader {
+class IdLoader extends AbstractLoader {
 
+    /**
+     * The document act short names.
+     */
     private final String[] shortNames;
 
+    /**
+     * The file iterator.
+     */
     private Iterator<File> iterator;
 
 
     /**
-     * Constructs a new <tt>DocumentLoader</tt>.
+     * Constructs a new <tt>IdLoader</tt>.
      *
+     * @param dir the source directory
      * @param service the archetype service
+     * @param factory the document factory
+     * @param recurse if <tt>true</tt> recursively scan the source dir
      */
     @SuppressWarnings("unchecked")
     public IdLoader(File dir, IArchetypeService service,
-                    DocumentFactory factory) {
+                    DocumentFactory factory,
+                    boolean recurse) {
         super(service, factory);
         this.shortNames = getDocumentActShortNames();
         List<File> files = new ArrayList<File>(
-                FileUtils.listFiles(dir, null, true));
+                FileUtils.listFiles(dir, null, recurse));
         Collections.sort(files);
         iterator = files.iterator();
     }
 
+    /**
+     * Determines if there is a document to load.
+     *
+     * @return <tt>true</tt> if there is a document to load, otherwise
+     *         <tt>false</tt>
+     */
     public boolean hasNext() {
         return iterator.hasNext();
     }
 
+    /**
+     * Loads the next document.
+     *
+     * @return <tt>true</tt> if the document was loaded successfully
+     */
     public boolean loadNext() {
         boolean result = false;
         File file = iterator.next();
@@ -95,8 +117,8 @@ public class IdLoader extends AbstractLoader {
             act = getAct(id);
         }
         if (act != null) {
-            if (act.getDocument() != null) {
-                result = load(file, act, name);
+            if (act.getDocument() == null) {
+                result = load(file, act);
             } else {
                 notifyAlreadyLoaded(file);
             }
@@ -106,12 +128,19 @@ public class IdLoader extends AbstractLoader {
         return result;
     }
 
-    private boolean load(File file, DocumentAct act, String name) {
+    /**
+     * Creates a document from a file, associating it with the supplied act.
+     *
+     * @param file the file
+     * @param act  the document act
+     * @return <tt>true</tt> if the file was loaded
+     */
+    private boolean load(File file, DocumentAct act) {
         boolean result = false;
         try {
             String mimeType = getMimeType(file);
             act.setMimeType(mimeType);
-            act.setFileName(name);
+            act.setFileName(file.getName());
             act.setStatus(ActStatus.COMPLETED);
             Document doc = createDocument(file, mimeType);
             save(act, doc);
@@ -123,7 +152,12 @@ public class IdLoader extends AbstractLoader {
         return result;
     }
 
-
+    /**
+     * Returns the act for the specified id.
+     *
+     * @param id the identifier
+     * @return the corresponding act, or <tt>null</tt> if none is found
+     */
     private DocumentAct getAct(String id) {
         try {
             Long value = Long.valueOf(id);
@@ -140,6 +174,13 @@ public class IdLoader extends AbstractLoader {
         return null;
     }
 
+    /**
+     * Returns the act for the specified id and short name.
+     *
+     * @param id        the identifier
+     * @param shortName the archetype short name. May contain wildcards.
+     * @return the corresponding act, or <tt>null</tt> if none is found
+     */
     private DocumentAct getAct(String id, String shortName) {
         DocumentAct act = getAct(id);
         DocumentAct result = null;
@@ -151,6 +192,11 @@ public class IdLoader extends AbstractLoader {
         return result;
     }
 
+    /**
+     * Returns all document act archetype short names.
+     *
+     * @return the document act  archetype short names
+     */
     private String[] getDocumentActShortNames() {
         List<String> result = new ArrayList<String>();
         List<ArchetypeDescriptor> descriptors
@@ -163,9 +209,19 @@ public class IdLoader extends AbstractLoader {
         return result.toArray(new String[0]);
     }
 
-    private String getMimeType(File file)
-            throws java.io.IOException, MalformedURLException {
+    /**
+     * Returns the mime type for a file.
+     *
+     * @param file the file
+     * @return the mime type of the file
+     * @throws IOException           for any I/O error
+     * @throws MalformedURLException for any URL error
+     */
+    private String getMimeType(File file) throws IOException,
+                                                 MalformedURLException {
         URLConnection uc = file.toURL().openConnection();
-        return uc.getContentType();
+        String mimeType = uc.getContentType();
+        uc.getInputStream().close();
+        return mimeType;
     }
 }

@@ -22,20 +22,46 @@ import org.apache.commons.logging.Log;
 
 import java.io.File;
 
+
 /**
- * Add description here.
+ * Implementation of {@link LoaderListener} that logs events to a <tt>Log</tt>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class LoggingLoaderListener extends AbstractLoaderListener {
 
+    /**
+     * The log.
+     */
     private final Log log;
 
+
+    /**
+     * Creates a new <tt>LoggingLoaderListener</tt>.
+     *
+     * @param log the log
+     */
     public LoggingLoaderListener(Log log) {
+        this(log, null);
+    }
+
+    /**
+     * Creates a new <tt>LoggingLoaderListener</tt>.
+     *
+     * @param log the log
+     * @param dir if non-null, files will be moved here on successful load
+     */
+    public LoggingLoaderListener(Log log, File dir) {
+        super(dir);
         this.log = log;
     }
 
+    /**
+     * Notifies when a file is loaded.
+     *
+     * @param file the file
+     */
     @Override
     public void loaded(File file) {
         if (doLoaded(file)) {
@@ -43,18 +69,36 @@ class LoggingLoaderListener extends AbstractLoaderListener {
         }
     }
 
+    /**
+     * Notifies that a file couldn't be loaded as it or another file had
+     * already been processed.
+     *
+     * @param file the file
+     */
     @Override
     public void alreadyLoaded(File file) {
         super.alreadyLoaded(file);
         log.info("Skipping " + file.getPath());
     }
 
+    /**
+     * Notifies that a file couldn't be loaded as there was no corresponding
+     * act.
+     *
+     * @param file the file
+     */
     @Override
     public void missingAct(File file) {
         super.missingAct(file);
-        log.info("Skipping " + file.getPath());
+        log.info("Missing act for " + file.getPath());
     }
 
+    /**
+     * Notifies that a file couldn't be loaded due to error.
+     *
+     * @param file      the file
+     * @param exception the error
+     */
     @Override
     public void error(File file, Throwable exception) {
         super.error(file, exception);

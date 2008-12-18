@@ -27,13 +27,12 @@ import java.io.File;
 
 
 /**
- * Implementation of the {@link DocumentFactory} interface that creates
- * documents from files.
+ * Default implementation of the {@link DocumentFactory} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class FileDocumentFactory implements DocumentFactory {
+class DefaultDocumentFactory implements DocumentFactory {
 
     /**
      * The document handlers.
@@ -42,19 +41,17 @@ class FileDocumentFactory implements DocumentFactory {
 
 
     /**
-     * Creates a new <tt>FileDocumentFactory</tt>.
+     * Creates a new <tt>DefaultDocumentFactory</tt>.
      */
-    public FileDocumentFactory() {
+    public DefaultDocumentFactory() {
         handlers = new DocumentHandlers();
     }
 
     /**
-     * Creates a document given a document act.
-     * This uses the file name of the document act to load the corresponding
-     * file and create a document from it.
+     * Creates a document from the supplied file.
      *
-     * @param file
-     * @param mimeType
+     * @param file     the file
+     * @param mimeType the file's mime type
      * @return a new document
      * @throws DocumentException for any error
      */

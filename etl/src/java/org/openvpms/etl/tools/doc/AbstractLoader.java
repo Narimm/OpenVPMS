@@ -25,63 +25,124 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import java.io.File;
 import java.util.Arrays;
 
+
 /**
- * Add description here.
+ * Abstract implementation of the {@link Loader} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 abstract class AbstractLoader implements Loader {
+
     /**
      * The archetype service.
      */
     private final IArchetypeService service;
 
+    /**
+     * The document factory.
+     */
     private final DocumentFactory factory;
 
+    /**
+     * The loader listener. May be <tt>null</tt>
+     */
     private LoaderListener listener;
 
 
+    /**
+     * Creates a new <tt>AbstractLoader</tt>.
+     *
+     * @param service the archetype service
+     * @param factory the document factory
+     */
     public AbstractLoader(IArchetypeService service,
                           DocumentFactory factory) {
         this.service = service;
         this.factory = factory;
     }
 
+    /**
+     * Registers a listener.
+     *
+     * @param listener the listener
+     */
     public void setListener(LoaderListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Creates a new document.
+     *
+     * @param file     the file to create the document from
+     * @param mimeType the file mime type
+     * @return a new document
+     */
     protected Document createDocument(File file, String mimeType) {
         return factory.create(file, mimeType);
     }
 
+    /**
+     * Helper to save a document and document act via the archetype service.
+     *
+     * @param act      the document act
+     * @param document the associated document
+     */
     protected void save(DocumentAct act, Document document) {
         service.save(Arrays.asList(act, document));
     }
 
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
     protected IArchetypeService getService() {
         return service;
     }
 
+    /**
+     * Notifies any registered listener that a file has been loaded.
+     *
+     * @param file the file
+     */
     protected void notifyLoaded(File file) {
         if (listener != null) {
             listener.loaded(file);
         }
     }
 
+    /**
+     * Notifies any registered listener that a file can't be loaded as it
+     * has already been processed.
+     *
+     * @param file the file
+     */
     protected void notifyAlreadyLoaded(File file) {
         if (listener != null) {
             listener.alreadyLoaded(file);
         }
     }
 
+    /**
+     * Notifies any registered listener that a file can't be loaded as a
+     * corresponding act cannot be found.
+     *
+     * @param file the file
+     */
     protected void notifyMissingAct(File file) {
         if (listener != null) {
             listener.missingAct(file);
         }
     }
 
+    /**
+     * Notifies any registered listener that a file can't be loaded due to an
+     * error.
+     *
+     * @param file  the file
+     * @param error the error
+     */
     protected void notifyError(File file, Throwable error) {
         if (listener != null) {
             listener.error(file, error);
