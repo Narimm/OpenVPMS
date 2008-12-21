@@ -182,6 +182,14 @@ public class DocumentLoaderTestCase
         for (File file : files) {
             assertTrue(expectedNames.contains(file.getName()));
         }
+
+        // verify the acts have associated documents
+        for (DocumentAct act : acts) {
+            act = (DocumentAct) service.get(act.getObjectReference());
+            assertNotNull(act);
+            assertNotNull(act.getDocument());
+            assertNotNull(service.get(act.getDocument()));
+        }
     }
 
     private File createFile(DocumentAct act, File source, String prefix)

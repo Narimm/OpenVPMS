@@ -143,6 +143,7 @@ class IdLoader extends AbstractLoader {
             act.setFileName(file.getName());
             act.setStatus(ActStatus.COMPLETED);
             Document doc = createDocument(file, mimeType);
+            act.setDocument(doc.getObjectReference());
             save(act, doc);
             notifyLoaded(file);
             result = true;
