@@ -381,6 +381,7 @@
         <property name='accessDecisionManager' ref='accessDecisionManager'/>
         <property name='objectDefinitionSource'>
             <value>
+                org.openvpms.component.business.service.archetype.IArchetypeService.create=archetypeService.create
                 org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
                 org.openvpms.component.business.service.archetype.IArchetypeService.remove=archetypeService.remove
             </value>
