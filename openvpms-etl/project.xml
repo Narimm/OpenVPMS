@@ -376,7 +376,7 @@
         <dependency>
             <groupId>hibernate</groupId>
             <artifactId>hibernate</artifactId>
-            <version>3.2.2</version>
+            <version>3.2.6</version>
             <url>http://www.hibernate.org</url>
             <properties>
                 <kettle.plugin>true</kettle.plugin>
