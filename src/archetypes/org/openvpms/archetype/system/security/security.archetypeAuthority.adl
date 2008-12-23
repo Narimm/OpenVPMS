@@ -44,7 +44,7 @@
                 <propertyList name="entries">
                     <property name="save" value="save"/>
                     <property name="remove" value="remove"/>
-                    <property name="get" value="get"/>
+                    <property name="create" value="create"/>
                 </propertyList>
                 <errorMessage>An error message</errorMessage>
             </assertion>
