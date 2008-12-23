@@ -31,7 +31,7 @@
 	<field name="endTime" class="java.util.Date"/>
 	<field name="label" class="java.lang.String"/>
 	<field name="clinician.entity.name" class="java.lang.String"/>
-	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'lastName')]" class="java.lang.String"/>
+	<field name="[openvpms:get(party:getPatientOwner(.),'lastName')]" class="java.lang.String"/>
 	<field name="quantity" class="java.math.BigDecimal"/>
 	<field name="product.entity.printedName" class="java.lang.String"/>
 	<field name="[party:getPartyFullName(party:getPractice())]" class="java.lang.String"/>
@@ -39,7 +39,7 @@
 	<field name="[party:getPracticeTelephone()]" class="java.lang.String"/>
 
 	<variable name="patientFullName" class="java.lang.String" resetType="Report" calculation="Nothing">
-		<variableExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'lastName')]} + "," + $F{patient.entity.name}]]></variableExpression>
+		<variableExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(.),'lastName')]} + "," + $F{patient.entity.name}]]></variableExpression>
 	</variable>
 		<background>
 			<band height="1"  isSplitAllowed="true" >
