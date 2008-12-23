@@ -7,9 +7,12 @@
 		serviceName="archetypeService" method="save" archetypeShortName="*" />
 	<data id="AUTH2" archetype="security.archetypeAuthority" name="remove.all" description="Authority to Remove All Archetypes"
 		serviceName="archetypeService" method="remove" archetypeShortName="*" />
+	<data id="AUTH3" archetype="security.archetypeAuthority" name="create.all" description="Authority to Create All Archetypes"
+		serviceName="archetypeService" method="create" archetypeShortName="*" />
 	<data id="ROLE1" archetype="security.role" name="Administration" >
 		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:AUTH1" />
 		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:AUTH2" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:AUTH3" />
 	</data>
 	<data archetype="security.user" username="admin" name="admin" password="admin">
 		<data collection="roles" archetype="security.role" childId="id:ROLE1" />
