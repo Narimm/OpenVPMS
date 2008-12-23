@@ -206,7 +206,7 @@ class ReminderGenerator extends AbstractBatchProcessor {
         if (!emailReminders.isEmpty()) {
             processors.put(new ReminderEmailProcessor(
                     emailReminders, ServiceHelper.getMailSender(),
-                    practice.getName(), address),
+                    address, practice.getName()),
                            emailReminders);
         }
     }
