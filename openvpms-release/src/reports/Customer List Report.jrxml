@@ -23,7 +23,9 @@
 	<import value="net.sf.jasperreports.engine.*" />
 	<import value="net.sf.jasperreports.engine.data.*" />
 
-	<parameter name="printDetail" isForPrompting="true" class="java.lang.Boolean"/>
+	<parameter name="printDetail" isForPrompting="true" class="java.lang.Boolean">
+		<defaultValueExpression ><![CDATA[new Boolean("true")]]></defaultValueExpression>
+	</parameter>
 	<parameter name="classification" isForPrompting="true" class="java.lang.String">
 		<defaultValueExpression ><![CDATA["%"]]></defaultValueExpression>
 	</parameter>
@@ -186,7 +188,7 @@ order by e.name]]></queryString>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$F{customerName}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						mode="Opaque"
 						x="140"
@@ -199,7 +201,7 @@ order by e.name]]></queryString>
 					<textElement>
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{contact}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{contact}.replaceAll("\n"," ")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
