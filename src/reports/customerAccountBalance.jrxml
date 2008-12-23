@@ -42,7 +42,7 @@
 	<variable name="TOTAL_CREDIT" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{creditBalance}]]></variableExpression>
 	</variable>
-	<variable name="TOTAL_CURRENT" class="java.math.BigDecimal" resetType="Report" calculation="Nothing">
+	<variable name="TOTAL_CURRENT" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[($F{balance}.subtract($F{overdueBalance})).subtract($F{creditBalance})]]></variableExpression>
 	</variable>
 	<variable name="TOTAL_DEBTORS" class="java.lang.Integer" resetType="Report" calculation="Count">
