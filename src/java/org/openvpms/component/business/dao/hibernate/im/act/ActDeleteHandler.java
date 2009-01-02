@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 import org.hibernate.Session;
 import org.openvpms.component.business.dao.hibernate.im.common.AbstractDeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -52,14 +53,15 @@ public class ActDeleteHandler extends AbstractDeleteHandler {
      * This implementation deletes any target act where there is a parent-child
      * relationship, and deletes the relationships from related acts.
      *
-     * @param object the object to delete
+     * @param object  the object to delete
      * @param session the session
+     * @param context the assembly context
      */
     @Override
-    protected void delete(IMObjectDO object, Session session) {
+    protected void delete(IMObjectDO object, Session session, Context context) {
         ActDO parent = (ActDO) object;
         Set<ActDO> visited = new HashSet<ActDO>();
-        delete(parent, visited, session);
+        delete(parent, visited, context);
     }
 
     /**
@@ -67,9 +69,9 @@ public class ActDeleteHandler extends AbstractDeleteHandler {
      *
      * @param act     the act to remove
      * @param visited the acts that have been visited
-     * @param session the hibernate session
+     * @param context the assembly context
      */
-    private void delete(ActDO act, Set<ActDO> visited, Session session) {
+    private void delete(ActDO act, Set<ActDO> visited, Context context) {
         visited.add(act);
 
         // remove relationships where the act is the source. If a relationship
@@ -84,7 +86,7 @@ public class ActDeleteHandler extends AbstractDeleteHandler {
                 target.removeTargetActRelationship(relationhip);
                 if (relationhip.isParentChildRelationship()) {
                     if (!visited.contains(target)) {
-                        delete(target, visited, session);
+                        delete(target, visited, context);
                     }
                 }
             }
@@ -100,7 +102,7 @@ public class ActDeleteHandler extends AbstractDeleteHandler {
                 source.removeSourceActRelationship(relationship);
             }
         }
-        session.delete(act);
+        context.remove(act);
     }
 
 }
