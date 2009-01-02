@@ -18,18 +18,23 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
+
+import java.util.List;
+
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
@@ -44,8 +49,6 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.List;
 
 
 /**
@@ -66,7 +69,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
             "act.patientDocumentImage",
             "act.patientInvestigationBiochemistry",
             "act.patientInvestigationCytology",
-            "act.patientInvestigationHaemotology",
+            "act.patientInvestigationHaematology",
             "act.patientInvestigationRadiology"
     };
 
@@ -102,7 +105,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     static {
         DOC_STATUSES = new ActStatuses("act.patientDocumentLetter");
-        DOC_STATUSES.setDefault(null);
+        DOC_STATUSES.setDefault((Lookup)null);
     }
 
 
