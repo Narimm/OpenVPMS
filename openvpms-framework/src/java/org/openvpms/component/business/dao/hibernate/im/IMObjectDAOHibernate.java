@@ -465,13 +465,25 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @return the corresponding object, or <tt>null</tt> if none exists
      * @throws IMObjectDAOException for any error
      */
-    public IMObject get(IMObjectReference reference) {
-        ArchetypeDescriptor desc = cache.getArchetypeDescriptor(
-                reference.getArchetypeId());
-        if (desc != null) {
-            return get(desc.getClassName(), "id", reference.getId());
+    public IMObject get(final IMObjectReference reference) {
+        // first determine if the object is cached in the transaction context
+        IMObject result = (IMObject) execute(new HibernateCallback() {
+                public Object doInHibernate(Session session) {
+                    Context context = getContext(session);
+                    DOState state = context.getCached(reference);
+                    return (state != null) ? state.getSource() : null;
+                }
+            });
+        if (result == null && !reference.isNew()) {
+            // no cached object. If the reference indicates the object is 
+            // committed, try and query it
+            ArchetypeDescriptor desc = cache.getArchetypeDescriptor(
+                    reference.getArchetypeId());
+            if (desc != null) {
+                result = get(desc.getClassName(), "id", reference.getId());
+            }
         }
-        return null;
+        return result;
     }
 
     /**
@@ -964,51 +976,51 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     }
 
     /**
-      * Resolves deferred references.
-      */
-     private void resolveDeferredReferences(Context context) {
-         List<DeferredReference> deferred = context.getDeferredReferences();
-         if (!deferred.isEmpty()) {
-             Map<Class<? extends IMObjectDOImpl>, List<DeferredReference>> map
-                     = new HashMap<Class<? extends IMObjectDOImpl>, List<DeferredReference>>();
-             for (DeferredReference ref : deferred) {
-                 IMObjectDO object = ref.getObject();
-                 if (Hibernate.isInitialized(object)) {
-                     ref.update(object.getObjectReference());
-                 } else {
-                     List<DeferredReference> list = map.get(ref.getType());
-                     if (list == null) {
-                         list = new ArrayList<DeferredReference>();
-                         map.put(ref.getType(), list);
-                     }
-                     list.add(ref);
-                 }
-             }
-             if (!map.isEmpty()) {
-                 for (Map.Entry<Class<? extends IMObjectDOImpl>,
-                         List<DeferredReference>> entry : map.entrySet()) {
-                     Class<? extends IMObjectDOImpl> type = entry.getKey();
-                     List<DeferredReference> refs = entry.getValue();
-                     Map<Long, IMObjectDO> objects = new HashMap<Long, IMObjectDO>();
-                     for (DeferredReference ref : refs) {
-                         IMObjectDO object = ref.getObject();
-                         objects.put(object.getId(), object);
-                     }
-                     Map<Long, IMObjectReference> resolvedRefs
-                             = context.getReferences(objects, type);
-                     for (DeferredReference ref : refs) {
-                         IMObjectReference resolved
-                                 = resolvedRefs.get(ref.getObject().getId());
-                         if (resolved != null) {
-                             ref.update(resolved);
-                         }
-                     }
-                 }
-                 map.clear();
-             }
-             deferred.clear();
-         }
-     }
+     * Resolves deferred references.
+     */
+    private void resolveDeferredReferences(Context context) {
+        List<DeferredReference> deferred = context.getDeferredReferences();
+        if (!deferred.isEmpty()) {
+            Map<Class<? extends IMObjectDOImpl>, List<DeferredReference>> map
+                    = new HashMap<Class<? extends IMObjectDOImpl>, List<DeferredReference>>();
+            for (DeferredReference ref : deferred) {
+                IMObjectDO object = ref.getObject();
+                if (Hibernate.isInitialized(object)) {
+                    ref.update(object.getObjectReference());
+                } else {
+                    List<DeferredReference> list = map.get(ref.getType());
+                    if (list == null) {
+                        list = new ArrayList<DeferredReference>();
+                        map.put(ref.getType(), list);
+                    }
+                    list.add(ref);
+                }
+            }
+            if (!map.isEmpty()) {
+                for (Map.Entry<Class<? extends IMObjectDOImpl>,
+                        List<DeferredReference>> entry : map.entrySet()) {
+                    Class<? extends IMObjectDOImpl> type = entry.getKey();
+                    List<DeferredReference> refs = entry.getValue();
+                    Map<Long, IMObjectDO> objects = new HashMap<Long, IMObjectDO>();
+                    for (DeferredReference ref : refs) {
+                        IMObjectDO object = ref.getObject();
+                        objects.put(object.getId(), object);
+                    }
+                    Map<Long, IMObjectReference> resolvedRefs
+                            = context.getReferences(objects, type);
+                    for (DeferredReference ref : refs) {
+                        IMObjectReference resolved
+                                = resolvedRefs.get(ref.getObject().getId());
+                        if (resolved != null) {
+                            ref.update(resolved);
+                        }
+                    }
+                }
+                map.clear();
+            }
+            deferred.clear();
+        }
+    }
 
     /**
      * Check whether write operations are allowed on the given Session.
@@ -1057,7 +1069,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     }
 
     /**
-     * Returns the assembly context for the specifie session,
+     * Returns the assembly context for the specified session,
      * creating one if it doesn't exist.
      *
      * @param session the session

@@ -55,7 +55,7 @@ public abstract class AbstractDeleteHandler implements DeleteHandler {
     public void delete(IMObject object, Session session, Context context) {
         if (!object.isNew()) {
             DOState state = assembler.assemble(object, context);
-            delete(state.getObject(), session);
+            delete(state.getObject(), session, context);
             session.flush();
         }
     }
@@ -65,9 +65,10 @@ public abstract class AbstractDeleteHandler implements DeleteHandler {
      *
      * @param object  the object to delete
      * @param session the hibernate session
+     * @param context the assembly context
      */
-    protected void delete(IMObjectDO object, Session session) {
-        session.delete(object);
+    protected void delete(IMObjectDO object, Session session, Context context) {
+        context.remove(object);
     }
 
 }

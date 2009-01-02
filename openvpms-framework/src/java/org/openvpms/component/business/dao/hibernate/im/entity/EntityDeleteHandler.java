@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.hibernate.Session;
 import org.openvpms.component.business.dao.hibernate.im.common.AbstractDeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -51,9 +52,10 @@ public class EntityDeleteHandler extends AbstractDeleteHandler {
      *
      * @param object  the object to delete
      * @param session the session
+     * @param context
      */
     @Override
-    protected void delete(IMObjectDO object, Session session) {
+    protected void delete(IMObjectDO object, Session session, Context context) {
         EntityDO entity = (EntityDO) object;
         // remove relationships where the entity is the source.
         EntityRelationshipDO[] relationships
@@ -77,7 +79,7 @@ public class EntityDeleteHandler extends AbstractDeleteHandler {
                 source.removeSourceEntityRelationship(relationship);
             }
         }
-        session.delete(entity);
+        context.remove(entity);
     }
 
 }

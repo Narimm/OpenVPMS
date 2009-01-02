@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 import org.hibernate.Session;
 import org.openvpms.component.business.dao.hibernate.im.common.AbstractDeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -51,9 +52,10 @@ public class LookupDeleteHandler extends AbstractDeleteHandler {
      *
      * @param object  the object to delete
      * @param session the session
+     * @param context
      */
     @Override
-    protected void delete(IMObjectDO object, Session session) {
+    protected void delete(IMObjectDO object, Session session, Context context) {
         LookupDO lookup = (LookupDO) object;
         // remove relationships where the lookup is the source.
         LookupRelationshipDO[] relationships
@@ -77,7 +79,7 @@ public class LookupDeleteHandler extends AbstractDeleteHandler {
                 source.removeSourceLookupRelationship(relationship);
             }
         }
-        session.delete(lookup);
+        context.remove(lookup);
     }
 
 }
