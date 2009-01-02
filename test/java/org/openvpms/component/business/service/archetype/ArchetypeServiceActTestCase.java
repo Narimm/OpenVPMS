@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToDeleteObject;
@@ -321,6 +322,119 @@ public class ArchetypeServiceActTestCase
     }
 
     /**
+     * Verifies that related acts must be saved together i.e the entire
+     * object graph must be saved.
+     */
+    public void testSaveRelatedActs() {
+        // Create 2 acts with the following relationship:
+        // act1 -- (parent/child) --> act2
+        final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        addRelationship(act1, act2, "act1->act2", true);
+
+        // verify that act1 cannot be saved without act2
+        try {
+            service.save(act1);
+            fail("Expected save to fail");
+        } catch (ArchetypeServiceException expected) {
+            assertEquals(-1, act1.getId());
+        }
+
+        // verify that act2 cannot be saved without act1
+        try {
+            service.save(act2);
+            fail("Expected save to fail");
+        } catch (ArchetypeServiceException expected) {
+            assertEquals(-1, act2.getId());
+        }
+
+        // verify both acts can be saved together
+        service.save(Arrays.asList(act1, act2));
+    }
+
+    /**
+     * Verifies that related acts can be saved individually, but in the one
+     * transaction.
+     */
+    public void testSaveRelatedActsInTxn() {
+        // Create 2 acts with the following relationship:
+        // act1 -- (parent/child) --> act2
+        final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        addRelationship(act1, act2, "act1->act2", true);
+
+        // now try to save each act within a transaction.
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                service.save(act1);
+                // act has been saved, but the identifier cannot be assigned
+                // until the related act is also saved
+                assertEquals(-1, act1.getId());
+
+                service.save(act2);
+
+                // identifiers should have updated
+                assertFalse(act1.getId() == -1);
+                assertFalse(act2.getId() == -1);
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Verifies that saved but uncommitted acts can be resolved using
+     * {@link IArchetypeService#get(IMObjectReference)} in a transaction,
+     * even if an identifier hasn't been assigned.
+     */
+    public void testResolveUncommittedActs() {
+        // Create 2 acts with the following relationship:
+        // act1 -- (parent/child) --> act2
+        final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        addRelationship(act1, act2, "act1->act2", true);
+
+        assertNull(service.get(act1.getObjectReference()));
+        assertNull(service.get(act2.getObjectReference()));
+
+        // now try to save each act within a transaction.
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                service.save(act1);
+                // act has been saved, but the identifier cannot be assigned
+                // until the related act is also saved
+                assertEquals(-1, act1.getId());
+
+                // verify that the act can be retrieved by reference, and is
+                // the same object
+                assertSame(act1, service.get(act1.getObjectReference()));
+
+                assertNull(service.get(act2.getObjectReference()));
+                service.save(act2);
+
+                // identifiers should have updated
+                assertFalse(act1.getId() == -1);
+                assertFalse(act2.getId() == -1);
+
+                // verify that the acts can be retrieved by reference, and are
+                // the same objects
+                assertSame(act1, service.get(act1.getObjectReference()));
+                assertSame(act2, service.get(act2.getObjectReference()));
+                return null;
+            }
+        });
+
+        IMObject reload1 = service.get(act1.getObjectReference());
+        IMObject reload2 = service.get(act2.getObjectReference());
+        assertNotNull(reload1);
+        assertNotNull(reload2);
+
+        // the reloaded acts should now be different objects as it is a
+        // different transaction
+        assertNotSame(act1, reload1);
+        assertNotSame(act2, reload2);
+    }
+
+    /**
      * Verifies an act can be removed.
      *
      * @throws Exception for any error
@@ -530,7 +644,7 @@ public class ArchetypeServiceActTestCase
 
                 // reload act3 and verify that it no longer has a relationship
                 // to act1, and can be saved again
-                Act act3reloaded = reload(act2);
+                Act act3reloaded = reload(act3);
                 relationships = act3reloaded.getActRelationships();
                 assertFalse(relationships.contains(relAct1Act3));
                 act3reloaded.setStatus("POSTED");
