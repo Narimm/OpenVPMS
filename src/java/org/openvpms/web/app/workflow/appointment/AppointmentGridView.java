@@ -70,7 +70,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
         }
         int endSlot;
         if (grid.getEndMins() == endMins) {
-            endSlot = grid.getLastSlot(endMins - getSlotSize());
+            endSlot = grid.getLastSlot(endMins - grid.getSlotSize());
         } else {
             endSlot = grid.getLastSlot(endMins);
         }
