@@ -107,6 +107,46 @@ public class FinancialTestHelper extends TestHelper {
     }
 
     /**
+     * Helper to create a new <em>act.customerAccountPayment</em> and
+     * corresponding <em>act.customerAccountPaymentCash</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @param status   the status
+     * @return a list containing the refund act and its item
+     */
+    public static List<FinancialAct> createPayment(Money amount,
+                                                   Party customer,
+                                                   Party till,
+                                                   String status) {
+        return createPaymentRefund("act.customerAccountPayment",
+                                   "act.customerAccountPaymentCash",
+                                   "actRelationship.customerAccountPaymentItem",
+                                   amount, customer, till, status);
+    }
+
+    /**
+     * Helper to create a new <em>act.customerAccountRefund</em> and
+     * corresponding <em>act.customerAccountRefundCash</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @param status   the status
+     * @return a list containing the refund act and its item
+     */
+    public static List<FinancialAct> createRefund(Money amount,
+                                                  Party customer,
+                                                  Party till,
+                                                  String status) {
+        return createPaymentRefund("act.customerAccountRefund",
+                                   "act.customerAccountRefundCash",
+                                   "actRelationship.customerAccountRefundItem",
+                                   amount, customer, till, status);
+    }
+
+    /**
      * Helper to create a POSTED <em>act.customerAccountPayment</em>.
      *
      * @param amount   the act total
@@ -446,6 +486,39 @@ public class FinancialTestHelper extends TestHelper {
         itemBean.save();
         bean.addRelationship(relationshipShortName, item);
         return act;
+    }
+
+    /**
+     * Creates a new payment/refund act and related item.
+     *
+     * @param shortName             the act short name
+     * @param itemShortName         the item short name
+     * @param relationshipShortName the relationship short name
+     * @param amount                the act amount
+     * @param customer              the customer
+     * @param till                  the till
+     * @param status                the act status
+     * @return a list containing the payment/refund act and its item
+     */
+    private static List<FinancialAct> createPaymentRefund(
+            String shortName, String itemShortName,
+            String relationshipShortName, Money amount, Party customer,
+            Party till, String status) {
+        FinancialAct act = createAct(shortName, amount, customer, status);
+        ActBean bean = new ActBean(act);
+        FinancialAct item = (FinancialAct) create(itemShortName);
+        item.setTotal(amount);
+        ActBean itemBean = new ActBean(item);
+        if (itemBean.isA("act.customerAccountPaymentCash",
+                         "act.customerAccountRefundCash")) {
+            itemBean.setValue("roundedAmount", amount);
+            if (itemBean.isA("act.customerAccountPaymentCash")) {
+                itemBean.setValue("tendered", amount);
+            }
+        }
+        bean.addParticipation("participation.till", till);
+        bean.addRelationship(relationshipShortName, item);
+        return Arrays.asList(act, item);
     }
 
     /**
