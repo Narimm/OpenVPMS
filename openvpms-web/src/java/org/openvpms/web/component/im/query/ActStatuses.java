@@ -103,6 +103,25 @@ public class ActStatuses implements LookupQuery {
     }
 
     /**
+     * Sets the default status, overriding that returned by
+     * {@link LookupQuery#getDefault()}.
+     *
+     * @param code the default lookup code. May be <tt>null</tt>
+     */
+    public void setDefault(String code) {
+        useDefault = true;
+        Lookup lookup = null;
+        if (code != null) {
+            for (Lookup l : getLookups()) {
+               if (l.getCode().equals(code)) {
+                   lookup = l;
+               }
+            }
+        }
+        defaultLookup = lookup;
+    }
+        
+     /**
      * Returns the default status.
      *
      * @return the default status, or <tt>null</tt> if none is defined
