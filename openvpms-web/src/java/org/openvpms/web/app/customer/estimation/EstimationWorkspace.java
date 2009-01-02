@@ -37,9 +37,12 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
     /**
      * The act statuses.
      */
-    private static final ActStatuses STATUSES
-            = new ActStatuses("act.customerEstimation");
-
+    private static final ActStatuses STATUSES;
+    static {
+        STATUSES = new ActStatuses("act.customerEstimation");
+        STATUSES.setDefault((String)null);
+    }
+    
     /**
      * Constructs a new <tt>EstimationWorkspace</tt>.
      */

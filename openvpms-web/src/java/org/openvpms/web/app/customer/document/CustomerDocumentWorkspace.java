@@ -46,10 +46,13 @@ public class CustomerDocumentWorkspace
     /**
      * The act statuses.
      */
-    private static final ActStatuses STATUSES
-            = new ActStatuses("act.customerDocumentLetter");
+    private static final ActStatuses STATUSES;
 
-
+    static {
+        STATUSES = new ActStatuses("act.customerDocumentLetter");
+        STATUSES.setDefault((String)null);
+    }
+    
     /**
      * Constructs a new <tt>CustomerDocumentWorkspace</tt>.
      */
