@@ -95,7 +95,12 @@ public class ActRelationshipCollectionPropertyEditor
     protected void removeRelationship(IMObject source,
                                       IMObject target,
                                       IMObjectRelationship relationship) {
-        ActBean bean = new ActBean((Act) source);
-        bean.removeRelationship((ActRelationship) relationship);
+        Act sourceAct = ((Act) source);
+        Act targetAct = ((Act) target);
+        ActRelationship actRel = (ActRelationship) relationship;
+        sourceAct.removeActRelationship(actRel);
+        targetAct.removeActRelationship(actRel);
     }
 }
+
+

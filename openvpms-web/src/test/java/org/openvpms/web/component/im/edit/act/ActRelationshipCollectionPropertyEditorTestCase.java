@@ -93,7 +93,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue(SaveHelper.save(parent));
                 assertTrue(editor.save());
-                return null;  //To change body of implemented methods use File | Settings | File Templates.
+                return null;
             }
         });
         assertEquals(0, parent.getVersion());
