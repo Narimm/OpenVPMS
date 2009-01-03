@@ -125,13 +125,16 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         IMObject elt1 = createObject(parent);
         IMObject elt2 = createObject(parent);
+        IMObject elt3 = createObject(parent);
 
         editor.add(elt1);
         editor.add(elt2);
+        editor.add(elt3);
 
-        assertEquals(2, editor.getObjects().size());
+        assertEquals(3, editor.getObjects().size());
         assertTrue(editor.getObjects().contains(elt1));
         assertTrue(editor.getObjects().contains(elt2));
+        assertTrue(editor.getObjects().contains(elt3));
         assertTrue(editor.isValid());
         assertTrue(editor.isModified());
 
@@ -148,12 +151,17 @@ public abstract class AbstractCollectionPropertyEditorTest
                      elt1, get(elt1));
         assertEquals("Retrieved element2 doesnt match that saved",
                      elt2, get(elt2));
+        assertEquals("Retrieved element3 doesnt match that saved",
+                     elt3, get(elt3));
 
-        // now remove elt1, save and verify that it is no longer available
+        // now remove elt1, and elt2, save and verify that they are no longer
+        // available
         editor.remove(elt1);
+        editor.remove(elt2);
         assertEquals(1, editor.getObjects().size());
         assertFalse(editor.getObjects().contains(elt1));
-        assertTrue(editor.getObjects().contains(elt2));
+        assertFalse(editor.getObjects().contains(elt2));
+        assertTrue(editor.getObjects().contains(elt3));
 
         execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
@@ -163,6 +171,7 @@ public abstract class AbstractCollectionPropertyEditorTest
             }
         });
         assertNull("element1 wasnt deleted", get(elt1));
+        assertNull("element2 wasnt deleted", get(elt2));
 
         // now retrieve parent and verify collection matches the original
         IMObject savedParent = get(parent);
@@ -170,7 +179,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         CollectionPropertyEditor saved = createEditor(
                 getCollectionProperty(savedParent), savedParent);
         assertEquals(1, saved.getObjects().size());
-        assertTrue(saved.getObjects().contains(elt2));
+        assertTrue(saved.getObjects().contains(elt3));
 
         assertFalse("Collection shouldn't be modified", saved.isModified());
         assertFalse("Collection not saved", saved.isSaved());
