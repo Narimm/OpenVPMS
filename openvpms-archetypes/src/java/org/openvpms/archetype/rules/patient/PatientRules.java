@@ -115,10 +115,33 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getOwner(Act act) {
-        Party owner = null;
         ActBean bean = new ActBean(act, service);
         Party patient = (Party) bean.getParticipant("participation.patient");
         Date startTime = act.getActivityStartTime();
+        return getOwner(patient, startTime);
+    }
+
+    /**
+     * Returns the owner of a patient.
+     *
+     * @param patient the patient
+     * @return the patient's owner, or <tt>null</tt> if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getOwner(Party patient) {
+        return getOwner(patient, new Date());
+    }
+
+    /**
+     * Returns the owner of a patient for a specified date
+     *
+     * @param patient the patient
+     * @param startTime the date to search for the ownership
+     * @return the patient's owner, or <tt>null</tt> if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getOwner(Party patient, Date startTime) {
+        Party owner = null;
         if (patient != null && startTime != null) {
             EntityBean patientBean = new EntityBean(patient, service);
             owner = (Party) patientBean.getSourceEntity(
@@ -149,18 +172,6 @@ public class PatientRules {
             }
         }
         return owner;
-    }
-
-    /**
-     * Returns the owner of a patient.
-     *
-     * @param patient the patient
-     * @return the patient's owner, or <tt>null</tt> if none can be found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Party getOwner(Party patient) {
-        EntityBean bean = new EntityBean(patient, service);
-        return (Party) bean.getNodeSourceEntity("customers", new Date());
     }
 
     /**
