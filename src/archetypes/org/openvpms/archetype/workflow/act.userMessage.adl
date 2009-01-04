@@ -38,7 +38,7 @@
 			</assertion>
 		</node>
 		<node displayName="Notes" name="description" type="java.lang.String" path="/description" />
-		<node name="status" path="/status" type="java.lang.String" minCardinality="1" >
+		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'PENDING'" >
 			<assertion name="lookup.local">
 				<propertyList name="entries">
 					<property name="PENDING" value="Pending" />
