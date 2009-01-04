@@ -51,7 +51,7 @@ from acts parent join act_relationships r on parent.act_id = r.source_id
     join entities product on product.entity_id = product_partic.entity_id and product.arch_short_name like "product.%"
     join participations patient_partic on child.act_id = patient_partic.act_id
     join entities patient on patient.entity_id = patient_partic.entity_id and patient.arch_short_name like "party.patient%"
-    join participations cust_partic on parent.act_id = cust_partic.act_id
+    join participations cust_partic on parent.act_id = cust_partic.act_id and cust_partic.arch_short_name = "participation.customer"
     join entities customer on customer.entity_id = cust_partic.entity_id and customer.arch_short_name like "party.customer%"
     join financial_acts f on f.financial_act_id = child.act_id
 where parent.activity_start_time between $P{startDate} and date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
