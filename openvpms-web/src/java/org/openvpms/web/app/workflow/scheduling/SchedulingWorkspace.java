@@ -37,7 +37,6 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
-import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
 
@@ -251,7 +250,7 @@ public abstract class SchedulingWorkspace
      * @return a new workspace split pane
      */
     protected Component createWorkspace() {
-        Component acts = GroupBoxFactory.create(browser.getComponent());
+        Component acts = browser.getComponent();
         Component window = getCRUDWindow().getComponent();
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,

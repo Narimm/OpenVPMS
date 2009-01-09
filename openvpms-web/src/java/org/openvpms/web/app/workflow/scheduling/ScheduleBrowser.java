@@ -22,6 +22,7 @@ import echopointng.TableEx;
 import echopointng.table.TableActionEventEx;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.ObjectUtils;
@@ -41,6 +42,7 @@ import org.openvpms.web.component.table.EvenOddTableCellRenderer;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -292,9 +294,12 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
         Row row = RowFactory.create("CellSpacing");
         layoutQueryRow(row);
 
-        Component component = ColumnFactory.create("WideCellSpacing", row);
+        Component column = ColumnFactory.create("WideCellSpacing", row);
+        SplitPane component = SplitPaneFactory.create(
+                SplitPane.ORIENTATION_VERTICAL,
+                "ScheduleBrowser", column);
         if (table != null) {
-            component.add(table);
+            addTable(table, component);
         }
         return component;
     }
@@ -359,7 +364,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
                     onSelected((TableActionEventEx) event);
                 }
             });
-            component.add(table);
+            addTable(table, component);
         } else {
             table.setModel(model);
             table.setColumnModel(model.getColumnModel());
@@ -391,6 +396,18 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
                 }
             }
         }
+    }
+
+    /**
+     * Adds a table to the browser component.
+     * <p/>
+     * This implementation adds it with a small inset.
+     *
+     * @param table     the table to add
+     * @param component the component
+     */
+    protected void addTable(TableEx table, Component component) {
+        component.add(ColumnFactory.create("Inset.Small", table));
     }
 
     /**
