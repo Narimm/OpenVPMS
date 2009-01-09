@@ -478,6 +478,22 @@
         </properties>
     </style>
 
+    <style name="ScheduleBrowser"
+           type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="80px"/>
+        </properties>
+    </style>
+
+    <style name="AppointmentBrowser"
+           type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="120px"/>
+        </properties>
+    </style>
+
 
     <!--  Schedule table styles. -->
 
@@ -492,8 +508,36 @@
             <property name="selectionBackground" value="#ffffff"/>
             <property name="selectionEnabled" value="true"/>
             <property name="width" value="100%"/>
+            <property name="font">
+                <font size="9pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
         </properties>
     </style>
+
+    <style name="ScheduleTable-1024x768"
+           base-name="ScheduleTable" type="nextapp.echo2.app.Table">
+        <properties>
+            <property name="font">
+                <font size="8pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="ScheduleTable-800x600"
+           base-name="ScheduleTable" type="nextapp.echo2.app.Table">
+        <properties>
+            <property name="font">
+                <font size="6pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
 
     <style name="ScheduleTable.Busy" type="nextapp.echo2.app.Component">
         <properties>

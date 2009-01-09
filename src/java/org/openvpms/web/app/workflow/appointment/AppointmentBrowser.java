@@ -23,6 +23,7 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -34,6 +35,7 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.text.DateFormat;
@@ -164,11 +166,13 @@ public class AppointmentBrowser extends ScheduleBrowser {
         Row row = RowFactory.create("CellSpacing");
         layoutQueryRow(row);
 
-        Component component = ColumnFactory.create("WideCellSpacing",
-                                                   title, row);
+        Component column = ColumnFactory.create("WideCellSpacing", title, row);
         TableEx table = getTable();
+        SplitPane component = SplitPaneFactory.create(
+                SplitPane.ORIENTATION_VERTICAL,
+                "AppointmentBrowser", column);
         if (table != null) {
-            component.add(table);
+            addTable(table, component);
         }
         return component;
     }
