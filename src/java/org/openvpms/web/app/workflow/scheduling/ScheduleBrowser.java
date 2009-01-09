@@ -381,15 +381,15 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
             // if the schedules and date haven't changed and there was no
             // previously selected object or the object hasn't changed,
             // reselect the selected cell
-            if (lastRow != -1 && lastColumn != -1) {
+            if (lastRow != -1 && lastColumn != -1
+                    && ObjectUtils.equals(lastSchedules, results.keySet())) {
                 Date selectedDate = (selectedTime != null)
                         ? DateRules.getDate(selectedTime) : null;
                 ObjectSet event = model.getEvent(lastColumn, lastRow);
                 IMObjectReference eventId = (event != null)
                         ? event.getReference(ScheduleEvent.ACT_REFERENCE)
                         : null;
-                if (ObjectUtils.equals(lastSchedules, results.keySet())
-                        && ObjectUtils.equals(selectedDate, query.getDate())
+                if (ObjectUtils.equals(selectedDate, query.getDate())
                         && (lastEventId == null
                         || ObjectUtils.equals(lastEventId, eventId))) {
                     model.setSelectedCell(lastColumn, lastRow);
