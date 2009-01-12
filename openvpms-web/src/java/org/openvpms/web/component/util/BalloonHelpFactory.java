@@ -44,6 +44,7 @@ public class BalloonHelpFactory {
         StringTemplateDataSource dataSource = new StringTemplateDataSource(xml);
         dataSource.setCachingHints(null); // no caching
         result.setPopUp(new TemplatePanel(dataSource));
+        result.setPopUpAlwaysOnTop(true);
         return result;
     }
 }
