@@ -66,7 +66,7 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
                      eval.getValue(expression));
 
         // test invalid nodes
-        assertEquals("Invalid node name: act.customer.foo",
+        assertEquals("Invalid property name: act.customer.foo",
                      eval.getValue("act.customer.foo"));
     }
 
@@ -103,7 +103,7 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
                      eval.getFormattedValue(expression));
 
         // test invalid nodes
-        assertEquals("Invalid node name: act.customer.foo",
+        assertEquals("Invalid property name: act.customer.foo",
                      eval.getValue("act.customer.foo"));
     }
 

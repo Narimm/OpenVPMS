@@ -29,7 +29,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
-import org.openvpms.component.business.service.archetype.helper.NodeResolverException;
+import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 import java.math.BigDecimal;
@@ -95,7 +95,7 @@ public abstract class AbstractExpressionEvaluator<T>
             }
         }
         catch (Exception exception) {
-        	// TODO Modified to return standard String rather than large exception error.   
+            // TODO Modified to return standard String rather than large exception error.
             return "Expression Error";
         }
     }
@@ -257,7 +257,7 @@ public abstract class AbstractExpressionEvaluator<T>
                     result = value;
                 }
             }
-        } catch (NodeResolverException exception) {
+        } catch (PropertyResolverException exception) {
             return exception.getLocalizedMessage();
         }
         return result;
