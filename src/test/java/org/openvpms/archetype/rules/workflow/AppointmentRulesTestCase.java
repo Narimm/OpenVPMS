@@ -176,7 +176,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Act appointment = createAppointment(start, end, schedule);
         save(appointment);
 
-        Act empty = createAct("act.customerAppointment");
+        Act empty = createAct(ScheduleArchetypes.APPOINTMENT);
         empty.setActivityStartTime(null);
         empty.setActivityEndTime(null);
 
@@ -294,7 +294,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Entity taskType = createTaskType();
         Party customer = TestHelper.createCustomer();
         Party workList = ScheduleTestHelper.createWorkList();
-        Act act = createAct("act.customerTask");
+        Act act = createAct(ScheduleArchetypes.TASK);
         ActBean bean = new ActBean(act);
         bean.setStatus(WorkflowStatus.PENDING);
         bean.setValue("startTime", new Date());
@@ -394,7 +394,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
 
         // for completed acts where the linked act is a task, expect the
         // endTimes to be different
-        if (TypeHelper.isA(linked, "act.customerTask")) {
+        if (TypeHelper.isA(linked, ScheduleArchetypes.TASK)) {
             if (WorkflowStatus.COMPLETED.equals(expectedStatus)) {
                 // end time should be > than before
                 assertTrue(linked.getActivityEndTime().compareTo(endTime) > 0);

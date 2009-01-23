@@ -29,11 +29,14 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.component.system.common.util.PropertySet;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -72,6 +75,16 @@ public abstract class AbstractScheduleService implements ScheduleService {
      */
     private Map<Long, Act> pending
             = Collections.synchronizedMap(new HashMap<Long, Act>());
+
+    /**
+     * Status lookup names, keyed on code.
+     */
+    private final Map<String, String> statusNames;
+
+    /**
+     * Reason lookup names, keyed on code.
+     */
+    private final Map<String, String> reasonNames;
 
 
     /**
@@ -116,30 +129,33 @@ public abstract class AbstractScheduleService implements ScheduleService {
 
         this.service = service;
         this.cache = cache;
+
+        statusNames = LookupHelper.getNames(service, eventShortName, "status");
+        reasonNames = LookupHelper.getNames(service, eventShortName, "reason");
     }
 
     /**
      * Returns all events for the specified schedule and day.
-     * Events are represented by {@link ObjectSet ObjectSets}.
+     * Events are represented by {@link PropertySet PropertySets}.
      *
      * @param schedule the schedule
      * @param day      the day
      * @return a list of events
      */
-    public List<ObjectSet> getEvents(Entity schedule, Date day) {
-        List<ObjectSet> result;
+    public List<PropertySet> getEvents(Entity schedule, Date day) {
+        List<PropertySet> result;
         day = getStart(day);
         Key key = new Key(schedule.getObjectReference(), day);
         Element element = cache.get(key);
         if (element != null) {
             synchronized (element) {
                 Value value = (Value) element.getObjectValue();
-                result = new ArrayList<ObjectSet>(value.getEvents());
+                result = copy(value);
             }
         } else {
-            List<ObjectSet> sets = query(schedule, day);
+            List<PropertySet> sets = query(schedule, day);
             Value value = new Value(sets);
-            result = new ArrayList<ObjectSet>(value.getEvents());
+            result = copy(value);
             cache.put(new Element(key, value));
         }
         return result;
@@ -151,12 +167,12 @@ public abstract class AbstractScheduleService implements ScheduleService {
      * @param schedule the schedule
      * @return a list of events
      */
-    public List<ObjectSet> getEvents(Entity schedule, Date from, Date to) {
+    public List<PropertySet> getEvents(Entity schedule, Date from, Date to) {
         Date fromDay = getStart(from);
         Date toDay = getStart(to);
-        List<ObjectSet> results = new ArrayList<ObjectSet>();
+        List<PropertySet> results = new ArrayList<PropertySet>();
         while (fromDay.compareTo(toDay) <= 0) {
-            for (ObjectSet event : getEvents(schedule, fromDay)) {
+            for (PropertySet event : getEvents(schedule, fromDay)) {
                 Date startTime = event.getDate(
                         ScheduleEvent.ACT_START_TIME);
                 Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
@@ -223,10 +239,10 @@ public abstract class AbstractScheduleService implements ScheduleService {
      *
      * @param schedule the event schedule
      * @param act      the event act reference
-     * @param set      the <tt>ObjectSet</tt> representation of the event
+     * @param set      the <tt>PropertySet</tt> representation of the event
      */
     protected void addEvent(IMObjectReference schedule, IMObjectReference act,
-                            ObjectSet set) {
+                            PropertySet set) {
         Date date = set.getDate(ScheduleEvent.ACT_START_TIME);
         addEvent(schedule, act, date, set);
     }
@@ -237,10 +253,10 @@ public abstract class AbstractScheduleService implements ScheduleService {
      * @param schedule the event schedule
      * @param act      the event act reference
      * @param date     the date
-     * @param set      the <tt>ObjectSet</tt> representation of the event
+     * @param set      the <tt>PropertySet</tt> representation of the event
      */
     protected void addEvent(IMObjectReference schedule, IMObjectReference act,
-                            Date date, ObjectSet set) {
+                            Date date, PropertySet set) {
         if (schedule != null && act != null && date != null) {
             Element element = getElement(schedule, date);
             if (element != null) {
@@ -285,9 +301,10 @@ public abstract class AbstractScheduleService implements ScheduleService {
      *
      * @param element the cache element
      * @param act     the act reference
-     * @param set     the object set representing the act
+     * @param set     the set representing the act
      */
-    protected void add(Element element, IMObjectReference act, ObjectSet set) {
+    protected void add(Element element, IMObjectReference act,
+                       PropertySet set) {
         synchronized (element) {
             Value value = (Value) element.getObjectValue();
             value.put(act, set);
@@ -333,18 +350,22 @@ public abstract class AbstractScheduleService implements ScheduleService {
     }
 
     /**
-     * Assembles an {@link ObjectSet ObjectSet} from a source act.
+     * Assembles an {@link PropertySet PropertySet} from a source act.
      *
      * @param target the target set
      * @param source the source act
      */
-    protected void assemble(ObjectSet target, ActBean source) {
+    protected void assemble(PropertySet target, ActBean source) {
         Act event = source.getAct();
+        String status = event.getStatus();
+        String reason = event.getReason();
         target.set(ScheduleEvent.ACT_REFERENCE, event.getObjectReference());
         target.set(ScheduleEvent.ACT_START_TIME, event.getActivityStartTime());
         target.set(ScheduleEvent.ACT_END_TIME, event.getActivityEndTime());
-        target.set(ScheduleEvent.ACT_STATUS, event.getStatus());
+        target.set(ScheduleEvent.ACT_STATUS, status);
+        target.set(ScheduleEvent.ACT_STATUS_NAME, statusNames.get(status));
         target.set(ScheduleEvent.ACT_REASON, event.getReason());
+        target.set(ScheduleEvent.ACT_REASON_NAME, reasonNames.get(reason));
         target.set(ScheduleEvent.ACT_DESCRIPTION, event.getDescription());
 
         IMObjectReference customerRef
@@ -466,10 +487,25 @@ public abstract class AbstractScheduleService implements ScheduleService {
      * @param start    the start date
      * @return all events for the date
      */
-    private List<ObjectSet> query(Entity schedule, Date start) {
+    private List<PropertySet> query(Entity schedule, Date start) {
         Date end = getEnd(start);
         ScheduleEventQuery query = createQuery(schedule, start, end);
-        return query.query().getResults();
+        IPage<ObjectSet> page = query.query();
+        return new ArrayList<PropertySet>(page.getResults());
+    }
+
+    /**
+     * Returns a shallow copy of the events.
+     *
+     * @param value the cache value
+     * @return a shallow copy of the cached events
+     */
+    private List<PropertySet> copy(Value value) {
+        List<PropertySet> result = new ArrayList<PropertySet>();
+        for (PropertySet set : value.getEvents()) {
+            result.add(new ObjectSet(set));
+        }
+        return result;
     }
 
     /**
@@ -547,21 +583,21 @@ public abstract class AbstractScheduleService implements ScheduleService {
      */
     private static class Value implements Serializable {
 
-        private final Map<IMObjectReference, ObjectSet> map;
+        private final Map<IMObjectReference, PropertySet> map;
 
-        private List<ObjectSet> sorted;
+        private List<PropertySet> sorted;
 
         private static final SetComparator COMPARATOR = new SetComparator();
 
-        public Value(List<ObjectSet> events) {
-            map = new HashMap<IMObjectReference, ObjectSet>();
-            for (ObjectSet set : events) {
+        public Value(List<PropertySet> events) {
+            map = new HashMap<IMObjectReference, PropertySet>();
+            for (PropertySet set : events) {
                 map.put(set.getReference(ScheduleEvent.ACT_REFERENCE), set);
             }
             sort();
         }
 
-        public void put(IMObjectReference act, ObjectSet set) {
+        public void put(IMObjectReference act, PropertySet set) {
             map.put(act, set);
             sort();
         }
@@ -574,18 +610,18 @@ public abstract class AbstractScheduleService implements ScheduleService {
             return result;
         }
 
-        public Collection<ObjectSet> getEvents() {
+        public Collection<PropertySet> getEvents() {
             return sorted;
         }
 
         private void sort() {
-            sorted = new ArrayList<ObjectSet>(map.values());
+            sorted = new ArrayList<PropertySet>(map.values());
             Collections.sort(sorted, COMPARATOR);
         }
 
     }
 
-    private static class SetComparator implements Comparator<ObjectSet> {
+    private static class SetComparator implements Comparator<PropertySet> {
 
         /**
          * Compares its two arguments for order.  Returns a negative integer,
@@ -601,7 +637,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
          * @throws ClassCastException if the arguments' types prevent them from
          *                            being compared by this Comparator.
          */
-        public int compare(ObjectSet o1, ObjectSet o2) {
+        public int compare(PropertySet o1, PropertySet o2) {
             Date startTime1 = o1.getDate(ScheduleEvent.ACT_START_TIME);
             Date startTime2 = o2.getDate(ScheduleEvent.ACT_START_TIME);
             int result = DateRules.compareTo(startTime1, startTime2);

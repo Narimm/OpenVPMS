@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -37,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -68,6 +70,16 @@ abstract class ScheduleEventQuery {
      */
     private Date to;
 
+    /**
+     * Status lookup names, keyed on code.
+     */
+    private final Map<String, String> statusNames;
+
+    /**
+     * Reason lookup names, keyed on code.
+     */
+    private final Map<String, String> reasonNames;
+
 
     /**
      * Creates a new <tt>ScheduleEventQuery</tt>.
@@ -76,8 +88,10 @@ abstract class ScheduleEventQuery {
      * @param from     the 'from' start time
      * @param to       the 'to' start time
      */
-    public ScheduleEventQuery(Entity schedule, Date from, Date to) {
-        this(schedule, from, to, ArchetypeServiceHelper.getArchetypeService());
+    public ScheduleEventQuery(Entity schedule, Date from, Date to,
+                              String eventShortName) {
+        this(schedule, from, to, eventShortName,
+             ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
@@ -89,11 +103,14 @@ abstract class ScheduleEventQuery {
      * @param service  the archetype service
      */
     public ScheduleEventQuery(Entity schedule, Date from, Date to,
+                              String eventShortName,
                               IArchetypeService service) {
         this.schedule = schedule;
         this.from = from;
         this.to = to;
         this.service = service;
+        statusNames = LookupHelper.getNames(service, eventShortName, "status");
+        reasonNames = LookupHelper.getNames(service, eventShortName, "reason");
     }
 
     /**
@@ -194,15 +211,18 @@ abstract class ScheduleEventQuery {
      */
     protected ObjectSet createEvent(IMObjectReference actRef, ObjectSet set) {
         ObjectSet result = new ObjectSet();
+        String status = set.getString(ScheduleEvent.ACT_STATUS);
+        String reason = set.getString(ScheduleEvent.ACT_REASON);
+
         result.set(ScheduleEvent.ACT_REFERENCE, actRef);
         result.set(ScheduleEvent.ACT_START_TIME,
                    set.get(ScheduleEvent.ACT_START_TIME));
         result.set(ScheduleEvent.ACT_END_TIME,
                    set.get(ScheduleEvent.ACT_END_TIME));
-        result.set(ScheduleEvent.ACT_STATUS,
-                   set.get(ScheduleEvent.ACT_STATUS));
-        result.set(ScheduleEvent.ACT_REASON,
-                   set.get(ScheduleEvent.ACT_REASON));
+        result.set(ScheduleEvent.ACT_STATUS, status);
+        result.set(ScheduleEvent.ACT_STATUS_NAME, statusNames.get(status));
+        result.set(ScheduleEvent.ACT_REASON, reason);
+        result.set(ScheduleEvent.ACT_REASON_NAME, reasonNames.get(reason));
         result.set(ScheduleEvent.ACT_DESCRIPTION,
                    set.get(ScheduleEvent.ACT_DESCRIPTION));
         result.set(ScheduleEvent.CUSTOMER_REFERENCE, null);

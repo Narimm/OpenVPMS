@@ -43,7 +43,7 @@ class AppointmentQuery extends ScheduleEventQuery {
      * @param to       the 'to' start time
      */
     public AppointmentQuery(Party schedule, Date from, Date to) {
-        super(schedule, from, to);
+        super(schedule, from, to, ScheduleArchetypes.APPOINTMENT);
     }
 
     /**
@@ -56,7 +56,7 @@ class AppointmentQuery extends ScheduleEventQuery {
      */
     public AppointmentQuery(Party schedule, Date from, Date to,
                             IArchetypeService service) {
-        super(schedule, from, to, service);
+        super(schedule, from, to, ScheduleArchetypes.APPOINTMENT, service);
     }
 
     /**

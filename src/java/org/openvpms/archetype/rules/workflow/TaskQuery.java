@@ -41,7 +41,7 @@ class TaskQuery extends ScheduleEventQuery {
      * @param to       the 'to' start time
      */
     public TaskQuery(Party workList, Date from, Date to) {
-        super(workList, from, to);
+        super(workList, from, to, ScheduleArchetypes.TASK);
     }
 
     /**
@@ -54,7 +54,7 @@ class TaskQuery extends ScheduleEventQuery {
      */
     public TaskQuery(Party workList, Date from, Date to,
                      IArchetypeService service) {
-        super(workList, from, to, service);
+        super(workList, from, to, ScheduleArchetypes.TASK, service);
     }
 
     /**

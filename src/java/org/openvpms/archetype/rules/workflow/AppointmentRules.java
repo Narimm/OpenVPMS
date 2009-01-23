@@ -41,8 +41,8 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -169,14 +169,14 @@ public class AppointmentRules {
         Date endTime = appointment.getActivityEndTime();
 
         if (startTime != null && endTime != null && schedule != null) {
-            List<ObjectSet> appointments = appointmentService.getEvents(
+            List<PropertySet> appointments = appointmentService.getEvents(
                     schedule, startTime, endTime);
             if (!appointments.isEmpty()) {
                 if (appointment.isNew()) {
                     return true;
                 } else {
                     IMObjectReference actRef = appointment.getObjectReference();
-                    for (ObjectSet set : appointments) {
+                    for (PropertySet set : appointments) {
                         IMObjectReference ref
                                 = set.getReference(ScheduleEvent.ACT_REFERENCE);
                         if (!ObjectUtils.equals(ref, actRef)) {
@@ -304,7 +304,7 @@ public class AppointmentRules {
                 || WorkflowStatus.CANCELLED.equals(status)) {
             if (!status.equals(linked.getStatus())) {
                 linked.setStatus(status);
-                if (TypeHelper.isA(linked, "act.customerTask")
+                if (TypeHelper.isA(linked, ScheduleArchetypes.TASK)
                         && WorkflowStatus.COMPLETED.equals(status)) {
                     // update the task's end time to now
                     linked.setActivityEndTime(new Date());

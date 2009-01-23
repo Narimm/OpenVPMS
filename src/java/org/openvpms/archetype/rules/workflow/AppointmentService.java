@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
 
@@ -45,17 +45,17 @@ public class AppointmentService extends AbstractScheduleService {
      * @param cache   the cache
      */
     public AppointmentService(IArchetypeService service, Cache cache) {
-        super("act.customerAppointment", service, cache);
+        super(ScheduleArchetypes.APPOINTMENT, service, cache);
     }
 
     /**
-     * Assembles an {@link ObjectSet ObjectSet} from a source act.
+     * Assembles an {@link PropertySet PropertySet} from a source act.
      *
      * @param target the target set
      * @param source the source act
      */
     @Override
-    protected void assemble(ObjectSet target, ActBean source) {
+    protected void assemble(PropertySet target, ActBean source) {
         super.assemble(target, source);
 
         IMObjectReference scheduleRef

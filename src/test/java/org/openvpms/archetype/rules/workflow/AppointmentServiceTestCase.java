@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
 import java.util.List;
@@ -63,7 +63,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         // retrieve the appointments for date1 and date2 and verify they are
         // empty.
         // This caches the appointments for each date.
-        List<ObjectSet> results = service.getEvents(schedule, date1);
+        List<PropertySet> results = service.getEvents(schedule, date1);
         assertEquals(0, results.size());
 
         results = service.getEvents(schedule, date2);
@@ -74,7 +74,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
 
         results = service.getEvents(schedule, date1);
         assertEquals(1, results.size());
-        ObjectSet set = results.get(0);
+        PropertySet set = results.get(0);
         checkAppointment(appointment, set);
 
         results = service.getEvents(schedule, date2);
@@ -92,10 +92,10 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         Date date2 = java.sql.Date.valueOf("2008-1-2");
         Date date3 = java.sql.Date.valueOf("2008-1-3");
 
-       // retrieve the appointments for date1 and date2 and verify they are
+        // retrieve the appointments for date1 and date2 and verify they are
         // empty.
         // This caches the appointments for each date.
-        List<ObjectSet> results = service.getEvents(schedule, date1);
+        List<PropertySet> results = service.getEvents(schedule, date1);
         assertEquals(0, results.size());
 
         results = service.getEvents(schedule, date2);
@@ -146,10 +146,10 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
 
         ScheduleService service = (ScheduleService) applicationContext.getBean(
                 "appointmentService");
-        List<ObjectSet> results = service.getEvents(schedule, date);
+        List<PropertySet> results = service.getEvents(schedule, date);
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
-            ObjectSet set = results.get(i);
+            PropertySet set = results.get(i);
             checkAppointment(appointments[i], set);
         }
     }
@@ -201,7 +201,6 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     }
 
 
-
     /**
      * Sets up the test case.
      *
@@ -216,13 +215,13 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that an appointment matches the {@link ObjectSet} representing
+     * Verifies that an appointment matches the {@link PropertySet} representing
      * it.
      *
      * @param act the appointment
      * @param set the set
      */
-    private void checkAppointment(Act act, ObjectSet set) {
+    private void checkAppointment(Act act, PropertySet set) {
         ActBean bean = new ActBean(act);
         assertEquals(act.getObjectReference(),
                      set.get(ScheduleEvent.ACT_REFERENCE));
@@ -231,7 +230,11 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         assertEquals(act.getActivityEndTime(),
                      set.get(ScheduleEvent.ACT_END_TIME));
         assertEquals(act.getStatus(), set.get(ScheduleEvent.ACT_STATUS));
+        assertEquals(TestHelper.getLookupName(act, "status"),
+                     set.get(ScheduleEvent.ACT_STATUS_NAME));
         assertEquals(act.getReason(), set.get(ScheduleEvent.ACT_REASON));
+        assertEquals(TestHelper.getLookupName(act, "reason"),
+                     set.get(ScheduleEvent.ACT_REASON_NAME));
         assertEquals(act.getDescription(),
                      set.get(ScheduleEvent.ACT_DESCRIPTION));
         assertEquals(bean.getNodeParticipantRef("customer"),
@@ -295,6 +298,5 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         save(appointment);
         return appointment;
     }
-
 
 }

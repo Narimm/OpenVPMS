@@ -176,7 +176,7 @@ public class ScheduleTestHelper extends TestHelper {
     public static Act createAppointment(Date startTime, Date endTime,
                                         Party schedule, Party customer,
                                         Party patient, User clinician) {
-        Act act = (Act) create("act.customerAppointment");
+        Act act = (Act) create(ScheduleArchetypes.APPOINTMENT);
         Lookup reason = createLookup("lookup.appointmentReason", "XReason");
 
         ActBean bean = new ActBean(act);
@@ -286,7 +286,7 @@ public class ScheduleTestHelper extends TestHelper {
     public static Act createTask(Date startTime, Date endTime,
                                  Party schedule, Party customer,
                                  Party patient, User clinician) {
-        Act act = (Act) create("act.customerTask");
+        Act act = (Act) create(ScheduleArchetypes.TASK);
 
         ActBean bean = new ActBean(act);
         bean.setValue("startTime", startTime);
