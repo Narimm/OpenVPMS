@@ -18,20 +18,14 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
-import echopointng.BalloonHelp;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
-import org.openvpms.web.component.util.BalloonHelpFactory;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -49,7 +43,7 @@ public class TaskTableModel extends ScheduleTableModel {
      * Creates a new <tt>TaskTableModel</tt>.
      */
     public TaskTableModel(TaskGrid grid) {
-        super(grid, "act.customerTask");
+        super(grid);
     }
 
     /**
@@ -61,7 +55,7 @@ public class TaskTableModel extends ScheduleTableModel {
      */
     protected Object getValueAt(Column column, int row) {
         Object result = null;
-        ObjectSet set = getEvent(column, row);
+        PropertySet set = getEvent(column, row);
         if (set != null) {
             result = getEvent(set);
         }
@@ -74,30 +68,23 @@ public class TaskTableModel extends ScheduleTableModel {
      * @param event the event
      * @return a new component
      */
-    private Component getEvent(ObjectSet event) {
-        Component result;
-        String text;
-        String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
-        String patient = event.getString(ScheduleEvent.PATIENT_NAME);
+    private Component getEvent(PropertySet event) {
+        String text = evaluate(event);
+        if (text == null) {
+            String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
+            String patient = event.getString(ScheduleEvent.PATIENT_NAME);
+            String status = event.getString(ScheduleEvent.ACT_STATUS_NAME);
+            if (patient == null) {
+                text = Messages.get("workflow.scheduling.task.table.customer",
+                                    customer, status);
+            } else {
+                text = Messages.get(
+                        "workflow.scheduling.task.table.customerpatient",
+                        customer, patient, status);
+            }
+        }
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        String status = getStatus(event.getString(ScheduleEvent.ACT_STATUS));
-        if (patient == null) {
-            text = Messages.get("workflow.scheduling.task.table.customer",
-                                customer, status);
-        } else {
-            text = Messages.get(
-                    "workflow.scheduling.task.table.customerpatient",
-                    customer, patient, status);
-        }
-        Label label = LabelFactory.create(true);
-        label.setText(text);
-        if (notes != null) {
-            BalloonHelp help = BalloonHelpFactory.create(notes);
-            result = RowFactory.create("CellSpacing", label, help);
-        } else {
-            result = ColumnFactory.create(label);
-        }
-        return result;
+        return createLabelWithNotes(text, notes);
     }
 
     /**

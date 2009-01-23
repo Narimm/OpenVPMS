@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
@@ -213,7 +213,7 @@ public abstract class SchedulingWorkspace
      *
      * @param event the event. May be <tt>null</tt>
      */
-    protected void eventSelected(ObjectSet event) {
+    protected void eventSelected(PropertySet event) {
         Act act = getAct(event);
         window.setObject(act);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
@@ -224,7 +224,7 @@ public abstract class SchedulingWorkspace
      *
      * @param event the event
      */
-    protected void onEdit(ObjectSet event) {
+    protected void onEdit(PropertySet event) {
         Act act = getAct(event);
         window.setObject(act);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
@@ -269,11 +269,11 @@ public abstract class SchedulingWorkspace
                 onQuery();
             }
 
-            public void selected(ObjectSet object) {
+            public void selected(PropertySet object) {
                 eventSelected(object);
             }
 
-            public void edit(ObjectSet set) {
+            public void edit(PropertySet set) {
                 onEdit(set);
             }
 
@@ -411,7 +411,7 @@ public abstract class SchedulingWorkspace
      * @param event the event. May be <tt>null</tt>
      * @return the associated act, or <tt>null</tt> if <tt>event</tt> is null
      */
-    private Act getAct(ObjectSet event) {
+    private Act getAct(PropertySet event) {
         if (event != null) {
             IMObjectReference actRef = event.getReference(
                     ScheduleEvent.ACT_REFERENCE);

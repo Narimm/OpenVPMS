@@ -29,7 +29,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleQuery;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
@@ -205,14 +205,14 @@ public class TaskQuery extends ScheduleQuery {
      * @return the events
      */
     @Override
-    protected List<ObjectSet> getEvents(Entity schedule, Date date) {
-        List<ObjectSet> events = super.getEvents(schedule, date);
-        List<ObjectSet> result;
+    protected List<PropertySet> getEvents(Entity schedule, Date date) {
+        List<PropertySet> events = super.getEvents(schedule, date);
+        List<PropertySet> result;
         StatusRange range = getStatusRange();
         if (!events.isEmpty() && range != StatusRange.ALL) {
             boolean complete = range == StatusRange.COMPLETE;
-            result = new ArrayList<ObjectSet>();
-            for (ObjectSet event : events) {
+            result = new ArrayList<PropertySet>();
+            for (PropertySet event : events) {
                 String status = event.getString(ScheduleEvent.ACT_STATUS);
                 if (complete) {
                     if (TaskStatus.isComplete(status)) {

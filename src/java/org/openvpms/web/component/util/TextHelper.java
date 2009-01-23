@@ -18,6 +18,10 @@
 
 package org.openvpms.web.component.util;
 
+import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -71,5 +75,27 @@ public class TextHelper {
             str = REPLACE.matcher(str).replaceAll(with);
         }
         return str;
+    }
+
+    /**
+     * Uncamel cases the specified text.
+     *
+     * @param text the camel cased text
+     * @return the uncamel-cased version of the text
+     */
+    public static String unCamelCase(String text) {
+        ArrayList<String> words = new ArrayList<String>();
+
+        Pattern pattern = Pattern.compile("/(\\w+?)([A-Z].*)/");
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.matches()) {
+            String word = matcher.group(1);
+            text = matcher.group(2);
+            words.add(StringUtils.capitalize(word));
+        }
+
+        words.add(StringUtils.capitalize(text));
+
+        return StringUtils.join(words.iterator(), " ");
     }
 }

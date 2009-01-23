@@ -31,7 +31,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleTableModel.Highlight;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
@@ -197,7 +197,7 @@ public abstract class ScheduleQuery {
      *
      * @return the query result set. May be <tt>null</tt>
      */
-    public Map<Entity, List<ObjectSet>> query() {
+    public Map<Entity, List<PropertySet>> query() {
         getComponent();
         return getEvents();
     }
@@ -287,7 +287,7 @@ public abstract class ScheduleQuery {
      * @param date     the date
      * @return the events
      */
-    protected List<ObjectSet> getEvents(Entity schedule, Date date) {
+    protected List<PropertySet> getEvents(Entity schedule, Date date) {
         return service.getEvents(schedule, date);
     }
 
@@ -376,10 +376,10 @@ public abstract class ScheduleQuery {
      *
      * @return the events
      */
-    private Map<Entity, List<ObjectSet>> getEvents() {
+    private Map<Entity, List<PropertySet>> getEvents() {
         Date date = getDate();
-        Map<Entity, List<ObjectSet>> result
-                = new LinkedHashMap<Entity, List<ObjectSet>>();
+        Map<Entity, List<PropertySet>> result
+                = new LinkedHashMap<Entity, List<PropertySet>>();
         Entity selected = (Entity) scheduleField.getSelectedItem();
         List<Entity> schedules;
         if (selected != null) {
@@ -388,7 +388,7 @@ public abstract class ScheduleQuery {
             schedules = getSchedules();
         }
         for (Entity schedule : schedules) {
-            List<ObjectSet> events = getEvents(schedule, date);
+            List<PropertySet> events = getEvents(schedule, date);
             result.put(schedule, events);
         }
         return result;

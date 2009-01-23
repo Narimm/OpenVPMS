@@ -21,7 +21,7 @@ package org.openvpms.web.app.workflow.worklist;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 
@@ -45,6 +45,11 @@ public class TaskGrid implements ScheduleEventGrid {
     private Date date;
 
     /**
+     * The schedule view.
+     */
+    private final Entity scheduleView;
+
+    /**
      * The schedules.
      */
     private List<Schedule> schedules;
@@ -64,16 +69,18 @@ public class TaskGrid implements ScheduleEventGrid {
      * @param date  the date
      * @param tasks the tasks
      */
-    public TaskGrid(Date date, Map<Entity, List<ObjectSet>> tasks) {
+    public TaskGrid(Entity scheduleView, Date date,
+                    Map<Entity, List<PropertySet>> tasks) {
         setDate(date);
+        this.scheduleView = scheduleView;
         this.date = DateRules.getDate(date);
 
         schedules = new ArrayList<Schedule>();
-        for (Map.Entry<Entity, List<ObjectSet>> entry : tasks.entrySet()) {
+        for (Map.Entry<Entity, List<PropertySet>> entry : tasks.entrySet()) {
             Entity workList = entry.getKey();
-            List<ObjectSet> sets = entry.getValue();
+            List<PropertySet> sets = entry.getValue();
             TaskSchedule schedule = new TaskSchedule(workList);
-            for (ObjectSet set : sets) {
+            for (PropertySet set : sets) {
                 schedule.addEvent(set);
             }
             schedules.add(schedule);
@@ -84,6 +91,15 @@ public class TaskGrid implements ScheduleEventGrid {
                 slots = events;
             }
         }
+    }
+
+    /**
+     * Returns the schedule view associated with this grid.
+     *
+     * @return the schedule view
+     */
+    public Entity getScheduleView() {
+        return scheduleView;
     }
 
     /**
@@ -135,8 +151,8 @@ public class TaskGrid implements ScheduleEventGrid {
      * @param slot     the slot
      * @return the corresponding event, or <tt>null</tt> if none is found
      */
-    public ObjectSet getEvent(Schedule schedule, int slot) {
-        List<ObjectSet> events = schedule.getEvents();
+    public PropertySet getEvent(Schedule schedule, int slot) {
+        List<PropertySet> events = schedule.getEvents();
         return (events.size() > slot) ? events.get(slot) : null;
     }
 
@@ -148,7 +164,7 @@ public class TaskGrid implements ScheduleEventGrid {
      * @return the start time of the specified slot. May be <tt>null</tt>
      */
     public Date getStartTime(Schedule schedule, int slot) {
-        ObjectSet event = getEvent(schedule, slot);
+        PropertySet event = getEvent(schedule, slot);
         return (event != null)
                 ? event.getDate(ScheduleEvent.ACT_START_TIME) : null;
     }

@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
@@ -68,7 +68,7 @@ public class TaskBrowser extends ScheduleBrowser {
      */
     public boolean setSelected(Act task) {
         ActBean bean = new ActBean(task);
-        ObjectSet selected = null;
+        PropertySet selected = null;
         IMObjectReference worklist = bean.getNodeParticipantRef("worklist");
         if (worklist != null) {
             IMObjectReference taskRef = task.getObjectReference();
@@ -79,9 +79,9 @@ public class TaskBrowser extends ScheduleBrowser {
                 IMObjectReference scheduleRef
                         = schedule.getSchedule().getObjectReference();
                 if (scheduleRef.equals(worklist)) {
-                    List<ObjectSet> events = schedule.getEvents();
+                    List<PropertySet> events = schedule.getEvents();
                     for (int j = 0; j < events.size(); ++j) {
-                        ObjectSet event = events.get(j);
+                        PropertySet event = events.get(j);
                         IMObjectReference ref = event.getReference(
                                 ScheduleEvent.ACT_REFERENCE);
                         if (ObjectUtils.equals(taskRef, ref)) {
@@ -106,8 +106,8 @@ public class TaskBrowser extends ScheduleBrowser {
      * @param events the events
      */
     protected ScheduleEventGrid createEventGrid(
-            Date date, Map<Entity, List<ObjectSet>> events) {
-        return new TaskGrid(date, events);
+            Date date, Map<Entity, List<PropertySet>> events) {
+        return new TaskGrid(getScheduleView(), date, events);
     }
 
     /**

@@ -18,26 +18,31 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import echopointng.BalloonHelp;
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.table.TableColumnEx;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.web.component.im.util.LookupNameHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.util.BalloonHelpFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -79,30 +84,31 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     private int selectedRow = -1;
 
     /**
-     * Cached status lookup names.
-     */
-    private Map<String, String> statuses;
-
-    /**
      * Determines cell colour.
      */
     private Highlight highlight = Highlight.EVENT;
 
     /**
-     * The event act archetype short name.
+     * The display expression, from the schedule view. May be <tt>null</tt>
      */
-    private String eventShortName;
+    private final String expression;
+
+    /**
+     * Determines if the notes popup should be displayed.
+     */
+    private final boolean displayNotes;
 
 
     /**
      * Creates a new <tt>ScheduleTableModel</tt>.
      *
-     * @param grid           the schedule event grid
-     * @param eventShortName the event act archetype short name
+     * @param grid the schedule event grid
      */
-    public ScheduleTableModel(ScheduleEventGrid grid, String eventShortName) {
+    public ScheduleTableModel(ScheduleEventGrid grid) {
         this.grid = grid;
-        this.eventShortName = eventShortName;
+        IMObjectBean bean = new IMObjectBean(grid.getScheduleView());
+        expression = bean.getString("displayExpression");
+        displayNotes = bean.getBoolean("displayNotes");
         model = createColumnModel(grid);
     }
 
@@ -267,7 +273,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @param row    the row
      * @return the event, or <tt>null</tt> if none is found
      */
-    public ObjectSet getEvent(int column, int row) {
+    public PropertySet getEvent(int column, int row) {
         return getEvent(getColumn(column), row);
     }
 
@@ -349,23 +355,9 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @param row    the row
      * @return the event, or <tt>null</tt> if none is found
      */
-    protected ObjectSet getEvent(Column column, int row) {
+    protected PropertySet getEvent(Column column, int row) {
         Schedule schedule = column.getSchedule();
         return (schedule != null) ? grid.getEvent(schedule, row) : null;
-    }
-
-    /**
-     * Returns a status name given its code.
-     *
-     * @param code the status code
-     * @return the status name
-     */
-    protected String getStatus(String code) {
-        if (statuses == null) {
-            statuses = LookupNameHelper.getLookupNames(eventShortName,
-                                                       "status");
-        }
-        return statuses.get(code);
     }
 
     /**
@@ -380,14 +372,14 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Returns a viewer for an object reference.
      *
-     * @param set     the object set
+     * @param set     the set
      * @param refKey  the object reference key
      * @param nameKey the entity name key
      * @param link    if <tt>true</tt> enable an hyperlink to the object
      * @return a new component to view the object reference
      */
-    protected Component getViewer(ObjectSet set, String refKey, String nameKey,
-                                  boolean link) {
+    protected Component getViewer(PropertySet set, String refKey,
+                                  String nameKey, boolean link) {
         IMObjectReference ref = set.getReference(refKey);
         String name = set.getString(nameKey);
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
@@ -445,6 +437,49 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
                                     String name) {
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
         return (descriptor != null) ? descriptor.getDisplayName() : null;
+    }
+
+    /**
+     * Evaluates the view's displayExpression expression against the supplied
+     * event. If no displayExpression is present, <tt>null</tt> is returned.
+     * <p/>
+     * If the event has an {@link ScheduleEvent.ARRIVAL_TIME} property,
+     * a formatted string named <em>waiting</em> will be added to the set prior
+     * to evaluation of the expression. This indicates the waiting time, and
+     * is the difference between the arrival time and the current time.
+     *
+     * @param event the event
+     * @return the evaluate result. May be <tt>null</tt>
+     */
+    protected String evaluate(PropertySet event) {
+        if (expression != null) {
+            return SchedulingHelper.evaluate(expression, event);
+        }
+        return null;
+    }
+
+    /**
+     * Helper to create a multiline label with optional notes popup,
+     * if the supplied notes are non-null and <tt>displayNotes</tt> is
+     * <tt>true</tt>.
+     *
+     * @param text  the label text
+     * @param notes the notes. May be <tt>null</tt>
+     * @return a component representing the label with optional popup
+     */
+    protected Component createLabelWithNotes(String text, String notes) {
+        Label label = LabelFactory.create(true);
+        Component result;
+        if (text != null) {
+            label.setText(text);
+        }
+        if (displayNotes && notes != null) {
+            BalloonHelp help = BalloonHelpFactory.create(notes);
+            result = RowFactory.create("CellSpacing", label, help);
+        } else {
+            result = label;
+        }
+        return result;
     }
 
     /**

@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,7 +59,7 @@ public class Schedule {
     /**
      * The events.
      */
-    private List<ObjectSet> events = new ArrayList<ObjectSet>();
+    private List<PropertySet> events = new ArrayList<PropertySet>();
 
 
     /**
@@ -146,7 +147,7 @@ public class Schedule {
      *
      * @param set an object set representing the event
      */
-    public void addEvent(ObjectSet set) {
+    public void addEvent(PropertySet set) {
         events.add(set);
     }
 
@@ -155,7 +156,7 @@ public class Schedule {
      *
      * @return the events
      */
-    public List<ObjectSet> getEvents() {
+    public List<PropertySet> getEvents() {
         return events;
     }
 
@@ -166,7 +167,7 @@ public class Schedule {
      * @param event the event
      * @return <tt>true</tt> if the schedule has an intersecting event
      */
-    public boolean hasEvent(ObjectSet event) {
+    public boolean hasEvent(PropertySet event) {
         return Collections.binarySearch(events, event,
                                         IntersectComparator.INSTANCE) >= 0;
     }
@@ -178,8 +179,8 @@ public class Schedule {
      * @param slotSize the slot size
      * @return the corresponding event, or <tt>null</tt> if none is found
      */
-    public ObjectSet getEvent(Date time, int slotSize) {
-        ObjectSet set = new ObjectSet();
+    public PropertySet getEvent(Date time, int slotSize) {
+        PropertySet set = new ObjectSet();
         set.set(ScheduleEvent.ACT_START_TIME, time);
         set.set(ScheduleEvent.ACT_END_TIME, time);
         int index = Collections.binarySearch(events, set,
@@ -193,8 +194,8 @@ public class Schedule {
      * @param time the time
      * @return the corresponding event, or <tt>null</tt> if none is found
      */
-    public ObjectSet getIntersectingEvent(Date time) {
-        ObjectSet set = new ObjectSet();
+    public PropertySet getIntersectingEvent(Date time) {
+        PropertySet set = new ObjectSet();
         set.set(ScheduleEvent.ACT_START_TIME, time);
         set.set(ScheduleEvent.ACT_END_TIME, time);
         int index = Collections.binarySearch(events, set,
@@ -205,7 +206,7 @@ public class Schedule {
     /**
      * Comparator used to locate events starting at particular time.
      */
-    private class StartTimeComparator implements Comparator<ObjectSet> {
+    private class StartTimeComparator implements Comparator<PropertySet> {
 
         private final int slotSize;
 
@@ -226,7 +227,7 @@ public class Schedule {
          * @throws ClassCastException if the arguments' types prevent them from
          *                            being compared by this Comparator.
          */
-        public int compare(ObjectSet o1, ObjectSet o2) {
+        public int compare(PropertySet o1, PropertySet o2) {
             int start1 = SchedulingHelper.getSlotMinutes(
                     o1.getDate(ScheduleEvent.ACT_START_TIME), slotSize, false);
             int start2 = SchedulingHelper.getSlotMinutes(
@@ -238,7 +239,8 @@ public class Schedule {
     /**
      * Comparator used to locate intersecting events.
      */
-    private static class IntersectComparator implements Comparator<ObjectSet> {
+    private static class IntersectComparator
+            implements Comparator<PropertySet> {
 
         public static IntersectComparator INSTANCE = new IntersectComparator();
 
@@ -255,7 +257,7 @@ public class Schedule {
          * @throws ClassCastException if the arguments' types prevent them from
          *                            being compared by this Comparator.
          */
-        public int compare(ObjectSet o1, ObjectSet o2) {
+        public int compare(PropertySet o1, PropertySet o2) {
             Date start1 = o1.getDate(ScheduleEvent.ACT_START_TIME);
             Date end1 = o1.getDate(ScheduleEvent.ACT_END_TIME);
             Date start2 = o2.getDate(ScheduleEvent.ACT_START_TIME);

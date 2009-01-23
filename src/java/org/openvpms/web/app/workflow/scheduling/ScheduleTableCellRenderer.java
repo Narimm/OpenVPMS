@@ -33,7 +33,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.FREE;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
@@ -205,7 +205,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         }
 
         if (component != null) {
-            ObjectSet event = model.getEvent(column, row);
+            PropertySet event = model.getEvent(column, row);
             if (event != null) {
                 TableLayoutData layout = getEventLayoutData(event, model);
                 if (layout != null) {
@@ -333,7 +333,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return layout data for the event, or <tt>null</tt> if no style
      *         information exists
      */
-    protected TableLayoutDataEx getEventLayoutData(ObjectSet event,
+    protected TableLayoutDataEx getEventLayoutData(PropertySet event,
                                                    ScheduleTableModel model) {
         TableLayoutDataEx result = null;
         if (!isSelectedClinician(event, model)) {
@@ -361,7 +361,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param event the event
      * @return the style
      */
-    private String getStatusStyle(ObjectSet event) {
+    private String getStatusStyle(PropertySet event) {
         return "ScheduleTable." + event.getString(ScheduleEvent.ACT_STATUS);
     }
 
@@ -374,7 +374,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return <tt>true</tt> if they have the same clinician, or the model
      *         indicates to display all clincians
      */
-    private boolean isSelectedClinician(ObjectSet event,
+    private boolean isSelectedClinician(PropertySet event,
                                         ScheduleTableModel model) {
         IMObjectReference clinician = model.getClinician();
         if (clinician == null) {
@@ -420,7 +420,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param highlight the highlight style
      * @return the colour, or <tt>null</tt> if none is found
      */
-    private Color getEventColour(ObjectSet event, Highlight highlight) {
+    private Color getEventColour(PropertySet event, Highlight highlight) {
         Color result = null;
         if (event != null) {
             switch (highlight) {
@@ -446,7 +446,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param colours the colours, keyed on object reference
      * @return the colour, or <tt>null</tt> if none is found
      */
-    private Color getColour(ObjectSet set, String key,
+    private Color getColour(PropertySet set, String key,
                             Map<IMObjectReference, String> colours) {
         String colour = colours.get(set.getReference(key));
         return ColourHelper.getColor(colour);

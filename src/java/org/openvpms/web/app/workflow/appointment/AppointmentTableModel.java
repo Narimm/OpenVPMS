@@ -20,14 +20,12 @@ package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
-import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
-import java.util.Map;
 
 
 /**
@@ -39,11 +37,6 @@ import java.util.Map;
 public abstract class AppointmentTableModel extends ScheduleTableModel {
 
     /**
-     * Cached reason lookup names.
-     */
-    private Map<String, String> reasons;
-
-    /**
      * The start time index.
      */
     protected static final int START_TIME_INDEX = 0;
@@ -53,7 +46,7 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
      * Creates a new <tt>AppointmentTableModel</tt>.
      */
     public AppointmentTableModel(AppointmentGrid grid) {
-        super(grid, "act.customerAppointment");
+        super(grid);
     }
 
     /**
@@ -82,7 +75,7 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
      * @param event the event
      * @return the status name
      */
-    protected String getStatus(ObjectSet event) {
+    protected String getStatus(PropertySet event) {
         String status = null;
 
         String code = event.getString(ScheduleEvent.ACT_STATUS);
@@ -93,26 +86,10 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
                 status = Messages.get("workflow.scheduling.table.waiting",
                                       diff);
             }
-        }
-        if (status == null) {
-            status = getStatus(code);
+        } else {
+            status = event.getString(ScheduleEvent.ACT_STATUS_NAME);
         }
         return status;
-    }
-
-    /**
-     * Returns a reason name for an event.
-     *
-     * @param event the event
-     * @return the reason name
-     */
-    protected String getReason(ObjectSet event) {
-        if (reasons == null) {
-            reasons = LookupNameHelper.getLookupNames(
-                    "act.customerAppointment", "reason");
-        }
-        String code = event.getString(ScheduleEvent.ACT_REASON);
-        return (reasons != null) ? reasons.get(code) : null;
     }
 
 }
