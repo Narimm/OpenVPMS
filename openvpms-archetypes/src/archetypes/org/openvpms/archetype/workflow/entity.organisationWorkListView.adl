@@ -22,6 +22,8 @@
         <node name="name" displayName="Worklist View" type="java.lang.String" path="/name" minCardinality="1"/>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="displayExpression" path="/details/displayExpression" type="java.lang.String" minCardinality="0" maxLength="500"/>
+        <node name="displayNotes" path="/details/displayNotes" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"/>
         <node name="workLists" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.viewWorkList">

@@ -18,36 +18,22 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.system.common.util.PropertySet;
-
-import java.util.Date;
-import java.util.List;
-
 
 /**
- * Schedule service.
+ * Schedule archetype short names.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface ScheduleService {
+public class ScheduleArchetypes {
 
     /**
-     * Returns all events for the specified schedule and day.
-     * Events are represented by {@link PropertySet PropertySets}.
-     *
-     * @param schedule the schedule
-     * @param day      the day
-     * @return a list of events
+     * The appointment archetype short name.
      */
-    List<PropertySet> getEvents(Entity schedule, Date day);
+    public static String APPOINTMENT = "act.customerAppointment";
 
     /**
-     * Returns all events for the specified schedule, and time range.
-     *
-     * @param schedule the schedule
-     * @return a list of events
+     * The task archetype short name.
      */
-    List<PropertySet> getEvents(Entity schedule, Date from, Date to);
+    public static String TASK = "act.customerTask";
 }

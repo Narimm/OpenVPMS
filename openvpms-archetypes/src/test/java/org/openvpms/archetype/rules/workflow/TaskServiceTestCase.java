@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
 import java.util.List;
@@ -62,7 +62,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
 
         // retrieve the tasks for date1 and date2 and verify they are empty.
         // This caches the tasks for each date.
-        List<ObjectSet> results = service.getEvents(workList, date1);
+        List<PropertySet> results = service.getEvents(workList, date1);
         assertEquals(0, results.size());
 
         results = service.getEvents(workList, date2);
@@ -74,7 +74,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
 
         results = service.getEvents(workList, date1);
         assertEquals(1, results.size());
-        ObjectSet set = results.get(0);
+        PropertySet set = results.get(0);
         checkTask(task, set);
 
         results = service.getEvents(workList, date2);
@@ -96,7 +96,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         Date date2 = java.sql.Date.valueOf("2008-1-2");
         Date date3 = java.sql.Date.valueOf("2008-1-3");
 
-        List<ObjectSet> results = service.getEvents(workList, date1);
+        List<PropertySet> results = service.getEvents(workList, date1);
         assertEquals(0, results.size());
 
         results = service.getEvents(workList, date2);
@@ -178,7 +178,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
             tasks[i] = createTask(startTime, endTime, schedule);
         }
 
-        List<ObjectSet> results = service.getEvents(schedule, date);
+        List<PropertySet> results = service.getEvents(schedule, date);
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
             checkTask(tasks[i], results.get(i));
@@ -239,12 +239,12 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
 
 
     /**
-     * Verifies that a task matches the {@link ObjectSet} representing it.
+     * Verifies that a task matches the {@link PropertySet} representing it.
      *
      * @param task the task
      * @param set  the set
      */
-    private void checkTask(Act task, ObjectSet set) {
+    private void checkTask(Act task, PropertySet set) {
         ActBean bean = new ActBean(task);
         assertEquals(task.getObjectReference(),
                      set.get(ScheduleEvent.ACT_REFERENCE));

@@ -45,14 +45,24 @@ public class ScheduleEvent {
     public static final String ACT_END_TIME = "act.endTime";
 
     /**
-     * The act status.
+     * The act status code.
      */
     public static final String ACT_STATUS = "act.status";
 
     /**
-     * The act reason.
+     * The act status name.
+     */
+    public static final String ACT_STATUS_NAME = "act.statusName";
+
+    /**
+     * The act reason code.
      */
     public static final String ACT_REASON = "act.reason";
+
+    /**
+     * The act reason name.
+     */
+    public static final String ACT_REASON_NAME = "act.reasonName";
 
     /**
      * The act description.

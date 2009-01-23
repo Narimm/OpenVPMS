@@ -34,6 +34,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -315,7 +316,7 @@ public class TestHelper extends Assert {
      * <p/>
      * If it exists, any tax rates will be removed.
      * <p/>
-     * The practice currency is set to <em>AUD</em>. 
+     * The practice currency is set to <em>AUD</em>.
      *
      * @return the practice
      */
@@ -420,9 +421,9 @@ public class TestHelper extends Assert {
      * Returns a lookup that is the target in a lookup relationship, creating
      * and saving it if it doesn't exist.
      *
-     * @param shortName the target lookup short name
-     * @param code the lookup code
-     * @param source the source lookup
+     * @param shortName             the target lookup short name
+     * @param code                  the lookup code
+     * @param source                the source lookup
      * @param relationshipShortName the lookup relationship short name
      */
     public static Lookup getLookup(String shortName, String code, Lookup source,
@@ -442,6 +443,22 @@ public class TestHelper extends Assert {
         target.addLookupRelationship(relationship);
         save(Arrays.asList(source, target));
         return target;
+    }
+
+    /**
+     * Helper to return the name of the lookup for the specified object and
+     * node.
+     *
+     * @param object the object
+     * @param node   the lookup node
+     * @return the corresponding lookup's name. May be <tt>null</tt>
+     */
+    public static String getLookupName(IMObject object, String node) {
+        IMObjectBean bean = new IMObjectBean(object);
+        return LookupHelper.getName(
+                ArchetypeServiceHelper.getArchetypeService(),
+                bean.getDescriptor(node),
+                object);
     }
 
     /**
