@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
@@ -19,21 +19,21 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 
 /**
- * {@link NodeResolver} test case.
+ * {@link PropertySetResolver} test case.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NodeResolverTestCase
+public class PropertySetResolverTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
@@ -41,36 +41,56 @@ public class NodeResolverTestCase
      */
     private IArchetypeService service;
 
+
     /**
-     * Tests single-level node resolution.
+     * Tests single-level property resolution.
      */
     public void testSingleLevelResolution() {
-        Party party = createCustomer();
-        NodeResolver resolver = new NodeResolver(party, service);
+        ObjectSet set = new ObjectSet();
+        set.set("firstName", "J");
+        set.set("lastName", "Zoo");
+        PropertySetResolver resolver = new PropertySetResolver(set, service);
         assertEquals("J", resolver.getObject("firstName"));
         assertEquals("Zoo", resolver.getObject("lastName"));
-        assertEquals("Customer(Person)", resolver.getObject("displayName"));
-        assertEquals("party.customerperson", resolver.getObject("shortName"));
     }
 
     /**
-     * Tests multiple-level node resolution.
+     * Tests multiple-level property resolution.
      */
     public void testMultiLevelResolution() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setParticipant("participation.customer", party);
-        NodeResolver resolver = new NodeResolver(act.getAct(), service);
-        assertEquals("J", resolver.getObject("customer.entity.firstName"));
-        assertEquals("Zoo", resolver.getObject("customer.entity.lastName"));
+        ObjectSet set = new ObjectSet();
+        set.set("act", act.getAct());
 
-        assertEquals("Estimation", resolver.getObject("displayName"));
+        PropertySetResolver resolver = new PropertySetResolver(set, service);
+        assertEquals("J", resolver.getObject("act.customer.entity.firstName"));
+        assertEquals("Zoo", resolver.getObject("act.customer.entity.lastName"));
+
+        assertEquals("Estimation", resolver.getObject("act.displayName"));
         assertEquals("Act Customer",
-                     resolver.getObject("customer.displayName"));
+                     resolver.getObject("act.customer.displayName"));
         assertEquals("Customer(Person)",
-                     resolver.getObject("customer.entity.displayName"));
+                     resolver.getObject("act.customer.entity.displayName"));
         assertEquals("party.customerperson",
-                     resolver.getObject("customer.entity.shortName"));
+                     resolver.getObject("act.customer.entity.shortName"));
+    }
+
+    /**
+     * Tests resolution where the property is an object reference.
+     */
+    public void testResolutionByReference() {
+        Party party = createCustomer();
+        ObjectSet set = new ObjectSet();
+        set.set("ref", party.getObjectReference());
+        PropertySetResolver resolver = new PropertySetResolver(set, service);
+        assertEquals("J", resolver.getObject("ref.firstName"));
+        assertEquals("Zoo", resolver.getObject("ref.lastName"));
+        assertEquals("Customer(Person)",
+                     resolver.getObject("ref.displayName"));
+        assertEquals("party.customerperson",
+                     resolver.getObject("ref.shortName"));
     }
 
     /**
@@ -78,23 +98,27 @@ public class NodeResolverTestCase
      */
     public void testMissingReference() {
         ActBean act = createAct("act.customerEstimation");
-        NodeResolver resolver = new NodeResolver(act.getAct(), service);
-        assertNull(resolver.getObject("customer.entity.firstName"));
+        ObjectSet set = new ObjectSet();
+        set.set("act", act.getAct());
+        PropertySetResolver resolver = new PropertySetResolver(set, service);
+        assertNull(resolver.getObject("act.customer.entity.firstName"));
     }
 
     /**
-     * Tests behaviour where an invalid node name is supplied.
+     * Tests behaviour where an invalid property name is supplied.
      */
-    public void testInvalidNode() {
+    public void testInvalidProperty() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setParticipant("participation.customer", party);
-        NodeResolver resolver = new NodeResolver(act.getAct(), service);
+        ObjectSet set = new ObjectSet();
+        set.set("act", act.getAct());
+        PropertySetResolver resolver = new PropertySetResolver(set, service);
 
         // root node followed by invalid node
         try {
-            resolver.getObject("customer.invalidNode");
-            fail("expected IMObjectReportException to be thrown");
+            resolver.getObject("act.customer.invalidNode");
+            fail("expected PropertyResolverException to be thrown");
         } catch (PropertyResolverException exception) {
             assertEquals(PropertyResolverException.ErrorCode.InvalidProperty,
                          exception.getErrorCode());
@@ -102,7 +126,7 @@ public class NodeResolverTestCase
 
         // intermediate node followed by invalid node
         try {
-            resolver.getObject("customer.entity.invalidNode");
+            resolver.getObject("act.customer.entity.invalidNode");
             fail("expected PropertyResolverException to be thrown");
         } catch (PropertyResolverException exception) {
             assertEquals(PropertyResolverException.ErrorCode.InvalidProperty,
@@ -111,35 +135,12 @@ public class NodeResolverTestCase
 
         // leaf node followed by invalid node
         try {
-            resolver.getObject("startTime.displayName");
+            resolver.getObject("act.startTime.displayName");
             fail("expected PropertyResolverException to be thrown");
         } catch (PropertyResolverException exception) {
             assertEquals(PropertyResolverException.ErrorCode.InvalidObject,
                          exception.getErrorCode());
         }
-    }
-
-    /**
-     * Verifies that the name <em>uid</em> can be used to access the id of an
-     * object, in order to support legacy users.
-     */
-    public void testUid() {
-        Party party = createCustomer();
-        ActBean act = createAct("act.customerEstimation");
-
-        // verify the archetypes have no uid node.
-        ArchetypeDescriptor custDesc = service.getArchetypeDescriptor(
-                party.getArchetypeId());
-        ArchetypeDescriptor estimationDesc = service.getArchetypeDescriptor(
-                act.getAct().getArchetypeId());
-        assertNull(custDesc.getNodeDescriptor("uid"));
-        assertNull(estimationDesc.getNodeDescriptor("uid"));
-
-        // now verify that using uid as a node name returns the id of the object
-        act.setParticipant("participation.customer", party);
-        NodeResolver resolver = new NodeResolver(act.getAct(), service);
-        assertEquals(act.getAct().getId(), resolver.getObject("uid"));
-        assertEquals(party.getId(), resolver.getObject("customer.entity.uid"));
     }
 
     /**

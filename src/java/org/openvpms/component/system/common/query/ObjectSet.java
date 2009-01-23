@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.util.AbstractPropertySet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.component.system.common.util.PropertySetException;
 import static org.openvpms.component.system.common.util.PropertySetException.ErrorCode.PropertyNotFound;
 
@@ -50,14 +51,45 @@ public class ObjectSet extends AbstractPropertySet implements Serializable {
     /**
      * The objects.
      */
-    private Map<String, Object> objects = new LinkedHashMap<String, Object>();
+    private Map<String, Object> objects;
 
     /**
      * The type short names, keyed on type alias.
      */
-    private Map<String, Set<String>> types
-            = new HashMap<String, Set<String>>();
+    private Map<String, Set<String>> types;
 
+
+    /**
+     * Creates an empty <tt>ObjectSet</tt>.
+     */
+    public ObjectSet() {
+        objects = new LinkedHashMap<String, Object>();
+        types = new HashMap<String, Set<String>>();
+    }
+
+    /**
+     * Creates a new <tt>ObjectSet</tt> from an existing set, by performing
+     * a shallow copy.
+     *
+     * @param set the set to copy
+     */
+    public ObjectSet(PropertySet set) {
+        this();
+        for (String name : set.getNames()) {
+            set(name, set.get(name));
+        }
+    }
+
+    /**
+     * Creates a new <tt>ObjectSet</tt> from an existing set, by performing
+     * a shallow copy.
+     *
+     * @param set the set to copy
+     */
+    public ObjectSet(ObjectSet set) {
+        objects = new LinkedHashMap<String, Object>(set.objects);
+        types = new HashMap<String, Set<String>>(set.types);
+    }
 
     /**
      * Returns the object names, in the order they were queried.
@@ -127,7 +159,7 @@ public class ObjectSet extends AbstractPropertySet implements Serializable {
     /**
      * Returns the matching short names for a name.
      *
-     * @return the matching short names, or <cpde>null</code> if there
+     * @return the matching short names, or <cpde>null</tt> if there
      *         is no type information available.
      */
     public Collection<String> getShortNames(String name) {
@@ -137,7 +169,7 @@ public class ObjectSet extends AbstractPropertySet implements Serializable {
     /**
      * Returns the node descriptor for a name.
      *
-     * @return the node descriptor for the name, or <code>null</code> if none
+     * @return the node descriptor for the name, or <tt>null</tt> if none
      *         is found
      */
     public NodeDescriptor getDescriptor(String name) {

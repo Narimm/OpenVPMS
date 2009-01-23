@@ -26,13 +26,16 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
-import org.openvpms.component.business.service.archetype.helper.NodeResolverException;
+import org.openvpms.component.business.service.archetype.helper.PropertyResolver;
+import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
+import org.openvpms.component.business.service.archetype.helper.PropertySetResolver;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +85,7 @@ public class ArchetypeServiceFunctions {
      * @param object the expression context
      * @param node   the node name
      * @return the value at the specified node
-     * @throws NodeResolverException if the name is invalid
+     * @throws PropertyResolverException if the name is invalid
      * @see NodeResolver
      */
     public static Object get(IMObject object, String node) {
@@ -106,7 +109,42 @@ public class ArchetypeServiceFunctions {
                              Object defaultValue) {
         try {
             return get(object, node);
-        } catch (NodeResolverException exception) {
+        } catch (PropertyResolverException exception) {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Resolves the value of the specified property.
+     *
+     * @param set      the expression context
+     * @param property the property name
+     * @return the value at the specified node
+     * @throws PropertyResolverException if the name is invalid
+     * @see NodeResolver
+     */
+    public static Object get(PropertySet set, String property) {
+        PropertyResolver resolver = new PropertySetResolver(
+                set, ArchetypeServiceHelper.getArchetypeService());
+        return resolver.getObject(property);
+    }
+
+    /**
+     * Resolves the value of the specified property.
+     * If the property doesn't exist returns the specified default value.     *
+     *
+     * @param set          the expression context
+     * @param property     the property name
+     * @param defaultValue the value to return if node does not exist
+     * @return the value at the specified node or defaultValue if node does not
+     *         exist
+     * @see NodeResolver
+     */
+    public static Object get(PropertySet set, String property,
+                             Object defaultValue) {
+        try {
+            return get(set, property);
+        } catch (PropertyResolverException exception) {
             return defaultValue;
         }
     }
@@ -117,8 +155,8 @@ public class ArchetypeServiceFunctions {
      * @param object the object
      * @param node   the node name
      * @return the lookup's name
-     * @throws NodeResolverException if the node is invalid
-     * @throws OpenVPMSException     if the call cannot complete
+     * @throws PropertyResolverException if the node is invalid
+     * @throws OpenVPMSException         if the call cannot complete
      * @see NodeResolver
      */
     public static String lookup(IMObject object, String node) {
@@ -132,8 +170,8 @@ public class ArchetypeServiceFunctions {
             result = LookupHelper.getName(service, descriptor,
                                           state.getParent());
         } else {
-            throw new NodeResolverException(
-                    NodeResolverException.ErrorCode.InvalidNode, node);
+            throw new PropertyResolverException(
+                    PropertyResolverException.ErrorCode.InvalidProperty, node);
         }
         return result;
     }
@@ -154,7 +192,7 @@ public class ArchetypeServiceFunctions {
                                 String defaultValue) {
         try {
             return lookup(object, node);
-        } catch (NodeResolverException exception) {
+        } catch (PropertyResolverException exception) {
             return defaultValue;
         }
     }
@@ -176,8 +214,8 @@ public class ArchetypeServiceFunctions {
         NodeResolver.State state = resolver.resolve(node);
         NodeDescriptor descriptor = state.getLeafNode();
         if (descriptor == null) {
-            throw new NodeResolverException(
-                    NodeResolverException.ErrorCode.InvalidNode, node);
+            throw new PropertyResolverException(
+                    PropertyResolverException.ErrorCode.InvalidProperty, node);
         }
         ILookupService lookups = LookupServiceHelper.getLookupService();
         if (descriptor.isLookup()) {
@@ -189,8 +227,9 @@ public class ArchetypeServiceFunctions {
             String[] shortNames = DescriptorHelper.getShortNames(descriptor,
                                                                  service);
             if (!TypeHelper.matches(shortNames, "lookup.*")) {
-                throw new NodeResolverException(
-                        NodeResolverException.ErrorCode.InvalidNode, node);
+                throw new PropertyResolverException(
+                        PropertyResolverException.ErrorCode.InvalidProperty,
+                        node);
 
             }
             for (String shortName : shortNames) {

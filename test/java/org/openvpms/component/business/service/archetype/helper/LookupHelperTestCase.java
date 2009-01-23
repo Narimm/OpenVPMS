@@ -26,10 +26,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.business.service.lookup.LookupUtil;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -62,6 +61,20 @@ public class LookupHelperTestCase
         assertNotNull(species);
         assertEquals(lookup.getName(),
                      LookupHelper.getName(service, species, pet));
+    }
+
+    /**
+     * Tests the {@link LookupHelper#getNames(IArchetypeService, String, String)} method.
+     */
+    public void testGetNames() {
+        Lookup canine = createLookup("lookup.species", "CANINE", "Canine");
+        Lookup feline = createLookup("lookup.species", "FELINE", "Feline");
+
+        Map<String, String> names
+                = LookupHelper.getNames(service, "party.animalpet", "species");
+        assertEquals(2, names.size());
+        assertEquals("Canine", names.get(canine.getCode()));
+        assertEquals("Feline", names.get(feline.getCode()));
     }
 
     /**
@@ -131,15 +144,10 @@ public class LookupHelperTestCase
 
     @Override
     protected void onSetUp() throws Exception {
-        // remove existing colour lookup
+        // remove existing lookups
         service = ArchetypeServiceHelper.getArchetypeService();
-        String shortName = "lookup.colour";
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> lookups = service.get(query).getResults();
-        for (IMObject lookup : lookups) {
-            service.remove(lookup);
-        }
+        LookupUtil.removeAll(service, "lookup.colour");
+        LookupUtil.removeAll(service, "lookup.species");
     }
 
     /**
@@ -158,8 +166,8 @@ public class LookupHelperTestCase
      * Helper to create a lookup.
      *
      * @param shortName the lookup short name
-     * @param code    the lookup code
-     * @param name    the lookup name
+     * @param code      the lookup code
+     * @param name      the lookup name
      * @return a new lookup
      */
     private Lookup createLookup(String shortName, String code, String name) {
@@ -181,5 +189,6 @@ public class LookupHelperTestCase
         assertNotNull(object);
         return object;
     }
+
 
 }

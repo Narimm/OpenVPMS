@@ -27,11 +27,12 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.NodeResolverException;
-import static org.openvpms.component.business.service.archetype.helper.NodeResolverException.ErrorCode.InvalidNode;
-import static org.openvpms.component.business.service.archetype.helper.NodeResolverException.ErrorCode.InvalidObject;
+import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidProperty;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.Collection;
@@ -54,9 +55,9 @@ public class ArchetypeServiceFunctionsTestCase
 
 
     /**
-     * Tests single-level node resolution.
+     * Tests single-level node resolution given a root IMObject.
      */
-    public void testSingleLevelResolution() {
+    public void testIMObjectSingleLevelResolution() {
         Party party = createCustomer();
         JXPathContext context = JXPathHelper.newContext(party);
 
@@ -66,9 +67,23 @@ public class ArchetypeServiceFunctionsTestCase
     }
 
     /**
-     * Tests multiple-level node resolution.
+     * Tests single-level node resolution given a root PropertySet.
      */
-    public void testMultiLevelResolution() {
+    public void testPropertySetSingleLevelResolution() {
+        Party party = createCustomer();
+        ObjectSet set = new ObjectSet();
+        set.set("customer", party);
+        JXPathContext context = JXPathHelper.newContext(set);
+
+        checkEquals("J", "customer.firstName", context);
+        checkEquals("Zoo", "customer.lastName", context);
+        checkEquals("Customer(Person)", "customer.displayName", context);
+    }
+
+    /**
+     * Tests multiple-level node resolution given a root IMObject.
+     */
+    public void testIMObjectMultiLevelResolution() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setParticipant("participation.customer", party);
@@ -79,14 +94,41 @@ public class ArchetypeServiceFunctionsTestCase
     }
 
     /**
+     * Tests multiple-level node resolution given a root PropertySet.
+     */
+    public void testPropertySetMultiLevelResolution() {
+        Party party = createCustomer();
+        ActBean act = createAct("act.customerEstimation");
+        act.setParticipant("participation.customer", party);
+        ObjectSet set = new ObjectSet();
+        set.set("act", act.getAct());
+
+        JXPathContext context = JXPathHelper.newContext(set);
+        checkEquals("J", "act.customer.entity.firstName", context);
+        checkEquals("Zoo", "act.customer.entity.lastName", context);
+    }
+
+    /**
      * Tests behaviour where an intermediate node doesn't exist.
      */
-    public void testMissingReference() {
+    public void testIMObjectMissingReference() {
         ActBean act = createAct("act.customerEstimation");
         JXPathContext context = JXPathHelper.newContext(act.getAct());
         assertNull(
+                context.getValue("openvpms:get(., 'customer.entity.firstName')"));
+    }
+
+    /**
+     * Tests behaviour where an intermediate node doesn't exist.
+     */
+    public void testPropertySetMissingReference() {
+        ActBean act = createAct("act.customerEstimation");
+        ObjectSet set = new ObjectSet();
+        set.set("act", act.getAct());
+        JXPathContext context = JXPathHelper.newContext(set);
+        assertNull(
                 context.getValue(
-                        "openvpms:get(., 'customer.entity.firstName')"));
+                        "openvpms:get(.,'act.customer.entity.firstName')"));
     }
 
     /**
@@ -101,23 +143,23 @@ public class ArchetypeServiceFunctionsTestCase
         // root node followed by invalid node
         try {
             context.getValue("openvpms:get(., 'customer.invalidNode')");
-            fail("expected NodeResolverException to be thrown");
+            fail("expected PropertyResolverException to be thrown");
         } catch (JXPathInvalidAccessException exception) {
-            checkException(exception, InvalidNode);
+            checkException(exception, InvalidProperty);
         }
 
         // intermediate node followed by invalid node
         try {
             context.getValue("openvpms:get(., 'customer.entity.invalidNode')");
-            fail("expected NodeResolverException to be thrown");
+            fail("expected PropertyResolverException to be thrown");
         } catch (JXPathInvalidAccessException exception) {
-            checkException(exception, InvalidNode);
+            checkException(exception, InvalidProperty);
         }
 
         // leaf node followed by invalid node
         try {
             context.getValue("openvpms:get(., 'startTime.displayName')");
-            fail("expected NodeResolverException to be thrown");
+            fail("expected PropertyResolverException to be thrown");
         } catch (JXPathInvalidAccessException exception) {
             checkException(exception, InvalidObject);
         }
@@ -125,6 +167,55 @@ public class ArchetypeServiceFunctionsTestCase
         // invalid node with default value
         Object value = context.getValue(
                 "openvpms:get(., 'invalidNode', 'default')");
+        assertEquals("default", value);
+    }
+
+    /**
+     * Tests behaviour where an invalid property name is supplied.
+     */
+    public void testInvalidProperty() {
+        Party party = createCustomer();
+        ActBean act = createAct("act.customerEstimation");
+        act.setParticipant("participation.customer", party);
+        ObjectSet set = new ObjectSet();
+        set.set("act", act.getAct());
+        JXPathContext context = JXPathHelper.newContext(set);
+
+        // invalid property name
+        try {
+            context.getValue("openvpms:get(., 'nonexistentprop')");
+            fail("expected PropertyResolverException to be thrown");
+        } catch (JXPathInvalidAccessException exception) {
+            checkException(exception, InvalidObject);
+        }
+
+        // root node followed by invalid node
+        try {
+            context.getValue("openvpms:get(., 'act.customer.invalidNode')");
+            fail("expected PropertyResolverException to be thrown");
+        } catch (JXPathInvalidAccessException exception) {
+            checkException(exception, InvalidProperty);
+        }
+
+        // intermediate node followed by invalid node
+        try {
+            context.getValue("openvpms:get(., 'act.customer.entity.invalidNode')");
+            fail("expected PropertyResolverException to be thrown");
+        } catch (JXPathInvalidAccessException exception) {
+            checkException(exception, InvalidProperty);
+        }
+
+        // leaf node followed by invalid node
+        try {
+            context.getValue("openvpms:get(., 'act.startTime.displayName')");
+            fail("expected PropertyResolverException to be thrown");
+        } catch (JXPathInvalidAccessException exception) {
+            checkException(exception, InvalidObject);
+        }
+
+        // invalid node with default value
+        Object value = context.getValue(
+                "openvpms:get(., 'act.invalidNode', 'default')");
         assertEquals("default", value);
     }
 
@@ -145,9 +236,9 @@ public class ArchetypeServiceFunctionsTestCase
         // test invalid node
         try {
             context.getValue("openvpms:lookup(., 'displayName')");
-            fail("expected NodeResolverException to be thrown");
+            fail("expected PropertyResolverException to be thrown");
         } catch (JXPathInvalidAccessException exception) {
-            checkException(exception, InvalidNode);
+            checkException(exception, InvalidProperty);
         }
 
         // test invalid node with default
@@ -250,11 +341,11 @@ public class ArchetypeServiceFunctionsTestCase
      * @param code      the code of the expected exception
      */
     private void checkException(JXPathInvalidAccessException exception,
-                                NodeResolverException.ErrorCode code) {
+                                PropertyResolverException.ErrorCode code) {
         Throwable target = exception.getCause();
         assertNotNull(target);
-        assertTrue(target instanceof NodeResolverException);
-        NodeResolverException cause = (NodeResolverException) target;
+        assertTrue(target instanceof PropertyResolverException);
+        PropertyResolverException cause = (PropertyResolverException) target;
         assertEquals(code, cause.getErrorCode());
     }
 

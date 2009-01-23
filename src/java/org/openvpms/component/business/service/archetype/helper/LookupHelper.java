@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,7 +38,10 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -189,6 +193,54 @@ public class LookupHelper {
         }
         return result;
     }
+
+    /**
+     * Returns a list of lookups for the specified archetype short name and node
+     * name.
+     *
+     * @param service   the archetype service
+     * @param shortName the archetype short name
+     * @param node      the node name
+     * @return a map of lookup codes to lookup names
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static Map<String, String> getNames(IArchetypeService service,
+                                               String shortName,
+                                               String node) {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(shortName, service);
+        if (archetype != null) {
+            NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+            if (descriptor != null) {
+                return getNames(service, descriptor);
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Returns a map of lookup codes to lookup names for the specified
+     * {@link NodeDescriptor}.
+     *
+     * @param service    the archetype service
+     * @param descriptor the node descriptor
+     * @return a map of lookup codes to lookup names
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static Map<String, String> getNames(IArchetypeService service,
+                                               NodeDescriptor descriptor) {
+        Map<String, String> result = new HashMap<String, String>();
+        List<Lookup> lookups = LookupHelper.get(service, descriptor);
+        for (Lookup lookup : lookups) {
+            if (lookup.isActive()) {
+                result.put(lookup.getCode(), lookup.getName());
+            }
+        }
+        return result;
+    }
+
 
     /**
      * Helper method that returns a single lookup with the specified

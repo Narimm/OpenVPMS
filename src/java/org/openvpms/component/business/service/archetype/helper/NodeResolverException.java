@@ -18,57 +18,23 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.apache.commons.resources.Messages;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-
 /**
  * Exception class for exceptions raised by {@link NodeResolver}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @deprecated use PropertyResolverException
  */
-public class NodeResolverException extends OpenVPMSException {
+@Deprecated
+public class NodeResolverException extends PropertyResolverException {
 
     /**
-     * An enumeration of error codes.
-     */
-    public enum ErrorCode {
-        InvalidNode,
-        InvalidObject
-    }
-
-    /**
-     * The error code.
-     */
-    private final ErrorCode errorCode;
-
-    /**
-     * The appropriate resource file is loaded cached into memory when this
-     * class is loaded.
-     */
-    private static Messages MESSAGES
-            = Messages.getMessages(
-            "org.openvpms.component.business.service.archetype.helper."
-                    + OpenVPMSException.ERRMESSAGES_FILE);
-
-    /**
-     * Constructs a new <code>NodeResolverException</code>.
+     * Constructs a new <tt>NodeResolverException</tt>.
      *
      * @param errorCode the error code
      */
     public NodeResolverException(ErrorCode errorCode, Object ... args) {
-        super(MESSAGES.getMessage(errorCode.toString(), args));
-        this.errorCode = errorCode;
-    }
-
-    /**
-     * Returns the error code.
-     *
-     * @return the error code
-     */
-    public NodeResolverException.ErrorCode getErrorCode() {
-        return errorCode;
+        super(errorCode, args);
     }
 
 }
