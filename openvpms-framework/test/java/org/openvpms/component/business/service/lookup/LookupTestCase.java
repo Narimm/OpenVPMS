@@ -218,15 +218,23 @@ public class LookupTestCase
     /**
      * Test OBF-46 bug report.
      */
-    public void testOBF46()
-            throws Exception {
+    public void testOBF46() {
         ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(
                 "party.horsepet");
         assertNotNull(descriptor);
+
+        Lookup equine = LookupUtil.getLookup(service, "lookup.species",
+                                             "EQUINE");
+
+        // make sure there is at least 1 equine breed
+        LookupUtil.getLookup(service, "lookup.breed", "ARAB",
+                             equine, "lookupRelationship.speciesBreed");
+
         Party animal = (Party) service.create(descriptor.getType());
         assertNotNull(animal);
         assertNotNull(descriptor.getNodeDescriptor("breed"));
         assertTrue(descriptor.getNodeDescriptor("breed").isLookup());
+
         assertTrue(LookupHelper.get(service,
                                     descriptor.getNodeDescriptor("breed"),
                                     animal).size() > 0);

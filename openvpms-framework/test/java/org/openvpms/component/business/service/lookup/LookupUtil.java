@@ -20,9 +20,14 @@ package org.openvpms.component.business.service.lookup;
 
 import junit.framework.Assert;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -81,10 +86,10 @@ public class LookupUtil extends Assert {
      * Helper to create a new lookup via the archetype service, with a unique
      * code.
      *
-     * @param service the archetype service
+     * @param service   the archetype service
      * @param shortName the lookup short name
-     * @param code    the lookup code
-     * @param name    the lookup name
+     * @param code      the lookup code
+     * @param name      the lookup name
      * @return a new lookup
      */
     public static Lookup createLookup(IArchetypeService service,
@@ -96,12 +101,66 @@ public class LookupUtil extends Assert {
     }
 
     /**
+     * Retuurns the lookup with the specified code, creating and saving it if
+     * it doesn't exist.
+     *
+     * @param service   the archetype service
+     * @param shortName the lookup short name
+     * @param code      the lookup code
+     */
+    public static Lookup getLookup(IArchetypeService service, String shortName,
+                                   String code) {
+        Lookup lookup;
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
+        List<IMObject> lookups = service.get(query).getResults();
+        if (lookups.isEmpty()) {
+            lookup = createLookup(service, shortName, code);
+            lookup.setCode(code); // use the supplied code
+            service.save(lookup);
+        } else {
+            lookup = (Lookup) lookups.get(0);
+        }
+        return lookup;
+    }
+
+    /**
+     * Returns a lookup that is the target in a lookup relationship, creating
+     * and saving it if it doesn't exist.
+     *
+     * @param service               the archetype service
+     * @param shortName             the target lookup short name
+     * @param code                  the lookup code
+     * @param source                the source lookup
+     * @param relationshipShortName the lookup relationship short name
+     */
+    public static Lookup getLookup(IArchetypeService service, String shortName,
+                                   String code, Lookup source,
+                                   String relationshipShortName) {
+        Lookup target = getLookup(service, shortName, code);
+        for (LookupRelationship relationship
+                : source.getLookupRelationships()) {
+            if (relationship.getTarget().equals(target.getObjectReference())) {
+                return target;
+            }
+        }
+        LookupRelationship relationship
+                = (LookupRelationship) service.create(relationshipShortName);
+        relationship.setSource(source.getObjectReference());
+        relationship.setTarget(target.getObjectReference());
+        source.addLookupRelationship(relationship);
+        target.addLookupRelationship(relationship);
+        service.save(Arrays.asList(source, target));
+        return target;
+    }
+
+
+    /**
      * Helper to create and add a relationship between two lookups.
      *
-     * @param service the archetype service
+     * @param service   the archetype service
      * @param shortName the lookup relationship short name
-     * @param source the source lookup
-     * @param target the target lookup
+     * @param source    the source lookup
+     * @param target    the target lookup
      * @return a new lookup relationship
      */
     public static LookupRelationship addRelationship(
@@ -116,4 +175,20 @@ public class LookupUtil extends Assert {
         target.addLookupRelationship(relationship);
         return relationship;
     }
+
+    /**
+     * Removes all lookups with the specified short name.
+     *
+     * @param service   the archetype service
+     * @param shortName the short name
+     */
+    public static void removeAll(IArchetypeService service, String shortName) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> lookups = service.get(query).getResults();
+        for (IMObject lookup : lookups) {
+            service.remove(lookup);
+        }
+    }
+
 }

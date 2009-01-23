@@ -22,37 +22,37 @@ import junit.framework.TestCase;
 
 
 /**
- * {@link NodeResolverException} test case.
+ * {@link PropertyResolverException} test case.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NodeResolverExceptionTestCase extends TestCase {
+public class PropertyResolverExceptionTestCase extends TestCase {
 
     /**
      * Verifies that the messages are generated correctly.
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     2, NodeResolverException.ErrorCode.values().length);
-        checkException(NodeResolverException.ErrorCode.InvalidNode,
-                       "Invalid node name: foo", "foo");
-        checkException(NodeResolverException.ErrorCode.InvalidObject,
-                       "Node does not refer to a valid object: foo", "foo");
+                     2, PropertyResolverException.ErrorCode.values().length);
+        checkException(PropertyResolverException.ErrorCode.InvalidProperty,
+                       "Invalid property name: foo", "foo");
+        checkException(PropertyResolverException.ErrorCode.InvalidObject,
+                       "Property does not refer to a valid object: foo", "foo");
     }
 
     /**
-     * Creates an {@link NodeResolverException} with the supplied code and
+     * Creates an {@link PropertyResolverException} with the supplied code and
      * arguments and verifies that the generated message matches that expected.
      *
      * @param code     the error code
      * @param expected the expected message
      * @param args     exception arguments
      */
-    private void checkException(NodeResolverException.ErrorCode code,
+    private void checkException(PropertyResolverException.ErrorCode code,
                                 String expected, Object ... args) {
-        NodeResolverException exception = new NodeResolverException(code,
-                                                                    args);
+        PropertyResolverException exception
+                = new PropertyResolverException(code, args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());
     }

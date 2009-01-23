@@ -25,42 +25,21 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import static org.openvpms.component.business.service.archetype.helper.NodeResolverException.ErrorCode.InvalidNode;
-import static org.openvpms.component.business.service.archetype.helper.NodeResolverException.ErrorCode.InvalidObject;
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidProperty;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.util.List;
 
 
 /**
- * Resolves node values given a root <code>IMObject</code> and a field name of
- * the form <em>node1.node2.nodeN</em>.
- * <p/>
- * Where a node refers to an <code>IMObjectReference</code>, or a collection
- * of 0..1 IMObject instances, these will be treated as an <code>IMObject</code>.
- * e.g. given an <code>Act</code> object, with archetype act.customerEstimation,
- * the field name <em>customer.entity.name</em>, this will:
- * <li>
- * <ul>get the <code>Participation</code> instance corresponding to the
- * "customer" node</ul>
- * <ul>get the Entity instance corresponding to the "entity" node of the
- * Participation</ul>
- * <ul>get the value of the "name" node of the entity.</ul>
- * </li>
- * <p/>
- * Several special node names are defined:
- * <ul>
- * <li><em>shortName</em> - returns the value of the archetypes short name</li>
- * <li><em>displayName</em> - returns the value of the archetypes display
- * name</li>
- * </ul>
- * These are only evaluated when they appear as leaf nodes and the archetype
- * corresponding to the leaf has doesn't define the node.
+ * A <tt>PropertyResolver</tt> that resolves node values given a root
+ * <tt>IMObject</tt>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NodeResolver {
+public class NodeResolver implements PropertyResolver {
 
     /**
      * The root object.
@@ -106,10 +85,11 @@ public class NodeResolver {
     }
 
     /**
-     * Returns the object associated with a field name.
+     * Resolves the named property.
      *
-     * @return the object corresponding to <code>name</code>
-     * @throws NodeResolverException if the name is invalid
+     * @param name the property name
+     * @return the corresponding property
+     * @throws PropertyResolverException if the name is invalid
      */
     public Object getObject(String name) {
         return resolve(name).getValue();
@@ -120,8 +100,9 @@ public class NodeResolver {
      *
      * @param name the field name
      * @return the resolved state
-     * @throws NodeResolverException if the name is invalid
+     * @throws PropertyResolverException if the name is invalid
      */
+    @SuppressWarnings({"deprecation"})
     public State resolve(String name) {
         State state;
         IMObject object = root;
@@ -131,7 +112,7 @@ public class NodeResolver {
             String nodeName = name.substring(0, index);
             NodeDescriptor node = archetype.getNodeDescriptor(nodeName);
             if (node == null) {
-                throw new NodeResolverException(InvalidNode, name);
+                throw new NodeResolverException(InvalidProperty, name);
             }
             Object value = getValue(object, node);
             if (value == null) {
@@ -157,7 +138,7 @@ public class NodeResolver {
                 } else if ("uid".equals(name)) {
                     value = object.getId();
                 } else {
-                    throw new NodeResolverException(InvalidNode, name);
+                    throw new NodeResolverException(InvalidProperty, name);
                 }
             } else {
                 value = getValue(object, leafNode);
