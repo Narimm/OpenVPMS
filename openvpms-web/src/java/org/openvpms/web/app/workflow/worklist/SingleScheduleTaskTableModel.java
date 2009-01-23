@@ -25,7 +25,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
@@ -99,7 +99,7 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
      * @param grid the task grid
      */
     public SingleScheduleTaskTableModel(TaskGrid grid) {
-        super(grid, "act.customerTask");
+        super(grid);
     }
 
     /**
@@ -111,7 +111,7 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
      */
     protected Object getValueAt(Column column, int row) {
         Object result = null;
-        ObjectSet set = getEvent(column, row);
+        PropertySet set = getEvent(column, row);
         if (set != null) {
             result = getValue(set, column);
         }
@@ -144,7 +144,7 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
      * @param column the column
      * @return the value at the given coordinate.
      */
-    private Object getValue(ObjectSet set, Column column) {
+    private Object getValue(PropertySet set, Column column) {
         Object result = null;
         int index = column.getModelIndex();
         switch (index) {
@@ -157,7 +157,7 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
                 result = label;
                 break;
             case STATUS_INDEX:
-                result = getStatus(set.getString(ScheduleEvent.ACT_STATUS));
+                result = set.getString(ScheduleEvent.ACT_STATUS_NAME);
                 break;
             case DESCRIPTION_INDEX:
                 result = set.getString(ScheduleEvent.ACT_DESCRIPTION);

@@ -18,19 +18,16 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
-import echopointng.BalloonHelp;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
-import org.openvpms.web.component.util.BalloonHelpFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -46,6 +43,8 @@ class MultiScheduleTableModel extends AppointmentTableModel {
 
     /**
      * Creates a new <tt>MultiScheduleTableModel</tt>.
+     *
+     * @param grid the appointment grid
      */
     public MultiScheduleTableModel(AppointmentGrid grid) {
         super(grid);
@@ -63,7 +62,7 @@ class MultiScheduleTableModel extends AppointmentTableModel {
         if (column.getModelIndex() == START_TIME_INDEX) {
             result = getGrid().getStartTime(row);
         } else {
-            ObjectSet set = getEvent(column, row);
+            PropertySet set = getEvent(column, row);
             AppointmentGrid grid = getGrid();
             int rowSpan = 1;
             if (set != null) {
@@ -90,34 +89,27 @@ class MultiScheduleTableModel extends AppointmentTableModel {
      * @param event the event
      * @return a new component
      */
-    private Component getEvent(ObjectSet event) {
-        Component result;
-        String text;
-        String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
-        String patient = event.getString(ScheduleEvent.PATIENT_NAME);
+    private Component getEvent(PropertySet event) {
+        String text = evaluate(event);
+        if (text == null) {
+            String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
+            String patient = event.getString(ScheduleEvent.PATIENT_NAME);
+            String status = getStatus(event);
+            String reason = event.getString(ScheduleEvent.ACT_REASON_NAME);
+
+            if (patient == null) {
+                text = Messages.get(
+                        "workflow.scheduling.appointment.table.customer",
+                        customer, reason, status);
+            } else {
+                text = Messages.get(
+                        "workflow.scheduling.appointment.table.customerpatient",
+                        customer, patient, reason, status);
+            }
+        }
+
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        String status = getStatus(event);
-        String reason = getReason(event);
-
-        if (patient == null) {
-            text = Messages.get(
-                    "workflow.scheduling.appointment.table.customer",
-                    customer, reason, status);
-        } else {
-            text = Messages.get(
-                    "workflow.scheduling.appointment.table.customerpatient",
-                    customer, patient, reason, status);
-        }
-
-        Label label = LabelFactory.create(true);
-        label.setText(text);
-        if (notes != null) {
-            BalloonHelp help = BalloonHelpFactory.create(notes);
-            result = RowFactory.create("CellSpacing", label, help);
-        } else {
-            result = label;
-        }
-        return result;
+        return createLabelWithNotes(text, notes);
     }
 
     /**

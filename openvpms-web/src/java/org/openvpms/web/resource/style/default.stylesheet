@@ -726,6 +726,14 @@
            type="nextapp.echo2.app.WindowPane">
     </style>
 
+    <style name="ScheduleExpressionDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="680px"/>
+            <property name="height" value="380px"/>
+        </properties>
+    </style>
+
     <style name="AbstractViewWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>

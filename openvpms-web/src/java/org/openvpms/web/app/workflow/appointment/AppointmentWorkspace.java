@@ -21,7 +21,7 @@ package org.openvpms.web.app.workflow.appointment;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.app.workflow.scheduling.SchedulingWorkspace;
@@ -96,7 +96,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * @param event the event. May be <tt>null</tt>
      */
     @Override
-    protected void eventSelected(ObjectSet event) {
+    protected void eventSelected(PropertySet event) {
         // update selected start time
         AppointmentCRUDWindow window = (AppointmentCRUDWindow) getCRUDWindow();
         window.setStartTime(getBrowser().getSelectedTime());
@@ -112,7 +112,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * @param event the event
      */
     @Override
-    protected void onEdit(ObjectSet event) {
+    protected void onEdit(PropertySet event) {
         updateContext();
         super.onEdit(event);
     }

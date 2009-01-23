@@ -26,7 +26,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
@@ -108,7 +108,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         if (column.getModelIndex() == START_TIME_INDEX) {
             result = grid.getStartTime(row);
         } else {
-            ObjectSet set = getEvent(column, row);
+            PropertySet set = getEvent(column, row);
             int rowSpan = 1;
             if (set != null) {
                 result = getValue(set, column);
@@ -142,7 +142,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
      * @param column the column
      * @return the value at the given coordinate.
      */
-    protected Object getValue(ObjectSet set, TableColumn column) {
+    protected Object getValue(PropertySet set, TableColumn column) {
         Object result = null;
         int index = column.getModelIndex();
         switch (index) {
@@ -158,7 +158,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                 result = getStatus(set);
                 break;
             case REASON_INDEX:
-                result = getReason(set);
+                result = set.getString(ScheduleEvent.ACT_REASON_NAME);
                 break;
             case DESCRIPTION_INDEX:
                 result = set.getString(ScheduleEvent.ACT_DESCRIPTION);

@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 
 import java.util.Date;
@@ -64,7 +64,7 @@ public interface AppointmentGrid extends ScheduleEventGrid {
      * @param slot        the starting slot
      * @return the no. of slots that the appointment occupies
      */
-    int getSlots(ObjectSet appointment, int slot);
+    int getSlots(PropertySet appointment, int slot);
 
     /**
      * Returns the time that the specified slot starts at.

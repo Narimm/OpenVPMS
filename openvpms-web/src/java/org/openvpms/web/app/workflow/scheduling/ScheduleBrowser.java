@@ -31,7 +31,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.AbstractBrowser;
@@ -57,7 +57,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
+public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
 
     /**
      * The query.
@@ -67,7 +67,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
     /**
      * The schedule events, keyed on schedule.
      */
-    private Map<Entity, List<ObjectSet>> results;
+    private Map<Entity, List<PropertySet>> results;
 
     /**
      * The browser component.
@@ -87,7 +87,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
     /**
      * The selected event.
      */
-    private ObjectSet selected;
+    private PropertySet selected;
 
     /**
      * The selected time. May be <tt>null</tt>.
@@ -125,7 +125,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
      * @return the selected object, or <tt>null</tt> if none has been
      *         selected.
      */
-    public ObjectSet getSelected() {
+    public PropertySet getSelected() {
         return selected;
     }
 
@@ -134,7 +134,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
      *
      * @param object the object to select
      */
-    public void setSelected(ObjectSet object) {
+    public void setSelected(PropertySet object) {
         selected = object;
     }
 
@@ -188,13 +188,13 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
      *
      * @return the objects matcing the query
      */
-    public List<ObjectSet> getObjects() {
+    public List<PropertySet> getObjects() {
         if (results == null) {
             query();
         }
-        List<ObjectSet> result = new ArrayList<ObjectSet>();
-        for (List<ObjectSet> list : results.values()) {
-            for (ObjectSet set : list) {
+        List<PropertySet> result = new ArrayList<PropertySet>();
+        for (List<PropertySet> list : results.values()) {
+            for (PropertySet set : list) {
                 result.add(set);
             }
         }
@@ -256,7 +256,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
      * @param events the events
      */
     protected abstract ScheduleEventGrid
-            createEventGrid(Date date, Map<Entity, List<ObjectSet>> events);
+            createEventGrid(Date date, Map<Entity, List<PropertySet>> events);
 
     /**
      * Creates a new table model.
@@ -298,7 +298,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
         SplitPane component = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL,
                 "ScheduleBrowser", column);
-        if (table != null) {
+        if (getScheduleView() != null && table != null) {
             addTable(table, component);
         }
         return component;
@@ -337,7 +337,20 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
      */
     protected void doQuery(boolean reselect) {
         getComponent();
+        if (query.getScheduleView() != null) {
+            doQueryWithView(reselect);
+        } else {
+            // no schedule view selected
+            if (table != null) {
+                component.remove(table);
+            }
+            results = null;
+            model = null;
+            table = null;
+        }
+    }
 
+    private void doQueryWithView(boolean reselect) {
         Set<Entity> lastSchedules = (results != null) ? results.keySet() : null;
         results = query.query();
 
@@ -349,7 +362,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
             lastRow = model.getSelectedRow();
             lastColumn = model.getSelectedColumn();
             if (lastRow != -1 && lastColumn != -1) {
-                ObjectSet event = model.getEvent(lastColumn, lastRow);
+                PropertySet event = model.getEvent(lastColumn, lastRow);
                 if (event != null) {
                     lastEventId = event.getReference(
                             ScheduleEvent.ACT_REFERENCE);
@@ -385,7 +398,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
                     && ObjectUtils.equals(lastSchedules, results.keySet())) {
                 Date selectedDate = (selectedTime != null)
                         ? DateRules.getDate(selectedTime) : null;
-                ObjectSet event = model.getEvent(lastColumn, lastRow);
+                PropertySet event = model.getEvent(lastColumn, lastRow);
                 IMObjectReference eventId = (event != null)
                         ? event.getReference(ScheduleEvent.ACT_REFERENCE)
                         : null;
@@ -449,14 +462,14 @@ public abstract class ScheduleBrowser extends AbstractBrowser<ObjectSet> {
         }
         if (doubleClick) {
             if (selected == null) {
-                for (QueryBrowserListener<ObjectSet> listener
+                for (QueryBrowserListener<PropertySet> listener
                         : getQueryListeners()) {
                     if (listener instanceof ScheduleBrowserListener) {
                         ((ScheduleBrowserListener) listener).create();
                     }
                 }
             } else {
-                for (QueryBrowserListener<ObjectSet> listener
+                for (QueryBrowserListener<PropertySet> listener
                         : getQueryListeners()) {
                     if (listener instanceof ScheduleBrowserListener) {
                         ((ScheduleBrowserListener) listener).edit(selected);

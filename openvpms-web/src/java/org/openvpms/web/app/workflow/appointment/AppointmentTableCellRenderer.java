@@ -22,7 +22,7 @@ import echopointng.layout.TableLayoutDataEx;
 import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Table;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableCellRenderer;
@@ -72,7 +72,7 @@ public class AppointmentTableCellRenderer extends ScheduleTableCellRenderer {
 
             result = TableHelper.createFragment(text);
 
-            ObjectSet event = model.getEvent(column, row);
+            PropertySet event = model.getEvent(column, row);
             if (event != null) {
                 layout = getEventLayoutData(event, model);
             } else {

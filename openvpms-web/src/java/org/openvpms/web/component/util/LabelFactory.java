@@ -109,7 +109,18 @@ public final class LabelFactory extends ComponentFactory {
      * @return a new label
      */
     public static Label create(String key) {
-        Label label = create();
+        return create(key, false);
+    }
+
+    /**
+     * Create a new label with localised text, and default style.
+     *
+     * @param key       the resource bundle key. May be <code>null</code>
+     * @param multiline if <tt>true</tt>, iterprets new lines in the text
+     * @return a new label
+     */
+    public static Label create(String key, boolean multiline) {
+        Label label = create(multiline);
         if (key != null) {
             label.setText(getString(TYPE, key, false));
         }

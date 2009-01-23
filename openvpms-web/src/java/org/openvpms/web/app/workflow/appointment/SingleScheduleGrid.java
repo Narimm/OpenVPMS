@@ -19,8 +19,9 @@
 package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 
 import java.util.ArrayList;
@@ -64,13 +65,15 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
     /**
      * Creates a new <tt>SingleScheduleGrid</tt>.
      *
+     * @param scheduleView         the schedule view
      * @param date                 the appointment date
      * @param organisationSchedule the schedule
      * @param appointmentSets      the appointments
      */
-    public SingleScheduleGrid(Date date, Party organisationSchedule,
-                              List<ObjectSet> appointmentSets) {
-        super(date, -1, -1);
+    public SingleScheduleGrid(Entity scheduleView, Date date,
+                              Party organisationSchedule,
+                              List<PropertySet> appointmentSets) {
+        super(scheduleView, date, -1, -1);
         schedule = createSchedule(organisationSchedule);
         schedules = Arrays.asList(schedule);
         int startMins = schedule.getStartMins();
@@ -78,7 +81,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
         int slotSize = schedule.getSlotSize();
 
         // adjust the start and end minutes based on the appointments present
-        for (ObjectSet set : appointmentSets) {
+        for (PropertySet set : appointmentSets) {
             Date startTime = set.getDate(ScheduleEvent.ACT_START_TIME);
             Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
             int slotStart = getSlotMinutes(startTime, false);
@@ -124,7 +127,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      * @param slot     the slot
      * @return the corresponding appointment, or <tt>null</tt> if none is found
      */
-    public ObjectSet getEvent(Schedule schedule, int slot) {
+    public PropertySet getEvent(Schedule schedule, int slot) {
         SlotGroup group = slots.get(slot).getGroup();
         return (group != null) ? group.getAppointment() : null;
     }
@@ -141,7 +144,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      * @return the no. of slots that the appointment occupies
      */
     @Override
-    public int getSlots(ObjectSet appointment, int slot) {
+    public int getSlots(PropertySet appointment, int slot) {
         SlotGroup group = slots.get(slot).getGroup();
         int result = 0;
         if (group != null) {
@@ -225,8 +228,8 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param sets the appointments
      */
-    private void setAppointments(List<ObjectSet> sets) {
-        for (ObjectSet set : sets) {
+    private void setAppointments(List<PropertySet> sets) {
+        for (PropertySet set : sets) {
             // add the appointment, and create a new SlotGroup for it
             addAppointment(set);
         }
@@ -271,7 +274,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param set the appointment
      */
-    private void addAppointment(ObjectSet set) {
+    private void addAppointment(PropertySet set) {
         schedule.addEvent(set);
 
         Date startTime = set.getDate(ScheduleEvent.ACT_START_TIME);
@@ -354,7 +357,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
         /**
          * The appointment.
          */
-        private final ObjectSet appointment;
+        private final PropertySet appointment;
 
         /**
          * The no. of slots that the appointment occupies.
@@ -384,7 +387,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
          * @param endMins     the end time, as minutes from midnight
          * @param slots       the no. of slots that the appointment occupies
          */
-        public SlotGroup(ObjectSet appointment, int startMins, int endMins,
+        public SlotGroup(PropertySet appointment, int startMins, int endMins,
                          int slots) {
             this.appointment = appointment;
             this.startMins = startMins;
@@ -397,7 +400,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
          *
          * @return the appointment
          */
-        public ObjectSet getAppointment() {
+        public PropertySet getAppointment() {
             return appointment;
         }
 

@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 
 
@@ -29,7 +29,7 @@ import org.openvpms.web.component.im.query.QueryBrowserListener;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ScheduleBrowserListener
-        extends QueryBrowserListener<ObjectSet> {
+        extends QueryBrowserListener<PropertySet> {
 
     /**
      * Invoked to create and edit a new event.
@@ -41,6 +41,6 @@ public interface ScheduleBrowserListener
      *
      * @param event the set representing the event
      */
-    void edit(ObjectSet event);
+    void edit(PropertySet event);
 
 }

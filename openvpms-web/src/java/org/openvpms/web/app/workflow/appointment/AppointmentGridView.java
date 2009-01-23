@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 
 import java.util.Date;
@@ -58,7 +58,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      */
     public AppointmentGridView(AppointmentGrid grid, int startMins,
                                int endMins) {
-        super(grid.getDate(), startMins, endMins);
+        super(grid.getScheduleView(), grid.getDate(), startMins, endMins);
         this.grid = grid;
         startSlot = grid.getFirstSlot(startMins);
         if (startSlot == -1) {
@@ -94,7 +94,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      * @param slot     the slot
      * @return the corresponding appointment, or <tt>null</tt> if none is found
      */
-    public ObjectSet getEvent(Schedule schedule, int slot) {
+    public PropertySet getEvent(Schedule schedule, int slot) {
         return grid.getEvent(schedule, startSlot + slot);
     }
 
@@ -110,7 +110,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      * @return the no. of slots that the appointment occupies
      */
     @Override
-    public int getSlots(ObjectSet appointment, int slot) {
+    public int getSlots(PropertySet appointment, int slot) {
         return grid.getSlots(appointment, startSlot + slot);
     }
 

@@ -18,20 +18,14 @@
 
 package org.openvpms.web.component.im.util;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -74,15 +68,8 @@ public class LookupNameHelper {
      */
     public static Map<String, String> getLookupNames(String shortName,
                                                      String node) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(shortName);
-        if (archetype != null) {
-            NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
-            if (descriptor != null) {
-                return getLookupNames(descriptor);
-            }
-        }
-        return Collections.emptyMap();
+        return LookupHelper.getNames(
+                ArchetypeServiceHelper.getArchetypeService(), shortName, node);
     }
 
     /**
@@ -96,16 +83,8 @@ public class LookupNameHelper {
      */
     public static Map<String, String> getLookupNames(
             NodeDescriptor descriptor) {
-        Map<String, String> result = new HashMap<String, String>();
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        List<Lookup> lookups = LookupHelper.get(service, descriptor);
-        for (Lookup lookup : lookups) {
-            if (lookup.isActive()) {
-                result.put(lookup.getCode(), lookup.getName());
-            }
-        }
-        return result;
+        return LookupHelper.getNames(
+                ArchetypeServiceHelper.getArchetypeService(), descriptor);
     }
 
 }

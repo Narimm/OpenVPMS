@@ -27,7 +27,7 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
@@ -87,17 +87,6 @@ public class AppointmentBrowser extends ScheduleBrowser {
     }
 
     /**
-     * Performs a query.
-     *
-     * @param reselect if <tt>true</tt> try and reselect the selected cell
-     */
-    @Override
-    protected void doQuery(boolean reselect) {
-        getComponent();
-        super.doQuery(reselect);
-    }
-
-    /**
      * Returns the query.
      *
      * @return the query
@@ -114,14 +103,15 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param events the events
      */
     protected ScheduleEventGrid createEventGrid(
-            Date date, Map<Entity, List<ObjectSet>> events) {
+            Date date, Map<Entity, List<PropertySet>> events) {
         Set<Entity> schedules = events.keySet();
         AppointmentGrid grid;
         if (schedules.size() == 1) {
             Party schedule = (Party) schedules.iterator().next();
-            grid = new SingleScheduleGrid(date, schedule, events.get(schedule));
+            grid = new SingleScheduleGrid(getScheduleView(), date, schedule,
+                                          events.get(schedule));
         } else {
-            grid = new MultiScheduleGrid(date, events);
+            grid = new MultiScheduleGrid(getScheduleView(), date, events);
         }
         AppointmentQuery.TimeRange range = getQuery().getTimeRange();
         return createGridView(grid, range);
@@ -171,7 +161,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         SplitPane component = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL,
                 "AppointmentBrowser", column);
-        if (table != null) {
+        if (getScheduleView() != null && table != null) {
             addTable(table, component);
         }
         return component;

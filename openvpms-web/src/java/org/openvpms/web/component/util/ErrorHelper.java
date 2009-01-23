@@ -57,7 +57,21 @@ public class ErrorHelper {
      * @param error the error
      */
     public static void show(String error) {
-        log.error(error);
+        show(error, true);
+    }
+
+    /**
+     * Display and optionally log an error. If an error dialog is already
+     * displayed, this method will not pop up a new one, to avoid
+     * multiple dialogs related to the same error.
+     *
+     * @param error the error
+     * @param log   if <tt>true</tt> log the error
+     */
+    public static void show(String error, boolean log) {
+        if (log) {
+            ErrorHelper.log.error(error);
+        }
         if (!inError()) {
             ErrorDialog.show(error);
         }
@@ -140,6 +154,24 @@ public class ErrorHelper {
     public static void show(Throwable error) {
         String message = getError(error);
         log.error(message, error);
+        if (!inError()) {
+            ErrorDialog.show(message);
+        }
+    }
+
+    /**
+     * Display and optionally log an error. If an error dialog is already
+     * displayed, this method will not pop up a new one, to avoid multiple
+     * dialogs related to the same error.
+     *
+     * @param error the error
+     * @param log   if <tt>true</tt> log the error
+     */
+    public static void show(Throwable error, boolean log) {
+        String message = getError(error);
+        if (log) {
+            ErrorHelper.log.error(message, error);
+        }
         if (!inError()) {
             ErrorDialog.show(message);
         }

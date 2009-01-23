@@ -18,11 +18,19 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import org.apache.commons.jxpath.JXPathContext;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.web.component.util.DateHelper;
+import org.openvpms.web.resource.util.Messages;
+
 import java.util.Calendar;
 import java.util.Date;
 
+
 /**
- * Add description here.
+ * Scheduling helper.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -61,4 +69,47 @@ public class SchedulingHelper {
         }
         return result;
     }
+
+    /**
+     * Evaluates an xpath expression against the supplied event.
+     * <p/>
+     * If the event has an {@link ScheduleEvent.ARRIVAL_TIME} property,
+     * a formatted string named <em>waiting</em> will be added to the set prior
+     * to evaluation of the expression. This indicates the waiting time, and
+     * is the difference between the arrival time and the current time.
+     * <p/>
+     * NOTE: any string sequence containing the characters '\\n' will be treated
+     * as new lines.
+     *
+     * @param expression the expression
+     * @param event      the event
+     * @return the evaluate result. May be <tt>null</tt>
+     */
+    public static String evaluate(String expression, PropertySet event) {
+        String text;
+        String waiting = "";
+        if (event.exists(ScheduleEvent.ARRIVAL_TIME)) {
+            Date arrival = event.getDate(ScheduleEvent.ARRIVAL_TIME);
+            if (arrival != null) {
+                waiting = DateHelper.formatTimeDiff(arrival, new Date());
+                waiting = Messages.get("scheduleview.expression.waiting",
+                                       waiting);
+            }
+        }
+        event.set("waiting", waiting);
+        JXPathContext context = JXPathHelper.newContext(event);
+
+        // hack to replace all instances of '\\n' with new lines to
+        // enable new lines to be included in the text
+        // Can't use <br> as all xml is escaped
+        expression = expression.replace("\'\\n\'", "\'\n\'");
+        try {
+            Object value = context.getValue(expression);
+            text = (value != null) ? value.toString() : null;
+        } catch (Throwable exception) {
+            text = exception.toString();
+        }
+        return text;
+    }
+
 }

@@ -18,7 +18,8 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
 import java.util.List;
@@ -38,6 +39,13 @@ public interface ScheduleEventGrid {
     enum Availability {
         FREE, BUSY, UNAVAILABLE
     }
+
+    /**
+     * Returns the schedule view associated with this grid.
+     *
+     * @return the schedule view
+     */
+    Entity getScheduleView();
 
     /**
      * Returns the schedule date.
@@ -69,7 +77,7 @@ public interface ScheduleEventGrid {
      * @param slot     the slot
      * @return the corresponding event, or <tt>null</tt> if none is found
      */
-    ObjectSet getEvent(Schedule schedule, int slot);
+    PropertySet getEvent(Schedule schedule, int slot);
 
     /**
      * Returns the time that the specified slot starts at.

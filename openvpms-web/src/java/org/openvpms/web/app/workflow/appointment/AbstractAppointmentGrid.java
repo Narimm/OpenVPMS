@@ -22,9 +22,10 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.SchedulingHelper;
 
@@ -38,6 +39,11 @@ import java.util.Date;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractAppointmentGrid implements AppointmentGrid {
+
+    /**
+     * The schedule view.
+     */
+    private final Entity scheduleView;
 
     /**
      * The grid date. All appointments must begin or end on this date.
@@ -83,15 +89,27 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
     /**
      * Creates a new <tt>AbstractAppointmentGrid</tt>.
      *
-     * @param date      the appointment date
-     * @param startMins the grid start time, as minutes from midnight
-     * @param endMins   the grid end time, as minutes from midnight
+     * @param scheduleView the schedule view
+     * @param date         the appointment date
+     * @param startMins    the grid start time, as minutes from midnight
+     * @param endMins      the grid end time, as minutes from midnight
      */
-    public AbstractAppointmentGrid(Date date, int startMins, int endMins) {
+    public AbstractAppointmentGrid(Entity scheduleView, Date date,
+                                   int startMins, int endMins) {
+        this.scheduleView = scheduleView;
         this.date = DateRules.getDate(date);
         this.startMins = startMins;
         this.endMins = endMins;
         rules = new AppointmentRules();
+    }
+
+    /**
+     * Returns the schedule view associated with this grid.
+     *
+     * @return the schedule view
+     */
+    public Entity getScheduleView() {
+        return scheduleView;
     }
 
     /**
@@ -152,7 +170,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      * @param slot        the starting slot
      * @return the no. of slots that the appointment occupies
      */
-    public int getSlots(ObjectSet appointment, int slot) {
+    public int getSlots(PropertySet appointment, int slot) {
         Date startTime = getStartTime(slot);
         Date endTime = appointment.getDate(ScheduleEvent.ACT_END_TIME);
         int startSlot = getSlot(startTime);

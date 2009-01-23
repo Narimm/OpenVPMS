@@ -38,7 +38,7 @@ package org.openvpms.web.app.workflow.appointment;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 
 import java.util.ArrayList;
@@ -67,12 +67,13 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
     /**
      * Creates a new <tt>MultiScheduleGrid</tt>.
      *
+     * @param scheduleView the schedule view
      * @param date         the appointment date
      * @param appointments the appointments
      */
-    public MultiScheduleGrid(Date date,
-                             Map<Entity, List<ObjectSet>> appointments) {
-        super(date, -1, -1);
+    public MultiScheduleGrid(Entity scheduleView, Date date,
+                             Map<Entity, List<PropertySet>> appointments) {
+        super(scheduleView, date, -1, -1);
         columns = new ArrayList<Schedule>();
         setAppointments(appointments);
     }
@@ -93,9 +94,9 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      * @param slot     the slot
      * @return the corresponding appointment, or <tt>null</tt> if none is found
      */
-    public ObjectSet getEvent(Schedule schedule, int slot) {
+    public PropertySet getEvent(Schedule schedule, int slot) {
         Date time = getStartTime(schedule, slot);
-        ObjectSet result = schedule.getEvent(time, getSlotSize());
+        PropertySet result = schedule.getEvent(time, getSlotSize());
         if (result == null && slot == 0) {
             result = schedule.getIntersectingEvent(time);
         }
@@ -134,7 +135,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param appointments the appointments, keyed on schedule
      */
-    private void setAppointments(Map<Entity, List<ObjectSet>> appointments) {
+    private void setAppointments(Map<Entity, List<PropertySet>> appointments) {
         int startMins = -1;
         int endMins = -1;
         int slotSize = -1;
@@ -173,12 +174,12 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         setSlotSize(slotSize);
 
         // add the appointments
-        for (Map.Entry<Entity, List<ObjectSet>> entry
+        for (Map.Entry<Entity, List<PropertySet>> entry
                 : appointments.entrySet()) {
             Party schedule = (Party) entry.getKey();
-            List<ObjectSet> sets = entry.getValue();
+            List<PropertySet> sets = entry.getValue();
 
-            for (ObjectSet set : sets) {
+            for (PropertySet set : sets) {
                 addAppointment(schedule, set);
             }
         }
@@ -194,7 +195,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      * @param schedule the schedule to add the appointment to
      * @param set      the appointment
      */
-    private void addAppointment(Party schedule, ObjectSet set) {
+    private void addAppointment(Party schedule, PropertySet set) {
         Date startTime = set.getDate(ScheduleEvent.ACT_START_TIME);
         Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
         int index = -1;

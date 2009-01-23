@@ -19,18 +19,16 @@
 package org.openvpms.web.component.property;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.util.TextHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
@@ -144,7 +142,7 @@ public class SimpleProperty extends AbstractProperty {
      */
     public String getDisplayName() {
         if (displayName == null) {
-            displayName = unCamelCase(name);
+            displayName = TextHelper.unCamelCase(name);
         }
         return displayName;
     }
@@ -472,19 +470,4 @@ public class SimpleProperty extends AbstractProperty {
         refresh();
     }
 
-    private String unCamelCase(String name) {
-        ArrayList<String> words = new ArrayList<String>();
-
-        Pattern pattern = Pattern.compile("/(\\w+?)([A-Z].*)/");
-        Matcher matcher = pattern.matcher(name);
-        while (matcher.matches()) {
-            String word = matcher.group(1);
-            name = matcher.group(2);
-            words.add(StringUtils.capitalize(word));
-        }
-
-        words.add(StringUtils.capitalize(name));
-
-        return StringUtils.join(words.iterator(), " ");
-    }
 }
