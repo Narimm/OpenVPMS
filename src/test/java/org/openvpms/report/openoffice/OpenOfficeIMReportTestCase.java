@@ -71,7 +71,7 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         assertEquals("2.00", fields.get("expression"));
         assertEquals("1234 Foo St\nMelbourne VIC 3001",
                      fields.get("address"));
-        assertEquals("Invalid node name: invalid", fields.get("invalid"));
+        assertEquals("Invalid property name: invalid", fields.get("invalid"));
     }
 
     /**

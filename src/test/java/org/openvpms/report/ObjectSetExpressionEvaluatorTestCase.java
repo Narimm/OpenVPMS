@@ -64,7 +64,7 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
 
         // test invalid nodes
         assertEquals("Invalid object/node name: foo", eval.getValue("foo"));
-        assertEquals("Invalid node name: foo",
+        assertEquals("Invalid property name: foo",
                      eval.getValue("act.customer.foo"));
 
         // test expressions
@@ -103,7 +103,7 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         // test invalid nodes
         assertEquals("Invalid object/node name: foo",
                      eval.getFormattedValue("foo"));
-        assertEquals("Invalid node name: foo",
+        assertEquals("Invalid property name: foo",
                      eval.getFormattedValue("act.customer.foo"));
 
 
