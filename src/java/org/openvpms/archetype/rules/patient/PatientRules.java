@@ -118,7 +118,7 @@ public class PatientRules {
         ActBean bean = new ActBean(act, service);
         Party patient = (Party) bean.getParticipant("participation.patient");
         Date startTime = act.getActivityStartTime();
-        return getOwner(patient, startTime);
+        return getOwner(patient, startTime, false);
     }
 
     /**
@@ -129,7 +129,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getOwner(Party patient) {
-        return getOwner(patient, new Date());
+        return getOwner(patient, new Date(), true);
     }
 
     /**
@@ -137,16 +137,17 @@ public class PatientRules {
      *
      * @param patient the patient
      * @param startTime the date to search for the ownership
+     * @param active only check active ownerships
      * @return the patient's owner, or <tt>null</tt> if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Party getOwner(Party patient, Date startTime) {
+    public Party getOwner(Party patient, Date startTime, Boolean active) {
         Party owner = null;
         if (patient != null && startTime != null) {
             EntityBean patientBean = new EntityBean(patient, service);
             owner = (Party) patientBean.getSourceEntity(
                     PatientArchetypes.PATIENT_OWNER, startTime, false);
-            if (owner == null) {
+            if (owner == null && active == false) {
                 // no match for the start time, so try and find an owner close
                 // to the start time
                 EntityRelationship match = null;
