@@ -35,7 +35,7 @@
               defaultValue="'Enter a title ...'"/>
         <node name="endTime" displayName="Expiry Date" path="/activityEndTime"
               type="java.util.Date" minCardinality="0"/>
-        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="2000"/>
+        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="lowTotal" path="/details/lowTotal"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               defaultValue="'0.0'" minCardinality="1" readOnly="true"/>
