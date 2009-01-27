@@ -30,7 +30,7 @@
               filter="participation.stockLocation" readOnly="true"/>
         <node name="startTime" displayName="Date" path="/activityStartTime"
               type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
-        <node name="title" displayName="Notes" path="/title" type="java.lang.String" minCardinality="0" maxLength="30" defaultValue=""/>
+        <node name="title" displayName="Notes" path="/title" type="java.lang.String" minCardinality="0" maxLength="150" defaultValue=""/>
         <node name="amount" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true">
