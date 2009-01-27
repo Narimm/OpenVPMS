@@ -1,11 +1,9 @@
 <archetype>
 	<data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Practice" currency="AUD">
-		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777" />
-		<data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC" postcode="3088" />
+		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="99999999" />
 	</data>	
 	<data id="OL1" archetype="party.organisationLocation" name="Main Clinic">
-		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777" />
-		<data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC" postcode="3088" />
+		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9999999" />
 	</data>
 	<data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1" />
 	<data id="OTC1" archetype="party.organisationOTC" name="OTC"/>
@@ -39,23 +37,6 @@
 	<data archetype="entityRelationship.worklistTaskType" source="id:OW1" target="id:TT1" noSlots="1"/>		
 	<data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT2" noSlots="1"/>		
 	<data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT3" noSlots="1"/>		
-	<data id="CTY1" archetype="lookup.country" code="AU" name="Australia" defaultLookup="true"/>
-	<data id="VIC" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true"/>
-	<data id="NSW" archetype="lookup.state" code="NSW" name="New South Wales" />
-	<data id="WA" archetype="lookup.state" code="WA" name="Western Australia" />
-	<data id="SA" archetype="lookup.state" code="SA" name="South Australia" />
-	<data id="NT" archetype="lookup.state" code="NT" name="Northern Territory" />
-	<data id="TAS" archetype="lookup.state" code="TAS" name="Tasmania" />
-	<data id="ACT" archetype="lookup.state" code="ACT" name="Australian Capital Territory" />
-	<data id="QLD" archetype="lookup.state" code="QLD" name="Queensland" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:VIC" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:NSW" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:WA" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:SA" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:NT" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:TAS" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ACT" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:QLD" />
 	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
 	<data archetype="lookup.uom" code="BOTTLE" />
 	<data archetype="lookup.uom" code="SYRINGE" />
