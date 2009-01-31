@@ -18,14 +18,18 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import echopointng.BalloonHelp;
-import echopointng.layout.TableLayoutDataEx;
-import echopointng.table.TableColumnEx;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
+
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -39,10 +43,9 @@ import org.openvpms.web.component.util.BalloonHelpFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import echopointng.BalloonHelp;
+import echopointng.layout.TableLayoutDataEx;
+import echopointng.table.TableColumnEx;
 
 
 /**
@@ -452,7 +455,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return the evaluate result. May be <tt>null</tt>
      */
     protected String evaluate(PropertySet event) {
-        if (expression != null) {
+        if (!StringUtils.isEmpty(expression)) {
             return SchedulingHelper.evaluate(expression, event);
         }
         return null;
