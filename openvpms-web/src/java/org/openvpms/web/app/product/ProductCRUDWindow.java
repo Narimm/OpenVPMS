@@ -92,13 +92,20 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        super.enableButtons(buttons, enable);
-        if (copy != null) {
-            buttons.remove(copy);
-            if (enable) {
-                buttons.add(copy);
+    	buttons.removeAll();
+    	if (enable) {
+    		buttons.add(getCreateButton());
+    		if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+    			buttons.add(getEditButton());
+    			buttons.add(getDeleteButton());
+    		}
+            if (copy != null) {
+            	buttons.add(copy);
             }
-        }
+    	}
+    	else {
+    		buttons.add(getCreateButton());    		
+    	}
     }
 
     /**
