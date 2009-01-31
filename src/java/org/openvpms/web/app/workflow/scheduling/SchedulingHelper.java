@@ -107,7 +107,7 @@ public class SchedulingHelper {
             Object value = context.getValue(expression);
             text = (value != null) ? value.toString() : null;
         } catch (Throwable exception) {
-            text = exception.toString();
+            text = "Expression Error";
         }
         return text;
     }
