@@ -47,7 +47,8 @@ public class AbstractProductTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to add an <em>productPrice.unitPrice</em> to a product.
+     * Helper to add an <em>productPrice.unitPrice</em> to a product, and save
+     * the product.
      *
      * @param product the product
      * @param cost    the cost
@@ -55,7 +56,21 @@ public class AbstractProductTest extends ArchetypeServiceTest {
      * @return the unit price
      */
     protected ProductPrice addUnitPrice(Product product, BigDecimal cost,
-                                BigDecimal price) {
+                                        BigDecimal price) {
+        return addUnitPrice(product, cost, price, true);
+    }
+
+    /**
+     * Helper to add an <em>productPrice.unitPrice</em> to a product.
+     *
+     * @param product the product
+     * @param cost    the cost
+     * @param price   the price
+     * @param save    if <tt>true</tt> save the product
+     * @return the unit price
+     */
+    protected ProductPrice addUnitPrice(Product product, BigDecimal cost,
+                                        BigDecimal price, boolean save) {
         ProductPrice unitPrice
                 = (ProductPrice) create("productPrice.unitPrice");
         IMObjectBean priceBean = new IMObjectBean(unitPrice);
@@ -63,7 +78,9 @@ public class AbstractProductTest extends ArchetypeServiceTest {
         priceBean.setValue("markup", BigDecimal.valueOf(100));
         priceBean.setValue("price", price);
         product.addProductPrice(unitPrice);
-        save(product);
+        if (save) {
+            save(product);
+        }
         return unitPrice;
     }
 

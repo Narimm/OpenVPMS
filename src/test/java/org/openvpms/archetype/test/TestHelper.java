@@ -261,13 +261,27 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates a new product with an optional species classification.
+     * Creates and saves a new product with an optional species classification.
      * The product name is prefixed with <em>XProduct-</em>.
      *
      * @param species the species classification name. May be <code>null</code>
      * @return a new product
      */
     public static Product createProduct(String shortName, String species) {
+        return createProduct(shortName, species, true);
+    }
+
+    /**
+     * Creates a new product with an optional species classification.
+     * The product name is prefixed with <em>XProduct-</em>.
+     *
+     * @param shortName the product short name
+     * @param species   the species classification name. May be <tt>null</tt>
+     * @param save      if <tt>true</tt>, save the product
+     * @return a new product
+     */
+    public static Product createProduct(String shortName, String species,
+                                        boolean save) {
         Product product = (Product) create(shortName);
         EntityBean bean = new EntityBean(product);
         String name = "XProduct-" + ((species != null) ? species : "")
@@ -278,20 +292,34 @@ public class TestHelper extends Assert {
                     = getLookup("lookup.species", species);
             bean.addValue("species", classification);
         }
-        bean.save();
+        if (save) {
+            bean.save();
+        }
         return product;
+    }
+
+    /**
+     * Creates and saves new <code>party.supplierorganisation</em>.
+     *
+     * @return a new party
+     */
+    public static Party createSupplier() {
+        return createSupplier(true);
     }
 
     /**
      * Creates a new <code>party.supplierorganisation</em>.
      *
+     * @param save if <tt>true</tt> save the supplier
      * @return a new party
      */
-    public static Party createSupplier() {
+    public static Party createSupplier(boolean save) {
         Party party = (Party) create("party.supplierorganisation");
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("name", "XSupplier");
-        bean.save();
+        if (save) {
+            bean.save();
+        }
         return party;
     }
 
