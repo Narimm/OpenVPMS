@@ -215,12 +215,12 @@ public class ProductPriceUpdater {
      */
     public List<ProductPrice> update(ProductSupplier productSupplier,
                                      boolean save) {
-        List<ProductPrice> result;
+        List<ProductPrice> result = Collections.emptyList();
         if (canUpdate(productSupplier)) {
             Product product = productSupplier.getProduct();
-            result = doUpdate(productSupplier, product, save);
-        } else {
-            result = Collections.emptyList();
+            if (product != null) {
+                result = doUpdate(productSupplier, product, save);
+            }
         }
         return result;
     }

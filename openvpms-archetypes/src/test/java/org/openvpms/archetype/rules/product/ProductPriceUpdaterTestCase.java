@@ -130,6 +130,34 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
+     * Tests update when a newly created product is saved with a relationship
+     * to an existing supplier.
+     */
+    public void testSaveNewProduct() {
+        checkSaveProductAndSupplier(true, false, true);
+        checkSaveProductAndSupplier(true, false, false);
+    }
+
+
+    /**
+     * Tests update when an existing product is saved with a relationship
+     * to a new supplier.
+     */
+    public void testSaveNewSupplier() {
+        checkSaveProductAndSupplier(false, true, true);
+        checkSaveProductAndSupplier(false, true, false);
+    }
+
+    /**
+     * Tests update when a newly created product is saved with a relationship
+     * to a new supplier.
+     */
+    public void testSaveNewProductAndSupplier() {
+        checkSaveProductAndSupplier(true, true, true);
+        checkSaveProductAndSupplier(true, true, false);
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -150,6 +178,60 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      */
     private Party initPractice() {
         return TestHelper.getPractice();
+    }
+
+    /**
+     * Verifies that prices are updated correctly when relationships are
+     * created between products and suppliers.
+     *
+     * @param newProduct       if <tt>true</tt> the product is not saved prior
+     *                         to adding the relationship
+     * @param newSupplier      if <tt>true</tt> the supplier is not saved prior
+     *                         to adding the relationship
+     * @param saveProductFirst if <tt>true</tt> the product is saved first
+     *                         in the transaction, otherwise the supplier is.
+     *                         This affects the order in which rules are fired
+     */
+    private void checkSaveProductAndSupplier(boolean newProduct,
+                                             boolean newSupplier,
+                                             boolean saveProductFirst) {
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
+                                                   null, !newProduct);
+        Party supplier = TestHelper.createSupplier(!newSupplier);
+
+        // add a new price
+        addUnitPrice(product, BigDecimal.ZERO, BigDecimal.ZERO, false);
+
+        // create a product-supplier relationship.
+        int packageSize = 30;
+        ProductRules rules = new ProductRules();
+        ProductSupplier ps = rules.createProductSupplier(product, supplier);
+        ps.setPackageUnits(PACKAGE_UNITS);
+        ps.setPackageSize(packageSize);
+        ps.setAutoPriceUpdate(true);
+        ps.setNettPrice(new BigDecimal("10.00"));
+        ps.setListPrice(new BigDecimal("20.00"));
+        product.addEntityRelationship(ps.getRelationship());
+        supplier.addEntityRelationship(ps.getRelationship());
+
+        if (newProduct) {
+            assertTrue(product.isNew());
+        } else {
+            assertFalse(product.isNew());
+        }
+        if (newSupplier) {
+            assertTrue(supplier.isNew());
+        } else {
+            assertFalse(supplier.isNew());
+        }
+        if (saveProductFirst) {
+            save(product, supplier);
+        } else {
+            save(supplier, product);
+        }
+
+        // verify that the price has updated
+        checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.34"));
     }
 
     /**
