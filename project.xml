@@ -459,11 +459,9 @@
             <groupId>castor</groupId>
             <artifactId>castor-xml</artifactId>
             <version>0.9.7</version>
-            <properties>
-                <classpath>true</classpath>
-            </properties>
             <url>http://castor.codehaus.org/</url>
             <properties>
+                <classpath>true</classpath>
                 <war.bundle>true</war.bundle>
             </properties>
         </dependency>
