@@ -47,17 +47,36 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="identities" path="/identities"
-              type="java.util.HashSet" baseName="Identity" minCardinality="0"
-              maxCardinality="*">
+        <node name="linked" path="/entityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.productLink">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entityIdentity.code"/>
+                                  value="entityRelationship.productLink"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
+            </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active linked product relationship</errorMessage>
+            </assertion>
+        </node>
+        <node name="type" path="/entityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.productTypeProduct">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityRelationship.productTypeProduct"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product type relationship</errorMessage>
             </assertion>
         </node>
         <node name="reminders" path="/entityRelationships"
@@ -105,19 +124,6 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="taxes" path="/classifications" parentChild="false"
-              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.taxType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.taxType"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
         <node name="discounts" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.discountProduct">
@@ -131,22 +137,6 @@
             </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active product discount relationship</errorMessage>
-            </assertion>
-        </node>
-        <node name="type" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.productTypeProduct">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.productTypeProduct"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-            <assertion name="uniqueEntityRelationship">
-                <errorMessage>Duplicate active product type relationship</errorMessage>
             </assertion>
         </node>
         <node name="species" path="/classifications" parentChild="false"
@@ -183,20 +173,30 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="linked" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.productLink">
+        <node name="identities" path="/identities"
+              type="java.util.HashSet" baseName="Identity" minCardinality="0"
+              maxCardinality="*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entityRelationship.productLink"/>
+                                  value="entityIdentity.code"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
-            <assertion name="uniqueEntityRelationship">
-                <errorMessage>Duplicate active linked product relationship</errorMessage>
+        </node>
+        <node name="taxes" path="/classifications" parentChild="false"
+              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+              filter="lookup.taxType">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="lookup.taxType"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="sourceRelationships" path="/sourceEntityRelationships"
