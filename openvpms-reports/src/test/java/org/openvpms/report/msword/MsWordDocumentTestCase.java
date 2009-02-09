@@ -23,6 +23,8 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.openoffice.AbstractOpenOfficeDocumentTest;
 import org.openvpms.report.openoffice.OpenOfficeDocument;
+import org.openvpms.report.openoffice.OOConnection;
+import org.openvpms.report.openoffice.OpenOfficeHelper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -35,6 +37,12 @@ import java.util.Map;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class MsWordDocumentTestCase extends AbstractOpenOfficeDocumentTest {
+
+    /**
+     * The OpenOffice connection.
+     */
+    private OOConnection connection;
+
 
     /**
      * Tests the {@link MsWordDocument#getUserFieldNames()},
@@ -81,7 +89,30 @@ public class MsWordDocumentTestCase extends AbstractOpenOfficeDocumentTest {
 
         checkUpdateInputField(doc, input1, "input1 new value");
         checkUpdateInputField(doc, input2, "input2 new value");
-        checkUpdateInputField(doc, input3, "input3 new value");    }
+        checkUpdateInputField(doc, input3, "input3 new value");
+    }
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        connection = getConnection();
+    }
+
+    /**
+     * Tears down the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onTearDown() throws Exception {
+        super.onTearDown();
+        OpenOfficeHelper.close(connection);
+    }
 
     /**
      * Loads the document to test agaisnt.
@@ -92,7 +123,7 @@ public class MsWordDocumentTestCase extends AbstractOpenOfficeDocumentTest {
         Document document
                 = getDocument("src/test/reports/act.customerEstimation.doc",
                               DocFormats.DOC_TYPE);
-        return new MsWordDocument(document, getConnection(), getHandlers());
+        return new MsWordDocument(document, connection, getHandlers());
     }
 
 }

@@ -20,6 +20,8 @@ package org.openvpms.report.openoffice;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -53,12 +55,17 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     /**
      * The document template.
      */
-    protected final Document template;
+    private final Document template;
 
     /**
      * The document handlers.
      */
-    protected final DocumentHandlers handlers;
+    private final DocumentHandlers handlers;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(OpenOfficeIMReport.class);
 
 
     /**
@@ -88,10 +95,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             Map<String, ParameterType> fields = doc.getInputFields();
             result = new LinkedHashSet<ParameterType>(fields.values());
         } finally {
-            if (doc != null) {
-                doc.close();
-            }
-            OpenOfficeHelper.close(connection);
+            close(doc, connection);
         }
         return result;
     }
@@ -220,10 +224,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             doc = create(objects, parameters, connection);
             return export(doc, mimeType);
         } finally {
-            if (doc != null) {
-                doc.close();
-            }
-            OpenOfficeHelper.close(connection);
+            close(doc, connection);
         }
     }
 
@@ -313,18 +314,19 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      */
     public void print(Iterator<T> objects, Map<String, Object> parameters,
                       PrintProperties properties) {
+        OpenOfficeDocument doc = null;
         OOConnection connection = null;
         try {
             PrintService service = OpenOfficeHelper.getPrintService();
             connection = OpenOfficeHelper.getConnectionPool().getConnection();
-            OpenOfficeDocument doc = create(objects, parameters, connection);
+            doc = create(objects, parameters, connection);
             service.print(doc, properties.getPrinterName(), true);
         } catch (OpenOfficeException exception) {
             throw new ReportException(exception,
                                       FailedToPrintReport,
                                       exception.getMessage());
         } finally {
-            OpenOfficeHelper.close(connection);
+            close(doc, connection);
         }
     }
 
@@ -427,6 +429,23 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
                 document.setUserField(name, value);
             }
         }
+    }
+
+    /**
+     * Helper to close a document and connection.
+     *
+     * @param doc        the document. May be <tt>null</tt>
+     * @param connection the connection. May be <tt>null</tt>
+     */
+    private void close(OpenOfficeDocument doc, OOConnection connection) {
+        if (doc != null) {
+            try {
+                doc.close();
+            } catch (Throwable exception) {
+                log.warn(exception, exception);
+            }
+        }
+        OpenOfficeHelper.close(connection);
     }
 
     /**

@@ -111,13 +111,4 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         assertEquals("2.00", eval.getFormattedValue("[1 + 1]"));
     }
 
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContext.xml"};
-    }
-
 }

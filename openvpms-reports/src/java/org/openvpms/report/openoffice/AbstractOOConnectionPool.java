@@ -25,6 +25,8 @@ import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.Faile
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -38,7 +40,13 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
     /**
      * The set of available collections.
      */
-    protected final ArrayBlockingQueue<State> connections;
+    private final ArrayBlockingQueue<State> connections;
+
+    /**
+     * Reentrant lock to avoid allocating and destroying connections
+     * simulatenously.
+     */
+    private final Lock lock = new ReentrantLock();
 
     /**
      * The pool capacity.
@@ -52,7 +60,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
 
     /**
      * The maximum no. of times a connection may be used before being
-     * closed. A value <code>&lt;= 0</code> indicates it should never be closed
+     * closed. A value <tt>&lt;= 0</tt> indicates it should never be closed.
      */
     private int uses = 0;
 
@@ -64,7 +72,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
 
 
     /**
-     * Constructs a new <code>AbstractOOConnectionPool</code>.
+     * Constructs a new <tt>AbstractOOConnectionPool</tt>.
      *
      * @param capacity the pool capacity
      */
@@ -74,16 +82,21 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
     }
 
     /**
-     * Gets a connection, blocking for up to <code>timeout</code> milliseconds
+     * Gets a connection, blocking for up to <tt>timeout</tt> milliseconds
      * until one becomes available.
      *
      * @param timeout the maximum no. of milliseconds to wait for a connection
-     * @return a connection or <code>null</code> if none was available before
+     * @return a connection or <tt>null</tt> if none was available before
      *         the timeout expired
      * @throws OpenOfficeException if a connection error occurs
      */
     public OOConnection getConnection(long timeout) {
-        allocate();
+        lock.lock();
+        try {
+            allocate();
+        } finally {
+            lock.unlock();
+        }
         try {
             State state = connections.poll(timeout, TimeUnit.MILLISECONDS);
             return (state != null) ? new OOConnectionHandle(state) : null;
@@ -98,22 +111,32 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
      * @throws OpenOfficeException if a connection error occurs
      */
     public OOConnection getConnection() {
-        allocate();
-        try {
-            for (int i = 0; i <= capacity; ++i) {
+        OOConnection result = null;
+        while (result == null) {
+            lock.lock();
+            try {
+                allocate();
+            } finally {
+                lock.unlock();
+            }
+            try {
                 // find an active connection
                 State state = connections.take();
-                if (isResponsive(state)) {
-                    return new OOConnectionHandle(state);
-                } else {
-                    destroy(state);
-                    allocate();
+                lock.lock();
+                try {
+                    if (isResponsive(state)) {
+                        result = new OOConnectionHandle(state);
+                    } else {
+                        destroy(state);
+                    }
+                } finally {
+                    lock.unlock();
                 }
+            } catch (InterruptedException exception) {
+                throw new OpenOfficeException(FailedToConnect, exception);
             }
-            throw new OpenOfficeException(FailedToConnect);
-        } catch (InterruptedException exception) {
-            throw new OpenOfficeException(FailedToConnect, exception);
         }
+        return result;
     }
 
     /**
@@ -129,7 +152,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
      * Determines when connections should be closed.
      *
      * @param uses the number of uses after which connections should be closed.
-     *             A value <code>&lt;= 0</code> indicates it should never
+     *             A value <tt>&lt;= 0</tt> indicates it should never
      *             be closed
      */
     public synchronized void setReuseCount(int uses) {
@@ -145,11 +168,26 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
     protected abstract OOConnection create();
 
     /**
+     * Destroys a connection.
+     *
+     * @param state the connection state
+     */
+    protected void destroy(State state) {
+        try {
+            state.getConnection().close();
+        } catch (Throwable exception) {
+            log.warn(exception, exception);
+        } finally {
+            --count;
+        }
+    }
+
+    /**
      * Allocates connections to the pool.
      *
      * @throws OpenOfficeException if a connection cannot be created
      */
-    protected synchronized void allocate() {
+    private void allocate() {
         while (count < capacity) {
             State state = new State(create());
             ++count;
@@ -167,14 +205,19 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
      *
      * @param state the connection state
      */
-    protected synchronized void release(State state) {
-        if (!canRelease(state)) {
-            destroy(state);
-        } else {
-            if (!connections.offer(state)) {
-                log.error("Failed to release connection to the pool");
+    private void release(State state) {
+        lock.lock();
+        try {
+            if (!canRelease(state)) {
                 destroy(state);
+            } else {
+                if (!connections.offer(state)) {
+                    log.error("Failed to release connection to the pool");
+                    destroy(state);
+                }
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -182,10 +225,10 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
      * Determines if a connection can be released back into the pool.
      *
      * @param state the connection state
-     * @return <code>true</code> if the connection can be released,
-     *         otherwise <code>false</code> to indicate it should be destroyed
+     * @return <tt>true</tt> if the connection can be released,
+     *         otherwise <tt>false</tt> to indicate it should be destroyed
      */
-    protected boolean canRelease(State state) {
+    private boolean canRelease(State state) {
         return ((uses <= 0 || state.getUses() < uses) && isResponsive(state));
     }
 
@@ -193,10 +236,10 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
      * Determines if a connection is responsive.
      *
      * @param state the connection state
-     * @return <code>true</code> if the connection is responsive, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the connection is responsive, otherwise
+     *         <tt>false</tt>
      */
-    protected boolean isResponsive(State state) {
+    private boolean isResponsive(State state) {
         boolean responsive = false;
         try {
             state.getConnection().getComponentLoader();
@@ -205,21 +248,6 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
             log.debug("Connection not responding", exception);
         }
         return responsive;
-    }
-
-    /**
-     * Destroys a connection.
-     *
-     * @param state the connection state
-     */
-    protected void destroy(State state) {
-        try {
-            state.getConnection().close();
-        } catch (Throwable exception) {
-            log.warn(exception, exception);
-        } finally {
-            --count;
-        }
     }
 
     protected class State {
@@ -260,13 +288,27 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
         private OOConnectionListener listener;
 
         /**
-         * Constructs a new <code>OOConnectionHandle</code>
+         * The thread that created the connection.
+         */
+        private String thread;
+
+        /**
+         * The call stack where the connection was created.
+         */
+        private Throwable stack;
+
+
+        /**
+         * Constructs a new <tt>OOConnectionHandle</tt>
          *
          * @param state the connection state
          */
         public OOConnectionHandle(State state) {
             this.state = state;
             state.incUses();
+            stack = new Throwable();
+            stack.fillInStackTrace();
+            thread = Thread.currentThread().getName();
         }
 
         /**
@@ -293,7 +335,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
         /**
          * Sets the listener for this connection.
          *
-         * @param listener the listener. May be <code>null</code>
+         * @param listener the listener. May be <tt>null</tt>
          */
         public void setListener(OOConnectionListener listener) {
             this.listener = listener;
@@ -330,14 +372,16 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
          * Called by the garbage collector on an object when garbage collection
          * determines that there are no more references to the object.
          *
-         * @throws Throwable the <code>Exception</code> raised by this method
+         * @throws Throwable the <tt>Exception</tt> raised by this method
          */
         @Override
         protected void finalize() throws Throwable {
             super.finalize();
             if (state != null) {
-                log.warn("OOConnection not closed: releasing");
+                log.warn("OOConnection allocated by thread=" + thread
+                        + " not closed: releasing", stack);
                 release(state);
+                state = null;
             }
         }
     }

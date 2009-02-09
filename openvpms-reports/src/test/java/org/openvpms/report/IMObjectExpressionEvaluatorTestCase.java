@@ -107,13 +107,4 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
                      eval.getValue("act.customer.foo"));
     }
 
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContext.xml"};
-    }
-
 }

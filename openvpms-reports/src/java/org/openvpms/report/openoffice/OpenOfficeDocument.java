@@ -40,9 +40,9 @@ import com.sun.star.util.CloseVetoException;
 import com.sun.star.util.XCloseable;
 import com.sun.star.util.XRefreshable;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -101,19 +101,6 @@ public class OpenOfficeDocument {
      */
     private static final Log log = LogFactory.getLog(OpenOfficeDocument.class);
 
-
-    /**
-     * Creates a new <tt>OpenOfficeDocument</tt>.
-     *
-     * @param document the document
-     * @param handlers the document handlers
-     */
-    public OpenOfficeDocument(XComponent document, DocumentHandlers handlers) {
-        this.document = document;
-        this.handlers = handlers;
-
-        initFields();
-    }
 
     /**
      * Creates a new <tt>OpenOfficeDocument</tt>.
