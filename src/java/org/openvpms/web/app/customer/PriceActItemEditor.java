@@ -62,7 +62,7 @@ public class PriceActItemEditor extends ActItemEditor {
 
 
     /**
-     * Creates a new <tt>FixedPriceActItemEditor</tt>.
+     * Creates a new <tt>PriceActItemEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act.
@@ -74,6 +74,7 @@ public class PriceActItemEditor extends ActItemEditor {
         Product product = getProduct();
         fixedEditor = new FixedPriceEditor(fixedPrice);
         fixedEditor.setProduct(product);
+        getEditors().add(fixedEditor);
     }
 
     /**
