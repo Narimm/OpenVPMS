@@ -21,7 +21,6 @@ package org.openvpms.report.msword;
 import com.sun.star.beans.XPropertySet;
 import com.sun.star.container.XEnumeration;
 import com.sun.star.container.XEnumerationAccess;
-import com.sun.star.lang.XComponent;
 import com.sun.star.lang.XServiceInfo;
 import com.sun.star.uno.UnoRuntime;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -49,16 +48,6 @@ public class MsWordDocument extends OpenOfficeDocument {
      */
     private static final String FIELD_CODE_PREFIX = "MERGEFIELD";
 
-
-    /**
-     * Creates a new <tt>MsWordDocument</tt>.
-     *
-     * @param document the document
-     * @param handlers the document handlers
-     */
-    public MsWordDocument(XComponent document, DocumentHandlers handlers) {
-        super(document, handlers);
-    }
 
     /**
      * Constructs a new <tt>MsWordDocument</tt>.

@@ -42,9 +42,15 @@ public abstract class AbstractOpenOfficeDocumentTest
      */
     protected Map<String, String> getUserFields(Document document) {
         Map<String, String> fields = new HashMap<String, String>();
-        OpenOfficeDocument doc = getDocument(document);
-        for (String name : doc.getUserFieldNames()) {
-            fields.put(name, doc.getUserField(name));
+        OOConnection connection = getConnection();
+        try {
+            OpenOfficeDocument doc = getDocument(document, connection);
+            for (String name : doc.getUserFieldNames()) {
+                fields.put(name, doc.getUserField(name));
+            }
+            doc.close();
+        } finally {
+            OpenOfficeHelper.close(connection);
         }
         return fields;
     }
@@ -57,9 +63,15 @@ public abstract class AbstractOpenOfficeDocumentTest
      */
     protected Map<String, String> getInputFields(Document document) {
         Map<String, String> fields = new HashMap<String, String>();
-        OpenOfficeDocument doc = getDocument(document);
-        for (String name : doc.getInputFields().keySet()) {
-            fields.put(name, doc.getInputField(name));
+        OOConnection connection = getConnection();
+        try {
+            OpenOfficeDocument doc = getDocument(document, connection);
+            for (String name : doc.getInputFields().keySet()) {
+                fields.put(name, doc.getInputField(name));
+            }
+            doc.close();
+        } finally {
+            OpenOfficeHelper.close(connection);
         }
         return fields;
     }
@@ -67,11 +79,13 @@ public abstract class AbstractOpenOfficeDocumentTest
     /**
      * Creates a new {@link OpenOfficeDocument} wrapping a {@link Document}.
      *
-     * @param document the document
+     * @param document   the document
+     * @param connection the connection to use
      * @return a new OpenOffice document
      */
-    protected OpenOfficeDocument getDocument(Document document) {
-        return new OpenOfficeDocument(document, getConnection(), getHandlers());
+    protected OpenOfficeDocument getDocument(Document document,
+                                             OOConnection connection) {
+        return new OpenOfficeDocument(document, connection, getHandlers());
     }
 
     /**

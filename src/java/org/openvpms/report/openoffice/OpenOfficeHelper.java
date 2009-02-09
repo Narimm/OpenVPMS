@@ -18,13 +18,13 @@
 
 package org.openvpms.report.openoffice;
 
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.ServiceNotInit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.ServiceNotInit;
 
 
 /**
- * OpenOIffice helper.
+ * OpenOffice helper.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -50,7 +50,8 @@ public class OpenOfficeHelper {
     /**
      * Initialises the helper.
      *
-     * @param pool a reference to the OpenOffice connection pool
+     * @param pool         a reference to the OpenOffice connection pool
+     * @param printService the print service
      */
     public OpenOfficeHelper(OOConnectionPool pool,
                             PrintService printService) {

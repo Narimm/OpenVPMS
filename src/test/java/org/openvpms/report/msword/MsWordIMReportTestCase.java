@@ -26,6 +26,7 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.openoffice.AbstractOpenOfficeDocumentTest;
+import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OpenOfficeDocument;
 
 import java.io.IOException;
@@ -108,11 +109,13 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     /**
      * Creates a new {@link OpenOfficeDocument} wrapping a {@link Document}.
      *
-     * @param document the document
+     * @param document   the document
+     * @param connection the connection
      * @return a new OpenOffice document
      */
     @Override
-    protected OpenOfficeDocument getDocument(Document document) {
-        return new MsWordDocument(document, getConnection(), getHandlers());
+    protected OpenOfficeDocument getDocument(Document document,
+                                             OOConnection connection) {
+        return new MsWordDocument(document, connection, getHandlers());
     }
 }

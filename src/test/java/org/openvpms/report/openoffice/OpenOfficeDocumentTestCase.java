@@ -35,6 +35,12 @@ import java.util.Map;
 public class OpenOfficeDocumentTestCase extends AbstractOpenOfficeDocumentTest {
 
     /**
+     * The OpenOffice connection.
+     */
+    private OOConnection connection;
+
+
+    /**
      * Tests the {@link OpenOfficeDocument#getUserFieldNames()},
      * {@link OpenOfficeDocument#getUserField(String)}
      * and {@link OpenOfficeDocument#setUserField(String, String)} methods.
@@ -83,6 +89,28 @@ public class OpenOfficeDocumentTestCase extends AbstractOpenOfficeDocumentTest {
     }
 
     /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        connection = getConnection();
+    }
+
+    /**
+     * Tears down the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onTearDown() throws Exception {
+        super.onTearDown();
+        OpenOfficeHelper.close(connection);
+    }
+
+    /**
      * Loads the document to test agaisnt.
      *
      * @return the document
@@ -91,7 +119,7 @@ public class OpenOfficeDocumentTestCase extends AbstractOpenOfficeDocumentTest {
         Document document
                 = getDocument("src/test/reports/act.customerEstimation.odt",
                               DocFormats.ODT_TYPE);
-        return new OpenOfficeDocument(document, getConnection(), getHandlers());
+        return new OpenOfficeDocument(document, connection, getHandlers());
     }
 
 }

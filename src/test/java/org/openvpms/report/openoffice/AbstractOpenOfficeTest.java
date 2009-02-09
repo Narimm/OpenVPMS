@@ -36,11 +36,6 @@ import java.io.File;
 public abstract class AbstractOpenOfficeTest extends ArchetypeServiceTest {
 
     /**
-     * The connection to OpenOffice.
-     */
-    private OOConnection connection;
-
-    /**
      * The document handlers.
      */
     private DocumentHandlers handlers;
@@ -52,11 +47,8 @@ public abstract class AbstractOpenOfficeTest extends ArchetypeServiceTest {
      * @return the connection
      */
     protected OOConnection getConnection() {
-        if (connection == null) {
-            OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
-            connection = pool.getConnection();
-        }
-        return connection;
+        OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
+        return pool.getConnection();
     }
 
     /**
@@ -101,9 +93,6 @@ public abstract class AbstractOpenOfficeTest extends ArchetypeServiceTest {
     @Override
     protected void onTearDown() throws Exception {
         super.onTearDown();
-        if (connection != null) {
-            OpenOfficeHelper.close(connection);
-        }
         OOBootstrapService service
                 = (OOBootstrapService) applicationContext.getBean(
                 "OOSocketBootstrapService");
