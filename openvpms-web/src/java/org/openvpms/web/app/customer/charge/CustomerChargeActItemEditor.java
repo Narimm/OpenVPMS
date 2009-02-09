@@ -337,12 +337,14 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 fixedCost.setValue(getCost(fixedProductPrice));
             } else {
                 fixedPrice.setValue(BigDecimal.ZERO);
+                fixedCost.setValue(BigDecimal.ZERO);
             }
             if (unitProductPrice != null) {
                 unitPrice.setValue(unitProductPrice.getPrice());
                 unitCost.setValue(getCost(unitProductPrice));
             } else {
                 unitPrice.setValue(BigDecimal.ZERO);
+                unitCost.setValue(BigDecimal.ZERO);
             }
             updateStockLocation(product);
         }
