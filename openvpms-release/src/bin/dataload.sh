@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. setenv.sh
+. ./setenv.sh
 
 if [ "$1" = "base" ] ;
 then
