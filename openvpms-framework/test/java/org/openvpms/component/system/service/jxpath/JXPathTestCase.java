@@ -18,8 +18,6 @@
 
 package org.openvpms.component.system.service.jxpath;
 
-import ognl.Ognl;
-import ognl.OgnlContext;
 import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
@@ -170,37 +168,6 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(er.getActiveStartTime() != null);
         assertTrue(er.getActiveStartTime().getTime() >= start.getTime());
         assertTrue(er.getActiveStartTime().getTime() <= new Date().getTime());
-    }
-
-    /**
-     * Test that we can set an entity identity on a set
-     */
-    @SuppressWarnings("unchecked")
-    public void testSetEntityIdentityOnEntity() throws Exception {
-        Party person = (Party) service.create("party.person");
-        assertTrue(person != null);
-        EntityIdentity eidentity = (EntityIdentity) service
-                .create("entityIdentity.personAlias");
-        assertTrue(eidentity != null);
-
-        // get the descriptor for the person node
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(person
-                .getArchetypeId());
-        assertTrue(adesc != null);
-        NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
-        assertTrue(ndesc != null);
-
-        ValueHolder holder = new ValueHolder(eidentity, person);
-        OgnlContext context = (OgnlContext) Ognl.createDefaultContext(null);
-
-        StringBuffer buf = new StringBuffer("target.add");
-        buf.append(StringUtils.capitalize(ndesc.getBaseName()));
-        buf.append("(source)");
-        Ognl.getValue(buf.toString(), context, holder);
-
-        assertTrue(person.getIdentities().size() == 1);
-        assertTrue(
-                person.getIdentities().iterator().next().getEntity() != null);
     }
 
     /**
