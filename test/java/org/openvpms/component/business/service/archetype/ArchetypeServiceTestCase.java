@@ -248,7 +248,7 @@ public class ArchetypeServiceTestCase
         Lookup lookup = null;
         for (int i = 0; i < 10; ++i) {
             lookup = (Lookup) service.create("lookup.staff");
-            lookup.setCode("CODE" + System.currentTimeMillis());
+            lookup.setCode("CODE" + System.nanoTime());
             lookup.setName(lookup.getCode());
             lookup.setDescription(lookup.getCode());
             service.save(lookup);

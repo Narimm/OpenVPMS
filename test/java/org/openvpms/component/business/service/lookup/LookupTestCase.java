@@ -63,7 +63,7 @@ public class LookupTestCase
             assertNotNull(lookup);
 
             // make sure the code is unique
-            lookup.setCode("AU-" + System.currentTimeMillis());
+            lookup.setCode("AU-" + System.nanoTime());
             lookup.setName("Australia");
 
             // insert the lookup object
@@ -134,19 +134,17 @@ public class LookupTestCase
      */
     public void testOBF43()
             throws Exception {
-        // the case where no default value is specified
+        // the case where no default value is specified on the node, but
+        // a default lookup is
+        Lookup lookup = LookupUtil.getLookup(service, "lookup.afl", "ST_KILDA");
+        lookup.setDefaultLookup(true);
+        service.save(lookup);
         Party person = (Party) service.create("party.personfootballer");
-        assertFalse(StringUtils.isEmpty(
-                (String) person.getDetails().get("team")));
-        String team = (String) person.getDetails().get("team");
-        assertTrue(team.equals("ST_KILDA"));
+        assertEquals("ST_KILDA", person.getDetails().get("team"));
 
         // the case where a default value is specified
         person = (Party) service.create("party.personnewfootballer");
-        assertFalse(StringUtils.isEmpty(
-                (String) person.getDetails().get("team")));
-        team = (String) person.getDetails().get("team");
-        assertTrue(team.equals("RICHMOND"));
+        assertEquals("RICHMOND", person.getDetails().get("team"));
     }
 
     /**

@@ -28,7 +28,7 @@ import java.util.Vector;
 /**
  * Test the
  * {@link org.openvpms.component.business.service.archetype.IArchetypeService}
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -44,8 +44,9 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
         try {
             new ArchetypeDescriptorCacheFS(null, null, assertionFile);
         } catch (ArchetypeDescriptorCacheException exception) {
-            assertTrue(exception.getErrorCode() == 
-                ArchetypeDescriptorCacheException.ErrorCode.NoDirSpecified);
+            assertEquals(
+                ArchetypeDescriptorCacheException.ErrorCode.NoDirSpecified,
+                exception.getErrorCode());
         }
     }
 
@@ -59,8 +60,8 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
         try {
             new ArchetypeDescriptorCacheFS("file-does-not-exist", assertionFile);
         } catch (ArchetypeDescriptorCacheException exception) {
-            assertTrue(exception.getErrorCode() == 
-                ArchetypeDescriptorCacheException.ErrorCode.InvalidFile);
+            assertEquals(ArchetypeDescriptorCacheException.ErrorCode.InvalidFile,
+                         exception.getErrorCode());
         }
     }
 
@@ -91,8 +92,9 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
             try {
                 new ArchetypeDescriptorCacheFS((String) str, assertionFile);
             } catch (ArchetypeDescriptorCacheException exception) {
-                assertTrue(exception.getErrorCode() ==
-                        ArchetypeDescriptorCacheException.ErrorCode.InvalidFile);
+                assertEquals(
+                        ArchetypeDescriptorCacheException.ErrorCode.InvalidFile,
+                        exception.getErrorCode());
             }
         }
     }
@@ -114,8 +116,8 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
         for (Object archetype : archetypes) {
             String key = (String) archetype;
             ArchetypeDescriptor descriptor = cache.getArchetypeDescriptor(key);
-            assertTrue(("Looking for " + key), (descriptor != null));
-            assertTrue(descriptor.getType() != null);
+            assertNotNull("Looking for " + key, descriptor);
+            assertNotNull(descriptor.getType());
         }
     }
 
@@ -135,8 +137,8 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
                 assertionFile);
         for (Object archetype : archetypes) {
             String key = (String) archetype;
-            assertTrue(("Looking for " + key),
-                       cache.getArchetypeDescriptor(key) == null);
+            assertNull(("Looking for " + key),
+                       cache.getArchetypeDescriptor(key));
         }
     }
 

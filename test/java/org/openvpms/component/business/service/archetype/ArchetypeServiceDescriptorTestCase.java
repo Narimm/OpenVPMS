@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -63,7 +64,7 @@ public class ArchetypeServiceDescriptorTestCase
 
         String name = "archetype.dummy-" + System.currentTimeMillis() + ".1.0";
         desc.setName(name);
-        desc.setClassName(this.getClass().getName());
+        desc.setClassName(getClass().getName());
         desc.setDisplayName("archetype.dummy");
         desc.setDescription("Archetype Dummy v1.0");
         desc.setLatest(true);
@@ -106,7 +107,7 @@ public class ArchetypeServiceDescriptorTestCase
     public void testCreateArchetypeWithNodeDescriptor() {
         String name = "archetype.dummy-" + System.currentTimeMillis() + ".1.0";
         ArchetypeDescriptor desc = createArchetypeDescriptor(
-                name, "thisClass",
+                name, Entity.class.getName(),
                 "archetype.dummy", true);
 
         NodeDescriptor ndesc = createNodeDescriptor("name", "/name",
@@ -139,7 +140,7 @@ public class ArchetypeServiceDescriptorTestCase
     public void testOBF174() {
         String name = "archetype.dummy-" + System.currentTimeMillis() + ".1.0";
         ArchetypeDescriptor desc = createArchetypeDescriptor(
-                name, "thisClass",
+                name, Entity.class.getName(),
                 "archetype.dummy", true);
 
         NodeDescriptor ndesc = createNodeDescriptor("name", "/name",
@@ -181,7 +182,7 @@ public class ArchetypeServiceDescriptorTestCase
         removeDescriptor("archetype.dummy.1.0");
         removeDescriptor("archetype.dummy.2.0");
         ArchetypeDescriptor desc = createArchetypeDescriptor(
-                "archetype.dummy.1.0", "thisClass",
+                "archetype.dummy.1.0", getClass().getName(),
                 "archetype.dummy", true);
 
         NodeDescriptor ndesc = createNodeDescriptor("name", "/name",
@@ -193,7 +194,7 @@ public class ArchetypeServiceDescriptorTestCase
         // clone the object and resave it
         ArchetypeDescriptor copy = (ArchetypeDescriptor) desc.clone();
         copy.setName("archetype.dummy.2.0");
-        copy.setClassName("thisClassAgain");
+        copy.setClassName(Entity.class.getName());
         assertFalse(copy.getName().equals(desc.getName()));
         assertFalse(copy.getClassName().equals(desc.getClassName()));
         service.save(copy);
@@ -269,13 +270,13 @@ public class ArchetypeServiceDescriptorTestCase
         String name2 = "archetype2.dummy" + System.currentTimeMillis() + ".1.0";
 
         ArchetypeDescriptor desc1 = createArchetypeDescriptor(
-                name1, "thisClass", "archetype1.dummy", true);
+                name1, getClass().getName(), "archetype1.dummy", true);
         NodeDescriptor ndesc1 = createNodeDescriptor("name", "/name",
                                                      "java.lang.String", 1, 1);
         desc1.addNodeDescriptor(ndesc1);
 
         ArchetypeDescriptor desc2 = createArchetypeDescriptor(
-                name2, "thisClass", "archetype2.dummy", true);
+                name2, getClass().getName(), "archetype2.dummy", true);
         NodeDescriptor ndesc2 = createNodeDescriptor("name", "/name",
                                                      "java.lang.String", 1, 1);
         desc2.addNodeDescriptor(ndesc2);
@@ -316,14 +317,14 @@ public class ArchetypeServiceDescriptorTestCase
     public void testReplace() {
         String name = "archetype.dummy" + System.currentTimeMillis() + ".1.0";
         final ArchetypeDescriptor desc1 = createArchetypeDescriptor(
-                name, "thisClass", "archetype.dummy", true);
+                name, getClass().getName(), "archetype.dummy", true);
         NodeDescriptor ndesc1 = createNodeDescriptor("name", "/name",
                                                      "java.lang.String", 1, 1);
         desc1.addNodeDescriptor(ndesc1);
         service.save(desc1);
 
         final ArchetypeDescriptor desc2 = createArchetypeDescriptor(
-                name, "thisClass", "archetype.dummy", true);
+                name, getClass().getName(), "archetype.dummy", true);
         NodeDescriptor ndesc2 = createNodeDescriptor("name2", "/name",
                                                      "java.lang.String", 1, 1);
         // try and save desc2. Should fail.

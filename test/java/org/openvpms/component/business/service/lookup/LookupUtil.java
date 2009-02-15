@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeConstraint;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +47,7 @@ public class LookupUtil extends Assert {
      */
     public static Lookup createLookup(String shortName, String code) {
         ArchetypeId id = new ArchetypeId(shortName + ".1.0");
-        code = code + "-" + System.currentTimeMillis();
+        code = code + "-" + System.nanoTime();
         return new Lookup(id, code);
     }
 
@@ -60,7 +61,7 @@ public class LookupUtil extends Assert {
     public static Lookup createLookup(String shortName, String code,
                                       String name) {
         ArchetypeId id = new ArchetypeId(shortName + ".1.0");
-        code = code + "-" + System.currentTimeMillis();
+        code = code + "-" + System.nanoTime();
         return new Lookup(id, code, name);
     }
 
@@ -77,7 +78,7 @@ public class LookupUtil extends Assert {
                                       String shortName, String code) {
         Lookup lookup = (Lookup) service.create(shortName);
         assertNotNull(lookup);
-        code = code + "-" + System.currentTimeMillis();
+        code = code + "-" + System.nanoTime();
         lookup.setCode(code);
         return lookup;
     }
@@ -112,6 +113,7 @@ public class LookupUtil extends Assert {
                                    String code) {
         Lookup lookup;
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
+        query.add(new NodeConstraint("code", code));
         List<IMObject> lookups = service.get(query).getResults();
         if (lookups.isEmpty()) {
             lookup = createLookup(service, shortName, code);
