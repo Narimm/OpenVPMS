@@ -67,8 +67,10 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -384,6 +386,16 @@ public abstract class AbstractIMObjectEditor
                         break;
                     }
                 }
+            }
+        }
+        if (valid) {
+            // run it by the archetype service to pick up validation issues
+            // not detected by the app e.g expression assertions
+            List<ValidatorError> errors = ValidationHelper.validate(
+                    object, ServiceHelper.getArchetypeService());
+            if (errors != null) {
+                validator.add(this, errors);
+                valid = false;
             }
         }
         return valid;

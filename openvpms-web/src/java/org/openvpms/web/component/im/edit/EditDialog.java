@@ -20,6 +20,8 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -172,7 +174,16 @@ public class EditDialog extends PopupDialog {
     protected boolean save() {
         boolean result = false;
         if (save) {
-            result = SaveHelper.save(editor);
+            Validator validator = new Validator();
+            if (editor.validate(validator)) {
+                result = SaveHelper.save(editor);
+                if (!result) {
+                    // workaround for OVPMS-855. If save fails, abort the edit
+                    onCancel();
+                }
+            } else {
+                ValidationHelper.showError(validator);
+            }
         }
         return result;
     }
