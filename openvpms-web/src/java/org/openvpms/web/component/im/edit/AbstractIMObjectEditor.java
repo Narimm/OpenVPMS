@@ -619,15 +619,18 @@ public abstract class AbstractIMObjectEditor
             @Override
             protected Component createComponent() {
                 lookups.clear();
-                Component component = super.createComponent();
-                onLayoutCompleted();
-                return component;
+                return super.createComponent();
             }
 
             protected LayoutContext getLayoutContext() {
                 return context;
             }
         };
+        view.setLayoutListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onLayoutCompleted();
+            }
+        });
         if (layout instanceof ExpandableLayoutStrategy) {
             view.getComponent(); // make sure the component is rendered.
             ExpandableLayoutStrategy exp = (ExpandableLayoutStrategy) layout;
@@ -751,17 +754,18 @@ public abstract class AbstractIMObjectEditor
     /**
      * Helper to return an editor associated with a property, given the property
      * name.
+     * <p/>
+     * This performs a layout of the component if it hasn't already been done,
+     * to ensure the editors are created
      *
      * @param name the property name
-     * @return the editor corresponding to <code>name</code> or
-     *         </code>null</code> if none exists
+     * @return the editor corresponding to <tt>name</tt> or </tt>null</tt> if
+     *         none exists
      */
     protected Editor getEditor(String name) {
-        if (editors.isEmpty()) {
-            // make sure the component has been laid out to ensure
-            // the editors are created
-            getComponent();
-        }
+        // make sure the component has been laid out to ensure
+        // the editors are created
+        getComponent();
         return editors.getEditor(name);
     }
 
