@@ -105,6 +105,9 @@ public abstract class AbstractIMObjectView implements IMObjectView {
     public Component getComponent() {
         if (component == null) {
             component = createComponent();
+            if (layoutListener != null) {
+                layoutListener.actionPerformed(new ActionEvent(this, null));
+            }
         }
         return component;
     }
@@ -128,9 +131,6 @@ public abstract class AbstractIMObjectView implements IMObjectView {
         component = null;
         this.layout = layout;
         getComponent();
-        if (layoutListener != null) {
-            layoutListener.actionPerformed(new ActionEvent(this, null));
-        }
     }
 
     /**
@@ -143,7 +143,7 @@ public abstract class AbstractIMObjectView implements IMObjectView {
     }
 
     /**
-     * Sets a listener to be notified when the layout changes.
+     * Sets a listener to be notified when the component is rendered.
      *
      * @param listener the listener
      */

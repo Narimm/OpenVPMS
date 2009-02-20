@@ -54,14 +54,14 @@ public interface IMObjectView {
      *         rendered
      */
     FocusGroup getFocusGroup();
-    
+
     /**
      * Returns the current layout.
      *
      * @return the layout. May be <code>null</code>
      */
     IMObjectLayoutStrategy getLayout();
-    
+
     /**
      * Changes the layout.
      *
@@ -70,7 +70,7 @@ public interface IMObjectView {
     void setLayout(IMObjectLayoutStrategy layout);
 
     /**
-     * Sets a listener to be notified when the layout changes.
+     * Sets a listener to be notified when the component is rendered.
      *
      * @param listener the listener
      */
