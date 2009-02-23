@@ -187,6 +187,9 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
 
     /**
      * Returns a participant reference.
+     * <p/>
+     * TODO - needs to be revisited. Doesn't take into account optional
+     * participations where the participation is only mapped when it is complete
      *
      * @param name the participation property name
      * @return a reference to the participant. May be <tt>null</tt>

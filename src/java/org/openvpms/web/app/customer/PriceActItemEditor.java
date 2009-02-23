@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -71,7 +72,12 @@ public class PriceActItemEditor extends ActItemEditor {
     public PriceActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
         Property fixedPrice = getProperty("fixedPrice");
-        Product product = getProduct();
+
+        // get the product. Note that the getProduct() method isn't used as
+        // that would force the component to render, causing problems for
+        // subclasses whose constructors haven't been invoked yet
+        ActBean bean = new ActBean(act);
+        Product product = (Product) bean.getNodeParticipant("product");
         fixedEditor = new FixedPriceEditor(fixedPrice);
         fixedEditor.setProduct(product);
         getEditors().add(fixedEditor);

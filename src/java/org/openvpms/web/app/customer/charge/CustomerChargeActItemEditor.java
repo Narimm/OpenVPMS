@@ -143,6 +143,16 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                     + act.getArchetypeId().getShortName());
         }
         rules = new StockRules();
+        quantityListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateMedicationQuantity();
+            }
+        };
+        medicationQuantityListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateQuantity();
+            }
+        };
 
         if (act.isNew()) {
             // default the act start time to today
@@ -174,19 +184,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         getProperty("fixedPrice").addModifiableListener(discountListener);
         getProperty("quantity").addModifiableListener(discountListener);
         getProperty("unitPrice").addModifiableListener(discountListener);
-
-        quantityListener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                updateMedicationQuantity();
-            }
-        };
         getProperty("quantity").addModifiableListener(quantityListener);
-
-        medicationQuantityListener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                updateQuantity();
-            }
-        };
 
         ModifiableListener startTimeListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {

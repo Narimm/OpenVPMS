@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -91,7 +92,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         no product
      */
     public IMObjectReference getProductRef() {
-        return getParticipantRef("product");
+        ProductParticipationEditor editor = getProductEditor();
+        return (editor != null) ? editor.getEntityRef() : null;
     }
 
     /**
@@ -123,7 +125,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         has no patient
      */
     public IMObjectReference getPatient() {
-        return getParticipantRef("patient");
+        PatientParticipationEditor editor = getPatientEditor();
+        return (editor != null) ? editor.getEntityRef() : null;
     }
 
     /**
@@ -133,7 +136,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         no clinician
      */
     public IMObjectReference getClinician() {
-        return getParticipantRef("clinician");
+        ClinicianParticipationEditor editor = getClinicianEditor();
+        return (editor != null) ? editor.getEntityRef() : null;
     }
 
     /**
@@ -199,11 +203,20 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the patient editor, or <tt>null</tt>  if none exists
      */
     protected PatientParticipationEditor getPatientEditor() {
-        Editor patient = getEditor("patient");
-        if (patient instanceof PatientParticipationEditor) {
-            return (PatientParticipationEditor) patient;
+        PatientParticipationEditor result = null;
+        Editor editor = getEditor("patient");
+        if (editor instanceof PatientParticipationEditor) {
+            result = (PatientParticipationEditor) editor;
+        } else if (editor instanceof ParticipationCollectionEditor) {
+            // handle the case of an optional patient participation
+            ParticipationCollectionEditor collectionEditor
+                    = ((ParticipationCollectionEditor) editor);
+            IMObjectEditor current = collectionEditor.getCurrentEditor();
+            if (current instanceof PatientParticipationEditor) {
+                result = (PatientParticipationEditor) current;
+            }
         }
-        return null;
+        return result;
     }
 
     /**
@@ -212,11 +225,20 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the clinician editor, or <tt>null</tt>  if none exists
      */
     protected ClinicianParticipationEditor getClinicianEditor() {
-        Editor clinician = getEditor("clinician");
-        if (clinician instanceof ClinicianParticipationEditor) {
-            return (ClinicianParticipationEditor) clinician;
+        ClinicianParticipationEditor result = null;
+        Editor editor = getEditor("clinician");
+        if (editor instanceof ClinicianParticipationEditor) {
+            result = (ClinicianParticipationEditor) editor;
+        } else if (editor instanceof ParticipationCollectionEditor) {
+            // handle the case of an optional clinician participation
+            ParticipationCollectionEditor collectionEditor
+                    = ((ParticipationCollectionEditor) editor);
+            IMObjectEditor current = collectionEditor.getCurrentEditor();
+            if (current instanceof ClinicianParticipationEditor) {
+                result = (ClinicianParticipationEditor) current;
+            }
         }
-        return null;
+        return result;
     }
 
     /**
