@@ -39,8 +39,7 @@ import org.openvpms.web.component.property.Property;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-07-03 00:50:52Z $
  */
-public class CustomerParticipationEditor
-        extends AbstractParticipationEditor<Party> {
+public class CustomerParticipationEditor extends ParticipationEditor<Party> {
 
     /**
      * Constructs a new <tt>CustomerParticipationEditor</tt>.
@@ -61,7 +60,7 @@ public class CustomerParticipationEditor
         IMObjectReference customerRef = participation.getEntity();
         if (customerRef == null && parent.isNew()) {
             Party customer = context.getCustomer();
-            getEditor().setObject(customer);
+            setEntity(customer);
         } else {
             // add the existing customer to the context
             Party customer = (Party) IMObjectHelper.getObject(customerRef);

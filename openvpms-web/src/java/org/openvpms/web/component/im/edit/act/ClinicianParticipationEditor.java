@@ -47,8 +47,7 @@ import org.openvpms.web.component.property.Property;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-24 01:44:28Z $
  */
-public class ClinicianParticipationEditor
-        extends AbstractParticipationEditor<User> {
+public class ClinicianParticipationEditor extends ParticipationEditor<User> {
 
     /**
      * Constructs a new <tt>ClinicianParticipationEditor</tt>.
@@ -68,7 +67,7 @@ public class ClinicianParticipationEditor
         }
         if (participation.getEntity() == null && parent.isNew()) {
             User clinician = getLayoutContext().getContext().getClinician();
-            getEditor().setObject(clinician);
+            setEntity(clinician);
         }
     }
 

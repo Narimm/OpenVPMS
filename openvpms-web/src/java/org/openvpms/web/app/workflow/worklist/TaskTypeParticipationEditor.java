@@ -29,7 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
-import org.openvpms.web.component.im.edit.act.AbstractParticipationEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -45,7 +45,7 @@ import java.util.List;
  * @version $LastChangedDate: 2006-08-15 06:42:15Z $
  */
 public class TaskTypeParticipationEditor
-        extends AbstractParticipationEditor<Entity> {
+        extends ParticipationEditor<Entity> {
 
     /**
      * The work list, used to constrain task types types. May be <tt>null</tt>.
@@ -85,7 +85,7 @@ public class TaskTypeParticipationEditor
             IMObjectReference taskTypeRef = getEntityRef();
             if (taskTypeRef == null || !hasTaskType(workList, taskTypeRef)) {
                 Entity taskType = getDefaultTaskType(workList);
-                getEditor().setObject((Entity) taskType);
+                setEntity((Entity) taskType);
             }
         }
     }

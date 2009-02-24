@@ -55,10 +55,10 @@ public class SingleParticipationCollectionEditor
      *
      * @return the participation editor. May be <tt>null</tt>
      */
-    protected AbstractParticipationEditor getParticipationEditor() {
+    protected ParticipationEditor getParticipationEditor() {
         IMObjectEditor editor = getCurrentEditor();
-        return (editor instanceof AbstractParticipationEditor) ?
-                (AbstractParticipationEditor) editor : null;
+        return (editor instanceof ParticipationEditor) ?
+                (ParticipationEditor) editor : null;
     }
 
     /**
@@ -68,7 +68,7 @@ public class SingleParticipationCollectionEditor
      * @return <tt>true</tt> if the participation is null
      */
     protected boolean isEmpty() {
-        AbstractParticipationEditor editor = getParticipationEditor();
+        ParticipationEditor editor = getParticipationEditor();
         return editor != null && getCollection().getMinCardinality() == 0
                 && editor.isNull();
     }

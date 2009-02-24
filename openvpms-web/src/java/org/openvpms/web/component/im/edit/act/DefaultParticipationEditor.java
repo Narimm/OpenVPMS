@@ -29,7 +29,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class DefaultParticipationEditor extends AbstractParticipationEditor {
+public class DefaultParticipationEditor extends ParticipationEditor {
 
     /**
      * Construct a new <code>AbstractParticipationEditor</code>.

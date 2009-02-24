@@ -240,6 +240,15 @@ public abstract class DelegatingCollectionEditor
     }
 
     /**
+     * Returns the editor to delegate to.
+     *
+     * @return the editor to delegate to
+     */
+    public AbstractIMObjectCollectionEditor getEditor() {
+        return editor;
+    }
+
+    /**
      * Registers the editor to delegate to.
      *
      * @param editor the editor to delegate to
@@ -248,12 +257,4 @@ public abstract class DelegatingCollectionEditor
         this.editor = editor;
     }
 
-    /**
-     * Returns the editor to delegate to.
-     *
-     * @return the editor to delegate to
-     */
-    protected AbstractIMObjectCollectionEditor getEditor() {
-        return editor;
-    }
 }

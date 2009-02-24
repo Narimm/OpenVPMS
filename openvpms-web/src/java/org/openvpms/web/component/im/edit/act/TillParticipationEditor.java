@@ -35,8 +35,7 @@ import org.openvpms.web.component.property.Property;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-18 14:13:02 +1000 (Thu, 18 May 2006) $
  */
-public class TillParticipationEditor
-        extends AbstractParticipationEditor<Party> {
+public class TillParticipationEditor extends ParticipationEditor<Party> {
 
     /**
      * Construct a new <tt>TillParticipationEditor</tt>.
@@ -56,7 +55,7 @@ public class TillParticipationEditor
         }
         if (participation.isNew() && participation.getEntity() == null) {
             Party till = getLayoutContext().getContext().getTill();
-            getEditor().setObject(till);
+            setEntity(till);
         }
     }
 

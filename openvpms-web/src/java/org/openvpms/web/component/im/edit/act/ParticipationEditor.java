@@ -40,7 +40,7 @@ import org.openvpms.web.component.property.PropertySet;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public abstract class AbstractParticipationEditor<T extends Entity>
+public abstract class ParticipationEditor<T extends Entity>
         extends AbstractIMObjectEditor {
 
     /**
@@ -50,14 +50,14 @@ public abstract class AbstractParticipationEditor<T extends Entity>
 
 
     /**
-     * Construct a new <code>AbstractParticipationEditor</code>.
+     * Construct a new <tt>ParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <code>null</code>
+     * @param context       the layout context. May be <tt>null</tt>
      */
-    public AbstractParticipationEditor(Participation participation, Act parent,
-                                       LayoutContext context) {
+    public ParticipationEditor(Participation participation, Act parent,
+                               LayoutContext context) {
         super(participation, parent, context);
         if (parent == null) {
             throw new IllegalArgumentException("Argument 'parent' is null");
@@ -90,27 +90,27 @@ public abstract class AbstractParticipationEditor<T extends Entity>
     }
 
     /**
-     * Returns the participation entity property.
+     * Returns the participation entity reference.
      *
-     * @return the participation entity property
+     * @return the participation entity reference. May be <tt>null</tt>
      */
-    public Property getProperty() {
-        return editor.getProperty();
+    public IMObjectReference getEntityRef() {
+        return (IMObjectReference) editor.getProperty().getValue();
     }
 
     /**
-     * Returns the participation entity reference.
+     * Sets the participation entity reference.
      *
-     * @return the participation entity reference. May be <code>null</code>
+     * @param reference the entity reference. May be <tt>null</tt>
      */
-    public IMObjectReference getEntityRef() {
-        return (IMObjectReference) getProperty().getValue();
+    public void setEntityRef(IMObjectReference reference) {
+        editor.getProperty().setValue(reference);
     }
 
     /**
      * Returns the participation entity.
      *
-     * @return the participation entity. May be <code>null</code>
+     * @return the participation entity. May be <tt>null</tt>
      */
     @SuppressWarnings("unchecked")
     public T getEntity() {
@@ -118,11 +118,20 @@ public abstract class AbstractParticipationEditor<T extends Entity>
     }
 
     /**
+     * Sets the participation entity.
+     *
+     * @param entity the entity. May be <tt>null</tt>
+     */
+    public void setEntity(T entity) {
+        editor.setObject(entity);
+    }
+
+    /**
      * Determines if the participation entity is null.
      * This takes into account if a name has been entered but does not match.
      */
     public boolean isNull() {
-        return getEditor().isNull();
+        return editor.isNull();
     }
 
     /**
