@@ -42,7 +42,7 @@ import org.openvpms.web.component.property.Property;
  * @version $LastChangedDate$
  */
 public class StockLocationParticipationEditor
-        extends AbstractParticipationEditor<Party> {
+        extends ParticipationEditor<Party> {
 
     /**
      * Constructs a new <tt>StockLocationParticipationEditor</tt>.
@@ -58,7 +58,7 @@ public class StockLocationParticipationEditor
                 && !TypeHelper.isA(participation,
                                    STOCK_XFER_LOCATION_PARTICIPATION)) {
             Party location = getLayoutContext().getContext().getStockLocation();
-            getEditor().setObject(location);
+            setEntity(location);
         }
     }
 

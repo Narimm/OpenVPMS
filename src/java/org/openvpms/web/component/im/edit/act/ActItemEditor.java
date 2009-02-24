@@ -23,11 +23,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -36,7 +36,6 @@ import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
 
 import java.math.BigDecimal;
 
@@ -79,10 +78,20 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return a reference to the customer or <tt>null</tt> if the act
      *         has no parent
      */
-    public IMObjectReference getCustomer() {
+    public IMObjectReference getCustomerRef() {
         Act act = (Act) getParent();
         ActBean bean = new ActBean(act);
         return bean.getParticipantRef("participation.customer");
+    }
+
+    /**
+     * Returns a reference to the customer, obtained from the parent act.
+     *
+     * @return a reference to the customer or <tt>null</tt> if the act
+     *         has no parent
+     */
+    public Party getCustomer() {
+        return (Party) IMObjectHelper.getObject(getCustomerRef());
     }
 
     /**
@@ -92,8 +101,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         no product
      */
     public IMObjectReference getProductRef() {
-        ProductParticipationEditor editor = getProductEditor();
-        return (editor != null) ? editor.getEntityRef() : null;
+        return getParticipantRef("product");
     }
 
     /**
@@ -111,11 +119,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param product a reference to the product.
      */
     public void setProductRef(IMObjectReference product) {
-        ProductParticipationEditor editor = getProductEditor();
-        if (editor != null) {
-            Property entity = editor.getProperty();
-            entity.setValue(product);
-        }
+        setParticipant("product", product);
     }
 
     /**
@@ -124,9 +128,18 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return a reference to the patient, or <tt>null</tt> if the act
      *         has no patient
      */
-    public IMObjectReference getPatient() {
-        PatientParticipationEditor editor = getPatientEditor();
-        return (editor != null) ? editor.getEntityRef() : null;
+    public Party getPatient() {
+        return (Party) IMObjectHelper.getObject(getPatientRef());
+    }
+
+    /**
+     * Returns a reference to the patient.
+     *
+     * @return a reference to the patient, or <tt>null</tt> if the act
+     *         has no patient
+     */
+    public IMObjectReference getPatientRef() {
+        return getParticipantRef("patient");
     }
 
     /**
@@ -135,9 +148,18 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return a reference to the clinician, or <tt>null</tt> if the act has
      *         no clinician
      */
-    public IMObjectReference getClinician() {
-        ClinicianParticipationEditor editor = getClinicianEditor();
-        return (editor != null) ? editor.getEntityRef() : null;
+    public Party getClinician() {
+        return (Party) IMObjectHelper.getObject(getClinicianRef());
+    }
+
+    /**
+     * Returns a reference to the clinician.
+     *
+     * @return a reference to the clinician, or <tt>null</tt> if the act has
+     *         no clinician
+     */
+    public IMObjectReference getClinicianRef() {
+        return getParticipantRef("clinician");
     }
 
     /**
@@ -190,11 +212,20 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the product editor, or <tt>null</tt> if none exists
      */
     protected ProductParticipationEditor getProductEditor() {
-        Editor product = getEditor("product");
-        if (product instanceof ProductParticipationEditor) {
-            return (ProductParticipationEditor) product;
-        }
-        return null;
+        return getProductEditor(true);
+    }
+
+    /**
+     * Returns the product editor.
+     *
+     * @param create if <tt>true</tt> force creation of the edit components if
+     *               it hasn't already been done
+     * @return the product editor, or <tt>null</tt> if none exists
+     */
+    protected ProductParticipationEditor getProductEditor(boolean create) {
+        ParticipationEditor<Product> editor = getParticipationEditor("product",
+                                                                     create);
+        return (ProductParticipationEditor) editor;
     }
 
     /**
@@ -203,20 +234,20 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the patient editor, or <tt>null</tt>  if none exists
      */
     protected PatientParticipationEditor getPatientEditor() {
-        PatientParticipationEditor result = null;
-        Editor editor = getEditor("patient");
-        if (editor instanceof PatientParticipationEditor) {
-            result = (PatientParticipationEditor) editor;
-        } else if (editor instanceof ParticipationCollectionEditor) {
-            // handle the case of an optional patient participation
-            ParticipationCollectionEditor collectionEditor
-                    = ((ParticipationCollectionEditor) editor);
-            IMObjectEditor current = collectionEditor.getCurrentEditor();
-            if (current instanceof PatientParticipationEditor) {
-                result = (PatientParticipationEditor) current;
-            }
-        }
-        return result;
+        return getPatientEditor(true);
+    }
+
+    /**
+     * Returns the patient editor.
+     *
+     * @param create if <tt>true</tt> force creation of the edit components if
+     *               it hasn't already been done
+     * @return the patient editor, or <tt>null</tt> if none exists
+     */
+    protected PatientParticipationEditor getPatientEditor(boolean create) {
+        ParticipationEditor<Party> editor
+                = getParticipationEditor("patient", create);
+        return (PatientParticipationEditor) editor;
     }
 
     /**
@@ -225,20 +256,20 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the clinician editor, or <tt>null</tt>  if none exists
      */
     protected ClinicianParticipationEditor getClinicianEditor() {
-        ClinicianParticipationEditor result = null;
-        Editor editor = getEditor("clinician");
-        if (editor instanceof ClinicianParticipationEditor) {
-            result = (ClinicianParticipationEditor) editor;
-        } else if (editor instanceof ParticipationCollectionEditor) {
-            // handle the case of an optional clinician participation
-            ParticipationCollectionEditor collectionEditor
-                    = ((ParticipationCollectionEditor) editor);
-            IMObjectEditor current = collectionEditor.getCurrentEditor();
-            if (current instanceof ClinicianParticipationEditor) {
-                result = (ClinicianParticipationEditor) current;
-            }
-        }
-        return result;
+        return getClinicianEditor(true);
+    }
+
+    /**
+     * Returns the clinician editor.
+     *
+     * @param create if <tt>true</tt> force creation of the edit components if
+     *               it hasn't already been done
+     * @return the clinician editor, or <tt>null</tt>  if none exists
+     */
+    protected ClinicianParticipationEditor getClinicianEditor(boolean create) {
+        ParticipationEditor<User> editor = getParticipationEditor("clinician",
+                                                                  create);
+        return (ClinicianParticipationEditor) editor;
     }
 
     /**

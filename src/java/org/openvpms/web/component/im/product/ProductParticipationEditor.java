@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
-import org.openvpms.web.component.im.edit.act.AbstractParticipationEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
 
@@ -38,8 +38,7 @@ import org.openvpms.web.component.property.Property;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ProductParticipationEditor
-        extends AbstractParticipationEditor<Product> {
+public class ProductParticipationEditor extends ParticipationEditor<Product> {
 
     /**
      * The patient, used to constrain searches to a particular species. May be

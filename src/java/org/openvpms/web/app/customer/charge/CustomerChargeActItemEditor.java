@@ -82,7 +82,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * selected.
      */
     private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-            "quantity", "fixedPrice", "unitPrice", "total");
+            "quantity", "fixedPrice", "unitPrice", "total", "dispensing");
 
     /**
      * Node filter, used to hide the dispensing node when a non-medication
@@ -355,7 +355,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @throws TaxRuleException          for any tax error
      */
     protected void calculateTax() {
-        Party customer = (Party) IMObjectHelper.getObject(getCustomer());
+        Party customer = getCustomer();
         Context context = getLayoutContext().getContext();
         Party practice = context.getPractice();
         if (customer != null && getProductRef() != null && practice != null) {
@@ -522,7 +522,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private void updateMedicationPatient() {
         for (PatientMedicationActEditor editor : getMedicationActEditors()) {
-            editor.setPatient(getPatient());
+            editor.setPatient(getPatientRef());
         }
     }
 
@@ -531,7 +531,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private void updateMedicationClinician() {
         for (PatientMedicationActEditor editor : getMedicationActEditors()) {
-            editor.setClinician(getClinician());
+            editor.setClinician(getClinicianRef());
         }
     }
 

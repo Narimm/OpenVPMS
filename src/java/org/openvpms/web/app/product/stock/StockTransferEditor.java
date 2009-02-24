@@ -22,8 +22,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.AbstractParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -54,10 +54,10 @@ public class StockTransferEditor extends ActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        final AbstractParticipationEditor from
-                = (AbstractParticipationEditor) getEditor("stockLocation");
-        final AbstractParticipationEditor to
-                = (AbstractParticipationEditor) getEditor("to");
+        final ParticipationEditor from
+                = (ParticipationEditor) getEditor("stockLocation");
+        final ParticipationEditor to
+                = (ParticipationEditor) getEditor("to");
         from.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 transferFromChanged((Party) from.getEntity());

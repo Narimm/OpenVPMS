@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -34,7 +33,6 @@ import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -73,14 +71,9 @@ public class PriceActItemEditor extends ActItemEditor {
         super(act, parent, context);
         Property fixedPrice = getProperty("fixedPrice");
 
-        // get the product. Note that the getProduct() method isn't used as
-        // that would force the component to render, causing problems for
-        // subclasses whose constructors haven't been invoked yet
-        ActBean bean = new ActBean(act);
-        Product product = (Product) bean.getNodeParticipant("product");
+        Product product = getProduct();
         fixedEditor = new FixedPriceEditor(fixedPrice);
         fixedEditor.setProduct(product);
-        getEditors().add(fixedEditor);
     }
 
     /**
@@ -110,10 +103,11 @@ public class PriceActItemEditor extends ActItemEditor {
                                                      IMObject parent,
                                                      LayoutContext context) {
                 if ("fixedPrice".equals(property.getName())) {
+                    // need to register the editor
+                    getEditors().add(fixedEditor, property);
                     return new ComponentState(fixedEditor.getComponent(),
                                               fixedEditor.getProperty(),
                                               fixedEditor.getFocusGroup());
-
                 }
                 return super.createComponent(property, parent, context);
             }
@@ -175,8 +169,8 @@ public class PriceActItemEditor extends ActItemEditor {
      */
     protected BigDecimal calculateDiscpount() {
         BigDecimal amount = BigDecimal.ZERO;
-        Party customer = (Party) IMObjectHelper.getObject(getCustomer());
-        Party patient = (Party) IMObjectHelper.getObject(getPatient());
+        Party customer = getCustomer();
+        Party patient = getPatient();
         Product product = getProduct();
 
         if (customer != null && product != null

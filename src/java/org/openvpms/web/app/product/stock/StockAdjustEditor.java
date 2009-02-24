@@ -22,8 +22,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.AbstractParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -54,8 +54,8 @@ public class StockAdjustEditor extends ActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        final AbstractParticipationEditor editor
-                = (AbstractParticipationEditor) getEditor("stockLocation");
+        final ParticipationEditor editor
+                = (ParticipationEditor) getEditor("stockLocation");
         editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 stockLocationChanged((Party) editor.getEntity());

@@ -40,8 +40,7 @@ import org.openvpms.web.component.property.Property;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PatientParticipationEditor
-        extends AbstractParticipationEditor<Party> {
+public class PatientParticipationEditor extends ParticipationEditor<Party> {
 
     /**
      * Construct a new <tt>PatientParticipationEditor</tt>.
@@ -62,8 +61,7 @@ public class PatientParticipationEditor
         Context context = getLayoutContext().getContext();
         IMObjectReference patientRef = participation.getEntity();
         if (patientRef == null && parent.isNew()) {
-            Party patient = context.getPatient();
-            getEditor().setObject(patient);
+            setEntity(context.getPatient());
         } else {
             // add the existing patient to the context
             Party patient = (Party) IMObjectHelper.getObject(patientRef);

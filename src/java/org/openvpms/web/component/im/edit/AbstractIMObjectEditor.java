@@ -763,9 +763,25 @@ public abstract class AbstractIMObjectEditor
      *         none exists
      */
     protected Editor getEditor(String name) {
-        // make sure the component has been laid out to ensure
-        // the editors are created
-        getComponent();
+        return getEditor(name, true);
+    }
+
+    /**
+     * Helper to return an editor associated with a property, given the property
+     * name.
+     *
+     * @param name   the property name
+     * @param create if <tt>true</tt> force creation of the edit components if
+     *               it hasn't already been done
+     * @return the editor corresponding to <tt>name</tt> or </tt>null</tt> if
+     *         none exists or hasn't been created
+     */
+    protected Editor getEditor(String name, boolean create) {
+        if (create) {
+            // make sure the component has been laid out to ensure
+            // the editors are created
+            getComponent();
+        }
         return editors.getEditor(name);
     }
 

@@ -20,11 +20,15 @@ package org.openvpms.web.component.im.edit.act;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -167,43 +171,47 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @param entity the participant. May be <tt>null</tt>
      */
     protected void setParticipant(String name, IMObjectReference entity) {
-        Property property = getProperty(name);
-        Participation participant
-                = getParticipation((IMObjectProperty) property);
-        if (participant != null) {
-            boolean modified = false;
-            if (participant.getAct() == null) {
-                participant.setAct(getObject().getObjectReference());
-                modified = true;
-            }
-            if (!ObjectUtils.equals(participant.getEntity(), entity)) {
-                participant.setEntity(entity);
-            }
-            if (modified) {
-                property.refresh();   // flag as modified
+        ParticipationEditor editor = getParticipationEditor(name, false);
+        if (editor != null) {
+            editor.setEntityRef(entity);
+        } else {
+            // no editor created yet. Set the participant via the corresponding
+            // property
+            Property property = getProperty(name);
+            Participation participant
+                    = getParticipation((IMObjectProperty) property);
+            if (participant != null) {
+                boolean modified = false;
+                if (participant.getAct() == null) {
+                    participant.setAct(getObject().getObjectReference());
+                    modified = true;
+                }
+                if (!ObjectUtils.equals(participant.getEntity(), entity)) {
+                    participant.setEntity(entity);
+                }
+                if (modified) {
+                    property.refresh();   // flag as modified
+                }
             }
         }
     }
 
     /**
      * Returns a participant reference.
-     * <p/>
-     * TODO - needs to be revisited. Doesn't take into account optional
-     * participations where the participation is only mapped when it is complete
      *
      * @param name the participation property name
      * @return a reference to the participant. May be <tt>null</tt>
      */
     protected IMObjectReference getParticipantRef(String name) {
-        Property property = getProperty(name);
-        if (property != null) {
-            Participation participant
-                    = getParticipation((IMObjectProperty) property);
-            if (participant != null) {
-                return participant.getEntity();
-            }
+        IMObjectReference result;
+        ParticipationEditor editor = getParticipationEditor(name, false);
+        if (editor != null) {
+            result = editor.getEntityRef();
+        } else {
+            ActBean bean = new ActBean((Act) getObject());
+            result = bean.getNodeParticipantRef(name);
         }
-        return null;
+        return result;
     }
 
     /**
@@ -242,6 +250,37 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
             value = property.getValue();
         }
         return (value instanceof Participation) ? (Participation) value : null;
+    }
+
+    /**
+     * Returns the participation editor for the named participation node.
+     *
+     * @param name   the participation property name
+     * @param create if <tt>true</tt> force creation of the edit components if
+     *               it hasn't already been done
+     * @return the editor corresponding to <tt>name</tt> or </tt>null</tt> if
+     *         none exists or hasn't been created
+     */
+    @SuppressWarnings("unchecked")
+    protected <T extends Entity> ParticipationEditor<T>
+            getParticipationEditor(String name, boolean create) {
+        ParticipationEditor<T> result = null;
+        Editor editor = getEditor(name, create);
+        if (editor instanceof ParticipationEditor) {
+            result = (ParticipationEditor<T>) editor;
+        } else if (editor instanceof ParticipationCollectionEditor) {
+            // handle the case of an optional participation
+            ParticipationCollectionEditor collectionEditor
+                    = ((ParticipationCollectionEditor) editor);
+            if (collectionEditor.getEditor()
+                    instanceof SingleParticipationCollectionEditor) {
+            }
+            IMObjectEditor current = collectionEditor.getCurrentEditor();
+            if (current instanceof ParticipationEditor) {
+                result = (ParticipationEditor<T>) current;
+            }
+        }
+        return result;
     }
 
     /**

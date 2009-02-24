@@ -174,7 +174,7 @@ public class TaskActEditor extends AbstractActEditor {
             PatientRules rules = new PatientRules();
             if (customer != null && patient != null) {
                 if (!rules.isOwner(customer, patient)) {
-                    getPatientEditor().getEditor().setObject(null);
+                    getPatientEditor().setEntity(null);
                 }
             }
         } catch (OpenVPMSException exception) {
