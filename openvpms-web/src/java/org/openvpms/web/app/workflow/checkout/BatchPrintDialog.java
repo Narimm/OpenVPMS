@@ -18,19 +18,22 @@
 
 package org.openvpms.web.app.workflow.checkout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.util.CheckBoxFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -145,10 +148,20 @@ public class BatchPrintDialog extends PopupDialog {
         @Override
         protected Object getValue(IMObject object, TableColumn column,
                                   int row) {
+        	Object result;
             if (column.getModelIndex() == PRINT_INDEX) {
-                return print.get(row);
+                result = print.get(row);
+            } else if (column.getModelIndex() == DESCRIPTION_INDEX) {
+                String description = object.getDescription();
+                if (StringUtils.isEmpty(description) && object instanceof DocumentAct) {
+                   result = ((DocumentAct) object).getFileName();
+                } else {
+                   result = description;
+                }
+            } else {
+            	result = super.getValue(object, column, row);     
             }
-            return super.getValue(object, column, row);
+            return result;
         }
 
         /**
