@@ -18,7 +18,18 @@
 
 package org.openvpms.web.app.reporting.reminder;
 
+import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
+import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.TemplateMissingEmailText;
+
+import java.io.InputStream;
+import java.util.List;
+
+import javax.mail.internet.AddressException;
+import javax.mail.internet.MimeMessage;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -30,8 +41,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.app.reporting.ReportingException;
-import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
-import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.TemplateMissingEmailText;
 import org.openvpms.web.component.im.doc.ReportGenerator;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.resource.util.Messages;
@@ -39,10 +48,6 @@ import org.openvpms.web.system.ServiceHelper;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-
-import javax.mail.internet.MimeMessage;
-import java.io.InputStream;
-import java.util.List;
 
 
 /**
@@ -73,6 +78,11 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
      */
     private final DocumentHandlers handlers;
 
+    /**
+     *  The logfile handler
+     */
+    
+    private static final Log log = LogFactory.getLog(ReminderEmailProcessor.class);
 
     /**
      * Constructs a new <tt>ReminderEmailProcessor</tt>.
@@ -104,6 +114,7 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
         try {
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setValidateAddresses(true);
             Contact contact = event.getContact();
             IMObjectBean bean = new IMObjectBean(contact);
             String to = bean.getString("emailAddress");
@@ -141,7 +152,11 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
             });
             sender.send(message);
             processCompleted(event);
-        } catch (ArchetypeServiceException exception) {
+        } catch (AddressException exception) {
+        	processCompleted(event);
+        	log.warn("Invalid Email Address", exception);
+        }
+        catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (ReminderProcessorException exception) {
             throw exception;
