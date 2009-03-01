@@ -62,10 +62,6 @@
                         <property name="shortName"
                                   value="entity.discountType"/>
                     </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entity.discountGroupType"/>
-                    </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
