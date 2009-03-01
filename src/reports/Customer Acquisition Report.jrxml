@@ -32,13 +32,21 @@
 	<parameter name="endDate" isForPrompting="true" class="java.util.Date">
 		<defaultValueExpression ><![CDATA[new Date()]]></defaultValueExpression>
 	</parameter>
-	<queryString><![CDATA[select e.name customerName, e.description as contact, d.value as createdDate
+	<parameter name="inactivePatients" isForPrompting="true" class="java.lang.Boolean">
+		<defaultValueExpression ><![CDATA[new Boolean("false")]]></defaultValueExpression>
+	</parameter>
+	<queryString><![CDATA[select distinct(e.entity_id) as id, e.name as customerName, e.description as contact, d.value as createdDate
 from entities e
 join entity_details d on d.entity_id = e.entity_id and d.name ="createdDate"
+join entity_relationships r on r.source_id = e.entity_id and r.arch_short_name = "entityRelationship.patientOwner"
+join entities p on p.entity_id = r.target_id
 where e.arch_short_name like "party.customer%" and
+(r.active_end_time is null or r.active_end_time >= CurDate()) and
+($P{inactivePatients} or p.active = 1) and
 d.value between $P{startDate} and $P{endDate}
 order by e.name]]></queryString>
 
+	<field name="id" class="java.lang.Long"/>
 	<field name="customerName" class="java.lang.String"/>
 	<field name="contact" class="java.lang.String"/>
 	<field name="createdDate" class="java.util.Date"/>
