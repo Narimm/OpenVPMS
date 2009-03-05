@@ -45,7 +45,7 @@ public class AssertionTypeDescriptorAssembler
     private static final
     SetAssembler<ActionTypeDescriptor, ActionTypeDescriptorDO>
             TYPES = SetAssembler.create(ActionTypeDescriptor.class,
-                                        ActionTypeDescriptorDOImpl.class);
+                                        ActionTypeDescriptorDO.class);
 
     /**
      * Creates a new <tt>AssertionTypeDescriptorAssembler</tt>.

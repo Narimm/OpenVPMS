@@ -19,11 +19,15 @@
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.hibernate.StaleObjectStateException;
+import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.proxy.LazyInitializer;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -72,9 +76,15 @@ public class DOState {
     private List<ReferenceUpdater> updaters;
 
     /**
+     * The reference update reverters, used to revert reference updates
+     * on transaction rollback
+     */
+    private Map<IMObjectReference, ReferenceUpdater> reverters;
+
+    /**
      * Child states of this state.
      */
-    private Map<IMObjectDO, DOState> states;
+    private Map<String, DOState> states;
 
     /**
      * Creates a new <tt>DOState</tt> for an object retrieved from the
@@ -127,6 +137,10 @@ public class DOState {
 
     /**
      * Indicates whether some other object is "equal to" this one.
+     * <p/>
+     * Note that this uses the underlying {@link #getObject() object} to perform
+     * equality. If the object has been lazily loaded, this will force it to
+     * load.
      *
      * @param other the reference object with which to compare.
      * @return <tt>true</tt> if this object is the same as the obj
@@ -145,6 +159,10 @@ public class DOState {
 
     /**
      * Returns a hash code value for the object.
+     * <p/>
+     * Note that this uses the underlying {@link #getObject() object} to
+     * calculate the hash code. If the object has been lazily loaded, this will
+     * force it to load.
      *
      * @return a hash code value for this object
      */
@@ -160,9 +178,13 @@ public class DOState {
      */
     public void addState(DOState state) {
         if (states == null) {
-            states = new LinkedHashMap<IMObjectDO, DOState>();
+            states = new LinkedHashMap<String, DOState>();
+        } else if (!state.isUninitialised()) {
+            // remove any existing mapping for the state. Only relevant if
+            // the object has been loaded subsequent to the state being added
+            removeState(state.getObject());
         }
-        states.put(state.getObject(), state);
+        states.put(state.getKey(), state);
     }
 
     /**
@@ -172,7 +194,23 @@ public class DOState {
      */
     public void removeState(IMObjectDO object) {
         if (states != null) {
-            states.remove(object);
+            if (states.remove(getKey(object)) == null) {
+                if (!HibernateHelper.isUnintialised(object)
+                        && object.getId() != -1) {
+                    // the object may have been loaded subsequent to the state
+                    // being added, in which case its key has changed
+                    object = (IMObjectDO) HibernateHelper.deproxy(object);
+                    Class impl = object.getClass();
+                    while (impl != IMObjectDOImpl.class
+                            && impl != Object.class) {
+                        String key = impl.getName() + "#" + object.getId();
+                        if (states.remove(key) != null) {
+                            break;
+                        }
+                        impl = impl.getSuperclass();
+                    }
+                }
+            }
         }
     }
 
@@ -259,7 +297,7 @@ public class DOState {
      *
      * @return the objects associated with the state
      */
-    public Set<IMObjectDO> getObjects() {
+    public Collection<IMObjectDO> getObjects() {
         ObjectCollector collector = new ObjectCollector();
         collector.visit(this);
         return collector.getObjects();
@@ -282,6 +320,14 @@ public class DOState {
             deferred.clear();
         }
         if (updaters != null) {
+            if (reverters == null) {
+                reverters = new HashMap<IMObjectReference, ReferenceUpdater>();
+            }
+            for (ReferenceUpdater updater : updaters) {
+                if (!reverters.containsKey(updater.getReference())) {
+                    reverters.put(updater.getReference(), updater);
+                }
+            }
             updaters.clear();
         }
     }
@@ -294,14 +340,60 @@ public class DOState {
     }
 
     /**
+     * Determines if the object associated with the state is an object which
+     * is yet to be loaded from the database.
+     *
+     * @return <tt>true</tt> if the object is yet to be loaded from the database
+     */
+    public boolean isUninitialised() {
+        return HibernateHelper.isUnintialised(object);
+    }
+
+    /**
+     * Returns a key for this state, to be used in sets and maps, to avoid
+     * loading the underlying object from the database.
+     *
+     * @return a unique identifier for the state
+     */
+    protected String getKey() {
+        return getKey(object);
+    }
+
+    /**
+     * Returns a key for an object, to be used in sets and maps, to avoid
+     * loading objects from the database.
+     * <p/>
+     * If the object is loaded, its link identifier will be used, otherwise
+     * the concatenation of its persistent class name and id will be used.
+     *
+     * @param object the object
+     * @return a unique identifier for the object
+     */
+    private String getKey(IMObjectDO object) {
+        String id = null;
+        if (object instanceof HibernateProxy) {
+            HibernateProxy proxy = (HibernateProxy) object;
+            LazyInitializer init = proxy.getHibernateLazyInitializer();
+            if (init.isUninitialized()) {
+                id = init.getPersistentClass().getName()
+                        + "#" + init.getIdentifier().toString();
+            }
+        }
+        if (id == null) {
+            id = object.getLinkId();
+        }
+        return id;
+    }
+
+    /**
      * Helper class to visit each reachable state once and only once.
      */
     private static abstract class Visitor {
 
         /**
-         * The visited states, used to avoid visiting s state more than once.
+         * The visited states, used to avoid visiting a state more than once.
          */
-        private Set<DOState> visited = new HashSet<DOState>();
+        private Set<String> visited = new HashSet<String>();
 
         /**
          * Visits each state reachable from the specified state, invoking
@@ -338,10 +430,10 @@ public class DOState {
          */
         protected boolean visitChildren(DOState state) {
             boolean result = true;
-            Map<IMObjectDO, DOState> states = state.states;
+            Map<String, DOState> states = state.states;
             if (states != null) {
                 for (DOState child : states.values()) {
-                    if (!visited.contains(child)) {
+                    if (!visited.contains(child.getKey())) {
                         if (!visit(child)) {
                             result = false;
                             break;
@@ -358,7 +450,7 @@ public class DOState {
          * @param state the visited state
          */
         protected void addVisited(DOState state) {
-            visited.add(state);
+            visited.add(state.getKey());
         }
     }
 
@@ -451,9 +543,9 @@ public class DOState {
                     source.setVersion(state.version);
                 }
             }
-            if (state.updaters != null) {
-                for (ReferenceUpdater updater : state.updaters) {
-                    updater.revert();
+            if (state.reverters != null) {
+                for (ReferenceUpdater reverter : state.reverters.values()) {
+                    reverter.revert();
                 }
             }
             return true;
@@ -538,7 +630,12 @@ public class DOState {
             if (updaters != null) {
                 updaters.clear();
             }
-            Map<IMObjectDO, DOState> states = state.states;
+            Map<IMObjectReference, ReferenceUpdater> reverters
+                    = state.reverters;
+            if (reverters != null) {
+                reverters.clear();
+            }
+            Map<String, DOState> states = state.states;
             if (states != null) {
                 states.clear();
             }
@@ -554,16 +651,16 @@ public class DOState {
         /**
          * The collected objects.
          */
-        private final Set<IMObjectDO> objects
-                = new LinkedHashSet<IMObjectDO>();
+        private final Map<String, IMObjectDO> objects
+                = new LinkedHashMap<String, IMObjectDO>();
 
         /**
          * Returns the collected objects.
          *
          * @return the collected objects
          */
-        public Set<IMObjectDO> getObjects() {
-            return objects;
+        public Collection<IMObjectDO> getObjects() {
+            return objects.values();
         }
 
         /**
@@ -589,7 +686,8 @@ public class DOState {
          * @return <tt>true</tt>
          */
         protected boolean doVisit(DOState state) {
-            objects.add(state.getObject());
+            IMObjectDO object = state.getObject();
+            objects.put(state.getKey(), object);
             return true;
         }
     }

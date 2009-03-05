@@ -46,7 +46,7 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
      */
     private static final SetAssembler<EntityIdentity, EntityIdentityDO>
             IDENT = SetAssembler.create(EntityIdentity.class,
-                                        EntityIdentityDOImpl.class);
+                                        EntityIdentityDO.class);
 
     /**
      * Assembles sets of lookups.
@@ -59,7 +59,7 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO>
      */
     private static final SetAssembler<EntityRelationship, EntityRelationshipDO>
             RELATIONSHIP = SetAssembler.create(EntityRelationship.class,
-                                               EntityRelationshipDOImpl.class);
+                                               EntityRelationshipDO.class);
 
 
     /**

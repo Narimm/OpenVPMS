@@ -21,7 +21,6 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 import org.hibernate.Hibernate;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.proxy.HibernateProxy;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -334,12 +333,7 @@ public class Context {
      */
     public <T extends IMObjectDO, Impl extends IMObjectDOImpl> T
             get(IMObjectReference reference, Class<T> type, Class<Impl> impl) {
-        Object result = session.get(impl, reference.getId());
-        if (result instanceof HibernateProxy) {
-            HibernateProxy proxy = ((HibernateProxy) result);
-            result = proxy.getHibernateLazyInitializer().getImplementation();
-        }
-
+        Object result = session.load(impl, reference.getId());
         return type.cast(result);
     }
 

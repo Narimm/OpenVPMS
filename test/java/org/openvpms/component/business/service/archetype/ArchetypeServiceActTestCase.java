@@ -779,6 +779,8 @@ public class ArchetypeServiceActTestCase
         assertEquals(-1, act2.getId());
         assertEquals(0, act2.getVersion());
         assertEquals(-1, rel.getId());
+        assertEquals(-1, rel.getSource().getId());
+        assertEquals(-1, rel.getTarget().getId());
         // TODO: act relationships unversioned.
 
         // save objects in a transaction, and rollback. Within the transaction,
@@ -796,6 +798,8 @@ public class ArchetypeServiceActTestCase
                     assertFalse(-1 == act1.getId());
                     assertFalse(-1 == act2.getId());
                     assertFalse(-1 == rel.getId());
+                    assertFalse(-1 == rel.getSource().getId());
+                    assertFalse(-1 == rel.getTarget().getId());
 
                     // versions don't get updated until commit
                     assertEquals(0, act1.getVersion());
@@ -813,6 +817,8 @@ public class ArchetypeServiceActTestCase
         assertEquals(-1, act1.getId());
         assertEquals(-1, act2.getId());
         assertEquals(-1, rel.getId());
+        assertEquals(-1, rel.getSource().getId());
+        assertEquals(-1, rel.getTarget().getId());
 
         assertEquals(0, act1.getVersion());
         assertEquals(0, act2.getVersion());
@@ -828,6 +834,7 @@ public class ArchetypeServiceActTestCase
                     }
                 });
             } catch (Exception error) {
+                error.printStackTrace();
                 fail("Expected transaction to succeed");
             }
         }

@@ -91,6 +91,7 @@ public abstract class IMObjectAssembler<T extends IMObject,
             } else {
                 target = load(source.getObjectReference(), typeDO, impl,
                               context);
+                target = deproxy(target);
             }
             state = new DOState(target, source);
             assembling = false;
@@ -215,6 +216,15 @@ public abstract class IMObjectAssembler<T extends IMObject,
      */
     public Class<? extends IMObjectDO> getDOType() {
         return typeDO;
+    }
+
+    /**
+     * Returns the data object implementation type.
+     *
+     * @return the data object implementation type
+     */
+    public Class<? extends IMObjectDO> getDOImplType() {
+        return impl;
     }
 
     /**

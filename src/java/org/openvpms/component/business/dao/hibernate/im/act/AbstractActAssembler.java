@@ -44,14 +44,14 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
      */
     private static final SetAssembler<Participation, ParticipationDO>
             PARTICIPATIONS = SetAssembler.create(Participation.class,
-                                                 ParticipationDOImpl.class);
+                                                 ParticipationDO.class);
 
     /**
      * Assembles sets of act relationships.
      */
     private static final SetAssembler<ActRelationship, ActRelationshipDO>
             RELATIONSHIPS = SetAssembler.create(ActRelationship.class,
-                                                ActRelationshipDOImpl.class);
+                                                ActRelationshipDO.class);
 
     /**
      * Creates a new <tt>AbstractActAssembler</tt>.

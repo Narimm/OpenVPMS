@@ -39,7 +39,7 @@ public class PartyAssembler extends EntityAssembler<Party, PartyDO> {
      * Assembles sets of contacts.
      */
     private SetAssembler<Contact, ContactDO> CONTACTS
-            = SetAssembler.create(Contact.class, ContactDOImpl.class);
+            = SetAssembler.create(Contact.class, ContactDO.class);
 
     /**
      * Creates a new <tt>PartyAssembler</tt>.
