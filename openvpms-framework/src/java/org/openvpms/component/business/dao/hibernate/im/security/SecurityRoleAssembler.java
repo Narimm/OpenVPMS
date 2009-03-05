@@ -40,7 +40,7 @@ public class SecurityRoleAssembler
      * Assembles sets of users.
      */
     private SetAssembler<User, UserDO> USERS
-            = SetAssembler.create(User.class, UserDOImpl.class);
+            = SetAssembler.create(User.class, UserDO.class);
 
     /**
      * Assembles sets of authorities.
@@ -48,7 +48,7 @@ public class SecurityRoleAssembler
     private SetAssembler<ArchetypeAwareGrantedAuthority,
             ArchetypeAuthorityDO> AUTHS
             = SetAssembler.create(ArchetypeAwareGrantedAuthority.class,
-                                  ArchetypeAuthorityDOImpl.class);
+                                  ArchetypeAuthorityDO.class);
 
 
     /**

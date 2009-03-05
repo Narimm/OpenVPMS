@@ -38,7 +38,7 @@ public class ProductAssembler extends EntityAssembler<Product, ProductDO> {
      * Assembles sets of prices.
      */
     private SetAssembler<ProductPrice, ProductPriceDO> PRICES
-            = SetAssembler.create(ProductPrice.class, ProductPriceDOImpl.class);
+            = SetAssembler.create(ProductPrice.class, ProductPriceDO.class);
 
     /**
      * Creates a new <tt>ProductAssembler</tt>.

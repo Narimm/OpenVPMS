@@ -18,8 +18,6 @@
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
-import org.hibernate.proxy.HibernateProxy;
-import org.hibernate.proxy.LazyInitializer;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.HashMap;
@@ -33,7 +31,8 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class CompoundAssembler implements Assembler {
+public abstract class CompoundAssembler
+        extends AbstractAssembler implements Assembler {
 
     /**
      * The assemblers, keyed on object type.
@@ -48,34 +47,10 @@ public abstract class CompoundAssembler implements Assembler {
             = new HashMap<Class<? extends IMObjectDO>, Assembler>();
 
     /**
-     * A map of object types to data object types.
-     */
-    private Map<Class<? extends IMObject>, Class<? extends IMObjectDO>>
-            typeDOMap = new HashMap<Class<? extends IMObject>,
-            Class<? extends IMObjectDO>>();
-
-    /**
-     * Map of object type names to data object type names.
+     * Map of object type names to data object implementation type names.
      */
     private Map<String, String> typeDONameMap = new HashMap<String, String>();
 
-    /**
-     * Map of data object type names to object type names.
-     */
-    private Map<String, String> doTypeNameMap = new HashMap<String, String>();
-
-
-    /**
-     * Returns the data object class for the specified object type.
-     *
-     * @param type the object type
-     * @return the corresponding data object class, or <tt>null</tt> if none is
-     *         found
-     */
-    public Class<? extends IMObjectDO> getDOClass(
-            Class<? extends IMObject> type) {
-        return typeDOMap.get(type);
-    }
 
     /**
      * Returns the data object class name for the specified {@link IMObject}
@@ -90,18 +65,6 @@ public abstract class CompoundAssembler implements Assembler {
     }
 
     /**
-     * Returns the object class name for the specified {@link IMObjectDO} class
-     * name.
-     *
-     * @param doClassName the data object class name
-     * @return the corresponding object class name, or <tt>null</tt> if none is
-     *         found
-     */
-    public String getClassName(String doClassName) {
-        return doTypeNameMap.get(doClassName);
-    }
-
-    /**
      * Registers an assembler.
      *
      * @param assembler the assembler
@@ -110,12 +73,9 @@ public abstract class CompoundAssembler implements Assembler {
             ? extends IMObjectDO> assembler) {
         doAssemblers.put(assembler.getType(), assembler);
         assemblers.put(assembler.getDOType(), assembler);
-        String typeName = assembler.getType().getName();
-        String doTypeName = assembler.getDOType().getName();
-
-        typeDOMap.put(assembler.getType(), assembler.getDOType());
-        typeDONameMap.put(typeName, doTypeName);
-        doTypeNameMap.put(doTypeName, typeName);
+        assemblers.put(assembler.getDOImplType(), assembler);
+        typeDONameMap.put(assembler.getType().getName(), 
+                          assembler.getDOType().getName());
     }
 
     /**
@@ -216,21 +176,6 @@ public abstract class CompoundAssembler implements Assembler {
             }
         }
         return assembler;
-    }
-
-    /**
-     * Helper to deproxy an object if required.
-     *
-     * @param object the potentially proxied object
-     * @return the deproxied object, or <tt>object</tt> if it wasn't proxied
-     */
-    private IMObjectDO deproxy(IMObjectDO object) {
-        if (object instanceof HibernateProxy) {
-            HibernateProxy proxy = ((HibernateProxy) object);
-            LazyInitializer init = proxy.getHibernateLazyInitializer();
-            object = (IMObjectDO) init.getImplementation();
-        }
-        return object;
     }
 
 }

@@ -40,7 +40,7 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
      */
     private static final SetAssembler<LookupRelationship, LookupRelationshipDO>
             RELATIONSHIPS = SetAssembler.create(LookupRelationship.class,
-                                                LookupRelationshipDOImpl.class);
+                                                LookupRelationshipDO.class);
 
     /**
      * Creates a new <tt>LookupAssembler</tt>.

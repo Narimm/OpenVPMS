@@ -123,4 +123,16 @@ public class AbstractAssembler {
         }
         return type.cast(result.getObject());
     }
+
+    /**
+     * Helper to deproxy an object if required.
+     *
+     * @param object the potentially proxied object
+     * @return the deproxied object, or <tt>object</tt> if it wasn't proxied
+     */
+    @SuppressWarnings("unchecked")
+    protected <DO extends IMObjectDO> DO deproxy(DO object) {
+        return (DO) HibernateHelper.deproxy(object);
+    }
+
 }
