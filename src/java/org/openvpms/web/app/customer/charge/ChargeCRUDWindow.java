@@ -34,6 +34,8 @@ import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.PrintActTask;
 import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.Tasks;
 
 import java.math.BigDecimal;
@@ -94,20 +96,25 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * @param act the act
      */
     @Override
-    protected void onPosted(FinancialAct act) {
-        BigDecimal total = BigDecimal.ZERO;
+    protected void onPosted(final FinancialAct act) {
         Tasks tasks = new Tasks();
         TaskContext context = new DefaultTaskContext();
         context.addObject(act);
         String shortName = act.getArchetypeId().getShortName();
-        total = act.getTotal();
+        BigDecimal total = act.getTotal();
         if (TypeHelper.isA(act, INVOICE, COUNTER)) {
-	        PaymentWorkflow payment = new PaymentWorkflow(total);
-	        payment.setRequired(false);
-	        tasks.addTask(payment);	
-	        // need to reload the act as it may be changed via the payment workflow
-	        // as part of the CustomerAccountRules
-	        tasks.addTask(new ReloadTask(shortName));
+            PaymentWorkflow payment = new PaymentWorkflow(total);
+            payment.setRequired(false);
+            tasks.addTask(payment);
+            // need to reload the act as it may be changed via the payment
+            // workflow as part of the CustomerAccountRules
+            tasks.addTask(new ReloadTask(shortName));
+            tasks.addTaskListener(new TaskListener() {
+                public void taskEvent(TaskEvent event) {
+                    // force a refresh so the summary updates
+                    onRefresh(act);
+                }
+            });
         }
         PrintActTask print = new PrintActTask(shortName);
         print.setRequired(false);
