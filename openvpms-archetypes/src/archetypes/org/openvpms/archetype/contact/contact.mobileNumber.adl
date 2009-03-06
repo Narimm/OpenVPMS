@@ -27,7 +27,7 @@
               derivedValue="concat(/details/mobileNumber,' ',party:getContactPurposes())"/>
 
         <node name="mobileNumber" path="/details/mobileNumber"
-              type="java.lang.String" minCardinality="1" maxLength="15">
+              type="java.lang.String" minCardinality="1" maxLength="30">
         </node>
         <node displayName="Allow SMS" name="useSms" path="/details/useSms"
               type="java.lang.Boolean" defaultValue="false()"/>

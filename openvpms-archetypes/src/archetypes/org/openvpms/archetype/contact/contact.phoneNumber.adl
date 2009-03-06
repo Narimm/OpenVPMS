@@ -30,7 +30,7 @@
               type="java.lang.String" minCardinality="0" maxLength="6">
         </node>
         <node name="telephoneNumber" path="/details/telephoneNumber"
-              type="java.lang.String" minCardinality="0" maxLength="15">
+              type="java.lang.String" minCardinality="0" maxLength="30">
         </node>
         <node name="preferred" path="/details/preferred"
               type="java.lang.Boolean" defaultValue="true()"/>
