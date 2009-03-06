@@ -200,6 +200,10 @@ public class ActRelationshipCollectionEditor
                     // reset the start-time, which may have been set by
                     // the editor
                     copy.setActivityStartTime(startTime);
+
+                    // create the component - must do this to ensure that
+                    // the product editor is created
+                    editor.getComponent();
                 }
                 editor.setProductRef(product);
 
