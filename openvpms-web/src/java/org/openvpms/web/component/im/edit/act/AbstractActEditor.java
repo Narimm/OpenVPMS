@@ -188,6 +188,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
                 }
                 if (!ObjectUtils.equals(participant.getEntity(), entity)) {
                     participant.setEntity(entity);
+                    modified = true;
                 }
                 if (modified) {
                     property.refresh();   // flag as modified
