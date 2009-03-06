@@ -182,13 +182,14 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
     }
 
     /**
-     * Determines if a name may be an identity (i.e contains a number).
-     * If so, selects * the 'identity search' box.
+     * Determines if a name may be an identity (i.e is all numeric).
+     * If so, selects the 'identity search' box.
      *
      * @param name the name
      */
     private void checkIdentityName(String name) {
-        if (name != null && name.matches(".*\\d+.*")) {
+        name = name.replaceAll("\\*", "");
+        if (name != null && name.matches("\\d+")) {
             getIdentitySearch().setSelected(true);
         }
     }
