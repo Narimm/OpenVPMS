@@ -395,7 +395,8 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             // previously selected object or the object hasn't changed,
             // reselect the selected cell
             if (lastRow != -1 && lastColumn != -1
-                    && ObjectUtils.equals(lastSchedules, results.keySet())) {
+                    && ObjectUtils.equals(lastSchedules, results.keySet())
+                    && lastColumn < model.getColumnCount()) {
                 Date selectedDate = (selectedTime != null)
                         ? DateRules.getDate(selectedTime) : null;
                 PropertySet event = model.getEvent(lastColumn, lastRow);
