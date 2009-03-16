@@ -52,7 +52,6 @@
                 <propertyList name="entries">
                     <property name="MALE" value="Male"/>
                     <property name="FEMALE" value="Female"/>
-                    <property name="GELDING" value="Gelding"/>
                     <property name="UNSPECIFIED" value="Unspecified"/>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
