@@ -22,7 +22,7 @@
         <node name="name" type="java.lang.String" path="/name" minCardinality="1"/>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node dislayName="Type" name="archetype" path="/details/archetype" type="java.lang.String" minCardinality="0">
+        <node displayName="Type" name="archetype" path="/details/archetype" type="java.lang.String" minCardinality="0">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="act.patientDocumentForm" value="Patient Form"/>
