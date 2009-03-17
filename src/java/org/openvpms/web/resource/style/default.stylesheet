@@ -697,6 +697,20 @@
         </properties>
     </style>
 
+    <style name="ScheduleTable.ADMITTED" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#FFCC99"/>
+                        <property name="insets" value="8px 2px"/>
+                        <!-- pale green -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <style name="AbstractReportingWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
