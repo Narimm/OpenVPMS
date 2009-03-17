@@ -26,12 +26,13 @@
               derivedValue="'Patient Radiology'"/>
         <node name="startTime" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" defaultValue="java.util.Date.new()"/>
-        <node name="description" type="java.lang.String" path="/description"/>
+        <node name="description" displayName="Notes" type="java.lang.String" path="/description" maxLength="200" />
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'IN_PROGRESS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>
+                    <property name="COMPLETED" value="Completed"/>
                     <property name="CANCELLED" value="Cancelled"/>
                     <property name="PRELIMINARY" value="Preliminary"/>
                     <property name="FINAL" value="Final"/>
