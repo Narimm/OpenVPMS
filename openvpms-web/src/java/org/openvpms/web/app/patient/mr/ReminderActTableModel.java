@@ -77,6 +77,7 @@ public class ReminderActTableModel extends PatientRecordActTableModel {
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
                 shortName);
         if (archetype != null) {
+        	addColumn(archetype,"reminderType", model);
             addColumn(archetype, "product", model);
         }
         return model;
