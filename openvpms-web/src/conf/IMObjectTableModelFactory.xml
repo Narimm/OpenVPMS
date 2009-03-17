@@ -18,9 +18,14 @@
                         <string>/details/note</string>
                     </entry>
                     <entry>
+                        <string>act.patientInvestigation</string>
+                        <string>concat(openvpms:get(.,'investigationType.entity.name'),"- Request No: ",/id,"-",/description, " [", openvpms:lookup(.,
+                            "status"), "]")</string>
+                    </entry>
+                    <entry>
                         <string>act.patientInvestigation*</string>
-                        <string>concat(/description, " [", openvpms:lookup(.,
-                            "status"), "] #",/id)</string>
+                        <string>concat("Request No: ",/id,"-",/description, " [", openvpms:lookup(.,
+                            "status"), "]")</string>
                     </entry>
                     <entry>
                         <string>act.patientMedication</string>
