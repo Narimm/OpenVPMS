@@ -172,7 +172,8 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         Party merged = checkMerge(from, to);
 
         EntityIdentity[] identities
-                = merged.getIdentities().toArray(new EntityIdentity[0]);
+                = merged.getIdentities().toArray(
+                new EntityIdentity[merged.getIdentities().size()]);
         String idA = identities[0].getIdentity();
         String idB = identities[1].getIdentity();
         assertTrue(id1.getIdentity().equals(idA)
@@ -260,18 +261,18 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         CustomerAccountRules rules = new CustomerAccountRules();
 
         // add some transaction history for the 'from' customer
-        Date firstStartTime = getDatetime("2007-1-2 10:0:0");
+        Date firstStartTime = getDatetime("2007-01-02 10:0:0");
         addInvoice(firstStartTime, eighty, from, fromPatient,
                    product);
-        addPayment(getDatetime("2007-1-2 11:0:0"), forty, from);
+        addPayment(getDatetime("2007-01-02 11:0:0"), forty, from);
 
-        runEOP(from, getDate("2007-2-1"));
+        runEOP(from, getDate("2007-02-01"));
 
         // ... and the 'to' customer
-        addInvoice(getDatetime("2007-1-1 10:0:0"), fifty, to, toPatient,
+        addInvoice(getDatetime("2007-01-01 10:0:0"), fifty, to, toPatient,
                    product);
-        runEOP(to, getDate("2007-1-1"));
-        runEOP(to, getDate("2007-2-1"));
+        runEOP(to, getDate("2007-01-01"));
+        runEOP(to, getDate("2007-02-01"));
 
         // verify balances prior to merge
         assertEquals(0, forty.compareTo(rules.getBalance(from)));

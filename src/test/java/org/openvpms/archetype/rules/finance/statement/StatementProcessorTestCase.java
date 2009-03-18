@@ -230,26 +230,26 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
 
         // backdate the statement to 1/1/2008. Should only include the
         // opening balance
-        Date statementDate3 = getDate("2008-1-1");
+        Date statementDate3 = getDate("2008-01-01");
         List<Act> acts = processStatement(statementDate3, customer);
         assertEquals(1, acts.size());
         checkAct(acts.get(0), "act.customerAccountOpeningBalance", amount);
 
         // now forward to the payment date. Statement should include opening
         // balance and payment
-        Date statementDate4 = getDate("2008-1-14");
+        Date statementDate4 = getDate("2008-01-14");
         acts = processStatement(statementDate4, customer);
         assertEquals(2, acts.size());
         checkAct(acts.get(0), "act.customerAccountOpeningBalance", amount);
         checkAct(acts.get(1), "act.customerAccountPayment", amount);
 
         // run EOP for the 31/1
-        Date statementDate5 = getDate("2008-1-31");
+        Date statementDate5 = getDate("2008-01-31");
         eop = new EndOfPeriodProcessor(statementDate5, true, getPractice());
         eop.process(customer);
 
         // check statement for 1/2. Balance should  be zero.
-        Date statementDate6 = getDate("2008-2-1");
+        Date statementDate6 = getDate("2008-02-01");
         acts = processStatement(statementDate6, customer);
         assertEquals(1, acts.size());
         checkAct(acts.get(0), "act.customerAccountOpeningBalance",
