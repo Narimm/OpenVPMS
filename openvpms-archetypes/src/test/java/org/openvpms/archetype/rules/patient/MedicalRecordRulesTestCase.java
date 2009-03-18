@@ -123,17 +123,17 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * method.
      */
     public void testGetEvent() {
-        Act event1 = createEvent(getDate("2007-1-1"));
+        Act event1 = createEvent(getDate("2007-01-01"));
         event1.setStatus(ActStatus.IN_PROGRESS);
         save(event1);
         checkEvent(event1);
 
-        Act event2 = createEvent(getDate("2007-1-2"));
+        Act event2 = createEvent(getDate("2007-01-02"));
         event2.setStatus(ActStatus.COMPLETED);
         save(event2);
         checkEvent(event2);
 
-        Act event3 = createEvent(getDate("2008-1-1"));
+        Act event3 = createEvent(getDate("2008-01-01"));
         event3.setStatus(ActStatus.IN_PROGRESS);
         save(event3);
         checkEvent(event3);
@@ -143,9 +143,9 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link MedicalRecordRules#getEvent} method.
      */
     public void testGetEventByDate() {
-        Date jan1 = getDate("2007-1-1");
-        Date jan2 = getDate("2007-1-2");
-        Date jan3 = getDate("2007-1-3 10:43:55");
+        Date jan1 = getDate("2007-01-01");
+        Date jan2 = getDate("2007-01-02");
+        Date jan3 = getDate("2007-01-03 10:43:55");
 
         checkEvent(jan2, null);
 
@@ -164,7 +164,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act event2 = createEvent(jan3);
         save(event2);
         checkEvent(jan3, event2);
-        checkEvent(getDate("2007-1-3"), event2);
+        checkEvent(getDate("2007-01-03"), event2);
         // note that the time component is zero, but still picks up event2,
         // despite the event being created after 00:00:00. This is required
         // as the time component of startTime is not supplied consistently -

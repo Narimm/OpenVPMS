@@ -264,6 +264,7 @@ public class TestHelper extends Assert {
      * Creates and saves a new product with an optional species classification.
      * The product name is prefixed with <em>XProduct-</em>.
      *
+     * @param shortName the archetype short name
      * @param species the species classification name. May be <code>null</code>
      * @return a new product
      */
@@ -385,6 +386,7 @@ public class TestHelper extends Assert {
      * Returns a currency with the specified currency code, creating it
      * if it doesn't exist.
      *
+     * @param code the currency code
      * @return the currency
      */
     public static Lookup getCurrency(String code) {
@@ -421,12 +423,12 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Gets a classification lookup, creating it if it doesn't exist.
+     * Returns a lookup, creating it if it doesn't exist.
      *
-     * @param shortName the clasification short name
-     * @param code      the classification code
-     * @param save      if <tt>true</tt>, save the classification
-     * @return the classification
+     * @param shortName the lookup short name
+     * @param code      the lookup code
+     * @param save      if <tt>true</tt>, save the lookup
+     * @return the lookup
      */
     public static Lookup getLookup(String shortName, String code,
                                    boolean save) {
@@ -453,6 +455,7 @@ public class TestHelper extends Assert {
      * @param code                  the lookup code
      * @param source                the source lookup
      * @param relationshipShortName the lookup relationship short name
+     * @return the lookup
      */
     public static Lookup getLookup(String shortName, String code, Lookup source,
                                    String relationshipShortName) {
@@ -507,7 +510,7 @@ public class TestHelper extends Assert {
      * @return the corresponding date
      */
     public static Date getDate(String value) {
-        return Timestamp.valueOf(value + " 0:0:0");
+        return getDatetime(value + " 0:0:0");
     }
 
 }

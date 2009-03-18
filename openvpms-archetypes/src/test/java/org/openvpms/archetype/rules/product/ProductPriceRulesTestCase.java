@@ -72,12 +72,12 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link ProductPriceRules#getProductPrice} method.
      */
     public void testGetProductPrice() {
-        ProductPrice fixed1 = createFixedPrice("2008-1-1", "2008-1-31", false);
-        ProductPrice fixed2 = createFixedPrice("2008-2-1", "2008-12-31", false);
-        ProductPrice fixed3 = createFixedPrice("2008-3-1", null, true);
+        ProductPrice fixed1 = createFixedPrice("2008-01-01", "2008-01-31", false);
+        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
 
-        ProductPrice unit1 = createPrice(UNIT_PRICE, "2008-1-1", "2008-1-10");
-        ProductPrice unit2 = createPrice(UNIT_PRICE, "2008-2-1", null);
+        ProductPrice unit1 = createPrice(UNIT_PRICE, "2008-01-01", "2008-01-10");
+        ProductPrice unit2 = createPrice(UNIT_PRICE, "2008-02-01", null);
 
         assertNull(rules.getProductPrice(product, FIXED_PRICE, new Date()));
         assertNull(rules.getProductPrice(product, UNIT_PRICE, new Date()));
@@ -87,19 +87,19 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         product.addProductPrice(unit1);
         product.addProductPrice(unit2);
 
-        checkPrice(null, FIXED_PRICE, "2007-1-1");
-        checkPrice(fixed1, FIXED_PRICE, "2008-1-1");
-        checkPrice(fixed1, FIXED_PRICE, "2008-1-31");
-        checkPrice(fixed2, FIXED_PRICE, "2008-2-1");
+        checkPrice(null, FIXED_PRICE, "2007-01-01");
+        checkPrice(fixed1, FIXED_PRICE, "2008-01-01");
+        checkPrice(fixed1, FIXED_PRICE, "2008-01-31");
+        checkPrice(fixed2, FIXED_PRICE, "2008-02-01");
         checkPrice(fixed2, FIXED_PRICE, "2008-12-31");
-        checkPrice(null, FIXED_PRICE, "2009-1-1");
+        checkPrice(null, FIXED_PRICE, "2009-01-01");
 
         checkPrice(null, UNIT_PRICE, "2007-12-31");
-        checkPrice(unit1, UNIT_PRICE, "2008-1-1");
-        checkPrice(unit1, UNIT_PRICE, "2008-1-10");
-        checkPrice(null, UNIT_PRICE, "2008-1-11");
-        checkPrice(unit2, UNIT_PRICE, "2008-2-1");
-        checkPrice(unit2, UNIT_PRICE, "2010-2-1"); // unbounded
+        checkPrice(unit1, UNIT_PRICE, "2008-01-01");
+        checkPrice(unit1, UNIT_PRICE, "2008-01-10");
+        checkPrice(null, UNIT_PRICE, "2008-01-11");
+        checkPrice(unit2, UNIT_PRICE, "2008-02-01");
+        checkPrice(unit2, UNIT_PRICE, "2010-02-01"); // unbounded
 
         // verify that linked products are used if there are no matching prices
         // for the date
@@ -112,14 +112,14 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(product);
         EntityRelationship relationship = bean.addRelationship(
                 ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
-        relationship.setActiveStartTime(getDate("2008-1-1"));
+        relationship.setActiveStartTime(getDate("2008-01-01"));
         bean.save();
 
         product = get(product);
-        checkPrice(fixed2, FIXED_PRICE, "2008-2-1");
+        checkPrice(fixed2, FIXED_PRICE, "2008-02-01");
 
         // fixed3 overrides fixed2 as it is the default
-        checkPrice(fixed3, FIXED_PRICE, "2008-3-1");
+        checkPrice(fixed3, FIXED_PRICE, "2008-03-01");
     }
 
     /**
@@ -131,16 +131,16 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         BigDecimal two = new BigDecimal("2.0");
         BigDecimal three = new BigDecimal("3.0");
 
-        ProductPrice fixed1 = createFixedPrice("2008-1-1", "2008-1-31", false);
-        ProductPrice fixed2 = createFixedPrice("2008-2-1", "2008-12-31", false);
-        ProductPrice fixed3 = createFixedPrice("2008-3-1", null, true);
+        ProductPrice fixed1 = createFixedPrice("2008-01-01", "2008-01-31", false);
+        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
 
         fixed1.setPrice(one);
         fixed2.setPrice(two);
         fixed3.setPrice(three);
 
-        ProductPrice unit1 = createPrice(UNIT_PRICE, "2008-1-1", "2008-1-10");
-        ProductPrice unit2 = createPrice(UNIT_PRICE, "2008-2-1", null);
+        ProductPrice unit1 = createPrice(UNIT_PRICE, "2008-01-01", "2008-01-10");
+        ProductPrice unit2 = createPrice(UNIT_PRICE, "2008-02-01", null);
 
         unit1.setPrice(one);
         unit2.setPrice(two);
@@ -156,24 +156,24 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         product.addProductPrice(unit1);
         product.addProductPrice(unit2);
 
-        checkPrice(null, two, FIXED_PRICE, "2008-1-1");
-        checkPrice(fixed1, one, FIXED_PRICE, "2008-1-1");
-        checkPrice(null, two, FIXED_PRICE, "2008-1-31");
-        checkPrice(fixed1, one, FIXED_PRICE, "2008-1-31");
-        checkPrice(null, one, FIXED_PRICE, "2008-2-1");
+        checkPrice(null, two, FIXED_PRICE, "2008-01-01");
+        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-01");
+        checkPrice(null, two, FIXED_PRICE, "2008-01-31");
+        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-31");
+        checkPrice(null, one, FIXED_PRICE, "2008-02-01");
         checkPrice(fixed2, two, FIXED_PRICE, "2008-12-31");
-        checkPrice(null, two, FIXED_PRICE, "2009-1-1");
+        checkPrice(null, two, FIXED_PRICE, "2009-01-01");
 
         checkPrice(null, one, UNIT_PRICE, "2007-12-31");
-        checkPrice(null, two, UNIT_PRICE, "2008-1-1");
-        checkPrice(unit1, one, UNIT_PRICE, "2008-1-1");
-        checkPrice(null, two, UNIT_PRICE, "2008-1-10");
-        checkPrice(unit1, one, UNIT_PRICE, "2008-1-10");
-        checkPrice(null, two, UNIT_PRICE, "2008-1-11");
-        checkPrice(null, three, UNIT_PRICE, "2008-2-1");
-        checkPrice(unit2, two, UNIT_PRICE, "2008-2-1");
-        checkPrice(null, three, UNIT_PRICE, "2010-2-1");
-        checkPrice(unit2, two, UNIT_PRICE, "2010-2-1"); // unbounded
+        checkPrice(null, two, UNIT_PRICE, "2008-01-01");
+        checkPrice(unit1, one, UNIT_PRICE, "2008-01-01");
+        checkPrice(null, two, UNIT_PRICE, "2008-01-10");
+        checkPrice(unit1, one, UNIT_PRICE, "2008-01-10");
+        checkPrice(null, two, UNIT_PRICE, "2008-01-11");
+        checkPrice(null, three, UNIT_PRICE, "2008-02-01");
+        checkPrice(unit2, two, UNIT_PRICE, "2008-02-01");
+        checkPrice(null, three, UNIT_PRICE, "2010-02-01");
+        checkPrice(unit2, two, UNIT_PRICE, "2010-02-01"); // unbounded
 
         // verify that linked products are used if there are no matching prices
         // for the date
@@ -186,23 +186,23 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(product);
         EntityRelationship relationship = bean.addRelationship(
                 ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
-        relationship.setActiveStartTime(getDate("2008-1-1"));
+        relationship.setActiveStartTime(getDate("2008-01-01"));
         bean.save();
 
         product = get(product);
-        checkPrice(fixed2, two, FIXED_PRICE, "2008-2-1");
-        checkPrice(fixed3, three, FIXED_PRICE, "2008-3-1");
-        checkPrice(fixed2, two, FIXED_PRICE, "2008-3-1");
+        checkPrice(fixed2, two, FIXED_PRICE, "2008-02-01");
+        checkPrice(fixed3, three, FIXED_PRICE, "2008-03-01");
+        checkPrice(fixed2, two, FIXED_PRICE, "2008-03-01");
     }
 
     /**
      * Tests the {@link ProductPriceRules#getProductPrices} method.
      */
     public void testGetProductPrices() {
-        ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-1-1", "2008-1-31");
-        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-1-1",
+        ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-01-01", "2008-01-31");
+        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-01-01",
                                           "2008-12-31");
-        ProductPrice fixed3 = createPrice(FIXED_PRICE, "2008-2-1", null);
+        ProductPrice fixed3 = createPrice(FIXED_PRICE, "2008-02-01", null);
 
         product.addProductPrice(fixed1);
         product.addProductPrice(fixed2);
@@ -216,31 +216,31 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(product);
         EntityRelationship relationship = bean.addRelationship(
                 ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
-        relationship.setActiveStartTime(getDate("2008-1-1"));
+        relationship.setActiveStartTime(getDate("2008-01-01"));
         bean.save();
 
         product = get(product);
 
         Set<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE,
-                                                          getDate("2007-1-1"));
+                                                          getDate("2007-01-01"));
         assertTrue(prices.isEmpty());
 
         prices = rules.getProductPrices(product, FIXED_PRICE,
-                                        getDate("2008-1-1"));
+                                        getDate("2008-01-01"));
         assertEquals(2, prices.size());
         assertTrue(prices.contains(fixed1));
         assertTrue(prices.contains(fixed2));
         assertFalse(prices.contains(fixed3));
 
         prices = rules.getProductPrices(product, FIXED_PRICE,
-                                        getDate("2008-2-1"));
+                                        getDate("2008-02-01"));
         assertEquals(2, prices.size());
         assertFalse(prices.contains(fixed1));
         assertTrue(prices.contains(fixed2));
         assertTrue(prices.contains(fixed3));
 
         prices = rules.getProductPrices(product, FIXED_PRICE,
-                                        getDate("2009-1-1"));
+                                        getDate("2009-01-01"));
         assertEquals(1, prices.size());
         assertFalse(prices.contains(fixed1));
         assertFalse(prices.contains(fixed2));
@@ -320,6 +320,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @param from         the active from date. May be <tt>null</tt>
      * @param to           the active to date. May be <tt>null</tt>
      * @param defaultPrice <tt>true</tt> if the price is the default
+     * @return a new fixed price
      */
     private ProductPrice createFixedPrice(String from, String to,
                                           boolean defaultPrice) {
@@ -336,6 +337,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @param shortName the short name
      * @param from      the active from date. May be <tt>null</tt>
      * @param to        the active to date. May be <tt>null</tt>
+     * @return a new price
      */
     private ProductPrice createPrice(String shortName, String from, String to) {
         ProductPrice result = (ProductPrice) create(shortName);
