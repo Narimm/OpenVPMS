@@ -11,7 +11,7 @@
     <inceptionYear>2005</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms</artifactId>
-    <currentVersion>1.3-beta-1</currentVersion>
+    <currentVersion>1.3</currentVersion>
     <package>org.openvpms</package>
     <shortDescription>VPMS Web Application</shortDescription>
     <url>http://www.openvpms.org/${pom.artifactId}</url>
@@ -713,7 +713,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>1.3-beta-1</version>
+            <version>1.3</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
@@ -722,7 +722,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>1.3-beta-1</version>
+            <version>1.3</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
@@ -731,7 +731,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-reports</artifactId>
-            <version>1.3-beta-1</version>
+            <version>1.3</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
