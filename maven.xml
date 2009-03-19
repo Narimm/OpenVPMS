@@ -31,6 +31,12 @@
                 <ant:pathelement path="${maven.build.dest}"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
+            <j:if test="${!empty(byid)}">
+                <ant:arg value="--byid"/>
+            </j:if>
+            <j:if test="${!empty(byname)}">
+                <ant:arg value="--byname"/>
+            </j:if>
             <j:if test="${!empty(docdir)}">
                 <ant:arg value="-d"/>
                 <ant:arg value="${docdir}"/>
