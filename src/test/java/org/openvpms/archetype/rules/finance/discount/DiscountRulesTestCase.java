@@ -293,7 +293,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         Party patientNoDisc = createPatient();
         Party patientWithDisc = createPatientWithDiscount(discount10);
         Product product = createProductWithProductTypeDiscount(discount5);
-        addDiscount(product, discountGroup, null);
+        addDiscount(product, discount10, null);
 
         Date now = new Date();
         checkDiscounts(now, custNoDisc, patientNoDisc, product);
@@ -326,6 +326,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      *
      * @param date             the date, used to determine if a discount applies
      * @param customer         the customer
+     * @param patient          the patient
      * @param product          the product
      * @param expectedDiscount the expected discount
      */
