@@ -17,14 +17,15 @@
     <goal name="generate-hibernate-properties">
         <copy tofile="${maven.build.dest}/hibernate.properties"
               file="${basedir}/src/conf/hibernate/hibernate.properties">
-            <filterset>
-                <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
-                <filter token="JDBC_DRIVER"
+            <filterset begintoken="${'${'}" endtoken="}">
+                <filter token="hibernate.dialect" value="${hibernate.dialect}"/>
+                <filter token="hibernate.connection.driver_class"
                         value="${hibernate.connection.driver_class}"/>
-                <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
-                <filter token="JDBC_USERNAME"
+                <filter token="hibernate.connection.url"
+                        value="${hibernate.connection.url}"/>
+                <filter token="hibernate.connection.username"
                         value="${hibernate.connection.username}"/>
-                <filter token="JDBC_PASSWORD"
+                <filter token="hibernate.connection.password"
                         value="${hibernate.connection.password}"/>
             </filterset>
         </copy>
