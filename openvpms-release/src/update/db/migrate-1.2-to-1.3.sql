@@ -376,3 +376,18 @@ update financial_acts
 
 update financial_acts
     set unit_cost = 0.0 where unit_cost is null;
+
+#
+# Add create.all security.archetypeAuthority for REL-6
+#
+
+insert into granted_authorities (version, linkId, arch_short_name, arch_version,
+    name, description, active, service_name, method, archetype)
+values (0, UUID(), "security.archetypeAuthority", "1.0", "create.all",
+        "Authority to Create All Archetypes", true, "archetypeService",
+        "create", "*");
+
+insert into roles_authorities (security_role_id, authority_id)
+select security_role_id, granted_authority_id
+from security_roles
+join granted_authorities a where a.name = "create.all";
