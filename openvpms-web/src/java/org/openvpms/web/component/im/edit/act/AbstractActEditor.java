@@ -210,7 +210,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
             result = editor.getEntityRef();
         } else {
             ActBean bean = new ActBean((Act) getObject());
-            result = bean.getNodeParticipantRef(name);
+            if (bean.hasNode(name)) {
+                result = bean.getNodeParticipantRef(name);
+            } else {
+                result = null;
+            }
         }
         return result;
     }
