@@ -421,7 +421,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * @param component the component
      */
     protected void addTable(TableEx table, Component component) {
-        component.add(ColumnFactory.create("Inset.Small", table));
+        component.add(ColumnFactory.create("Inset.SmallXLargeY", table));
     }
 
     /**
