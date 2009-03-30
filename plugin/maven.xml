@@ -53,7 +53,7 @@
         <mkdir dir="${maven.build.dir}"/>
         <velocity:merge name="${maven.build.dir}/plugin.xml"
                         basedir="${basedir}/src/conf/kettle"
-                        template="plugin.xml"
+                        template="plugin.vm"
                         inputEncoding="${maven.docs.outputencoding}"
                         outputEncoding="${maven.docs.outputencoding}"/>
         <delete file="${basedir}/velocity.log" failonerror="false"/>
