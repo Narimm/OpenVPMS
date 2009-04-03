@@ -75,10 +75,12 @@ public abstract class AbstractBatchProcessor implements BatchProcessor {
     }
 
     /**
-     * Increments the processed counter.
+     * Increments the processed counter by the specified amount.
+     *
+     * @param count the amount to increment by
      */
-    protected void incProcessed() {
-        ++processed;
+    protected void incProcessed(int count) {
+        processed += count;
     }
 
     /**

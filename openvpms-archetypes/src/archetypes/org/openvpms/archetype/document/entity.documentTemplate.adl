@@ -52,6 +52,7 @@
                     <property name="act.supplierAccountPayment" value="Supplier Remittance"/>
                     <property name="CUSTOMER_BALANCE" value="Customer Account Balance"/>
                     <property name="WORK_IN_PROGRESS_CHARGES" value="Work in Progress Charges"/>
+                    <property name="GROUPED_REMINDERS" value="Grouped Reminders"/>
                     <property name="REPORT" value="Report"/>
                     <property name="SUBREPORT" value="Sub Report"/>
                 </propertyList>
