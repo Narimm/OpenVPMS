@@ -29,6 +29,7 @@
     </scm>
 
     <build>
+        <finalName>openvpms</finalName>
         <resources>
             <resource>
                 <directory>${basedir}/src/java</directory>
@@ -130,11 +131,29 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <warSourceDirectory>
-                        ${basedir}/src/webapp</warSourceDirectory>
+                        ${basedir}/src/webapp
+                    </warSourceDirectory>
                     <archive>
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>tomcat-maven-plugin</artifactId>
+                <version>1.0-beta-1</version>
+                <configuration>
+                    <server>tomcat</server>
+                    <path>/${project.build.finalName}</path>
+                    <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>${mysql.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -260,11 +279,14 @@
 
     <properties>
         <hibernate.dialect>
-            org.hibernate.dialect.MySQL5InnoDBDialect</hibernate.dialect>
+            org.hibernate.dialect.MySQL5InnoDBDialect
+        </hibernate.dialect>
         <hibernate.connection.driver_class>
-            com.mysql.jdbc.Driver</hibernate.connection.driver_class>
+            com.mysql.jdbc.Driver
+        </hibernate.connection.driver_class>
         <hibernate.connection.url>
-            jdbc:mysql://localhost:3306/openvpms</hibernate.connection.url>
+            jdbc:mysql://localhost:3306/openvpms
+        </hibernate.connection.url>
         <hibernate.connection.username>openvpms</hibernate.connection.username>
         <hibernate.connection.password>openvpms</hibernate.connection.password>
         <echo.version>2.1.0.rc5</echo.version>

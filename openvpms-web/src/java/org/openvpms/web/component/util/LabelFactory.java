@@ -58,8 +58,19 @@ public final class LabelFactory extends ComponentFactory {
      * @return a new label
      */
     public static Label create(boolean multiline) {
+        return create(multiline, false);
+    }
+
+    /**
+     * Creates a new label that may support multiple lines, and wrap long lines.
+     *
+     * @param multiline if <tt>true</tt>, iterprets new lines in the text
+     * @param wrap      if <tt>true</tt>, long lines will be wrapped
+     * @return a new label
+     */
+    public static Label create(boolean multiline, boolean wrap) {
         Label result;
-        if (multiline) {
+        if (multiline || wrap) {
             LabelEx label = new LabelEx() {
                 @Override
                 public void setText(String newValue) {
@@ -71,7 +82,12 @@ public final class LabelFactory extends ComponentFactory {
                     super.setText(newValue);
                 }
             };
-            label.setIntepretNewlines(true);
+            if (multiline) {
+                label.setIntepretNewlines(true);
+            }
+            if (wrap) {
+                label.setLineWrap(true);
+            }
             result = label;
         } else {
             result = new Label() {
@@ -130,7 +146,8 @@ public final class LabelFactory extends ComponentFactory {
     /**
      * Create a new label with localised text, and specific style.
      *
-     * @param key the resource bundle key. May be <code>null</code>
+     * @param key   the resource bundle key. May be <code>null</code>
+     * @param style the label style
      * @return a new label
      */
     public static Label create(String key, String style) {

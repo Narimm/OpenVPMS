@@ -21,14 +21,22 @@ package org.openvpms.web.app.reporting.reminder;
 import org.openvpms.archetype.rules.patient.reminder.AbstractReminderProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 
 /**
  * Helper to collect reminders produced by the {@link ReminderProcessor}.
+ * Each reminder is grouped according to:
+ * <ul>
+ * <li>contact</li>
+ * <li>whether or not the associated reminder type supports grouping</li>
+ * </ul>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -38,7 +46,7 @@ class ReminderCollector extends AbstractReminderProcessorListener {
     /**
      * The reminders.
      */
-    private List<ReminderEvent> reminders = new ArrayList<ReminderEvent>();
+    private HashMap<Key, List<ReminderEvent>> reminders = new LinkedHashMap<Key, List<ReminderEvent>>();
 
     /**
      * Process an event.
@@ -47,7 +55,13 @@ class ReminderCollector extends AbstractReminderProcessorListener {
      * @throws OpenVPMSException for any error
      */
     public void process(ReminderEvent event) {
-        reminders.add(event);
+        Key key = new Key(event);
+        List<ReminderEvent> events = reminders.get(key);
+        if (events == null) {
+            events = new ArrayList<ReminderEvent>();
+            reminders.put(key, events);
+        }
+        events.add(event);
     }
 
     /**
@@ -55,7 +69,40 @@ class ReminderCollector extends AbstractReminderProcessorListener {
      *
      * @return the reminders
      */
-    public List<ReminderEvent> getReminders() {
-        return reminders;
+    public List<List<ReminderEvent>> getReminders() {
+        return new ArrayList<List<ReminderEvent>>(reminders.values());
+    }
+
+    private static class Key {
+
+        private final long contactId;
+
+        private boolean group;
+
+        private int hashCode;
+
+        public Key(ReminderEvent event) {
+            Contact contact = event.getContact();
+            contactId = (contact != null) ? contact.getId() : -1;
+            group = event.getReminderType().canGroup();
+            hashCode = (contact != null) ? contact.hashCode() : event.getReminder().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            boolean equal = false;
+            if (obj instanceof Key) {
+                Key key = (Key) obj;
+                if (contactId != -1 && contactId == key.contactId && group && key.group) {
+                    equal = true;
+                }
+            }
+            return equal;
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
     }
 }

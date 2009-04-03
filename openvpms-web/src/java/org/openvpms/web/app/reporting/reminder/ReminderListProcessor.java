@@ -23,6 +23,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
@@ -34,6 +35,7 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -45,14 +47,21 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderListProcessor extends AbstractBatchProcessor
-        implements BatchProcessorComponent {
+class ReminderListProcessor extends AbstractBatchProcessor implements BatchProcessorComponent {
 
     /**
      * Reminders that need to be listed.
      */
-    private final List<Act> reminders = new ArrayList<Act>();
+    private final List<ReminderEvent> reminders = new ArrayList<ReminderEvent>();
 
+    /**
+     * The statistics.
+     */
+    private final Statistics statistics;
+
+    /**
+     * The component layout row.
+     */
     private Row row;
 
 
@@ -60,11 +69,15 @@ class ReminderListProcessor extends AbstractBatchProcessor
      * Creates a new <tt>ReminderListProcessor</tt>.
      *
      * @param reminders the reminders
+     * @param statistics the reminder statistics
      */
-    public ReminderListProcessor(List<ReminderEvent> reminders) {
-        for (ReminderEvent reminder : reminders) {
-            this.reminders.add(reminder.getReminder());
+    public ReminderListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics) {
+        for (List<ReminderEvent> list : reminders) {
+            for (ReminderEvent reminder : list) {
+                this.reminders.add(reminder);
+            }
         }
+        this.statistics = statistics;
         row = RowFactory.create();
     }
 
@@ -93,18 +106,24 @@ class ReminderListProcessor extends AbstractBatchProcessor
         setStatus(Messages.get("reporting.reminder.list.status.begin"));
         if (!reminders.isEmpty()) {
             try {
+                List<Act> acts = new ArrayList<Act>();
+                for (ReminderEvent event : reminders) {
+                    acts.add(event.getReminder());
+                }
                 IMObjectReportPrinter<Act> printer
-                        = new IMObjectReportPrinter<Act>(reminders,
-                                                         "act.patientReminder");
-                final InteractiveIMPrinter<Act> iPrinter
-                        = new InteractiveIMPrinter<Act>(
+                        = new IMObjectReportPrinter<Act>(acts, "act.patientReminder");
+                final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(
                         Messages.get("reporting.reminder.list.print.title"),
                         printer, true);
 
                 iPrinter.setListener(new PrinterListener() {
                     public void printed(String printer) {
-                        setProcessed(reminders.size());
-                        notifyCompleted();
+                        try {
+                            updateReminders();
+                            notifyCompleted();
+                        } catch (Throwable error) {
+                            notifyError(error);
+                        }
                     }
 
                     public void cancelled() {
@@ -160,5 +179,14 @@ class ReminderListProcessor extends AbstractBatchProcessor
         row.add(label);
     }
 
+    private void updateReminders() {
+        setProcessed(reminders.size());
+        ReminderRules rules = new ReminderRules();
+        Date date = new Date();
+        for (ReminderEvent reminder : reminders) {
+            rules.updateReminder(reminder.getReminder(), date);
+            statistics.increment(reminder.getReminderType().getEntity(), reminder.getAction());
+        }
+    }
 
 }

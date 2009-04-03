@@ -95,8 +95,7 @@ class Statistics {
      * @param actions      the actions
      * @return the count
      */
-    public int getCount(Entity reminderType,
-                        EnumSet<ReminderEvent.Action> actions) {
+    public int getCount(Entity reminderType, EnumSet<ReminderEvent.Action> actions) {
         int result = 0;
         Map<ReminderEvent.Action, Integer> stats = statistics.get(reminderType);
         if (stats != null) {
@@ -108,6 +107,13 @@ class Statistics {
             }
         }
         return result;
+    }
+
+    /**
+     * Clears the statistics.
+     */
+    public void clear() {
+        statistics.clear();
     }
 
 }

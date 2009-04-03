@@ -19,19 +19,19 @@
 package org.openvpms.web.app.reporting.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.im.print.IMObjectReportPrinter;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
+import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.print.PrinterListener;
-import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
+import java.util.ArrayList;
 
 
 /**
@@ -40,7 +40,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
+class ReminderPrintProcessor extends ReminderProgressBarProcessor {
 
     /**
      * The name of the selected printer. Once a printer has been selected,
@@ -52,26 +52,34 @@ class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
     /**
      * Constructs a new <tt>ReminderPrintProcessor</tt>.
      *
-     * @param reminders the reminders to print
+     * @param reminders     the reminders to print
+     * @param groupTemplate the grouped reminder document template
+     * @param statistics    the statistics
      */
-    public ReminderPrintProcessor(List<ReminderEvent> reminders) {
-        super(reminders, Messages.get("reporting.reminder.run.print"));
+    public ReminderPrintProcessor(List<List<ReminderEvent>> reminders, Entity groupTemplate,
+                                  Statistics statistics) {
+        super(reminders, groupTemplate, statistics, Messages.get("reporting.reminder.run.print"));
     }
 
-    /**
-     * Invoked to process a reminder.
-     *
-     * @param event the event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the event cannot be processed
-     */
-    protected void process(final ReminderEvent event) {
+    @Override
+    protected void process(List<ReminderEvent> events, String shortName, Entity documentTemplate) {
         setSuspend(true);
-        Entity documentTemplate = event.getDocumentTemplate();
-        IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(
-                event.getReminder(), documentTemplate);
-        final InteractiveIMPrinter<Act> iPrinter
-                = new InteractiveIMPrinter<Act>(printer);
+        if (events.size() > 1) {
+            List<ObjectSet> sets = createObjectSets(events);
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, shortName, documentTemplate);
+            print(events, printer);
+        } else {
+            List<Act> acts = new ArrayList<Act>();
+            for (ReminderEvent event : events) {
+                acts.add(event.getReminder());
+            }
+            IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, shortName, documentTemplate);
+            print(events, printer);
+        }
+    }
+
+    private <T> void print(final List<ReminderEvent> events, IMPrinter<T> printer) {
+        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer);
         if (printerName != null) {
             iPrinter.setInteractive(false);
         }
@@ -79,7 +87,7 @@ class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
             public void printed(String printer) {
                 try {
                     setSuspend(false);
-                    processCompleted(event);
+                    processCompleted(events);
                     printerName = printer;
                 } catch (OpenVPMSException exception) {
                     notifyError(exception);
