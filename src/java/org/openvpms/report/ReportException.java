@@ -45,13 +45,16 @@ public class ReportException extends OpenVPMSException {
         @Deprecated UnsupportedMimeTypes,
         UnsupportedMimeType,
         NoExpressionEvaluatorForType,
-        FailedToGetParameters
+        FailedToGetParameters,
+        InvalidArchetype,
+        NoTemplateForArchetype,
+        UnsupportedTemplate
     }
 
     /**
      * The error code.
      */
-    private final ErrorCode _errorCode;
+    private final ErrorCode errorCode;
 
 
     /**
@@ -59,22 +62,21 @@ public class ReportException extends OpenVPMSException {
      * class is loaded.
      */
     private static Messages MESSAGES
-            = Messages.getMessages(
-            "org.openvpms.report."+ OpenVPMSException.ERRMESSAGES_FILE);
+            = Messages.getMessages("org.openvpms.report."+ OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
-     * Constructs a new <code>IMReportException</code>.
+     * Constructs a new <tt>IMReportException</tt>.
      *
      * @param errorCode the error code
      * @param args arguments used to format the error message
      */
     public ReportException(ErrorCode errorCode, Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args));
-        _errorCode = errorCode;
+        this.errorCode = errorCode;
     }
 
     /**
-     * Constructs a new <code>IMReportException</code>.
+     * Constructs a new <tt>IMReportException</tt>.
      *
      * @param cause the root cause
      * @param errorCode the error code
@@ -83,7 +85,7 @@ public class ReportException extends OpenVPMSException {
     public ReportException(Throwable cause, ErrorCode errorCode,
                            Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args), cause);
-        _errorCode = errorCode;
+        this.errorCode = errorCode;
     }
     /**
      * Returns the error code.
@@ -91,7 +93,7 @@ public class ReportException extends OpenVPMSException {
      * @return the error code
      */
     public ErrorCode getErrorCode() {
-        return _errorCode;
+        return errorCode;
     }
 
 }

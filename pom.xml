@@ -116,6 +116,11 @@
             <version>${jasperreports.version}</version>
         </dependency>
         <dependency>
+            <groupId>commons-digester</groupId>
+            <artifactId>commons-digester</artifactId>
+            <version>1.7</version>
+        </dependency>
+        <dependency>
             <groupId>org.openoffice</groupId>
             <artifactId>juh</artifactId>
             <version>${openoffice.version}</version>
@@ -159,5 +164,21 @@
     <properties>
         <openoffice.version>2.1</openoffice.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <!-- override the jaspersoft repository specified by the jasperreports pom to avoid it
+                 continually checking for updates due to specification of version ranges. Better way to do this?
+             -->
+            <id>jaspersoft</id>
+            <url>http://rs.jaspersoft.com/maven2</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>

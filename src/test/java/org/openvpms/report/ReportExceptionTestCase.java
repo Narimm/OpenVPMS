@@ -35,7 +35,7 @@ public class ReportExceptionTestCase extends TestCase {
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     7, ReportException.ErrorCode.values().length);
+                     3, ReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
         checkException(FailedToGenerateReport, "Failed to generate report: foo",
@@ -50,6 +50,12 @@ public class ReportExceptionTestCase extends TestCase {
                        "No ExpressionEvalutor for type: foo", "foo");
         checkException(ReportException.ErrorCode.FailedToGetParameters,
                        "Failed to get report parameters");
+        checkException(ReportException.ErrorCode.InvalidArchetype,
+                       "foo is not a valid report type", "foo");
+        checkException(ReportException.ErrorCode.NoTemplateForArchetype,
+                       "No document template available for report type: foo", "foo");
+        checkException(ReportException.ErrorCode.UnsupportedTemplate,
+                       "Unsupported document template: foo", "foo");
     }
 
     /**
@@ -60,10 +66,10 @@ public class ReportExceptionTestCase extends TestCase {
      * @param expected the expected message
      * @param args     exception arguments
      */
+    @SuppressWarnings({"ThrowableInstanceNeverThrown"})
     private void checkException(ReportException.ErrorCode code,
-                                String expected, Object ... args) {
-        ReportException exception = new ReportException(code,
-                                                        args);
+                                String expected, Object... args) {
+        ReportException exception = new ReportException(code, args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());
     }

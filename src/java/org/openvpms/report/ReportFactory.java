@@ -18,8 +18,6 @@
 
 package org.openvpms.report;
 
-import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
-
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -28,6 +26,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
+import static org.openvpms.report.ReportException.ErrorCode.*;
 import org.openvpms.report.jasper.DynamicJasperReport;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.jasper.TemplatedJasperObjectSetReport;
@@ -45,19 +44,20 @@ public class ReportFactory {
 
     /**
      * Creates a new report.
+     *
+     * @param template the document template
+     * @param service  the archetype service
+     * @param handlers the document handlers
+     * @return a new report
+     * @throws ReportException for any report error
      */
-    public static Report createReport(
-            Document template, IArchetypeService service,
-            DocumentHandlers handlers) {
+    public static Report createReport(Document template, IArchetypeService service, DocumentHandlers handlers) {
         String name = template.getName();
         Report report;
         if (name.endsWith(DocFormats.JRXML_EXT)) {
-            report = new TemplatedJasperIMObjectReport(template, service,
-                                                       handlers);
+            report = new TemplatedJasperIMObjectReport(template, service, handlers);
         } else {
-            throw new ReportException(
-                    FailedToCreateReport,
-                    "Unsupported document template: '" + name + "'");
+            throw new ReportException(UnsupportedTemplate, name);
         }
         return report;
     }
@@ -69,25 +69,21 @@ public class ReportFactory {
      * @param service  the archetype service
      * @param handlers the document handlers
      * @return a new report
-     * @throws ReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static IMReport<IMObject> createIMObjectReport(
-            Document template, IArchetypeService service,
-            DocumentHandlers handlers) {
+    public static IMReport<IMObject> createIMObjectReport(Document template, IArchetypeService service,
+                                                          DocumentHandlers handlers) {
         String name = template.getName();
         IMReport<IMObject> report;
         if (name.endsWith(DocFormats.JRXML_EXT)) {
-            report = new TemplatedJasperIMObjectReport(template, service,
-                                                       handlers);
+            report = new TemplatedJasperIMObjectReport(template, service, handlers);
         } else if (name.endsWith(DocFormats.ODT_EXT)) {
             report = new OpenOfficeIMReport<IMObject>(template, handlers);
         } else if (name.endsWith(DocFormats.DOC_EXT)) {
             report = new MsWordIMReport<IMObject>(template, handlers);
         } else {
-            throw new ReportException(
-                    FailedToCreateReport,
-                    "Unsupported document template: '" + name + "'");
+            throw new ReportException(UnsupportedTemplate, name);
         }
         return report;
     }
@@ -99,20 +95,17 @@ public class ReportFactory {
      * @param service   the archetype service
      * @param handlers  the document handlers
      * @return a new report
-     * @throws ReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static IMReport<IMObject> createIMObjectReport(
-            String shortName, IArchetypeService service,
-            DocumentHandlers handlers) {
+    public static IMReport<IMObject> createIMObjectReport(String shortName, IArchetypeService service,
+                                                          DocumentHandlers handlers) {
         TemplateHelper helper = new TemplateHelper(service);
         Document doc = helper.getDocumentForArchetype(shortName);
         if (doc == null) {
-            ArchetypeDescriptor archetype
-                    = service.getArchetypeDescriptor(shortName);
+            ArchetypeDescriptor archetype = service.getArchetypeDescriptor(shortName);
             if (archetype == null) {
-                throw new ReportException(FailedToCreateReport,
-                                          "Invalid archetype: " + shortName);
+                throw new ReportException(InvalidArchetype, shortName);
             }
             return new DynamicJasperReport(archetype, service, handlers);
         }
@@ -122,11 +115,31 @@ public class ReportFactory {
     /**
      * Creates a new report for a collection of {@link ObjectSet}s.
      *
+     * @param shortName the archetype short name
+     * @param service   the archetype service
+     * @param handlers  the document handlers
+     * @return a new report
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static IMReport<ObjectSet> createObjectSetReport(String shortName, IArchetypeService service,
+                                                            DocumentHandlers handlers) {
+        TemplateHelper helper = new TemplateHelper(service);
+        Document doc = helper.getDocumentForArchetype(shortName);
+        if (doc == null) {
+            throw new ReportException(NoTemplateForArchetype, shortName);
+        }
+        return createObjectSetReport(doc, service, handlers);
+    }
+
+    /**
+     * Creates a new report for a collection of {@link ObjectSet}s.
+     *
      * @param template the document template
      * @param service  the archetype service
      * @param handlers the document handlers
      * @return a new report
-     * @throws ReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMReport<ObjectSet> createObjectSetReport(
@@ -135,14 +148,11 @@ public class ReportFactory {
         String name = template.getName();
         IMReport<ObjectSet> report;
         if (name.endsWith(DocFormats.JRXML_EXT)) {
-            report = new TemplatedJasperObjectSetReport(template, service,
-                                                        handlers);
+            report = new TemplatedJasperObjectSetReport(template, service, handlers);
         } else if (name.endsWith(DocFormats.ODT_EXT)) {
             report = new OpenOfficeIMReport<ObjectSet>(template, handlers);
         } else {
-            throw new ReportException(
-                    FailedToCreateReport,
-                    "Unsupported document template: '" + name + "'");
+            throw new ReportException(UnsupportedTemplate, name);
         }
         return report;
     }
