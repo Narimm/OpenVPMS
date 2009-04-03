@@ -72,6 +72,11 @@ public class ReminderType {
     private final DateUnits cancelUnits;
 
     /**
+     * Determines if the reminder can be grouped with other reminders in a single report.
+     */
+    private final boolean canGroup;
+
+    /**
      * Creates a new <tt>ReminderType</tt>.
      *
      * @param reminderType the <em>entity.reminderType</em>
@@ -97,6 +102,7 @@ public class ReminderType {
                 : bean.getValues("templates", EntityRelationship.class)) {
             templates.add(new Template(template, service));
         }
+        canGroup = bean.getBoolean("group");
         this.reminderType = reminderType;
     }
 
@@ -194,12 +200,12 @@ public class ReminderType {
     }
 
     /**
-     * Determines if a reminder is due.
+     * Determines if a reminder is due in the specified date range.
      *
      * @param dueDate       the reminder's due date
      * @param reminderCount the no. of times the reminder has been sent
-     * @param from
-     * @param to
+     * @param from          the 'from' due date. May be <tt>null</tt>
+     * @param to            the 'to' due date. May be <tt>null</tt>
      * @return <tt>true</tt> if the reminder is due, otherwise <tt>false</tt>
      */
     public boolean isDue(Date dueDate, int reminderCount, Date from, Date to) {
@@ -211,7 +217,16 @@ public class ReminderType {
             nextDue = getNextDueDate(dueDate, reminderCount);
         }
         return (from == null || nextDue.getTime() >= from.getTime())
-                && (to == null || nextDue.getTime() <= to.getTime());
+               && (to == null || nextDue.getTime() <= to.getTime());
+    }
+
+    /**
+     * Determines if the reminder can be grouped with other reminders in a single report.
+     *
+     * @return <tt>true</tt> if the reminder can be grouped, otherwise <tt>false</tt>
+     */
+    public boolean canGroup() {
+        return canGroup;
     }
 
     /**

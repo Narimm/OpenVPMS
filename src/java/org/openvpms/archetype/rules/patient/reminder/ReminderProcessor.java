@@ -145,15 +145,15 @@ public class ReminderProcessor
         }
         Date dueDate = reminder.getActivityEndTime();
         if (rules.shouldCancel(reminder, processingDate)) {
-            cancel(reminder, reminderType.getEntity());
+            cancel(reminder, reminderType);
         } else {
             int reminderCount = bean.getInt("reminderCount");
             if (reminderType.isDue(dueDate, reminderCount, from, to)) {
                 EntityRelationship template
                         = reminderType.getTemplateRelationship(reminderCount);
-                generate(reminder, reminderType.getEntity(), template);
+                generate(reminder, reminderType, template);
             } else {
-                skip(reminder, reminderType.getEntity());
+                skip(reminder, reminderType);
             }
         }
     }
@@ -162,15 +162,14 @@ public class ReminderProcessor
      * Generates a reminder.
      *
      * @param reminder     the reminder
-     * @param reminderType the reminder type. An instance of
-     *                     <em>entity.reminderType</em>
+     * @param reminderType the reminder type
      * @param template     the template. An instance of
      *                     <em>entityRelationship.reminderTypeTemplate</em>,
      *                     or <tt>null</tt> if there is no template
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected void generate(Act reminder, Entity reminderType,
+    protected void generate(Act reminder, ReminderType reminderType,
                             EntityRelationship template) {
         ActBean bean = new ActBean(reminder);
         Party patient = (Party) bean.getParticipant("participation.patient");
@@ -213,11 +212,11 @@ public class ReminderProcessor
      * Notifies listeners to skip a reminder.
      *
      * @param reminder     the reminder
-     * @param reminderType the reminder to skip
+     * @param reminderType the reminder type
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected void skip(Act reminder, Entity reminderType) {
+    protected void skip(Act reminder, ReminderType reminderType) {
         ReminderEvent event = new ReminderEvent(Action.SKIP, reminder,
                                                 reminderType);
         notifyListeners(event.getAction(), event);
@@ -231,7 +230,7 @@ public class ReminderProcessor
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected void cancel(Act reminder, Entity reminderType) {
+    protected void cancel(Act reminder, ReminderType reminderType) {
         ReminderEvent event = new ReminderEvent(Action.CANCEL, reminder,
                                                 reminderType);
         notifyListeners(event.getAction(), event);
@@ -247,7 +246,7 @@ public class ReminderProcessor
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected void email(Act reminder, Entity reminderType, Contact contact,
+    protected void email(Act reminder, ReminderType reminderType, Contact contact,
                          Entity documentTemplate) {
         ReminderEvent event = new ReminderEvent(Action.EMAIL, reminder,
                                                 reminderType, contact,
@@ -265,7 +264,7 @@ public class ReminderProcessor
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected void phone(Act reminder, Entity reminderType, Contact contact,
+    protected void phone(Act reminder, ReminderType reminderType, Contact contact,
                          Entity documentTemplate) {
         ReminderEvent event = new ReminderEvent(Action.PHONE, reminder,
                                                 reminderType, contact,
@@ -283,7 +282,7 @@ public class ReminderProcessor
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected void print(Act reminder, Entity reminderType, Contact contact,
+    protected void print(Act reminder, ReminderType reminderType, Contact contact,
                          Entity documentTemplate) {
         ReminderEvent event = new ReminderEvent(Action.PRINT, reminder,
                                                 reminderType, contact,
@@ -304,7 +303,7 @@ public class ReminderProcessor
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected void list(Act reminder, Entity reminderType, Contact contact,
+    protected void list(Act reminder, ReminderType reminderType, Contact contact,
                         Entity documentTemplate) {
         ReminderEvent event = new ReminderEvent(Action.LIST, reminder,
                                                 reminderType, contact,

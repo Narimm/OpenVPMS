@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 
 
 /**
@@ -53,7 +54,7 @@ public class ReminderEvent {
     /**
      * The reminder type.
      */
-    private final Entity reminderType;
+    private final ReminderType reminderType;
 
     /**
      * The contact. May be <tt>null</tt>.
@@ -73,7 +74,7 @@ public class ReminderEvent {
      * @param reminder     the reminder
      * @param reminderType the reminder type
      */
-    public ReminderEvent(Action action, Act reminder, Entity reminderType) {
+    public ReminderEvent(Action action, Act reminder, ReminderType reminderType) {
         this(action, reminder, reminderType, null, null);
     }
 
@@ -86,7 +87,7 @@ public class ReminderEvent {
      * @param contact          the reminder contact. May be <tt>null</tt>
      * @param documentTemplate the document template. May be <tt>null</tt>
      */
-    public ReminderEvent(Action action, Act reminder, Entity reminderType,
+    public ReminderEvent(Action action, Act reminder, ReminderType reminderType,
                          Contact contact, Entity documentTemplate) {
         this.action = action;
         this.reminder = reminder;
@@ -118,8 +119,17 @@ public class ReminderEvent {
      *
      * @return the reminder type
      */
-    public Entity getReminderType() {
+    public ReminderType getReminderType() {
         return reminderType;
+    }
+
+    /**
+     * Returns the customer.
+     *
+     * @return the customer. May be <tt>null</tt>
+     */
+    public Party getCustomer() {
+        return (contact != null) ? contact.getParty() : null;
     }
 
     /**
