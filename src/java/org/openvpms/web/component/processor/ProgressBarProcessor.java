@@ -28,7 +28,7 @@ import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProce
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.util.Vetoable;
 
-import java.util.List;
+import java.util.Collection;
 
 
 /**
@@ -88,7 +88,7 @@ public abstract class ProgressBarProcessor<T>
      * @param items the items to process
      * @param title the processor title. May be <tt>null</tt>
      */
-    public ProgressBarProcessor(List<T> items, String title) {
+    public ProgressBarProcessor(Collection<T> items, String title) {
         this(items, items.size(), title);
     }
 
@@ -203,7 +203,7 @@ public abstract class ProgressBarProcessor<T>
      * @param object the processed object
      */
     protected void processCompleted(T object) {
-        incProcessed();
+        incProcessed(object);
         long time = System.currentTimeMillis();
         int processed = getProcessed();
         if (processed > bar.getMaximum()) {
@@ -214,7 +214,7 @@ public abstract class ProgressBarProcessor<T>
             bar.setValue(processed);
         }
         if (!isSuspended() && (lastRefresh == 0
-                || ((time - lastRefresh) > refreshInterval))) {
+                               || ((time - lastRefresh) > refreshInterval))) {
             // enable a refresh of the progress bar
             setSuspend(true);
             final ApplicationInstance app = ApplicationInstance.getActive();
@@ -225,6 +225,10 @@ public abstract class ProgressBarProcessor<T>
             });
             lastRefresh = time;
         }
+    }
+
+    protected void incProcessed(T object) {
+        incProcessed(1);
     }
 
     /**

@@ -24,6 +24,9 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.web.component.im.report.TemplatedReporter;
+import org.openvpms.web.component.im.util.LookupNameHelper;
+
+import java.util.Map;
 
 
 /**
@@ -33,6 +36,12 @@ import org.openvpms.web.component.im.report.TemplatedReporter;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
+
+    /**
+     * Cache of template names, keyed on template archetype short name.
+     */
+    private Map<String, String> templateNames;
+
 
     /**
      * Creates a new <tt>TemplatedIMReportPrinter</tt>.
@@ -54,7 +63,15 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      * @return a display name for the objects being printed
      */
     public String getDisplayName() {
-        return DescriptorHelper.getDisplayName(getReporter().getShortName());
+        if (templateNames == null) {
+            templateNames = LookupNameHelper.getLookupNames("entity.documentTemplate", "archetype");
+        }
+        String shortName = getReporter().getShortName();
+        String result = templateNames.get(shortName);
+        if (result == null) {
+            result = DescriptorHelper.getDisplayName(shortName);
+        }
+        return result;
     }
 
     /**

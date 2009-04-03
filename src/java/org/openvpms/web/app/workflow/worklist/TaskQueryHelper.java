@@ -53,11 +53,11 @@ class TaskQueryHelper {
      * Helper to create a date range constraint for a particular date.
      *
      * @param date the date
+     * @return a new constraint
      */
     public static IConstraint createDateRangeConstraint(Date date) {
         Date from = DateHelper.getDayMonthYear(date);
-        long end = from.getTime() + DateUtils.MILLIS_IN_DAY
-                - DateUtils.MILLIS_IN_SECOND;
+        long end = from.getTime() + DateUtils.MILLIS_PER_DAY - DateUtils.MILLIS_PER_SECOND;
         Date to = new Date(end);
         return createDateRangeConstraint(from, to);
     }

@@ -80,7 +80,6 @@ public abstract class AbstractIMPrinter<T>
         report.print(getObjects().iterator(), getParameters(),
                      getProperties(printer));
     }
-
     /**
      * Sets parameters to pass to the report.
      *

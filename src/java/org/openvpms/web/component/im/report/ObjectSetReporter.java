@@ -20,9 +20,12 @@ package org.openvpms.web.component.im.report;
 
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
@@ -39,18 +42,25 @@ import org.openvpms.web.system.ServiceHelper;
 public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
 
     /**
-     * Constructs a new <tt>ObjectSetReporter</tt>.
+     * Constructs a new <tt>ObjectSetReporter</tt> for a collection of objects.
      *
-     * @param set       the set to print
-     * @param shortName the archetype short name
-     * @throws DocumentException         if the document template can't be found
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param objects   the objects to print
+     * @param shortName the archetype short name to determine the template to use
+     * @throws OpenVPMSException for any error
      */
-    public ObjectSetReporter(Iterable<ObjectSet> set, String shortName) {
-        super(set, shortName);
-        if (getTemplate() == null) {
-            throw new DocumentException(DocumentException.ErrorCode.NotFound);
-        }
+    public ObjectSetReporter(Iterable<ObjectSet> objects, String shortName) {
+        this(objects, shortName, null);
+    }
+
+    /**
+     * Constructs a new <tt>ObjectSetReporter</tt> for a collection of objects.
+     *
+     * @param objects   the objects to print
+     * @param shortName the archetype short name to determine the template to use
+     * @param template  the document template to use. May be <tt>null</tt>
+     */
+    public ObjectSetReporter(Iterable<ObjectSet> objects, String shortName, Entity template) {
+        super(objects, shortName, template);
     }
 
     /**
@@ -62,13 +72,20 @@ public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
      * @throws DocumentException         if the template document can't be found
      */
     public IMReport<ObjectSet> getReport() {
-        Document document = getTemplateDocument();
-        if (document == null) {
-            throw new DocumentException(NotFound);
+        Entity template = getTemplate();
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+        IMReport<ObjectSet> report;
+        if (template == null) {
+            report = ReportFactory.createObjectSetReport(getShortName(), service, handlers);
+        } else {
+            Document doc = getTemplateDocument();
+            if (doc == null) {
+                throw new DocumentException(NotFound);
+            }
+            report = ReportFactory.createObjectSetReport(doc, service, handlers);
         }
-        return ReportFactory.createObjectSetReport(
-                document, ArchetypeServiceHelper.getArchetypeService(),
-                ServiceHelper.getDocumentHandlers());
+        return report;
     }
 
 }

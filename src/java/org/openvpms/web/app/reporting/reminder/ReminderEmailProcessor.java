@@ -29,14 +29,17 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.DocFormats;
+import org.openvpms.report.IMReport;
 import org.openvpms.web.app.reporting.ReportingException;
 import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
 import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.TemplateMissingEmailText;
-import org.openvpms.web.component.im.doc.ReportGenerator;
-import org.openvpms.web.component.processor.ProgressBarProcessor;
+import org.openvpms.web.component.im.report.ObjectSetReporter;
+import org.openvpms.web.component.im.report.IMObjectReporter;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.core.io.InputStreamSource;
@@ -47,6 +50,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
 import java.util.List;
+import java.util.ArrayList;
 
 
 /**
@@ -55,7 +59,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
+class ReminderEmailProcessor extends ReminderProgressBarProcessor {
 
     /**
      * The mail sender.
@@ -78,41 +82,36 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
     private final DocumentHandlers handlers;
 
     /**
-     * The logfile handler
+     * The logger.
      */
+    private static final Log log = LogFactory.getLog(ReminderEmailProcessor.class);
 
-    private static final Log log = LogFactory.getLog(
-            ReminderEmailProcessor.class);
-
+    
     /**
      * Constructs a new <tt>ReminderEmailProcessor</tt>.
      *
-     * @param reminders    the reminders
-     * @param sender       the mail sender
-     * @param emailAddress the email address
-     * @param emailName    the email name
+     * @param reminders     the reminders
+     * @param sender        the mail sender
+     * @param emailAddress  the email address
+     * @param emailName     the email name
+     * @param groupTemplate the grouped reminder document template
+     * @param statistics    the statistics
      */
-    public ReminderEmailProcessor(List<ReminderEvent> reminders,
-                                  JavaMailSender sender,
-                                  String emailAddress, String emailName) {
-        super(reminders, Messages.get("reporting.reminder.run.email"));
+    public ReminderEmailProcessor(List<List<ReminderEvent>> reminders, JavaMailSender sender, String emailAddress,
+                                  String emailName, Entity groupTemplate, Statistics statistics) {
+        super(reminders, groupTemplate, statistics, Messages.get("reporting.reminder.run.email"));
         this.sender = sender;
         this.emailAddress = emailAddress;
         this.emailName = emailName;
         handlers = ServiceHelper.getDocumentHandlers();
     }
 
-    /**
-     * Invoked to process a reminder.
-     *
-     * @param event the event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the event cannot be processed
-     * @throws ReportingException         for any other error
-     */
-    protected void process(ReminderEvent event) {
+    @Override
+    protected void process(List<ReminderEvent> events, String shortName, Entity documentTemplate) {
+        ReminderEvent event = events.get(0);
         Contact contact = event.getContact();
         String to = null;
+
         try {
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -121,48 +120,39 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
             to = bean.getString("emailAddress");
             helper.setFrom(emailAddress, emailName);
             helper.setTo(to);
-            Entity documentTemplate = event.getDocumentTemplate();
 
-            IMObjectBean templateBean
-                    = new IMObjectBean(documentTemplate);
+            IMObjectBean templateBean = new IMObjectBean(documentTemplate);
             String subject = templateBean.getString("emailSubject");
             if (StringUtils.isEmpty(subject)) {
                 subject = documentTemplate.getName();
             }
             String body = templateBean.getString("emailText");
             if (StringUtils.isEmpty(body)) {
-                throw new ReportingException(TemplateMissingEmailText,
-                                             documentTemplate.getName());
+                throw new ReportingException(TemplateMissingEmailText, documentTemplate.getName());
             }
             helper.setText(body);
-            ReportGenerator generator = new ReportGenerator(documentTemplate);
-            final Document reminder = generator.generate(event.getReminder(),
-                                                         DocFormats.PDF_TYPE);
 
-            final DocumentHandler handler = handlers.get(
-                    reminder.getName(),
-                    reminder.getArchetypeId().getShortName(),
-                    reminder.getMimeType());
+            final Document reminder = createReport(events, shortName, documentTemplate);
+            final DocumentHandler handler = handlers.get(reminder.getName(), reminder.getArchetypeId().getShortName(),
+                                                         reminder.getMimeType());
 
             helper.setSubject(subject);
-            helper.addAttachment(
-                    reminder.getName(), new InputStreamSource() {
+            helper.addAttachment(reminder.getName(), new InputStreamSource() {
                 public InputStream getInputStream() {
                     return handler.getContent(reminder);
                 }
             });
             sender.send(message);
-            processCompleted(event);
+            processCompleted(events);
         } catch (AddressException exception) {
-            processCompleted(event);
+            processCompleted(events);
             Party party = contact.getParty();
             String customer = null;
             if (party != null) {
                 customer = "id=" + party.getId() + ", name=" + party.getName();
             }
 
-            log.warn("Invalid email address for customer " + customer + ": "
-                    + to, exception);
+            log.warn("Invalid email address for customer " + customer + ": " + to, exception);
         }
         catch (ArchetypeServiceException exception) {
             throw exception;
@@ -171,8 +161,26 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
         } catch (ReportingException exception) {
             throw exception;
         } catch (Throwable exception) {
-            throw new ReportingException(FailedToProcessReminder,
-                                         exception, exception.getMessage());
+            throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
         }
+    }
+
+    private Document createReport(List<ReminderEvent> events, String shortName, Entity documentTemplate) {
+        Document result;
+        if (events.size() > 1) {
+            List<ObjectSet> sets = createObjectSets(events);
+            ObjectSetReporter reporter = new ObjectSetReporter(sets, shortName, documentTemplate);
+            IMReport<ObjectSet> report = reporter.getReport();
+            result = report.generate(sets.iterator(), DocFormats.PDF_TYPE);
+        } else {
+            List<Act> acts = new ArrayList<Act>();
+            for (ReminderEvent event : events) {
+                acts.add(event.getReminder());
+            }
+            IMObjectReporter<Act> reporter = new IMObjectReporter<Act>(acts, shortName, documentTemplate);
+            IMReport<Act> report = reporter.getReport();
+            result = report.generate(acts.iterator(), DocFormats.PDF_TYPE);
+        }
+        return result;
     }
 }

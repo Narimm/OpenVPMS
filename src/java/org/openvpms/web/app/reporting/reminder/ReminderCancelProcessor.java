@@ -21,7 +21,6 @@ package org.openvpms.web.app.reporting.reminder;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -33,33 +32,32 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReminderCancelProcessor
-        extends ProgressBarProcessor<ReminderEvent> {
+public class ReminderCancelProcessor extends ReminderProgressBarProcessor {
 
     /**
-     * The reminder rules.
-     */
-    private final ReminderRules rules;
-
-
-    /**
-     * Constructs a new <tt>ReminderCancelProcessor</tt>.
+     * Creates a new <tt>ReminderCancelProcessor</tt>.
      *
      * @param reminders the reminders to cancel
+     * @param statistics the statistics
      */
-    public ReminderCancelProcessor(List<ReminderEvent> reminders) {
-        super(reminders, Messages.get("reporting.reminder.run.cancel"));
-        rules = new ReminderRules();
+    public ReminderCancelProcessor(List<List<ReminderEvent>> reminders,
+                                   Statistics statistics) {
+        super(reminders, null, statistics, Messages.get("reporting.reminder.run.cancel"));
     }
 
     /**
      * Invoked to process a reminder.
      *
-     * @param event the event
+     * @param events the event
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected void process(ReminderEvent event) {
-        rules.cancelReminder(event.getReminder());
-        processCompleted(event);
+    @Override
+    protected void process(List<ReminderEvent> events) {
+        ReminderRules rules = getRules();
+        for (ReminderEvent event : events) {
+            rules.cancelReminder(event.getReminder());
+        }
+        processCompleted(events);
     }
+
 }
