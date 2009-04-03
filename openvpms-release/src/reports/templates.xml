@@ -110,6 +110,12 @@
               mimeType="text/xml"
               docType="document.other"/>
 
+    <template name="Grouped Reminders Report"
+              archetype="GROUPED_REMINDER"
+              path="Grouped Reminders.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
     <template name="Patient Image"
               archetype="act.patientDocumentImage"
               path="patientDocumentImage.jrxml"
