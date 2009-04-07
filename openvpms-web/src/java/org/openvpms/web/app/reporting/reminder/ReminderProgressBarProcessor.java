@@ -21,13 +21,10 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -40,17 +37,18 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<ReminderEvent>> {
-
-    /**
-     * The document template for grouped reminders.
-     */
-    private final Entity groupTemplate;
+abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<ReminderEvent>>
+        implements ReminderBatchProcessor {
 
     /**
      * The reminder rules.
      */
     private final ReminderRules rules;
+
+    /**
+     * Determines if reminders should be updated on completion.
+     */
+    private boolean update = true;
 
     /**
      * The statistics.
@@ -66,63 +64,61 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     /**
      * Creates a new <tt>ReminderProgressBarProcessor</tt>.
      *
-     * @param items         the reminder items
-     * @param groupTemplate reminder group template. May be <tt>null</tt>
-     * @param statistics    the statistics
-     * @param title         the progress bar title for display purposes
+     * @param items      the reminder items
+     * @param statistics the statistics
+     * @param title      the progress bar title for display purposes
      */
-    public ReminderProgressBarProcessor(List<List<ReminderEvent>> items, Entity groupTemplate,
-                                        Statistics statistics, String title) {
+    public ReminderProgressBarProcessor(List<List<ReminderEvent>> items, Statistics statistics, String title) {
         super(items, count(items), title);
-        this.groupTemplate = groupTemplate;
         this.statistics = statistics;
         rules = new ReminderRules();
     }
 
     /**
-     * Processes a list of reminder events.
+     * Determines if reminders should be updated on completion.
      * <p/>
-     * This implementation delegates to {@link #process(List, String, Entity)}.
+     * If set, the <tt>reminderCount</tt> is incremented the <tt>lastSent</tt> timestamp set on completed reminders.
      *
-     * @param events the reminder events
+     * @param update if <tt>true</tt> update reminders on completion
      */
-    protected void process(List<ReminderEvent> events) {
-        ReminderEvent event = events.get(0);
-        String shortName;
-        Entity documentTemplate;
-
-        if (events.size() > 1) {
-            shortName = "GROUPED_REMINDERS";
-            documentTemplate = groupTemplate;
-        } else {
-            shortName = "act.patientReminder";
-            documentTemplate = event.getDocumentTemplate();
-        }
-        process(events, shortName, documentTemplate);
+    public void setUpdateOnCompletion(boolean update) {
+        this.update = update;
     }
 
     /**
-     * Processes a list of reminder events.
-     * <p/>
-     * This implementation is a no-op
+     * Increments the count of processed reminders.
      *
-     * @param events           the events
-     * @param shortName        the report archetype short name, used to select the document template if none specified
-     * @param documentTemplate the document template to use. May be <tt>null</tt>
+     * @param events the reminder events
      */
-    protected void process(List<ReminderEvent> events, String shortName, Entity documentTemplate) {
-
-    }
-
     @Override
     protected void incProcessed(List<ReminderEvent> events) {
         super.incProcessed(events.size());
     }
 
+    /**
+     * Invoked when processing of reminder events is complete.
+     * <p/>
+     * This updates the reminders and statistics.
+     *
+     * @param events the reminder events
+     */
     @Override
     protected void processCompleted(List<ReminderEvent> events) {
-        updateReminders(events);
+        if (update) {
+            updateReminders(events);
+        }
         updateStatistics(events);
+        super.processCompleted(events);
+    }
+
+    /**
+     * Skips a set of reminders.
+     * <p/>
+     * This doesn't update the reminders and their statistics
+     *
+     * @param events the reminder events
+     */
+    protected void skip(List<ReminderEvent> events) {
         super.processCompleted(events);
     }
 
@@ -133,31 +129,6 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
      */
     protected ReminderRules getRules() {
         return rules;
-    }
-
-    /**
-     * Creates object sets for the specified set of reminder events.
-     *
-     * @param events the events
-     * @return a list of object sets corresponding to the events
-     */
-    protected List<ObjectSet> createObjectSets(List<ReminderEvent> events) {
-        List<ObjectSet> result = new ArrayList<ObjectSet>();
-        for (ReminderEvent event : events) {
-            ObjectSet set = new ObjectSet();
-            ActBean bean = new ActBean(event.getReminder());
-            set.set("customer", event.getCustomer());
-            set.set("reminderType", event.getReminderType().getEntity());
-            set.set("patient", bean.getNodeParticipant("patient"));
-            set.set("product", bean.getNodeParticipant("product"));
-            set.set("clinician", bean.getNodeParticipant("product"));
-            set.set("startTime", event.getReminder().getActivityEndTime());
-            set.set("endTime", event.getReminder().getActivityEndTime());
-            set.set("reminderCount", bean.getInt("reminderCount"));
-            set.set("act", event.getReminder());
-            result.add(set);
-        }
-        return result;
     }
 
     /**
@@ -181,12 +152,23 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
         }
     }
 
+    /**
+     * Updates statistics for a set of reminders.
+     *
+     * @param events the reminder events
+     */
     private void updateStatistics(List<ReminderEvent> events) {
         for (ReminderEvent event : events) {
             statistics.increment(event.getReminderType().getEntity(), event.getAction());
         }
     }
 
+    /**
+     * Counts reminders.
+     *
+     * @param events the reminder events
+     * @return the reminder count
+     */
     private static int count(List<List<ReminderEvent>> events) {
         int result = 0;
         for (List<ReminderEvent> list : events) {

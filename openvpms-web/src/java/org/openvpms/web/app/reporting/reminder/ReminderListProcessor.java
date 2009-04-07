@@ -29,7 +29,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.PrinterListener;
-import org.openvpms.web.component.processor.BatchProcessorComponent;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -47,7 +46,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderListProcessor extends AbstractBatchProcessor implements BatchProcessorComponent {
+class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBatchProcessor {
 
     /**
      * Reminders that need to be listed.
@@ -64,11 +63,16 @@ class ReminderListProcessor extends AbstractBatchProcessor implements BatchProce
      */
     private Row row;
 
+    /**
+     * Determines if reminders should be updated on completion.
+     */
+    private boolean update = true;
+
 
     /**
      * Creates a new <tt>ReminderListProcessor</tt>.
      *
-     * @param reminders the reminders
+     * @param reminders  the reminders
      * @param statistics the reminder statistics
      */
     public ReminderListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics) {
@@ -79,6 +83,17 @@ class ReminderListProcessor extends AbstractBatchProcessor implements BatchProce
         }
         this.statistics = statistics;
         row = RowFactory.create();
+    }
+
+    /**
+     * Determines if reminders should be updated on completion.
+     * <p/>
+     * If set, the <tt>reminderCount</tt> is incremented the <tt>lastSent</tt> timestamp set on completed reminders.
+     *
+     * @param update if <tt>true</tt> update reminders on completion
+     */
+    public void setUpdateOnCompletion(boolean update) {
+        this.update = update;
     }
 
     /**
@@ -147,6 +162,9 @@ class ReminderListProcessor extends AbstractBatchProcessor implements BatchProce
         }
     }
 
+    /**
+     * Restarts processing.
+     */
     public void restart() {
         // no-op
     }
@@ -184,7 +202,9 @@ class ReminderListProcessor extends AbstractBatchProcessor implements BatchProce
         ReminderRules rules = new ReminderRules();
         Date date = new Date();
         for (ReminderEvent reminder : reminders) {
-            rules.updateReminder(reminder.getReminder(), date);
+            if (update) {
+                rules.updateReminder(reminder.getReminder(), date);
+            }
             statistics.increment(reminder.getReminderType().getEntity(), reminder.getAction());
         }
     }

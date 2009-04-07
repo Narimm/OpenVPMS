@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -201,7 +202,7 @@ class StatementGenerator extends AbstractStatementGenerator {
         Contact preferred = null;
         Contact fallback = null;
         for (Contact contact : practice.getContacts()) {
-            if (TypeHelper.isA(contact, "contact.email")) {
+            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
                 IMObjectBean bean = new IMObjectBean(contact);
                 List<Lookup> purposes = bean.getValues("purposes",
                                                        Lookup.class);
@@ -244,7 +245,7 @@ class StatementGenerator extends AbstractStatementGenerator {
             List<Contact> contacts = statement.getContacts();
             if (contacts.size() >= 1) {
                 Contact contact = contacts.get(0);
-                if (TypeHelper.isA(contact, "contact.email")) {
+                if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
                     listener = mailer;
                 }
             }

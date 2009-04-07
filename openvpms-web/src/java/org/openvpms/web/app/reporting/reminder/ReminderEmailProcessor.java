@@ -11,25 +11,23 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
-
 package org.openvpms.web.app.reporting.reminder;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -38,19 +36,17 @@ import org.openvpms.report.IMReport;
 import org.openvpms.web.app.reporting.ReportingException;
 import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
 import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.TemplateMissingEmailText;
-import org.openvpms.web.component.im.report.ObjectSetReporter;
 import org.openvpms.web.component.im.report.IMObjectReporter;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.component.im.report.ObjectSetReporter;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
-import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -59,7 +55,7 @@ import java.util.ArrayList;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderEmailProcessor extends ReminderProgressBarProcessor {
+public class ReminderEmailProcessor extends AbstractReminderProcessor {
 
     /**
      * The mail sender.
@@ -81,43 +77,50 @@ class ReminderEmailProcessor extends ReminderProgressBarProcessor {
      */
     private final DocumentHandlers handlers;
 
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(ReminderEmailProcessor.class);
 
-    
     /**
-     * Constructs a new <tt>ReminderEmailProcessor</tt>.
+     * Creates a new <tt>ReminderEmailProcessor</tt>.
      *
-     * @param reminders     the reminders
      * @param sender        the mail sender
-     * @param emailAddress  the email address
-     * @param emailName     the email name
-     * @param groupTemplate the grouped reminder document template
-     * @param statistics    the statistics
+     * @param practice      the practice
+     * @param groupTemplate the template for grouped reminders
      */
-    public ReminderEmailProcessor(List<List<ReminderEvent>> reminders, JavaMailSender sender, String emailAddress,
-                                  String emailName, Entity groupTemplate, Statistics statistics) {
-        super(reminders, groupTemplate, statistics, Messages.get("reporting.reminder.run.email"));
+    public ReminderEmailProcessor(JavaMailSender sender, Party practice, Entity groupTemplate) {
+        super(groupTemplate);
+        ReminderRules rules = new ReminderRules();
+        Contact email = rules.getEmailContact(practice.getContacts());
+        if (email == null) {
+            throw new ReportingException(ReportingException.ErrorCode.NoReminderContact, practice.getName());
+        }
+        IMObjectBean bean = new IMObjectBean(email);
+        emailAddress = bean.getString("emailAddress");
+        if (StringUtils.isEmpty(emailAddress)) {
+            throw new ReportingException(ReportingException.ErrorCode.InvalidEmailAddress, emailAddress,
+                                         practice.getName());
+        }
+
+        emailName = practice.getName();
         this.sender = sender;
-        this.emailAddress = emailAddress;
-        this.emailName = emailName;
         handlers = ServiceHelper.getDocumentHandlers();
     }
 
-    @Override
+    /**
+     * Processes a list of reminder events.
+     *
+     * @param events           the events
+     * @param shortName        the report archetype short name, used to select the document template if none specified
+     * @param documentTemplate the document template to use. May be <tt>null</tt>
+     */
     protected void process(List<ReminderEvent> events, String shortName, Entity documentTemplate) {
         ReminderEvent event = events.get(0);
         Contact contact = event.getContact();
-        String to = null;
 
         try {
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setValidateAddresses(true);
             IMObjectBean bean = new IMObjectBean(contact);
-            to = bean.getString("emailAddress");
+            String to = bean.getString("emailAddress");
             helper.setFrom(emailAddress, emailName);
             helper.setTo(to);
 
@@ -143,18 +146,7 @@ class ReminderEmailProcessor extends ReminderProgressBarProcessor {
                 }
             });
             sender.send(message);
-            processCompleted(events);
-        } catch (AddressException exception) {
-            processCompleted(events);
-            Party party = contact.getParty();
-            String customer = null;
-            if (party != null) {
-                customer = "id=" + party.getId() + ", name=" + party.getName();
-            }
-
-            log.warn("Invalid email address for customer " + customer + ": " + to, exception);
-        }
-        catch (ArchetypeServiceException exception) {
+        } catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (ReminderProcessorException exception) {
             throw exception;

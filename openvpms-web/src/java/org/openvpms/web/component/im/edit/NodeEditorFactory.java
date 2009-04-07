@@ -214,7 +214,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         Editor editor = null;
         if (property.isParentChild()) {
             if (property.getMinCardinality() == 1
-                    && property.getMaxCardinality() == 1) {
+                && property.getMaxCardinality() == 1) {
                 // handle the special case of a collection of one element.
                 // This can be edited inline
                 String[] range = property.getArchetypeRange();
@@ -246,7 +246,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             List<IMObject> identifiers = ArchetypeQueryHelper.getCandidates(
                     service, property.getDescriptor());
             Palette palette = new BoundPalette(identifiers, property);
-            palette.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+            palette.setCellRenderer(IMObjectListCellRenderer.NAME);
             editor = createPropertyEditor(property, palette);
         }
         return editor;
@@ -289,6 +289,10 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     /**
      * Helper to create a {@link PropertyEditor} for a component, and register
      * with the set of editors.
+     *
+     * @param property  the property
+     * @param component the component
+     * @return a new editor
      */
     private PropertyEditor createPropertyEditor(Property property,
                                                 Component component) {

@@ -25,7 +25,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -34,19 +33,17 @@ import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.app.reporting.ReportingException;
 import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.processor.BatchProcessorComponent;
 import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -70,17 +67,17 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderGenerator extends AbstractBatchProcessor {
+public class ReminderGenerator extends AbstractBatchProcessor {
 
     /**
      * The reminder processors.
      */
-    private List<BatchProcessorComponent> processors = new ArrayList<BatchProcessorComponent>();
+    private List<ReminderBatchProcessor> processors = new ArrayList<ReminderBatchProcessor>();
 
     /**
-     * If <tt>true</tt>, only print reminders.
+     * If <tt>true</tt>, pop up a dialog to perform generation.
      */
-    private boolean printOnly;
+    private boolean popup = true;
 
     /**
      * The current generation dialog.
@@ -92,6 +89,16 @@ class ReminderGenerator extends AbstractBatchProcessor {
      */
     private Statistics statistics = new Statistics();
 
+    /**
+     * The practice.
+     */
+    private final Party practice;
+
+    /**
+     * The template for grouped reminders.
+     */
+    private final Entity groupTemplate;
+
 
     /**
      * Constructs a new <tt>ReminderGenerator</tt> to print a single reminder.
@@ -99,11 +106,13 @@ class ReminderGenerator extends AbstractBatchProcessor {
      * @param reminder the reminder
      * @param from     only process reminder if its next due date &gt;= from
      * @param to       only process reminder if its next due date &lt;= to
+     * @param context  the context
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException for any reminder error
      * @throws ReportingException         if the reminder has no associated document template
      */
-    public ReminderGenerator(Act reminder, Date from, Date to) {
+    public ReminderGenerator(Act reminder, Date from, Date to, Context context) {
+        this(context);
         ReminderProcessor processor = new ReminderProcessor(from, to);
         ReminderCollector collector = new ReminderCollector();
 
@@ -115,9 +124,39 @@ class ReminderGenerator extends AbstractBatchProcessor {
             if (event.getDocumentTemplate() == null) {
                 throw new ReportingException(ReminderMissingDocTemplate);
             }
-            processors.add(new ReminderPrintProcessor(reminders, event.getDocumentTemplate(), statistics));
+            processors.add(createPrintProcessor(reminders));
         }
-        printOnly = true;
+        popup = false;
+    }
+
+    /**
+     * Constructs a new <tt>ReminderGenerator</tt> to process a single reminder.
+     *
+     * @param event   the reminder event
+     * @param context the context
+     */
+    public ReminderGenerator(ReminderEvent event, Context context) {
+        this(context);
+        List<List<ReminderEvent>> reminders = new ArrayList<List<ReminderEvent>>();
+        List<ReminderEvent> group = new ArrayList<ReminderEvent>();
+        group.add(event);
+        reminders.add(group);
+
+        switch (event.getAction()) {
+            case EMAIL:
+                processors.add(createEmailProcessor(reminders));
+                break;
+            case PRINT:
+                processors.add(createPrintProcessor(reminders));
+                break;
+            case LIST:
+            case PHONE:
+                processors.add(createListProcessor(reminders));
+                break;
+            case CANCEL:
+                processors.add(createCancelProcessor(reminders));
+        }
+        popup = false;
     }
 
     /**
@@ -131,7 +170,7 @@ class ReminderGenerator extends AbstractBatchProcessor {
      */
     public ReminderGenerator(DueReminderQuery query, Context context) {
         this(getReminders(query), query.getFrom(), query.getTo(), context);
-        // NOTE: all of the reminders are cached in memory, as the reminder
+        // TODO: all of the reminders are cached in memory, as the reminder
         // processing affects the paging of the reminder query. A better
         // approach to reduce memory requirements would be
         // to cache the reminder IMObjectReferences
@@ -149,25 +188,7 @@ class ReminderGenerator extends AbstractBatchProcessor {
      * @throws ReminderProcessorException for any error
      */
     public ReminderGenerator(Iterator<Act> reminders, Date from, Date to, Context context) {
-        Party practice = context.getPractice();
-        if (practice == null) {
-            throw new ReportingException(ReportingException.ErrorCode.NoPractice);
-        }
-        ReminderRules rules = new ReminderRules();
-        Contact email = rules.getEmailContact(practice.getContacts());
-        if (email == null) {
-            throw new ReportingException(ReportingException.ErrorCode.NoReminderContact, practice.getName());
-        }
-        IMObjectBean bean = new IMObjectBean(email);
-        String address = bean.getString("emailAddress");
-        if (StringUtils.isEmpty(address)) {
-            throw new ReportingException(ReportingException.ErrorCode.InvalidEmailAddress, address, practice.getName());
-        }
-        TemplateHelper helper = new TemplateHelper();
-        Entity groupTemplate = helper.getTemplateForArchetype("GROUPED_REMINDERS");
-        if (groupTemplate == null) {
-            throw new ReportingException(ReportingException.ErrorCode.NoGroupReminderTemplate);
-        }
+        this(context);
 
         ReminderProcessor processor = new ReminderProcessor(from, to);
 
@@ -194,18 +215,34 @@ class ReminderGenerator extends AbstractBatchProcessor {
         List<List<ReminderEvent>> printReminders = printCollector.getReminders();
 
         if (!cancelReminders.isEmpty()) {
-            processors.add(new ReminderCancelProcessor(cancelReminders, statistics));
+            processors.add(createCancelProcessor(cancelReminders));
         }
         if (!listReminders.isEmpty()) {
-            processors.add(new ReminderListProcessor(listReminders, statistics));
+            processors.add(createListProcessor(listReminders));
         }
 
         if (!printReminders.isEmpty()) {
-            processors.add(new ReminderPrintProcessor(printReminders, groupTemplate, statistics));
+            processors.add(createPrintProcessor(printReminders));
         }
         if (!emailReminders.isEmpty()) {
-            processors.add(new ReminderEmailProcessor(emailReminders, ServiceHelper.getMailSender(), address,
-                                                      practice.getName(), groupTemplate, statistics));
+            processors.add(createEmailProcessor(emailReminders));
+        }
+    }
+
+    /**
+     * Creates a new <tt>ReminderGenerator</tt>.
+     *
+     * @param context the context
+     */
+    private ReminderGenerator(Context context) {
+        practice = context.getPractice();
+        if (practice == null) {
+            throw new ReportingException(ReportingException.ErrorCode.NoPractice);
+        }
+        TemplateHelper helper = new TemplateHelper();
+        groupTemplate = helper.getTemplateForArchetype("GROUPED_REMINDERS");
+        if (groupTemplate == null) {
+            throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);
         }
     }
 
@@ -213,39 +250,44 @@ class ReminderGenerator extends AbstractBatchProcessor {
      * Processes the reminders.
      */
     public void process() {
-        if (!printOnly) {
-            GenerationDialog dialog = new GenerationDialog();
-            dialog.show();
-        } else {
-            // should only contain the print processor
-            for (BatchProcessor processor : processors) {
-                processor.setListener(new BatchProcessorListener() {
-                    public void completed() {
-                        confirmUpdate();
-                    }
+        if (!processors.isEmpty()) {
+            if (popup) {
+                GenerationDialog dialog = new GenerationDialog();
+                dialog.show();
+            } else {
+                // only processing a single reminder
+                for (BatchProcessor processor : processors) {
+                    processor.setListener(new BatchProcessorListener() {
+                        public void completed() {
+                            onCompletion();
+                        }
 
-                    public void error(Throwable exception) {
-                        onError(exception);
-                    }
-                });
-                processor.process();
+                        public void error(Throwable exception) {
+                            onError(exception);
+                        }
+                    });
+                    processor.process();
+                }
             }
+        } else {
+            InformationDialog.show(Messages.get("reporting.reminder.none.title"),
+                                   Messages.get("reporting.reminder.none.message"));
         }
     }
 
     /**
-     * Confirms if reminders should be updated.
+     * Determines if reminders should be updated on completion.
+     * <p/>
+     * If set, the <tt>reminderCount</tt> is incremented the <tt>lastSent</tt> timestamp set on completed reminders.
+     * <p/>
+     * Defaults to <tt>true</tt>.
+     *
+     * @param update if <tt>true</tt> update reminders on completion
      */
-    private void confirmUpdate() {
-        final ConfirmationDialog dialog = new ConfirmationDialog(
-                Messages.get("reporting.reminder.update.title"),
-                Messages.get("reporting.reminder.update.message"));
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                }
-            }
-        });
+    public void setUpdateOnCompletion(boolean update) {
+        for (ReminderBatchProcessor processor : processors) {
+            processor.setUpdateOnCompletion(update);
+        }
     }
 
     /**
@@ -280,12 +322,56 @@ class ReminderGenerator extends AbstractBatchProcessor {
         notifyError(exception);
     }
 
+    /**
+     * Updates the count of processed reminders.
+     */
     private void updateProcessed() {
         int processed = 0;
         for (BatchProcessor processor : processors) {
             processed += processor.getProcessed();
         }
         setProcessed(processed);
+    }
+
+    /**
+     * Creates a new email processor.
+     *
+     * @param reminders the email reminders
+     * @return a new processor
+     */
+    private ReminderBatchProcessor createEmailProcessor(List<List<ReminderEvent>> reminders) {
+        return new ReminderEmailProgressBarProcessor(reminders, ServiceHelper.getMailSender(),
+                                                     practice, groupTemplate, statistics);
+    }
+
+    /**
+     * Creates a new print processor.
+     *
+     * @param reminders the print reminders
+     * @return a new processor
+     */
+    private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders) {
+        return new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics);
+    }
+
+    /**
+     * Creates a new list processor.
+     *
+     * @param reminders the reminders to list
+     * @return a new processor
+     */
+    private ReminderBatchProcessor createListProcessor(List<List<ReminderEvent>> reminders) {
+        return new ReminderListProcessor(reminders, statistics);
+    }
+
+    /**
+     * Creates a new cancel processor.
+     *
+     * @param reminders the reminders to cancel
+     * @return a new processor
+     */
+    private ReminderBatchProcessor createCancelProcessor(List<List<ReminderEvent>> reminders) {
+        return new ReminderCancelProcessor(reminders, statistics);
     }
 
     /**
@@ -314,6 +400,16 @@ class ReminderGenerator extends AbstractBatchProcessor {
          */
         private List<Button> restartButtons = new ArrayList<Button>();
 
+        /**
+         * The ok button.
+         */
+        private final Button ok;
+
+        /**
+         * The cancel button.
+         */
+        private final Button cancel;
+
 
         /**
          * Creates a new <tt>GenerationDialog</tt>.
@@ -324,7 +420,7 @@ class ReminderGenerator extends AbstractBatchProcessor {
             workflow = new WorkflowImpl();
             workflow.setBreakOnCancel(false);
             Grid grid = GridFactory.create(3);
-            for (BatchProcessorComponent processor : processors) {
+            for (ReminderBatchProcessor processor : processors) {
                 BatchProcessorTask task = new BatchProcessorTask(processor);
                 workflow.addTask(task);
                 Label title = LabelFactory.create();
@@ -350,6 +446,10 @@ class ReminderGenerator extends AbstractBatchProcessor {
                     }
                 }
             });
+            ButtonSet buttons = getButtons();
+            ok = buttons.getButton(OK_ID);
+            cancel = getButtons().getButton(CANCEL_ID);
+
             // disable OK, restart buttons
             enableButtons(false);
         }
@@ -376,14 +476,14 @@ class ReminderGenerator extends AbstractBatchProcessor {
                         workflow.cancel();
                         GenerationDialog.this.close(CANCEL_ID);
                     } else {
-                        BatchProcessorComponent processor = getCurrent();
+                        ReminderBatchProcessor processor = getCurrent();
                         if (processor instanceof ProgressBarProcessor) {
                             processor.process();
                         }
                     }
                 }
             });
-            BatchProcessorComponent processor = getCurrent();
+            ReminderBatchProcessor processor = getCurrent();
             if (processor instanceof ProgressBarProcessor) {
                 ((ProgressBarProcessor) processor).setSuspend(true);
             }
@@ -396,7 +496,7 @@ class ReminderGenerator extends AbstractBatchProcessor {
          * @param processor the processor
          * @return a new button
          */
-        private Button addReprintButton(final BatchProcessorComponent processor) {
+        private Button addReprintButton(final ReminderBatchProcessor processor) {
             Button button = ButtonFactory.create("reprint", new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     restart(processor);
@@ -412,17 +512,17 @@ class ReminderGenerator extends AbstractBatchProcessor {
          * @return the current batch processor, or <tt>null</tt> if there
          *         is none
          */
-        private BatchProcessorComponent getCurrent() {
+        private ReminderBatchProcessor getCurrent() {
             BatchProcessorTask task = (BatchProcessorTask) workflow.getCurrent();
             if (task != null) {
-                return (BatchProcessorComponent) task.getProcessor();
+                return (ReminderBatchProcessor) task.getProcessor();
             }
             return null;
         }
 
         /**
          * Invoked when generation is complete.
-         * Displays statistics.
+         * Displays statistics, and enables the reprint and OK buttons.
          */
         private void onGenerationComplete() {
             showStatistics();
@@ -434,7 +534,7 @@ class ReminderGenerator extends AbstractBatchProcessor {
          *
          * @param processor the processor to restart
          */
-        private void restart(BatchProcessorComponent processor) {
+        private void restart(ReminderBatchProcessor processor) {
             enableButtons(false);
             statistics.clear();
             processor.restart();
@@ -452,17 +552,23 @@ class ReminderGenerator extends AbstractBatchProcessor {
         }
 
         /**
-         * Enables/disables the OK/Cancel and restart buttons.
+         * Enables/disables restart buttons and OK/Cancel buttons.
          * <p/>
-         * When the OK button is enabled, the cancel button is disabled, and vice-versa.
+         * When the restart buttons are enabled, the OK button is present. When the buttons are disabled,
+         * the cancel button is present.
          *
          * @param enable if <tt>true</tt> enable the buttons; otherwise disable them
          */
         private void enableButtons(boolean enable) {
-            getButtons().getButton(OK_ID).setEnabled(enable);
-            getButtons().getButton(CANCEL_ID).setEnabled(!enable);
             for (Button button : restartButtons) {
                 button.setEnabled(enable);
+            }
+            ButtonSet buttons = getButtons();
+            buttons.removeAll();
+            if (enable) {
+                buttons.add(ok);
+            } else {
+                buttons.add(cancel);
             }
         }
     }

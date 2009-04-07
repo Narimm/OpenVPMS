@@ -42,7 +42,7 @@ public class ReminderCancelProcessor extends ReminderProgressBarProcessor {
      */
     public ReminderCancelProcessor(List<List<ReminderEvent>> reminders,
                                    Statistics statistics) {
-        super(reminders, null, statistics, Messages.get("reporting.reminder.run.cancel"));
+        super(reminders, statistics, Messages.get("reporting.reminder.run.cancel"));
     }
 
     /**

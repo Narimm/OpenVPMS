@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.test.TestHelper;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -55,11 +56,11 @@ public class DefaultCollectionPropertyEditorTestCase
         String[] range = editor.getArchetypeRange();
         assertEquals(5, range.length);
         Set<String> set = new HashSet<String>(Arrays.asList(range));
-        assertTrue(set.contains("contact.location"));
-        assertTrue(set.contains("contact.phoneNumber"));
-        assertTrue(set.contains("contact.mobileNumber"));
-        assertTrue(set.contains("contact.email"));
-        assertTrue(set.contains("contact.faxNumber"));
+        assertTrue(set.contains(ContactArchetypes.LOCATION));
+        assertTrue(set.contains(ContactArchetypes.PHONE));
+        assertTrue(set.contains(ContactArchetypes.MOBILE));
+        assertTrue(set.contains(ContactArchetypes.EMAIL));
+        assertTrue(set.contains(ContactArchetypes.FAX));
     }
 
     /**
@@ -70,7 +71,7 @@ public class DefaultCollectionPropertyEditorTestCase
     protected IMObject createParent() {
         Party party = (Party) TestHelper.create("party.customerperson");
         // remove default contacts
-        for (Contact contact : party.getContacts().toArray(new Contact[0])) {
+        for (Contact contact : party.getContacts().toArray(new Contact[party.getContacts().size()])) {
             party.removeContact(contact);
         }
         IMObjectBean bean = new IMObjectBean(party);
@@ -107,7 +108,7 @@ public class DefaultCollectionPropertyEditorTestCase
      * @return a new object to add to the collection
      */
     protected IMObject createObject(IMObject parent) {
-        return TestHelper.create("contact.location");
+        return TestHelper.create(ContactArchetypes.LOCATION);
     }
 
 }

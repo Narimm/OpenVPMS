@@ -74,7 +74,7 @@ public class ClearTillDialog extends PopupDialog {
                 service, shortNames, true, 0, ArchetypeQuery.ALL_RESULTS);
         List<IMObject> accounts = page.getResults();
         _account = SelectFieldFactory.create(accounts);
-        _account.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+        _account.setCellRenderer(IMObjectListCellRenderer.NAME);
         if (!accounts.isEmpty()) {
             _account.setSelectedIndex(0);
         }
