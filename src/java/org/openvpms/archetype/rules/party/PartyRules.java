@@ -18,12 +18,6 @@
 
 package org.openvpms.archetype.rules.party;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -43,6 +37,12 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 
 /**
@@ -83,7 +83,7 @@ public class PartyRules {
      * act via an <em>participation.customer</em> or an
      * <em>participation.patient</em> participation.
      *
-     * @param act the act
+     * @param act      the act
      * @param nodeName the name of the node
      * @return a node object may be null if no customer or invalid node
      * @throws ArchetypeServiceException for any archetype service error
@@ -99,22 +99,22 @@ public class PartyRules {
     /**
      * Returns a specified node for a specified customer.
      *
-     * @param party the party
+     * @param party    the party
      * @param nodeName the name of the node
      * @return a node object may be null if no customer or invalid node
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Object getCustomerNode(Party party, String nodeName) {
-    	if (party != null) {
-        	IMObjectBean bean = new IMObjectBean(party);
-        	NodeDescriptor descriptor = bean.getDescriptor(nodeName);
+        if (party != null) {
+            IMObjectBean bean = new IMObjectBean(party);
+            NodeDescriptor descriptor = bean.getDescriptor(nodeName);
             if (descriptor != null && descriptor.isLookup()) {
                 return ArchetypeServiceFunctions.lookup(party, nodeName);
             } else {
-            	return bean.getValue(nodeName);    		
+                return bean.getValue(nodeName);
             }
-    	}
-    	return null;
+        }
+        return null;
     }
 
     /**
@@ -143,8 +143,8 @@ public class PartyRules {
      */
     public Set<Contact> getDefaultContacts() {
         Set<Contact> contacts = new HashSet<Contact>();
-        Contact phone = (Contact) service.create("contact.phoneNumber");
-        Contact location = (Contact) service.create("contact.location");
+        Contact phone = (Contact) service.create(ContactArchetypes.PHONE);
+        Contact location = (Contact) service.create(ContactArchetypes.LOCATION);
         service.deriveValues(phone);
         service.deriveValues(location);
         contacts.add(phone);
@@ -204,6 +204,7 @@ public class PartyRules {
     /**
      * Returns a formatted billing address for a party.
      *
+     * @param party the party
      * @return a formatted billing address for a party. May be empty if
      *         there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
@@ -234,6 +235,7 @@ public class PartyRules {
     /**
      * Returns a formatted correspondence address for a party.
      *
+     * @param party the party
      * @return a formatted correspondence address for a party. May be empty if
      *         there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
@@ -245,6 +247,7 @@ public class PartyRules {
     /**
      * Returns a formatted correspondence name and address for a party.
      *
+     * @param party the party
      * @return a formatted correspondence name and address for a party. May be empty if
      *         there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
@@ -254,7 +257,7 @@ public class PartyRules {
         result.append(getFullName(party));
         result.append("\n");
         result.append(getAddress(party, "CORRESPONDENCE"));
-        
+
         return result.toString();
     }
 
@@ -295,7 +298,7 @@ public class PartyRules {
         }
         return (party != null) ? getCorrespondenceNameAddress(party) : "";
     }
-    
+
     /**
      * Returns a formatted <em>contact.location</em> address with the
      * specified purpose, for a party if one exists.
@@ -307,7 +310,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getAddress(Party party, String purpose) {
-        Contact contact = getContact(party, "contact.location", purpose);
+        Contact contact = getContact(party, ContactArchetypes.LOCATION, purpose);
         return (contact != null) ? formatAddress(contact) : "";
     }
 
@@ -320,7 +323,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getHomeTelephone(Party party) {
-        Contact contact = getContact(party, "contact.phoneNumber", "HOME",
+        Contact contact = getContact(party, ContactArchetypes.PHONE, "HOME",
                                      false);
         return (contact != null) ? formatPhone(contact) : "";
     }
@@ -352,7 +355,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getWorkTelephone(Party party) {
-        Contact contact = getContact(party, "contact.phoneNumber", "WORK",
+        Contact contact = getContact(party, ContactArchetypes.PHONE, "WORK",
                                      true);
         return (contact != null) ? formatPhone(contact) : "";
     }
@@ -384,7 +387,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFaxNumber(Party party) {
-        Contact contact = getContact(party, "contact.faxNumber", null);
+        Contact contact = getContact(party, ContactArchetypes.FAX, null);
         if (contact != null) {
             IMObjectBean bean = new IMObjectBean(contact, service);
             String areaCode = bean.getString("areaCode");
@@ -407,7 +410,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getEmailAddress(Party party) {
-        Contact contact = getContact(party, "contact.email", null);
+        Contact contact = getContact(party, ContactArchetypes.EMAIL, null);
         if (contact != null) {
             IMObjectBean bean = new IMObjectBean(contact, service);
             return bean.getString("emailAddress");
@@ -532,7 +535,8 @@ public class PartyRules {
     /**
      * Formats an address from an <em>contact.location</em> contact.
      *
-     * @param contact contact
+     * @param contact    contact
+     * @param singleLine if <tt>true</tt> formats the address on a single line
      * @return a formatted address
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -583,8 +587,9 @@ public class PartyRules {
                 0, 1).getResults();
         if (!rows.isEmpty()) {
             return (Party) rows.get(0);
-        } else
+        } else {
             return null;
+        }
     }
 
     /**
@@ -594,7 +599,7 @@ public class PartyRules {
      */
     public String getPracticeAddress() {
         return formatAddress(
-                getContact(getPractice(), "contact.location", null), true);
+                getContact(getPractice(), ContactArchetypes.LOCATION, null), true);
     }
 
     /**
@@ -619,7 +624,7 @@ public class PartyRules {
      * Returns a Bpay Id for the Party.
      * Utilises the party uid and adds a check digit using a Luntz 10 algorithm.
      *
-     * @param party
+     * @param party the party
      * @return string bpay id
      */
     public String getBpayId(Party party) {
@@ -839,8 +844,9 @@ public class PartyRules {
          */
         private boolean hasContactPurpose(Contact contact, String purpose) {
             for (Lookup classification : contact.getClassifications()) {
-                if (classification.getCode().equals(purpose))
+                if (classification.getCode().equals(purpose)) {
                     return true;
+                }
             }
             return false;
         }

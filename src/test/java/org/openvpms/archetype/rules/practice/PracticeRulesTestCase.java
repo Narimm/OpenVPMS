@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.practice;
 
 import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_LOCATION_RELATIONSHIP;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -149,7 +150,7 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
         Lookup currency = TestHelper.getCurrency("AUD");
         bean.setValue("currency", currency.getCode());
 
-        Contact contact = (Contact) create("contact.phoneNumber");
+        Contact contact = (Contact) create(ContactArchetypes.PHONE);
         party.addContact(contact);
         return party;
     }

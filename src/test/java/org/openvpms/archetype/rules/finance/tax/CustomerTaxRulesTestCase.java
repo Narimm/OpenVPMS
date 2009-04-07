@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.tax;
 
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -156,7 +157,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(customer);
         bean.setValue("firstName", "J");
         bean.setValue("lastName", "Zoo");
-        Contact contact = (Contact) create("contact.phoneNumber");
+        Contact contact = (Contact) create(ContactArchetypes.PHONE);
         assertNotNull(contact);
         customer.addContact(contact);
         save(customer);

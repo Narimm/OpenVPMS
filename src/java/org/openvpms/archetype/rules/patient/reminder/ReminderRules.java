@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -207,6 +208,7 @@ public class ReminderRules {
      * Returns a count of 'in progress' reminders for a patient.
      *
      * @param patient the patient
+     * @return the no. of 'in progress' reminders for <tt>patient</tt>
      * @throws ArchetypeServiceException for any error
      */
     public int countReminders(Party patient) {
@@ -222,6 +224,7 @@ public class ReminderRules {
      *
      * @param patient the patient
      * @param date    the date/time
+     * @return the no. of 'in progress' alerts for <tt>patient</tt>
      * @throws ArchetypeServiceException for any error
      */
     public int countAlerts(Party patient, Date date) {
@@ -233,11 +236,12 @@ public class ReminderRules {
     }
 
     /**
-     * Determines if a reminder is due.
+     * Determines if a reminder is due in the specified date range.
      *
      * @param reminder the reminder
      * @param from     the 'from' date. May be <tt>null</tt>
      * @param to       the 'to' date. Nay be <tt>null</tt>
+     * @return <tt>true</tt> if the reminder is due
      */
     public boolean isDue(Act reminder, Date from, Date to) {
         ActBean bean = new ActBean(reminder, service);
@@ -398,29 +402,32 @@ public class ReminderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getContact(Set<Contact> contacts) {
-        return getContact(contacts, "contact.location", true);
+        return getContact(contacts, true, ContactArchetypes.LOCATION);
     }
 
     /**
-     * Returns the first phone contact with classification 'REMINDER' or
+     * Returns the first phone contact (either an <em>contact.phoneNumber</em> or <em>contact.mobileNumber</em>)
+     * with classification 'REMINDER' or
      * the preferred phone contact if no contact has this classification.
      *
+     * @param contacts the contacts
+     * @return a contact, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getPhoneContact(Set<Contact> contacts) {
-        return getContact(contacts, "contact.phoneNumber", false);
+        return getContact(contacts, false, ContactArchetypes.PHONE, ContactArchetypes.MOBILE);
     }
 
     /**
      * Returns the first email contact with classification 'REMINDER' or the
-     * preferred email contact.if no contact has this classification.
+     * preferred email contact if no contact has this classification.
      *
      * @param contacts the contacts
      * @return a contact, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getEmailContact(Set<Contact> contacts) {
-        return getContact(contacts, "contact.email", false);
+        return getContact(contacts, false, ContactArchetypes.EMAIL);
     }
 
     /**
@@ -486,7 +493,6 @@ public class ReminderRules {
      * classification.
      *
      * @param contacts   the contacts
-     * @param shortName  the archetype shortname of the preferred contact
      * @param anyContact if <tt>true</tt> any contact with a 'REMINDER'
      *                   classification will be returned. If there is
      *                   no 'REMINDER' contact, the first preferred contact
@@ -497,19 +503,18 @@ public class ReminderRules {
      *                   contact will be returned.
      *                   If <tt>false</tt> only those contacts of type
      *                   <em>shortName</em> will be returned
+     * @param shortNames the archetype shortname of the preferred contact
      * @return a contact, or <tt>null</tt> if none is found
      */
-    private Contact getContact(Set<Contact> contacts, String shortName,
-                               boolean anyContact) {
+    private Contact getContact(Set<Contact> contacts, boolean anyContact, String... shortNames) {
         Contact reminder = null;
         Contact preferred = null;
         Contact fallback = null;
         for (Contact contact : contacts) {
             IMObjectBean bean = new IMObjectBean(contact, service);
-            if (bean.isA(shortName) || anyContact) {
-                if (reminder == null || !TypeHelper.isA(reminder, shortName)) {
-                    List<Lookup> purposes = bean.getValues("purposes",
-                                                           Lookup.class);
+            if (bean.isA(shortNames) || anyContact) {
+                if (reminder == null || !TypeHelper.isA(reminder, shortNames)) {
+                    List<Lookup> purposes = bean.getValues("purposes", Lookup.class);
                     for (Lookup purpose : purposes) {
                         if ("REMINDER".equals(purpose.getCode())) {
                             reminder = contact;
@@ -518,14 +523,12 @@ public class ReminderRules {
                     }
                 }
 
-                if (preferred == null
-                        || !TypeHelper.isA(preferred, shortName)) {
-                    if (bean.hasNode("preferred") && bean.getBoolean(
-                            "preferred")) {
+                if (preferred == null || !TypeHelper.isA(preferred, shortNames)) {
+                    if (bean.hasNode("preferred") && bean.getBoolean("preferred")) {
                         preferred = contact;
                     }
                 }
-                if (fallback == null || !TypeHelper.isA(fallback, shortName)) {
+                if (fallback == null || !TypeHelper.isA(fallback, shortNames)) {
                     fallback = contact;
                 }
             }
@@ -534,9 +537,9 @@ public class ReminderRules {
         if (reminder != null) {
             result = reminder;
         } else if (preferred != null && fallback != null) {
-            if (TypeHelper.isA(preferred, shortName)) {
+            if (TypeHelper.isA(preferred, shortNames)) {
                 result = preferred;
-            } else if (TypeHelper.isA(fallback, shortName)) {
+            } else if (TypeHelper.isA(fallback, shortNames)) {
                 result = fallback;
             } else {
                 result = preferred;

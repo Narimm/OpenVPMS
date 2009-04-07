@@ -63,7 +63,7 @@ public abstract class IteratingBatchProcessor<Type>
             while (iterator.hasNext()) {
                 Type object = iterator.next();
                 process(object);
-                incProcessed();
+                incProcessed(object);
             }
             // processing completed.
             processingCompleted();
@@ -91,6 +91,8 @@ public abstract class IteratingBatchProcessor<Type>
     /**
      * Invoked when batch processing has terminated due to error.
      * This implementation delegates to {@link #notifyError}.
+     *
+     * @param exception the error
      */
     protected void processingError(Throwable exception) {
         notifyError(exception);
@@ -114,6 +116,18 @@ public abstract class IteratingBatchProcessor<Type>
      */
     protected Iterator<Type> getIterator() {
         return iterator;
+    }
+
+    /**
+     * Increments the count of processed objects.
+     * <p/>
+     * This implementation increments it by <tt>1</tt>.
+     *
+     * @param object the processed object
+     */
+    @SuppressWarnings("UnusedDeclaration")
+    protected void incProcessed(Type object) {
+        incProcessed(1);
     }
 
 }

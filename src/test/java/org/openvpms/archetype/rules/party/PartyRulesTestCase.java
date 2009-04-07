@@ -75,8 +75,8 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         assertEquals(2, contacts.size());
 
         // expect a contact.location and a contact.phoneNumber
-        assertNotNull(getContact(contacts, "contact.location"));
-        assertNotNull(getContact(contacts, "contact.phoneNumber"));
+        assertNotNull(getContact(contacts, ContactArchetypes.LOCATION));
+        assertNotNull(getContact(contacts, ContactArchetypes.PHONE));
     }
 
     /**
@@ -85,8 +85,8 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     public void testGetPreferredContacts() {
         Party party = (Party) create("party.customerperson");
         assertEquals(2, party.getContacts().size());
-        Contact location = getContact(party, "contact.location");
-        Contact phone = getContact(party, "contact.phoneNumber");
+        Contact location = getContact(party, ContactArchetypes.LOCATION);
+        Contact phone = getContact(party, ContactArchetypes.PHONE);
         IMObjectBean locationBean = new IMObjectBean(location);
         IMObjectBean phoneBean = new IMObjectBean(phone);
         locationBean.setValue("preferred", false);
@@ -126,7 +126,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link PartyRules#getContactPurposes(Contact)} method.
      */
     public void testGetContactPurposes() {
-        Contact contact = (Contact) create("contact.location");
+        Contact contact = (Contact) create(ContactArchetypes.LOCATION);
         contact.addClassification(getContactPurpose("HOME"));
 
         assertEquals("(Home)", rules.getContactPurposes(contact));
@@ -148,7 +148,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         IMObjectBean customer = new IMObjectBean(party);
         customer.setValue("title", "MR");
 
-        Contact location = getContact(party, "contact.location");
+        Contact location = getContact(party, ContactArchetypes.LOCATION);
         populateLocation(location, "1 Foo St", null);
 
         // no location with billing address, uses the first available.
@@ -164,7 +164,8 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
                      rules.getBillingAddress(party));
 
         // remove all the contacts and verify there is no billing address
-        for (Contact c : party.getContacts().toArray(new Contact[0])) {
+        Contact[] contacts = party.getContacts().toArray(new Contact[party.getContacts().size()]);
+        for (Contact c : contacts) {
             party.removeContact(c);
         }
 
@@ -179,7 +180,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         IMObjectBean customer = new IMObjectBean(party);
         customer.setValue("title", "MR");
 
-        Contact location = getContact(party, "contact.location");
+        Contact location = getContact(party, ContactArchetypes.LOCATION);
         populateLocation(location, "1 Foo St", null);
 
         // no location with billing address, uses the first available.
@@ -195,7 +196,8 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
                      rules.getCorrespondenceAddress(party));
 
         // remove all the contacts and verify there is no correspondence address
-        for (Contact c : party.getContacts().toArray(new Contact[0])) {
+        Contact[] contacts = party.getContacts().toArray(new Contact[party.getContacts().size()]);
+        for (Contact c : contacts) {
             party.removeContact(c);
         }
 
@@ -207,7 +209,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      */
     public void testGetHomeTelephone() {
         Party party = TestHelper.createCustomer(false);
-        Contact phone1 = getContact(party, "contact.phoneNumber");
+        Contact phone1 = getContact(party, ContactArchetypes.PHONE);
         populatePhone(phone1, "12345", false, null);
 
         assertEquals("(03) 12345", rules.getHomeTelephone(party)); // OVPMS-718
@@ -228,7 +230,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      */
     public void testGetWorkTelephone() {
         Party party = TestHelper.createCustomer(false);
-        Contact phone1 = getContact(party, "contact.phoneNumber");
+        Contact phone1 = getContact(party, ContactArchetypes.PHONE);
         populatePhone(phone1, "12345", false, null);
 
         assertEquals("", rules.getWorkTelephone(party));
@@ -252,7 +254,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         assertEquals("", rules.getHomeTelephone(act));
 
         Party party = TestHelper.createCustomer();
-        Contact phone = getContact(party, "contact.phoneNumber");
+        Contact phone = getContact(party, ContactArchetypes.PHONE);
         populatePhone(phone, "12345", false, "HOME");
         save(phone);
 
@@ -270,7 +272,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         assertEquals("", rules.getWorkTelephone(act));
 
         Party party = TestHelper.createCustomer();
-        Contact phone = getContact(party, "contact.phoneNumber");
+        Contact phone = getContact(party, ContactArchetypes.PHONE);
         populatePhone(phone, "12345", false, "WORK");
         save(phone);
 
@@ -363,7 +365,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      * @return a new location contact
      */
     private Contact createLocation(String address, String purpose) {
-        Contact contact = (Contact) create("contact.location");
+        Contact contact = (Contact) create(ContactArchetypes.LOCATION);
         populateLocation(contact, address, purpose);
         return contact;
     }
@@ -401,7 +403,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      */
     private Contact createPhone(String number, boolean preferred,
                                 String purpose) {
-        Contact contact = (Contact) create("contact.phoneNumber");
+        Contact contact = (Contact) create(ContactArchetypes.PHONE);
         populatePhone(contact, number, preferred, purpose);
         return contact;
     }
