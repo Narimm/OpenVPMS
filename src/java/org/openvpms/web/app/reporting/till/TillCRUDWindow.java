@@ -282,7 +282,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         String title = Messages.get("till.transfer.title");
         String message = Messages.get("till.transfer.message");
         ListBox list = new ListBox(accounts.toArray());
-        list.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+        list.setCellRenderer(IMObjectListCellRenderer.NAME);
 
         final SelectionDialog dialog
                 = new SelectionDialog(title, message, list);

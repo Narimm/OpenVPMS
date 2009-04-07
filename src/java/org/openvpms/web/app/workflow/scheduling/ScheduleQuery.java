@@ -405,7 +405,7 @@ public abstract class ScheduleQuery {
         Entity defaultView = getDefaultScheduleView();
         IMObjectListModel model = new IMObjectListModel(views, false, false);
         result = SelectFieldFactory.create(model);
-        result.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+        result.setCellRenderer(IMObjectListCellRenderer.NAME);
         if (defaultView != null) {
             result.setSelectedItem(defaultView);
         }
@@ -425,7 +425,7 @@ public abstract class ScheduleQuery {
     private SelectField createScheduleField() {
         IMObjectListModel model = createScheduleModel();
         SelectField result = SelectFieldFactory.create(model);
-        result.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+        result.setCellRenderer(IMObjectListCellRenderer.NAME);
         result.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onQuery();
@@ -475,7 +475,7 @@ public abstract class ScheduleQuery {
         IMObjectListModel model
                 = new IMObjectListModel(clinicians, true, false);
         SelectField result = SelectFieldFactory.create(model);
-        result.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+        result.setCellRenderer(IMObjectListCellRenderer.NAME);
 
         result.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {

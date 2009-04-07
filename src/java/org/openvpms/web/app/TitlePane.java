@@ -97,7 +97,7 @@ public class TitlePane extends ContentPane {
             if (defLocation != null) {
                 locationSelector.setSelectedItem(defLocation);
             }
-            locationSelector.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+            locationSelector.setCellRenderer(IMObjectListCellRenderer.NAME);
             locationUserRow.add(location, 0);
             locationUserRow.add(locationSelector, 1);
             locationSelector.addActionListener(new ActionListener() {
@@ -136,6 +136,8 @@ public class TitlePane extends ContentPane {
 
     /**
      * Returns the locations for the current user.
+     *
+     * @return the locations
      */
     private List<Party> getLocations() {
         List<Party> locations = Collections.emptyList();

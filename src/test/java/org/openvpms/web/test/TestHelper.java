@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 
 import java.util.Arrays;
 
@@ -87,7 +88,7 @@ public class TestHelper extends Assert {
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("firstName", "foo");
         bean.setValue("lastName", "xyz");
-        Contact contact = (Contact) create("contact.phoneNumber");
+        Contact contact = (Contact) create(ContactArchetypes.PHONE);
         party.addContact(contact);
         if (save) {
             bean.save();

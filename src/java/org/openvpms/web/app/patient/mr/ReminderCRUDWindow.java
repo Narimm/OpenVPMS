@@ -18,16 +18,23 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -42,10 +49,20 @@ import org.openvpms.web.system.ServiceHelper;
 public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
+     * The resend button. Only applies when a reminder is selected.
+     */
+    private Button resend;
+
+    /**
      * Reminder and alert shortnames supported by the workspace.
      */
-    private static final String[] SHORT_NAMES = {"act.patientReminder",
-                                                 "act.patientAlert"};
+    private static final String[] SHORT_NAMES = {"act.patientReminder", "act.patientAlert"};
+
+    /**
+     * Resend button identifier.
+     */
+    private static final String RESEND_ID = "resend";
+
 
     /**
      * Create a new <tt>ReminderCRUDWindow</tt>.
@@ -65,6 +82,11 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
         buttons.add(getEditButton());
         buttons.add(getCreateButton());
         buttons.add(getDeleteButton());
+        resend = ButtonFactory.create(RESEND_ID, new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onResend();
+            }
+        });
     }
 
     /**
@@ -80,6 +102,9 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
             buttons.add(getEditButton());
             buttons.add(getCreateButton());
             buttons.add(getDeleteButton());
+            if (TypeHelper.isA(getObject(), "act.patientReminder")) {
+                buttons.add(resend);
+            }
         } else {
             buttons.add(getCreateButton());
         }
@@ -108,6 +133,25 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
             }
         }
         super.onCreated(act);
+    }
+
+    /**
+     * Invoked to resend a reminder.
+     */
+    private void onResend() {
+        try {
+            ResendReminderDialog dialog = ResendReminderDialog.create(getObject());
+            if (dialog != null) {
+                dialog.addWindowPaneListener(new WindowPaneListener() {
+                    public void windowPaneClosing(WindowPaneEvent event) {
+                        onRefresh(getObject());
+                    }
+                });
+                dialog.show();
+            }
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
 }

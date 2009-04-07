@@ -19,19 +19,22 @@ package org.openvpms.web.app.reporting.reminder;
 
 import org.openvpms.web.component.processor.BatchProcessorComponent;
 
-import java.util.Date;
-
 
 /**
- * Add description here.
+ * Reminder batch processor.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface ReminderUpdateProcessor extends BatchProcessorComponent {
+interface ReminderBatchProcessor extends BatchProcessorComponent {
 
-    void update(Date date);
-
-    void updateStatistics(Statistics statistics);
+    /**
+     * Determines if reminders should be updated on completion.
+     * <p/>
+     * If set, the <tt>reminderCount</tt> is incremented the <tt>lastSent</tt> timestamp set on completed reminders.
+     *
+     * @param update if <tt>true</tt> update reminders on completion
+     */
+    void setUpdateOnCompletion(boolean update);
 
 }

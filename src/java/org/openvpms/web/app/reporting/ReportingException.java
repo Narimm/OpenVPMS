@@ -40,7 +40,7 @@ public class ReportingException extends OpenVPMSException {
         TemplateMissingEmailText,
         FailedToProcessReminder,
         ReminderMissingDocTemplate,
-        NoGroupReminderTemplate
+        NoGroupedReminderTemplate
     }
 
     /**

@@ -59,6 +59,7 @@ import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 
 
 /**
@@ -80,7 +81,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * class is configured.
      */
     public void testCreateDefaultEditor() {
-        checkCreate("contact.phoneNumber", DefaultIMObjectEditor.class);
+        checkCreate(ContactArchetypes.PHONE, DefaultIMObjectEditor.class);
     }
 
     /**

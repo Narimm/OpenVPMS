@@ -108,7 +108,7 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
     @Override
     protected void doLayout(Component container) {
         reminderType = SelectFieldFactory.create(createReminderTypeModel());
-        reminderType.setCellRenderer(IMObjectListCellRenderer.INSTANCE);
+        reminderType.setCellRenderer(IMObjectListCellRenderer.NAME);
 
         Row reminderTypeRow = RowFactory.create(reminderType);
         // wrap the list in a row as a workaround for render bug in firefox.

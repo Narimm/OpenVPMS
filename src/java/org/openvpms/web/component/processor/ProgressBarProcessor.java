@@ -227,10 +227,6 @@ public abstract class ProgressBarProcessor<T>
         }
     }
 
-    protected void incProcessed(T object) {
-        incProcessed(1);
-    }
-
     /**
      * To be invoked when processing of an object fails.
      * Suspends processing.

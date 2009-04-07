@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.*;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -156,7 +157,7 @@ public class StatementEmailProcessor
             }
             Contact contact = contacts.get(0);
             IMObjectBean bean = new IMObjectBean(contact);
-            if (!bean.isA("contact.email")) {
+            if (!bean.isA(ContactArchetypes.EMAIL)) {
                 throw new StatementProcessorException(NoContact,
                                                       statement.getCustomer());
             }

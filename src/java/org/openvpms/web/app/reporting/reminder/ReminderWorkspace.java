@@ -114,9 +114,8 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
             Act selected = browser.getSelected();
             if (selected != null) {
                 DueReminderQuery q = query.createReminderQuery();
-                ReminderGenerator generator
-                        = new ReminderGenerator(selected, q.getFrom(),
-                                                q.getTo());
+                ReminderGenerator generator = new ReminderGenerator(selected, q.getFrom(), q.getTo(),
+                                                                    GlobalContext.getInstance());
                 generateReminders(generator);
             }
         } catch (OpenVPMSException exception) {

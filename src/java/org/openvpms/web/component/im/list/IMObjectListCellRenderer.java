@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * List cell renderer that display's an {@link IMObject}'s name.
+ * List cell renderer that display's an {@link IMObject}'s name or description.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -32,19 +32,38 @@ public class IMObjectListCellRenderer
         extends AllNoneListCellRenderer<IMObject> {
 
     /**
-     * The singleton instance.
+     * A renderer that renders the object's name.
      */
-    public static final IMObjectListCellRenderer INSTANCE
-            = new IMObjectListCellRenderer();
+    public static final IMObjectListCellRenderer NAME = new IMObjectListCellRenderer(Node.NAME);
+
+    /**
+     * A renderer that renders the object's description.
+     */
+    public static final IMObjectListCellRenderer DESCRIPTION = new IMObjectListCellRenderer(Node.DESCRIPTION);
+
+    /**
+     * The nodes that may be rendered.
+     */
+    private enum Node {
+
+        NAME, DESCRIPTION
+    }
+
+    /**
+     * The node to render.
+     */
+    private final Node node;
 
 
     /**
      * Constructs a new <tt>IMObjectListCellRenderer</tt>.
+     *
+     * @param node the node to render
      */
-    protected IMObjectListCellRenderer() {
+    protected IMObjectListCellRenderer(Node node) {
         super(IMObject.class);
+        this.node = node;
     }
-
 
     /**
      * Renders an object.
@@ -55,7 +74,10 @@ public class IMObjectListCellRenderer
      * @return the rendered object
      */
     protected Object getComponent(Component list, IMObject object, int index) {
-        return (object != null) ? object.getName() : null;
+        if (object != null) {
+            return (node == Node.NAME) ? object.getName() : object.getDescription();
+        }
+        return null;
     }
 
 }

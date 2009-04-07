@@ -26,6 +26,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -255,14 +256,14 @@ public class PatientReminderTableModel extends AbstractActTableModel {
             if (customer != null) {
                 Contact contact = rules.getContact(customer, act);
                 if (contact != null) {
-                    if (TypeHelper.isA(contact, "contact.location")) {
+                    if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
                         result.setText(
                                 Messages.get("patientremindertablemodel.post"));
-                    } else if (TypeHelper.isA(contact, "contact.email")) {
+                    } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
                         result.setText(
                                 Messages.get(
                                         "patientremindertablemodel.email"));
-                    } else if (TypeHelper.isA(contact, "contact.phoneNumber")) {
+                    } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
                         result.setText(
                                 Messages.get("patientremindertablemodel.list"));
                     }
