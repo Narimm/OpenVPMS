@@ -21,6 +21,7 @@ package org.openvpms.archetype.test;
 import junit.framework.Assert;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -370,7 +371,7 @@ public class TestHelper extends Assert {
         } else {
             party = (Party) create(PracticeArchetypes.PRACTICE);
             party.setName("XPractice");
-            Contact contact = (Contact) create("contact.phoneNumber");
+            Contact contact = (Contact) create(ContactArchetypes.PHONE);
             party.addContact(contact);
         }
 
@@ -405,7 +406,7 @@ public class TestHelper extends Assert {
     public static Party createLocation() {
         Party party = (Party) create(PracticeArchetypes.LOCATION);
         party.setName("XLocation");
-        Contact contact = (Contact) create("contact.phoneNumber");
+        Contact contact = (Contact) create(ContactArchetypes.PHONE);
         party.addContact(contact);
         save(party);
         return party;

@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.AbstractProcessor;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -192,11 +193,11 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      */
     private List<Contact> getContacts(Party customer) {
         List<Contact> result = new ArrayList<Contact>();
-        addBillingContacts(result, customer, "contact.email");
-        addBillingContacts(result, customer, "contact.location");
+        addBillingContacts(result, customer, ContactArchetypes.EMAIL);
+        addBillingContacts(result, customer, ContactArchetypes.LOCATION);
         if (result.isEmpty()) {
             for (Contact contact : customer.getContacts()) {
-                if (TypeHelper.isA(contact, "contact.location")) {
+                if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
                     result.add(contact);
                 }
             }
@@ -208,6 +209,7 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      * Adds contacts with the specified archetype short name and
      * <em>BILLING</em> purpose.
      *
+     * @param list      the contact list to add to
      * @param customer  the customer
      * @param shortName the contact archetype short name
      * @throws ArchetypeServiceException for any archetype service error

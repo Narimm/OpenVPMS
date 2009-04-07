@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -237,7 +238,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     public void testGetContact() {
         // create a patient, and owner. Remove default contacts from owner
         Party owner = TestHelper.createCustomer();
-        for (Contact contact : owner.getContacts().toArray(new Contact[0])) {
+        Contact[] contacts = owner.getContacts().toArray(new Contact[owner.getContacts().size()]);
+        for (Contact contact : contacts) {
             owner.removeContact(contact);
         }
 
@@ -259,7 +261,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         // returned instead of the non-preferred location contact
         Contact preferredLocation = createLocation(true);
         checkContact(owner, preferredLocation, preferredLocation);
-//        save(owner);
 
         // add a REMINDER classification to the email contact and verify it is
         // returned instead of the preferred location contact
@@ -405,7 +406,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @return a new email contact
      */
     private Contact createEmail() {
-        Contact contact = (Contact) create("contact.email");
+        Contact contact = (Contact) create(ContactArchetypes.EMAIL);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("emailAddress", "foo@bar.com");
         bean.save();
@@ -419,7 +420,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @return a new phone contact
      */
     private Contact createPhone(boolean preferred) {
-        Contact contact = (Contact) create("contact.phoneNumber");
+        Contact contact = (Contact) create(ContactArchetypes.PHONE);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("preferred", preferred);
         save(contact);
@@ -433,7 +434,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @return a new location contact
      */
     private Contact createLocation(boolean preferred) {
-        Contact contact = (Contact) create("contact.location");
+        Contact contact = (Contact) create(ContactArchetypes.LOCATION);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("preferred", preferred);
         save(contact);
@@ -444,6 +445,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * Helper to create and save an <em>act.patientAlert</tt> for a patient.
      *
      * @param patient the patient
+     * @return a new alert
      */
     private Act createAlert(Party patient) {
         Act act = (Act) create("act.patientAlert");

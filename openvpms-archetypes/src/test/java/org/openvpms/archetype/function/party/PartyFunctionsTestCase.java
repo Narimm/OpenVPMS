@@ -21,6 +21,7 @@ package org.openvpms.archetype.function.party;
 import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -161,7 +162,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     private Contact createPhone(String number, boolean preferred,
                                 String purpose) {
-        Contact contact = (Contact) create("contact.phoneNumber");
+        Contact contact = (Contact) create(ContactArchetypes.PHONE);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("areaCode", "03");
         bean.setValue("telephoneNumber", number);
@@ -181,7 +182,8 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     private Party createCustomer() {
         Party party = TestHelper.createCustomer(false);
-        for (Contact contact : party.getContacts().toArray(new Contact[0])) {
+        Contact[] contacts = party.getContacts().toArray(new Contact[party.getContacts().size()]);
+        for (Contact contact : contacts) {
             party.removeContact(contact);
         }
         return party;
