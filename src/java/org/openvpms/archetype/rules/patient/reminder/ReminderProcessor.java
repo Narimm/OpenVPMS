@@ -19,11 +19,11 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.component.processor.AbstractActionProcessor;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoPatient;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderType;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -194,14 +194,14 @@ public class ReminderProcessor
             }
         }
         if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
-            result = print(reminder, reminderType, contact, documentTemplate);
+            result = print(reminder, reminderType, owner, contact, documentTemplate);
         } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
-            result = phone(reminder, reminderType, contact, documentTemplate);
+            result = phone(reminder, reminderType, owner, contact, documentTemplate);
         } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-            result = email(reminder, reminderType, contact, documentTemplate);
+            result = email(reminder, reminderType, owner, contact, documentTemplate);
         } else {
             // no/unrecognised contact
-            result = list(reminder, reminderType, contact, documentTemplate);
+            result = list(reminder, reminderType, owner, contact, documentTemplate);
         }
         return result;
     }
@@ -241,14 +241,17 @@ public class ReminderProcessor
      *
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param customer         the customer
      * @param contact          the reminder contact
      * @param documentTemplate the document template
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected ReminderEvent email(Act reminder, ReminderType reminderType, Contact contact, Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.EMAIL, reminder, reminderType, contact, documentTemplate);
+    protected ReminderEvent email(Act reminder, ReminderType reminderType, Party customer, Contact contact,
+                                  Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.EMAIL, reminder, reminderType, customer, contact,
+                                                documentTemplate);
         notifyListeners(event.getAction(), event);
         return event;
     }
@@ -258,14 +261,17 @@ public class ReminderProcessor
      *
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param customer         the customer
      * @param contact          the reminder contact
-     * @param documentTemplate the document template. May be <tt>null</tt>
+     * @param documentTemplate the document template. May be <tt>null</tt>   @return the reminder event
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected ReminderEvent phone(Act reminder, ReminderType reminderType, Contact contact, Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.PHONE, reminder, reminderType, contact, documentTemplate);
+    protected ReminderEvent phone(Act reminder, ReminderType reminderType, Party customer, Contact contact,
+                                  Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.PHONE, reminder, reminderType, customer, contact,
+                                                documentTemplate);
         notifyListeners(event.getAction(), event);
         return event;
     }
@@ -275,14 +281,17 @@ public class ReminderProcessor
      *
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param customer         the customer
      * @param contact          the reminder contact
      * @param documentTemplate the document template
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected ReminderEvent print(Act reminder, ReminderType reminderType, Contact contact, Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.PRINT, reminder, reminderType, contact, documentTemplate);
+    protected ReminderEvent print(Act reminder, ReminderType reminderType, Party customer, Contact contact,
+                                  Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.PRINT, reminder, reminderType, customer, contact,
+                                                documentTemplate);
         notifyListeners(event.getAction(), event);
         return event;
     }
@@ -295,15 +304,17 @@ public class ReminderProcessor
      *
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param customer         the customer
      * @param contact          the reminder contact. May be <tt>null</tt>
      * @param documentTemplate the document template
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected ReminderEvent list(Act reminder, ReminderType reminderType, Contact contact,
+    protected ReminderEvent list(Act reminder, ReminderType reminderType, Party customer, Contact contact,
                                  Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.LIST, reminder, reminderType, contact, documentTemplate);
+        ReminderEvent event = new ReminderEvent(Action.LIST, reminder, reminderType, customer, contact,
+                                                documentTemplate);
         notifyListeners(event.getAction(), event);
         return event;
     }
