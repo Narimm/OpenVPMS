@@ -150,7 +150,7 @@ class ResendReminderDialog extends PopupDialog {
                         action = ReminderEvent.Action.EMAIL;
                     }
                     event = new ReminderEvent(action, event.getReminder(), event.getReminderType(),
-                                              selectedContact, event.getDocumentTemplate());
+                                              event.getCustomer(), selectedContact, event.getDocumentTemplate());
                 }
                 final ReminderGenerator generator = new ReminderGenerator(event, GlobalContext.getInstance());
                 generator.setUpdateOnCompletion(false);
