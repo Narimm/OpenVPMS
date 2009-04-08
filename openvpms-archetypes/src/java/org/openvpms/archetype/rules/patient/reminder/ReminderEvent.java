@@ -57,6 +57,11 @@ public class ReminderEvent {
     private final ReminderType reminderType;
 
     /**
+     * The customer. May be <tt>null</tt>
+     */
+    private final Party customer;
+
+    /**
      * The contact. May be <tt>null</tt>.
      */
     private final Contact contact;
@@ -75,7 +80,7 @@ public class ReminderEvent {
      * @param reminderType the reminder type
      */
     public ReminderEvent(Action action, Act reminder, ReminderType reminderType) {
-        this(action, reminder, reminderType, null, null);
+        this(action, reminder, reminderType, null, null, null);
     }
 
     /**
@@ -84,14 +89,16 @@ public class ReminderEvent {
      * @param action           the reminder action
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param customer         the customer. May be <tt>null</tt>
      * @param contact          the reminder contact. May be <tt>null</tt>
      * @param documentTemplate the document template. May be <tt>null</tt>
      */
-    public ReminderEvent(Action action, Act reminder, ReminderType reminderType,
+    public ReminderEvent(Action action, Act reminder, ReminderType reminderType, Party customer,
                          Contact contact, Entity documentTemplate) {
         this.action = action;
         this.reminder = reminder;
         this.reminderType = reminderType;
+        this.customer = customer;
         this.contact = contact;
         this.documentTemplate = documentTemplate;
     }
@@ -129,7 +136,7 @@ public class ReminderEvent {
      * @return the customer. May be <tt>null</tt>
      */
     public Party getCustomer() {
-        return (contact != null) ? contact.getParty() : null;
+        return customer;
     }
 
     /**
