@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
+import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -145,10 +146,14 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
             Act act = event.getReminder();
             if (!completed.contains(act.getObjectReference())) {
                 if (!ActStatus.CANCELLED.equals(act.getStatus())) {
-                    rules.updateReminder(act, date);
+                    try {
+                        rules.updateReminder(act, date);
+                        completed.add(act.getObjectReference());
+                    } catch (Throwable exception) {
+                        ErrorHelper.show(exception);
+                    }
                 }
             }
-            completed.add(act.getObjectReference());
         }
     }
 
