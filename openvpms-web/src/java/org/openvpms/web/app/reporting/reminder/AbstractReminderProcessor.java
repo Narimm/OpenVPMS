@@ -28,15 +28,24 @@ import java.util.List;
 
 
 /**
- * Add description here.
+ * Abstract implementation of the {@link Processor} interface for reminder processing.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractReminderProcessor implements Processor<List<ReminderEvent>> {
 
+    /**
+     * The grouped reminder template.
+     */
     private final Entity groupTemplate;
 
+
+    /**
+     * Creates a new <tt>AbstracatReminderProcessor</tt>.
+     *
+     * @param groupTemplate the grouped reminder template
+     */
     public AbstractReminderProcessor(Entity groupTemplate) {
         this.groupTemplate = groupTemplate;
     }

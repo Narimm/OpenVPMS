@@ -58,9 +58,14 @@ class SummaryDialog extends PopupDialog {
             add(grid, text, stats.getCount(reminderType, actions));
         }
 
-        for (ReminderEvent.Action action : actions) {
-            add(grid, action, stats);
-        }
+        add(grid, ReminderEvent.Action.EMAIL, stats);
+        add(grid, ReminderEvent.Action.PRINT, stats);
+
+        // phone and list actions are merged
+        int phone = stats.getCount(ReminderEvent.Action.PHONE);
+        int list = stats.getCount(ReminderEvent.Action.LIST);
+        add(grid, ReminderEvent.Action.LIST, phone + list);
+
         getLayout().add(ColumnFactory.create("Inset", grid));
     }
 
@@ -71,11 +76,20 @@ class SummaryDialog extends PopupDialog {
      * @param action the reminder action
      * @param stats  the reminder statistics
      */
-    private void add(Grid grid, ReminderEvent.Action action,
-                     Statistics stats) {
-        String text = Messages.get("reporting.reminder.summary."
-                + action.name());
-        add(grid, text, stats.getCount(action));
+    private void add(Grid grid, ReminderEvent.Action action, Statistics stats) {
+        add(grid, action, stats.getCount(action));
+    }
+
+    /**
+     * Adds a summary line item to a grid.
+     *
+     * @param grid   the grid
+     * @param action the reminder action
+     * @param count  the count
+     */
+    private void add(Grid grid, ReminderEvent.Action action, int count) {
+        String text = Messages.get("reporting.reminder.summary." + action.name());
+        add(grid, text, count);
     }
 
     /**

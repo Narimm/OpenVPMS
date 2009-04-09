@@ -253,22 +253,22 @@ public class PatientReminderTableModel extends AbstractActTableModel {
             result.setText(Messages.get("patientremindertablemodel.cancel"));
         } else {
             Party customer = getPatientOwner(act);
+            String text = null;
             if (customer != null) {
                 Contact contact = rules.getContact(customer, act);
                 if (contact != null) {
                     if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
-                        result.setText(
-                                Messages.get("patientremindertablemodel.post"));
+                        text = Messages.get("patientremindertablemodel.post");
+                        result.setText(text);
                     } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-                        result.setText(
-                                Messages.get(
-                                        "patientremindertablemodel.email"));
-                    } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
-                        result.setText(
-                                Messages.get("patientremindertablemodel.list"));
+                        text = Messages.get("patientremindertablemodel.email");
                     }
                 }
             }
+            if (text == null) {
+                text = Messages.get("patientremindertablemodel.list");
+            }
+            result.setText(text);
         }
         return result;
     }

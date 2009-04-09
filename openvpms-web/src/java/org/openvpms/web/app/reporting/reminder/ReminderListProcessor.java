@@ -25,22 +25,25 @@ import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
- * Processor for {@link ReminderEvent.Action.PHONE} and
- * {@link ReminderEvent.Action.LIST} events.
+ * Processor for {@link ReminderEvent.Action#PHONE} and {@link ReminderEvent.Action#LIST} events.
  * Prints all of the reminders to a report.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -67,6 +70,11 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
      * Determines if reminders should be updated on completion.
      */
     private boolean update = true;
+
+    /**
+     * The set of completed reminder ids, used to avoid updating reminders that are being reprocessed.
+     */
+    private Set<IMObjectReference> completed = new HashSet<IMObjectReference>();
 
 
     /**
@@ -202,8 +210,14 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
         ReminderRules rules = new ReminderRules();
         Date date = new Date();
         for (ReminderEvent reminder : reminders) {
-            if (update) {
-                rules.updateReminder(reminder.getReminder(), date);
+            IMObjectReference ref = reminder.getReminder().getObjectReference();
+            if (update && !completed.contains(ref)) {
+                try {
+                    rules.updateReminder(reminder.getReminder(), date);
+                    completed.add(ref);
+                } catch (Throwable exception) {
+                    ErrorHelper.show(exception);
+                }
             }
             statistics.increment(reminder.getReminderType().getEntity(), reminder.getAction());
         }
