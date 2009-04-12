@@ -215,6 +215,8 @@
                 </entry>
                 <entry key="date"
                        value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
+                <entry key="word"
+                      value="org.apache.commons.lang.WordUtils"/>
             </map>
         </constructor-arg>
     </bean>
