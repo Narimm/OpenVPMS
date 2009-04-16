@@ -76,6 +76,8 @@ public class ReminderQuery {
 
     /**
      * Constructs  a new <tt>ReminderQuery</tt>.
+     *
+     * @param service the archetype service
      */
     public ReminderQuery(IArchetypeService service) {
         this.service = service;
@@ -151,14 +153,12 @@ public class ReminderQuery {
     }
 
     /**
-     * Returns a new {@link ArchetypeQuery matching the constraints.
+     * Returns a new {@link ArchetypeQuery} matching the constraints.
      *
      * @return a new query
      */
     public ArchetypeQuery createQuery() {
-        ShortNameConstraint act = new ShortNameConstraint("act",
-                                                          "act.patientReminder",
-                                                          true);
+        ShortNameConstraint act = new ShortNameConstraint("act", ReminderArchetypes.REMINDER, true);
         ArchetypeQuery query = new ArchetypeQuery(act);
         query.setMaxResults(1000);
         query.setDistinct(true);
@@ -172,7 +172,7 @@ public class ReminderQuery {
         ShortNameConstraint customer = new ShortNameConstraint(
                 "customer", "party.customer*", true);
         ShortNameConstraint reminder = new ShortNameConstraint(
-                "reminderType", "participation.reminderType", true);
+                "reminderType", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, true);
 
         query.add(new NodeConstraint("status", ReminderStatus.IN_PROGRESS));
 

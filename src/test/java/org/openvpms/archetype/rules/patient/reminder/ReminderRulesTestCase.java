@@ -182,7 +182,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         // Now add a template to the reminderType, due 2 weeks after the current
         // due date.
         EntityRelationship reminderTypeTemplate = (EntityRelationship) create(
-                "entityRelationship.reminderTypeTemplate");
+                ReminderArchetypes.REMINDER_TYPE_TEMPLATE);
         Entity template = (Entity) create("entity.documentTemplate");
         template.setName("XTestTemplate_" + System.currentTimeMillis());
         IMObjectBean bean = new IMObjectBean(reminderTypeTemplate);

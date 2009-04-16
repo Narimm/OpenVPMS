@@ -18,8 +18,8 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -57,16 +57,6 @@ import java.util.Set;
  * @version $LastChangedDate$
  */
 public class ReminderRules {
-
-    /**
-     * Patient reminder act short name.
-     */
-    public static final String PATIENT_REMINDER = "act.patientReminder";
-
-    /**
-     * Reminder type participation short name.
-     */
-    public static final String REMINDER_TYPE = "participation.reminderType";
 
     /**
      * The archetype service.
@@ -129,8 +119,7 @@ public class ReminderRules {
         if (reminder.isNew() && ReminderStatus.IN_PROGRESS.equals(
                 reminder.getStatus())) {
             ActBean bean = new ActBean(reminder, service);
-            Entity reminderType = bean.getParticipant(
-                    "participation.reminderType");
+            Entity reminderType = bean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
             Party patient = (Party) bean.getParticipant(
                     "participation.patient");
             if (reminderType != null && patient != null) {
@@ -153,7 +142,7 @@ public class ReminderRules {
         EntityBean bean = new EntityBean(reminderType);
         List<IMObject> groups = bean.getValues("groups");
         if (!groups.isEmpty()) {
-            ArchetypeQuery query = new ArchetypeQuery(PATIENT_REMINDER,
+            ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER,
                                                       false, true);
             query.add(new NodeConstraint("status",
                                          ReminderStatus.IN_PROGRESS));
@@ -297,6 +286,8 @@ public class ReminderRules {
 
     /**
      * Updates a reminder that has been successfully sent.
+     * <p/>
+     * This clears the <em>error</em> node.
      *
      * @param reminder the reminder
      * @param lastSent the date when the reminder was sent
@@ -307,6 +298,7 @@ public class ReminderRules {
         int count = bean.getInt("reminderCount");
         bean.setValue("reminderCount", count + 1);
         bean.setValue("lastSent", lastSent);
+        bean.setValue("error", null);
         bean.save();
     }
 
@@ -563,9 +555,9 @@ public class ReminderRules {
         ReminderType reminderType = null;
         if (reminderTypes != null) {
             reminderType = reminderTypes.get(
-                    bean.getParticipantRef(REMINDER_TYPE));
+                    bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION));
         } else {
-            Entity entity = bean.getParticipant(REMINDER_TYPE);
+            Entity entity = bean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
             if (entity != null) {
                 reminderType = new ReminderType(entity, service);
             }

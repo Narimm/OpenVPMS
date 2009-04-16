@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.finance.invoice;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -146,7 +147,7 @@ class InvoiceItemSaveRules {
         // being triggered in rules causing reminders completions not to work.
         // Need to modify back when this fixed in 1.2.
         for (IMObject object : toSave) {
-            if (TypeHelper.isA(object, "act.patientReminder")) {
+            if (TypeHelper.isA(object, ReminderArchetypes.REMINDER)) {
                 reminderRules.markMatchingRemindersCompleted((Act) object);
             }
             service.save(object);
@@ -189,7 +190,7 @@ class InvoiceItemSaveRules {
         for (Act reminder : reminders) {
             ActBean bean = new ActBean(reminder, service);
             IMObjectReference type
-                    = bean.getParticipantRef("participation.reminderType");
+                    = bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
             if (type == null || !productReminders.contains(type)) {
                 ActRelationship r = itemBean.getRelationship(reminder);
                 toRemove.add(reminder);
@@ -218,7 +219,7 @@ class InvoiceItemSaveRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void addReminder(Entity reminderType) {
-        Act reminder = (Act) service.create("act.patientReminder");
+        Act reminder = (Act) service.create(ReminderArchetypes.REMINDER);
         Date startTime = item.getActivityStartTime();
         Date endTime = null;
         if (startTime != null) {
@@ -232,7 +233,7 @@ class InvoiceItemSaveRules {
         IMObjectReference patient = itemBean.getParticipantRef(
                 "participation.patient");
         bean.addParticipation("participation.patient", patient);
-        bean.addParticipation("participation.reminderType", reminderType);
+        bean.addParticipation(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, reminderType);
         if (product != null) {
             bean.addParticipation("participation.product", product);
         }

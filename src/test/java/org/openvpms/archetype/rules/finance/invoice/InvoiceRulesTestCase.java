@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.act.ActStatus.*;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import static org.openvpms.archetype.rules.patient.MedicalRecordRules.CLINICAL_EVENT_ITEM;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -124,7 +125,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         assertEquals(patient,
                      reminderBean.getParticipant("participation.patient"));
         assertEquals(this.reminder,
-                     reminderBean.getParticipant("participation.reminderType"));
+                     reminderBean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION));
         assertEquals(product,
                      reminderBean.getParticipant("participation.product"));
 
@@ -419,6 +420,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * Creates a new <em>act.patientMedication</em>.
      *
      * @param product the product
+     * @return a new medication
      */
     private Act createMedication(Product product) {
         Act act = createAct("act.patientMedication");
@@ -431,6 +433,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     /**
      * Creates and saves a new desexing product, with associated
      * <em>lookup.demographicUpdate</em> to perform the desexing update.
+     *
+     * @return a new desexing product
      */
     private Product createDesexingProduct() {
         Product product = TestHelper.createProduct();

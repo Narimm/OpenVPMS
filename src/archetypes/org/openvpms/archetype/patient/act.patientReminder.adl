@@ -40,6 +40,7 @@
         <node name="reminderCount" displayName="Reminders Sent" path="/details/reminderCount" type="java.lang.Integer" readOnly="true" defaultValue="0"/>
         <node displayName="Last Sent" name="lastSent" path="/details/lastSent" type="java.util.Date" minCardinality="0"/>
         <node displayName="Completed" name="completedDate" path="/details/completedDate" type="java.util.Date" minCardinality="0"/>
+        <node name="error" path="/details/error" type="java.lang.String" minCardinality="0" readOnly="true"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true"/>
         <node name="product" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"

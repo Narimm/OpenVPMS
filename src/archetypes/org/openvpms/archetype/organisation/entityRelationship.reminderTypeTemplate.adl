@@ -42,6 +42,7 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="list" path="/details/list" type="java.lang.Boolean" minCardinality="0" defaultValue="false()"/>
         <node name="source" displayName="Reminder Type" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">

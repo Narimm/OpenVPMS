@@ -22,7 +22,6 @@ import org.openvpms.archetype.component.processor.AbstractActionProcessor;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoPatient;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -34,9 +33,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -85,6 +87,17 @@ public class ReminderProcessor
      * Reminder type cache.
      */
     private final ReminderTypeCache reminderTypes;
+
+    /**
+     * Template cache.
+     */
+    private final Map<IMObjectReference, Entity> templates = new HashMap<IMObjectReference, Entity>();
+
+    /**
+     * Determines if evaluation of patients and customers should occur, even if the reminder must be cancelled or
+     * skipped.
+     */
+    private boolean evaluateFully = false;
 
 
     /**
@@ -156,58 +169,65 @@ public class ReminderProcessor
     }
 
     /**
+     * Determines if reminder events should be fully populated, even if the reminder is to be cancelled or skipped.
+     * <p/>
+     * For performance, defaults to <tt>false</tt>
+     *
+     * @param evaluateFully if <tt>true</tt> populate patient, customer and contact information for cancelled and
+     *                      skipped reminders
+     */
+    public void setEvaluateFully(boolean evaluateFully) {
+        this.evaluateFully = evaluateFully;
+    }
+
+    /**
      * Generates a reminder.
      *
      * @param reminder     the reminder
      * @param reminderType the reminder type
-     * @param template     the template. An instance of
-     *                     <em>entityRelationship.reminderTypeTemplate</em>,
-     *                     or <tt>null</tt> if there is no template
+     * @param template     the template. An instance of <em>entityRelationship.reminderTypeTemplate</em>
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
     protected ReminderEvent generate(Act reminder, ReminderType reminderType, EntityRelationship template) {
         ReminderEvent result;
-        ActBean bean = new ActBean(reminder);
-        Party patient = (Party) bean.getParticipant("participation.patient");
-        if (patient == null) {
-            throw new ReminderProcessorException(NoPatient);
-        }
-        Entity documentTemplate = null;
-        if (template != null) {
-            IMObjectReference target = template.getTarget();
-            if (target != null) {
-                documentTemplate = (Entity) service.get(target);
+        Party patient = getPatient(reminder);
+        if (patient != null) {
+            Entity documentTemplate = null;
+            IMObjectBean templateBean = new IMObjectBean(template, service);
+            boolean list = templateBean.getBoolean("list");
+            if (!list) {
+                documentTemplate = getTemplate(template.getTarget());
             }
-        }
-
-        Contact contact = null;
-        Party owner = patientRules.getOwner(patient);
-        if (owner != null) {
-            if (documentTemplate == null) {
-                // no document template, so can't send email or print. Use the
-                // customer's phone contact.
-                contact = rules.getPhoneContact(owner.getContacts());
+            if (!list && documentTemplate == null) {
+                // no template, so can't process
+                result = skip(reminder, reminderType, patient);
             } else {
-                contact = rules.getContact(owner.getContacts());
+                Party customer = getCustomer(patient);
+                Contact contact = getContact(customer);
+                if (list) {
+                    result = list(reminder, reminderType, patient, customer, contact, documentTemplate);
+                } else if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
+                    result = print(reminder, reminderType, patient, customer, contact, documentTemplate);
+                } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
+                    result = phone(reminder, reminderType, patient, customer, contact, documentTemplate);
+                } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
+                    result = email(reminder, reminderType, patient, customer, contact, documentTemplate);
+                } else {
+                    // no/unrecognised contact
+                    result = list(reminder, reminderType, patient, customer, contact, documentTemplate);
+                }
             }
-        }
-        if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
-            result = print(reminder, reminderType, owner, contact, documentTemplate);
-        } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
-            result = phone(reminder, reminderType, owner, contact, documentTemplate);
-        } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-            result = email(reminder, reminderType, owner, contact, documentTemplate);
         } else {
-            // no/unrecognised contact
-            result = list(reminder, reminderType, owner, contact, documentTemplate);
+            // need a patient
+            result = skip(reminder, reminderType);
         }
         return result;
     }
 
     /**
-     * Notifies listeners to skip a reminder.
+     * Notifies listeners to skip a reminder, when the patient cannot be determined.
      *
      * @param reminder     the reminder
      * @param reminderType the reminder type
@@ -222,6 +242,20 @@ public class ReminderProcessor
     }
 
     /**
+     * Notifies listeners to skip a reminder.
+     *
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
+     * @param patient      the patient. May be <tt>null</tt>
+     * @return the reminder event
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected ReminderEvent skip(Act reminder, ReminderType reminderType, Party patient) {
+        return notifyListeners(Action.SKIP, reminder, reminderType, patient);
+    }
+
+    /**
      * Notifies listeners to cancel a reminder.
      *
      * @param reminder     the reminder
@@ -231,9 +265,7 @@ public class ReminderProcessor
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
     protected ReminderEvent cancel(Act reminder, ReminderType reminderType) {
-        ReminderEvent event = new ReminderEvent(Action.CANCEL, reminder, reminderType);
-        notifyListeners(event.getAction(), event);
-        return event;
+        return notifyListeners(Action.CANCEL, reminder, reminderType, null);
     }
 
     /**
@@ -241,6 +273,7 @@ public class ReminderProcessor
      *
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param patient          the patient
      * @param customer         the customer
      * @param contact          the reminder contact
      * @param documentTemplate the document template
@@ -248,9 +281,9 @@ public class ReminderProcessor
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected ReminderEvent email(Act reminder, ReminderType reminderType, Party customer, Contact contact,
-                                  Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.EMAIL, reminder, reminderType, customer, contact,
+    protected ReminderEvent email(Act reminder, ReminderType reminderType, Party patient, Party customer,
+                                  Contact contact, Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.EMAIL, reminder, reminderType, patient, customer, contact,
                                                 documentTemplate);
         notifyListeners(event.getAction(), event);
         return event;
@@ -261,16 +294,17 @@ public class ReminderProcessor
      *
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param patient          the patient
      * @param customer         the customer
      * @param contact          the reminder contact
-     * @param documentTemplate the document template. May be <tt>null</tt>   @return the reminder event
+     * @param documentTemplate the document template. May be <tt>null</tt>
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected ReminderEvent phone(Act reminder, ReminderType reminderType, Party customer, Contact contact,
-                                  Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.PHONE, reminder, reminderType, customer, contact,
+    protected ReminderEvent phone(Act reminder, ReminderType reminderType, Party patient, Party customer,
+                                  Contact contact, Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.PHONE, reminder, reminderType, patient, customer, contact,
                                                 documentTemplate);
         notifyListeners(event.getAction(), event);
         return event;
@@ -281,6 +315,7 @@ public class ReminderProcessor
      *
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param patient          the patient
      * @param customer         the customer
      * @param contact          the reminder contact
      * @param documentTemplate the document template
@@ -288,9 +323,9 @@ public class ReminderProcessor
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected ReminderEvent print(Act reminder, ReminderType reminderType, Party customer, Contact contact,
-                                  Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.PRINT, reminder, reminderType, customer, contact,
+    protected ReminderEvent print(Act reminder, ReminderType reminderType, Party patient, Party customer,
+                                  Contact contact, Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.PRINT, reminder, reminderType, patient, customer, contact,
                                                 documentTemplate);
         notifyListeners(event.getAction(), event);
         return event;
@@ -304,6 +339,7 @@ public class ReminderProcessor
      *
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param patient          the patient
      * @param customer         the customer
      * @param contact          the reminder contact. May be <tt>null</tt>
      * @param documentTemplate the document template
@@ -311,9 +347,9 @@ public class ReminderProcessor
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected ReminderEvent list(Act reminder, ReminderType reminderType, Party customer, Contact contact,
-                                 Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.LIST, reminder, reminderType, customer, contact,
+    protected ReminderEvent list(Act reminder, ReminderType reminderType, Party patient, Party customer,
+                                 Contact contact, Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.LIST, reminder, reminderType, patient, customer, contact,
                                                 documentTemplate);
         notifyListeners(event.getAction(), event);
         return event;
@@ -331,7 +367,8 @@ public class ReminderProcessor
      */
     private ReminderEvent process(Act reminder, int reminderCount, ActBean bean) {
         ReminderEvent result;
-        ReminderType reminderType = reminderTypes.get(bean.getParticipantRef("participation.reminderType"));
+        IMObjectReference ref = bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
+        ReminderType reminderType = reminderTypes.get(ref);
         if (reminderType == null) {
             throw new ReminderProcessorException(NoReminderType);
         }
@@ -341,12 +378,97 @@ public class ReminderProcessor
         } else {
             if (reminderType.isDue(dueDate, reminderCount, from, to)) {
                 EntityRelationship template = reminderType.getTemplateRelationship(reminderCount);
-                result = generate(reminder, reminderType, template);
+                if (template != null) {
+                    result = generate(reminder, reminderType, template);
+                } else {
+                    // no template, so skip the reminder
+                    result = skip(reminder, reminderType, null);
+                }
             } else {
-                result = skip(reminder, reminderType);
+                result = skip(reminder, reminderType, null);
             }
         }
         return result;
+    }
+
+    /**
+     * Notifies listeners of a reminder event.
+     *
+     * @param action       the event action
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
+     * @param patient      the patient. May be <tt>null</tt>
+     * @return a new reminder event
+     */
+    private ReminderEvent notifyListeners(Action action, Act reminder, ReminderType reminderType, Party patient) {
+        Party customer = null;
+        Contact contact = null;
+        if (evaluateFully) {
+            if (patient == null) {
+                patient = getPatient(reminder);
+            }
+            if (patient != null) {
+                customer = getCustomer(patient);
+                contact = getContact(customer);
+            }
+        }
+        ReminderEvent event = new ReminderEvent(action, reminder, reminderType, patient, customer, contact, null);
+        notifyListeners(event.getAction(), event);
+        return event;
+    }
+
+    /**
+     * Returns the template for the specified template reference.
+     *
+     * @param reference the reference. May be <tt>null</tt>
+     * @return the corresponding template, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Entity getTemplate(IMObjectReference reference) {
+        Entity result = null;
+        if (reference != null) {
+            result = templates.get(reference);
+            if (result == null) {
+                result = (Entity) service.get(reference);
+                if (result != null) {
+                    templates.put(reference, result);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the patient of a reminder.
+     *
+     * @param reminder the reminder
+     * @return the patient, or <tt>null</tt> if it cannot be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Party getPatient(Act reminder) {
+        ActBean bean = new ActBean(reminder, service);
+        return (Party) bean.getParticipant("participation.patient");
+    }
+
+    /**
+     * Returns the customer associated with a patient.
+     *
+     * @param patient the patient
+     * @return the corresponding customer, or <tt>null</tt> if it cannot be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Party getCustomer(Party patient) {
+        return patientRules.getOwner(patient);
+    }
+
+    /**
+     * Returns the default contact for a customer.
+     *
+     * @param customer the customer. May be <tt>null</tt>
+     * @return the default contact, or <tt>null</tt>
+     */
+    private Contact getContact(Party customer) {
+        return (customer != null) ? rules.getContact(customer.getContacts()) : null;
     }
 
 }
