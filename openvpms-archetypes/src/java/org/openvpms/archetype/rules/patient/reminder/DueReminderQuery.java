@@ -166,6 +166,7 @@ public class DueReminderQuery {
         return new Iterable<Act>() {
             public Iterator<Act> iterator() {
                 ReminderQuery query = new ReminderQuery(service);
+                query.setFrom(from);
                 query.setTo(to);
                 query.setReminderType(reminderType);
                 return new DueIterator(query.query().iterator());
@@ -246,8 +247,7 @@ public class DueReminderQuery {
             while (iterator.hasNext()) {
                 Act reminder = iterator.next();
                 ActBean bean = new ActBean(reminder, service);
-                IMObjectReference ref = bean.getParticipantRef(
-                        "participation.reminderType");
+                IMObjectReference ref = bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
                 ReminderType reminderType = reminderTypes.get(ref);
                 if (reminderType != null) {
                     if (shouldCancel(reminder, reminderType)
@@ -268,11 +268,7 @@ public class DueReminderQuery {
          * @return <tt>true</tt> if the reminder should be cancelled
          */
         private boolean shouldCancel(Act reminder, ReminderType reminderType) {
-            if (cancel != null) {
-                return reminderType.shouldCancel(reminder.getActivityEndTime(),
-                                                 cancel);
-            }
-            return false;
+            return cancel != null && reminderType.shouldCancel(reminder.getActivityEndTime(), cancel);
         }
 
         /**

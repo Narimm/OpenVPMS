@@ -60,7 +60,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         List<Act> reminders = getReminders(query);
         assertEquals(initialCount, reminders.size());
         for (Act act : reminders) {
-            assertTrue(TypeHelper.isA(act, "act.patientReminder"));
+            assertTrue(TypeHelper.isA(act, ReminderArchetypes.REMINDER));
             assertEquals(ActStatus.IN_PROGRESS, act.getStatus());
         }
     }
@@ -153,6 +153,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * Returns all reminders matching a query.
      *
      * @param query the query
+     * @return the reminders matching the query
      * @throws ArchetypeServiceException for any archetype service error
      */
     private List<Act> getReminders(ReminderQuery query) {
@@ -173,7 +174,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      */
     private int countReminders(Date dueFrom, Date dueTo) {
         int result = 0;
-        ArchetypeQuery query = new ArchetypeQuery("act.patientReminder", false,
+        ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false,
                                                   true);
         query.add(new NodeConstraint("status", ActStatus.IN_PROGRESS));
         if (dueFrom != null && dueTo != null) {
@@ -189,7 +190,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             if (patient != null) {
                 EntityBean entityBean = new EntityBean(patient);
                 if (entityBean.getSourceEntity(PatientArchetypes.PATIENT_OWNER)
-                        != null) {
+                    != null) {
                     result++;
                 }
             }

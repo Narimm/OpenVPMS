@@ -101,7 +101,7 @@ public class ReminderTestHelper extends TestHelper {
         ActBean bean = new ActBean(act);
         bean.setStatus(ActStatus.IN_PROGRESS);
         bean.setParticipant("participation.patient", patient);
-        bean.setParticipant("participation.reminderType", reminderType);
+        bean.setParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, reminderType);
         return act;
     }
 

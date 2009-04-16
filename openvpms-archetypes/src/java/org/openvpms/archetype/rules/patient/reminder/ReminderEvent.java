@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 public class ReminderEvent {
 
     public enum Action {
+
         SKIP,        // indicates reminder should be skipped as it is not due
         CANCEL,      // indicates reminder should be cancelled
         EMAIL,       // indicates reminder should be emailed
@@ -57,6 +58,11 @@ public class ReminderEvent {
     private final ReminderType reminderType;
 
     /**
+     * The patient. May be <tt>null</tt>
+     */
+    private final Party patient;
+
+    /**
      * The customer. May be <tt>null</tt>
      */
     private final Party customer;
@@ -71,7 +77,6 @@ public class ReminderEvent {
      */
     private final Entity documentTemplate;
 
-
     /**
      * Constructs a new <tt>ReminderEvent</tt>.
      *
@@ -80,7 +85,20 @@ public class ReminderEvent {
      * @param reminderType the reminder type
      */
     public ReminderEvent(Action action, Act reminder, ReminderType reminderType) {
-        this(action, reminder, reminderType, null, null, null);
+        this(action, reminder, reminderType, null, null);
+    }
+
+    /**
+     * Constructs a new <tt>ReminderEvent</tt>.
+     *
+     * @param action       the reminder action
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
+     * @param patient      the patient. May be <tt>null</tt>
+     * @param customer     the customer. May be <tt>null</tt>
+     */
+    public ReminderEvent(Action action, Act reminder, ReminderType reminderType, Party patient, Party customer) {
+        this(action, reminder, reminderType, patient, customer, null, null);
     }
 
     /**
@@ -89,15 +107,17 @@ public class ReminderEvent {
      * @param action           the reminder action
      * @param reminder         the reminder
      * @param reminderType     the reminder type
+     * @param patient          the patient. May be <tt>null</tt>
      * @param customer         the customer. May be <tt>null</tt>
      * @param contact          the reminder contact. May be <tt>null</tt>
      * @param documentTemplate the document template. May be <tt>null</tt>
      */
-    public ReminderEvent(Action action, Act reminder, ReminderType reminderType, Party customer,
+    public ReminderEvent(Action action, Act reminder, ReminderType reminderType, Party patient, Party customer,
                          Contact contact, Entity documentTemplate) {
         this.action = action;
         this.reminder = reminder;
         this.reminderType = reminderType;
+        this.patient = patient;
         this.customer = customer;
         this.contact = contact;
         this.documentTemplate = documentTemplate;
@@ -128,6 +148,15 @@ public class ReminderEvent {
      */
     public ReminderType getReminderType() {
         return reminderType;
+    }
+
+    /**
+     * Returns the patient.
+     *
+     * @return the patient. May be <tt>null</tt>
+     */
+    public Party getPatient() {
+        return patient;
     }
 
     /**

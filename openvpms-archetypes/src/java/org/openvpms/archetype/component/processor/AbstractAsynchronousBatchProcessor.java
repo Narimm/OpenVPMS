@@ -63,7 +63,7 @@ public abstract class AbstractAsynchronousBatchProcessor<Type>
      * This sets the suspend state to <tt>false</tt> and processes the
      * next available item. This repeats until there are no items left to
      * process, or processing is suspended. If suspended, the method returns;
-     * processing may be resumed by invoking {@link #process()} again.
+     * processing may be resumed by invoking <tt>process()</tt> again.
      * <p/>
      * On completion of the last item in the batch, notifies the listener
      * (if any).
