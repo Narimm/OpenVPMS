@@ -22,6 +22,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 
 /**
  * Table model for <em>act.patientReminder</em> and <em>act.patientAlert</em>
@@ -73,7 +74,7 @@ public class ReminderActTableModel extends PatientRecordActTableModel {
     protected TableColumnModel createColumnModel(String[] shortNames,
                                                  LayoutContext context) {
         TableColumnModel model = super.createColumnModel(shortNames, context);
-        String shortName = "act.patientReminder";
+        String shortName = ReminderArchetypes.REMINDER;
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
                 shortName);
         if (archetype != null) {

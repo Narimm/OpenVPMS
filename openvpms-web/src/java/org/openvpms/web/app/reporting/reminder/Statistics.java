@@ -41,24 +41,30 @@ class Statistics {
     private final Map<Entity, Map<ReminderEvent.Action, Integer>> statistics
             = new HashMap<Entity, Map<ReminderEvent.Action, Integer>>();
 
+    /**
+     * The no. of errors encountered.
+     */
+    private int errors;
+
 
     /**
-     * Increments the count for a reminder type.
+     * Increments the count for a reminder.
      *
-     * @param reminderType the reminderType
-     * @param type         the processing type
+     * @param reminder the reminder event
      */
-    public void increment(Entity reminderType, ReminderEvent.Action type) {
+    public void increment(ReminderEvent reminder) {
+        Entity reminderType = reminder.getReminderType().getEntity();
+        ReminderEvent.Action action = reminder.getAction();
         Map<ReminderEvent.Action, Integer> stats = statistics.get(reminderType);
         if (stats == null) {
             stats = new HashMap<ReminderEvent.Action, Integer>();
             statistics.put(reminderType, stats);
         }
-        Integer count = stats.get(type);
+        Integer count = stats.get(action);
         if (count == null) {
-            stats.put(type, 1);
+            stats.put(action, 1);
         } else {
-            stats.put(type, count + 1);
+            stats.put(action, count + 1);
         }
     }
 
@@ -110,10 +116,27 @@ class Statistics {
     }
 
     /**
+     * Returns the no. of errors encountered.
+     *
+     * @return the no. of errors
+     */
+    public int getErrors() {
+        return errors;
+    }
+
+    /**
+     * Increments the error count.
+     */
+    public void incErrors() {
+        ++errors;
+    }
+
+    /**
      * Clears the statistics.
      */
     public void clear() {
         statistics.clear();
+        errors = 0;
     }
 
 }

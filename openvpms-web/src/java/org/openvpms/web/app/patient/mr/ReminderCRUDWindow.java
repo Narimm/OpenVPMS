@@ -38,6 +38,7 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 
 
 /**
@@ -56,7 +57,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
     /**
      * Reminder and alert shortnames supported by the workspace.
      */
-    private static final String[] SHORT_NAMES = {"act.patientReminder", "act.patientAlert"};
+    private static final String[] SHORT_NAMES = {ReminderArchetypes.REMINDER, "act.patientAlert"};
 
     /**
      * Resend button identifier.
@@ -102,7 +103,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
             buttons.add(getEditButton());
             buttons.add(getCreateButton());
             buttons.add(getDeleteButton());
-            if (TypeHelper.isA(getObject(), "act.patientReminder")) {
+            if (TypeHelper.isA(getObject(), ReminderArchetypes.REMINDER)) {
                 buttons.add(resend);
             }
         } else {

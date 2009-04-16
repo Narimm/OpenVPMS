@@ -220,7 +220,7 @@ public class ErrorHelper {
      * @param exception the exception
      * @return the exception message
      */
-    private static String getError(Throwable exception) {
+    public static String getError(Throwable exception) {
         return getError(exception, null);
     }
 
@@ -232,7 +232,7 @@ public class ErrorHelper {
      *                    May be <tt>null</tt>
      * @return the exception message
      */
-    private static String getError(Throwable exception, String displayName) {
+    public static String getError(Throwable exception, String displayName) {
         exception = getRootCause(exception);
         String result = null;
         if (displayName != null) {

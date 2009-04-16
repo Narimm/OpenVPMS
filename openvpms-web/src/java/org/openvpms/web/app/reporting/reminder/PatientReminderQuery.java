@@ -24,6 +24,7 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.ListModel;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -77,7 +78,7 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
      *                                 archetypes
      */
     public PatientReminderQuery() {
-        super(new String[]{"act.patientReminder"}, Act.class);
+        super(new String[]{ReminderArchetypes.REMINDER}, Act.class);
         QueryFactory.initialise(this);
     }
 

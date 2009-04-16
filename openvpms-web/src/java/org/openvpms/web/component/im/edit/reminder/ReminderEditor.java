@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.edit.reminder;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -43,15 +44,15 @@ import org.openvpms.web.component.util.ErrorHelper;
 public class ReminderEditor extends AbstractActEditor {
 
     /**
-     * Construct a new <code>ReminderEditor</code>.
+     * Creates a new <tt>ReminderEditor</tt>.
      *
-     * @param act
-     * @param parent
-     * @param context
+     * @param act     the reminder act
+     * @param parent  the parent. May be <tt>null</tt>
+     * @param context the layout context
      */
     public ReminderEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
-        if (!TypeHelper.isA(act, "act.patientReminder")) {
+        if (!TypeHelper.isA(act, ReminderArchetypes.REMINDER)) {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
@@ -70,8 +71,9 @@ public class ReminderEditor extends AbstractActEditor {
                 onReminderTypeChanged();
             }
         };
-        if (editor != null)
+        if (editor != null) {
             editor.addModifiableListener(listener);
+        }
     }
 
     /**

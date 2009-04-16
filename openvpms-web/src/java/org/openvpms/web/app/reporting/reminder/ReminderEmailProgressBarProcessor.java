@@ -18,18 +18,12 @@
 
 package org.openvpms.web.app.reporting.reminder;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.resource.util.Messages;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import javax.mail.internet.AddressException;
 import java.util.List;
 
 
@@ -45,11 +39,6 @@ class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
      * The email processor.
      */
     private final ReminderEmailProcessor processor;
-
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(ReminderEmailProgressBarProcessor.class);
 
 
     /**
@@ -72,14 +61,14 @@ class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
      * Processes an object.
      *
      * @param events the reminder events to process
-     * @throws OpenVPMSException if the object cannot be processed
      */
     protected void process(List<ReminderEvent> events) {
+        super.process(events);
         try {
             processor.process(events);
             processCompleted(events);
-        } catch (ReminderProcessorException exception) {
-            if (exception.getCause() instanceof AddressException) {
+        } catch (Throwable exception) {
+/*            if (exception.getCause() instanceof AddressException) {
                 ReminderEvent event = events.get(0);
                 Contact contact = event.getContact();
                 String to = null;
@@ -91,10 +80,8 @@ class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
                 }
 
                 log.warn("Invalid email address for customer " + customer + ": " + to, exception.getCause());
-                skip(events);
-            } else {
-                throw exception;
-            }
+            }*/
+            processError(exception, events);
         }
     }
 

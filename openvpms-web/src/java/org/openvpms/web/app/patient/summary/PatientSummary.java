@@ -26,6 +26,7 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -270,7 +271,7 @@ public class PatientSummary {
      * @return the set of outstanding reminders for the patient
      */
     private ResultSet<Act> getReminders(Party patient) {
-        String[] shortNames = {"act.patientReminder"};
+        String[] shortNames = {ReminderArchetypes.REMINDER};
         String[] statuses = {ActStatus.IN_PROGRESS};
         ShortNameConstraint archetypes = new ShortNameConstraint(
                 shortNames, true, true);
@@ -307,8 +308,9 @@ public class PatientSummary {
         /**
          * Construct a new <code>ViewerDialog</code>.
          *
-         * @param table the table to display
+         * @param title the dialog title
          * @param style the window style
+         * @param table the table to display
          */
         public ViewerDialog(String title, String style,
                             PagedIMTable<Act> table) {
@@ -346,7 +348,7 @@ public class PatientSummary {
          * Creates a new <code>AlertTableModel</code>.
          */
         public ReminderTableModel() {
-            super(new String[]{"act.patientReminder"}, createLayoutContext());
+            super(new String[]{ReminderArchetypes.REMINDER}, createLayoutContext());
         }
 
         /**
