@@ -19,8 +19,8 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -72,26 +72,39 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         // group1 lookup.reminderGroup. Verify it has not changed reminder0
         Act reminder1 = createReminder(patient1, group1);
         checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder0, ReminderStatus.IN_PROGRESS, true);
+        checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
 
         // create a reminder for patient2, with an entity.reminderType with
         // group2 lookup.reminderGroup. Verify it has not changed reminder1
         Act reminder2 = createReminder(patient2, group2);
         checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder1, ReminderStatus.IN_PROGRESS, true);
+        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
 
         // create a reminder for patient1, with an entity.reminderType with
         // group1 lookup.reminderGroup. Verify it marks reminder1 COMPLETED.
         Act reminder3 = createReminder(patient1, group1);
         checkReminder(reminder3, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder1, ReminderStatus.COMPLETED, true);
+        checkReminder(reminder1, ReminderStatus.COMPLETED);
 
         // create a reminder for patient2, with an entity.reminderType with
         // both group1 and group2 lookup.reminderGroup. Verify it marks
         // reminder2 COMPLETED.
         Act reminder4 = createReminder(patient2, group1, group2);
         checkReminder(reminder4, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder2, ReminderStatus.COMPLETED, true);
+        checkReminder(reminder2, ReminderStatus.COMPLETED);
+
+        // create a reminder type with no group, and create 2 reminders using it.
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder5 = createReminder(patient1, reminderType);
+        Act reminder6 = createReminder(patient2, reminderType);
+        checkReminder(reminder5, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder6, ReminderStatus.IN_PROGRESS);
+
+        // now create a reminder for patient1. Verify it marks reminder5 COMPLETED
+        Act reminder7 = createReminder(patient1, reminderType);
+        checkReminder(reminder5, ReminderStatus.COMPLETED);
+        checkReminder(reminder6, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder7, ReminderStatus.IN_PROGRESS);
     }
 
     /**
@@ -308,10 +321,20 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @param groups  the reminder group classifications
      * @return a new reminder
      */
-    private Act createReminder(Party patient, Lookup ... groups) {
+    private Act createReminder(Party patient, Lookup... groups) {
         Entity reminderType = ReminderTestHelper.createReminderType(groups);
-        return ReminderTestHelper.createReminder(patient, reminderType,
-                                                 new Date());
+        return createReminder(patient, reminderType);
+    }
+
+    /**
+     * Helper to create a reminder.
+     *
+     * @param patient      the patient
+     * @param reminderType the reminder type
+     * @return a new reminder
+     */
+    private Act createReminder(Party patient, Entity reminderType) {
+        return ReminderTestHelper.createReminder(patient, reminderType, new Date());
     }
 
     /**
@@ -322,22 +345,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @param status   the expected reminder status
      */
     private void checkReminder(Act reminder, String status) {
-        checkReminder(reminder, status, false);
-    }
-
-    /**
-     * Verifies a reminder has the expected state.
-     * For COMPLETED status, checks that the 'completedDate' node is non-null.
-     *
-     * @param reminder the reminder
-     * @param status   the expected reminder status
-     * @param reload   if <code>true</code>, reload the act before checking
-     */
-    private void checkReminder(Act reminder, String status, boolean reload) {
-        if (reload) {
-            reminder = get(reminder);
-            assertNotNull(reminder);
-        }
+        reminder = get(reminder);
+        assertNotNull(reminder);
         assertEquals(status, reminder.getStatus());
         ActBean bean = new ActBean(reminder);
         Date date = bean.getDate("completedDate");
