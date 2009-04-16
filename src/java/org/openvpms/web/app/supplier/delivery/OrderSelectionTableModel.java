@@ -48,6 +48,7 @@ public class OrderSelectionTableModel
         extends DescriptorTableModel<FinancialAct> {
 
     private int selectedIndex;
+
     private int startTimeIndex;
 
     private int titleIndex;
@@ -88,6 +89,8 @@ public class OrderSelectionTableModel
 
     /**
      * Returns the row selection index.
+     *
+     * @return the row selection index
      */
     public int getSelectionColumnIndex() {
         return selectedIndex;
@@ -95,6 +98,8 @@ public class OrderSelectionTableModel
 
     /**
      * Returns the list of selected acts.
+     *
+     * @return the selected acts
      */
     public List<FinancialAct> getSelected() {
         List<FinancialAct> result = new ArrayList<FinancialAct>();
@@ -111,6 +116,8 @@ public class OrderSelectionTableModel
 
     /**
      * Listener to be notified when a item is selected.
+     *
+     * @param listener the listener. May be <tt>null</tt>
      */
     public void setSelectionListener(ActionListener listener) {
         this.listener = listener;
@@ -137,20 +144,21 @@ public class OrderSelectionTableModel
      *
      * @param object the object to operate on
      * @param column the column
+     * @param row    the row
      * @return the value for the column
      */
     @Override
     protected Object getValue(FinancialAct object,
-                              DescriptorTableColumn column) {
+                              DescriptorTableColumn column, int row) {
         Object result = null;
         int index = column.getModelIndex();
         boolean orderColumn = (index == startTimeIndex || index == titleIndex);
         if (TypeHelper.isA(object, "act.supplierOrder")) {
             if (orderColumn) {
-                result = super.getValue(object, column);
+                result = super.getValue(object, column, row);
             }
         } else if (!orderColumn) {
-            result = super.getValue(object, column);
+            result = super.getValue(object, column, row);
         }
         return result;
     }
@@ -222,6 +230,7 @@ public class OrderSelectionTableModel
     }
 
     private class Toggle extends CheckBox {
+
         public Toggle(final int row) {
             addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

@@ -23,7 +23,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -32,7 +32,6 @@ import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
@@ -134,7 +133,7 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
                     acts.add(event.getReminder());
                 }
                 IMObjectReportPrinter<Act> printer
-                        = new IMObjectReportPrinter<Act>(acts, "act.patientReminder");
+                        = new IMObjectReportPrinter<Act>(acts, ReminderArchetypes.REMINDER);
                 final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(
                         Messages.get("reporting.reminder.list.print.title"),
                         printer, true);
@@ -188,16 +187,27 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
 
     /**
      * Invoked if an error occurs processing the batch.
-     * Notifies any listener.
+     * <p/>
+     * Sets the error message on each reminder, and notifies any listener.
      *
      * @param exception the cause
      */
     @Override
     protected void notifyError(Throwable exception) {
         setStatus(Messages.get("reporting.reminder.list.status.failed"));
+        if (update) {
+            for (ReminderEvent event : reminders) {
+                ReminderHelper.setError(event.getReminder(), exception);
+            }
+        }
         super.notifyError(exception);
     }
 
+    /**
+     * Sets the status.
+     *
+     * @param status the status message
+     */
     private void setStatus(String status) {
         row.removeAll();
         Label label = LabelFactory.create();
@@ -205,21 +215,25 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
         row.add(label);
     }
 
+    /**
+     * Updates reminders.
+     */
     private void updateReminders() {
         setProcessed(reminders.size());
-        ReminderRules rules = new ReminderRules();
         Date date = new Date();
         for (ReminderEvent reminder : reminders) {
             IMObjectReference ref = reminder.getReminder().getObjectReference();
             if (update && !completed.contains(ref)) {
-                try {
-                    rules.updateReminder(reminder.getReminder(), date);
+                Act act = reminder.getReminder();
+                if (ReminderHelper.update(act, date)) {
+                    statistics.increment(reminder);
                     completed.add(ref);
-                } catch (Throwable exception) {
-                    ErrorHelper.show(exception);
+                } else {
+                    statistics.incErrors();
                 }
+            } else {
+                statistics.increment(reminder);
             }
-            statistics.increment(reminder.getReminderType().getEntity(), reminder.getAction());
         }
     }
 

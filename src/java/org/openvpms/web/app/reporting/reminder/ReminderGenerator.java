@@ -80,11 +80,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private boolean popup = true;
 
     /**
-     * The current generation dialog.
-     */
-    private GenerationDialog dialog;
-
-    /**
      * The reminder statistics.
      */
     private Statistics statistics = new Statistics();
@@ -278,7 +273,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * Determines if reminders should be updated on completion.
      * <p/>
-     * If set, the <tt>reminderCount</tt> is incremented the <tt>lastSent</tt> timestamp set on completed reminders.
+     * If set, the <tt>reminderCount</tt> is incremented and the <tt>lastSent</tt> timestamp set on completed reminders.
      * <p/>
      * Defaults to <tt>true</tt>.
      *
@@ -300,13 +295,9 @@ public class ReminderGenerator extends AbstractBatchProcessor {
 
     /**
      * Invoked when generation is complete.
-     * Closes the dialog and notifies any listener.
+     * Notifies any listener.
      */
     private void onCompletion() {
-        if (dialog != null) {
-            dialog.close();
-            dialog = null;
-        }
         updateProcessed();
         notifyCompleted();
     }
@@ -422,12 +413,14 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             Grid grid = GridFactory.create(3);
             for (ReminderBatchProcessor processor : processors) {
                 BatchProcessorTask task = new BatchProcessorTask(processor);
+                task.setTerminateOnError(false);
                 workflow.addTask(task);
                 Label title = LabelFactory.create();
                 title.setText(processor.getTitle());
                 grid.add(title);
                 grid.add(processor.getComponent());
-                if (processor instanceof ReminderListProcessor || processor instanceof ReminderPrintProcessor) {
+                if (processor instanceof ReminderListProcessor
+                    || processor instanceof ReminderPrintProgressBarProcessor) {
                     Button button = addReprintButton(processor);
                     grid.add(button);
                 } else {
@@ -437,13 +430,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             getLayout().add(grid);
             workflow.addTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
-                    switch (event.getType()) {
-                        case COMPLETED:
-                            onGenerationComplete();
-                            break;
-                        default:
-                            onCompletion();
-                    }
+                    onGenerationComplete();
                 }
             });
             ButtonSet buttons = getButtons();
@@ -460,6 +447,16 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         public void show() {
             super.show();
             workflow.start();
+        }
+
+        /**
+         * Invoked when the 'OK' button is pressed. Closes the dialog and invokes
+         * {@link ReminderGenerator#onCompletion()}.
+         */
+        @Override
+        protected void onOK() {
+            super.onOK();
+            onCompletion();
         }
 
         /**
@@ -489,6 +486,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             }
             dialog.show();
         }
+
 
         /**
          * Adds a button to restart a processor to reprint reminders.

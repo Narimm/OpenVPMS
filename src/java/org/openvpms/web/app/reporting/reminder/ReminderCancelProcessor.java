@@ -37,7 +37,7 @@ public class ReminderCancelProcessor extends ReminderProgressBarProcessor {
     /**
      * Creates a new <tt>ReminderCancelProcessor</tt>.
      *
-     * @param reminders the reminders to cancel
+     * @param reminders  the reminders to cancel
      * @param statistics the statistics
      */
     public ReminderCancelProcessor(List<List<ReminderEvent>> reminders,
@@ -54,10 +54,14 @@ public class ReminderCancelProcessor extends ReminderProgressBarProcessor {
     @Override
     protected void process(List<ReminderEvent> events) {
         ReminderRules rules = getRules();
-        for (ReminderEvent event : events) {
-            rules.cancelReminder(event.getReminder());
+        try {
+            for (ReminderEvent event : events) {
+                rules.cancelReminder(event.getReminder());
+            }
+            processCompleted(events);
+        } catch (Throwable exception) {
+            processError(exception, events);
         }
-        processCompleted(events);
     }
 
 }

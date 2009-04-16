@@ -26,6 +26,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
@@ -150,7 +151,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         Iterable<Act> objects = query.createReminderQuery().query();
         IMPrinter<Act> printer
                 = new IMObjectReportPrinter<Act>(objects,
-                                                 "act.patientReminder");
+                                                 ReminderArchetypes.REMINDER);
         String title = Messages.get("reporting.reminder.print.title");
         try {
             InteractiveIMPrinter<Act> iPrinter

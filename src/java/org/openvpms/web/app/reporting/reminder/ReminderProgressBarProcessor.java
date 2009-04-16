@@ -21,15 +21,15 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
-import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 
 /**
@@ -59,7 +59,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     /**
      * The set of completed reminder ids, used to avoid updating reminders that are being reprocessed.
      */
-    private Set<IMObjectReference> completed = new HashSet<IMObjectReference>();
+    private Map<Act, State> states = new HashMap<Act, State>();
 
 
     /**
@@ -84,6 +84,31 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
      */
     public void setUpdateOnCompletion(boolean update) {
         this.update = update;
+    }
+
+    /**
+     * Processes a set of reminder events.
+     *
+     * @param events the events to process
+     * @throws OpenVPMSException if the events cannot be processed
+     */
+    protected void process(List<ReminderEvent> events) {
+        if (update) {
+            // need to cache the reminderCount and lastSent nodes to allow reprocessing with the original values
+            for (ReminderEvent event : events) {
+                Act reminder = event.getReminder();
+                State state = states.get(reminder);
+                if (state != null) {
+                    // reprocessing a reminder - reset the reminderCount and lastSent nodes
+                    if (state.isComplete()) {
+                        state.reset(reminder);
+                    }
+                } else {
+                    state = new State(reminder);
+                    states.put(reminder, state);
+                }
+            }
+        }
     }
 
     /**
@@ -113,9 +138,33 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     }
 
     /**
+     * Invoked if an error occurs processing the batch.
+     * <p/>
+     * This:
+     * <ul>
+     * <li>updates the error node of each reminder if {@link #setUpdateOnCompletion(boolean)} is <tt>true</tt></li>
+     * <li>updates statistics</li>
+     * <li>delegates to the parent {@link #processCompleted(Object)} to continue processing</li>
+     * </ul>
+     *
+     * @param exception the cause
+     * @param events    the events being processed
+     */
+    protected void processError(Throwable exception, List<ReminderEvent> events) {
+        for (ReminderEvent event : events) {
+            if (update) {
+                ReminderHelper.setError(event.getReminder(), exception);
+            }
+            statistics.incErrors();
+        }
+        notifyError(exception);
+        super.processCompleted(events);
+    }
+
+    /**
      * Skips a set of reminders.
      * <p/>
-     * This doesn't update the reminders and their statistics
+     * This doesn't update the reminders and their statistics.
      *
      * @param events the reminder events
      */
@@ -143,14 +192,14 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     private void updateReminders(List<ReminderEvent> events) {
         Date date = new Date();
         for (ReminderEvent event : events) {
-            Act act = event.getReminder();
-            if (!completed.contains(act.getObjectReference())) {
-                if (!ActStatus.CANCELLED.equals(act.getStatus())) {
-                    try {
-                        rules.updateReminder(act, date);
-                        completed.add(act.getObjectReference());
-                    } catch (Throwable exception) {
-                        ErrorHelper.show(exception);
+            Act reminder = event.getReminder();
+            if (!ActStatus.CANCELLED.equals(reminder.getStatus())) {
+                State state = states.get(reminder);
+                if (state != null && !state.isComplete()) {
+                    if (ReminderHelper.update(reminder, date)) {
+                        state.setCompleted(true);
+                    } else {
+                        statistics.incErrors();
                     }
                 }
             }
@@ -164,7 +213,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
      */
     private void updateStatistics(List<ReminderEvent> events) {
         for (ReminderEvent event : events) {
-            statistics.increment(event.getReminderType().getEntity(), event.getAction());
+            statistics.increment(event);
         }
     }
 
@@ -180,5 +229,35 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
             result += list.size();
         }
         return result;
+    }
+
+    private static class State {
+
+        private boolean completed;
+
+        private int reminderCount;
+
+        private Date lastSent;
+
+        public State(Act reminder) {
+            IMObjectBean bean = new IMObjectBean(reminder);
+            reminderCount = bean.getInt("reminderCount");
+            lastSent = bean.getDate("lastSent");
+        }
+
+        public void setCompleted(boolean completed) {
+            this.completed = completed;
+        }
+
+        public boolean isComplete() {
+            return completed;
+        }
+
+        public void reset(Act reminder) {
+            IMObjectBean bean = new IMObjectBean(reminder);
+            bean.setValue("reminderCount", reminderCount);
+            bean.setValue("lastSent", lastSent);
+        }
+
     }
 }

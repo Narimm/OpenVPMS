@@ -40,6 +40,11 @@ public class BatchProcessorTask extends AbstractTask {
      */
     private final BatchProcessor processor;
 
+    /**
+     * Determines if the task should terminate on error.
+     */
+    private boolean terminate = true;
+
 
     /**
      * Creates a new <tt>BatchProcessorTask</tt>.
@@ -60,6 +65,17 @@ public class BatchProcessorTask extends AbstractTask {
     }
 
     /**
+     * Determines if the task should terminate on error.
+     * <p/>
+     * Defaults to <tt>true</tt>.
+     *
+     * @param terminate if <tt>true</tt> terminates on error, otherwise ignores the error
+     */
+    public void setTerminateOnError(boolean terminate) {
+        this.terminate = terminate;
+    }
+
+    /**
      * Starts the task.
      * <p/>
      * The registered {@link TaskListener} will be notified on completion or
@@ -75,7 +91,9 @@ public class BatchProcessorTask extends AbstractTask {
             }
 
             public void error(Throwable exception) {
-                notifyCancelledOnError(exception);
+                if (terminate) {
+                    notifyCancelledOnError(exception);
+                }
             }
         });
         processor.process();

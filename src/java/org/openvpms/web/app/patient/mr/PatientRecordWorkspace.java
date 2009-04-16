@@ -49,6 +49,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 
 
 /**
@@ -96,7 +97,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * The reminder statuses to query.
      */
     private static final ActStatuses STATUSES
-            = new ActStatuses("act.patientReminder");
+            = new ActStatuses(ReminderArchetypes.REMINDER);
 
     /**
      * The document statuses to query
@@ -305,7 +306,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new query
      */
     private Query<Act> createReminderAlertQuery() {
-        String[] shortNames = {"act.patientReminder", "act.patientAlert"};
+        String[] shortNames = {ReminderArchetypes.REMINDER, "act.patientAlert"};
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 getObject(), "patient", "participation.patient", shortNames,
                 STATUSES);

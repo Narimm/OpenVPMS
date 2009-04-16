@@ -140,6 +140,7 @@ class ResendReminderDialog extends PopupDialog {
                                                             reminder.getActivityEndTime(),
                                                             reminder.getActivityStartTime(),
                                                             ServiceHelper.getArchetypeService());
+        processor.setEvaluateFully(true);
         ReminderEvent event = processor.process(reminder, reminderCount);
         Party customer = event.getCustomer();
         if (customer != null) {
@@ -193,7 +194,7 @@ class ResendReminderDialog extends PopupDialog {
                     } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
                         action = ReminderEvent.Action.EMAIL;
                     }
-                    event = new ReminderEvent(action, event.getReminder(), event.getReminderType(),
+                    event = new ReminderEvent(action, event.getReminder(), event.getReminderType(), event.getPatient(),
                                               event.getCustomer(), contact, event.getDocumentTemplate());
                 }
                 final ReminderGenerator generator = new ReminderGenerator(event, GlobalContext.getInstance());
@@ -281,7 +282,7 @@ class ResendReminderDialog extends PopupDialog {
 
     /**
      * Returns an ordered list of reminder counts up to and including the current reminder count, that have an
-     * associated document template.
+     * associated document template, and don't have their <em>list</em> node set.
      *
      * @param reminderType  the reminder type
      * @param reminderCount the current reminder count
@@ -293,9 +294,12 @@ class ResendReminderDialog extends PopupDialog {
 
         for (EntityRelationship relationship : bean.getNodeRelationships("templates")) {
             IMObjectBean relBean = new IMObjectBean(relationship);
-            int count = relBean.getInt("reminderCount");
-            if (count <= reminderCount) {
-                counts.add(count);
+            boolean list = relBean.getBoolean("list");
+            if (!list) {
+                int count = relBean.getInt("reminderCount");
+                if (count <= reminderCount) {
+                    counts.add(count);
+                }
             }
         }
         return new ArrayList<Integer>(counts);

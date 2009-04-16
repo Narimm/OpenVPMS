@@ -66,6 +66,9 @@ class SummaryDialog extends PopupDialog {
         int list = stats.getCount(ReminderEvent.Action.LIST);
         add(grid, ReminderEvent.Action.LIST, phone + list);
 
+        String errors = Messages.get("reporting.reminder.summary.errors");
+        add(grid, errors, stats.getErrors());
+
         getLayout().add(ColumnFactory.create("Inset", grid));
     }
 

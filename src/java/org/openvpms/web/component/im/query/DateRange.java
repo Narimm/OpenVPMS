@@ -31,6 +31,7 @@ import org.openvpms.web.component.util.ComponentHelper;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.archetype.rules.util.DateRules;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -264,7 +265,8 @@ public class DateRange {
      * @return the selected date from <tt>field</tt>
      */
     private Date getDate(DateField field) {
-        return field.getDateChooser().getSelectedDate().getTime();
+        Date date = field.getDateChooser().getSelectedDate().getTime();
+        return DateRules.getDate(date); // truncate any time component
     }
 
     /**

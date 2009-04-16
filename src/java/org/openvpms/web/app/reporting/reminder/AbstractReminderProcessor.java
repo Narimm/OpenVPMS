@@ -19,6 +19,7 @@ package org.openvpms.web.app.reporting.reminder;
 
 import org.openvpms.archetype.component.processor.Processor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -66,7 +67,7 @@ public abstract class AbstractReminderProcessor implements Processor<List<Remind
             shortName = "GROUPED_REMINDERS";
             documentTemplate = groupTemplate;
         } else {
-            shortName = "act.patientReminder";
+            shortName = ReminderArchetypes.REMINDER;
             documentTemplate = event.getDocumentTemplate();
         }
         process(events, shortName, documentTemplate);

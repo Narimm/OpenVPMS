@@ -139,7 +139,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     protected Object getValue(T object, TableColumn column, int row) {
         Object result;
         if (column instanceof DescriptorTableColumn) {
-            result = getValue(object, (DescriptorTableColumn) column);
+            result = getValue(object, (DescriptorTableColumn) column, row);
         } else {
             result = super.getValue(object, column, row);
         }
@@ -151,9 +151,10 @@ public abstract class DescriptorTableModel<T extends IMObject>
      *
      * @param object the object to operate on
      * @param column the column
+     * @param row    the row
      * @return the value for the column
      */
-    protected Object getValue(T object, DescriptorTableColumn column) {
+    protected Object getValue(T object, DescriptorTableColumn column, int row) {
         return column.getValue(object, context);
     }
 

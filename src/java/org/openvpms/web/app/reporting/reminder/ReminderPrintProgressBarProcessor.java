@@ -62,7 +62,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
                     setSuspend(false);
                     processCompleted(events);
                 } catch (OpenVPMSException exception) {
-                    notifyError(exception);
+                    processError(exception, events);
                 }
             }
 
@@ -76,7 +76,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
             }
 
             public void failed(Throwable cause) {
-                notifyError(cause);
+                processError(cause, events);
             }
         };
 
@@ -90,6 +90,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
      * @throws OpenVPMSException if the events cannot be processed
      */
     protected void process(List<ReminderEvent> events) {
+        super.process(events);
         this.events = events;
         processor.process(events);
         if (processor.isInteractive()) {
