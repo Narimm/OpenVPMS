@@ -107,17 +107,16 @@ public class ReminderRules {
     }
 
     /**
-     * Sets any 'in progress' reminders that have the same patient and
-     * reminder group as that in the supplied reminder to 'completed'.
-     * This only has effect if the reminder is new, and has 'in progress'
-     * status.
+     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/oror type as that in
+     * the supplied reminder to 'completed'.
+     * <p/>
+     * This only has effect if the reminder is new, and has 'in progress' status.
      *
      * @param reminder the reminder
      * @throws ArchetypeServiceException for any archetype service exception
      */
     public void markMatchingRemindersCompleted(Act reminder) {
-        if (reminder.isNew() && ReminderStatus.IN_PROGRESS.equals(
-                reminder.getStatus())) {
+        if (reminder.isNew() && ReminderStatus.IN_PROGRESS.equals(reminder.getStatus())) {
             ActBean bean = new ActBean(reminder, service);
             Entity reminderType = bean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
             Party patient = (Party) bean.getParticipant(
@@ -130,34 +129,28 @@ public class ReminderRules {
 
     /**
      * Sets any 'in progress' reminders that have the same patient and reminder
-     * group as that being supplied to 'completed'.
+     * group as that supplied to 'completed'.
      *
      * @param patient      the patient
      * @param reminderType the reminder type
      * @throws ArchetypeServiceException for any archetype service exception
      */
     @SuppressWarnings("unchecked")
-    public void markMatchingRemindersCompleted(Party patient,
-                                               Entity reminderType) {
+    public void markMatchingRemindersCompleted(Party patient, Entity reminderType) {
         EntityBean bean = new EntityBean(reminderType);
         List<IMObject> groups = bean.getValues("groups");
-        if (!groups.isEmpty()) {
-            ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER,
-                                                      false, true);
-            query.add(new NodeConstraint("status",
-                                         ReminderStatus.IN_PROGRESS));
-            IMObjectReference ref = patient.getObjectReference();
-            CollectionNodeConstraint participations
-                    = new CollectionNodeConstraint(
-                    "patient", "participation.patient", false, true)
-                    .add(new ObjectRefNodeConstraint("entity", ref));
-            query.add(participations);
-            query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-            List acts = service.get(query).getResults();
-            for (Act act : (List<Act>) acts) {
-                if (hasMatchingGroup(groups, act)) {
-                    markCompleted(act);
-                }
+        ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false, true);
+        query.add(new NodeConstraint("status", ReminderStatus.IN_PROGRESS));
+        IMObjectReference ref = patient.getObjectReference();
+        CollectionNodeConstraint participations = new CollectionNodeConstraint(
+                "patient", "participation.patient", false, true)
+                .add(new ObjectRefNodeConstraint("entity", ref));
+        query.add(participations);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List acts = service.get(query).getResults();
+        for (Act act : (List<Act>) acts) {
+            if (hasMatchingTypeOrGroup(act, reminderType, groups)) {
+                markCompleted(act);
             }
         }
     }
@@ -437,29 +430,33 @@ public class ReminderRules {
     }
 
     /**
-     * Determines if a reminder is associated with an
-     * <em>entity.reminderType</em> that has one or more
-     * <em>lookup.reminderGroup</em> classifications the same as those
-     * specified.
+     * Determines if a reminder is associated with an <em>entity.reminderType</em> that is the same as that specified
+     * or has one or more <em>lookup.reminderGroup</em> classifications the same as those specified.
      *
-     * @param groups   the groups
-     * @param reminder the reminder
-     * @return <tt>true</tt> if the reminder has a matching group
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
+     * @param groups       the groups
+     * @return <tt>true</tt> if the reminder has a matching type or group
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private boolean hasMatchingGroup(List<IMObject> groups, Act reminder) {
+    private boolean hasMatchingTypeOrGroup(Act reminder, Entity reminderType, List<IMObject> groups) {
+        boolean result = false;
         ActBean bean = new ActBean(reminder, service);
-        ReminderType reminderType = getReminderType(bean);
-        if (reminderType != null) {
-            EntityBean typeBean = new EntityBean(reminderType.getEntity(),
-                                                 service);
-            for (IMObject group : typeBean.getValues("groups")) {
-                if (groups.contains(group)) {
-                    return true;
+        ReminderType otherType = getReminderType(bean);
+        if (otherType != null) {
+            if (otherType.getEntity().equals(reminderType)) {
+                result = true;
+            } else {
+                EntityBean typeBean = new EntityBean(otherType.getEntity(), service);
+                for (IMObject group : typeBean.getValues("groups")) {
+                    if (groups.contains(group)) {
+                        result = true;
+                        break;
+                    }
                 }
             }
         }
-        return false;
+        return result;
     }
 
     /**

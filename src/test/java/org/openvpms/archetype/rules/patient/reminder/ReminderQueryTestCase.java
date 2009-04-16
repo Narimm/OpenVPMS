@@ -72,11 +72,11 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     public void testQueryReminderType() {
         final int count = 10;
         Entity reminderType = ReminderTestHelper.createReminderType();
-        Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient(customer);
         Date dueDate = new Date();
 
         for (int i = 0; i < count; ++i) {
+            Party customer = TestHelper.createCustomer();
+            Party patient = TestHelper.createPatient(customer);
             ReminderTestHelper.createReminder(patient, reminderType, dueDate);
         }
 
@@ -125,8 +125,6 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     public void testQueryReminderTypeDateRange() {
         final int count = 10;
         Entity reminderType = ReminderTestHelper.createReminderType();
-        Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient(customer);
 
         Calendar calendar = new GregorianCalendar();
         calendar.set(1980, 0, 1);
@@ -135,6 +133,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         for (int i = 0; i < count; ++i) {
             calendar.set(Calendar.DAY_OF_MONTH, i + 1);
             Date dueDate = calendar.getTime();
+            Party customer = TestHelper.createCustomer();
+            Party patient = TestHelper.createPatient(customer);
             ReminderTestHelper.createReminder(patient, reminderType, dueDate);
         }
         // query a subset of the dates just added
