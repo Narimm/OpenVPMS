@@ -26,7 +26,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.oro.text.perl.Perl5Util;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -38,6 +37,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
+import org.openvpms.component.system.common.util.StringUtilities;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +47,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -245,9 +246,9 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * Add an assertion descriptor to this node
+     * Adds an assertion descriptor to this node.
      *
-     * @param descriptor
+     * @param descriptor the assertion descriptor to add
      */
     public void addAssertionDescriptor(AssertionDescriptor descriptor) {
         assertionDescriptors.put(descriptor.getName(), descriptor);
@@ -458,7 +459,9 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * Return the assertion descriptors in index order
+     * Return the assertion descriptors in index order.
+     *
+     * @return the assertion descriptors, ordered on index
      */
     public List<AssertionDescriptor> getAssertionDescriptorsInIndexOrder() {
         List<AssertionDescriptor> adescs =
@@ -470,7 +473,9 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * Return the assertion descriptors as a map
+     * Return the assertion descriptors as an array.
+     *
+     * @return the assertion descriptors
      */
     public AssertionDescriptor[] getAssertionDescriptorsAsArray() {
         return assertionDescriptors.values().toArray(
@@ -643,7 +648,7 @@ public class NodeDescriptor extends Descriptor {
      * @return Returns the displayName.
      */
     public String getDisplayName() {
-        return StringUtils.isEmpty(displayName) ? unCamelCase(getName())
+        return StringUtils.isEmpty(displayName) ? StringUtilities.unCamelCase(getName())
                 : displayName;
     }
 
@@ -1049,10 +1054,9 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * This method indicates that this node descriptor is readOnly and a call to
-     * {@link #setValue(IMObject, Object) will throw an exception.
+     * This method indicates that this node descriptor is read-only.
      *
-     * @return boolean
+     * @return <tt>true</tt> if the node descriptor is read only
      */
     public boolean isReadOnly() {
         return isReadOnly;
@@ -1093,8 +1097,8 @@ public class NodeDescriptor extends Descriptor {
             if (StringUtils.isEmpty(filter)) {
                 matches = true;
             } else {
-                matches = imobj.getArchetypeId().getShortName().matches(
-                        modFilter);
+                String shortName = imobj.getArchetypeId().getShortName();
+                matches = shortName.matches(modFilter);
             }
         }
 
@@ -1347,7 +1351,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Set the value of the readOnly attribute
      *
-     * @param value
+     * @param value if <tt>true</tt> marks the node descriptor read-only
      */
     public void setReadOnly(boolean value) {
         this.isReadOnly = value;
@@ -1470,32 +1474,6 @@ public class NodeDescriptor extends Descriptor {
         this.parent = parent;
     }
 
-
-    /**
-     * This method will uncamel case the speified string and return it to the
-     * caller
-     *
-     * @param name the camel cased strig
-     * @return String
-     */
-    private String unCamelCase(String name) {
-        if (StringUtils.isEmpty(name)) {
-            return null;
-        }
-
-        ArrayList<String> words = new ArrayList<String>();
-        Perl5Util perl = new Perl5Util();
-
-        while (perl.match("/(\\w+?)([A-Z].*)/", name)) {
-            String word = perl.group(1);
-            name = perl.group(2);
-            words.add(StringUtils.capitalize(word));
-        }
-
-        words.add(StringUtils.capitalize(name));
-
-        return StringUtils.join(words.iterator(), " ");
-    }
 }
 
 /**
