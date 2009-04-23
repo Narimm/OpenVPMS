@@ -24,21 +24,20 @@ import org.apache.oro.text.perl.Perl5Util;
 
 import java.util.ArrayList;
 
+
 /**
- * Holds a number of stirng utility methods
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * Holds a number of string utility methods.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class StringUtilities {
 
     /**
-     * Uncamel cases the specified name
-     * 
-     * @param name
-     *            the camel cased name
-     * @return
-     *            the uncmael cased name
+     * Uncamel cases the specified name.
+     *
+     * @param name the camel cased name. May be <tt>null</tt>
+     * @return the uncamel cased name. May be <tt>null</tt>
      */
     public static String unCamelCase(String name) {
         ArrayList<String> words = new ArrayList<String>();
@@ -54,34 +53,30 @@ public class StringUtilities {
 
         return StringUtils.join(words.iterator(), " ");
     }
-    
+
     /**
      * Convert the incoming string to a regular expression. This means
      * escaping the '.' and converting all the '*' to '.*'
-     * 
-     * @param input
-     *            the input string
-     * @return String
-     *            the converted string            
+     *
+     * @param input the input string
+     * @return the converted string
      */
     public static String toRegEx(String input) {
         return input.replace(".", "\\.").replace("*", ".*");
 
     }
-    
+
     /**
-     * The '*' character denotes a wildcard character. This method will do a 
+     * The '*' character denotes a wildcard character. This method will do a
      * regular expression match against the input string. It first converts any
      * '*' characters to the equivalent '.*' regular expression before executing
      * a regex match
-     * 
-     * @param str
-     *            the string that is matched
-     * @param expression
-     *            the expression to match, which can contain wild card
-     *            characters
+     *
+     * @param str        the string that is matched
+     * @param expression the expression to match, which can contain wild card
+     *                   characters
      * @return boolean
-     *            true if it matches                                  
+     *         true if it matches
      */
     public static boolean matches(String str, String expression) {
         if (!expression.contains("*")) {
