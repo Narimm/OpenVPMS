@@ -1,42 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE hibernate-configuration PUBLIC
-"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
-"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-        <property name="hibernate.c3p0.max_size">20</property>
-        <property name="hibernate.c3p0.max_statements">50</property>
-        <property name="hibernate.c3p0.min_size">5</property>
-        <property name="hibernate.c3p0.timeout">1800</property>
-        <property name="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
-        <property name="hibernate.cache.use_query_cache">true</property>
-        <property name="hibernate.cache.use_second_level_cache">true</property>
-        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="hibernate.connection.password">openvpms</property>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/openvpms</property>
-        <property name="hibernate.connection.username">openvpms</property>
-        <property name="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
-        <property name="hibernate.jdbc.batch_size">30</property>
-        <property name="hibernate.query.factory_class">org.hibernate.hql.ast.ASTQueryTranslatorFactory</property>
-        <property name="hibernate.show_sql">false</property>
-           <mapping resource="org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/document/DocumentDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml"/>
-                <mapping resource="org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/document/DocumentDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>
