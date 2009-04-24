@@ -35,7 +35,7 @@ public class ReportExceptionTestCase extends TestCase {
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     3, ReportException.ErrorCode.values().length);
+                     10, ReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
         checkException(FailedToGenerateReport, "Failed to generate report: foo",
