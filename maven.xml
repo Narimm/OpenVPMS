@@ -19,14 +19,10 @@
               file="${basedir}/src/conf/hibernate/hibernate.properties">
             <filterset begintoken="${'${'}" endtoken="}">
                 <filter token="hibernate.dialect" value="${hibernate.dialect}"/>
-                <filter token="hibernate.connection.driver_class"
-                        value="${hibernate.connection.driver_class}"/>
-                <filter token="hibernate.connection.url"
-                        value="${hibernate.connection.url}"/>
-                <filter token="hibernate.connection.username"
-                        value="${hibernate.connection.username}"/>
-                <filter token="hibernate.connection.password"
-                        value="${hibernate.connection.password}"/>
+                <filter token="jdbc.driverClassName" value="${jdbc.driverClassName}"/>
+                <filter token="jdbc.url" value="${jdbc.url}"/>
+                <filter token="jdbc.username" value="${jdbc.username}"/>
+                <filter token="jdbc.password" value="${jdbc.password}"/>
             </filterset>
         </copy>
     </goal>
