@@ -5,7 +5,6 @@
 
     <preGoal name="test:test">
        <attainGoal name="generate-hibernate-properties"/>
-       <copy todir="${maven.test.dest}" file="${maven.hibernate.properties}"/>
     </preGoal>
 
     <preGoal name="hibernate:schema-export">
@@ -20,16 +19,13 @@
 
     <goal name="generate-hibernate-properties">
         <copy tofile="${maven.hibernate.properties}"
-              file="src/conf/hibernate/hibernate.properties">
-            <filterset>
-                <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
-                <filter token="JDBC_DRIVER"
-                        value="${hibernate.connection.driver_class}"/>
-                <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
-                <filter token="JDBC_USERNAME"
-                        value="${hibernate.connection.username}"/>
-                <filter token="JDBC_PASSWORD"
-                        value="${hibernate.connection.password}"/>
+              file="src/test/resources/hibernate.properties">
+           <filterset begintoken="${'${'}" endtoken="}">
+                <filter token="hibernate.dialect" value="${hibernate.dialect}"/>
+                <filter token="jdbc.driverClassName" value="${jdbc.driverClassName}"/>
+                <filter token="jdbc.url" value="${jdbc.url}"/>
+                <filter token="jdbc.username" value="${jdbc.username}"/>
+                <filter token="jdbc.password" value="${jdbc.password}"/>
             </filterset>
         </copy>
     </goal>
@@ -51,7 +47,7 @@
     </goal>
 
     <goal name="clean-mapping-files">
-        <delete>
+        <delete failonerror="false">
             <fileset dir="${maven.build.dir}/hibernate" includes="**/*.hbm.xml"/>
         </delete>
     </goal>
@@ -66,7 +62,7 @@
                 fork="true">
             <ant:classpath>
                 <ant:pathelement path="${maven.build.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+           	    <ant:pathelement path="${maven.build.dir}/test-classes"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
             <arg line="${openvpms.archetype.loader.cmdline}"/>
@@ -84,8 +80,8 @@
                 fork="true">
             <ant:classpath>
                 <ant:pathelement path="${maven.build.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
                 <ant:path refid="maven.dependency.classpath"/>
+                <ant:pathelement path="${maven.build.dir}/test-classes"/>
             </ant:classpath>
             <arg line="${openvpms.data.loader.cmdline}"/>
         </ant:java>
@@ -102,7 +98,7 @@
                 fork="true">
             <ant:classpath>
                 <ant:pathelement path="${maven.build.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:pathelement path="${maven.build.dir}/test-classes"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
             <arg line="--context application-context.xml -g"/>
@@ -120,7 +116,7 @@
                 fork="true">
             <ant:classpath>
                 <ant:pathelement path="${maven.build.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:pathelement path="${maven.build.dir}/test-classes"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
             <arg line="--context application-context.xml -c"/>
@@ -138,7 +134,7 @@
             fork="true">
             <ant:classpath>
                 <ant:pathelement path="${maven.build.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:pathelement path="${maven.build.dir}/test-classes"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
             <arg line="-c application-context.xml"/>
@@ -156,7 +152,7 @@
             fork="true">
             <ant:classpath>
                 <ant:pathelement path="${maven.build.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:pathelement path="${maven.build.dir}/test-classes"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
             <arg line="-v -a ${archetype} --context application-context.xml"/>
@@ -174,7 +170,7 @@
             fork="true">
             <ant:classpath>
                 <ant:pathelement path="${maven.build.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:pathelement path="${maven.build.dir}/test-classes"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
             <arg line="-c application-context.xml"/>
