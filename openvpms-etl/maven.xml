@@ -5,15 +5,12 @@
     <goal name="generate-appcontext">
         <copy tofile="${maven.build.dir}/applicationContext.xml"
               file="src/conf/spring/applicationContext.xml">
-            <filterset>
-                <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
-                <filter token="JDBC_DRIVER"
-                        value="${hibernate.connection.driver_class}"/>
-                <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
-                <filter token="JDBC_USERNAME"
-                        value="${hibernate.connection.username}"/>
-                <filter token="JDBC_PASSWORD"
-                        value="${hibernate.connection.password}"/>
+                <filterset begintoken="${'${'}" endtoken="}">
+                    <filter token="hibernate.dialect" value="${hibernate.dialect}"/>
+                    <filter token="jdbc.driverClassName" value="${jdbc.driverClassName}"/>
+                    <filter token="jdbc.url" value="${jdbc.url}"/>
+                    <filter token="jdbc.username" value="${jdbc.username}"/>
+                    <filter token="jdbc.password" value="${jdbc.password}"/>
             </filterset>
         </copy>
     </goal>
