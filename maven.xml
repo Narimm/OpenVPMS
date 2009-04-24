@@ -26,17 +26,14 @@
     </postGoal>
 
     <goal name="generate-hibernate-properties">
-        <copy tofile="${maven.build.dir}/hibernate/hibernate.properties"
-              file="${basedir}/src/conf/hibernate/hibernate.properties">
-            <filterset>
-                <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
-                <filter token="JDBC_DRIVER"
-                        value="${hibernate.connection.driver_class}"/>
-                <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
-                <filter token="JDBC_USERNAME"
-                        value="${hibernate.connection.username}"/>
-                <filter token="JDBC_PASSWORD"
-                        value="${hibernate.connection.password}"/>
+        <copy tofile="${maven.build.dir}/test-classes"
+              file="src/test/resources/hibernate.properties">
+           <filterset begintoken="${'${'}" endtoken="}">
+                <filter token="hibernate.dialect" value="${hibernate.dialect}"/>
+                <filter token="jdbc.driverClassName" value="${jdbc.driverClassName}"/>
+                <filter token="jdbc.url" value="${jdbc.url}"/>
+                <filter token="jdbc.username" value="${jdbc.username}"/>
+                <filter token="jdbc.password" value="${jdbc.password}"/>
             </filterset>
         </copy>
     </goal>
@@ -50,7 +47,7 @@
                 failonerror="true"
                 fork="true">
             <ant:classpath>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:pathelement path="${maven.build.dir}/test-classes"/>
                 <ant:pathelement path="${basedir}/src/conf/spring"/>
                 <ant:pathelement path="${maven.build.dest}"/>
                 <ant:path refid="maven.dependency.classpath"/>

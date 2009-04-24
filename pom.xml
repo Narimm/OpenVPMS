@@ -48,6 +48,12 @@
         </resources>
         <testResources>
             <testResource>
+                <directory>${basedir}/src/conf/spring</directory>
+                <includes>
+                    <include>*.xml</include>
+                </includes>
+            </testResource>
+            <testResource>
                 <directory>${basedir}/src/test/conf</directory>
                 <includes>
                     <include>*.xml</include>
@@ -56,8 +62,9 @@
             <testResource>
                 <directory>${basedir}/src/test/resources</directory>
                 <includes>
-                    <include>**/*.properties</include>
+                    <include>*.properties</include>
                 </includes>
+                <filtering>true</filtering>
             </testResource>
         </testResources>
         <plugins>
@@ -111,14 +118,63 @@
             <version>${pom.version}</version>
         </dependency>
         <dependency>
+            <groupId>castor</groupId>
+            <artifactId>castor-xml</artifactId>
+            <version>${castor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>${commons.collections.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-jxpath</groupId>
+            <artifactId>commons-jxpath</artifactId>
+            <version>${commons.jxpath.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${commons.lang.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>${commons.logging.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-resources</groupId>
+            <artifactId>commons-resources</artifactId>
+            <version>${commons.resources.version}</version>
+        </dependency>
+        <dependency>
             <groupId>jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
             <version>${jasperreports.version}</version>
+            <exclusions>
+                <exclusion>
+                    <!-- use the jdt-compiler jar instead -->
+                    <groupId>eclipse</groupId>
+                    <artifactId>jdtcore</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>commons-digester</groupId>
-            <artifactId>commons-digester</artifactId>
-            <version>1.7</version>
+            <groupId>jsap</groupId>
+            <artifactId>JSAP</artifactId>
+            <version>${jsap.version}</version>
+        </dependency>
+        <dependency>
+            <!-- use this instead of jdtcore - its significantly smaller -->
+            <groupId>org.eclipse</groupId>
+            <artifactId>jdt-compiler</artifactId>
+            <version>3.1.1</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.openoffice</groupId>
@@ -142,15 +198,20 @@
             <version>${openoffice.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${mysql.version}</version>
+            <groupId>${jdbc.groupId}</groupId>
+            <artifactId>${jdbc.artifactId}</artifactId>
+            <version>${jdbc.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -159,10 +220,15 @@
             <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>${xmlapis.version}</version>
+        </dependency>
     </dependencies>
 
     <properties>
-        <openoffice.version>2.1</openoffice.version>
+        <openoffice.version>2.1.0</openoffice.version>
     </properties>
 
     <repositories>
