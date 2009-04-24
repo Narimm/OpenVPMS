@@ -5,18 +5,16 @@
 <beans>
 
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
-        <property name="driverClassName" value="@JDBC_DRIVER@"/>
-        <property name="url" value="@JDBC_URL@"/>
-        <property name="username" value="@JDBC_USERNAME@"/>
-        <property name="password" value="@JDBC_PASSWORD@"/>
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
     </bean>
 
     <!-- Configure CacheManager from specified config location -->
     <bean id="cacheManager"
           class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
-        <property name="configLocation">
-            <value>classpath:ehcache.xml</value>
-        </property>
+        <property name="configLocation" value="classpath:ehcache.xml"/>
     </bean>
 
     <!--  Hibernate session factory -->

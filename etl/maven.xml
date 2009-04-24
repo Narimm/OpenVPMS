@@ -25,7 +25,6 @@
 
     <preGoal name="test:test">
         <attainGoal name="generate-hibernate-properties"/>
-        <copy todir="${maven.test.dest}" file="${maven.hibernate.properties}"/>
         <attainGoal name="generate-appcontext"/>
         <copy todir="${maven.test.dest}"
               file="${maven.build.dir}/applicationContext.xml"/>
@@ -44,33 +43,15 @@
     </preGoal>
 
     <goal name="generate-hibernate-properties">
+        <!-- src/conf/hibernate can go when the maven1 build is dropped -->
         <copy tofile="${maven.hibernate.properties}"
               file="src/conf/hibernate/hibernate.properties">
-            <filterset>
-                <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
-                <filter token="JDBC_DRIVER"
-                        value="${hibernate.connection.driver_class}"/>
-                <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
-                <filter token="JDBC_USERNAME"
-                        value="${hibernate.connection.username}"/>
-                <filter token="JDBC_PASSWORD"
-                        value="${hibernate.connection.password}"/>
-            </filterset>
-        </copy>
-    </goal>
-
-    <goal name="generate-appcontext">
-        <copy tofile="${maven.build.dir}/applicationContext.xml"
-              file="src/conf/spring/applicationContext.xml">
-            <filterset>
-                <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
-                <filter token="JDBC_DRIVER"
-                        value="${hibernate.connection.driver_class}"/>
-                <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
-                <filter token="JDBC_USERNAME"
-                        value="${hibernate.connection.username}"/>
-                <filter token="JDBC_PASSWORD"
-                        value="${hibernate.connection.password}"/>
+           <filterset begintoken="${'${'}" endtoken="}">
+                <filter token="hibernate.dialect" value="${hibernate.dialect}"/>
+                <filter token="jdbc.driverClassName" value="${jdbc.driverClassName}"/>
+                <filter token="jdbc.url" value="${jdbc.url}"/>
+                <filter token="jdbc.username" value="${jdbc.username}"/>
+                <filter token="jdbc.password" value="${jdbc.password}"/>
             </filterset>
         </copy>
     </goal>
