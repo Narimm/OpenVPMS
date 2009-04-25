@@ -1,4 +1,4 @@
-OpenVPMS @VERSION@ Release
+OpenVPMS ${pom.version} Release
 ==========================
 
 1. Installation Notes
@@ -31,7 +31,7 @@ OpenVPMS @VERSION@ Release
 1.2 Directory structure
 
  The OpenVPMS installation has a single top-level directory named
- openvpms-release-@VERSION@
+ openvpms-release-${pom.version}
  This will be referred to as <OPENVPMS_HOME> in the remainder of this document.
  This directory has the following sub-directories:
 

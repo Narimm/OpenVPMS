@@ -1,0 +1,260 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.openvpms</groupId>
+        <artifactId>openvpms</artifactId>
+        <version>1.4-SNAPSHOT</version>
+        <relativePath>../openvpms/pom.xml</relativePath>
+    </parent>
+
+    <groupId>org.openvpms</groupId>
+    <artifactId>openvpms-release</artifactId>
+
+    <packaging>pom</packaging>
+    <!-- hack to get round the fact that zip is not a supported package type -->
+
+    <name>OpenVPMS Release</name>
+    <description>The OpenVPMS Release Distribution
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-framework</artifactId>
+            <version>${pom.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-archetypes</artifactId>
+            <version>${pom.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-reports</artifactId>
+            <version>${pom.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-web</artifactId>
+            <version>${pom.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-etl-load</artifactId>
+            <version>${pom.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-etl-plugin</artifactId>
+            <version>${pom.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>${jdbc.groupId}</groupId>
+            <artifactId>${jdbc.artifactId}</artifactId>
+            <version>${jdbc.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- use the dependency plugin to get the .adl files from archetypes -->
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>org.openvpms</groupId>
+                            <artifactId>openvpms-archetypes</artifactId>
+                            <version>${pom.version}</version>
+                            <outputDirectory>target/archetypes</outputDirectory>
+                            <includes>org/**/*.adl,org/**/*.xml</includes>
+                        </artifactItem>
+                    </artifactItems>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- use the resources plugin to generate hibernate.properties -->
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- drop and create the openvpms database -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>sql-maven-plugin</artifactId>
+                <version>1.1</version>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                </dependencies>
+
+                <!-- common configuration shared by all executions -->
+                <configuration>
+                    <driver>${jdbc.driverClassName}</driver>
+                    <url>${jdbc.admin.url}</url>
+                    <username>${jdbc.admin.username}</username>
+                    <password>${jdbc.admin.password}</password>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <id>drop-db</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <autocommit>true</autocommit>
+                            <sqlCommand>drop database openvpms</sqlCommand>
+                            <!-- ignore error when database is not avaiable -->
+                            <onError>continue</onError>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>create-db</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <srcFiles>
+                                <srcFile>src/db/createdb.sql</srcFile>
+                            </srcFiles>
+                            <keepFormat>true</keepFormat>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- generate the database schema -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>hibernate3-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <componentProperties>
+                        <jdk5>true</jdk5>
+                        <configurationfile>src/conf/hibernate/hibernate.cfg.xml</configurationfile>
+                        <propertyfile>target/classes/hibernate.properties</propertyfile>
+                    </componentProperties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>hbm2ddl</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.2</version>
+                <configuration>
+                    <tasks>
+                        <echo message="Loading archetypes"/>
+                        <java classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
+                              failonerror="true"
+                              fork="true">
+                            <classpath>
+                                <path refid="maven.runtime.classpath"/>
+                            </classpath>
+                            <arg line="-v -s -c --context src/conf/spring/applicationContext.xml -o -m target/archetypes/org/openvpms/archetype/assertionTypes.xml -d target/archetypes/org/openvpms/archetype"/>
+                        </java>
+                        <echo message="Loading reports"/>
+                        <java classname="org.openvpms.report.tools.TemplateLoader"
+                              failonerror="true"
+                              fork="true">
+                            <classpath>
+                                <pathelement path="${basedir}/src/conf/log4j"/>
+                                <pathelement path="${basedir}/src/conf/spring"/>
+                                <path refid="maven.runtime.classpath"/>
+                            </classpath>
+                            <arg line="-f src/reports/templates.xml"/>
+                        </java>
+                        <echo message="Dumping database"/>
+                        <!-- todo - need alternative dump for other databases -->
+                        <mkdir dir="target/db"/>
+                        <exec executable="mysqldump" output="target/db/db.sql"
+                              failOnError="true" logError="true">
+                            <arg line="openvpms -u openvpms --password=openvpms"/>
+                        </exec>
+                    </tasks>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- build the release zip -->
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/conf/hibernate</directory>
+                <includes>
+                    <include>*.properties</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+    <properties>
+        <jdbc.admin.url>jdbc:mysql://localhost:3306/</jdbc.admin.url>
+        <jdbc.admin.username>root</jdbc.admin.username>
+        <jdbc.admin.password>root</jdbc.admin.password>
+    </properties>
+
+</project>
