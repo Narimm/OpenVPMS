@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 
 /**
@@ -78,11 +79,14 @@ public class DateFunctionsTestCase extends TestCase {
         assertEquals("17:54:22", DateFunctions.formatTime(dateTime, "medium"));
         assertEquals("17:54:22", DateFunctions.formatTime(dateTime, "long"));
 
+        // override the local and time zone
         DateFunctions.setLocale(Locale.UK);
-        assertEquals("17:54:22", DateFunctions.formatTime(dateTime));
-        assertEquals("17:54", DateFunctions.formatTime(dateTime, "short"));
-        assertEquals("17:54:22", DateFunctions.formatTime(dateTime, "medium"));
-        assertEquals("17:54:22 EST",
+        DateFunctions.setTimeZone(TimeZone.getTimeZone("GMT+4"));
+
+        assertEquals("21:54:22", DateFunctions.formatTime(dateTime));
+        assertEquals("21:54", DateFunctions.formatTime(dateTime, "short"));
+        assertEquals("21:54:22", DateFunctions.formatTime(dateTime, "medium"));
+        assertEquals("21:54:22 GMT+04:00",
                      DateFunctions.formatTime(dateTime, "long"));
     }
 
@@ -116,14 +120,14 @@ public class DateFunctionsTestCase extends TestCase {
                      DateFunctions.formatDateTime(dateTime, "short"));
         assertEquals("20-Sep-2006 17:54:22", DateFunctions.formatDateTime(
                 dateTime, "medium"));
-        assertEquals("20 September 2006 17:54:22 EST",
+        assertEquals("20 September 2006 17:54:22 GMT",
                      DateFunctions.formatDateTime(dateTime, "long"));
 
         assertEquals("20/09/06 17:54",
                      DateFunctions.formatDateTime(dateTime, "short", "short"));
         assertEquals("20-Sep-2006 17:54:22", DateFunctions.formatDateTime(
                 dateTime, "medium", "medium"));
-        assertEquals("20 September 2006 17:54:22 EST",
+        assertEquals("20 September 2006 17:54:22 GMT",
                      DateFunctions.formatDateTime(dateTime, "long", "long"));
     }
 
@@ -132,8 +136,12 @@ public class DateFunctionsTestCase extends TestCase {
      */
     @Override
     protected void setUp() {
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
         Calendar calendar = new GregorianCalendar(2006, 8, 20, 17, 54, 22);
         dateTime = calendar.getTime();
+
+        // use the default time zone for formatting
+        DateFunctions.setTimeZone(TimeZone.getDefault());
     }
 }
 
