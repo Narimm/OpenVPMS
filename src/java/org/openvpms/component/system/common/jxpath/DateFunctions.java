@@ -21,6 +21,7 @@ package org.openvpms.component.system.common.jxpath;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 
 /**
@@ -30,11 +31,6 @@ import java.util.Locale;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DateFunctions {
-
-    /**
-     * The thread-specific locale to use to format dates.
-     */
-    private static ThreadLocal<Locale> threadLocale = new ThreadLocal<Locale>();
 
     /**
      * Short format style.
@@ -51,6 +47,16 @@ public class DateFunctions {
      * Long format style.
      */
     public static final String LONG = "long";
+
+    /**
+     * The thread-specific locale to use to format dates.
+     */
+    private static ThreadLocal<Locale> threadLocale = new ThreadLocal<Locale>();
+
+    /**
+     * The thread-specific time zone to use to format dates.
+     */
+    private static ThreadLocal<TimeZone> threadZone = new ThreadLocal<TimeZone>();
 
 
     /**
@@ -78,6 +84,7 @@ public class DateFunctions {
         if (date != null) {
             int type = getStyle(style);
             DateFormat format = DateFormat.getDateInstance(type, getLocale());
+            format.setTimeZone(getTimeZone());
             return format.format(date);
         }
         return null;
@@ -108,6 +115,7 @@ public class DateFunctions {
         if (time != null) {
             int type = getStyle(style);
             DateFormat format = DateFormat.getTimeInstance(type, getLocale());
+            format.setTimeZone(getTimeZone());
             return format.format(time);
         }
         return null;
@@ -153,6 +161,7 @@ public class DateFunctions {
         if (dateTime != null) {
             DateFormat format = DateFormat.getDateTimeInstance(
                     getStyle(dateStyle), getStyle(timeStyle), getLocale());
+            format.setTimeZone(getTimeZone());
             return format.format(dateTime);
         }
         return null;
@@ -165,6 +174,15 @@ public class DateFunctions {
      */
     public static void setLocale(Locale locale) {
         threadLocale.set(locale);
+    }
+
+    /**
+     * Sets the time zone for the current thread.
+     *
+     * @param zone the time zone. May be <tt>null</tt>
+     */
+    public static void setTimeZone(TimeZone zone) {
+        threadZone.set(zone);
     }
 
     /**
@@ -197,6 +215,19 @@ public class DateFunctions {
             locale = Locale.getDefault();
         }
         return locale;
+    }
+
+    /**
+     * Returns the timezone to use for formatting.
+     *
+     * @return the time zone
+     */
+    private static TimeZone getTimeZone() {
+        TimeZone zone = threadZone.get();
+        if (zone == null) {
+            zone = TimeZone.getDefault();
+        }
+        return zone;
     }
 
 }
