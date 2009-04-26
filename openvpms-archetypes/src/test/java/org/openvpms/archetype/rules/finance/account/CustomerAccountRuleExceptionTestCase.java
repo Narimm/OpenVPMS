@@ -21,6 +21,8 @@ package org.openvpms.archetype.rules.finance.account;
 import junit.framework.TestCase;
 
 import java.math.BigDecimal;
+import java.util.Locale;
+
 
 /**
  * {@link CustomerAccountRuleException}  test case.
@@ -34,6 +36,9 @@ public class CustomerAccountRuleExceptionTestCase extends TestCase {
      * Verifies that the messages are generated correctly.
      */
     public void testMessages() {
+        // set the default locale to format currency amounts as expected.
+        Locale.setDefault(Locale.US);
+
         assertEquals("Need to update tests to incorporate new messages",
                      2, CustomerAccountRuleException.ErrorCode.values().length);
 
@@ -52,6 +57,7 @@ public class CustomerAccountRuleExceptionTestCase extends TestCase {
      * @param expected the expected message
      * @param args     exception arguments
      */
+    @SuppressWarnings({"ThrowableInstanceNeverThrown"})
     private void checkException(CustomerAccountRuleException.ErrorCode code,
                                 String expected, Object ... args) {
         CustomerAccountRuleException exception = new CustomerAccountRuleException(
