@@ -26,7 +26,8 @@
     </postGoal>
 
     <goal name="generate-hibernate-properties">
-        <copy tofile="${maven.build.dir}/test-classes"
+        <mkdir dir="${maven.build.dir}/test-classes"/>
+        <copy todir="${maven.build.dir}/test-classes"
               file="src/test/resources/hibernate.properties">
            <filterset begintoken="${'${'}" endtoken="}">
                 <filter token="hibernate.dialect" value="${hibernate.dialect}"/>
