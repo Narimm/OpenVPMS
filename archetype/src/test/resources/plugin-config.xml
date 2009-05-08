@@ -1,0 +1,14 @@
+<project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openvpms</groupId>
+                <artifactId>openvpms-archetype-maven-plugin</artifactId>
+                <configuration>
+                    <dir>src/test/archetypes</dir>
+                    <propertyfile>src/test/resources/hibernate.properties</propertyfile>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
