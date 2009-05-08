@@ -20,25 +20,29 @@ package org.openvpms.tools.data.loader;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 
@@ -53,25 +57,14 @@ import java.util.Map;
 public class StaxArchetypeDataLoader {
 
     /**
-     * The default name of the application context file.
-     */
-    private final static String DEFAULT_APP_CONTEXT_FNAME
-            = "application-context.xml";
-
-    /**
      * The archetype service.
      */
-    private IArchetypeService service;
+    private final IArchetypeService service;
 
     /**
      * Caches loaded objects.
      */
     private final LoadCache cache = new LoadCache();
-
-    /**
-     * Specifies the file extension to filter. Defaults to xml.
-     */
-    private String extension = "xml";
 
     /**
      * Maintains a list of archetypes and count to indicate the number of
@@ -80,132 +73,176 @@ public class StaxArchetypeDataLoader {
     private Map<String, Long> statistics = new HashMap<String, Long>();
 
     /**
-     * Used to process the command line
+     * Determines if verbose logging will be performed.
      */
-    private JSAP jsap = new JSAP();
+    private boolean verbose;
 
     /**
-     * The results once the commnad line has been processed
+     * Determines if objects will be validated only, and not saved.
      */
-    private JSAPResult config;
+    private boolean validateOnly;
 
+    /**
+     * The batch size.
+     */
+    private int batchSize;
 
     /**
      * The logger.
      */
-    private static final Log log
-            = LogFactory.getLog(StaxArchetypeDataLoader.class);
+    private static final Log log = LogFactory.getLog(StaxArchetypeDataLoader.class);
+
+    /**
+     * The default name of the application context file.
+     */
+    private final static String DEFAULT_APP_CONTEXT_FNAME
+            = "application-context.xml";
+
+    /**
+     * The file extension to filter.
+     */
+    private static final String EXTENSION = "xml";
 
 
     /**
-     * Process the records in the specified XML document
+     * Creates a new <tt>StaxArchetypeDataLoader</tt>.
      *
-     * @param args the command line
+     * @param service the archetype service
      */
-    public StaxArchetypeDataLoader(String[] args) throws Exception {
-        // set up the command line options and the logger 
-        createOptions();
+    public StaxArchetypeDataLoader(IArchetypeService service) {
+        this.service = service;
+    }
 
-        // process the configuration 
-        config = jsap.parse(args);
-        if (!config.success()) {
-            displayUsage();
+    /**
+     * Determines if logging will be verbose.
+     *
+     * @param verbose if <tt>true</tt> perform verbose logging.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Determines if objects will be validated only, and not saved.
+     *
+     * @param validateOnly if <tt>true</tt> only perform validation
+     */
+    public void setValidateOnly(boolean validateOnly) {
+        this.validateOnly = validateOnly;
+    }
+
+    /**
+     * Sets the batch size for saving objects.
+     *
+     * @param batchSize the batch size
+     */
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
+
+    /**
+     * Loads data from the specified paths.
+     *
+     * @param paths the file or directory paths to load from
+     * @throws FileNotFoundException if a file cannot be found
+     * @throws OpenVPMSException for any archetype service exception
+     * @throws XMLStreamException if a file cannot be parsed
+     */
+    public void load(String... paths) throws XMLStreamException, FileNotFoundException {
+        Date start = new Date();
+        DataLoader loader = new DataLoader(cache, service, verbose, validateOnly, batchSize, statistics);
+        for (String path : paths) {
+            File file = new File(path);
+            if (file.isDirectory()) {
+                processDir(file, loader);
+            } else {
+                processFile(file, loader);
+            }
         }
-        // init
-        init();
+        loader.close();
+
+        // dump the statistics
+        dumpStatistics(start);
     }
 
     /**
      * The main line
      *
-     * @param args the file where the data is stored is passed in as the first
-     *             argument
+     * @param args the command line arguments
      */
-    public static void main(String[] args) throws Exception {
-        StaxArchetypeDataLoader loader = new StaxArchetypeDataLoader(args);
-        loader.load();
-    }
-
-    /**
-     * Load all the elements
-     *
-     * @throws Exception
-     */
-    private void load() throws Exception {
-        // set some of the configuration options
-        boolean verbose = config.getBoolean("verbose");
-        boolean validateOnly = config.getBoolean("validateOnly");
-        int batchSize = config.getInt("batchSaveSize");
-
-        Date start = new Date();
-        DataLoader loader = new DataLoader(cache, service,
-                                           verbose, validateOnly, batchSize,
-                                           statistics);
-
-        String[] files = config.getStringArray("file");
-        String dir = config.getString("dir");
-        if (files.length != 0 || dir != null) {
-            if (files.length != 0) {
-                processFiles(files, loader);
+    public static void main(String[] args) {
+        try {
+            JSAP parser = createParser();
+            JSAPResult config = parser.parse(args);
+            String[] files = config.getStringArray("file");
+            String dir = config.getString("dir");
+            if (!config.success() || (files.length == 0 && dir == null)) {
+                displayUsage(parser, config);
             } else {
-                // process the files
-                processDir(dir, loader);
-            }
-            loader.close();
+                String contextPath = config.getString("context");
 
-            // dump the statistics
-            dumpStatistics(start);
-        } else {
-            displayUsage();
+                ApplicationContext context;
+                if (!new File(contextPath).exists()) {
+                    context = new ClassPathXmlApplicationContext(contextPath);
+                } else {
+                    context = new FileSystemXmlApplicationContext(contextPath);
+                }
+
+                IArchetypeService service = (IArchetypeService) context.getBean("archetypeService");
+                StaxArchetypeDataLoader loader = new StaxArchetypeDataLoader(service);
+                loader.setVerbose(config.getBoolean("verbose"));
+                loader.setValidateOnly(config.getBoolean("validateOnly"));
+                loader.setBatchSize(config.getInt("batchSaveSize"));
+                if (files.length != 0) {
+                    loader.load(files);
+                } else if (dir != null) {
+                    loader.load(dir);
+                }
+            }
+        } catch (Throwable throwable) {
+            log.error(throwable, throwable);
         }
     }
 
     /**
      * Process all the files in the directory
      *
-     * @param dir the directory
+     * @param dir    the directory
+     * @param loader the loader
+     * @throws FileNotFoundException if the file cannot be found
+     * @throws XMLStreamException if the file cannot be parsed
      */
-    private void processDir(String dir, DataLoader loader) throws Exception {
-        String[] extensions = {extension};
-        Collection collection = FileUtils.listFiles(new File(dir), extensions,
-                                                    false);
+    private void processDir(File dir, DataLoader loader) throws XMLStreamException, FileNotFoundException {
+        String[] extensions = {EXTENSION};
+        Collection collection = FileUtils.listFiles(dir, extensions, false);
         File[] files = FileUtils.convertFileCollectionToFileArray(collection);
         Arrays.sort(files);
         for (int i = 0, n = files.length; i < n; i++) {
             File file = files[i];
-            processFile(file.getAbsolutePath(), loader);
-            loader.flush();
-        }
-    }
-
-    /**
-     * Processes a list of files.
-     *
-     * @param files the file names
-     */
-    private void processFiles(String[] files, DataLoader loader)
-            throws Exception {
-        for (String file : files) {
             processFile(file, loader);
+            loader.flush();
         }
     }
 
     /**
      * Process the data elements.
      *
-     * @param file the file to process
-     *             if this is the first parse for this file
-     * @throws Exception propagate all exceptions to client
+     * @param file   the file to process
+     * @param loader the loader
+     * @throws FileNotFoundException if the file cannot be found
+     * @throws XMLStreamException if the file cannot be parsed
      */
-    private void processFile(String file, DataLoader loader) throws Exception {
+    private void processFile(File file, DataLoader loader) throws XMLStreamException, FileNotFoundException {
         log.info("\n[PROCESSING FILE : " + file + "]\n");
 
         XMLStreamReader reader = getReader(file);
-        loader.load(reader, file);
+        loader.load(reader, file.getPath());
     }
 
     /**
-     * Dump the statistics using the logger
+     * Dump the statistics using the logger.
+     *
+     * @param start the start timestamp
      */
     private void dumpStatistics(Date start) {
         Date end = new Date();
@@ -224,31 +261,14 @@ public class StaxArchetypeDataLoader {
     }
 
     /**
-     * Initialise and start the spring container
-     */
-    private void init() throws Exception {
-        String contextFile = StringUtils.isEmpty(config.getString("context")) ?
-                DEFAULT_APP_CONTEXT_FNAME : config.getString("context");
-
-        log.info("Using application context [" + contextFile + "]");
-        ApplicationContext context;
-        if (!new File(contextFile).exists()) {
-            context = new ClassPathXmlApplicationContext(contextFile);
-        } else {
-            context = new FileSystemXmlApplicationContext(contextFile);
-        }
-
-        service = (IArchetypeService) context.getBean("archetypeService");
-    }
-
-    /**
      * Return the XMLReader for the specified file
      *
      * @param file the file
      * @return XMLStreamReader
-     * @throws Exception propagate to the caller
+     * @throws FileNotFoundException if the file cannot be found
+     * @throws XMLStreamException if the file cannot be read
      */
-    private XMLStreamReader getReader(String file) throws Exception {
+    private XMLStreamReader getReader(File file) throws FileNotFoundException, XMLStreamException {
         FileInputStream stream = new FileInputStream(file);
         XMLInputFactory factory = XMLInputFactory.newInstance();
 
@@ -256,45 +276,55 @@ public class StaxArchetypeDataLoader {
     }
 
     /**
-     * Configure the options for this applications
+     * Creates a new command line parser.
      *
-     * @throws Exception let the caller handle the error
+     * @return a new parser
+     * @throws com.martiansoftware.jsap.JSAPException
+     *          if the parser can't be created
      */
-    private void createOptions() throws Exception {
-        jsap.registerParameter(new FlaggedOption("context").setShortFlag('c')
+    private static JSAP createParser() throws JSAPException {
+        JSAP parser = new JSAP();
+        parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                 .setLongFlag("context").setDefault(DEFAULT_APP_CONTEXT_FNAME)
                 .setHelp("Application context for the data loader"));
-        jsap.registerParameter(new FlaggedOption("dir").setShortFlag('d')
+        parser.registerParameter(new FlaggedOption("dir").setShortFlag('d')
                 .setLongFlag("dir").setHelp(
                 "Directory where data files reside."));
-        jsap.registerParameter(new Switch("subdir").setShortFlag('s')
+        parser.registerParameter(new Switch("subdir").setShortFlag('s')
                 .setLongFlag("subdir").setDefault("false").setHelp(
                 "Search the subdirectories as well."));
-        jsap.registerParameter(new FlaggedOption("file").setShortFlag('f')
+        parser.registerParameter(new FlaggedOption("file").setShortFlag('f')
                 .setList(true).setListSeparator(',')
                 .setLongFlag("file").setHelp("Name of file containing data"));
-        jsap.registerParameter(new Switch("verbose").setShortFlag('v')
+        parser.registerParameter(new Switch("verbose").setShortFlag('v')
                 .setLongFlag("verbose").setDefault("false").setHelp(
                 "Displays verbose info to the console."));
-        jsap.registerParameter(new Switch("validateOnly")
+        parser.registerParameter(new Switch("validateOnly")
                 .setLongFlag("validateOnly").setDefault("false").setHelp(
                 "Only validate the data file. Do not process."));
-        jsap.registerParameter(new FlaggedOption("batchSaveSize")
+        parser.registerParameter(new FlaggedOption("batchSaveSize")
                 .setStringParser(JSAP.INTEGER_PARSER).setDefault("0")
                 .setShortFlag('b').setLongFlag("batchSaveSize")
-                .setHelp("The batch size for saving entities."));
+                .setHelp("The batch size for saving objects."));
+        return parser;
     }
 
     /**
-     * Print usage information
+     * Prints usage information and exits.
+     *
+     * @param parser the parser
+     * @param result the parse result
      */
-    private void displayUsage() {
+    private static void displayUsage(JSAP parser, JSAPResult result) {
+        Iterator iter = result.getErrorMessageIterator();
+        while (iter.hasNext()) {
+            System.err.println(iter.next());
+        }
         System.err.println();
-        System.err.println("Usage: java "
-                + StaxArchetypeDataLoader.class.getName());
-        System.err.println("                " + jsap.getUsage());
+        System.err.println("Usage: java " + StaxArchetypeDataLoader.class.getName());
+        System.err.println("                " + parser.getUsage());
         System.err.println();
-        System.err.println(jsap.getHelp());
+        System.err.println(parser.getHelp());
         System.exit(1);
     }
 

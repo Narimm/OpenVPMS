@@ -54,10 +54,9 @@
 	        maxmemory="512m"
     	    fork="true">
             <ant:classpath>
+                <ant:pathelement path="${maven.build.dir}/test-classes"/>
            		<ant:pathelement path="${maven.build.dest}"/>
            		<ant:path refid="maven.dependency.classpath"/>
-           		<ant:pathelement path="${maven.build.dir}/test-classes"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
         	<arg line="${openvpms.lookup.loader.cmdline}"/>
     	</ant:java>	
@@ -74,10 +73,9 @@
 	        maxmemory="512m"
     	    fork="true">
             <ant:classpath>
+                <ant:pathelement path="${maven.build.dir}/test-classes"/>
            		<ant:pathelement path="${maven.build.dest}"/>
            		<ant:path refid="maven.dependency.classpath"/>
-           		<ant:pathelement path="${maven.build.dir}/test-classes"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
         	<arg line="${openvpms.data.loader.cmdline}"/>
     	</ant:java>	
@@ -93,10 +91,9 @@
 	        failonerror="true"
     	    fork="true">
             <ant:classpath>
+           		<ant:pathelement path="${maven.test.dest}"/>
            		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dest}"/>
-           		<ant:pathelement path="${maven.test.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
         	<arg line="${openvpms.archetype.loader.cmdline}"/>
     	</ant:java>	
@@ -111,9 +108,9 @@
 	        failonerror="true"
     	    fork="true">
             <ant:classpath>
+                <ant:pathelement path="${maven.test.dest}"/>
            		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
         	<arg line="${openvpms.security.loader.cmdline}"/>
     	</ant:java>	
@@ -129,10 +126,9 @@
             failonerror="true"
             fork="true">
             <ant:classpath>
+                <ant:pathelement path="${maven.test.dest}"/>
                 <ant:path refid="maven.dependency.classpath"/>
                 <ant:pathelement path="${maven.build.dest}"/>
-                <ant:pathelement path="${maven.test.dest}"/>
-                <ant:pathelement path="${maven.build.dir}/hibernate"/>
             </ant:classpath>
             <arg line="${openvpms.migration.details.cmdline}"/>
         </ant:java>
