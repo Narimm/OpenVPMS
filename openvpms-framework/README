@@ -10,10 +10,6 @@ hibernate.connection.url=jdbc:mysql://localhost:3306/openvpms
 hibernate.connection.username=openvpms
 hibernate.connection.password=openvpms
 
-2. Copy the file test/conf/log4j/log4j.properties.sample to 
-   test/conf/log4j/log4j.properties. You can then change this file to 
-   suit your logging needs since it isn't under source control
-   
    
 ======================      
 Preparing the database

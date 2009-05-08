@@ -29,11 +29,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
@@ -94,6 +92,11 @@ public class ArchetypeLoader {
     private boolean failOnError = true;
 
     /**
+     * Determines if verbose logging will be performed.
+     */
+    private boolean verbose;
+
+    /**
      * The load state.
      */
     private Changes changes = new Changes();
@@ -107,7 +110,7 @@ public class ArchetypeLoader {
     /**
      * The logger.
      */
-    private static final Logger log = Logger.getLogger(ArchetypeLoader.class);
+    private static final Log log = LogFactory.getLog(ArchetypeLoader.class);
 
 
     /**
@@ -138,6 +141,15 @@ public class ArchetypeLoader {
     }
 
     /**
+     * Determines if logging will be verbose.
+     *
+     * @param verbose if <tt>true</tt> perform verbose logging.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
      * Returns the changes that have been made.
      *
      * @return the changes
@@ -163,7 +175,7 @@ public class ArchetypeLoader {
      * @throws ArchetypeLoaderException if the assertions cannot be loaded
      */
     public void loadAssertions(String fileName) {
-        if (log.isInfoEnabled()) {
+        if (verbose) {
             log.info("Processing assertion type descriptors from: " + fileName);
         }
         try {
@@ -221,9 +233,9 @@ public class ArchetypeLoader {
      * @throws ArchetypeServiceException for any archetype service exception
      */
     public void loadAssertion(AssertionTypeDescriptor descriptor) {
-        if (log.isInfoEnabled()) {
+        if (verbose) {
             log.info("Processing assertion type descriptor: "
-                    + descriptor.getName());
+                     + descriptor.getName());
         }
 
         AssertionTypeDescriptor existing
@@ -251,12 +263,6 @@ public class ArchetypeLoader {
     public static void main(String[] args) {
         BasicConfigurator.configure();
 
-        // set the root logger level to error
-        Logger root = Logger.getRootLogger();
-        root.setLevel(Level.ERROR);
-        root.removeAllAppenders();
-        root.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
-
         try {
             JSAP parser = createParser();
             JSAPResult config = parser.parse(args);
@@ -283,10 +289,6 @@ public class ArchetypeLoader {
                 boolean clean = config.getBoolean("clean");
                 String mappingFile = config.getString("mappingFile");
                 int processed = 0;
-
-                if (config.getBoolean("verbose")) {
-                    log.setLevel(Level.INFO);
-                }
 
                 PlatformTransactionManager mgr;
                 mgr = (PlatformTransactionManager) context.getBean(
@@ -335,7 +337,7 @@ public class ArchetypeLoader {
      * @throws DescriptorException       if the file cannot be read
      */
     private void loadArchetypes(File file) {
-        if (log.isInfoEnabled()) {
+        if (verbose) {
             log.info("Processing file: " + file.getName());
         }
 
@@ -389,9 +391,9 @@ public class ArchetypeLoader {
      */
     private void loadArchetype(ArchetypeDescriptor descriptor,
                                String fileName) {
-        if (log.isInfoEnabled()) {
+        if (verbose) {
             log.info("Processing archetype descriptor: "
-                    + descriptor.getName());
+                     + descriptor.getName());
         }
 
         // attempt to validate the archetype descriptor.
@@ -449,16 +451,16 @@ public class ArchetypeLoader {
         if (existing != null) {
             if (!overwrite) {
                 save = false;
-                if (log.isInfoEnabled()) {
+                if (verbose) {
                     log.info(descriptor.getName()
-                            + " already exists. Not overwriting");
+                             + " already exists. Not overwriting");
                 }
             } else {
                 service.remove(existing);
             }
         }
         if (save) {
-            if (log.isInfoEnabled()) {
+            if (verbose) {
                 log.info("Saving " + descriptor.getName());
             }
             // NOTE: ideally wouldn't use the deprecated save() method to
@@ -528,6 +530,9 @@ public class ArchetypeLoader {
 
     /**
      * Prints usage information and exits.
+     *
+     * @param parser the parser
+     * @param result the parse result
      */
     private static void displayUsage(JSAP parser, JSAPResult result) {
         Iterator iter = result.getErrorMessageIterator();
@@ -551,7 +556,7 @@ public class ArchetypeLoader {
         List<ArchetypeDescriptor> descriptors
                 = service.getArchetypeDescriptors();
         for (ArchetypeDescriptor descriptor : descriptors) {
-            if (log.isInfoEnabled()) {
+            if (verbose) {
                 log.info("Deleting " + descriptor.getName());
             }
             service.remove(descriptor);
@@ -568,7 +573,7 @@ public class ArchetypeLoader {
         List<AssertionTypeDescriptor> descriptors
                 = service.getAssertionTypeDescriptors();
         for (AssertionTypeDescriptor descriptor : descriptors) {
-            if (log.isInfoEnabled()) {
+            if (verbose) {
                 log.info("Deleting " + descriptor.getName());
             }
             service.remove(descriptor);

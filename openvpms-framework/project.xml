@@ -10,7 +10,7 @@
   <inceptionYear>2005</inceptionYear>
   <name>openvpms</name>
   <artifactId>openvpms-framework</artifactId>
-  <currentVersion>1.3</currentVersion>
+  <currentVersion>1.4-SNAPSHOT</currentVersion>
   <package>org.openvpms</package>
   <url>http://www.openvpms.org/${pom.artifactId}</url>
   <issueTrackingUrl>
@@ -453,7 +453,7 @@
         <resource>
           <directory>${basedir}/test/conf/log4j</directory>
           <includes>
-            <include>**/*.*</include>
+            <include>log4j.properties</include>
           </includes>
         </resource>
         <resource>
@@ -485,12 +485,6 @@
       </resources>
     </unitTest>
     <resources>
-      <resource>
-        <directory>${basedir}/src/conf/log4j</directory>
-        <includes>
-          <include>log4j.properties</include>
-        </includes>
-      </resource>
       <resource>
         <directory>${basedir}/src/java</directory>
         <includes>
