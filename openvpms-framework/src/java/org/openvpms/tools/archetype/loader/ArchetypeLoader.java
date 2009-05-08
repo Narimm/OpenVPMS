@@ -286,6 +286,7 @@ public class ArchetypeLoader {
                 boolean recurse = config.getBoolean("subdir");
                 loader.setOverwrite(config.getBoolean("overwrite"));
                 loader.setFailOnError(config.getBoolean("failOnError"));
+                loader.setVerbose(config.getBoolean("verbose"));
                 boolean clean = config.getBoolean("clean");
                 String mappingFile = config.getString("mappingFile");
                 int processed = 0;
