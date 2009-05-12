@@ -20,7 +20,7 @@
                type="org.openvpms.component.business.domain.im.act.DocumentAct"
                displayName="Attachment">
         <node name="id" path="/id" type="java.lang.Long"
-              hidden="true" readOnly="true"/>
+              hidden="false" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true"
               minCardinality="1" derived="true"
               derivedValue="'Customer Attachment'"/>
