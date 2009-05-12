@@ -24,19 +24,24 @@ import org.openvpms.archetype.rules.party.AbstractPartyMergerTest;
 import org.openvpms.archetype.rules.party.MergeException;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -105,13 +110,13 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
         Party merged = checkMerge(from, to);
 
         EntityIdentity[] identities
-                = merged.getIdentities().toArray(new EntityIdentity[0]);
+                = merged.getIdentities().toArray(new EntityIdentity[merged.getIdentities().size()]);
         String idA = identities[0].getIdentity();
         String idB = identities[1].getIdentity();
         assertTrue(id1.getIdentity().equals(idA)
-                || id1.getIdentity().equals(idB));
+                   || id1.getIdentity().equals(idB));
         assertTrue(id2.getIdentity().equals(idA)
-                || id2.getIdentity().equals(idB));
+                   || id2.getIdentity().equals(idB));
     }
 
     /**
@@ -143,6 +148,23 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
         // verify all participations moved to the 'to' patient
         int toRefs = countParticipations(to);
         assertEquals(toRefs, fromRefs);  //
+    }
+
+    /**
+     * Verifies that discounts are moved to the merged patient.
+     */
+    public void testMergeDiscounts() {
+        Party from = TestHelper.createPatient();
+        Party to = TestHelper.createPatient();
+        Entity discount = createDiscount();
+
+        EntityBean bean = new EntityBean(from);
+        bean.addRelationship("entityRelationship.discountPatient", discount);
+        bean.save();
+
+        Party merged = checkMerge(from, to);
+        bean = new EntityBean(merged);
+        assertNotNull(bean.getRelationship(discount));
     }
 
     /**
@@ -224,5 +246,20 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
         EntityIdentity id = (EntityIdentity) create("entityIdentity.petTag");
         id.setIdentity(identity);
         return id;
+    }
+
+    /**
+     * Helper to create and save a new discount type entity.
+     *
+     * @return a new discount
+     */
+    private Entity createDiscount() {
+        Entity discount = (Entity) create("entity.discountType");
+        IMObjectBean bean = new IMObjectBean(discount);
+        bean.setValue("name", "XDISCOUNT_PATIENT_MERGER_TESTCASE_" + Math.abs(new Random().nextInt()));
+        bean.setValue("rate", BigDecimal.TEN);
+        bean.setValue("discountFixed", true);
+        save(discount);
+        return discount;
     }
 }

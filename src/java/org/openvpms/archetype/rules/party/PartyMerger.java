@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.party;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -117,7 +118,7 @@ public abstract class PartyMerger {
         merged.addAll(participations);
 
         for (EntityRelationship relationship : from.getEntityRelationships()) {
-            Party other = getRelated(from, to, relationship);
+            Entity other = getRelated(from, to, relationship);
             if (other != null) {
                 other.removeEntityRelationship(relationship);
                 merged.add(other);
@@ -127,21 +128,6 @@ public abstract class PartyMerger {
         service.remove(from);
     }
 
-    private Party getRelated(Party from, Party to,
-                             EntityRelationship relationship) {
-        if (from.getObjectReference().equals(relationship.getSource())) {
-            if (to.equals(relationship.getTarget())) {
-                return to;
-            }
-            return getParty(relationship.getTarget());
-        } else {
-            if (to.equals(relationship.getSource())) {
-                return to;
-            }
-            return getParty(relationship.getSource());
-        }
-    }
-
     /**
      * Copies contacts from one party to another.
      *
@@ -149,7 +135,7 @@ public abstract class PartyMerger {
      * @param to   the party to copy to
      */
     protected void copyContacts(Party from, Party to) {
-        Contact[] contacts = from.getContacts().toArray(new Contact[0]);
+        Contact[] contacts = from.getContacts().toArray(new Contact[from.getContacts().size()]);
         for (Contact contact : contacts) {
             List<IMObject> objects = contactCopier.apply(contact);
             Contact copy = (Contact) objects.get(0);
@@ -303,10 +289,10 @@ public abstract class PartyMerger {
         ArchetypeId id = relationship.getArchetypeId();
         for (EntityRelationship r : party.getEntityRelationships()) {
             if (r.getSource().equals(relationship.getSource())
-                    && r.getTarget().equals(relationship.getTarget())
-                    && r.getArchetypeId().equals(id)
-                    && r.getActiveEndTime() == null
-                    && relationship.getActiveEndTime() == null) {
+                && r.getTarget().equals(relationship.getTarget())
+                && r.getArchetypeId().equals(id)
+                && r.getActiveEndTime() == null
+                && relationship.getActiveEndTime() == null) {
                 result = true;
                 break;
             }
@@ -314,7 +300,40 @@ public abstract class PartyMerger {
         return result;
     }
 
-    private Party getParty(IMObjectReference reference) {
-        return (reference != null) ? (Party) service.get(reference) : null;
+    /**
+     * Returns the related entity in a relationship.
+     * This is the source or target of the relationship that isn't the same as <tt>from</tt>.
+     *
+     * @param from         the merge from party
+     * @param to           the merge to party
+     * @param relationship the relationship
+     * @return the related entity
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Entity getRelated(Party from, Party to, EntityRelationship relationship) {
+        IMObjectReference source = relationship.getSource();
+        if (from.getObjectReference().equals(source)) {
+            IMObjectReference target = relationship.getTarget();
+            if (to.getObjectReference().equals(target)) {
+                return to;
+            }
+            return getEntity(target);
+        } else {
+            if (to.getObjectReference().equals(source)) {
+                return to;
+            }
+            return getEntity(source);
+        }
+    }
+
+    /**
+     * Returns the entity with the specified reference.
+     *
+     * @param reference the reference. May be <tt>null</tt>
+     * @return the corresponding entity, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Entity getEntity(IMObjectReference reference) {
+        return (reference != null) ? (Entity) service.get(reference) : null;
     }
 }
