@@ -16,15 +16,9 @@ package org.openvpms.maven.data;
  * limitations under the License.
  */
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.project.MavenProject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.data.loader.StaxArchetypeDataLoader;
-import org.openvpms.maven.archetype.AbstractHibernateMojo;
-import org.springframework.context.ApplicationContext;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
 import java.io.FileNotFoundException;
 
 
@@ -36,6 +30,33 @@ import java.io.FileNotFoundException;
  */
 public class DataLoadMojo extends AbstractDataMojo {
 
+
+    /**
+     * The batch size, used to reduce database access.
+     *
+     * @parameter expression="1000"
+     * @optional
+     */
+    private int batchSize;
+
+    /**
+     * Sets the batch size, used to batch database writes.
+     *
+     * @param batchSize the batch size
+     */
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
+
+    /**
+     * Returns the batch size, used to batch databases writes.
+     *
+     * @return the batch size
+     */
+    public int getBatchSize() {
+        return batchSize;
+    }
+
     /**
      * Loads data from the specified directory.
      *
@@ -45,6 +66,7 @@ public class DataLoadMojo extends AbstractDataMojo {
      */
     protected void doExecute(StaxArchetypeDataLoader loader) throws XMLStreamException, FileNotFoundException {
         loader.setVerbose(isVerbose());
+        loader.setBatchSize(batchSize);
         loader.load(getDir().getPath());
     }
 }
