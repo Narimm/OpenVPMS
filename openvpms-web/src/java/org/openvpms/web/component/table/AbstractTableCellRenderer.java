@@ -95,7 +95,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
                 label.setText(value.toString());
                 component = label;
             } else {
-                component = new LabelEx(new XhtmlFragment(TableHelper.SPACE));
+                component = new LabelEx(new XhtmlFragment(TableHelper.SPACER));
             }
         }
         return component;
