@@ -108,6 +108,7 @@
                 <configuration>
                     <dir>src/archetypes/org/openvpms/archetype</dir>
                     <propertyfile>target/test-classes/hibernate.properties</propertyfile>
+                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -149,6 +150,9 @@
                         <include>**/*TestCase.java</include>
                     </includes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
