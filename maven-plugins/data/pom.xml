@@ -45,12 +45,6 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-archetypes</artifactId>
-            <version>${pom.version}</version>
-            <scope>runtime</scope> <!-- for jxpath functions -->
-        </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetype-maven-plugin</artifactId>
             <version>${pom.version}</version>
         </dependency>
