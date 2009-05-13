@@ -17,6 +17,7 @@ package org.openvpms.maven.archetype;
  */
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.ArchetypeLoader;
@@ -47,7 +48,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     /**
      * Determines if existing archetypes should be overwritten.
      *
-     * @parameter=true
+     * @parameter expression="true"
      * @optional
      */
     private boolean overwrite = true;
@@ -55,7 +56,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     /**
      * Determines if verbose logging is enabled.
      *
-     * @parameter=true
+     * @parameter expression="true"
      * @optional
      */
     private boolean verbose = true;
@@ -67,6 +68,14 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
      * @required
      */
     private File propertyfile;
+
+    /**
+     * If <tt>true</tt>, skips execution.
+     *
+     * @parameter expression="false"
+     * @optional
+     */
+    private boolean skip;
 
     /**
      * The maven project to interact with.
@@ -112,7 +121,46 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
         return verbose;
     }
 
-    protected void doExecute() throws MojoExecutionException {
+    /**
+     * Determines if execution should be skipped.
+     *
+     * @param skip if <tt>true</tt>, skip execution
+     */
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * Determines if execution is skipped.
+     *
+     * @return <tt>true</tt> if execution is skipped
+     */
+    public boolean isSkip() {
+        return skip;
+    }
+
+    /**
+     * Executes the archetype load, unless, execution is skipped.
+     *
+     * @throws MojoExecutionException if an unexpected problem occurs
+     * @throws MojoFailureException if an expected problem (such as a compilation failure) occurs
+     */
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        if (!skip) {
+            super.execute();
+        } else {
+            getLog().info("Archetype load is skipped");
+        }
+    }
+
+    /**
+     * Execute the plugin.
+     *
+     * @throws MojoExecutionException if an unexpected problem occurs
+     * @throws MojoFailureException   if an expected problem (such as a compilation failure) occurs
+     */
+    protected void doExecute() throws MojoExecutionException, MojoFailureException {
         if (dir == null || !dir.exists()) {
             throw new MojoExecutionException("Directory not found: " + dir);
         }
