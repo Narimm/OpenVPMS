@@ -179,36 +179,66 @@
                 </dependencies>
             </plugin>
             <plugin>
+                <!-- load archetypes -->
+                <groupId>org.openvpms</groupId>
+                <artifactId>openvpms-archetype-maven-plugin</artifactId>
+                <version>${pom.version}</version>
+                <configuration>
+                    <dir>target/archetypes/org/openvpms/archetype</dir>
+                    <propertyfile>target/classes/hibernate.properties</propertyfile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>load</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <!-- load report templates -->
+                <groupId>org.openvpms</groupId>
+                <artifactId>openvpms-report-maven-plugin</artifactId>
+                <version>${pom.version}</version>
+                <configuration>
+                    <file>src/reports/templates.xml</file>
+                    <propertyfile>target/classes/hibernate.properties</propertyfile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>load</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.2</version>
                 <configuration>
                     <tasks>
-                        <echo message="Loading archetypes"/>
-                        <java classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
-                              failonerror="true"
-                              fork="true">
-                            <classpath>
-                                <path refid="maven.runtime.classpath"/>
-                            </classpath>
-                            <arg line="-v -s -c --context src/conf/spring/applicationContext.xml -o -m target/archetypes/org/openvpms/archetype/assertionTypes.xml -d target/archetypes/org/openvpms/archetype"/>
-                        </java>
-                        <echo message="Loading reports"/>
-                        <java classname="org.openvpms.report.tools.TemplateLoader"
-                              failonerror="true"
-                              fork="true">
-                            <classpath>
-                                <pathelement path="${basedir}/src/conf/log4j"/>
-                                <pathelement path="${basedir}/src/conf/spring"/>
-                                <path refid="maven.runtime.classpath"/>
-                            </classpath>
-                            <arg line="-f src/reports/templates.xml"/>
-                        </java>
                         <echo message="Dumping database"/>
                         <!-- todo - need alternative dump for other databases -->
                         <mkdir dir="target/db"/>
                         <exec executable="mysqldump" output="target/db/db.sql"
                               failOnError="true" logError="true">
-                            <arg line="openvpms -u openvpms --password=openvpms"/>
+                            <arg line="${jdbc.admin.db} -u ${jdbc.admin.username} --password=${jdbc.admin.password}"/>
                         </exec>
                     </tasks>
                 </configuration>
@@ -253,6 +283,7 @@
 
     <properties>
         <jdbc.admin.url>jdbc:mysql://localhost:3306/</jdbc.admin.url>
+        <jdbc.admin.db>openvpms</jdbc.admin.db>
         <jdbc.admin.username>root</jdbc.admin.username>
         <jdbc.admin.password>root</jdbc.admin.password>
     </properties>
