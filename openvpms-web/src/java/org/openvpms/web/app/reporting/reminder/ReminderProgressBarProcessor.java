@@ -144,6 +144,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
      * <ul>
      * <li>updates the error node of each reminder if {@link #setUpdateOnCompletion(boolean)} is <tt>true</tt></li>
      * <li>updates statistics</li>
+     * <li>notifies any listeners of the error</li>
      * <li>delegates to the parent {@link #processCompleted(Object)} to continue processing</li>
      * </ul>
      *
