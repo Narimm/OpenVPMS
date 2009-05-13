@@ -43,7 +43,7 @@ public class TableHelper {
     /**
      * Helper to ensure that empty cells render with non-zero height.
      */
-    public static final String SPACE = "<p>&#160;</p>";
+    public static final String SPACER = "<br/>";
 
     /**
      * Helper to return an <tt>XhtmlFragment</tt> for text.
@@ -55,7 +55,7 @@ public class TableHelper {
      */
     public static XhtmlFragment createFragment(String text) {
         if (StringUtils.isEmpty(text)) {
-            return new XhtmlFragment(SPACE);
+            return new XhtmlFragment(SPACER);
         }
 
         text = StringEscapeUtils.escapeXml(text);
