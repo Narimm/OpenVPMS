@@ -22,6 +22,17 @@
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>2.5</version>
             </plugin>
+            <plugin>
+                <!-- TODO - disabled tests for the moment, as the project needs to depend on archetypes, but doing
+                     so would introduce a circular dependency in the build -->
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*TestCase.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
