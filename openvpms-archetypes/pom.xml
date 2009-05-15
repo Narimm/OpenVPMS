@@ -102,13 +102,42 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>hibernate3-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <componentProperties>
+                        <drop>true</drop>
+                        <jdk5>true</jdk5>
+                        <configurationfile>src/test/resources/hibernate.cfg.xml</configurationfile>
+                        <propertyfile>target/test-classes/hibernate.properties</propertyfile>
+                        <skip>${maven.test.skip}</skip>
+                    </componentProperties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>hbm2ddl</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
                 <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-archetype-maven-plugin</artifactId>
                 <version>${pom.version}</version>
                 <configuration>
                     <dir>src/archetypes/org/openvpms/archetype</dir>
                     <propertyfile>target/test-classes/hibernate.properties</propertyfile>
-                    <skip>true</skip>
+                    <skip>${maven.test.skip}</skip>
                 </configuration>
                 <executions>
                     <execution>
