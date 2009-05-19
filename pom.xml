@@ -147,8 +147,7 @@
                 <artifactId>tomcat-maven-plugin</artifactId>
                 <version>1.0-beta-1</version>
                 <configuration>
-                    <server>tomcat</server>
-                    <port>8081</port>
+                    <server>openvpms-tomcat</server>
                     <path>/${project.build.finalName}</path>
                     <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
                 </configuration>
