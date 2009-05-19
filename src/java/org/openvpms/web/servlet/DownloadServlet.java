@@ -161,8 +161,13 @@ public class DownloadServlet extends HttpServlet {
             DocumentHandler handler = handlers.get(
                     doc.getName(), doc.getArchetypeId().getShortName(),
                     doc.getMimeType());
-            response.setHeader("Content-Disposition",
-                               "inline; filename=\"" + doc.getName() + "\"");
+            if(doc.getMimeType().equals("text/xml")) {           	
+                response.setHeader("Content-Disposition",
+                        "attachment; filename=\"" + doc.getName() + "\"");
+            } else {            	
+                response.setHeader("Content-Disposition",
+                        "inline; filename=\"" + doc.getName() + "\"");
+            }
             response.setContentType(doc.getMimeType());
             response.setContentLength(doc.getDocSize());
             InputStream stream = null;
