@@ -19,13 +19,13 @@
 package org.openvpms.component.business.dao.hibernate.im.query;
 
 import org.hibernate.HibernateException;
+import org.openvpms.component.business.dao.hibernate.im.AssemblerImpl;
 import org.openvpms.component.business.dao.hibernate.im.act.ActDO;
 import org.openvpms.component.business.dao.hibernate.im.act.DocumentActDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDO;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.dao.hibernate.im.party.PartyDO;
 import org.openvpms.component.business.dao.hibernate.im.product.ProductDO;
-import org.openvpms.component.business.dao.hibernate.im.AssemblerImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -93,8 +93,7 @@ public class QueryBuilderTestCase
     /**
      * Test the query by archetype id and name.
      */
-    public void testQueryByArchetypeIdAndName()
-            throws Exception {
+    public void testQueryByArchetypeIdAndName() {
         final String expected = "select party0 "
                 + "from " + PartyDO.class.getName() + " as party0 "
                 + "where (party0.archetypeId.shortName = :shortName0 and "
@@ -108,8 +107,7 @@ public class QueryBuilderTestCase
     /**
      * Test the query on archetype id, name and a sort criteria.
      */
-    public void testQueryByArchetypeIdAndNameAndSort()
-            throws Exception {
+    public void testQueryByArchetypeIdAndNameAndSort() {
         final String expected = "select party0 "
                 + "from " + PartyDO.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
@@ -131,8 +129,7 @@ public class QueryBuilderTestCase
     /**
      * Test the query on archetype short name, name and a sort criteria
      */
-    public void testQueryByArchetypeShortNameAndNameAndSort()
-            throws Exception {
+    public void testQueryByArchetypeShortNameAndNameAndSort() {
         final String expected = "select party0 "
                 + "from " + PartyDO.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
@@ -159,8 +156,7 @@ public class QueryBuilderTestCase
      * Test the query on a collection constraint without specifying
      * archetype constraint info.
      */
-    public void testCollectionNodeConstraintWithNodeNameOnly()
-            throws Exception {
+    public void testCollectionNodeConstraintWithNodeNameOnly() {
         final String expected = "select party0 "
                 + "from " + PartyDO.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
@@ -186,8 +182,7 @@ public class QueryBuilderTestCase
     /**
      * Test query with an archetype and node based sort constraint.
      */
-    public void testWithMultipleSortConstraints()
-            throws Exception {
+    public void testWithMultipleSortConstraints() {
         String expected = "select party0 "
                 + "from " + PartyDO.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
@@ -217,7 +212,7 @@ public class QueryBuilderTestCase
     /**
      * Test target lookups.
      */
-    public void testTargetLookups() throws Exception {
+    public void testTargetLookups() {
         final String expected = "select lookup0 "
                 + "from " + LookupDO.class.getName() + " as lookup0 "
                 + "inner join lookup0.targetLookupRelationships "
@@ -239,10 +234,9 @@ public class QueryBuilderTestCase
     }
 
     /**
-     * Test for ovpms-240
+     * Test for ovpms-240.
      */
-    public void testOVPMS240()
-            throws Exception {
+    public void testOVPMS240() {
         final String expected = "select product0 "
                 + "from " + ProductDO.class.getName() + " "
                 + "as product0 "
@@ -266,10 +260,9 @@ public class QueryBuilderTestCase
     }
 
     /**
-     * Test for ovpms-245
+     * Test for ovpms-245.
      */
-    public void testOVPMS245()
-            throws Exception {
+    public void testOVPMS245() {
         final String expected = "select product0 "
                 + "from " + ProductDO.class.getName() + " as product0 "
                 + "left outer join product0.classifications as classifications0"
@@ -521,13 +514,15 @@ public class QueryBuilderTestCase
         IArchetypeDescriptorCache cache
                 = (IArchetypeDescriptorCache) applicationContext.getBean(
                 "archetypeDescriptorCache");
-        builder = new QueryBuilder(cache, new AssemblerImpl());
+        builder = new QueryBuilder(cache, new AssemblerImpl(cache));
     }
 
     /**
      * Verifies that a query matches that expected, and can be parsed by
      * hibernate.
      *
+     * @param query the query to check
+     * @param expected the expected HQL
      * @throws QueryBuilderException if the query is invalid
      * @throws HibernateException    if the query is invalid
      */

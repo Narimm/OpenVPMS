@@ -19,15 +19,12 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
-// commons-resources
 import org.apache.commons.resources.Messages;
-
-// openvpms-common
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
+
 /**
- * This is the base exception thrown by the objects of type
- * {@link org.openvpms.component.business.service.archetype.AssertionTypeRecord} 
+ * This is the base exception thrown by assertions.
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
@@ -35,7 +32,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 public class AssertionException extends OpenVPMSException {
 
     /**
-     * Generated SUID
+     * Serialization version ID.
      */
     private static final long serialVersionUID = 1L;
 
@@ -44,12 +41,8 @@ public class AssertionException extends OpenVPMSException {
      */
     public enum ErrorCode {
         NoAssertionTypeSpecified,
-        FailedtoApplyAssertion,
-        NoClassOrMethodSpecified,
-        FailedToLocateMethod,
         FailedToApplyAssertion,
-        ActionNoSupportedByAssertion,
-        NoActionTypeSpecified
+        ActionNotSupportedByAssertion
     }
 
     /**
@@ -83,7 +76,7 @@ public class AssertionException extends OpenVPMSException {
      * 
      * @param errorCode
      *            the error code
-     * @param parama
+     * @param params
      *            the parameters used to render the message associated with the
      *            error code
      */

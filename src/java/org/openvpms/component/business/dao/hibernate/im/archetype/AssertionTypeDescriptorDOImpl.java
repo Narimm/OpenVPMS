@@ -38,7 +38,7 @@ public class AssertionTypeDescriptorDOImpl extends DescriptorDOImpl
      * A list of well known actions which may be supported by assertions.
      */
     public enum Actions {
-        create, validate
+        create, validate, set
     }
 
     /**

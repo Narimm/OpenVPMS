@@ -19,9 +19,10 @@
 package org.openvpms.component.business.dao.hibernate.im;
 
 import org.openvpms.component.business.dao.hibernate.im.act.ActAssembler;
+import org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipAssembler;
 import org.openvpms.component.business.dao.hibernate.im.act.DocumentActAssembler;
 import org.openvpms.component.business.dao.hibernate.im.act.FinancialActAssembler;
-import org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipAssembler;
+import org.openvpms.component.business.dao.hibernate.im.act.ParticipationAssembler;
 import org.openvpms.component.business.dao.hibernate.im.archetype.ActionTypeDescriptorAssembler;
 import org.openvpms.component.business.dao.hibernate.im.archetype.ArchetypeDescriptorAssembler;
 import org.openvpms.component.business.dao.hibernate.im.archetype.AssertionDescriptorAssembler;
@@ -30,9 +31,8 @@ import org.openvpms.component.business.dao.hibernate.im.archetype.NodeDescriptor
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.DefaultEntityAssembler;
-import org.openvpms.component.business.dao.hibernate.im.act.ParticipationAssembler;
-import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityAssembler;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupAssembler;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipAssembler;
 import org.openvpms.component.business.dao.hibernate.im.party.ContactAssembler;
@@ -42,6 +42,7 @@ import org.openvpms.component.business.dao.hibernate.im.product.ProductPriceAsse
 import org.openvpms.component.business.dao.hibernate.im.security.ArchetypeAuthorityAssembler;
 import org.openvpms.component.business.dao.hibernate.im.security.SecurityRoleAssembler;
 import org.openvpms.component.business.dao.hibernate.im.security.UserAssembler;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 
 
 /**
@@ -52,7 +53,12 @@ import org.openvpms.component.business.dao.hibernate.im.security.UserAssembler;
  */
 public class AssemblerImpl extends CompoundAssembler {
 
-    public AssemblerImpl() {
+    /**
+     * Creates a new <tt>AssemblerImpl</tt>.
+     *
+     * @param cache the archetype descriptor cache
+     */
+    public AssemblerImpl(IArchetypeDescriptorCache cache) {
         addAssembler(new ActAssembler());
         addAssembler(new ActRelationshipAssembler());
         addAssembler(new DocumentActAssembler());
@@ -60,7 +66,7 @@ public class AssemblerImpl extends CompoundAssembler {
 
         addAssembler(new ActionTypeDescriptorAssembler());
         addAssembler(new ArchetypeDescriptorAssembler());
-        addAssembler(new AssertionDescriptorAssembler());
+        addAssembler(new AssertionDescriptorAssembler(cache));
         addAssembler(new AssertionTypeDescriptorAssembler());
         addAssembler(new NodeDescriptorAssembler());
 

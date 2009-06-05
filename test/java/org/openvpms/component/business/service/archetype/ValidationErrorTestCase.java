@@ -47,7 +47,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test that a validation exception is actually generated for an invalid
      * object.
      */
-    public void testSimpleValidationException() throws Exception {
+    public void testSimpleValidationException() {
         Party person = new Party();
         person.setArchetypeId(service.getArchetypeDescriptor("party.person")
                 .getType());
@@ -65,7 +65,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test that no validation exception is thrown for this extended validation
      * example.
      */
-    public void testExtendedValidationException() throws Exception {
+    public void testExtendedValidationException() {
         Party person = createPerson("MR", "Jim", "Alateras");
         EntityIdentity eid = (EntityIdentity) service
                 .create("entityIdentity.personAlias");
@@ -78,7 +78,7 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test an object going from 5 to zero validation errors.
      */
-    public void testDecreaseToZeroErrors() throws Exception {
+    public void testDecreaseToZeroErrors() {
         Party person = (Party) service.create("party.person");
         try {
             service.validateObject(person);
@@ -97,7 +97,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test that the correct error is generated when a incorrect value is passed
      * in for title.
      */
-    public void testIncorrectLookupValue() throws Exception {
+    public void testIncorrectLookupValue() {
         Party person = createPerson("Mister", "Jim", "Alateras");
         try {
             service.validateObject(person);
@@ -113,7 +113,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test the min cardinality attached to the archetypeRange assertion being
      * satisfied.
      */
-    public void testValidMinCardinalityOnArchetypeRange() throws Exception {
+    public void testValidMinCardinalityOnArchetypeRange() {
         Party person = createPerson("MR", "Jim", "Alateras");
 
         person.addClassification(createLookup("lookup.staff", "CLASS1"));
@@ -124,8 +124,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test the max cardinality attached to the archetypeRange
      * assertion being satisfied.
      */
-    public void testValidMaxCardinalityOnArchetypeRange()
-            throws Exception {
+    public void testValidMaxCardinalityOnArchetypeRange() {
         Party person = (Party) service.create("party.personjima");
 
         person.getDetails().put("title", "MR");
@@ -176,7 +175,7 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test a simple regex validation.
      */
-    public void testRegExValidation() throws Exception {
+    public void testRegExValidation() {
         assertNotNull(service.getArchetypeDescriptor("contact.phoneNumber"));
         Contact contact = (Contact) service.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
@@ -196,7 +195,7 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test that min and max cardinalities also work for collection classes.
      */
-    public void testMinMaxCardinalityOnCollections() throws Exception {
+    public void testMinMaxCardinalityOnCollections() {
         assertTrue(service.getArchetypeDescriptor("party.animalpet") != null);
         Party pet = (Party) service.create("party.animalpet");
         pet.setName("bill");
@@ -243,11 +242,11 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test where only the max cardinality is specified on a collection.
      */
-    public void testMaxCardinalityOnCollections() throws Exception {
+    public void testMaxCardinalityOnCollections() {
         assertNotNull(service.getArchetypeDescriptor("party.animalpet1"));
         Party pet = (Party) service.create("party.animalpet1");
         pet.setName("bill");
-        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("sex", "MALE");
         pet.getDetails().put("dateOfBirth", new Date());
         service.validateObject(pet);
 
@@ -282,11 +281,11 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test where min cardinality and unbounded is specifed on collection.
      */
-    public void testMinUnboundedCardinalityOnCollections() throws Exception {
+    public void testMinUnboundedCardinalityOnCollections() {
         assertTrue(service.getArchetypeDescriptor("party.animalpet2") != null);
         Party pet = (Party) service.create("party.animalpet2");
         pet.setName("bill");
-        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("sex", "MALE");
         pet.getDetails().put("dateOfBirth", new Date());
         try {
             service.validateObject(pet);
@@ -347,11 +346,11 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test where only unbounded cardinality is specified on collections.
      */
-    public void testUnboundedCardinalityOnCollections() throws Exception {
+    public void testUnboundedCardinalityOnCollections() {
         assertNotNull(service.getArchetypeDescriptor("party.animalpet3"));
         Party pet = (Party) service.create("party.animalpet3");
         pet.setName("bill");
-        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("sex", "MALE");
         pet.getDetails().put("dateOfBirth", new Date());
         service.validateObject(pet);
 
@@ -395,7 +394,7 @@ public class ValidationErrorTestCase extends TestCase {
         assertNotNull(service.getArchetypeDescriptor("party.animalpet"));
         Party pet = (Party) service.create("party.animalpet");
 
-        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("sex", "MALE");
         pet.getDetails().put("dateOfBirth", new Date());
 
         EntityIdentity eid = (EntityIdentity) service.create(
@@ -421,7 +420,7 @@ public class ValidationErrorTestCase extends TestCase {
     @Override
     protected void setUp() {
         String archFile = "org/openvpms/component/business/service/archetype/ValidationErrorArchetypes.xml";
-        String assertionFile = "org/openvpms/component/business/service/archetype/assertionTypes.xml";
+        String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
 
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
                 archFile, assertionFile);

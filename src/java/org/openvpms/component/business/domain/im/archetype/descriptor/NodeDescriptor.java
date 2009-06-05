@@ -1123,7 +1123,7 @@ public class NodeDescriptor extends Descriptor {
         assertionDescriptors.remove(type);
     }
 
-    /**
+    /**                 a
      * Remove the specified child object from the collection defined by this
      * node descriptor using the nominated {@link IMObject} as the root context.
      * <p/>
@@ -1395,6 +1395,9 @@ public class NodeDescriptor extends Descriptor {
         }
 
         try {
+            for (AssertionDescriptor descriptor: getAssertionDescriptorsAsArray()) {
+                value = descriptor.set(value, context, this);
+            }
             if (isArray) {
                 JXPathHelper.newContext(context).setValue(getPath(), value);
             } else {

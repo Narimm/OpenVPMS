@@ -23,12 +23,6 @@
       className="org.openvpms.component.business.service.archetype.assertion.ArchetypeAssertions"
       methodName="isArchetypeShortNameInRange" />
   </assertionType>
-  <assertionType name="maxStringLengthAssertion"
-    propertyArchetype="openvpms-system-assertion.maxStringLengthAssertionProperty.1.0">
-    <actionType name="assert"
-      className="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
-      methodName="withinMaxLength" />
-  </assertionType>
   <assertionType name="dummyAssertion1"
     propertyArchetype="openvpms-system-assertion.validateMethod.1.0">
     <actionType name="validate"

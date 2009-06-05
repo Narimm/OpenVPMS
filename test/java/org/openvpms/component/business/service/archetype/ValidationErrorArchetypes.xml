@@ -218,10 +218,12 @@
               minCardinality="1"/>
         <node name="sex" path="/details/sex"
               type="java.lang.String">
-            <assertion name="lookup">
-                <property name="MAKE" value="male"/>
-                <property name="FEMALE" value="female"/>
-                <property name="UNSPECIFIED" value="unspecified"/>
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="MALE" value="male"/>
+                    <property name="FEMALE" value="female"/>
+                    <property name="UNSPECIFIED" value="unspecified"/>
+                </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
@@ -246,10 +248,12 @@
               minCardinality="1" maxCardinality="1">
             <node name="sex" path="/details/sex"
                   type="java.lang.String">
-                <assertion name="lookup">
-                    <property name="MALE" value="male"/>
-                    <property name="FEMALE" value="female"/>
-                    <property name="UNSPECIFIED" value="unspecified"/>
+                <assertion name="lookup.local">
+                    <propertyList name="entries">
+                        <property name="MALE" value="male"/>
+                        <property name="FEMALE" value="female"/>
+                        <property name="UNSPECIFIED" value="unspecified"/>
+                    </propertyList>
                     <errorMessage>errorMessage</errorMessage>
                 </assertion>
             </node>
@@ -275,10 +279,12 @@
               minCardinality="1" maxCardinality="1">
             <node name="sex" path="/details/sex"
                   type="java.lang.String">
-                <assertion name="lookup">
-                    <property name="MALE" value="male"/>
-                    <property name="FEMALE" value="female"/>
-                    <property name="UNSPECIFIED" value="unspecified"/>
+                <assertion name="lookup.local">
+                    <propertyList name="entries">
+                        <property name="MALE" value="male"/>
+                        <property name="FEMALE" value="female"/>
+                        <property name="UNSPECIFIED" value="unspecified"/>
+                    </propertyList>
                     <errorMessage>errorMessage</errorMessage>
                 </assertion>
             </node>
@@ -304,10 +310,12 @@
               minCardinality="1" maxCardinality="1">
             <node name="sex" path="/details/sex"
                   type="java.lang.String">
-                <assertion name="lookup">
-                    <property name="MALE" value="male"/>
-                    <property name="FEMALE" value="female"/>
-                    <property name="UNSPECIFIED" value="unspecified"/>
+                <assertion name="lookup.local">
+                    <propertyList name="entries">
+                        <property name="MALE" value="male"/>
+                        <property name="FEMALE" value="female"/>
+                        <property name="UNSPECIFIED" value="unspecified"/>
+                    </propertyList>
                     <errorMessage>errorMessage</errorMessage>
                 </assertion>
             </node>
