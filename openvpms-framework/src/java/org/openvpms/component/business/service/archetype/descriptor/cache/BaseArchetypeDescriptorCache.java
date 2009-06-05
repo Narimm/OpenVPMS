@@ -268,6 +268,8 @@ public abstract class BaseArchetypeDescriptorCache
                     throw new ArchetypeDescriptorCacheException(
                             ArchetypeDescriptorCacheException.ErrorCode.InvalidAssertionSpecified,
                             new Object[]{assertion.getName()});
+                }  else {
+                    assertion.setDescriptor(atDesc);
                 }
             }
 
@@ -278,9 +280,9 @@ public abstract class BaseArchetypeDescriptorCache
     }
 
     /**
-     * Add the descriptor to the short name cache
+     * Add the descriptor to the short name cache.
      *
-     * @param adesc
+     * @param adesc the archetype descriptor
      */
     protected void addArchetypeByShortName(ArchetypeDescriptor adesc) {
         ArchetypeId archId = adesc.getType();
@@ -297,9 +299,9 @@ public abstract class BaseArchetypeDescriptorCache
     }
 
     /**
-     * Add the descriptor to the id cache
+     * Add the descriptor to the id cache.
      *
-     * @param adesc
+     * @param adesc the archetype descriptor
      */
     protected void addArchetypeById(ArchetypeDescriptor adesc) {
         archetypesById.put(adesc.getType().getQualifiedName(), adesc);

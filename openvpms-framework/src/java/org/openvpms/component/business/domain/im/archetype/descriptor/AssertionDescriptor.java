@@ -21,17 +21,25 @@ package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 
+
 /**
+ * An <tt>AssertionDescriptor</tt> describes an assertion on a {@link NodeDescriptor}, and is used to configure the
+ * behaviour of its associated {@link AssertionTypeDescriptor}.
+ * <br/>
+ * By convention, the <tt>AssertionTypeDescriptor</tt> should have the same name as the <tt>AssertionDescriptor</tt> -
+ * this is used to establish the association.
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class AssertionDescriptor extends Descriptor {
 
     /**
-     * Default SUID
+     * Serialization version ID.
      */
     private static final long serialVersionUID = 1L;
 
@@ -41,7 +49,7 @@ public class AssertionDescriptor extends Descriptor {
     private String errorMessage;
 
     /**
-     * The index of this assertion descriptor
+     * The index of this assertion descriptor.
      */
     private int index;
 
@@ -53,54 +61,66 @@ public class AssertionDescriptor extends Descriptor {
     private PropertyMap propertyMap = new PropertyMap("root");
 
     /**
-     * Default constructor
+     * The assertion type descriptor that this configures. By convention, this should have the same name as the
+     * assertion descriptor.
+     */
+    private transient AssertionTypeDescriptor descriptor;
+
+
+    /**
+     * Default constructor.
      */
     public AssertionDescriptor() {
         setArchetypeId(new ArchetypeId("descriptor.assertion.1.0"));
     }
 
     /**
-     * @return Returns the errorMessage.
+     * Returns the error message.
+     *
+     * @return the error message
      */
     public String getErrorMessage() {
         return errorMessage;
     }
 
     /**
-     * @param errorMessage The errorMessage to set.
+     * Sets the error message.
+     *
+     * @param errorMessage the error message
      */
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
     /**
-     * Return the properties as a map
+     * Return the properties as a map.
      *
-     * @return Returns the properties.
+     * @return the properties
      */
     public PropertyMap getPropertyMap() {
         return propertyMap;
     }
 
     /**
-     * @param propertyMap the properties to add
+     * Sets the properties.
+     *
+     * @param propertyMap the properties to set
      */
     public void setPropertyMap(PropertyMap propertyMap) {
         this.propertyMap = propertyMap;
     }
 
     /**
-     * Add the property to the collection
-     * <p/>
-     * param property
-     * the property to add
+     * Adds a property.
+     *
+     * @param property the property to add
      */
     public void addProperty(NamedProperty property) {
         propertyMap.getProperties().put(property.getName(), property);
     }
 
     /**
-     * Remove the specified property
+     * Removes the specified property.
      *
      * @param property the property to remove
      */
@@ -109,7 +129,7 @@ public class AssertionDescriptor extends Descriptor {
     }
 
     /**
-     * Remove the property with the specified name
+     * Removes the property with the specified name.
      *
      * @param name the property name
      */
@@ -118,19 +138,19 @@ public class AssertionDescriptor extends Descriptor {
     }
 
     /**
-     * Retrieve the property descriptor with the specified name
+     * Retrieves the property descriptor with the specified name.
      *
-     * @return NamedProperty
-     *         the named property or null
-     * @param, name
-     * the property name
+     * @param name the property name
+     * @return the named property, or <tt>null</tt> if none is found
      */
     public NamedProperty getProperty(String name) {
         return propertyMap.getProperties().get(name);
     }
 
     /**
-     * @return Returns the properties.
+     * Returns the properties.
+     *
+     * @return the properties
      */
     public NamedProperty[] getPropertiesAsArray() {
         return propertyMap.getProperties().values().toArray(
@@ -138,7 +158,9 @@ public class AssertionDescriptor extends Descriptor {
     }
 
     /**
-     * @param properties The properties to set.
+     * Sets the properties.
+     *
+     * @param properties the properties
      */
     public void setPropertiesAsArray(NamedProperty[] properties) {
         this.propertyMap = new PropertyMap("root");
@@ -148,14 +170,18 @@ public class AssertionDescriptor extends Descriptor {
     }
 
     /**
-     * @return Returns the index.
+     * Returns the assertion index, used to order assertions in a collection.
+     *
+     * @return the assertion index
      */
     public int getIndex() {
         return index;
     }
 
     /**
-     * @param index The index to set.
+     * Sets the assertion index, used to order assertions in a collection.
+     *
+     * @param index the assertion index
      */
     public void setIndex(int index) {
         this.index = index;
@@ -179,6 +205,73 @@ public class AssertionDescriptor extends Descriptor {
             copy.propertyMap = (PropertyMap) propertyMap.clone();
         }
         return copy;
+    }
+
+    /**
+     * Returns the assertion type descriptor.
+     *
+     * @return the assertion type descriptor. May be <tt>null</tt>
+     */
+    public AssertionTypeDescriptor getDescriptor() {
+        return descriptor;
+    }
+
+    /**
+     * Sets the assertion type descriptor.
+     *
+     * @param descriptor the assertion type descriptor. May be <tt>null</tt>
+     */
+    public void setDescriptor(AssertionTypeDescriptor descriptor) {
+        this.descriptor = descriptor;
+    }
+
+    /**
+     * Evaluates the create action type of the associated assertion type descriptor, if one is defined.
+     *
+     * @param target the value to validate
+     * @param node   the node descriptor
+     * @throws AssertionException if the assertion cannot be evaluated
+     */
+    public void create(Object target, NodeDescriptor node) {
+        if (descriptor == null) {
+            throw new AssertionException(AssertionException.ErrorCode.NoAssertionTypeSpecified,
+                                         new Object[]{this.getName(), node.getName()});
+        }
+        descriptor.create(target, node, this);
+    }
+
+    /**
+     * Evaluates the validation action type of the associated assertion type descriptor, if one is defined.
+     *
+     * @param value  the value to validate
+     * @param parent the parent object
+     * @param node   the node descriptor
+     * @return <tt>true</tt> if the value is valid, otherwise <tt>false</tt>
+     * @throws AssertionException if the assertion cannot be evaluated
+     */
+    public boolean validate(Object value, IMObject parent, NodeDescriptor node) {
+        if (descriptor == null) {
+            throw new AssertionException(AssertionException.ErrorCode.NoAssertionTypeSpecified,
+                                         new Object[]{this.getName(), node.getName()});
+        }
+        return descriptor.validate(value, parent, node, this);
+    }
+
+    /**
+     * Evaluates the set action type of the associated assertion type descriptor, if one is defined.
+     *
+     * @param value  the value to set. May be <tt>null</tt>
+     * @param parent the parent object
+     * @param node   the node descriptor
+     * @return the (possibly modified) value to set. May be <tt>null</tt>
+     * @throws AssertionException if the assertion cannot be evaluated
+     */
+    public Object set(Object value, IMObject parent, NodeDescriptor node) {
+        if (descriptor == null) {
+            throw new AssertionException(AssertionException.ErrorCode.NoAssertionTypeSpecified,
+                                         new Object[]{this.getName(), node.getName()});
+        }
+        return descriptor.set(value, parent, node, this);
     }
 
 }

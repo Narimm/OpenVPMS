@@ -43,17 +43,10 @@ public class ArchetypeServiceAssertionDescriptorTestCase extends TestCase {
     private ArchetypeService service;
 
     /**
-     * Constructor for ArchetypeServiceTestCase.
-     *
-     * @param name
-     */
-    public ArchetypeServiceAssertionDescriptorTestCase(String name) {
-        super(name);
-    }
-
-    /**
      * Test that we can successfully create all the archetypes loaded by the
-     * service
+     * service.
+     *
+     * @throws Exception for any error
      */
     public void testCreateDefaultObject() throws Exception {
         for (ArchetypeDescriptor descriptor : service
@@ -64,10 +57,11 @@ public class ArchetypeServiceAssertionDescriptorTestCase extends TestCase {
     }
 
     /**
-     * Test the creation of an archetypeRange assertion
+     * Test the creation of an archetypeRange assertion.
+     *
+     * @throws Exception for any error
      */
-    public void testCreateArchetypeRange()
-            throws Exception {
+    public void testCreateArchetypeRange() throws Exception {
         AssertionDescriptor adesc = (AssertionDescriptor) service.create(
                 "assertion.archetypeRange");
         assertTrue(adesc != null);
@@ -108,7 +102,7 @@ public class ArchetypeServiceAssertionDescriptorTestCase extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        String assertionFile = "org/openvpms/component/business/service/archetype/assertionTypes.xml";
+        String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
         String archFile = "org/openvpms/archetype/system/assertion/assertion.archetypeRange.adl";
 
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(

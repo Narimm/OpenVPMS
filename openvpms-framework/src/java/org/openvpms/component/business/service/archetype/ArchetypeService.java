@@ -239,9 +239,7 @@ public class ArchetypeService implements IArchetypeService {
             errors.add(new ValidationError(
                     id.getShortName(), null,
                     "No archetype definition for " + id));
-            log.error(new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
-                    id.toString()));
+            log.error("No archetype definition for " + id);
         } else {
             // if there are nodes attached to the archetype then validate the
             // associated assertions
@@ -713,6 +711,7 @@ public class ArchetypeService implements IArchetypeService {
      * specified assertions. The assertions are defined in the node and can be
      * hierarchical, which means that this method is re-entrant.
      *
+     * @param parent     the parent object
      * @param context    holds the object to be validated
      * @param descriptor the archetype descriptor
      * @param nodes      the node to validate
@@ -826,9 +825,7 @@ public class ArchetypeService implements IArchetypeService {
                                                         new StringBuffer(
                                                                 "No archetype definition for ").append(
                                                                 imobj.getArchetypeId()).toString()));
-                            log.error(new ArchetypeServiceException(
-                                    ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
-                                    imobj.getArchetypeId().toString()));
+                            log.error("No archetype definition for " + imobj.getArchetypeId());
                             continue;
                         }
 
@@ -846,23 +843,11 @@ public class ArchetypeService implements IArchetypeService {
                 }
             }
 
-            if ((value != null) &&
-                    (node.getAssertionDescriptorsAsArray().length > 0)) {
+            if (value != null && node.getAssertionDescriptorsAsArray().length > 0) {
                 // only check the assertions for non-null values
-                for (AssertionDescriptor assertion : node
-                        .getAssertionDescriptorsAsArray()) {
-                    AssertionTypeDescriptor assertionType =
-                            dCache.getAssertionTypeDescriptor(
-                                    assertion.getName());
-                    if (assertionType == null) {
-                        throw new ArchetypeServiceException(
-                                ArchetypeServiceException.ErrorCode.AssertionTypeNotSpecified,
-                                assertion.getName());
-                    }
-
+                for (AssertionDescriptor assertion : node.getAssertionDescriptorsAsArray()) {
                     try {
-                        if (!assertionType.validate(value, parent, node,
-                                                    assertion)) {
+                        if (!assertion.validate(value, parent, node)) {
                             errors.add(new ValidationError(shortName,
                                                            node.getName(),
                                                            assertion.getErrorMessage()));
@@ -979,20 +964,9 @@ public class ArchetypeService implements IArchetypeService {
                 create(context, node);
             }
 
-            for (AssertionDescriptor assertion
-                    : node.getAssertionDescriptorsAsArray()) {
-                AssertionTypeDescriptor assertionType
-                        = dCache.getAssertionTypeDescriptor(
-                        assertion.getName());
-                if (assertionType == null) {
-                    throw new ArchetypeServiceException(
-                            ArchetypeServiceException.ErrorCode.AssertionTypeNotSpecified,
-                            assertion.getName());
-                }
-
+            for (AssertionDescriptor assertion : node.getAssertionDescriptorsAsArray()) {
                 try {
-                    assertionType.create(context.getContextBean(), node,
-                                         assertion);
+                    assertion.create(context.getContextBean(), node);
                 } catch (Exception exception) {
                     throw new ArchetypeServiceException(
                             ArchetypeServiceException.ErrorCode.FailedToExecuteCreateFunction,

@@ -24,7 +24,6 @@ import org.hibernate.Session;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectResultCollector;
-import org.openvpms.component.business.dao.hibernate.im.AssemblerImpl;
 import org.openvpms.component.business.dao.im.security.IUserDAO;
 import org.openvpms.component.business.dao.im.security.UserDAOException;
 import org.openvpms.component.business.domain.im.security.User;
@@ -52,13 +51,13 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
      */
     private static final String QUERY =
             "from " + UserDOImpl.class.getName()
-                    + " as user where user.username = :name";
+            + " as user where user.username = :name";
 
     /**
-     * Constructs a new <code>UserDAOHibernate</code>.
+     * Constructs a new <tt>UserDAOHibernate</tt>.
      */
     public UserDAOHibernate() {
-        assembler = new AssemblerImpl();
+        assembler = new Assembler();
     }
 
     /**
@@ -94,4 +93,12 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
         return results;
     }
 
+    private static class Assembler extends CompoundAssembler {
+
+        public Assembler() {
+            addAssembler(new ArchetypeAuthorityAssembler());
+            addAssembler(new SecurityRoleAssembler());
+            addAssembler(new UserAssembler());
+        }
+    }
 }

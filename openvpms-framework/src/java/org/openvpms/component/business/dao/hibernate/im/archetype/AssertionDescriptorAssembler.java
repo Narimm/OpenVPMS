@@ -23,6 +23,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 
 
 /**
@@ -38,11 +39,20 @@ public class AssertionDescriptorAssembler
         AssertionDescriptorDO> {
 
     /**
-     * Creates a new <tt>AssertionDescriptorAssembler</tt>.
+     * The archetype descriptor cache, used to resolve <tt>AssertionTypeDescriptor</tt>s by name.
      */
-    public AssertionDescriptorAssembler() {
+    private final IArchetypeDescriptorCache cache;
+
+
+    /**
+     * Creates a new <tt>AssertionDescriptorAssembler</tt>.
+     *
+     * @param cache the archetype descriptor cache, used to resolve <tt>AssertionTypeDescriptor</tt>s by name
+     */
+    public AssertionDescriptorAssembler(IArchetypeDescriptorCache cache) {
         super(AssertionDescriptor.class, AssertionDescriptorDO.class,
               AssertionDescriptorDOImpl.class);
+        this.cache = cache;
     }
 
     /**
@@ -78,6 +88,7 @@ public class AssertionDescriptorAssembler
         target.setErrorMessage(source.getErrorMessage());
         target.setIndex(source.getIndex());
         target.setPropertyMap(source.getPropertyMap());
+        target.setDescriptor(cache.getAssertionTypeDescriptor(target.getName()));
     }
 
     /**

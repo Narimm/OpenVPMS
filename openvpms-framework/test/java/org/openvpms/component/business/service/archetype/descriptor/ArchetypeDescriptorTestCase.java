@@ -45,7 +45,9 @@ import java.util.List;
 public class ArchetypeDescriptorTestCase extends BaseTestCase {
 
     /**
-     * Test that we can read an archetype file with a single archetype
+     * Test that we can read an archetype file with a single archetype.
+     *
+     * @throws Exception for any error
      */
     public void testSingleArchetypeDescripor() throws Exception {
         Hashtable gparams = getTestData().getGlobalParams();
@@ -59,7 +61,9 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
     }
 
     /**
-     * Test that we can read the assertion types from an XML document
+     * Test that we can read the assertion types from an XML document.
+     *
+     * @throws Exception for any error
      */
     public void testAssertionTypeDescriptors() throws Exception {
         Hashtable gparams = getTestData().getGlobalParams();
@@ -70,14 +74,15 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
         // load the assertion types
         AssertionTypeDescriptors descriptors = getAssertionTypeDescriptors(
                 mfile, afile);
-        assertTrue(descriptors.getAssertionTypeDescriptors().size() == 9);
+        assertEquals(8, descriptors.getAssertionTypeDescriptors().size());
     }
 
     /**
-     * Test that getAllNodeDescriptors works
+     * Test that getAllNodeDescriptors works.
+     *
+     * @throws Exception for any error
      */
-    public void testGetAllNodeDescriptors()
-            throws Exception {
+    public void testGetAllNodeDescriptors() throws Exception {
         Hashtable gparams = getTestData().getGlobalParams();
         String mfile = (String) gparams.get("mappingFile");
         String afile = (String) gparams.get("archetypeFile");
@@ -94,9 +99,10 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
     /**
      * Test that the default node descriptor is being correctly inserted into
      * the archetype descriptor.
+     *
+     * @throws Exception for any error
      */
-    public void testIdNodeDescriptorExists()
-            throws Exception {
+    public void testIdNodeDescriptorExists() throws Exception {
         Hashtable gparams = getTestData().getGlobalParams();
         String mfile = (String) gparams.get("mappingFile");
         String afile = (String) gparams.get("archetypeFile");
@@ -111,10 +117,11 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
     }
 
     /**
-     * Test that it can retrieve the simple and complex node descriptors
+     * Test that it can retrieve the simple and complex node descriptors.
+     *
+     * @throws Exception for any error
      */
-    public void testGetNodeDescriptorMethods()
-            throws Exception {
+    public void testGetNodeDescriptorMethods() throws Exception {
         Hashtable gparams = getTestData().getGlobalParams();
         String mfile = (String) gparams.get("mappingFile");
         String afile = (String) this.getTestData().getTestCaseParameter(
@@ -132,12 +139,12 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
     }
 
     /**
-     * Get archetype descriptors
+     * Get archetype descriptors.
      *
      * @param mfile the mapping file
      * @param afile the archetype descriptor file
      * @return ArchetypeDescriptors
-     * @throws Exception
+     * @throws Exception for any error
      */
     private ArchetypeDescriptors getArchetypeDescriptors(String mfile,
                                                          String afile)
@@ -156,12 +163,12 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
     }
 
     /**
-     * Get assertion type descriptors
+     * Get assertion type descriptors.
      *
      * @param mfile the mapping file
      * @param afile the assertion type descriptor file
      * @return AssertionTypeDescriptors
-     * @throws Exception
+     * @throws Exception for any error
      */
     private AssertionTypeDescriptors getAssertionTypeDescriptors(String mfile,
                                                                  String afile)

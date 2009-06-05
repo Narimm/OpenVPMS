@@ -19,66 +19,82 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
-import java.util.Map;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionContext;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 
 /**
- * This class has a number of static assertion functions. All static functions
- * take two parameters, the target object and a map of properties and return 
- * a boolean value.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * String assertion methods to use in conjunction with
+ * {@link org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor}s.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class StringAssertions {
 
     /**
-     * Default constrcutor 
+     * Default constructor.
      */
     public StringAssertions() {
     }
 
     /**
-     * Test that the length of the string is less than the max length
-     * 
-     * @param target
-     *            the target object
-     * @param node
-     *            the node descriptor for this assertion
-     * @param assertion
-     *            the particular assertion                        
+     * Test that the action value matches the specified regular expression.
+     *
+     * @param context the action context
+     * @return <tt>true</tt> if value  matches the assertion's regular expression; otherwise <tt>false</tt>
      */
-    public static boolean withinMaxLength(Object target, 
-            NodeDescriptor node, AssertionDescriptor assertion) {
-        Map properties = assertion.getPropertyMap().getProperties();
-        String str = (String)target;
-        int maxLength = Integer.parseInt((String)properties.get("maxLength"));
-        
-        return (str.length() <= maxLength);
+    public static boolean regularExpressionMatch(ActionContext context) {
+        String str = (String) context.getValue();
+        NamedProperty expression = context.getProperty("expression");
+        String regExpr = (expression != null) ? (String) expression.getValue() : null;
+        return (str != null && regExpr != null) && str.matches(regExpr);
     }
-    
+
     /**
-     * Test that the target object matches the specified regular expression
-     * 
-     * @param target
-     *            the target object
-     * @param node
-     *            the node descriptor for this assertion
-     * @param assertion
-     *            the particular assertion                        
+     * Converts the action context value string to upper case.
+     *
+     * @param context the action context
+     * @return the converted string. May be <tt>null</tt>
      */
-    public static boolean regularExpressionMatch(Object target, 
-            NodeDescriptor node, AssertionDescriptor assertion) {
-        String str = (String)target;
-        String regExpr = (String)assertion.getPropertyMap().getProperties().get(
-                "expression").getValue();
-        
-        if (str == null) {
-            return false;
-        } else {
-            return str.matches(regExpr);
-        }
+    public static String uppercase(ActionContext context) {
+        String str = (String) context.getValue();
+        return (str != null) ? str.toUpperCase() : null;
     }
+
+    /**
+     * Converts the action context value string to lower case.
+     *
+     * @param context the action context
+     * @return the converted string. May be <tt>null</tt>
+     */
+    public static String lowercase(ActionContext context) {
+        String str = (String) context.getValue();
+        return (str != null) ? str.toLowerCase() : null;
+    }
+
+    /**
+     * Converts the action context value string to proper case.
+     *
+     * @param context the action context
+     * @return the converted string. May be <tt>null</tt>
+     */
+    public static String propercase(ActionContext context) {
+        String str = (String) context.getValue();
+        if (str != null) {
+            NodeDescriptor node = context.getNode();
+            IMObject parent = context.getParent();
+            String existing = (String) node.getValue(parent);
+            if (existing == null || !str.equalsIgnoreCase(existing)) {
+                ProperCaseConverter converter = ProperCaseConverterHelper.getConverter();
+                if (converter != null) {
+                    str = converter.convert(str);
+                }
+            }
+        }
+
+        return str;
+    }
+
 }

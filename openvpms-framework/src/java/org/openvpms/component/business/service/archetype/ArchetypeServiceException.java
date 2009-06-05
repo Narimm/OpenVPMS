@@ -42,50 +42,21 @@ public class ArchetypeServiceException extends OpenVPMSException {
      * An enumeration of error codes.
      */
     public enum ErrorCode {
-        InvalidArchetypeDefDir,
-        FailedToLoadClass,
+
         NoArchetypeDefinition,
-        FailedToInitializeRegistry,
-        FailedToCreateArchetype,
-        InvalidFile,
-        InvalidDir,
-        NoFileSpecified,
-        NoDirSpecified,
-        ArchetypeAlreadyDefined,
-        InvalidIMClass,
         FailedToCreateObject,
-        NoAssertionTypeFileSpecified,
-        InvalidAssertionFile,
-        InvalidAssertionSpecified,
         FailedToSaveObject,
         FailedToSaveCollectionOfObjects,
         FailedToDeleteObject,
-        FailedToFindObject,
-        FailedToFindObjects,
         NoDaoConfigured,
-        FailedInGetByNamedQuery,
         InvalidDomainClass,
-        AssertionTypeNotSpecified,
         FailedToExecuteCreateFunction,
-        FailedToGetActs,
-        FailedToGetActForEntity,
-        FailedToGetParticipations,
-        EntityUidNotSpecified,
-        EntityConceptNotSpecified,
         FailedToDeriveValue,
-        FailedInGetByObjectReference,
-        InvalidSortProperty,
-        CannotSortOnProperty,
-        SortPropertyNotSupported,
-        CanOnlySearchAgainstSingleType,
-        FailedToFindObjectsMatchingShortNames,
         FailedToExecuteQuery,
-        UnsupportedQuery,
         NonNullObjectRequired,
         NonNullNodeNameRequired,
         InvalidArchetypeDescriptor,
         InvalidNodeDescriptor,
-        InvalidDefaultValue,
         FailedToExecuteRule,
         RuleEngineNotSupported,
         ArchetypeServiceNotSet
@@ -102,11 +73,11 @@ public class ArchetypeServiceException extends OpenVPMSException {
      */
     private static Messages messages = Messages
             .getMessages("org.openvpms.component.business.service.archetype."
-                    + OpenVPMSException.ERRMESSAGES_FILE);
+                         + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
      * Instantiate an exception given an error code. The error code corresponds
-     * to a message that does not require any parameters to redner
+     * to a message that does not require any parameters to render.
      *
      * @param errorCode the error code
      */
@@ -117,13 +88,13 @@ public class ArchetypeServiceException extends OpenVPMSException {
 
     /**
      * Instantiate an exception given an error code and a set of associated
-     * object parameters. The params are required to render the message
+     * object parameters. The params are required to render the message.
      *
      * @param errorCode the error code
      * @param params    the parameters used to render the message associated with
      *                  the error code
      */
-    public ArchetypeServiceException(ErrorCode errorCode, Object ... params) {
+    public ArchetypeServiceException(ErrorCode errorCode, Object... params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -143,20 +114,22 @@ public class ArchetypeServiceException extends OpenVPMSException {
     /**
      * Create an exception with the following error code and the root exception.
      * The params is used to render the messsgae that is associated with the
-     * error code
+     * error code.
      *
      * @param errorCode the error code
-     * @param cause
+     * @param cause     the root exception
      * @param params    additional information required to render the message
      */
     public ArchetypeServiceException(ErrorCode errorCode, Throwable cause,
-                                     Object ... params) {
+                                     Object... params) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;
     }
 
     /**
-     * @return Returns the errorCode.
+     * Returns the error code.
+     *
+     * @return the error code
      */
     public ErrorCode getErrorCode() {
         return errorCode;
