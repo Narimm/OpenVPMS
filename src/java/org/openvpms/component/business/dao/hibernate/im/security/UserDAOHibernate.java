@@ -24,6 +24,8 @@ import org.hibernate.Session;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectResultCollector;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupAssembler;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipAssembler;
 import org.openvpms.component.business.dao.im.security.IUserDAO;
 import org.openvpms.component.business.dao.im.security.UserDAOException;
 import org.openvpms.component.business.domain.im.security.User;
@@ -99,6 +101,8 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
             addAssembler(new ArchetypeAuthorityAssembler());
             addAssembler(new SecurityRoleAssembler());
             addAssembler(new UserAssembler());
+            addAssembler(new LookupAssembler());
+            addAssembler(new LookupRelationshipAssembler());
         }
     }
 }

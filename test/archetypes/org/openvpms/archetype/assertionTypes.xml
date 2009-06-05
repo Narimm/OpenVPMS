@@ -20,20 +20,17 @@
                     className="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
                     methodName="regularExpressionMatch"/>
     </assertionType>
-    <assertionType name="lowercase"
-                   propertyArchetype="openvpms-system-assertion.lowercase.1.0">
+    <assertionType name="lowercase" propertyArchetype="assertion.stringcase.1.0">
         <actionType name="set"
                     className="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
                     methodName="lowercase"/>
     </assertionType>
-    <assertionType name="uppercase"
-                   propertyArchetype="openvpms-system-assertion.uppercase.1.0">
+    <assertionType name="uppercase" propertyArchetype="assertion.stringcase.1.0">
         <actionType name="set"
                     className="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
                     methodName="uppercase"/>
     </assertionType>
-    <assertionType name="propercase"
-                   propertyArchetype="openvpms-system-assertion.propercase.1.0">
+    <assertionType name="propercase" propertyArchetype="assertion.stringcase.1.0">
         <actionType name="set"
                     className="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
                     methodName="propercase"/>
