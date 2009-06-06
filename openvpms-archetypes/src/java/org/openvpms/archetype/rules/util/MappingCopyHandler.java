@@ -337,8 +337,8 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      * Determines if an object should be referenced.
      * <p/>
      * This implementation returns <tt>true</tt> if the object is an instance
-     * of a type specified by {@link #setReference(String...)}
-     * or {@link #setReference(Class...)}.
+     * of a type specified by {@link #setReference(String[])}
+     * or {@link #setReference(Class[])}.
      *
      * @param object the object to check
      * @return <tt>true</tt> if it should be referenced
@@ -351,8 +351,8 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      * Determines if an object should be copied.
      * <p/>
      * This implementation returns <tt>true</tt> if the object is an instance
-     * of a type specified by {@link #setCopy(String...)}
-     * or {@link #setCopy(Class...)}.
+     * of a type specified by {@link #setCopy(String[])}
+     * or {@link #setCopy(Class[])}.
      *
      * @param object the object to check
      * @return <tt>true</tt> if it should be referenced
@@ -367,8 +367,8 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      * Excluded objects are replaced with <tt>null</tt>.
      * <p/>
      * This implementation returns <tt>true</tt> if the object is an instance
-     * of a type specified by {@link #setExclude(String...)} or
-     * {@link #setExclude(Class...)}.
+     * of a type specified by {@link #setExclude(String[])} or
+     * {@link #setExclude(Class[])}.
      *
      * @param object the object to check
      * @return <tt>true</tt> if it should be replaced with <tt>null</tt>
@@ -403,7 +403,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
         IMObject result = service.create(shortName);
         if (result == null) {
             throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.FailedToCreateArchetype,
+                    ArchetypeServiceException.ErrorCode.FailedToCreateObject,
                     shortName);
         }
         return result;
