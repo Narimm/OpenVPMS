@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToCreateArchetype;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
@@ -96,7 +95,7 @@ public abstract class AbstractActReversalHandler
             }
             result = service.create(shortName);
             if (result == null) {
-                throw new ArchetypeServiceException(FailedToCreateArchetype,
+                throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.FailedToCreateObject,
                                                     shortName);
             }
         } else {
