@@ -24,7 +24,7 @@
 		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
 		<node name="errorMessage" path="/errorMessage"
-			type="java.lang.String" minCardinality="1" />
+			type="java.lang.String" minCardinality="0" />
 		<node name="propertyMap" path="/propertyMap"
 			type="org.openvpms.component.business.domain.im.datatypes.property.PropertyMap"
 			hidden="true" baseName="property"  maxCardinality="*" >
