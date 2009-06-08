@@ -20,9 +20,12 @@ package org.openvpms.tools.archetype.loader;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -44,7 +47,7 @@ public class Change {
      */
     private ArchetypeDescriptor newVersion;
 
-    
+
     /**
      * Creates a new <tt>Change</tt>.
      */
@@ -151,10 +154,8 @@ public class Change {
      */
     public boolean hasChangedDerivedNodes() {
         if (isUpdate()) {
-            Map<String, NodeDescriptor> oldNodes
-                    = getDerivedNodes(oldVersion);
-            Map<String, NodeDescriptor> newNodes
-                    = getDerivedNodes(newVersion);
+            Map<String, NodeDescriptor> oldNodes = getDerivedNodes(oldVersion);
+            Map<String, NodeDescriptor> newNodes = getDerivedNodes(newVersion);
             if (oldNodes.size() != newNodes.size()) {
                 return true;
             }
@@ -163,14 +164,81 @@ public class Change {
                 if (newNode == null) {
                     return true;
                 }
-                if (!ObjectUtils.equals(oldNode.getPath(),
-                                        newNode.getPath())
-                        || !ObjectUtils.equals(oldNode.getDerivedValue(),
-                                               newNode.getDerivedValue())) {
+                if (!ObjectUtils.equals(oldNode.getPath(), newNode.getPath())
+                    || !ObjectUtils.equals(oldNode.getDerivedValue(), newNode.getDerivedValue())) {
                     return true;
                 }
             }
             return false;
+        }
+        return false;
+    }
+
+    /**
+     * Determines if the archetype has nodes that have assertions that have been changed since the prior version.
+     * Only applicable if this is an update change.
+     *
+     * @param assertions if specified, then only the named assertions are considered
+     * @return <tt>true</tt> if the update changed node assertions
+     */
+    public boolean hasChangedAssertions(String... assertions) {
+        if (isUpdate()) {
+            for (NodeDescriptor oldNode : oldVersion.getAllNodeDescriptors()) {
+                String name = oldNode.getName();
+                NodeDescriptor newNode = newVersion.getNodeDescriptor(name);
+                if (newNode != null) {
+                    if (hasChangedAssertions(oldNode, newNode, assertions)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if the archetype has nodes that have different assertions since the prior
+     * version. Only applicable if this is an update change.
+     *
+     * @param assertions if specified, then only the named assertions are considered
+     * @return a list of nodes that have different assertions
+     */
+    public List<String> getNodesWithChangedAssertions(String... assertions) {
+        List<String> result = new ArrayList<String>();
+        if (isUpdate()) {
+            for (NodeDescriptor oldNode : oldVersion.getAllNodeDescriptors()) {
+                String name = oldNode.getName();
+                NodeDescriptor newNode = newVersion.getNodeDescriptor(name);
+                if (newNode != null) {
+                    if (hasChangedAssertions(oldNode, newNode, assertions)) {
+                        result.add(name);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if a node has changed assertions.
+     *
+     * @param oldNode    the old version of the node descriptor
+     * @param newNode    the new version of the node descriptor
+     * @param assertions if specified, then only the named assertions are considered
+     * @return <tt>true</tt> if the node has changed assertions; otherwise <tt>false</tt>
+     */
+    private boolean hasChangedAssertions(NodeDescriptor oldNode, NodeDescriptor newNode, String... assertions) {
+        Map<String, AssertionDescriptor> oldAssertions = oldNode.getAssertionDescriptors();
+        Map<String, AssertionDescriptor> newAssertions = newNode.getAssertionDescriptors();
+        if (assertions.length == 0) {
+            return oldAssertions.keySet() != newAssertions.keySet();
+        }
+        for (String assertion : assertions) {
+            boolean foundNew = newAssertions.containsKey(assertion);
+            boolean foundOld = oldAssertions.containsKey(assertion);
+            if ((foundOld && !foundNew) || (foundNew && !foundOld)) {
+                return true;
+            }
         }
         return false;
     }
@@ -181,14 +249,12 @@ public class Change {
      * @param descriptor the archetype descriptor
      * @return the derived nodes, keyed on name
      */
-    private Map<String, NodeDescriptor> getDerivedNodes(
-            ArchetypeDescriptor descriptor) {
+    private Map<String, NodeDescriptor> getDerivedNodes(ArchetypeDescriptor descriptor) {
         Map<String, NodeDescriptor> result
                 = new HashMap<String, NodeDescriptor>();
         for (NodeDescriptor node : descriptor.getNodeDescriptorsAsArray()) {
             if (node.isDerived()) {
                 result.put(node.getName(), node);
-
             }
         }
         return result;
