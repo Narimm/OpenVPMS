@@ -38,7 +38,7 @@
         <description>       Default mapping for class
             org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor     </description>
         <map-to xml="assertion"/>
-        <field name="errorMessage" type="string" required="true"
+        <field name="errorMessage" type="string" required="false"
             direct="false" transient="false"
             get-method="getErrorMessage" set-method="setErrorMessage">
             <bind-xml name="errorMessage" node="element" reference="false"/>
