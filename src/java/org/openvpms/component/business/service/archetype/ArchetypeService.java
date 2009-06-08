@@ -849,8 +849,12 @@ public class ArchetypeService implements IArchetypeService {
     private void addToCache(IMObject object) {
         if (object instanceof ArchetypeDescriptor) {
             ArchetypeDescriptor descriptor
-                    = (ArchetypeDescriptor) object;
-            dCache.addArchetypeDescriptor(descriptor, true);
+                    = (ArchetypeDescriptor) get(object.getObjectReference());
+            // retrieve the saved instance - this will have assertion descriptors correctly associated with assertion
+            // type descriptors
+            if (descriptor != null) {
+                dCache.addArchetypeDescriptor(descriptor, true);
+            }
         } else if (object instanceof AssertionTypeDescriptor) {
             AssertionTypeDescriptor descriptor
                     = (AssertionTypeDescriptor) object;

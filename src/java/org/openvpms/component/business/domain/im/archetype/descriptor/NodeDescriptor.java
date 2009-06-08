@@ -1123,7 +1123,7 @@ public class NodeDescriptor extends Descriptor {
         assertionDescriptors.remove(type);
     }
 
-    /**                 a
+    /**
      * Remove the specified child object from the collection defined by this
      * node descriptor using the nominated {@link IMObject} as the root context.
      * <p/>
