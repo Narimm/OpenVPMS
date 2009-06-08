@@ -19,7 +19,9 @@
     <archetype name="party.organisationSchedule.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Schedule">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1"/>
+        <node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="slotSize" path="/details/slotSize" type="java.lang.Integer" defaultValue="'15'" minCardinality="1"/>
         <node name="slotUnits" path="/details/slotUnit" type="java.lang.String" defaultValue="'MINUTES'" minCardinality="1">

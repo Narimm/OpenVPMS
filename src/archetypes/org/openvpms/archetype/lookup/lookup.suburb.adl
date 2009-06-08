@@ -29,7 +29,9 @@
             </assertion>
         </node>
         <node name="name" path="/name" type="java.lang.String"
-              minCardinality="1"/>
+              minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="postCode" path="/details/postCode"
               type="java.lang.String"
               minCardinality="0" maxLength="6"/>

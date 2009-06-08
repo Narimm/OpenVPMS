@@ -22,7 +22,9 @@
 		<node name="id" path="/id"
 			type="java.lang.Long" />
 		<node name="name" path="/name" type="java.lang.String" displayName="Name"
-			minCardinality="1" />
+			minCardinality="1">
+            <assertion name="propercase"/>
+		</node>
 		<node name="description" path="/description" type="java.lang.String" displayName="Description"/>
 		<node name="authorities" path="/authorities" type="java.util.HashSet" displayName="Authorities"
 			maxCardinality="*" parentChild="false" baseName="authority">

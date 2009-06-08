@@ -36,7 +36,9 @@
             </assertion>
         </node>
         <node name="name" path="/name" type="java.lang.String" displayName="Full Name"
-              minCardinality="1"/>
+              minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="description" path="/description" type="java.lang.String" displayName="Description"/>
         <node name="colour" path="/details/colour" type="java.lang.String" maxLength="10"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>

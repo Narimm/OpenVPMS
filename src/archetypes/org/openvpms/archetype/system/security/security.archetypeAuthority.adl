@@ -24,7 +24,9 @@
               type="java.lang.Long"/>
         <node name="name" path="/name" type="java.lang.String"
               displayName="Authority Name"
-              minCardinality="1"/>
+              minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="description" path="/description" type="java.lang.String"
               displayName="Description"/>
         <node name="serviceName" path="/serviceName" type="java.lang.String"

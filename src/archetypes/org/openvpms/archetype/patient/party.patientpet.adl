@@ -22,7 +22,9 @@
         <node name="id" path="/id"
               type="java.lang.Long" readOnly="true"/>
         <node name="name" path="/name" type="java.lang.String"
-              minCardinality="1"/>
+              minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(openvpms:lookup(.,'sex'), ' ', /details/colour, ' ', openvpms:lookup(.,'breed'), '(',party:identities(),')')"/>
@@ -46,6 +48,7 @@
         </node>
         <node name="colour" path="/details/colour" type="java.lang.String"
               maxLength="30">
+            <assertion name="propercase"/>
         </node>
         <node name="sex" path="/details/sex" type="java.lang.String">
             <assertion name="lookup.local">

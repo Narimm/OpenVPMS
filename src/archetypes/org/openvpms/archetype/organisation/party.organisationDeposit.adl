@@ -19,7 +19,9 @@
     <archetype name="party.organisationDeposit.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Deposit Account">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1"/>
+        <node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat('Last Deposit : ',/details/lastDeposit, ' Last Balance : ',/details/lastBalance)"/>

@@ -21,10 +21,14 @@
         <node name="id" path="/id"
               type="java.lang.Long" readOnly="true"/>
         <node name="name" path="/name" type="java.lang.String"
-              minCardinality="1"/>
+              minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="printedName" path="/details/printedName" type="java.lang.String"
-              minCardinality="0"/>
+              minCardinality="0">
+            <assertion name="propercase"/>
+        </node>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="invoiceNote" path="/details/invoiceNote" type="java.lang.String" maxLength="300"/>
         <node name="visitNote" path="/details/visitNote" type="java.lang.String" maxLength="1000"/>
