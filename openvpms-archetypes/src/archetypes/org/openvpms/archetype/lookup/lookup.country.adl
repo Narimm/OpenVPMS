@@ -29,7 +29,9 @@
             </assertion>
         </node>
         <node displayName="Country" name="name" path="/name" type="java.lang.String"
-              minCardinality="1"/>
+              minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name,' ',lookup:isDefault(/defaultLookup))"/>

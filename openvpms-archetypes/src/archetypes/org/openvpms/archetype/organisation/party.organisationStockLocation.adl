@@ -19,7 +19,9 @@
 	<archetype name="party.organisationStockLocation.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.party.Party"  displayName="Stock Location" >
 		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1" />
+		<node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1">
+            <assertion name="propercase"/>
+		</node>
 		<node name="description" type="java.lang.String" path="/description" />
 		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="locations" path="/targetEntityRelationships"

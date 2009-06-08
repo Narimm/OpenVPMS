@@ -22,7 +22,9 @@
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="name" path="/name" type="java.lang.String"
-              minCardinality="1"/>
+              minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="description" type="java.lang.String" path="/description"
               minCardinality="0"/>
         <node name="active" path="/active" type="java.lang.Boolean"

@@ -19,7 +19,9 @@
 	<archetype name="party.supplierorganisation.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.party.Party"  displayName="Supplier(Organisation)" >
 		<node name="id" path="/id" type="java.lang.Long" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name" minCardinality="1" displayName="Company Name"/>
+		<node name="name" type="java.lang.String" path="/name" minCardinality="1" displayName="Company Name">
+            <assertion name="propercase"/>
+		</node>
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="/name" />

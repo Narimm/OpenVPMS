@@ -26,7 +26,9 @@
               path="/description" hidden="true" derived="true"
               derivedValue="concat(party:getBillingAddress(.),' - ',party:getHomeTelephone(.))"/>
         <node name="lastName" path="/details/lastName" type="java.lang.String"
-              minCardinality="1" maxLength="30"/>
+              minCardinality="1" maxLength="30">
+            <assertion name="propercase"/>
+        </node>
         <node name="title" path="/details/title" type="java.lang.String"
               minCardinality="0" maxLength="10">
             <assertion name="lookup">
@@ -35,11 +37,17 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-        <node name="initials" path="/details/initials" type="java.lang.String" maxLength="10"/>
+        <node name="initials" path="/details/initials" type="java.lang.String" maxLength="10">
+            <assertion name="propercase"/>
+        </node>
         <node name="firstName" path="/details/firstName" type="java.lang.String"
-              minCardinality="0" maxLength="30"/>
+              minCardinality="0" maxLength="30">
+            <assertion name="propercase"/>
+        </node>
         <node name="companyName" path="/details/companyName" type="java.lang.String"
-              minCardinality="0" maxLength="50"/>
+              minCardinality="0" maxLength="50">
+            <assertion name="propercase"/>
+        </node>
         <node displayName="Referred By" name="referral" path="/details/referral" type="java.lang.String"
               minCardinality="0" maxLength="20">
             <assertion name="lookup">
@@ -49,8 +57,8 @@
             </assertion>
         </node>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="createdDate" path="/details/createdDate" type="java.util.Date" 
-        	minCardinality="0" defaultValue="java.util.Date.new()" hidden="true"/>
+        <node name="createdDate" path="/details/createdDate" type="java.util.Date"
+              minCardinality="0" defaultValue="java.util.Date.new()" hidden="true"/>
         <node name="patients" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.patient*">
@@ -127,21 +135,21 @@
             </assertion>
         </node>
         <node name="discounts" path="/entityRelationships"
-               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-               filter="entityRelationship.discountCustomer">
-             <assertion name="archetypeRange">
-                 <propertyList name="archetypes">
-                     <propertyMap name="archetype">
-                         <property name="shortName"
-                                   value="entityRelationship.discountCustomer"/>
-                     </propertyMap>
-                 </propertyList>
-                 <errorMessage>errorMessage</errorMessage>
-             </assertion>
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.discountCustomer">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityRelationship.discountCustomer"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active discount customer relationship</errorMessage>
             </assertion>
-         </node>
+        </node>
         <node name="taxes" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
               filter="lookup.taxType">

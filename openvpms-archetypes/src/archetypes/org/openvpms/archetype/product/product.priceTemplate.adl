@@ -20,7 +20,9 @@
                type="org.openvpms.component.business.domain.im.product.Product"
                displayName="Product Price Template">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" path="/name" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="/name"/>
