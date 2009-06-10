@@ -19,6 +19,8 @@ package org.openvpms.component.business.service.archetype.assertion;
 
 import junit.framework.TestCase;
 
+import java.util.Locale;
+
 
 /**
  * Tests the {@link ProperCaseNameConverter} class.
@@ -28,7 +30,10 @@ import junit.framework.TestCase;
  */
 public class ProperCaseNameConverterTestCase extends TestCase {
 
-    private ProperCaseNameConverter capitaliser;
+    /**
+     * The proper case converter.
+     */
+    private ProperCaseNameConverter converter;
 
     /**
      * Tests case conversion of simple names.
@@ -36,6 +41,29 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     public void testCaseConversion() {
         check("Phillip K Dick", "phillip k dick");
         check("J K Rowling", "J K rowLing");
+    }
+
+    /**
+     * Tests names that contain <em>&amp;</em> are correctly spaced.
+     */
+    public void testSpace() {
+        check("Pippi & Reuben & Judah", "pippi & reuben & judah");
+        check("Pippi & Reuben & Judah", "pippi &reuben &judah");
+        check("Pippi & Reuben & Judah", "pippi&reuben&judah");
+    }
+
+    /**
+     * Tests names that contain <em>(</em> have a space before them.
+     */
+    public void testSpaceBefore() {
+        check("Fido (Deceased)", "fido(deceased)");
+    }
+
+    /**
+     * Tests names that contain <em>. </em> have a space after them.
+     */
+    public void testSpaceAfter() {
+        check("J. K. Rowling", "j.k.rowling");
     }
 
     /**
@@ -48,12 +76,12 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     }
 
     /**
-     * Tests names that contain <em>-</em>, <em>.</em> and <em>'</em>.
+     * Tests names that contain <em>-</em>, <em>.</em>, <em>'</em> and <em>&amp;</em>.
      */
     public void testContains() {
         check("Mary-Anne Fahey", "mary-anne fahey");
         check("Grace O'Malley", "grace o'malley");
-        check("J.K. Rowling", "j.k. rowling");
+        check("J. K. Rowling", "j.k. rowling");
         check("Werner von Braun", "werner von braun");
     }
 
@@ -92,19 +120,8 @@ public class ProperCaseNameConverterTestCase extends TestCase {
      */
     @Override
     protected void setUp() throws Exception {
-        ProperCaseRules rules = new ProperCaseRules() {
+        ProperCaseRules rules = new LocaleProperCaseRules(new Locale("")) {
             int version;
-            public String[] getStartsWith() {
-                return new String[]{"Mac", "Mc", "d'"};
-            }
-
-            public String[] getContains() {
-                return new String[]{"-", ".", "'"};
-            }
-
-            public String[] getEndsWith() {
-                return new String[]{"'s"};
-            }
 
             public String[] getExceptions() {
                 return new String[]{"von", "van", "de", "la", "da", "di", "Macintosh", "Macquarie", "La Trobe"};
@@ -114,11 +131,17 @@ public class ProperCaseNameConverterTestCase extends TestCase {
                 return ++version;
             }
         };
-        capitaliser = new ProperCaseNameConverter(rules);
+        converter = new ProperCaseNameConverter(rules);
     }
 
+    /**
+     * Checks name conversion.
+     *
+     * @param expected the expected result
+     * @param name     the name to convert
+     */
     private void check(String expected, String name) {
-        assertEquals(expected, capitaliser.convert(name));
+        assertEquals(expected, converter.convert(name));
     }
 
 }

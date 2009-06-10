@@ -24,29 +24,87 @@ import java.util.Comparator;
 
 
 /**
- * Add description here.
+ * Implementation of the {@link ProperCaseConverter} interface for proper-casing names.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ProperCaseNameConverter implements ProperCaseConverter {
 
+    /**
+     * The case rules to use.
+     */
     private final ProperCaseRules rules;
 
+    /**
+     * Strings that must appear surround by spaces.
+     * Each element is a list of two strings, the first being a lowercase version used to match text, the second the
+     * proper case version.
+     */
+    private String[][] space;
+
+    /**
+     * Strings that must appear with a space before them.
+     * Each element is a list of two strings, the first being a lowercase version used to match text, the second the
+     * proper case version.
+     */
+    private String[][] spaceBefore;
+
+    /**
+     * Strings that must appear with a space after them.
+     * Each element is a list of two strings, the first being a lowercase version used to match text, the second the
+     * proper case version.
+     */
+    private String[][] spaceAfter;
+
+    /**
+     * A list of exceptions. Any word(s) in the text matching these are replaced with the exceptions, ignoring other
+     * case rules. Each element is a list of two strings, the first being a lowercase version used to match text, the
+     * second the proper case version.
+     */
     private String[][] exceptions;
 
+    /**
+     * Strings that must appear with the specified case at the start of a word. Where they appear, they force
+     * capitalisation of the next character in the word.
+     * Each element is a list of two strings, the first being a lowercase version used to match text, the second the
+     * proper case version.
+     */
     private String[][] startsWith;
 
-    private String[][] endsWith;
-
+    /**
+     * Strings that must appear with the specified case anywhere in a word. Where they appear, rhey force capitalisation
+     * of the next character in the word.
+     * Each element is a list of two strings, the first being a lowercase version used to match text, the second the
+     * proper case version.
+     */
     private String[][] contains;
 
+    /**
+     * Strings that must appear with the specified case at the end of a word.
+     * Each element is a list of two strings, the first being a lowercase version used to match text, the second the
+     * proper case version.
+     */
+    private String[][] endsWith;
+
+    /**
+     * Keeps track of the rules version, to detect updates.
+     */
     private int version = -1;
 
+
+    /**
+     * Creates a new <tt>ProperCaseNameConverter</tt/> using an {@link LocaleProperCaseRules} as the rules.
+     */
     public ProperCaseNameConverter() {
         this(new LocaleProperCaseRules());
     }
 
+    /**
+     * Creates a new <tt>ProperCaseNameConverter</tt>.
+     *
+     * @param rules the proper-case rules
+     */
     public ProperCaseNameConverter(ProperCaseRules rules) {
         this.rules = rules;
     }
@@ -64,7 +122,7 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
         Converter converter;
         synchronized (this) {
             getRules();
-            converter = new Converter(text, exceptions, startsWith, endsWith, contains);
+            converter = new Converter(text, space, spaceBefore, spaceAfter, exceptions, startsWith, endsWith, contains);
         }
 
         return converter.convert();
@@ -75,6 +133,9 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
      */
     private synchronized void getRules() {
         if (exceptions == null || version != rules.getVersion()) {
+            space = getStrings(rules.getSpace());
+            spaceBefore = getStrings(rules.getSpaceBefore());
+            spaceAfter = getStrings(rules.getSpaceAfter());
             exceptions = getStrings(rules.getExceptions());
             startsWith = getStrings(rules.getStartsWith());
             endsWith = getStrings(rules.getEndsWith());
@@ -83,44 +144,109 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
         }
     }
 
-    private String[][] getStrings(String[] exceptions) {
-        String[][] result = new String[exceptions.length][];
-        Arrays.sort(exceptions, new Comparator<String>() {
+    /**
+     * Returns a list of string pairs for the supplied strings. The first element is the lower case version of the
+     * string, the second the proper case version.
+     *
+     * @param propercase the proper case strings
+     * @return strings pairs corresponding to the proper case strings
+     */
+    private String[][] getStrings(String[] propercase) {
+        String[][] result = new String[propercase.length][];
+        Arrays.sort(propercase, new Comparator<String>() {
             public int compare(String o1, String o2) {
                 return -(o1.length() - o2.length());
             }
         });
         for (int i = 0; i < result.length; ++i) {
             result[i] = new String[2];
-            result[i][0] = exceptions[i].toLowerCase();
-            result[i][1] = exceptions[i];
+            result[i][0] = propercase[i].toLowerCase();
+            result[i][1] = propercase[i];
         }
         return result;
     }
 
+    /**
+     * Converts text to proper case.
+     */
     private class Converter {
 
+        /**
+         * The text to convert.
+         */
         private final String text;
 
+        /**
+         * The converted text
+         */
         private final StringBuffer result;
 
+        /**
+         * The starting index into the text.
+         */
         private int start;
 
+        /**
+         * The text length.
+         */
         private final int length;
 
+        /**
+         * Exception rules.
+         */
         private final String[][] exceptions;
 
+        /**
+         * Starts-with rules.
+         */
         private final String[][] startsWith;
 
+        /**
+         * Ends-with rules.
+         */
         private final String[][] endsWith;
 
+        /**
+         * Contains rules.
+         */
         private final String[][] contains;
 
-        public Converter(String text, String[][] exceptions, String[][] startsWith,
-                         String[][] endsWith, String[][] contains) {
-            text = StringUtils.strip(text);
-            text = text.replaceAll("\\p{javaWhitespace}", " ");
+        /**
+         * Creates a new <tt>Converter</tt>.
+         *
+         * @param text        the text to convert
+         * @param space       space rules
+         * @param spaceBefore space-before rules
+         * @param spaceAfter  space-after rules
+         * @param exceptions  exception rules
+         * @param startsWith  starts-with rules
+         * @param endsWith    ends-with rules
+         * @param contains    contains rules
+         */
+        public Converter(String text, String[][] space, String[][] spaceBefore, String[][] spaceAfter,
+                         String[][] exceptions, String[][] startsWith, String[][] endsWith, String[][] contains) {
+            // lowercase in order to match with rules
             text = text.toLowerCase();
+
+            // apply space rules
+            for (String[] rule : space) {      //
+                text = text.replace(rule[0], " " + rule[1] + " ");
+            }
+
+            for (String[] rule : spaceBefore) {
+                text = text.replace(rule[0], " " + rule[1]);
+            }
+
+            for (String[] rule : spaceAfter) {
+                text = text.replace(rule[0], rule[1] + " ");
+            }
+
+            // strip leading and trailing whitespace
+            text = StringUtils.strip(text);
+
+            // collapse consecutive spaces
+            text = text.replaceAll(" +", " ");
+
             this.text = text;
             length = text.length();
             result = new StringBuffer(text.length());
@@ -130,10 +256,15 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
             this.contains = contains;
         }
 
+        /**
+         * Converts the text to proper case.
+         *
+         * @return the converted text
+         */
         public String convert() {
             start = 0;
             while (start < length) {
-                int matchLen = checkExceptions();
+                int matchLen = addExceptionMatch();
                 boolean capNext = false;
                 if (matchLen == 0) {
                     capNext = true;
@@ -149,15 +280,14 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
                     end -= endMatch.length();
                 }
                 while (start < end && text.charAt(start) != ' ') {
-                    if (capNext) {
-                        result.append(Character.toTitleCase(text.charAt(start)));
-                        ++start;
-                        capNext = false;
-                        continue;
-                    }
                     matchLen = addMatch(contains, end);
                     if (matchLen == 0) {
-                        result.append(text.charAt(start));
+                        if (capNext) {
+                            result.append(Character.toTitleCase(text.charAt(start)));
+                            capNext = false;
+                        } else {
+                            result.append(text.charAt(start));
+                        }
                         ++start;
                     } else {
                         start += matchLen;
@@ -180,7 +310,13 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
             return result.toString();
         }
 
-        private int checkExceptions() {
+        /**
+         * Tries to adds the proper case text of one of the exception rules if there is a match on a word boundary
+         * (i.e the next character is a ' ' or end of string).
+         *
+         * @return the length of the match, or <tt>0</tt> if there is no match
+         */
+        private int addExceptionMatch() {
             int matchLen = 0;
             for (String[] pair : exceptions) {
                 int end = start + pair[0].length();
@@ -193,6 +329,14 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
             return matchLen;
         }
 
+        /**
+         * Tries to adds the proper case text of one of the specified pairs if there is a match prior to or including
+         * the end index.
+         *
+         * @param pairs the pairs to match
+         * @param end   the end index
+         * @return the length of the match, or <tt>0</tt> if there is no match
+         */
         private int addMatch(String[][] pairs, int end) {
             int matchLen = 0;
             for (String[] pair : pairs) {
@@ -205,6 +349,12 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
             return matchLen;
         }
 
+        /**
+         * Adds the proper case text if the lowercase version matches the text at <tt>start</tt>.
+         *
+         * @param pair the lower and proper case pair
+         * @return the length of the match, or <tt>0</tt> if there is no match
+         */
         private int addMatch(String[] pair) {
             if (text.startsWith(pair[0], start)) {
                 String proper = pair[1];
@@ -214,6 +364,12 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
             return 0;
         }
 
+        /**
+         * Determines if any ends-with rule matches the text prior to the specified offset.
+         *
+         * @param end the end offset
+         * @return the proper case text for the first match, or <tt>null</tt> if none is found
+         */
         private String getEndsWith(int end) {
             for (String[] pair : endsWith) {
                 String lower = pair[0];

@@ -24,7 +24,22 @@ import java.util.ResourceBundle;
 
 
 /**
- * Add description here.
+ * Implementation of the {@link ProperCaseRules} that retrieves rules from a resource bundle named
+ * <em>org.openvpms.component.business.service.archetype.assertion.propercase</em>.
+ * <p/>
+ * A sample set of rules may look like:
+ * <pre>
+ * space.1 = &amp;
+ * startsWith.1 = Mac
+ * startsWith.2 = Mc
+ * startsWith.4 = (
+ * contains.1 = -
+ * contains.2 = .
+ * contains.3 = '
+ * endsWith.1 = 's
+ * exceptions.1 = von
+ * exceptions.2 = van
+ * </pre>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -42,12 +57,47 @@ public class LocaleProperCaseRules implements ProperCaseRules {
     private static final String BUNDLE_NAME
             = "org.openvpms.component.business.service.archetype.assertion.propercase";
 
+    /**
+     * Creates a new <tt>LocaleProperCaseRules</tt> for the default locale.
+     */
     public LocaleProperCaseRules() {
         this(Locale.getDefault());
     }
 
+    /**
+     * Creates a new <tt>LocaleProperCaseRules</tt> for the specified locale.
+     *
+     * @param locale the locale
+     */
     public LocaleProperCaseRules(Locale locale) {
         this.locale = locale;
+    }
+
+    /**
+     * Returns a list of strings that should be surrounded by spaces.
+     *
+     * @return a list of strings
+     */
+    public String[] getSpace() {
+        return getStrings("space.");
+    }
+
+    /**
+     * Returns a list of strings that should have a space before them.
+     *
+     * @return a list of strings
+     */
+    public String[] getSpaceBefore() {
+        return getStrings("spaceBefore.");
+    }
+
+    /**
+     * Returns a list of strings that should have a space after them.
+     *
+     * @return a list of strings
+     */
+    public String[] getSpaceAfter() {
+        return getStrings("spaceAfter.");
     }
 
     /**
@@ -57,7 +107,7 @@ public class LocaleProperCaseRules implements ProperCaseRules {
      * @return a list of strings
      */
     public String[] getStartsWith() {
-        return getStrings("startsWith");
+        return getStrings("startsWith.");
     }
 
     /**
@@ -67,7 +117,7 @@ public class LocaleProperCaseRules implements ProperCaseRules {
      * @return a list of strings
      */
     public String[] getContains() {
-        return getStrings("contains");
+        return getStrings("contains.");
     }
 
     /**
@@ -76,7 +126,7 @@ public class LocaleProperCaseRules implements ProperCaseRules {
      * @return a list of strings
      */
     public String[] getEndsWith() {
-        return getStrings("endsWith");
+        return getStrings("endsWith.");
     }
 
     /**
@@ -85,7 +135,7 @@ public class LocaleProperCaseRules implements ProperCaseRules {
      * @return a list of strings that should appear as is
      */
     public String[] getExceptions() {
-        return getStrings("exceptions");
+        return getStrings("exceptions.");
     }
 
     /**
