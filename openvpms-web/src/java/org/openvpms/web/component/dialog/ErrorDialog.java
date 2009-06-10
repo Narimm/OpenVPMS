@@ -60,6 +60,17 @@ public class ErrorDialog extends MessageDialog {
     }
 
     /**
+     * Construct a new <code>ErrorDialog</code>.
+     *
+     * @param title   the dialog title
+     * @param message the message to display
+     * @param buttons the buttons to display
+     */
+    public ErrorDialog(String title, String message, String[] buttons) {
+        super(title, message, "ErrorDialog", buttons);
+    }
+
+    /**
      * Helper to show a new error dialog.
      *
      * @param exception the exception to display

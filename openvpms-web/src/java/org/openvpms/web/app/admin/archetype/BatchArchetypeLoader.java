@@ -18,8 +18,6 @@
 
 package org.openvpms.web.app.admin.archetype;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
@@ -27,9 +25,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.property.ValidationHelper;
-import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
@@ -75,21 +72,18 @@ public class BatchArchetypeLoader
      * Processes an object.
      *
      * @param descriptor the object to process
+     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
+     *          if the descriptor fails to validate
      */
     protected void process(ArchetypeDescriptor descriptor) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        List<ValidatorError> errors
-                = ValidationHelper.validate(descriptor, service);
-        if (errors == null) {
-            String shortName = descriptor.getShortName();
-            ArchetypeDescriptor existing
-                    = service.getArchetypeDescriptor(shortName);
-            if (existing != null) {
-                promptOnReplace(descriptor, existing);
-            } else {
-                save(descriptor, service);
-            }
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        service.validateObject(descriptor);
+        String shortName = descriptor.getShortName();
+        ArchetypeDescriptor existing = service.getArchetypeDescriptor(shortName);
+        if (existing != null) {
+            promptOnReplace(descriptor, existing);
+        } else {
+            save(descriptor, service);
         }
     }
 
@@ -137,16 +131,17 @@ public class BatchArchetypeLoader
         final ConfirmationDialog dialog = new ConfirmationDialog(title, message,
                                                                  buttons);
         setSuspend(true);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                if (ConfirmationDialog.OK_ID.equals(action)) {
-                    replace(descriptor, existing);
-                    process(); // process the next descriptor
-                } else if (ConfirmationDialog.SKIP_ID.equals(action)) {
-                    // skip the descriptor and process the next
-                    process();
-                }
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                replace(descriptor, existing);
+                process(); // process the next descriptor
+            }
+
+            @Override
+            public void onSkip() {
+                // skip the descriptor and process the next
+                process();
             }
         });
         dialog.show();
@@ -161,5 +156,6 @@ public class BatchArchetypeLoader
     private void replace(ArchetypeDescriptor descriptor,
                          ArchetypeDescriptor existing) {
         SaveHelper.replace(existing, descriptor);
+        changes.add(new Change(existing, descriptor));
     }
 }

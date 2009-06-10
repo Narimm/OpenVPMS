@@ -21,8 +21,6 @@ package org.openvpms.web.app.admin.archetype;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -30,12 +28,16 @@ import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -137,8 +139,10 @@ public class ArchetypeCRUDWindow
     protected void onSaved(ArchetypeDescriptor object, boolean isNew) {
         Change change = new Change(object, getObject());
         super.onSaved(object, isNew);
-        if (change.hasChangedDerivedNodes()) {
-            confirmUpdateDerivedNodes(Arrays.asList(object));
+        boolean updateDerived = change.hasChangedDerivedNodes();
+        boolean updateAssertions = change.hasAddedAssertions(BatchArchetypeUpdater.ASSERTIONS);
+        if (updateDerived || updateAssertions) {
+            confirmUpdateNodes(Arrays.asList(change));
         }
     }
 
@@ -149,10 +153,8 @@ public class ArchetypeCRUDWindow
      */
     private Button getImportButton() {
         if (importButton == null) {
-            importButton = ButtonFactory.create(
-                    IMPORT_ID, new ActionListener() {
-                public void actionPerformed(
-                        ActionEvent event) {
+            importButton = ButtonFactory.create(IMPORT_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
                     onImport();
                 }
             });
@@ -167,10 +169,8 @@ public class ArchetypeCRUDWindow
      */
     private Button getExportButton() {
         if (exportButton == null) {
-            exportButton = ButtonFactory.create(
-                    EXPORT_ID, new ActionListener() {
-                public void actionPerformed(
-                        ActionEvent event) {
+            exportButton = ButtonFactory.create(EXPORT_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
                     onExport();
                 }
             });
@@ -185,7 +185,7 @@ public class ArchetypeCRUDWindow
         UploadListener listener = new UploadListener() {
             public void fileUpload(UploadEvent event) {
                 InputStream stream = event.getInputStream();
-                upload(stream);
+                upload(stream, event.getFileName());
             }
 
             public void invalidFileUpload(UploadEvent event) {
@@ -225,28 +225,58 @@ public class ArchetypeCRUDWindow
     /**
      * Uploads a file.
      *
-     * @param stream the file stream
+     * @param stream   the file stream
+     * @param fileName the file name
      */
-    private void upload(InputStream stream) {
+    private void upload(InputStream stream, String fileName) {
         try {
-            ArchetypeDescriptors descriptors
-                    = ArchetypeDescriptors.read(stream);
-
-            final BatchArchetypeLoader loader
-                    = new BatchArchetypeLoader(descriptors);
-            loader.setListener(new BatchProcessorListener() {
-                public void completed() {
-                    uploaded(loader.getChanges());
-                }
-
-                public void error(Throwable exception) {
-                    ErrorHelper.show(exception);
-                }
-            });
-
-            loader.process();
+            if (fileName == null || fileName.toLowerCase().endsWith(".adl")) {
+                loadArchetypes(stream);
+            } else {
+                loadAssertions(stream);
+            }
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Loads archetype descriptors from the supplied stream.
+     *
+     * @param stream the stream to read
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
+     *          for any error
+     */
+    private void loadArchetypes(InputStream stream) {
+        ArchetypeDescriptors descriptors
+                = ArchetypeDescriptors.read(stream);
+
+        final BatchArchetypeLoader loader = new BatchArchetypeLoader(descriptors);
+        loader.setListener(new BatchProcessorListener() {
+            public void completed() {
+                uploaded(loader.getChanges());
+            }
+
+            public void error(Throwable exception) {
+                ErrorHelper.show(exception);
+            }
+        });
+
+        loader.process();
+    }
+
+    /**
+     * Loads assertion type descriptors from the supplied stream.
+     *
+     * @param stream the stream to read
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
+     *          for any error
+     */
+    private void loadAssertions(InputStream stream) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        AssertionTypeDescriptors descriptors = AssertionTypeDescriptors.read(stream);
+        for (AssertionTypeDescriptor descriptor : descriptors.getAssertionTypeDescriptors().values()) {
+            service.save(descriptor);
         }
     }
 
@@ -258,60 +288,52 @@ public class ArchetypeCRUDWindow
     private void uploaded(List<Change> changes) {
         if (!changes.isEmpty()) {
             super.onSaved(changes.get(0).getNewVersion(), true);
-            List<ArchetypeDescriptor> update
-                    = new ArrayList<ArchetypeDescriptor>();
+            List<Change> update = new ArrayList<Change>();
             for (Change change : changes) {
-                if (change.hasChangedDerivedNodes()) {
-                    update.add(change.getNewVersion());
+                if (change.hasChangedDerivedNodes() || change.hasAddedAssertions(BatchArchetypeUpdater.ASSERTIONS)) {
+                    update.add(change);
                 }
             }
             if (!update.isEmpty()) {
-                confirmUpdateDerivedNodes(update);
+                confirmUpdateNodes(update);
             }
         }
     }
 
     /**
-     * Prompts to update derived nodes of objects associated with the supplied
-     * archetype descriptors.
+     * Prompts to update nodes of objects associated with the supplied archetype changes.
      *
-     * @param descriptors the archetype descriptors
+     * @param changes the archetype changes
      */
-    private void confirmUpdateDerivedNodes(
-            final List<ArchetypeDescriptor> descriptors) {
+    private void confirmUpdateNodes(final List<Change> changes) {
         StringBuffer names = new StringBuffer();
-        for (ArchetypeDescriptor descriptor : descriptors) {
+        for (Change change : changes) {
             if (names.length() != 0) {
                 names.append(", ");
             }
-            names.append(descriptor.getDisplayName());
+            names.append(change.getNewVersion().getDisplayName());
         }
 
-        String title = Messages.get("archetype.derived.update.title");
-        String message = Messages.get(
-                "archetype.derived.update.message",
-                names);
+        String title = Messages.get("archetype.update.title");
+        String message = Messages.get("archetype.update.message", names);
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                if (ConfirmationDialog.OK_ID.equals(action)) {
-                    updateDerivedNodes(descriptors);
-                }
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                updateNodes(changes);
             }
         });
         dialog.show();
     }
 
     /**
-     * Updates derived nodes of objects associated with the supplied archetype
-     * descriptors.
+     * Updates nodes of objects associated with the supplied changed archetype descriptors.
      *
-     * @param descriptors the archetype descriptors
+     * @param changes the changed archetypes
      */
-    private void updateDerivedNodes(List<ArchetypeDescriptor> descriptors) {
-        BatchArchetypeUpdater updater = new BatchArchetypeUpdater(descriptors);
+    private void updateNodes(List<Change> changes) {
+        BatchArchetypeUpdater updater = new BatchArchetypeUpdater(changes);
         updater.setListener(new BatchProcessorListener() {
             public void completed() {
             }
