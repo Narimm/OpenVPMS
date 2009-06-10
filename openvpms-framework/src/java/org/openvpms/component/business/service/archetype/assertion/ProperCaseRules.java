@@ -26,6 +26,27 @@ package org.openvpms.component.business.service.archetype.assertion;
 public interface ProperCaseRules {
 
     /**
+     * Returns a list of strings that should be surrounded by spaces.
+     *
+     * @return a list of strings
+     */
+    String[] getSpace();
+
+    /**
+     * Returns a list of strings that should have a space before them.
+     *
+     * @return a list of strings
+     */
+    String[] getSpaceBefore();
+
+    /**
+     * Returns a list of strings that should have a space after them.
+     *
+     * @return a list of strings
+     */
+    String[] getSpaceAfter();
+
+    /**
      * Returns a list of strings that force capitalisation of the next character when they are encountered at the start 
      * of a word.
      *
@@ -34,8 +55,8 @@ public interface ProperCaseRules {
     String[] getStartsWith();
 
     /**
-     * Returns a list of strings that force capitalisation of the next character when they are encountered within a
-     * word.
+     * Returns a list of strings that force capitalisation of the next character when they are encountered anywhere
+     * within a word.
      *
      * @return a list of strings
      */
