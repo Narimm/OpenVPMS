@@ -24,33 +24,30 @@ import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.IterableIMObjectQuery;
+import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 /**
- * Updates objects associated with a batch of {@link ArchetypeDescriptor}s,
+ * Updates objects associated with a batch of changed {@link ArchetypeDescriptor}s,
  * providing a progress bar and cancel prompt.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class BatchArchetypeUpdater
-        extends AbstractAsynchronousBatchProcessor<ArchetypeDescriptor> {
+        extends AbstractAsynchronousBatchProcessor<Change> {
+
+    /**
+     * Assertion names to check for during updates.
+     */
+    public static String[] ASSERTIONS = {"propercase", "lowercase", "uppercase"};
 
     /**
      * The update progress dialog.
@@ -60,29 +57,29 @@ public class BatchArchetypeUpdater
     /**
      * The progress bar.
      */
-    private DerivedProgressBarProcessor processor;
+    private ObjectUpdateProgressBarProcessor processor;
 
 
     /**
      * Constructs a new <tt>BatchArchetypeUpdater</tt>.
      *
-     * @param descriptors the archetype descriptors of the objects to update
+     * @param changes the changed archetype descriptors of the objects to update
      */
-    public BatchArchetypeUpdater(List<ArchetypeDescriptor> descriptors) {
-        super(descriptors.iterator());
+    public BatchArchetypeUpdater(List<Change> changes) {
+        super(changes.iterator());
     }
 
     /**
      * Processes an object.
      *
-     * @param descriptor the object to process
+     * @param change the object to process
      */
-    protected void process(final ArchetypeDescriptor descriptor) {
+    protected void process(final Change change) {
         if (processor == null) {
-            processor = new DerivedProgressBarProcessor();
+            processor = new ObjectUpdateProgressBarProcessor();
             processor.setListener(new BatchProcessorListener() {
                 public void completed() {
-                    process(); // process the next archetype descriptor, if any
+                    process(); // process the next change, if any
                 }
 
                 public void error(Throwable exception) {
@@ -95,8 +92,8 @@ public class BatchArchetypeUpdater
             dialog.show();
         }
         setSuspend(true);
-        dialog.setArchetype(descriptor.getDisplayName());
-        processor.derive(descriptor.getShortName());
+        dialog.setArchetype(change.getNewVersion().getDisplayName());
+        processor.update(change);
     }
 
     /**
@@ -133,80 +130,6 @@ public class BatchArchetypeUpdater
         }
     }
 
-    private class DerivedProgressBarProcessor
-            extends ProgressBarProcessor<IMObject> {
-
-        /**
-         * Used to batch-save objects, for performance.
-         */
-        private List<IMObject> batch = new ArrayList<IMObject>();
-
-        /**
-         * The archetype service.
-         */
-        private IArchetypeService service;
-
-
-        /**
-         * Default constructor.
-         */
-        public DerivedProgressBarProcessor() {
-            super(null);
-            // don't want to trigger rules when deriving values
-            service = ServiceHelper.getArchetypeService(false);
-        }
-
-        /**
-         * Updates derived nodes for all objects matching the specified short
-         * name.
-         *
-         * @param shortName the archetype short name
-         * @throws ArchetypeServiceException for any archetype service error
-         */
-        public void derive(String shortName) {
-            ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
-
-            query.setMaxResults(0);
-            query.setCountResults(true);
-            IPage<IMObject> page = service.get(query);
-            int size = page.getTotalResults();
-            query.setMaxResults(100);
-            query.setCountResults(false);
-            Iterable<IMObject> iter
-                    = new IterableIMObjectQuery<IMObject>(service, query);
-            setItems(iter, size);
-            process();
-        }
-
-        /**
-         * Processes an object.
-         *
-         * @param object the object to process
-         */
-        protected void process(IMObject object) {
-            service.deriveValues(object);
-            batch.add(object);
-            if (batch.size() > 100) {
-                flushBatch();
-            }
-            processCompleted(object);
-        }
-
-        /**
-         * Invoked when batch processing has completed.
-         */
-        @Override
-        protected void processingCompleted() {
-            flushBatch();
-            super.processingCompleted();
-        }
-
-        private void flushBatch() {
-            service.save(batch);
-            batch.clear();
-        }
-    }
-
     private class UpdateDialog extends PopupDialog {
 
         /**
@@ -216,9 +139,11 @@ public class BatchArchetypeUpdater
 
         /**
          * Creates a new <tt>UpdateDialog</tt>.
+         *
+         * @param processor the processor
          */
-        public UpdateDialog(DerivedProgressBarProcessor processor) {
-            super(Messages.get("archetype.derived.updating.title"), CANCEL);
+        public UpdateDialog(ObjectUpdateProgressBarProcessor processor) {
+            super(Messages.get("archetype.updating.title"), CANCEL);
             setModal(true);
             label = LabelFactory.create();
             Row row = RowFactory.create("CellSpacing", label,
@@ -233,9 +158,17 @@ public class BatchArchetypeUpdater
          * @param displayName the archetype display name
          */
         public void setArchetype(String displayName) {
-            label.setText(Messages.get("archetype.derived.updating.message",
-                                       displayName));
+            label.setText(Messages.get("archetype.updating.message", displayName));
         }
 
+        /**
+         * Invoked when the 'cancel' button is pressed.
+         */
+        @Override
+        protected void onCancel() {
+            processor.processingCompleted();
+            super.onCancel();
+        }
     }
+
 }
