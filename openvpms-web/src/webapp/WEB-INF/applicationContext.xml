@@ -227,8 +227,8 @@
 
     <bean id="lookupService"
           class="org.openvpms.component.business.service.lookup.CachingLookupService">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg>
+        <constructor-arg index="0" ref="archetypeService"/>
+        <constructor-arg index="1">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="lookupCache"/>
@@ -257,8 +257,8 @@
 
     <bean id="appointmentService"
           class="org.openvpms.archetype.rules.workflow.AppointmentService">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg>
+        <constructor-arg index="0" ref="archetypeService"/>
+        <constructor-arg index="1">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="appointmentCache"/>
@@ -425,9 +425,9 @@
     -->
     <bean id="OOSocketBootstrapService"
           class="org.openvpms.report.openoffice.OOSocketBootstrapService">
-        <constructor-arg value="8100"/>
+        <constructor-arg type="int" value="8100"/>
         <!-- start the service on demand -->
-        <constructor-arg value="false"/>
+        <constructor-arg type="boolean" value="false"/>
     </bean>
 
     <!-- OpenOffice connection pool. Uses an OOBootstrapService
@@ -472,6 +472,24 @@
     </bean>
 
     <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache"/>
+
+    <!-- ================================================================== -->
+    <!--                        PROPER CASING                               -->
+    <!-- ================================================================== -->
+
+    <bean id="properCaseConverter"
+          class="org.openvpms.component.business.service.archetype.assertion.ProperCaseNameConverter">
+        <constructor-arg>
+            <bean class="org.openvpms.component.business.service.archetype.assertion.LocaleProperCaseRules">
+                <constructor-arg value="org.openvpms.web.resource.localisation.propercase"/>    
+            </bean>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="properCaseConverterHelper"
+          class="org.openvpms.component.business.service.archetype.assertion.ProperCaseConverterHelper">
+        <constructor-arg ref="properCaseConverter"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
