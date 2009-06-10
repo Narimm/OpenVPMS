@@ -32,7 +32,7 @@ import java.util.ResourceBundle;
  * space.1 = &amp;
  * startsWith.1 = Mac
  * startsWith.2 = Mc
- * startsWith.4 = (
+ * startsWith.3 = (
  * contains.1 = -
  * contains.2 = .
  * contains.3 = '
@@ -47,14 +47,19 @@ import java.util.ResourceBundle;
 public class LocaleProperCaseRules implements ProperCaseRules {
 
     /**
+     * The resource bundle base name.
+     */
+    private final String baseName;
+
+    /**
      * The locale.
      */
     private final Locale locale;
 
     /**
-     * Resource bundle name.
+     * Default resource bundle base name.
      */
-    private static final String BUNDLE_NAME
+    private static final String BASE_NAME
             = "org.openvpms.component.business.service.archetype.assertion.propercase";
 
     /**
@@ -65,11 +70,31 @@ public class LocaleProperCaseRules implements ProperCaseRules {
     }
 
     /**
-     * Creates a new <tt>LocaleProperCaseRules</tt> for the specified locale.
+     * Creates a new <tt>LocaleProperCaseRules</tt> specified resource bundle base name and default locale.
+     *
+     * @param baseName the resource bundle base name
+     */
+    public LocaleProperCaseRules(String baseName) {
+        this(baseName, Locale.getDefault());
+    }
+
+    /**
+     * Creates a new <tt>LocaleProperCaseRules</tt> for the specified locale and default bundle base name.
      *
      * @param locale the locale
      */
     public LocaleProperCaseRules(Locale locale) {
+        this(BASE_NAME, locale);
+    }
+
+    /**
+     * Creates a new <tt>LocaleProperCaseRules</tt> for the specified locale.
+     *
+     * @param baseName the resource bundle base name
+     * @param locale   the locale
+     */
+    public LocaleProperCaseRules(String baseName, Locale locale) {
+        this.baseName = baseName;
         this.locale = locale;
     }
 
@@ -156,7 +181,7 @@ public class LocaleProperCaseRules implements ProperCaseRules {
      * @return a list of strings
      */
     private String[] getStrings(String prefix) {
-        ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+        ResourceBundle bundle = ResourceBundle.getBundle(baseName, locale);
         ArrayList<String> matches = new ArrayList<String>();
 
         for (Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {

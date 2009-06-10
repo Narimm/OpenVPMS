@@ -175,19 +175,19 @@ public class Change {
     }
 
     /**
-     * Determines if the archetype has nodes that have assertions that have been changed since the prior version.
+     * Determines if the archetype has nodes that have assertions that have been added since the prior version.
      * Only applicable if this is an update change.
      *
      * @param assertions if specified, then only the named assertions are considered
      * @return <tt>true</tt> if the update changed node assertions
      */
-    public boolean hasChangedAssertions(String... assertions) {
+    public boolean hasAddedAssertions(String... assertions) {
         if (isUpdate()) {
             for (NodeDescriptor oldNode : oldVersion.getAllNodeDescriptors()) {
                 String name = oldNode.getName();
                 NodeDescriptor newNode = newVersion.getNodeDescriptor(name);
                 if (newNode != null) {
-                    if (hasChangedAssertions(oldNode, newNode, assertions)) {
+                    if (hasAddedAssertions(oldNode, newNode, assertions)) {
                         return true;
                     }
                 }
@@ -197,20 +197,20 @@ public class Change {
     }
 
     /**
-     * Determines if the archetype has nodes that have different assertions since the prior
+     * Determines if the archetype has nodes that have assertions added since the prior
      * version. Only applicable if this is an update change.
      *
      * @param assertions if specified, then only the named assertions are considered
      * @return a list of nodes that have different assertions
      */
-    public List<String> getNodesWithChangedAssertions(String... assertions) {
+    public List<String> getNodesWithAddedAssertions(String... assertions) {
         List<String> result = new ArrayList<String>();
         if (isUpdate()) {
             for (NodeDescriptor oldNode : oldVersion.getAllNodeDescriptors()) {
                 String name = oldNode.getName();
                 NodeDescriptor newNode = newVersion.getNodeDescriptor(name);
                 if (newNode != null) {
-                    if (hasChangedAssertions(oldNode, newNode, assertions)) {
+                    if (hasAddedAssertions(oldNode, newNode, assertions)) {
                         result.add(name);
                     }
                 }
@@ -220,23 +220,23 @@ public class Change {
     }
 
     /**
-     * Determines if a node has changed assertions.
+     * Determines if a node has added assertions.
      *
      * @param oldNode    the old version of the node descriptor
      * @param newNode    the new version of the node descriptor
      * @param assertions if specified, then only the named assertions are considered
      * @return <tt>true</tt> if the node has changed assertions; otherwise <tt>false</tt>
      */
-    private boolean hasChangedAssertions(NodeDescriptor oldNode, NodeDescriptor newNode, String... assertions) {
+    private boolean hasAddedAssertions(NodeDescriptor oldNode, NodeDescriptor newNode, String... assertions) {
         Map<String, AssertionDescriptor> oldAssertions = oldNode.getAssertionDescriptors();
         Map<String, AssertionDescriptor> newAssertions = newNode.getAssertionDescriptors();
         if (assertions.length == 0) {
-            return oldAssertions.keySet() != newAssertions.keySet();
+            return !oldAssertions.keySet().equals(newAssertions.keySet());
         }
         for (String assertion : assertions) {
             boolean foundNew = newAssertions.containsKey(assertion);
             boolean foundOld = oldAssertions.containsKey(assertion);
-            if ((foundOld && !foundNew) || (foundNew && !foundOld)) {
+            if (foundNew && !foundOld) {
                 return true;
             }
         }
