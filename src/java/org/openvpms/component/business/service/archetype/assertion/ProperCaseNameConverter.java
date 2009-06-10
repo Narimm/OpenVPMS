@@ -271,15 +271,12 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
                     matchLen = addMatch(startsWith, length);
                 }
                 start += matchLen;
-                int end = text.indexOf(' ', start + 1);
-                if (end == -1) {
-                    end = length;
-                }
+                int end = nextWhitespace();
                 String endMatch = getEndsWith(end);
                 if (endMatch != null) {
                     end -= endMatch.length();
                 }
-                while (start < end && text.charAt(start) != ' ') {
+                while (start < end && !Character.isWhitespace(text.charAt(start))) {
                     matchLen = addMatch(contains, end);
                     if (matchLen == 0) {
                         if (capNext) {
@@ -298,13 +295,9 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
                     result.append(endMatch);
                     start += endMatch.length();
                 }
-                boolean spaces = false;
-                while (start < length && text.charAt(start) == ' ') {
-                    spaces = true;
+                while (start < length && Character.isWhitespace(text.charAt(start))) {
+                    result.append(text.charAt(start));
                     ++start;
-                }
-                if (spaces) {
-                    result.append(" ");
                 }
             }
             return result.toString();
@@ -312,7 +305,7 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
 
         /**
          * Tries to adds the proper case text of one of the exception rules if there is a match on a word boundary
-         * (i.e the next character is a ' ' or end of string).
+         * (i.e the next character is whitespace or end of string).
          *
          * @return the length of the match, or <tt>0</tt> if there is no match
          */
@@ -320,7 +313,7 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
             int matchLen = 0;
             for (String[] pair : exceptions) {
                 int end = start + pair[0].length();
-                if (end == length || (end < length && text.charAt(end) == ' ')) {
+                if (end == length || (end < length && Character.isWhitespace(text.charAt(end)))) {
                     if ((matchLen = addMatch(pair)) != 0) {
                         break;
                     }
@@ -378,6 +371,20 @@ public class ProperCaseNameConverter implements ProperCaseConverter {
                 }
             }
             return null;
+        }
+
+        /**
+         * Returns the index of the next whitespace character after <tt>start</tt>.
+         *
+         * @return the index of the next whitespace, or <tt>length</tt> if none is found
+         */
+        private int nextWhitespace() {
+            for (int i = start + 1; i < length; ++i) {
+                if (Character.isWhitespace(text.charAt(i))) {
+                    return i;
+                }
+            }
+            return length;
         }
 
     }

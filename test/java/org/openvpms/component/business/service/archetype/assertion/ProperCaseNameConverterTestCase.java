@@ -35,6 +35,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
      */
     private ProperCaseNameConverter converter;
 
+
     /**
      * Tests case conversion of simple names.
      */
@@ -67,12 +68,15 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     }
 
     /**
-     * Tests names that start with <em>Mac</em>, <em>Mc</em> and <em>d'</em>.
+     * Tests names that start with <em>Mac</em>, <em>Mc</em>, <em>d'</em> and the various quote characters.
      */
     public void testStartsWith() {
-        check("Jacques MacDonald", "jacques macdonald");
+        check("Old MacDonald", "old macdonald");
         check("Joseph R McCarthy", "joseph r mccarthy");
         check("Charles d'Artagnan", "charles d'artagnan");
+        check("'Old MacDonald'", "'old macdonald'");
+        check("\"Old MacDonald\"", "\"old macdonald\"");
+        check("`Old MacDonald`", "`old macdonald`");
     }
 
     /**
@@ -112,7 +116,15 @@ public class ProperCaseNameConverterTestCase extends TestCase {
      * Verifies that leading and trailing spaces are removed, and that multiple spaces are replaced with a single space.
      */
     public void testCollapseSpaces() {
-        check("Jacques MacDonald", " jacques   macdonald ");
+        check("Old MacDonald", " old   macdonald ");
+        check("Old MacDonald", "\nold   macdonald\n");
+    }
+
+    /**
+     * Verifies that proper casing occurs for names containing new lines.
+     */
+    public void testNewLines() {
+        check("Old\nMacDonald", "old\nmacdonald");
     }
 
     /**
