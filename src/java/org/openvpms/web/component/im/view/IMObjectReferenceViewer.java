@@ -52,10 +52,9 @@ public class IMObjectReferenceViewer {
     private final String name;
 
     /**
-     * Determines if a hyperlink should be created, to launch a view of the
-     * object.
+     * The listener to invoke if the hyperlink is selected.
      */
-    private final boolean link;
+    private final ActionListener linkListener;
 
     /**
      * The style name.
@@ -64,27 +63,54 @@ public class IMObjectReferenceViewer {
 
 
     /**
-     * Construct a new <code>IMObjectReferenceViewer</code>.
+     * Construct a new <tt>IMObjectReferenceViewer</tt>.
      *
-     * @param reference the reference to view. May be <code>null</code>
-     * @param link      if <code>true</code> enable an hyperlink to the object
+     * @param reference the reference to view. May be <tt>null</tt>
+     * @param link      if <tt>true</tt> enable an hyperlink to the object
      */
     public IMObjectReferenceViewer(IMObjectReference reference, boolean link) {
         this(reference, null, link);
     }
 
     /**
-     * Construct a new <code>IMObjectReferenceViewer</code>.
+     * Construct a new <tt>IMObjectReferenceViewer</tt>.
      *
-     * @param reference the reference to view. May be <code>null</code>
-     * @param name      the object name. May be <code>null</code>
-     * @param link      if <code>true</code> enable an hyperlink to the object
+     * @param reference the reference to view. May be <tt>null</tt>
+     * @param name      the object name. May be <tt>null</tt>
+     * @param link      if <tt>true</tt> enable an hyperlink to the object
      */
-    public IMObjectReferenceViewer(IMObjectReference reference, String name,
-                                   boolean link) {
+    public IMObjectReferenceViewer(IMObjectReference reference, String name, boolean link) {
         this.reference = reference;
         this.name = name;
-        this.link = link;
+        if (link) {
+            linkListener = new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onView();
+                }
+            };
+        } else {
+            linkListener = null;
+        }
+    }
+
+    /**
+     * Create a new <tt>IMObjectReferenceViewer</tt> that invokes an action listener
+     * when the reference is selected.
+     *
+     * @param reference the reference to view. May be <tt>null</tt>
+     * @param name      the object name. May be <tt>null</tt>
+     * @param listener  the listener to notify. May be <tt>null</tt>
+     */
+    public IMObjectReferenceViewer(IMObjectReference reference, String name,
+                                   final ActionListener listener) {
+        this.reference = reference;
+        this.name = name;
+        this.linkListener = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                event = new ActionEvent(IMObjectReferenceViewer.this, event.getActionCommand());
+                listener.actionPerformed(event);
+            }
+        };
     }
 
     /**
@@ -113,24 +139,20 @@ public class IMObjectReferenceViewer {
             }
         }
         if (text != null) {
-            if (link) {
+            if (linkListener != null) {
                 if (style == null) {
                     style = "hyperlink";
                 }
                 Button button = ButtonFactory.create(null, style, false);
                 button.setText(text);
-                button.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        onView();
-                    }
-                });
+                button.addActionListener(linkListener);
                 button.setFocusTraversalParticipant(false);
                 // wrap in a row so the button renders to its minimum width
                 result = RowFactory.create(button);
             } else {
                 Label label = (style != null)
-                        ? LabelFactory.create(null, style)
-                        : LabelFactory.create();
+                              ? LabelFactory.create(null, style)
+                              : LabelFactory.create();
                 label.setText(text);
                 result = label;
             }
@@ -141,6 +163,15 @@ public class IMObjectReferenceViewer {
         }
         return result;
 
+    }
+
+    /**
+     * Returns the object reference.
+     *
+     * @return the object reference. May be <tt>null</tt>
+     */
+    public IMObjectReference getReference() {
+        return reference;
     }
 
     /**

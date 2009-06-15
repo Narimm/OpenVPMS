@@ -39,16 +39,20 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.admin.AdminSubsystem;
 import org.openvpms.web.app.customer.CustomerSubsystem;
+import org.openvpms.web.app.history.CustomerPatientPartyHistoryBrowser;
 import org.openvpms.web.app.patient.PatientSubsystem;
 import org.openvpms.web.app.product.ProductSubsystem;
 import org.openvpms.web.app.reporting.ReportingSubsystem;
 import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
+import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.subsystem.Refreshable;
 import org.openvpms.web.component.subsystem.Subsystem;
@@ -147,7 +151,9 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      * The workspace style name.
      */
     private static final String WORKSPACE_STYLE = "MainPane.Workspace";
+
     private static final String LEFTPANE_STYLE = "MainPane.Left";
+
     private static final String RIGHTPANE_STYLE = "MainPane.Right";
 
     /**
@@ -202,6 +208,11 @@ public class MainPane extends SplitPane implements ContextChangeListener,
             addSubsystem(new AdminSubsystem());
         }
 
+        menu.addButton("history", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                showHistory();
+            }
+        });
         menu.addButton("help", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 new HelpDialog().show();
@@ -252,10 +263,8 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      * @param value the context value. May be <tt>null</tt>
      */
     public void changed(String key, IMObject value) {
-        if ((value != null
-                && currentWorkspace.canHandle(
-                value.getArchetypeId().getShortName()))
-                || currentWorkspace.canHandle(key)) {
+        if ((value != null && currentWorkspace.canHandle(value.getArchetypeId().getShortName()))
+            || currentWorkspace.canHandle(key)) {
             // the key may be a short name. Use in the instance that the value
             // is null
             currentWorkspace.setIMObject(value);
@@ -423,6 +432,23 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         removeTaskQueue();
         OpenVPMSApp app = OpenVPMSApp.getInstance();
         app.logout();
+    }
+
+    /**
+     * Displays the customer/patient history browser.
+     */
+    private void showHistory() {
+        CustomerPatientPartyHistoryBrowser browser = new CustomerPatientPartyHistoryBrowser();
+        final BrowserDialog<Party> dialog = new BrowserDialog<Party>(Messages.get("history.title"), browser);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                Party party = dialog.getSelected();
+                if (party != null) {
+                    ContextApplicationInstance.getInstance().switchTo(party);
+                }
+            }
+        });
+        dialog.show();
     }
 
     /**

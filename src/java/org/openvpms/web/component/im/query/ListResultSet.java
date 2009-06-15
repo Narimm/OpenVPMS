@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * Paged result set where the results are pre-loaded from a list.
- * This implementation provides no sorting support.
+ * This implementation does not support sorting beyond keeping the sort criteria.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-11-27 05:30:20Z $
@@ -36,6 +36,11 @@ public class ListResultSet<T> extends AbstractListResultSet<T> {
      * The sort criteria.
      */
     private SortConstraint[] sort = new SortConstraint[0];
+
+    /**
+     * Determines if the set is sorted ascending or descending.
+     */
+    private boolean sortAscending = true;
 
 
     /**
@@ -51,19 +56,23 @@ public class ListResultSet<T> extends AbstractListResultSet<T> {
     /**
      * This resets the iterator but does not do any sorting.
      *
-     * @param sort the sort criteria. May be <code>null</code>
+     * @param sort the sort criteria. May be <tt>null</tt>
      */
     public void sort(SortConstraint[] sort) {
+        if (sort != null && sort.length != 0) {
+            sortAscending = sort[0].isAscending();
+            this.sort = sort;
+        }
         reset();
     }
 
     /**
      * Determines if the node is sorted ascending or descending.
      *
-     * @return <code>false</code>
+     * @return <tt>false</tt>
      */
     public boolean isSortedAscending() {
-        return false;
+        return sortAscending;
     }
 
     /**
