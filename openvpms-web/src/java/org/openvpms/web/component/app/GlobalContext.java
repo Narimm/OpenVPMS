@@ -21,7 +21,9 @@ package org.openvpms.web.component.app;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -30,12 +32,17 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class GlobalContext extends AbstractContext {
+public class GlobalContext extends AbstractContext implements ContextHistory {
 
     /**
      * The context listeners.
      */
     private List<ContextListener> listeners = new ArrayList<ContextListener>();
+
+    /**
+     * The context history.
+     */
+    private Map<String, SelectionHistory> history = new HashMap<String, SelectionHistory>();
 
 
     /**
@@ -86,8 +93,25 @@ public class GlobalContext extends AbstractContext {
             // only update the context if the objects have different instances,
             // to avoid cyclic notifications
             super.setObject(key, object);
+            if (object != null) {
+                updateHistory(key, object);
+            }
             notifyListeners(key, object);
         }
+    }
+
+    public SelectionHistory getHistory(String shortName) {
+        SelectionHistory result = history.get(shortName);
+        return result != null ? result : new SelectionHistory();
+    }
+
+    private void updateHistory(String key, IMObject object) {
+        SelectionHistory selectionHistory = history.get(key);
+        if (selectionHistory == null) {
+            selectionHistory = new SelectionHistory();
+            history.put(key, selectionHistory);
+        }
+        selectionHistory.add(object);
     }
 
     /**
@@ -97,7 +121,7 @@ public class GlobalContext extends AbstractContext {
      * @param value the context value
      */
     private void notifyListeners(String key, IMObject value) {
-        ContextListener[] list = listeners.toArray(new ContextListener[0]);
+        ContextListener[] list = listeners.toArray(new ContextListener[listeners.size()]);
         for (ContextListener listener : list) {
             listener.changed(key, value);
         }

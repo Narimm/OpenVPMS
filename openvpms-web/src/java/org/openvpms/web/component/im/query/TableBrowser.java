@@ -216,7 +216,7 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      * Adds the table to the browser container.
      *
      * @param container  the browser container
-     * @param hasResults
+     * @param hasResults determines if there are results to display
      */
     private void doLayout(Component container, boolean hasResults) {
         if (initialLayout || (hasResults != resultsLayout)) {
