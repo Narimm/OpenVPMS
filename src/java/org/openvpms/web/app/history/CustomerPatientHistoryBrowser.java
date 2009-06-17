@@ -38,8 +38,7 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Browser of customer & patient selection history, providing hyperlinks to launch the workspace of the selected
- * customer or patient.
+ * Browser of customer and patient selection history.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

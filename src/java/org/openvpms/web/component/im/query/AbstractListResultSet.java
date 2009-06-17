@@ -113,12 +113,16 @@ public abstract class AbstractListResultSet<T> extends AbstractResultSet<T> {
      */
     protected IPage<T> get(int page) {
         Page<T> result = null;
-        int from = page * getPageSize();
+        int maxResults = getPageSize();
+        int from;
+        if (page == 0) {
+            from = 0;
+        } else {
+            from = (maxResults == ArchetypeQuery.ALL_RESULTS) ? objects.size() : page * maxResults;
+        }
         if (from < objects.size()) {
             int to;
-            int maxResults = getPageSize();
-            if (maxResults == ArchetypeQuery.ALL_RESULTS
-                    || ((from + maxResults) >= objects.size())) {
+            if (maxResults == ArchetypeQuery.ALL_RESULTS || ((from + maxResults) >= objects.size())) {
                 to = objects.size();
             } else {
                 to = from + maxResults;

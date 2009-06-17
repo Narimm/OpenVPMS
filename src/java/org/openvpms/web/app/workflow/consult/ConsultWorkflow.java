@@ -115,6 +115,8 @@ public class ConsultWorkflow extends WorkflowImpl {
         // add a task to update the global context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
+                global.setCustomer(context.getCustomer());
+                global.setPatient(context.getPatient());
                 global.setClinician(context.getClinician());
             }
         });

@@ -22,11 +22,11 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.app.workflow.LocalClinicianContext;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -103,7 +103,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     @Override
     protected void edit(IMObjectEditor editor) {
         if (startTime != null && editor.getObject().isNew()
-                && editor instanceof AppointmentActEditor) {
+            && editor instanceof AppointmentActEditor) {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
         super.edit(editor);
@@ -162,15 +162,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     protected LayoutContext createLayoutContext() {
         LayoutContext context = super.createLayoutContext();
 
-        // create a local context - don't want customer and patient changes
-        // to propagate to the global context, and don't want to pick up
-        // the current clinician
-        Context global = GlobalContext.getInstance();
-        LocalContext local = new LocalContext(null);
-        local.setSchedule(global.getSchedule());
-        local.setScheduleDate(global.getScheduleDate());
-        local.setCustomer(global.getCustomer());
-        local.setPatient(global.getPatient());
+        // create a local context - don't want to pick up the current clinician
+        Context local = new LocalClinicianContext(GlobalContext.getInstance());
         context.setContext(local);
         return context;
     }
@@ -193,9 +186,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     protected boolean canCheckoutOrConsult(Act act) {
         String status = act.getStatus();
         return AppointmentStatus.CHECKED_IN.equals(status)
-                || AppointmentStatus.IN_PROGRESS.equals(status)
-                || AppointmentStatus.COMPLETED.equals(status)
-                || AppointmentStatus.BILLED.equals(status);
+               || AppointmentStatus.IN_PROGRESS.equals(status)
+               || AppointmentStatus.COMPLETED.equals(status)
+               || AppointmentStatus.BILLED.equals(status);
     }
 
     /**

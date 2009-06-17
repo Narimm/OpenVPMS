@@ -92,6 +92,8 @@ public class CheckOutWorkflow extends WorkflowImpl {
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
                 Context global = GlobalContext.getInstance();
+                global.setCustomer(context.getCustomer());
+                global.setPatient(context.getPatient());
                 global.setTill(context.getTill());
                 global.setClinician(context.getClinician());
             }

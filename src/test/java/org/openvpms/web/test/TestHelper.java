@@ -25,6 +25,7 @@
 package org.openvpms.web.test;
 
 import junit.framework.Assert;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -32,7 +33,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 
 import java.util.Arrays;
 
@@ -63,7 +63,7 @@ public class TestHelper extends Assert {
      *
      * @param objects the objects to save
      */
-    public static <T extends IMObject> void save(T ... objects) {
+    public static <T extends IMObject> void save(T... objects) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         service.save(Arrays.asList(objects));
     }
@@ -84,10 +84,22 @@ public class TestHelper extends Assert {
      * @return a new customer
      */
     public static Party createCustomer(boolean save) {
+        return createCustomer("foo", "xyz", save);
+    }
+
+    /**
+     * Creates a new customer.
+     *
+     * @param firstName the customer's first name
+     * @param lastName  the customer's last name
+     * @param save      if <tt>true</tt> save it
+     * @return a new customer
+     */
+    public static Party createCustomer(String firstName, String lastName, boolean save) {
         Party party = (Party) create("party.customerperson");
         IMObjectBean bean = new IMObjectBean(party);
-        bean.setValue("firstName", "foo");
-        bean.setValue("lastName", "xyz");
+        bean.setValue("firstName", firstName);
+        bean.setValue("lastName", lastName);
         Contact contact = (Contact) create(ContactArchetypes.PHONE);
         party.addContact(contact);
         if (save) {
@@ -112,9 +124,20 @@ public class TestHelper extends Assert {
      * @return a new patient
      */
     public static Party createPatient(boolean save) {
+        return createPatient("Fido", save);
+    }
+
+    /**
+     * Creates a new patient.
+     *
+     * @param name the patient name
+     * @param save if <tt>true</tt>, save it
+     * @return a new patient
+     */
+    public static Party createPatient(String name, boolean save) {
         Party party = (Party) create("party.patientpet");
         IMObjectBean bean = new IMObjectBean(party);
-        bean.setValue("name", "Fido");
+        bean.setValue("name", name);
         bean.setValue("species", "Canine");
         if (save) {
             bean.save();
