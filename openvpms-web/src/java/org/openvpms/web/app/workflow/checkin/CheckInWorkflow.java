@@ -173,6 +173,8 @@ public class CheckInWorkflow extends WorkflowImpl {
         // add a task to update the global context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
+                global.setPatient(context.getPatient());
+                global.setCustomer(context.getCustomer());
                 global.setClinician(context.getClinician());
             }
         });
@@ -181,7 +183,9 @@ public class CheckInWorkflow extends WorkflowImpl {
     private class CustomerTaskWorkflow extends WorkflowImpl {
 
         /**
-         * Constructs a new <code>CustomerTaskWorkflow</code>.
+         * Constructs a new <tt>CustomerTaskWorkflow</tt>.
+         *
+         * @param taskDescription the task description
          */
         public CustomerTaskWorkflow(String taskDescription) {
             // select a worklist

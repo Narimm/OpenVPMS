@@ -99,6 +99,12 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         super(SHORT_NAMES, CustomerPatient.class);
         setAuto(true);
         history = getHistory(customers, patients);
+        filter = TextComponentFactory.create();
+        filter.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onQuery();
+            }
+        });
     }
 
     /**
@@ -111,12 +117,6 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
             component = RowFactory.create("ControlRow");
             Label nameLabel = LabelFactory.create("name");
             component.add(nameLabel);
-            filter = TextComponentFactory.create();
-            filter.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onQuery();
-                }
-            });
             component.add(filter);
             focusGroup.add(filter);
         }
@@ -145,6 +145,17 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
      */
     public FocusGroup getFocusGroup() {
         return focusGroup;
+    }
+
+    /**
+     * Sets the name filter.
+     * <p/>
+     * Selections containing the filter will be included in the results.
+     *
+     * @param filter the name filter
+     */
+    public void setName(String filter) {
+        this.filter.setText(filter);
     }
 
     /**

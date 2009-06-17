@@ -23,10 +23,10 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.app.workflow.LocalClinicianContext;
 import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -107,15 +107,8 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
     protected LayoutContext createLayoutContext() {
         LayoutContext context = super.createLayoutContext();
 
-        // create a local context - don't want customer and patient changes
-        // to propagate to the global context, and don't want to pick up
-        // the current clinician
-        Context global = GlobalContext.getInstance();
-        LocalContext local = new LocalContext(null);
-        local.setWorkList(global.getWorkList());
-        local.setWorkListDate(global.getWorkListDate());
-        local.setCustomer(global.getCustomer());
-        local.setPatient(global.getPatient());
+        // create a local context - don't want don't want to pick up the current clinician
+        Context local = new LocalClinicianContext(GlobalContext.getInstance());
         context.setContext(local);
         return context;
     }
