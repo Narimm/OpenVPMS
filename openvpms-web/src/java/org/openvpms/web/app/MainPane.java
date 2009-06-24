@@ -42,13 +42,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.admin.AdminSubsystem;
 import org.openvpms.web.app.customer.CustomerSubsystem;
-import org.openvpms.web.app.history.CustomerPatientPartyHistoryBrowser;
+import org.openvpms.web.app.history.CustomerPatient;
+import org.openvpms.web.app.history.CustomerPatientHistoryBrowser;
 import org.openvpms.web.app.patient.PatientSubsystem;
 import org.openvpms.web.app.product.ProductSubsystem;
 import org.openvpms.web.app.reporting.ReportingSubsystem;
 import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
-import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -208,11 +208,6 @@ public class MainPane extends SplitPane implements ContextChangeListener,
             addSubsystem(new AdminSubsystem());
         }
 
-        menu.addButton("history", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                showHistory();
-            }
-        });
         menu.addButton("help", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 new HelpDialog().show();
@@ -362,6 +357,11 @@ public class MainPane extends SplitPane implements ContextChangeListener,
             }
         });
         row.addButton(newWindow);
+        row.addButton("recent", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                showHistory();
+            }
+        });
         row.addButton("logout", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onLogout();
@@ -438,13 +438,19 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      * Displays the customer/patient history browser.
      */
     private void showHistory() {
-        CustomerPatientPartyHistoryBrowser browser = new CustomerPatientPartyHistoryBrowser();
-        final BrowserDialog<Party> dialog = new BrowserDialog<Party>(Messages.get("history.title"), browser);
+        final CustomerPatientHistoryBrowser browser = new CustomerPatientHistoryBrowser();
+        BrowserDialog<CustomerPatient> dialog = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
-                Party party = dialog.getSelected();
-                if (party != null) {
-                    ContextApplicationInstance.getInstance().switchTo(party);
+                CustomerPatient selected = browser.getSelected();
+                if (selected != null) {
+                    GlobalContext context = GlobalContext.getInstance();
+                    context.setCustomer(selected.getCustomer());
+                    context.setPatient(selected.getPatient());
+                    Party party = browser.getSelectedParty();
+                    if (party != null) {
+                        changeContext(party);
+                    }
                 }
             }
         });
