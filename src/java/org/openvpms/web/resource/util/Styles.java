@@ -19,6 +19,7 @@
 package org.openvpms.web.resource.util;
 
 import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Style;
 import nextapp.echo2.app.StyleSheet;
 import nextapp.echo2.app.componentxml.ComponentXmlException;
 import nextapp.echo2.app.componentxml.StyleSheetLoader;
@@ -110,8 +111,23 @@ public final class Styles {
         return result;
     }
 
+    /**
+     * Returns the value of an integer property from a style.
+     *
+     * @param style        the style
+     * @param name         the property name
+     * @param defaultValue the default value, if no such property exists
+     * @return the property value
+     */
+    public static int getInt(Style style, String name, int defaultValue) {
+        Object value = style.getProperty(name);
+        return (value != null) ? ((Number) value).intValue() : defaultValue;
+    }
+
     private static class Width {
+
         public final int width;
+
         public final String styleSuffix;
 
         public Width(int width, String styleSuffix) {

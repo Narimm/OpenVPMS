@@ -11,7 +11,6 @@
         <properties>
             <property name="resizable" value="false"/>
             <property name="width" value="450px"/>
-            admin
             <property name="height" value="160px"/>
         </properties>
     </style>
