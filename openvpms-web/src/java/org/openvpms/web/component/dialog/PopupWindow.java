@@ -18,11 +18,15 @@
 
 package org.openvpms.web.component.dialog;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.webcontainer.ContainerContext;
+import nextapp.echo2.webrender.ClientProperties;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.focus.FocusHelper;
@@ -106,11 +110,59 @@ public abstract class PopupWindow extends WindowPane {
         if (getParent() == null) {
             doLayout();
             DialogManager.show(this);
+            restrictDimensions();
         }
         if (defaultButton != null) {
             Button button = getButtons().getButton(defaultButton);
             if (button != null) {
                 FocusHelper.setFocus(button);
+            }
+        }
+    }
+
+    /**
+     * Restrict dialog dimensions to 70% of screen height and 90% of screen width to try and prevent dialogs from
+     * exceeding screen bounds. See OVPMS-
+     */
+    private void restrictDimensions() {
+        ApplicationInstance app = ApplicationInstance.getActive();
+        ContainerContext context = (ContainerContext) app.getContextProperty(
+                ContainerContext.CONTEXT_PROPERTY_NAME);
+        if (context != null) {
+            ClientProperties properties = context.getClientProperties();
+            int screenWidth = properties.getInt(ClientProperties.SCREEN_WIDTH, 0);
+            int screenHeight = properties.getInt(ClientProperties.SCREEN_HEIGHT, 0);
+            restrictSize(screenHeight, WindowPane.PROPERTY_HEIGHT, WindowPane.PROPERTY_POSITION_Y, 0.70);
+            restrictSize(screenWidth, WindowPane.PROPERTY_WIDTH, WindowPane.PROPERTY_POSITION_X, 0.90);
+        }
+
+    }
+
+    /**
+     * Restricts the size and offset of a dialog based on a factor and screen size.
+     *
+     * @param screenSize       the screen size, in pixels, or <tt>0</tt> if unknown
+     * @param sizeProperty     the name of the size property
+     * @param positionProperty the name of the position property
+     * @param factor           the factor to restrict by
+     */
+    private void restrictSize(int screenSize, String sizeProperty, String positionProperty, double factor) {
+        int size = getPixelSize(sizeProperty);
+        int offset = getPixelSize(positionProperty);
+        if (screenSize > 0 && size > 0) {
+            int limitSize = (int) (screenSize * factor);
+            if (size + offset > limitSize) {
+                if (offset != 0) {
+                    offset = (limitSize - size) / 2;
+                    if (offset <= 0) {
+                        offset = 5;
+                    }
+                    setProperty(positionProperty, new Extent(offset));
+                }
+                if (size > limitSize - offset) {
+                    size = limitSize - offset;
+                    setProperty(sizeProperty, new Extent(size));
+                }
             }
         }
     }
@@ -151,6 +203,8 @@ public abstract class PopupWindow extends WindowPane {
 
     /**
      * Returns the layout pane.
+     *
+     * @return the layout pane
      */
     protected SplitPane getLayout() {
         return layout;
@@ -224,4 +278,14 @@ public abstract class PopupWindow extends WindowPane {
         FocusHelper.setFocus(component);
     }
 
+    /**
+     * Returns the size in pixels for the specified property.
+     *
+     * @param propertyName the property name
+     * @return the size in pixels, or <tt>0</tt> if its not known
+     */
+    private int getPixelSize(String propertyName) {
+        Extent result = (Extent) getRenderProperty(propertyName);
+        return (result == null || result.getUnits() != Extent.PX) ? 0 : result.getValue();
+    }
 }
