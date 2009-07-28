@@ -367,6 +367,12 @@ public class ReminderProcessor
      */
     private ReminderEvent process(Act reminder, int reminderCount, ActBean bean) {
         ReminderEvent result;
+
+        // if the current reminderCount is not the same as that supplied, then a historical reminder event
+        // is being processed, and the isDue() check does not apply.
+        int currentReminderCount = bean.getInt("reminderCount");
+        boolean ignoreDueDate = (currentReminderCount != reminderCount);
+
         IMObjectReference ref = bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
         ReminderType reminderType = reminderTypes.get(ref);
         if (reminderType == null) {
@@ -376,7 +382,7 @@ public class ReminderProcessor
         if (rules.shouldCancel(reminder, processingDate)) {
             result = cancel(reminder, reminderType);
         } else {
-            if (reminderType.isDue(dueDate, reminderCount, from, to)) {
+            if (ignoreDueDate || reminderType.isDue(dueDate, reminderCount, from, to)) {
                 EntityRelationship template = reminderType.getTemplateRelationship(reminderCount);
                 if (template != null) {
                     result = generate(reminder, reminderType, template);
