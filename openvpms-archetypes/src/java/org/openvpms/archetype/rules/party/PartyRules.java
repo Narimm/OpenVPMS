@@ -550,9 +550,9 @@ public class PartyRules {
             result.append(bean.getString("address", ""));
             result.append("\n");
         }
-        result.append(ArchetypeServiceFunctions.lookup(contact, "suburb"));
+        result.append(ArchetypeServiceFunctions.lookup(contact, "suburb",""));
         result.append(" ");
-        result.append(bean.getString("state", ""));
+        result.append(ArchetypeServiceFunctions.lookup(contact, "state",""));
         result.append(" ");
         result.append(bean.getString("postcode", ""));
         return result.toString();
