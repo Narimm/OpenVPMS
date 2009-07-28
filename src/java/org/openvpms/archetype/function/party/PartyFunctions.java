@@ -817,6 +817,49 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the Desex status of a Patient.
+     *
+     * @param context the expression context. Expected to reference a party or
+     *                act
+     * @return desex status, or an empty string
+     */
+
+    public String getPatientDesexStatus(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        if (value instanceof Party) {
+            return getPatientDesexStatus((Party) value);
+
+        } else if (value instanceof Act) {
+            return getPatientDesexStatus((Act) value);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the Desex status of a Patient.
+     *
+     * @param party the patient. May be <tt>null</tt>.
+     * @return desex status, or an empty string
+     */
+    public String getPatientDesexStatus(Party party) {
+            return getPatientRules().getPatientDesexStatus(party);
+    }
+
+    /**
+     * Returns the Desex Status for a Patient.
+     *
+     * @param act the act. May be <tt>null</tt>.
+     * @return desex status, or an empty string
+     */
+    public String getPatientDesexStatus(Act act) {
+        if (act != null) {
+            return getPatientRules().getPatientDesexStatus(act);
+        }
+        return "";
+    }
+
+    /**
      * Returns the Practice party object.
      *
      * @return the practice party object

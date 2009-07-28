@@ -18,10 +18,19 @@
 
 package org.openvpms.archetype.rules.patient;
 
-import org.apache.commons.lang.time.DateUtils;
-import org.openvpms.archetype.rules.party.MergeException;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PARTICIPATION;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
+import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.resources.Message;
+import org.openvpms.archetype.rules.party.MergeException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -42,14 +51,7 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ParticipationConstraint;
-import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -270,6 +272,40 @@ public class PatientRules {
     public boolean isDesexed(Party patient) {
         EntityBean bean = new EntityBean(patient, service);
         return bean.getBoolean("desexed");
+    }
+
+    /**
+     * Returns the Desex status of the patient.
+     *
+     * @param patient the patient
+     * @return the desex status in string format
+     * @throws ArchetypeServiceException for any archetype service error
+     *                                   todo - should be localised
+     */
+    public String getPatientDesexStatus(Party patient) {
+    	if(patient != null) {
+            if(isDesexed(patient)) {
+            	return "Desexed";
+            } else {
+            	return "Entire";
+            }    		
+    	} else {
+    		return "";
+    	}
+    }
+
+    /**
+     * Returns the Desex status of the patient associated with an act.
+     *
+     * @param act the act connected to the patient
+     * @return the age in string format
+     * @throws ArchetypeServiceException for any archetype service error
+     *                                   todo - should be localised
+     */
+    public String getPatientDesexStatus(Act act) {
+        ActBean bean = new ActBean(act, service);
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        return getPatientDesexStatus(patient);
     }
 
     /**
