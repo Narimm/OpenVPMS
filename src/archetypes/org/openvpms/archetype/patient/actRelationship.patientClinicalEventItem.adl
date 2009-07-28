@@ -54,7 +54,7 @@
 						<property name="shortName" value="act.patientMedication" />
 					</propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName" value="act.patientInvestigation*"/>
+                        <property name="shortName" value="act.patientInvestigation"/>
                     </propertyMap>
                     <propertyMap name="archetype">
                         <property name="shortName" value="act.patientDocument*"/>
