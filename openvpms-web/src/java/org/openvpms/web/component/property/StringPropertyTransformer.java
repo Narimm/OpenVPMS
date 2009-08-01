@@ -28,6 +28,8 @@ import org.openvpms.web.system.ServiceHelper;
 /**
  * String property transformer, that provides macro expansion for
  * {@link IMObjectProperty} instances.
+ * <p/>
+ * For macro expansion to occur, the property be editable (i.e not read-only or derived)
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -50,6 +52,11 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      */
     private final Object context;
 
+    /**
+     * Determines if macros should be expanded.
+     */
+    private boolean expandMacros;
+
 
     /**
      * Constructs a new <tt>StringTransformer</tt>.
@@ -70,13 +77,36 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     public StringPropertyTransformer(Property property, boolean trim) {
         super(property);
         if (property instanceof IMObjectProperty) {
-            macros = new MacroEvaluator(ServiceHelper.getMacroCache());
+            if (!property.isReadOnly() && !property.isDerived()) {
+                macros = new MacroEvaluator(ServiceHelper.getMacroCache());
+            } else {
+                macros = null;
+            }
             context = ((IMObjectProperty) property).getObject();
         } else {
             macros = null;
             context = null;
         }
+        expandMacros = macros != null;
         this.trim = trim;
+    }
+
+    /**
+     * Determines if macros should be expanded.
+     *
+     * @return <tt>true</tt> if macros should be expanded, otherwise <tt>false</tt>
+     */
+    public boolean getExpandMacros() {
+        return expandMacros;
+    }
+
+    /**
+     * Determines if macros should be expanded.
+     *
+     * @param expand if <tt>true</tt>, macros should be expanded
+     */
+    public void setExpandMacros(boolean expand) {
+        expandMacros = expand;
     }
 
     /**
@@ -97,7 +127,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
                                           property.getDisplayName());
                 throw new PropertyException(property, msg);
             }
-            if (macros != null) {
+            if (expandMacros && macros != null) {
                 result = macros.evaluate(str, context);
             } else {
                 result = str;
@@ -111,7 +141,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         int minLength = property.getMinLength();
         int maxLength = property.getMaxLength();
         if ((result == null && minLength > 0)
-                || (result != null && result.length() < minLength)) {
+            || (result != null && result.length() < minLength)) {
             String msg = Messages.get("property.error.minLength", minLength);
             throw new PropertyException(property, msg);
         }
