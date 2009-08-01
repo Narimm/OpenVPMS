@@ -26,9 +26,12 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.AbstractProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertyTransformer;
+import org.openvpms.web.component.property.StringPropertyTransformer;
 
 
 /**
@@ -58,8 +61,16 @@ public class LookupEditor extends AbstractIMObjectEditor {
     public LookupEditor(Lookup object, IMObject parent, LayoutContext context) {
         super(object, parent, context);
 
+        Property code = getProperty("code");
+        if (code != null && code instanceof AbstractProperty) {
+            // disable macro expansion for the code node to avoid the node expanding itself
+            PropertyTransformer transformer = ((AbstractProperty) code).getTransformer();
+            if (transformer instanceof StringPropertyTransformer) {
+                ((StringPropertyTransformer) transformer).setExpandMacros(false);
+            }
+        }
+
         if (object.isNew()) {
-            Property code = getProperty("code");
             Property name = getProperty("name");
             if (code != null && name != null) {
                 if (code.isHidden()) {
@@ -126,6 +137,7 @@ public class LookupEditor extends AbstractIMObjectEditor {
     }
 
     protected class LayoutStrategy extends AbstractLayoutStrategy {
+
         @Override
         protected ComponentState createComponent(Property property,
                                                  IMObject parent,
