@@ -165,7 +165,19 @@
                     <groupId>eclipse</groupId>
                     <artifactId>jdtcore</artifactId>
                 </exclusion>
+                <exclusion>
+                    <!-- jasper specifies an unbounded version which screws up the build each time a new release of 
+                         itext comes out with dependencies we don't have -->
+                    <groupId>com.lowagie</groupId>
+                    <artifactId>itext</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+            <version>${itext.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>jsap</groupId>
@@ -232,6 +244,7 @@
 
     <properties>
         <openoffice.version>2.1.0</openoffice.version>
+        <itext.version>1.3.1</itext.version>
     </properties>
 
     <repositories>
