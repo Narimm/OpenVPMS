@@ -18,6 +18,11 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import java.util.Date;
+import java.util.Iterator;
+
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -32,9 +37,6 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
-
-import java.util.Date;
-import java.util.Iterator;
 
 
 /**
@@ -201,12 +203,15 @@ public class ReminderQuery {
             query.add(new IdConstraint("reminderType.act", "act"));
         }
         if (from != null) {
-            query.add(new NodeConstraint("endTime", RelationalOp.GTE, from));
+            query.add(new NodeConstraint("endTime", RelationalOp.GTE, DateRules.getDate(from)));
         }
         if (to != null) {
-            query.add(new NodeConstraint("endTime", RelationalOp.LTE, to));
+        	Date tempTo = DateRules.getDate(to); // truncat eto date to date only
+        	tempTo = DateRules.getDate(tempTo, 1, DateUnits.DAYS);  //Add one day 
+            query.add(new NodeConstraint("endTime", RelationalOp.LT, tempTo));
         }
         return query;
     }
+
 
 }

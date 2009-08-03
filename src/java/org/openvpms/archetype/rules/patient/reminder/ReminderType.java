@@ -216,8 +216,19 @@ public class ReminderType {
         } else {
             nextDue = getNextDueDate(dueDate, reminderCount);
         }
+        if(from != null) {
+        	from = DateRules.getDate(from); //truncate from to date only
+        }
+        if(to != null) {
+        	to = DateRules.getDate(to); // truncate to to date only
+        	to = DateRules.getDate(to,1,DateUnits.DAYS); //add one day for comparison so get all reminders prior to this date
+        }
+        if (nextDue != null) {
+        	nextDue = DateRules.getDate(nextDue);
+        }
+        
         return (from == null || nextDue.getTime() >= from.getTime())
-               && (to == null || nextDue.getTime() <= to.getTime());
+               && (to == null || nextDue.getTime() < to.getTime());
     }
 
     /**
