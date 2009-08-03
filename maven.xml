@@ -212,7 +212,7 @@
         </condition>
         <fail if="do.abort">Build aborted by user.</fail>
 
-        <sql driver="${hibernate.connection.driver_class}"
+        <sql driver="${jdbc.driverClassName}"
              url="${openvpms.db.admin.url}"
              userid="${openvpms.db.admin.username}"
              password="${openvpms.db.admin.password}">
@@ -222,7 +222,7 @@
            drop database if exists `openvpms';
            commit;
         </sql>
-        <sql driver="${hibernate.connection.driver_class}"
+        <sql driver="${jdbc.driverClassName}"
              url="${openvpms.db.admin.url}"
              userid="${openvpms.db.admin.username}"
              password="${openvpms.db.admin.password}"
