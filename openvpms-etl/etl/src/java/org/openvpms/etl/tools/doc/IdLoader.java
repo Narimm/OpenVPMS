@@ -167,7 +167,12 @@ class IdLoader extends AbstractLoader {
             IPage<IMObject> page = getService().get(query);
             List<IMObject> results = page.getResults();
             if (!results.isEmpty()) {
-                return (DocumentAct) results.get(0);
+            	if(results.get(0) instanceof DocumentAct) {
+            		return (DocumentAct) results.get(0);
+            	}
+            	else {
+            		return null;
+            	}
             }
         } catch (NumberFormatException ignore) {
             // do nothing
