@@ -19,9 +19,10 @@
 package org.openvpms.archetype.test;
 
 import junit.framework.Assert;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -266,7 +267,7 @@ public class TestHelper extends Assert {
      * The product name is prefixed with <em>XProduct-</em>.
      *
      * @param shortName the archetype short name
-     * @param species the species classification name. May be <code>null</code>
+     * @param species   the species classification name. May be <code>null</code>
      * @return a new product
      */
     public static Product createProduct(String shortName, String species) {
@@ -287,7 +288,7 @@ public class TestHelper extends Assert {
         Product product = (Product) create(shortName);
         EntityBean bean = new EntityBean(product);
         String name = "XProduct-" + ((species != null) ? species : "")
-                + System.currentTimeMillis();
+                      + System.currentTimeMillis();
         bean.setValue("name", name);
         if (species != null) {
             Lookup classification
@@ -442,6 +443,41 @@ public class TestHelper extends Assert {
         }
         Lookup lookup = (Lookup) create(shortName);
         lookup.setCode(code);
+        if (save) {
+            save(lookup);
+        }
+        return lookup;
+    }
+
+    /**
+     * Returns a lookup, creating it if it doesn't exist.
+     * <p/>
+     * If the lookup exists, but the name is different, the name will be updated.
+     *
+     * @param shortName the lookup short name
+     * @param code      the lookup code
+     * @param name      the lookup name
+     * @param save      if <tt>true</tt>, save the lookup
+     * @return the lookup
+     */
+    public static Lookup getLookup(String shortName, String code, String name, boolean save) {
+        Lookup lookup;
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
+        query.add(new NodeConstraint("code", code));
+        query.setMaxResults(1);
+        QueryIterator<Lookup> iter = new IMObjectQueryIterator<Lookup>(query);
+        if (iter.hasNext()) {
+            lookup = iter.next();
+            if (!StringUtils.equals(name, lookup.getName())) {
+                lookup.setName(name);
+            } else {
+                save = false;
+            }
+        } else {
+            lookup = (Lookup) create(shortName);
+            lookup.setCode(code);
+            lookup.setName(name);
+        }
         if (save) {
             save(lookup);
         }

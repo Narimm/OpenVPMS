@@ -119,7 +119,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         String contacts = rules.getPreferredContacts(party);
         // order is not guaranteed
         assertTrue(contacts.equals(address + ", " + phoneNo)
-                || contacts.equals(phoneNo + ", " + address));
+                   || contacts.equals(phoneNo + ", " + address));
     }
 
     /**
@@ -137,7 +137,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
 
         // order not guaranteed
         assertTrue(purposes.equals("(Home, Work)")
-                || purposes.equals("(Work, Home)"));
+                   || purposes.equals("(Work, Home)"));
     }
 
     /**
@@ -152,7 +152,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         populateLocation(location, "1 Foo St", null);
 
         // no location with billing address, uses the first available.
-        assertEquals("1 Foo St\nCoburg Vic 3071",
+        assertEquals("1 Foo St\nCoburg Victoria 3071",
                      rules.getBillingAddress(party));
 
         // add a billing location
@@ -160,7 +160,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         party.addContact(billing);
 
         // verify the billing address is that just added
-        assertEquals("3 Bar St\nCoburg Vic 3071",
+        assertEquals("3 Bar St\nCoburg Victoria 3071",
                      rules.getBillingAddress(party));
 
         // remove all the contacts and verify there is no billing address
@@ -184,7 +184,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         populateLocation(location, "1 Foo St", null);
 
         // no location with billing address, uses the first available.
-        assertEquals("1 Foo St\nCoburg Vic 3071",
+        assertEquals("1 Foo St\nCoburg Victoria 3071",
                      rules.getCorrespondenceAddress(party));
 
         // add a correspondence location
@@ -192,7 +192,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         party.addContact(correspondence);
 
         // verify the correspondence address is that just added
-        assertEquals("3 Bar St\nCoburg Vic 3071",
+        assertEquals("3 Bar St\nCoburg Victoria 3071",
                      rules.getCorrespondenceAddress(party));
 
         // remove all the contacts and verify there is no correspondence address
@@ -316,6 +316,10 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         rules = new PartyRules();
+
+        Lookup state = TestHelper.getLookup("lookup.state", "VIC", "Victoria", true);
+        state.setDefaultLookup(true);
+        save(state);
     }
 
     /**
