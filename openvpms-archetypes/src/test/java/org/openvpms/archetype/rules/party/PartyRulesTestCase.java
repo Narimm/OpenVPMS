@@ -152,7 +152,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         populateLocation(location, "1 Foo St", null);
 
         // no location with billing address, uses the first available.
-        assertEquals("1 Foo St\nCoburg VIC 3071",
+        assertEquals("1 Foo St\nCoburg Vic 3071",
                      rules.getBillingAddress(party));
 
         // add a billing location
@@ -160,7 +160,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         party.addContact(billing);
 
         // verify the billing address is that just added
-        assertEquals("3 Bar St\nCoburg VIC 3071",
+        assertEquals("3 Bar St\nCoburg Vic 3071",
                      rules.getBillingAddress(party));
 
         // remove all the contacts and verify there is no billing address
@@ -184,7 +184,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         populateLocation(location, "1 Foo St", null);
 
         // no location with billing address, uses the first available.
-        assertEquals("1 Foo St\nCoburg VIC 3071",
+        assertEquals("1 Foo St\nCoburg Vic 3071",
                      rules.getCorrespondenceAddress(party));
 
         // add a correspondence location
@@ -192,7 +192,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         party.addContact(correspondence);
 
         // verify the correspondence address is that just added
-        assertEquals("3 Bar St\nCoburg VIC 3071",
+        assertEquals("3 Bar St\nCoburg Vic 3071",
                      rules.getCorrespondenceAddress(party));
 
         // remove all the contacts and verify there is no correspondence address
