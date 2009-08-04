@@ -69,6 +69,8 @@ public class InvoiceRules {
     /**
      * Invoked <em>after</em> an invoice is saved. Processes any demographic
      * updates if the invoice is 'Posted'.
+     *
+     * @param invoice the invoice
      */
     public void saveInvoice(FinancialAct invoice) {
         if (!TypeHelper.isA(invoice, "act.customerAccountChargesInvoice")) {
@@ -87,7 +89,7 @@ public class InvoiceRules {
 
     /**
      * Invoked <em>prior</em> to an invoice being removed. Removes any reminders
-     * or documents that don't have status 'Completed'.
+     * or documents that don't have status <em>COMPLETED</em>.
      *
      * @param invoice the invoice
      */
@@ -103,13 +105,8 @@ public class InvoiceRules {
     }
 
     /**
-     * Invoked when an invoice item has been removed. Removes any reminders
-     * or documents that don't have status 'Completed.
-     * <p/>
-     * NOTE: when invoked on deletion of an invoice, this must occur prior
-     * to the invoice being deleted, in order for the invoice items to be
-     * resolved. When invoked on deletion of an invoice item, it can occur
-     * after the invoice item has been removed.
+     * Invoked prior to an invoice item has been removed. Removes any reminders
+     * or documents that don't have status <em>COMPLETED</em>.
      *
      * @param act the act
      */

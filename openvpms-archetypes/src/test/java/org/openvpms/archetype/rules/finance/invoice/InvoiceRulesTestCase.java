@@ -222,9 +222,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         remove(item.getAct());
         assertNull(get(actRef));
 
-        // verify the reminder and document have been removed
-        assertNull(get(reminder.getObjectReference()));
-        assertNull(get(document.getObjectReference()));
+        // verify the reminder and document haven't been removed
+        assertNotNull(get(reminder.getObjectReference()));
+        assertNotNull(get(document.getObjectReference()));
     }
 
     /**
@@ -298,9 +298,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         remove(invoice.getAct());
         assertNull(get(actRef));
 
-        // verify the reminder and document haven been removed
-        assertNull(get(reminder.getObjectReference()));
-        assertNull(get(document.getObjectReference()));
+        // verify the reminder and document haven't been removed
+        assertNotNull(get(reminder.getObjectReference()));
+        assertNotNull(get(document.getObjectReference()));
     }
 
     /**

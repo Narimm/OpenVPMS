@@ -21,7 +21,21 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
-    				   
+
+   <rule name="Remove Invoice item">
+        <parameter identifier="act">
+        	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
+        </parameter>
+        <parameter identifier="service">
+        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
+        </parameter>
+        <java:consequence>
+            import org.openvpms.archetype.rules.finance.invoice.InvoiceRules;
+            InvoiceRules rules = new InvoiceRules(service);
+            rules.removeInvoiceItem(act);
+        </java:consequence>
+    </rule>
+    
     <rule name="Update Stock Onhand">
         <parameter identifier="act">
         	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
