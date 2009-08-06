@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
+import org.openvpms.web.component.im.edit.medication.PatientMedicationActEditor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -31,13 +31,13 @@ import java.util.LinkedList;
 
 
 /**
- * Helper to queue editing of patient medication popups, only showing one
+ * Helper to queue editing of patient medication and investigation popups, only showing one
  * dialog at a time.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-class MedicationManager {
+class PatientActEditorManager {
 
     /**
      * Listener to notify completion of the edit.

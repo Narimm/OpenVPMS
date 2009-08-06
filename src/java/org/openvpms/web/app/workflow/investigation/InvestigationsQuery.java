@@ -38,21 +38,17 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     /**
      * The act short names.
      */
-    public static final String[] SHORT_NAMES = new String[]{
-            InvestigationArchetypes.GENERAL};
+    public static final String[] SHORT_NAMES = new String[]{InvestigationArchetypes.GENERAL};
 
     /**
      * The default sort constraint.
      */
-    private final SortConstraint[] DEFAULT_SORT = {
-            new NodeSortConstraint("startTime")
-    };
+    private static final SortConstraint[] DEFAULT_SORT = {new NodeSortConstraint("startTime", false)};
 
     /**
-     * The act statuses, excluding FINAL.
+     * The act statuses to query..
      */
-    private static final ActStatuses STATUSES
-            = new ActStatuses(InvestigationArchetypes.BIOCHEMISTRY);
+    private static final ActStatuses STATUSES = new ActStatuses(InvestigationArchetypes.GENERAL);
 
 
     /**
@@ -61,6 +57,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     public InvestigationsQuery() {
         super(null, null, null, SHORT_NAMES, STATUSES, Act.class);
         setDefaultSortConstraint(DEFAULT_SORT);
+        setAuto(true);
     }
 
 }
