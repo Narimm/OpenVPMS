@@ -103,6 +103,18 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="investigations" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.invoiceItemInvestigation">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.invoiceItemInvestigation"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
         <node name="documents" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.invoiceItemDocument" hidden="true">

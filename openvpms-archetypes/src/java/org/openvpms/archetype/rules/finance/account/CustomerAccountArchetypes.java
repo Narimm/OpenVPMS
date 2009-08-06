@@ -73,6 +73,13 @@ public class CustomerAccountArchetypes {
      */
     public static final String DISPENSING_ITEM_RELATIONSHIP
             = "actRelationship.invoiceItemDispensing";
+
+    /**
+     * Invoice charge item investigation act relationship short name.
+     */
+    public static final String INVESTIGATION_ITEM_RELATIONSHIP
+            = "actRelationship.invoiceItemInvestigation";
+
     /**
      * Credit charge act short name.
      */

@@ -19,13 +19,13 @@
 package org.openvpms.archetype.rules.finance.invoice;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.ArrayList;
@@ -45,9 +45,27 @@ public class InvoiceRules {
      */
     private final IArchetypeService service;
 
+    /**
+     * Statuses of <em>act.patientInvestigation</em> acts that should be retained even if their associated
+     * invoice item is deleted.
+     */
+    private static final String[] INVESTIGATION_STATUSES = {InvestigationActStatus.COMPLETED,
+                                                            InvestigationActStatus.PRELIMINARY,
+                                                            InvestigationActStatus.FINAL};
 
     /**
-     * Creates a new <code>InvoiceRules</code>.
+     * Statuses of <em>act.patientReminder</em> acts that should be retained.
+     */
+    private static final String[] REMINDER_STATUSES = {ActStatus.COMPLETED};
+
+    /**
+     * Statuses of <em>act.patientDocument*</em> acts that should be retained.
+     */
+    private static final String[] DOCUMENT_STATUSES = {ActStatus.COMPLETED, ActStatus.POSTED};
+
+
+    /**
+     * Creates a new <tt>InvoiceRules</tt>.
      *
      * @param service the archetype service
      */
@@ -73,15 +91,14 @@ public class InvoiceRules {
      * @param invoice the invoice
      */
     public void saveInvoice(FinancialAct invoice) {
-        if (!TypeHelper.isA(invoice, "act.customerAccountChargesInvoice")) {
+        if (!TypeHelper.isA(invoice, CustomerAccountArchetypes.INVOICE)) {
             throw new IllegalArgumentException("Invalid argument 'invoice'");
         }
         if (ActStatus.POSTED.equals(invoice.getStatus())) {
             ActBean bean = new ActBean(invoice, service);
-            List<Act> acts = bean.getActs("act.customerAccountInvoiceItem");
+            List<Act> acts = bean.getActs(CustomerAccountArchetypes.INVOICE_ITEM);
             for (Act act : acts) {
-                DemographicUpdateHelper helper = new DemographicUpdateHelper(
-                        act, service);
+                DemographicUpdateHelper helper = new DemographicUpdateHelper(act, service);
                 helper.processDemographicUpdates(invoice);
             }
         }
@@ -94,11 +111,11 @@ public class InvoiceRules {
      * @param invoice the invoice
      */
     public void removeInvoice(FinancialAct invoice) {
-        if (!TypeHelper.isA(invoice, "act.customerAccountChargesInvoice")) {
+        if (!TypeHelper.isA(invoice, CustomerAccountArchetypes.INVOICE)) {
             throw new IllegalArgumentException("Invalid argument 'invoice'");
         }
         ActBean bean = new ActBean(invoice, service);
-        List<Act> acts = bean.getActs("act.customerAccountInvoiceItem");
+        List<Act> acts = bean.getActs(CustomerAccountArchetypes.INVOICE_ITEM);
         for (Act act : acts) {
             removeInvoiceItem((FinancialAct) act);
         }
@@ -111,11 +128,14 @@ public class InvoiceRules {
      * @param act the act
      */
     public void removeInvoiceItem(FinancialAct act) {
-        if (!TypeHelper.isA(act, "act.customerAccountInvoiceItem")) {
+        if (!TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
             throw new IllegalArgumentException("Invalid argument 'act'");
         }
-        List<Act> toRemove = removeInvoiceItemReminders(act);
-        toRemove.addAll(removeInvoiceItemDocuments(act));
+        List<Act> toRemove = new ArrayList<Act>();
+        removeRelatedActs(act, "investigations", INVESTIGATION_STATUSES, toRemove);
+        removeRelatedActs(act, "reminders", REMINDER_STATUSES, toRemove);
+        removeRelatedActs(act, "documents", DOCUMENT_STATUSES, toRemove);
+
         if (!toRemove.isEmpty()) {
             // TODO - need to save to update session prior
             // to removing child acts. Shouldn't need this
@@ -128,57 +148,35 @@ public class InvoiceRules {
     }
 
     /**
-     * Removes relationships to any reminders associated with an
-     * <em>act.customerAccountInvoiceItem</em> that don't have status
-     * 'Completed'.
+     * Removes relationships between an invoice item and related acts that meet the specified criteria.
+     * The acts that match the criteria are added to <tt>toRemove</tt>.
      *
-     * @param item the invoice item
-     * @return the documents to remove
-     * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if the reminders node does't exist
+     * @param item     the invoice item
+     * @param node     the node of the related acts
+     * @param statuses act statuses. If a related act has one of these, it will be retained  
+     * @param toRemove the acts to remove
      */
-    private List<Act> removeInvoiceItemReminders(FinancialAct item) {
-        List<Act> toRemove = new ArrayList<Act>();
+    private void removeRelatedActs(FinancialAct item, String node, String[] statuses, List<Act> toRemove) {
         ActBean bean = new ActBean(item, service);
-        List<Act> acts = bean.getNodeActs("reminders");
-
-        for (Act act : acts) {
-            ActRelationship r = bean.getRelationship(act);
-            if (!ActStatus.COMPLETED.equals(act.getStatus())) {
-                toRemove.add(act);
-                act.removeActRelationship(r);
-                bean.removeRelationship(r);
-            }
-        }
-        return toRemove;
-    }
-
-    /**
-     * Removes relationships to any documents associated with an
-     * <em>act.customerAccountInvoiceItem</em> that don't have status
-     * 'Completed' or 'Posted'.
-     *
-     * @param item the invoice item
-     * @return the documents to remove
-     * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if the documents node does't exist
-     */
-    private List<Act> removeInvoiceItemDocuments(FinancialAct item) {
-        List<Act> toRemove = new ArrayList<Act>();
-        ActBean bean = new ActBean(item, service);
-        List<Act> acts = bean.getNodeActs("documents");
+        List<Act> acts = bean.getNodeActs(node);
 
         for (Act act : acts) {
             String status = act.getStatus();
             ActRelationship r = bean.getRelationship(act);
-            if (!ActStatus.COMPLETED.equals(status)
-                    && !ActStatus.POSTED.equals(status)) {
+
+            boolean retain = false;
+            for (String s : statuses) {
+                if (s.equals(status)) {
+                    retain = true;
+                    break;
+                }
+            }
+            if (!retain) {
                 toRemove.add(act);
                 act.removeActRelationship(r);
                 bean.removeRelationship(r);
             }
         }
-        return toRemove;
     }
 
 }
