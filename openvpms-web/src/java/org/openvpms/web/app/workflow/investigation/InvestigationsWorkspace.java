@@ -26,7 +26,6 @@ import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.util.GroupBoxFactory;
 
 import echopointng.GroupBox;
@@ -40,12 +39,6 @@ import echopointng.GroupBox;
  */
 public class InvestigationsWorkspace
         extends AbstractReportingWorkspace<Act> {
-
-    /**
-     * The query.
-     */
-    private Query<Act> query;
-
 
     /**
      * Creates a new <tt>InvestigationsWorkspace</tt>.
@@ -62,7 +55,7 @@ public class InvestigationsWorkspace
      */
     @Override
     protected void doLayout(Component container, FocusGroup group) {
-        query = new InvestigationsQuery();
+        Query<Act> query = new InvestigationsQuery();
         Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(
                 query, new InvestigationsTableModel());
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
@@ -80,20 +73,4 @@ public class InvestigationsWorkspace
         return true;
     }
 
-    class InvestigationsTableModel extends AbstractActTableModel {
-
-        public InvestigationsTableModel() {
-            super(InvestigationsQuery.SHORT_NAMES);
-        }
-
-        /**
-         * Returns a list of descriptor names to include in the table.
-         *
-         * @return the list of descriptor names to include in the table
-         */
-        @Override
-        protected String[] getNodeNames() {
-            return new String[]{"startTime", "investigationType", "patient", "status", "docReference"};
-        }
-    }
 }

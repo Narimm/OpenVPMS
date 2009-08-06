@@ -16,15 +16,18 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.act;
+package org.openvpms.web.component.im.edit.medication;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.im.edit.act.PatientActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
@@ -38,7 +41,7 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientMedicationActEditor extends AbstractActEditor {
+public class PatientMedicationActEditor extends PatientActEditor {
 
     /**
      * Construct a new <tt>PatientMedicationActEditor</tt>.
@@ -47,26 +50,18 @@ public class PatientMedicationActEditor extends AbstractActEditor {
      * @param parent  the parent act. May be <tt>null</tt>
      * @param context the layout context. May be <tt>null</tt>
      */
-    public PatientMedicationActEditor(Act act, Act parent,
-                                      LayoutContext context) {
+    public PatientMedicationActEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
-        if (!TypeHelper.isA(act, "act.patientMedication")) {
-            throw new IllegalArgumentException("Invalid act type:"
-                    + act.getArchetypeId().getShortName());
+        if (!TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION)) {
+            throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
 
         if (parent != null) {
-            if (act.isNew()) {
-                // default the act start time to that of the parent
-                act.setActivityStartTime(parent.getActivityStartTime());
-            }
-
             ActBean bean = new ActBean(parent);
             if (bean.hasNode("product")) {
                 // update the product from the parent
-                IMObjectReference product
-                        = bean.getParticipantRef("participation.product");
-                if (TypeHelper.isA(product, "product.medication")) {
+                IMObjectReference product = bean.getParticipantRef(ProductArchetypes.PRODUCT_PARTICIPATION);
+                if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
                     setProduct(product);
                     if (bean.hasNode("quantity")) {
                         setQuantity(bean.getBigDecimal("quantity"));
@@ -75,7 +70,6 @@ public class PatientMedicationActEditor extends AbstractActEditor {
                     setProduct(null);
                 }
             }
-            setPatient(bean.getParticipantRef("participation.patient"));
         }
     }
 
@@ -108,33 +102,6 @@ public class PatientMedicationActEditor extends AbstractActEditor {
      */
     public IMObjectReference getProduct() {
         return getParticipantRef("product");
-    }
-
-    /**
-     * Sets the patient.
-     *
-     * @param patient the patient reference. May be <tt>null</tt>
-     */
-    public void setPatient(IMObjectReference patient) {
-        setParticipant("patient", patient);
-    }
-
-    /**
-     * Returns the patient.
-     *
-     * @return the patient reference. May be <tt>null</tt>
-     */
-    public IMObjectReference getPatient() {
-        return getParticipantRef("patient");
-    }
-
-    /**
-     * Sets the clinician.
-     *
-     * @param clinician the clinician reference. May be <tt>null</tt>.
-     */
-    public void setClinician(IMObjectReference clinician) {
-        setParticipant("clinician", clinician);
     }
 
     /**

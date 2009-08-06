@@ -69,8 +69,7 @@ public class ActRelationshipCollectionEditor
      */
     public ActRelationshipCollectionEditor(CollectionProperty property,
                                            Act act, LayoutContext context) {
-        super(new ActRelationshipCollectionPropertyEditor(property, act),
-              act, context);
+        super(new ActRelationshipCollectionPropertyEditor(property, act), act, context);
     }
 
     /**
@@ -84,17 +83,12 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
-     * Returns the set of acts being edited, including that of the
-     * {@link #getCurrentEditor()}.
+     * Returns the set of acts being edited, including that of the {@link #getCurrentEditor()}.
      *
      * @return the set of acts being edited
      */
     public List<Act> getCurrentActs() {
-        ActRelationshipCollectionPropertyEditor collection = getEditor();
-        Set<Act> result = new LinkedHashSet<Act>();
-        for (IMObject object : collection.getObjects()) {
-            result.add((Act) object);
-        }
+        Set<Act> result = new LinkedHashSet<Act>(getActs());
         IMObjectEditor current = getCurrentEditor();
         if (current != null) {
             result.add((Act) current.getObject());
@@ -114,7 +108,7 @@ public class ActRelationshipCollectionEditor
         boolean result = false;
         Act act = (Act) editor.getObject();
         if (editor instanceof ActItemEditor
-                && hasProductTemplate((ActItemEditor) editor)) {
+            && hasProductTemplate((ActItemEditor) editor)) {
             IMObjectReference product = ((ActItemEditor) editor).getProductRef();
             if (TypeHelper.isA(product, TEMPLATE)) {
                 result = expandTemplate((ActItemEditor) editor, act, product);
@@ -230,6 +224,7 @@ public class ActRelationshipCollectionEditor
      * expanding.
      *
      * @param editor the editor
+     * @return true if the editor has a template product
      */
     private boolean hasProductTemplate(ActItemEditor editor) {
         IMObjectReference product = editor.getProductRef();
@@ -285,8 +280,8 @@ public class ActRelationshipCollectionEditor
                                          COUNTER_ITEM)) {
                 String name = node.getName();
                 result = "quantity".equals(name) || "patient".equals(name)
-                        || "product".equals(name) || "author".equals(name)
-                        || "clinician".equals(name);
+                         || "product".equals(name) || "author".equals(name)
+                         || "clinician".equals(name);
             }
             return result;
         }

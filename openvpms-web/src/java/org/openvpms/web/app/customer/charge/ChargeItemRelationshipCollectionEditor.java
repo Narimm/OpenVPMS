@@ -22,7 +22,6 @@ import java.util.Date;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -32,13 +31,12 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
  * Editor for <em>actRelationship.customerAccountInvoiceItem</em> and
  * <em>actRelationship.customerAccountCreditItem</em> act relationships.
- * Sets an {@link MedicationManager} on {@link CustomerChargeActItemEditor}
+ * Sets an {@link PatientActEditorManager} on {@link CustomerChargeActItemEditor}
  * instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -55,7 +53,7 @@ public class ChargeItemRelationshipCollectionEditor
     /**
      * The medication manager.
      */
-    private final MedicationManager medicationMgr = new MedicationManager();
+    private final PatientActEditorManager medicationMgr = new PatientActEditorManager();
 
 
     /**
