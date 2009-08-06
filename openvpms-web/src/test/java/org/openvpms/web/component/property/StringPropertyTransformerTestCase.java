@@ -84,7 +84,7 @@ public class StringPropertyTransformerTestCase
      */
     public void testMacroExpansion() {
         Party person = TestHelper.createCustomer();
-        NodeDescriptor descriptor = getDescriptor(person, "name");
+        NodeDescriptor descriptor = getDescriptor(person, "lastName");
         Property property = new IMObjectProperty(person, descriptor);
         StringPropertyTransformer handler
                 = new StringPropertyTransformer(property);
