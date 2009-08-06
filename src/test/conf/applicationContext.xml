@@ -26,9 +26,7 @@
     <!-- Configure CacheManager from specified config location -->
     <bean id="cacheManager"
           class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
-        <property name="configLocation">
-            <value>classpath:ehcache.xml</value>
-        </property>
+        <property name="configLocation" value="classpath:ehcache.xml"/>
     </bean>
 
     <!--  Hibernate session factory -->
@@ -183,12 +181,8 @@
     <!-- The `local' ruleServiceProvider; we can have as many different ruleProviders as we want -->
     <bean id="ruleServiceProvider"
           class="org.springmodules.jsr94.factory.DefaultRuleServiceProviderFactoryBean">
-        <property name="provider">
-            <value>http://drools.org</value>
-        </property>
-        <property name="providerClass">
-            <value>org.drools.jsr94.rules.RuleServiceProviderImpl</value>
-        </property>
+        <property name="provider" value="http://drools.org"/>
+        <property name="providerClass" value="org.drools.jsr94.rules.RuleServiceProviderImpl"/>
     </bean>
 
     <!-- The local ruleRuntime. Usually, there is one ruleRuntime bean for each ruleServiceProvider bean. -->
@@ -233,8 +227,8 @@
 
     <bean id="appointmentService"
           class="org.openvpms.archetype.rules.workflow.AppointmentService">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg>
+        <constructor-arg ref="archetypeService" index="0"/>
+        <constructor-arg index="1">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="lookupCache"/>
@@ -247,8 +241,8 @@
 
     <bean id="taskService"
           class="org.openvpms.archetype.rules.workflow.TaskService">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg>
+        <constructor-arg ref="archetypeService" index="0"/>
+        <constructor-arg index="1">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="lookupCache"/>

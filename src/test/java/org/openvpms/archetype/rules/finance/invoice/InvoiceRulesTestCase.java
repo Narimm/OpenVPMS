@@ -20,11 +20,18 @@ package org.openvpms.archetype.rules.finance.invoice;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.act.ActStatus.*;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import static org.openvpms.archetype.rules.patient.MedicalRecordRules.CLINICAL_EVENT_ITEM;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -41,6 +48,9 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
 
 
 /**
@@ -70,9 +80,14 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     private User clinician;
 
     /**
+     * The investigation types.
+     */
+    private Set<Entity> investigationTypes;
+
+    /**
      * The reminder.
      */
-    private Entity reminder;
+    private Entity reminderType;
 
     /**
      * The document template.
@@ -89,11 +104,20 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         ActBean item = createInvoiceItem();
         Product product = createProduct(true);
         Act medication = createMedication(product);
-        item.addParticipation("participation.product", product);
-        item.addRelationship("actRelationship.invoiceItemDispensing",
-                             medication);
+        item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
+        item.addRelationship(CustomerAccountArchetypes.DISPENSING_ITEM_RELATIONSHIP, medication);
         save(medication, item.getAct());
+
+        // add investigation acts
+        List<Act> investigations = createInvestigationActs();
+        for (Act investigation : investigations) {
+            item.addRelationship(CustomerAccountArchetypes.INVESTIGATION_ITEM_RELATIONSHIP, investigation);
+            save(investigation);
+        }
+        save(item.getAct());
         item = reload(item); // reload to ensure the item has saved correctly
+
+        Date startTime = item.getAct().getActivityStartTime();
 
         // make sure a reminder has been added
         List<Act> reminders = item.getNodeActs("reminders");
@@ -101,14 +125,11 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act reminder = reminders.get(0);
 
         // verify the start time is the same as the invoice item start time
-        Date startTime = item.getAct().getActivityStartTime();
-        assertEquals(startTime,
-                     reminder.getActivityStartTime());
+        assertEquals(startTime, reminder.getActivityStartTime());
 
         // verify the end time has been set
         ReminderRules rules = new ReminderRules(getArchetypeService());
-        Date endTime = rules.calculateReminderDueDate(
-                startTime, this.reminder);
+        Date endTime = rules.calculateReminderDueDate(startTime, reminderType);
         assertEquals(endTime, reminder.getActivityEndTime());
 
         // make sure a document has been added
@@ -122,34 +143,33 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
 
         // check reminder participations
         ActBean reminderBean = new ActBean(reminder);
-        assertEquals(patient,
-                     reminderBean.getParticipant("participation.patient"));
-        assertEquals(this.reminder,
-                     reminderBean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION));
-        assertEquals(product,
-                     reminderBean.getParticipant("participation.product"));
+        assertEquals(patient, reminderBean.getParticipant(PatientArchetypes.PATIENT_PARTICIPATION));
+        assertEquals(reminderType, reminderBean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION));
+        assertEquals(product, reminderBean.getParticipant(ProductArchetypes.PRODUCT_PARTICIPATION));
 
         // check document participations
         ActBean docBean = new ActBean(document);
-        assertEquals(patient, docBean.getParticipant("participation.patient"));
-        assertEquals(template,
-                     docBean.getParticipant("participation.documentTemplate"));
+        assertEquals(patient, docBean.getParticipant(PatientArchetypes.PATIENT_PARTICIPATION));
+        assertEquals(template, docBean.getParticipant("participation.documentTemplate"));
 
-        // verify the dispensing and document acts have been added to the
-        // visit
+        // verify the investigation, dispensing and document acts have been added to the visit
         MedicalRecordRules medRules = new MedicalRecordRules();
         Act event = medRules.getEvent(patient, startTime);
         assertNotNull(event);
         ActBean eventBean = new ActBean(event);
+        for (Act investigation : investigations) {
+            assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, investigation));
+        }
         assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, medication));
         assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, document));
 
         // change the product participation to one without a reminder.
         // The invoice should no longer have any associated reminders or
         // documents
-        item.setParticipant("participation.product", createProduct(false));
+        item.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(false));
         item.save();
         item = reload(item);
+
         reminders = item.getNodeActs("reminders");
         assertTrue(reminders.isEmpty());
 
@@ -163,8 +183,16 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      */
     public void testRemoveInvoiceItemIncompleteActs() {
         ActBean item = createInvoiceItem();
-        item.addParticipation("participation.product", createProduct(true));
+        item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(true));
         item.save();
+
+        // add investigation acts
+        List<Act> investigations = createInvestigationActs();
+        for (Act investigation : investigations) {
+            item.addRelationship(CustomerAccountArchetypes.INVESTIGATION_ITEM_RELATIONSHIP, investigation);
+            save(investigation);
+        }
+        save(item.getAct());
         item = reload(item); // reload to ensure the item has saved correctly
 
         List<Act> reminders = item.getNodeActs("reminders");
@@ -178,14 +206,19 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         remove(item.getAct());
         assertNull(get(actRef));
 
+        // verify the investigations have been removed
+        for (Act investigation : investigations) {
+            assertNull(get(investigation));
+        }
+
         // verify the reminders have been removed
         for (Act reminder : reminders) {
-            assertNull(get(reminder.getObjectReference()));
+            assertNull(get(reminder));
         }
 
         // verify the documents have been removed
         for (Act document : documents) {
-            assertNull(get(document.getObjectReference()));
+            assertNull(get(document));
         }
     }
 
@@ -195,7 +228,15 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      */
     public void testRemoveInvoiceItemCompleteActs() {
         ActBean item = createInvoiceItem();
-        item.addParticipation("participation.product", createProduct(true));
+        item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(true));
+        item.save();
+
+        // add investigation acts
+        List<Act> investigations = createInvestigationActs();
+        for (Act investigation : investigations) {
+            item.addRelationship(CustomerAccountArchetypes.INVESTIGATION_ITEM_RELATIONSHIP, investigation);
+        }
+        save(investigations);
         item.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
@@ -204,6 +245,11 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
 
         List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
+
+        investigations.get(0).setStatus(InvestigationActStatus.COMPLETED);
+        investigations.get(1).setStatus(InvestigationActStatus.PRELIMINARY);
+        investigations.get(2).setStatus(InvestigationActStatus.FINAL);
+        save(investigations);
 
         // set the reminder status to 'Completed'
         Act reminder = reminders.get(0);
@@ -222,9 +268,12 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         remove(item.getAct());
         assertNull(get(actRef));
 
-        // verify the reminder and document haven't been removed
-        assertNotNull(get(reminder.getObjectReference()));
-        assertNotNull(get(document.getObjectReference()));
+        // verify the investigations, reminder and document haven't been removed
+        for (Act investigation : investigations) {
+            assertNotNull(get(investigation));
+        }
+        assertNotNull(get(reminder));
+        assertNotNull(get(document));
     }
 
     /**
@@ -234,11 +283,19 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     public void testRemoveInvoiceIncompleteActs() {
         ActBean invoice = createInvoice();
         ActBean item = createInvoiceItem();
-        item.addParticipation("participation.product", createProduct(true));
+        item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(true));
         item.save();
-        invoice.addRelationship("actRelationship.customerAccountInvoiceItem",
-                                item.getAct());
+
+        // add investigation acts
+        List<Act> investigations = createInvestigationActs();
+        for (Act investigation : investigations) {
+            item.addRelationship(CustomerAccountArchetypes.INVESTIGATION_ITEM_RELATIONSHIP, investigation);
+            save(investigation);
+        }
+        item.save();
+        invoice.addRelationship(CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP, item.getAct());
         invoice.save();
+
         item = reload(item); // reload to ensure the item has saved correctly
 
         List<Act> reminders = item.getNodeActs("reminders");
@@ -248,32 +305,43 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         assertEquals(1, documents.size());
 
         // remove the invoice and verify it can't be retrieved
-        IMObjectReference actRef = invoice.getAct().getObjectReference();
         remove(invoice.getAct());
-        assertNull(get(actRef));
+        assertNull(get(invoice.getAct()));
+
+        // verify the investigations have been removed
+        for (Act investigation : investigations) {
+            assertNull(get(investigation));
+        }
 
         // verify the reminders have been removed
         for (Act reminder : reminders) {
-            assertNull(get(reminder.getObjectReference()));
+            assertNull(get(reminder));
         }
 
         // verify the documents have been removed
         for (Act document : documents) {
-            assertNull(get(document.getObjectReference()));
+            assertNull(get(document));
         }
     }
 
     /**
-     * Verifies that reminders and documents that have status
+     * Verifies that investigations, reminders and documents that have status
      * 'Completed' are not removed when an invoice is deleted.
      */
     public void testRemoveInvoiceCompleteActs() {
         ActBean invoice = createInvoice();
         ActBean item = createInvoiceItem();
-        item.addParticipation("participation.product", createProduct(true));
+        item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(true));
         item.save();
-        invoice.addRelationship("actRelationship.customerAccountInvoiceItem",
-                                item.getAct());
+
+        // add investigation acts
+        List<Act> investigations = createInvestigationActs();
+        for (Act investigation : investigations) {
+            item.addRelationship(CustomerAccountArchetypes.INVESTIGATION_ITEM_RELATIONSHIP, investigation);
+            save(investigation);
+        }
+        item.save();
+        invoice.addRelationship(CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP, item.getAct());
         invoice.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
@@ -282,6 +350,12 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
 
         List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
+
+        // change the investigation statuses to statuses that should prevent their removal
+        investigations.get(0).setStatus(InvestigationActStatus.COMPLETED);
+        investigations.get(1).setStatus(InvestigationActStatus.PRELIMINARY);
+        investigations.get(2).setStatus(InvestigationActStatus.FINAL);
+        save(investigations);
 
         // set the reminder status to 'Completed'
         Act reminder = reminders.get(0);
@@ -298,9 +372,12 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         remove(invoice.getAct());
         assertNull(get(actRef));
 
-        // verify the reminder and document haven't been removed
-        assertNotNull(get(reminder.getObjectReference()));
-        assertNotNull(get(document.getObjectReference()));
+        // verify the investigations, reminder and document haven't been removed
+        for (Act investigation : investigations) {
+            assertNotNull(get(investigation));
+        }
+        assertNotNull(get(reminder));
+        assertNotNull(get(document));
     }
 
     /**
@@ -311,14 +388,13 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Product product = createDesexingProduct();
         ActBean invoice = createInvoice();
         ActBean item = createInvoiceItem();
-        item.addParticipation("participation.product", product);
+        item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
         item.save();
 
         IMObjectBean bean = new IMObjectBean(get(patient));
         assertFalse(bean.getBoolean("desexed"));
 
-        invoice.addRelationship("actRelationship.customerAccountInvoiceItem",
-                                item.getAct());
+        invoice.addRelationship(CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP, item.getAct());
         invoice.setStatus(ActStatus.POSTED);
         invoice.save();
 
@@ -337,7 +413,11 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         customer = TestHelper.createCustomer();
         clinician = TestHelper.createClinician();
         patient = TestHelper.createPatient();
-        reminder = ReminderTestHelper.createReminderType();
+        investigationTypes = new HashSet<Entity>();
+        for (int i = 0; i < 3; ++i) {
+            investigationTypes.add(createInvestigationType());
+        }
+        reminderType = ReminderTestHelper.createReminderType();
         template = createDocumentTemplate();
     }
 
@@ -347,12 +427,12 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * @return a new act
      */
     private ActBean createInvoice() {
-        Act act = createAct("act.customerAccountChargesInvoice");
+        Act act = createAct(CustomerAccountArchetypes.INVOICE);
         act.setStatus(IN_PROGRESS);
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.customer", customer);
-        bean.addParticipation("participation.patient", patient);
-        bean.addParticipation("participation.clinician", clinician);
+        bean.addParticipation(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
+        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+        bean.addParticipation(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
         return bean;
     }
 
@@ -362,11 +442,23 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * @return a new act
      */
     private ActBean createInvoiceItem() {
-        Act act = createAct("act.customerAccountInvoiceItem");
+        Act act = createAct(CustomerAccountArchetypes.INVOICE_ITEM);
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
-        bean.addParticipation("participation.clinician", clinician);
+        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+        bean.addParticipation(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
         return bean;
+    }
+
+    /**
+     * Helper to create an <em>entity.investigationType</em>.
+     *
+     * @return a new investigation type
+     */
+    private Entity createInvestigationType() {
+        Entity investigation = (Entity) create(InvestigationArchetypes.INVESTIGATION_TYPE);
+        investigation.setName("X-TestInvestigationType-" + investigation.hashCode());
+        save(investigation);
+        return investigation;
     }
 
     /**
@@ -399,20 +491,21 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     /**
      * Creates and saves a new product.
      *
-     * @param reminderDoc if <code>true</code> add a reminder and document
+     * @param addRelationships if <tt>true</tt> add relationships to an investigation type, reminder and document
      * @return a new product
      */
-    private Product createProduct(boolean reminderDoc) {
+    private Product createProduct(boolean addRelationships) {
         Product product = (Product) create("product.medication");
         EntityBean bean = new EntityBean(product);
         bean.setValue("name", "XProduct");
-        if (reminderDoc) {
-            bean.addRelationship("entityRelationship.productReminder",
-                                 reminder);
-            bean.addRelationship("entityRelationship.productDocument",
-                                 template);
+        if (addRelationships) {
+            for (Entity investigation : investigationTypes) {
+                bean.addRelationship("entityRelationship.productInvestigationType", investigation);
+            }
+            bean.addRelationship("entityRelationship.productReminder", reminderType);
+            bean.addRelationship("entityRelationship.productDocument", template);
         }
-        save(product, reminder, template);
+        save(product, reminderType, template);
         return product;
     }
 
@@ -425,9 +518,26 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     private Act createMedication(Product product) {
         Act act = createAct("act.patientMedication");
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
-        bean.addParticipation("participation.product", product);
+        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+        bean.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
         return act;
+    }
+
+    /**
+     * Creates <em>act.patientInvestigation</em> acts for each of the investigation types.
+     *
+     * @return a list of investigation acts
+     */
+    private List<Act> createInvestigationActs() {
+        List<Act> result = new ArrayList<Act>();
+        for (Entity investigationType : investigationTypes) {
+            Act act = createAct(InvestigationArchetypes.GENERAL);
+            ActBean bean = new ActBean(act);
+            bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+            bean.addParticipation(InvestigationArchetypes.INVESTIGATION_TYPE_PARTICIPATION, investigationType);
+            result.add(act);
+        }
+        return result;
     }
 
     /**

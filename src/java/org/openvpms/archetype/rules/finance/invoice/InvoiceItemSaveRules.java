@@ -19,9 +19,13 @@
 package org.openvpms.archetype.rules.finance.invoice;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -105,12 +109,12 @@ class InvoiceItemSaveRules {
      */
     public InvoiceItemSaveRules(Act act, IArchetypeService service) {
         this.service = service;
-        if (!TypeHelper.isA(act, "act.customerAccountInvoiceItem")) {
+        if (!TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
             throw new IllegalArgumentException("Invalid argument 'act'");
         }
         this.item = act;
         itemBean = new ActBean(act, service);
-        product = (Product) itemBean.getParticipant("participation.product");
+        product = (Product) itemBean.getParticipant(ProductArchetypes.PRODUCT_PARTICIPATION);
         if (product != null) {
             productBean = new EntityBean(product, service);
         }
@@ -121,7 +125,7 @@ class InvoiceItemSaveRules {
      * Invoked after the invoice item is saved. This:
      * <ul>
      * <li>adds reminders and document acts</li>
-     * <li>adds dispensing and document acts to the patient's associated
+     * <li>adds dispensing, investigation and document acts to the patient's associated
      * <em>act.patientClinicalEvent</em>; and</li>
      * <li>processes any demographic updates associated with the product</li>
      * </ul>
@@ -168,48 +172,12 @@ class InvoiceItemSaveRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void addReminders() {
-        List<Act> reminders = itemBean.getNodeActs("reminders");
-
-        Set<IMObjectReference> actReminders         // reminderTypes referenced
-                = new HashSet<IMObjectReference>(); // by the acts
-
-        Set<IMObjectReference> productReminders     // reminderTypes referenced
-                = new HashSet<IMObjectReference>(); // by the product
-
-        // get the set of references to entity.reminderTypes for the product
-        if (product != null && productBean.hasNode("reminders")) {
-            for (IMObject object : productBean.getValues("reminders")) {
-                EntityRelationship r = (EntityRelationship) object;
-                if (r.getTarget() != null) {
-                    productReminders.add(r.getTarget());
-                }
-            }
-        }
-
-        // remove any existing reminders not referenced by the current product
-        for (Act reminder : reminders) {
-            ActBean bean = new ActBean(reminder, service);
-            IMObjectReference type
-                    = bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
-            if (type == null || !productReminders.contains(type)) {
-                ActRelationship r = itemBean.getRelationship(reminder);
-                toRemove.add(reminder);
-                itemBean.removeRelationship(r);
-                reminder.removeActRelationship(r);
-            } else {
-                actReminders.add(type);
-            }
-        }
-
-        // add any reminders associated with the current product
-        for (IMObjectReference reminderRef : productReminders) {
-            if (!actReminders.contains(reminderRef)) {
-                Entity reminderType = (Entity) getObject(reminderRef);
-                if (reminderType != null) {
-                    addReminder(reminderType);
-                }
-            }
-        }
+        linkActsToProductEntities("reminders", "reminders", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION,
+                                  new ActLinker() {
+                                      public void link(Entity entity) {
+                                          addReminder(entity);
+                                      }
+                                  });
     }
 
     /**
@@ -230,15 +198,13 @@ class InvoiceItemSaveRules {
         reminder.setActivityEndTime(endTime);
 
         ActBean bean = new ActBean(reminder, service);
-        IMObjectReference patient = itemBean.getParticipantRef(
-                "participation.patient");
-        bean.addParticipation("participation.patient", patient);
+        IMObjectReference patient = itemBean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
+        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
         bean.addParticipation(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, reminderType);
         if (product != null) {
-            bean.addParticipation("participation.product", product);
+            bean.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
         }
-        itemBean.addRelationship("actRelationship.invoiceItemReminder",
-                                 reminder);
+        itemBean.addRelationship("actRelationship.invoiceItemReminder", reminder);
         toSave.add(reminder);
     }
 
@@ -248,48 +214,12 @@ class InvoiceItemSaveRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void addDocuments() {
-        List<Act> documents = itemBean.getNodeActs("documents");
-
-        Set<IMObjectReference> actDocs              // entity.documentTemplates
-                = new HashSet<IMObjectReference>(); // referenced by the acts
-
-        Set<IMObjectReference> productDocs          // entity.documentTemplates
-                = new HashSet<IMObjectReference>(); // referenced by the product
-
-        // get the set of references to entity.documentTemplates for the product
-        if (product != null && productBean.hasNode("documents")) {
-            for (IMObject object : productBean.getValues("documents")) {
-                EntityRelationship r = (EntityRelationship) object;
-                if (r.getTarget() != null) {
-                    productDocs.add(r.getTarget());
-                }
-            }
-        }
-
-        // remove any existing documents not referenced by the current product
-        for (Act document : documents) {
-            ActBean bean = new ActBean(document, service);
-            IMObjectReference template
-                    = bean.getParticipantRef("participation.documentTemplate");
-            if (template == null || !productDocs.contains(template)) {
-                ActRelationship r = itemBean.getRelationship(document);
-                toRemove.add(document);
-                itemBean.removeRelationship(r);
-                document.removeActRelationship(r);
-            } else {
-                actDocs.add(template);
-            }
-        }
-
-        // add any documents associated with the current product
-        for (IMObjectReference templateRef : productDocs) {
-            if (!actDocs.contains(templateRef)) {
-                Entity template = (Entity) getObject(templateRef);
-                if (template != null) {
-                    addDocument(template);
-                }
-            }
-        }
+        linkActsToProductEntities("documents", "documents", "participation.documentTemplate",
+                                  new ActLinker() {
+                                      public void link(Entity entity) {
+                                          addDocument(entity);
+                                      }
+                                  });
     }
 
     /**
@@ -308,41 +238,34 @@ class InvoiceItemSaveRules {
             Act act = (Act) service.create(shortName);
             act.setActivityStartTime(item.getActivityStartTime());
             ActBean documentAct = new ActBean(act, service);
-            IMObjectReference patient = itemBean.getParticipantRef(
-                    "participation.patient");
-            documentAct.addParticipation("participation.patient", patient);
-            documentAct.addParticipation("participation.documentTemplate",
-                                         document);
-            IMObjectReference clinician = itemBean.getParticipantRef(
-                    "participation.clinician");
+            IMObjectReference patient = itemBean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
+            documentAct.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+            documentAct.addParticipation("participation.documentTemplate", document);
+            IMObjectReference clinician = itemBean.getParticipantRef(UserArchetypes.CLINICIAN_PARTICIPATION);
             if (clinician != null) {
-                documentAct.addParticipation("participation.clinician",
-                                             clinician);
+                documentAct.addParticipation(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
             }
 
             if (TypeHelper.isA(act, "act.patientDocumentForm")) {
-
-                IMObjectReference product = itemBean.getParticipantRef(
-                        "participation.product");
-                documentAct.addParticipation("participation.product", product);
+                IMObjectReference product = itemBean.getParticipantRef(ProductArchetypes.PRODUCT_PARTICIPATION);
+                documentAct.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
             }
             toSave.add(act);
             newDocs.add(act);
-            itemBean.addRelationship("actRelationship.invoiceItemDocument",
-                                     documentAct.getAct());
+            itemBean.addRelationship("actRelationship.invoiceItemDocument", documentAct.getAct());
         }
     }
 
     /**
-     * Adds relationships between dispensing and document acts to the
+     * Adds relationships between dispensing, investigation and document acts to the
      * associated patient's <em>act.patientClinicalEvent</em>.
      */
     private void addEventRelationships() {
         List<Act> acts = new ArrayList<Act>();
-        for (Act medication : itemBean.getNodeActs("dispensing")) {
-            acts.add(medication);
-        }
+        acts.addAll(itemBean.getNodeActs("dispensing"));
+        acts.addAll(itemBean.getNodeActs("investigations"));
         acts.addAll(newDocs);
+
         MedicalRecordRules rules = new MedicalRecordRules(service);
         Date startTime = item.getActivityStartTime();
         if (startTime == null) {
@@ -360,9 +283,75 @@ class InvoiceItemSaveRules {
      * @throws ArchetypeServiceException for any error
      */
     private IMObject getObject(IMObjectReference ref) {
-        if (ref != null) {
-            return service.get(ref);
+        return (ref != null) ? service.get(ref) : null;
+    }
+
+    /**
+     * Creates or deletes acts related to the invoice item based on the entities associated with the current product.
+     * This:
+     * <ol>
+     * <li>gets all entities associated with the product's <tt>entityNode</tt></li>
+     * <li>iterates through the acts associated with the invoice item's <tt>actNode</tt> and:</li>
+     * <ol>
+     * <li>queues removal of acts that don't have participation to any of the <em>entityNode</em> entities</li>
+     * <li>retains acts which have participations to any of the <em>entityNode</em> entities</li>
+     * </ol>
+     * <li>uses the <tt>linker</tt> to create and link acts for each entity that doesn't yet have an act</li>
+     * </ol>
+     *
+     * @param actNode    the invoice item node to use to get the related acts
+     * @param entityNode the product node to use to get the related entities
+     * @param archetype  the participation archetype that links the act with the entity
+     * @param linker     used to link the invoice item with a new act created by the linker for a given entity
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private void linkActsToProductEntities(String actNode, String entityNode, String archetype, ActLinker linker) {
+        List<Act> acts = itemBean.getNodeActs(actNode);
+        Set<IMObjectReference> productTypes = new HashSet<IMObjectReference>();
+        Set<IMObjectReference> actTypes = new HashSet<IMObjectReference>();
+        if (product != null && productBean.hasNode(entityNode)) {
+            for (EntityRelationship r : productBean.getValues(entityNode, EntityRelationship.class)) {
+                IMObjectReference target = r.getTarget();
+                if (target != null) {
+                    productTypes.add(target);
+                }
+            }
         }
-        return null;
+        for (Act act : acts) {
+            ActBean bean = new ActBean(act, service);
+            IMObjectReference type = bean.getParticipantRef(archetype);
+            if (type != null && !productTypes.contains(type)) {
+                toRemove.add(act);
+                ActRelationship r = itemBean.getRelationship(act);
+                itemBean.removeRelationship(r);
+                act.removeActRelationship(r);
+            } else {
+                actTypes.add(type);
+            }
+        }
+
+        // add any entities associated with the current product
+        for (IMObjectReference typeRef : productTypes) {
+            if (!actTypes.contains(typeRef)) {
+                Entity entity = (Entity) getObject(typeRef);
+                if (entity != null) {
+                    linker.link(entity);
+                }
+            }
+        }
+    }
+
+    /**
+     * Used to create a new act to link to the invoice item.
+     */
+    interface ActLinker {
+
+        /**
+         * Creates and links a new act to the invoice item.
+         *
+         * @param entity the entity to create the act for
+         * @throws ArchetypeServiceException for any archetype service error
+         */
+        void link(Entity entity);
     }
 }

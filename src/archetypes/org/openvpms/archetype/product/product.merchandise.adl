@@ -89,6 +89,21 @@
                 <errorMessage>Duplicate active product type relationship</errorMessage>
             </assertion>
         </node>
+        <node name="investigationTypes" path="/entityRelationships"
+            type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+                filter="entityRelationship.productInvestigationType">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityRelationship.productInvestigationType"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product investigation type relationship</errorMessage>
+            </assertion>
+        </node>
         <node name="suppliers" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.productSupplier">

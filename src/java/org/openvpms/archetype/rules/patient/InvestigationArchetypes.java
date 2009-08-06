@@ -20,7 +20,7 @@ package org.openvpms.archetype.rules.patient;
 
 
 /**
- * Customer archetypes.
+ * Patient investigation archetypes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -51,4 +51,19 @@ public class InvestigationArchetypes {
      * General investigation short name.
      */
     public static final String GENERAL = "act.patientInvestigation";
+
+    /**
+     * Investigation type short name.
+     */
+    public static final String INVESTIGATION_TYPE = "entity.investigationType";
+
+    /**
+     * Investigation type participation short name.
+     */
+    public static final String INVESTIGATION_TYPE_PARTICIPATION = "participation.investigationType";
+
+    /**
+     * Patient investigation act short name.
+     */
+    public static final String PATIENT_INVESTIGATION = "act.patientInvestigation";
 }
