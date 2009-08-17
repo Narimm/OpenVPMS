@@ -165,11 +165,12 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
+        buttons.add(adjust);
         if (enable) {
             buttons.add(reverse);
             buttons.add(getPrintButton());
             buttons.add(statement);
-            buttons.add(adjust);
+
             if (check != null) {
                 buttons.add(check);
             }
