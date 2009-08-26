@@ -70,8 +70,7 @@ public class ComponentGrid {
      * @param set the set of components
      */
     public void add(ComponentSet set) {
-        ComponentState[] states = set.getComponents().toArray(
-                new ComponentState[0]);
+        ComponentState[] states = set.getComponents().toArray(new ComponentState[set.getComponents().size()]);
         int size = states.length;
         int columns = (size <= 2) ? 1 : 2;
         int rows;
@@ -84,7 +83,7 @@ public class ComponentGrid {
         int start = components.size();
         int end = start + rows;
         for (int col = 0; col < columns; ++col) {
-            for (int row = start; row < end; ++row) {
+            for (int row = start; row < end && index < states.length; ++row) {
                 set(row, col, states[index++]);
             }
         }
