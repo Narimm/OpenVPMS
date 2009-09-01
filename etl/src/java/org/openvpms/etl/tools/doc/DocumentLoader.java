@@ -37,11 +37,13 @@ import java.util.Date;
 
 
 /**
- * Document loader.
+ * Loads documents from the file system, attaching them to existing document acts.
+ * Documents may be loaded by name or by identifier.
  * <p/>
- * This loads documents from the file system for all document acts
- * matching the specified short name that have a file name specified but no
- * corresponding document content.
+ * To load documents by name, the document file name is used to locate a document act with the same name.
+ * <p/>
+ * To load documents by identifier, the identifier is parsed from the document file name and used to retrieve the
+ * corresponding document act.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -120,26 +122,24 @@ public class DocumentLoader {
 
                 ApplicationContext context;
                 if (!new File(contextPath).exists()) {
-                    context = new ClassPathXmlApplicationContext(
-                            contextPath);
+                    context = new ClassPathXmlApplicationContext(contextPath);
                 } else {
-                    context = new FileSystemXmlApplicationContext(
-                            contextPath);
+                    context = new FileSystemXmlApplicationContext(contextPath);
                 }
                 Loader loader;
-                IArchetypeService service = (IArchetypeService) context.getBean(
-                        "archetypeService");
+                IArchetypeService service = (IArchetypeService) context.getBean("archetypeService");
                 DocumentFactory factory = new DefaultDocumentFactory();
                 LoaderListener listener = (config.getBoolean("verbose"))
-                        ? new LoggingLoaderListener(log, target)
-                        : new DefaultLoaderListener(target);
+                                          ? new LoggingLoaderListener(log, target)
+                                          : new DefaultLoaderListener(target);
 
                 Date start = new Date();
                 log.info("Starting load at: " + start);
 
                 if (byId) {
                     boolean recurse = config.getBoolean("recurse");
-                    loader = new IdLoader(source, service, factory, recurse);
+                    boolean overwrite = config.getBoolean("overwrite");
+                    loader = new IdLoader(source, service, factory, recurse, overwrite);
                 } else {
                     String type = config.getString("type");
                     loader = new NameLoader(source, type, service, factory);
@@ -167,25 +167,19 @@ public class DocumentLoader {
         if (source == null) {
             displayUsage(parser, "No source directory specified");
         } else if (!source.isDirectory()) {
-            displayUsage(parser,
-                         "Source is not a directory: " + source.getPath());
+            displayUsage(parser, "Source is not a directory: " + source.getPath());
         } else {
             if (target != null) {
                 if (!target.isDirectory()) {
-                    displayUsage(parser,
-                                 "Destination is not a directory: "
-                                         + target.getPath());
+                    displayUsage(parser, "Destination is not a directory: " + target.getPath());
                 }
                 if (target.equals(source)) {
-                    displayUsage(parser, "Destination directory is the same "
-                            + "as the source");
+                    displayUsage(parser, "Destination directory is the same as the source");
                 }
                 File parent = target.getParentFile();
                 while (parent != null) {
                     if (parent.equals(source)) {
-                        displayUsage(parser,
-                                     "Destination directory cannot be a child "
-                                             + "of the source directory");
+                        displayUsage(parser, "Destination directory cannot be a child of the source directory");
                     }
                     parent = parent.getParentFile();
                 }
@@ -193,6 +187,12 @@ public class DocumentLoader {
         }
     }
 
+    /**
+     * Dumps statistics.
+     *
+     * @param listener the loader listener
+     * @param start    the start time
+     */
     private static void dumpStats(LoaderListener listener, Date start) {
         Date end = new Date();
         log.info("Ending load at: " + start);
@@ -203,9 +203,7 @@ public class DocumentLoader {
         log.info("Loaded: " + listener.getLoaded());
         log.info("Errors: " + listener.getErrors());
         log.info("Total:  " + total);
-        log.info(String.format(
-                "Processed %d files in %.2f seconds (%.2f files/sec)",
-                total, elapsed, rate));
+        log.info(String.format("Processed %d files in %.2f seconds (%.2f files/sec)", total, elapsed, rate));
     }
 
     /**
@@ -224,8 +222,7 @@ public class DocumentLoader {
                 .setHelp("Load files using the identifiers in their names"));
         parser.registerParameter(new Switch("byname").setShortFlag('n')
                 .setLongFlag("byname")
-                .setHelp(
-                "Load files by matching their names with document acts"));
+                .setHelp("Load files by matching their names with document acts"));
         parser.registerParameter(new FlaggedOption("source").setShortFlag('s')
                 .setLongFlag("source")
                 .setStringParser(dirParser)
@@ -235,6 +232,10 @@ public class DocumentLoader {
                 .setLongFlag("recurse")
                 .setDefault("false")
                 .setHelp("Recursively scan the source directory"));
+        parser.registerParameter(new Switch("overwrite").setShortFlag('o')
+                .setLongFlag("overwrite")
+                .setDefault("false")
+                .setHelp("Overwrite existing attachments. Ony applies when --byid is used"));
         parser.registerParameter(new FlaggedOption("dest").setShortFlag('d')
                 .setLongFlag("dest")
                 .setStringParser(dirParser)
@@ -242,7 +243,7 @@ public class DocumentLoader {
         parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
                 .setLongFlag("type")
                 .setHelp("The archetype short name. May contain wildcards. "
-                + "If not specified, defaults to all document acts"));
+                         + "If not specified, defaults to all document acts"));
         parser.registerParameter(new FlaggedOption("failOnError")
                 .setShortFlag('e')
                 .setLongFlag("failOnError")
@@ -250,8 +251,7 @@ public class DocumentLoader {
                 .setStringParser(BooleanStringParser.getParser())
                 .setHelp("Fail on error"));
         parser.registerParameter(new Switch("verbose").setShortFlag('v')
-                .setLongFlag("verbose").setDefault("false").setHelp(
-                "Displays verbose info to the console."));
+                .setLongFlag("verbose").setDefault("false").setHelp("Displays verbose info to the console."));
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                 .setLongFlag("context")
                 .setDefault(APPLICATION_CONTEXT)
@@ -269,9 +269,7 @@ public class DocumentLoader {
         if (error != null) {
             System.err.println(error);
         }
-        System.err.println("Usage: java "
-                + DocumentLoader.class.getName());
-
+        System.err.println("Usage: java " + DocumentLoader.class.getName());
         System.err.println("                " + parser.getUsage());
         System.err.println();
         System.err.println(parser.getHelp());

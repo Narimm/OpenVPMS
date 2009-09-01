@@ -19,7 +19,6 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -37,17 +36,19 @@ import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
  * Document loader that:
  * <ul>
- * <li>recursively searches a source directory for files
- * <li>for each file, parses its name for a <em>DocumentAct</em> identifier
- * <li>retrieves the corresponding <em>DocumentAct</em> and attaches the
- * file as a new <em>Document</em>
+ * <li>recursively searches a source directory for files</li>
+ * <li>for each file, parses its name for a <em>DocumentAct</em> identifier</li>
+ * <li>retrieves the corresponding <em>DocumentAct</em> and attaches the file as a new <em>Document</em></li>
  * </ul>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -63,26 +64,34 @@ class IdLoader extends AbstractLoader {
     /**
      * The file iterator.
      */
-    private Iterator<File> iterator;
+    private final Iterator<File> iterator;
+
+    /**
+     * Determines if existing documents should be overwritten.
+     */
+    private final boolean overwrite;
+
+    /**
+     * The pattern to extract act ids from file names.
+     */
+    private static final Pattern pattern = Pattern.compile("^(\\d+).*");
 
 
     /**
      * Constructs a new <tt>IdLoader</tt>.
      *
-     * @param dir the source directory
-     * @param service the archetype service
-     * @param factory the document factory
-     * @param recurse if <tt>true</tt> recursively scan the source dir
+     * @param dir       the source directory
+     * @param service   the archetype service
+     * @param factory   the document factory
+     * @param recurse   if <tt>true</tt> recursively scan the source dir
+     * @param overwrite if <tt>true</tt> overwrite existing documents
      */
-    @SuppressWarnings("unchecked")
-    public IdLoader(File dir, IArchetypeService service,
-                    DocumentFactory factory,
-                    boolean recurse) {
+    public IdLoader(File dir, IArchetypeService service, DocumentFactory factory, boolean recurse,
+                    boolean overwrite) {
         super(service, factory);
-        this.shortNames = getDocumentActShortNames();
-        List<File> files = new ArrayList<File>(
-                FileUtils.listFiles(dir, null, recurse));
-        Collections.sort(files);
+        shortNames = getDocumentActShortNames();
+        this.overwrite = overwrite;
+        List<File> files = getFiles(dir, recurse);
         iterator = files.iterator();
     }
 
@@ -107,23 +116,62 @@ class IdLoader extends AbstractLoader {
         String name = file.getName();
         DocumentAct act;
         if (name.startsWith("C")) {
-            String id = FilenameUtils.getBaseName(name.substring(1));
+            long id = getId(name.substring(1));
             act = getAct(id, "act.customerDocument*");
         } else if (name.startsWith("P") || name.startsWith("V")) {
-            String id = FilenameUtils.getBaseName(name.substring(1));
+            long id = getId(name.substring(1));
             act = getAct(id, "act.patientDocument*");
         } else {
-            String id = FilenameUtils.getBaseName(name);
+            long id = getId(name);
             act = getAct(id);
         }
         if (act != null) {
-            if (act.getDocument() == null) {
+            if (act.getDocument() == null || overwrite) {
                 result = load(file, act);
             } else {
                 notifyAlreadyLoaded(file);
             }
         } else {
             notifyMissingAct(file);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the files in the specified directory, ordered increasing modified timestamp and name.
+     *
+     * @param dir     the directory
+     * @param recurse if <tt>true</tt>, recurse subdirectories
+     * @return a list of files
+     */
+    @SuppressWarnings("unchecked")
+    private static List<File> getFiles(File dir, boolean recurse) {
+        List<File> files = new ArrayList<File>(FileUtils.listFiles(dir, null, recurse));
+
+        // sort the files on increasing last modified timestamp and name
+        Collections.sort(files, new Comparator<File>() {
+            public int compare(File o1, File o2) {
+                int result = (int) (o1.lastModified() - o2.lastModified());
+                if (result == 0) {
+                    result = o1.compareTo(o2);
+                }
+                return result;
+            }
+        });
+        return files;
+    }
+
+    /**
+     * Returns the act id from a file name.
+     *
+     * @param name the file name
+     * @return the act id, or <tt>-1</tt> if none can be found
+     */
+    private long getId(String name) {
+        long result = -1;
+        Matcher matcher = pattern.matcher(name);
+        if (matcher.matches()) {
+            result = Long.valueOf(matcher.group(1));
         }
         return result;
     }
@@ -159,25 +207,18 @@ class IdLoader extends AbstractLoader {
      * @param id the identifier
      * @return the corresponding act, or <tt>null</tt> if none is found
      */
-    private DocumentAct getAct(String id) {
-        try {
-            Long value = Long.valueOf(id);
+    private DocumentAct getAct(long id) {
+        DocumentAct result = null;
+        if (id >= 0) {
             ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
-            query.add(new NodeConstraint("id", value));
+            query.add(new NodeConstraint("id", id));
             IPage<IMObject> page = getService().get(query);
             List<IMObject> results = page.getResults();
             if (!results.isEmpty()) {
-            	if(results.get(0) instanceof DocumentAct) {
-            		return (DocumentAct) results.get(0);
-            	}
-            	else {
-            		return null;
-            	}
+                result = (DocumentAct) results.get(0);
             }
-        } catch (NumberFormatException ignore) {
-            // do nothing
         }
-        return null;
+        return result;
     }
 
     /**
@@ -187,7 +228,7 @@ class IdLoader extends AbstractLoader {
      * @param shortName the archetype short name. May contain wildcards.
      * @return the corresponding act, or <tt>null</tt> if none is found
      */
-    private DocumentAct getAct(String id, String shortName) {
+    private DocumentAct getAct(long id, String shortName) {
         DocumentAct act = getAct(id);
         DocumentAct result = null;
         if (act != null) {
@@ -205,14 +246,13 @@ class IdLoader extends AbstractLoader {
      */
     private String[] getDocumentActShortNames() {
         List<String> result = new ArrayList<String>();
-        List<ArchetypeDescriptor> descriptors
-                = getService().getArchetypeDescriptors();
+        List<ArchetypeDescriptor> descriptors = getService().getArchetypeDescriptors();
         for (ArchetypeDescriptor descriptor : descriptors) {
-            if (descriptor.getClazz().isAssignableFrom(DocumentAct.class)) {
+            if (DocumentAct.class.isAssignableFrom(descriptor.getClazz())) {
                 result.add(descriptor.getType().getShortName());
             }
         }
-        return result.toArray(new String[0]);
+        return result.toArray(new String[result.size()]);
     }
 
     /**
@@ -223,11 +263,11 @@ class IdLoader extends AbstractLoader {
      * @throws IOException           for any I/O error
      * @throws MalformedURLException for any URL error
      */
-    private String getMimeType(File file) throws IOException,
-                                                 MalformedURLException {
+    private String getMimeType(File file) throws IOException {
         URLConnection uc = file.toURL().openConnection();
         String mimeType = uc.getContentType();
         uc.getInputStream().close();
         return mimeType;
     }
+
 }
