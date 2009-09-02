@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -89,13 +90,11 @@ public class CheckInWorkflow extends WorkflowImpl {
         ActBean bean = new ActBean(appointment);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        final User clinician
-                = (User) bean.getParticipant("participation.clinician");
+        User clinician = (User) bean.getParticipant("participation.clinician");
 
-        String reason = bean.getString("reason", "");
+        String reason = ArchetypeServiceFunctions.lookup(appointment, "reason", "");
         String notes = bean.getString("description", "");
-        String description = Messages.get("workflow.checkin.task.description",
-                                          reason, notes);
+        String description = Messages.get("workflow.checkin.task.description", reason, notes);
 
         initialise(appointment, customer, patient, clinician, description);
     }
