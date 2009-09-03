@@ -72,6 +72,15 @@ abstract class AbstractLoader implements Loader {
     }
 
     /**
+     * Returns the listener.
+     *
+     * @return the listener. May be <tt>null</tt>
+     */
+    public LoaderListener getListener() {
+        return listener;
+    }
+
+    /**
      * Creates a new document.
      *
      * @param file     the file to create the document from

@@ -35,6 +35,13 @@ interface Loader {
     void setListener(LoaderListener listener);
 
     /**
+     * Returns the listener.
+     *
+     * @return the listener. May be <tt>null</tt>
+     */
+    LoaderListener getListener();
+
+    /**
      * Determines if there is a document to load.
      *
      * @return <tt>true</tt> if there is a document to load, otherwise

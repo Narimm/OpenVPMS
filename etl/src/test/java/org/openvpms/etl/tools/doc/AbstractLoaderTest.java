@@ -27,7 +27,9 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -80,6 +82,18 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
     /**
      * Creates a dummy <em>.gif</em> file for a document act.
      *
+     * @param act the act
+     * @param dir the parent directory
+     * @return a new file
+     * @throws java.io.IOException for any I/O error
+     */
+    protected File createFile(DocumentAct act, File dir) throws IOException {
+        return createFile(act, dir, null);
+    }
+
+    /**
+     * Creates a dummy <em>.gif</em> file for a document act.
+     *
      * @param act    the act
      * @param dir    the parent directory
      * @param prefix the file name prefix. May be <tt>null</tt>
@@ -113,6 +127,15 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
         File file = new File(dir, buff.toString());
         FileUtils.touch(file);
         return file;
+    }
+
+    /**
+     * Creaets a new <em>act.patientDocumentAttachment</em>.
+     *
+     * @return a new act
+     */
+    protected DocumentAct createPatientDocAct() {
+        return createPatientDocAct("act.patientDocumentAttachment");
     }
 
     /**
@@ -178,5 +201,24 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
         DocumentLoader docLoader = new DocumentLoader(loader);
         docLoader.setFailOnError(false);
         docLoader.load();
+    }
+
+    /**
+     * Verifies that a directory contains the expected files.
+     *
+     * @param dir      the directory
+     * @param expected the expected files
+     */
+    protected void checkFiles(File dir, File... expected) {
+        String[] names = new String[expected.length];
+        for (int i = 0; i < expected.length; ++i) {
+            names[i] = expected[i].getName();
+        }
+        Set<File> files = getFiles(dir);
+        assertEquals(names.length, files.size());
+        List<String> list = Arrays.asList(names);
+        for (File file : files) {
+            assertTrue(list.contains(file.getName()));
+        }
     }
 }

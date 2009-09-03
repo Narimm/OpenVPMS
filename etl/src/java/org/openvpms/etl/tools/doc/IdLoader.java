@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -57,6 +56,11 @@ import java.util.regex.Pattern;
 class IdLoader extends AbstractLoader {
 
     /**
+     * The default regular expression for extract act ids from file names.
+     */
+    public static final String DEFAULT_REGEXP = "[^\\d]*(\\d+).*";
+    
+    /**
      * The document act short names.
      */
     private final String[] shortNames;
@@ -74,7 +78,12 @@ class IdLoader extends AbstractLoader {
     /**
      * The pattern to extract act ids from file names.
      */
-    private static final Pattern pattern = Pattern.compile("^(\\d+).*");
+    private final Pattern pattern;
+
+    /**
+     * The default pattern to extract act ids from file names.
+     */
+    private static final Pattern DEFAULT_PATTERN = Pattern.compile(DEFAULT_REGEXP);
 
 
     /**
@@ -88,11 +97,27 @@ class IdLoader extends AbstractLoader {
      */
     public IdLoader(File dir, IArchetypeService service, DocumentFactory factory, boolean recurse,
                     boolean overwrite) {
+        this(dir, service, factory, recurse, overwrite, DEFAULT_PATTERN);
+    }
+
+    /**
+     * Constructs a new <tt>IdLoader</tt>.
+     *
+     * @param dir       the source directory
+     * @param service   the archetype service
+     * @param factory   the document factory
+     * @param recurse   if <tt>true</tt> recursively scan the source dir
+     * @param overwrite if <tt>true</tt> overwrite existing documents
+     * @param pattern   the pattern to extract act ids from file names
+     */
+    public IdLoader(File dir, IArchetypeService service, DocumentFactory factory, boolean recurse,
+                    boolean overwrite, Pattern pattern) {
         super(service, factory);
         shortNames = getDocumentActShortNames();
         this.overwrite = overwrite;
         List<File> files = getFiles(dir, recurse);
         iterator = files.iterator();
+        this.pattern = pattern;
     }
 
     /**
@@ -113,18 +138,8 @@ class IdLoader extends AbstractLoader {
     public boolean loadNext() {
         boolean result = false;
         File file = iterator.next();
-        String name = file.getName();
-        DocumentAct act;
-        if (name.startsWith("C")) {
-            long id = getId(name.substring(1));
-            act = getAct(id, "act.customerDocument*");
-        } else if (name.startsWith("P") || name.startsWith("V")) {
-            long id = getId(name.substring(1));
-            act = getAct(id, "act.patientDocument*");
-        } else {
-            long id = getId(name);
-            act = getAct(id);
-        }
+        long id = getId(file.getName());
+        DocumentAct act = (id != -1) ? getAct(id) : null;
         if (act != null) {
             if (act.getDocument() == null || overwrite) {
                 result = load(file, act);
@@ -209,32 +224,12 @@ class IdLoader extends AbstractLoader {
      */
     private DocumentAct getAct(long id) {
         DocumentAct result = null;
-        if (id >= 0) {
-            ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
-            query.add(new NodeConstraint("id", id));
-            IPage<IMObject> page = getService().get(query);
-            List<IMObject> results = page.getResults();
-            if (!results.isEmpty()) {
-                result = (DocumentAct) results.get(0);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the act for the specified id and short name.
-     *
-     * @param id        the identifier
-     * @param shortName the archetype short name. May contain wildcards.
-     * @return the corresponding act, or <tt>null</tt> if none is found
-     */
-    private DocumentAct getAct(long id, String shortName) {
-        DocumentAct act = getAct(id);
-        DocumentAct result = null;
-        if (act != null) {
-            if (TypeHelper.isA(act, shortName)) {
-                result = act;
-            }
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
+        query.add(new NodeConstraint("id", id));
+        IPage<IMObject> page = getService().get(query);
+        List<IMObject> results = page.getResults();
+        if (!results.isEmpty()) {
+            result = (DocumentAct) results.get(0);
         }
         return result;
     }
