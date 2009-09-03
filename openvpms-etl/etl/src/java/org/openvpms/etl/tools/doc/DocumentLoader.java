@@ -34,6 +34,8 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.io.File;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.regex.Pattern;
 
 
 /**
@@ -72,12 +74,90 @@ public class DocumentLoader {
 
 
     /**
-     * Constructs a new <tt>DocumentLoader</tt>.
+     * Creates a new <tt>DocumentLoader</tt>.
      *
-     * @param loader loader
+     * @param loader the loader to use
      */
     public DocumentLoader(Loader loader) {
         this.loader = loader;
+    }
+
+    /**
+     * Creates a new <tt>DocumentLoader</tt> from command line arguments.
+     *
+     * @param args    the arguments to parse
+     * @param service the achetype service. If <tt>null</tt> it will be bootstrapped from the default spring context
+     * @throws DocumentLoaderException if the arguments are invalid
+     */
+    protected DocumentLoader(String[] args, IArchetypeService service) {
+        this(args, createParser(), service);
+    }
+
+    /**
+     * Creates a new <tt>DocumentLoader</tt> from command line arguments.
+     *
+     * @param args   the arguments to parse
+     * @param parser the argument parser
+     * @throws DocumentLoaderException if the arguments are invalid
+     */
+    protected DocumentLoader(String[] args, JSAP parser) {
+        this(args, parser, null);
+    }
+
+    /**
+     * Creates a new <tt>DocumentLoader</tt> from command line arguments.
+     *
+     * @param args    the arguments to parse
+     * @param parser  the argument parser
+     * @param service the achetype service. If <tt>null</tt> it will be bootstrapped from the default spring context
+     * @throws DocumentLoaderException if the arguments are invalid
+     */
+    protected DocumentLoader(String[] args, JSAP parser, IArchetypeService service) {
+        JSAPResult config = parser.parse(args);
+        boolean byId = config.getBoolean("byid");
+        boolean byName = config.getBoolean("byname");
+        if (!config.success()) {
+            String message = null;
+            Iterator iter = config.getErrorMessageIterator();
+            if (iter.hasNext()) {
+                message = iter.next().toString();
+            }
+            throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.InvalidArguments, message);
+        } else if (!byId && !byName) {
+            throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.InvalidArguments,
+                                              "One of --byid or --byname must be specified");
+        } else {
+            File source = config.getFile("source");
+            File target = config.getFile("dest");
+            checkDirs(source, target);
+
+            if (service == null) {
+                String contextPath = config.getString("context");
+                ApplicationContext context;
+                if (!new File(contextPath).exists()) {
+                    context = new ClassPathXmlApplicationContext(contextPath);
+                } else {
+                    context = new FileSystemXmlApplicationContext(contextPath);
+                }
+                service = (IArchetypeService) context.getBean("archetypeService");
+            }
+            DocumentFactory factory = new DefaultDocumentFactory();
+            LoaderListener listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log, target)
+                                                                     : new DefaultLoaderListener(target);
+
+            if (byId) {
+                boolean recurse = config.getBoolean("recurse");
+                boolean overwrite = config.getBoolean("overwrite");
+                String regexp = config.getString("regexp");
+                Pattern pattern = Pattern.compile(regexp);
+                loader = new IdLoader(source, service, factory, recurse, overwrite, pattern);
+            } else {
+                String type = config.getString("type");
+                loader = new NameLoader(source, type, service, factory);
+            }
+            loader.setListener(listener);
+            setFailOnError(config.getBoolean("failOnError"));
+        }
     }
 
     /**
@@ -94,11 +174,15 @@ public class DocumentLoader {
      * Loads documents.
      */
     public void load() {
+        Date start = new Date();
+        log.info("Starting load at: " + start);
+
         while (loader.hasNext()) {
             if (!loader.loadNext() && failOnError) {
                 break;
             }
         }
+        dumpStats(start);
     }
 
     /**
@@ -107,49 +191,24 @@ public class DocumentLoader {
      * @param args command line arguments
      */
     public static void main(String[] args) {
+        JSAP parser = null;
         try {
-            JSAP parser = createParser();
-            JSAPResult config = parser.parse(args);
-            boolean byId = config.getBoolean("byid");
-            boolean byName = config.getBoolean("byname");
-            if (!config.success() || !(byId || byName)) {
-                displayUsage(parser, null);
-            } else {
-                File source = config.getFile("source");
-                File target = config.getFile("dest");
-                checkDirs(source, target, parser);
-                String contextPath = config.getString("context");
-
-                ApplicationContext context;
-                if (!new File(contextPath).exists()) {
-                    context = new ClassPathXmlApplicationContext(contextPath);
-                } else {
-                    context = new FileSystemXmlApplicationContext(contextPath);
-                }
-                Loader loader;
-                IArchetypeService service = (IArchetypeService) context.getBean("archetypeService");
-                DocumentFactory factory = new DefaultDocumentFactory();
-                LoaderListener listener = (config.getBoolean("verbose"))
-                                          ? new LoggingLoaderListener(log, target)
-                                          : new DefaultLoaderListener(target);
-
-                Date start = new Date();
-                log.info("Starting load at: " + start);
-
-                if (byId) {
-                    boolean recurse = config.getBoolean("recurse");
-                    boolean overwrite = config.getBoolean("overwrite");
-                    loader = new IdLoader(source, service, factory, recurse, overwrite);
-                } else {
-                    String type = config.getString("type");
-                    loader = new NameLoader(source, type, service, factory);
-                }
-                loader.setListener(listener);
-                DocumentLoader docLoader = new DocumentLoader(loader);
-                docLoader.setFailOnError(config.getBoolean("failOnError"));
-                docLoader.load();
-                dumpStats(listener, start);
+            parser = createParser();
+            DocumentLoader loader = new DocumentLoader(args, parser);
+            loader.load();
+        } catch (DocumentLoaderException exception) {
+            if (exception.getMessage() != null) {
+                System.err.println(exception.getMessage());
             }
+            if (parser != null) {
+                System.err.println("Usage: java " + DocumentLoader.class.getName());
+                System.err.println("                " + parser.getUsage());
+                System.err.println();
+                System.err.println(parser.getHelp());
+            } else {
+                log.error(exception, exception);
+            }
+            System.exit(1);
         } catch (Throwable throwable) {
             log.error(throwable, throwable);
             System.exit(1);
@@ -160,29 +219,23 @@ public class DocumentLoader {
      * Verifies that the source and target directories are valid.
      *
      * @param source the source directory
-     * @param target the target directory
-     * @param parser the command line parser
+     * @param target the target directory. May be <tt>null</tt>
      */
-    private static void checkDirs(File source, File target, JSAP parser) {
+    private void checkDirs(File source, File target) {
         if (source == null) {
-            displayUsage(parser, "No source directory specified");
-        } else if (!source.isDirectory()) {
-            displayUsage(parser, "Source is not a directory: " + source.getPath());
-        } else {
-            if (target != null) {
-                if (!target.isDirectory()) {
-                    displayUsage(parser, "Destination is not a directory: " + target.getPath());
+            throw new IllegalArgumentException("Argument 'source' is null");
+        }
+        if (target != null) {
+            if (target.equals(source)) {
+                throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.SourceTargetSame);
+
+            }
+            File parent = target.getParentFile();
+            while (parent != null) {
+                if (parent.equals(source)) {
+                    throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.TargetChildOfSource);
                 }
-                if (target.equals(source)) {
-                    displayUsage(parser, "Destination directory is the same as the source");
-                }
-                File parent = target.getParentFile();
-                while (parent != null) {
-                    if (parent.equals(source)) {
-                        displayUsage(parser, "Destination directory cannot be a child of the source directory");
-                    }
-                    parent = parent.getParentFile();
-                }
+                parent = parent.getParentFile();
             }
         }
     }
@@ -190,14 +243,14 @@ public class DocumentLoader {
     /**
      * Dumps statistics.
      *
-     * @param listener the loader listener
-     * @param start    the start time
+     * @param start the start time
      */
-    private static void dumpStats(LoaderListener listener, Date start) {
+    private void dumpStats(Date start) {
         Date end = new Date();
         log.info("Ending load at: " + start);
 
         double elapsed = (end.getTime() - start.getTime()) / 1000;
+        LoaderListener listener = loader.getListener();
         int total = listener.getProcessed();
         double rate = (elapsed != 0) ? total / elapsed : 0;
         log.info("Loaded: " + listener.getLoaded());
@@ -210,69 +263,61 @@ public class DocumentLoader {
      * Creates a new command line parser.
      *
      * @return a new parser
-     * @throws JSAPException if the parser can't be created
      */
-    private static JSAP createParser() throws JSAPException {
+    private static JSAP createParser() {
         JSAP parser = new JSAP();
         FileStringParser dirParser = FileStringParser.getParser();
         dirParser.setMustBeDirectory(true);
         dirParser.setMustExist(true);
-        parser.registerParameter(new Switch("byid").setShortFlag('i')
-                .setLongFlag("byid")
-                .setHelp("Load files using the identifiers in their names"));
-        parser.registerParameter(new Switch("byname").setShortFlag('n')
-                .setLongFlag("byname")
-                .setHelp("Load files by matching their names with document acts"));
-        parser.registerParameter(new FlaggedOption("source").setShortFlag('s')
-                .setLongFlag("source")
-                .setStringParser(dirParser)
-                .setDefault("./")
-                .setHelp("The directory to load files from. "));
-        parser.registerParameter(new Switch("recurse").setShortFlag('r')
-                .setLongFlag("recurse")
-                .setDefault("false")
-                .setHelp("Recursively scan the source directory"));
-        parser.registerParameter(new Switch("overwrite").setShortFlag('o')
-                .setLongFlag("overwrite")
-                .setDefault("false")
-                .setHelp("Overwrite existing attachments. Ony applies when --byid is used"));
-        parser.registerParameter(new FlaggedOption("dest").setShortFlag('d')
-                .setLongFlag("dest")
-                .setStringParser(dirParser)
-                .setHelp("The directory to move files to on successful load."));
-        parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
-                .setLongFlag("type")
-                .setHelp("The archetype short name. May contain wildcards. "
-                         + "If not specified, defaults to all document acts"));
-        parser.registerParameter(new FlaggedOption("failOnError")
-                .setShortFlag('e')
-                .setLongFlag("failOnError")
-                .setDefault("false")
-                .setStringParser(BooleanStringParser.getParser())
-                .setHelp("Fail on error"));
-        parser.registerParameter(new Switch("verbose").setShortFlag('v')
-                .setLongFlag("verbose").setDefault("false").setHelp("Displays verbose info to the console."));
-        parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
-                .setLongFlag("context")
-                .setDefault(APPLICATION_CONTEXT)
-                .setHelp("Application context path"));
+        try {
+            parser.registerParameter(new Switch("byid").setShortFlag('i')
+                    .setLongFlag("byid")
+                    .setHelp("Load files using the identifiers in their names"));
+            parser.registerParameter(new Switch("byname").setShortFlag('n')
+                    .setLongFlag("byname")
+                    .setHelp("Load files by matching their names with document acts"));
+            parser.registerParameter(new FlaggedOption("source").setShortFlag('s')
+                    .setLongFlag("source")
+                    .setStringParser(dirParser)
+                    .setDefault("./")
+                    .setHelp("The directory to load files from. "));
+            parser.registerParameter(new Switch("recurse").setShortFlag('r')
+                    .setLongFlag("recurse")
+                    .setDefault("false")
+                    .setHelp("Recursively scan the source directory"));
+            parser.registerParameter(new Switch("overwrite").setShortFlag('o')
+                    .setLongFlag("overwrite")
+                    .setDefault("false")
+                    .setHelp("Overwrite existing attachments. Ony applies when --byid is used"));
+            parser.registerParameter(new FlaggedOption("regexp")
+                    .setLongFlag("regexp")
+                    .setDefault(IdLoader.DEFAULT_REGEXP)
+                    .setHelp("Regular expression for parsing identifiers from file names. "
+                             + "Only applies when --byid is used"));
+            parser.registerParameter(new FlaggedOption("dest").setShortFlag('d')
+                    .setLongFlag("dest")
+                    .setStringParser(dirParser)
+                    .setHelp("The directory to move files to on successful load."));
+            parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
+                    .setLongFlag("type")
+                    .setHelp("The archetype short name. May contain wildcards. "
+                             + "If not specified, defaults to all document acts"));
+            parser.registerParameter(new FlaggedOption("failOnError")
+                    .setShortFlag('e')
+                    .setLongFlag("failOnError")
+                    .setDefault("false")
+                    .setStringParser(BooleanStringParser.getParser())
+                    .setHelp("Fail on error"));
+            parser.registerParameter(new Switch("verbose").setShortFlag('v')
+                    .setLongFlag("verbose").setDefault("false").setHelp("Displays verbose info to the console."));
+            parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
+                    .setLongFlag("context")
+                    .setDefault(APPLICATION_CONTEXT)
+                    .setHelp("Application context path"));
+        } catch (JSAPException exception) {
+            throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.FailedToCreateParser, exception);
+        }
         return parser;
     }
 
-    /**
-     * Prints usage information.
-     *
-     * @param parser the parser
-     * @param error  the error. May be <tt>null</tt>
-     */
-    private static void displayUsage(JSAP parser, String error) {
-        if (error != null) {
-            System.err.println(error);
-        }
-        System.err.println("Usage: java " + DocumentLoader.class.getName());
-        System.err.println("                " + parser.getUsage());
-        System.err.println();
-        System.err.println(parser.getHelp());
-        System.exit(1);
-    }
 }

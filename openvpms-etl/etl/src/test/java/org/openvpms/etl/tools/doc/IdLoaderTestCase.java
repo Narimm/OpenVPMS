@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 
@@ -38,54 +37,101 @@ import java.util.Set;
  */
 public class IdLoaderTestCase extends AbstractLoaderTest {
 
-
     /**
      * Tests the loader.
      *
      * @throws Exception for any error
      */
     public void testLoad() throws Exception {
-        final int count = 10;
-        final String patientAct = "act.patientDocumentAttachment";
-        final String customerAct = "act.customerDocumentAttachment";
         File source = new File("target/sdocs" + System.currentTimeMillis());
         File target = new File("target/tdocs" + System.currentTimeMillis());
         assertTrue(source.mkdirs());
         assertTrue(target.mkdirs());
 
-        DocumentAct[] acts = new DocumentAct[count];
-        String[] expectedNames = new String[count];
-        for (int i = 0; i < count; ++i) {
-            DocumentAct act = createPatientDocAct(patientAct);
-            File file = createFile(act, source, null);
-            acts[i] = act;
-            expectedNames[i] = file.getName();
-        }
+        DocumentAct act1 = createPatientDocAct();
+        DocumentAct act2 = createPatientDocAct();
+        DocumentAct act3 = createPatientDocAct();
+        DocumentAct act4 = createPatientDocAct();
 
-        // create a file with no corresponding act.
-        File noActFile = new File(source, "0000.gif");
-        FileUtils.touch(noActFile);
+        // create files with varying file names for each act
+        File act1File = createFile(act1, source, null);
+        File act2File = createFile(act2, source, "V");
+        File act3File = createFile(act3, source, null, "-12345");
+        File act4File = createFile(act4, source, "P", "-123456");
 
-        // create a file with an incorrect prefix for the id.
-        DocumentAct invalid1 = createPatientDocAct(patientAct);
+        IdLoader idLoader = new IdLoader(source, service, new DefaultDocumentFactory(), true, false);
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
+        load(idLoader, listener);
 
-        // C indicates customer act
-        File invalidF1 = createFile(invalid1, source, "C");
+        assertEquals(4, listener.getLoaded());
+        assertEquals(0, listener.getErrors());
+        assertEquals(4, listener.getProcessed());
+        assertEquals(0, listener.getMissingAct());
+        assertEquals(0, listener.getAlreadyLoaded());
 
-        DocumentAct invalid2 = createCustomerDocAct(customerAct);
-        // P indicates patient act
-        File invalidF2 = createFile(invalid2, source, "P");
+        Set<File> files = getFiles(source);
+        assertEquals(0, files.size());
 
-        DocumentAct invalid3 = createCustomerDocAct(customerAct);
-        // V indicates patient act
-        File invalidF3 = createFile(invalid3, source, "V");
+        checkFiles(target, act1File, act2File, act3File, act4File);
 
-        // create a file and associate it with the act. The loader will skip
-        // it
-        DocumentAct preLoaded = createPatientDocAct(patientAct);
+        // verify the acts have associated documents
+        checkAct(act1);
+        checkAct(act2);
+        checkAct(act3);
+        checkAct(act4);
+    }
+
+    /**
+     * Verifies behaviour when an act is missing.
+     *
+     * @throws Exception for any error
+     */
+    public void testMissingAct() throws Exception {
+        File source = new File("target/sdocs" + System.currentTimeMillis());
+        File target = new File("target/tdocs" + System.currentTimeMillis());
+        assertTrue(source.mkdirs());
+        assertTrue(target.mkdirs());
+
+        // create files with no corresponding acts.
+        File noAct1 = new File(source, "0000.gif");
+        FileUtils.touch(noAct1);
+
+        File noAct2 = new File(source, "C0001.gif");
+        FileUtils.touch(noAct2);
+
+        File noAct3 = new File(source, "0000-12345.gif");
+        FileUtils.touch(noAct3);
+
+        IdLoader idLoader = new IdLoader(source, service, new DefaultDocumentFactory(), true, false);
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
+        load(idLoader, listener);
+
+        int expectedErrors = 3;
+        assertEquals(0, listener.getLoaded());
+        assertEquals(expectedErrors, listener.getErrors());
+        assertEquals(expectedErrors, listener.getProcessed());
+        assertEquals(expectedErrors, listener.getMissingAct());
+        assertEquals(0, listener.getAlreadyLoaded());
+
+        checkFiles(source, noAct1, noAct2, noAct3);
+        checkFiles(target);
+    }
+
+    /**
+     * Tests the loader.
+     *
+     * @throws Exception for any error
+     */
+    public void testSkipProcessed() throws Exception {
+        File source = new File("target/sdocs" + System.currentTimeMillis());
+        File target = new File("target/tdocs" + System.currentTimeMillis());
+        assertTrue(source.mkdirs());
+        assertTrue(target.mkdirs());
+
+        // create a file and associate it with the act. The loader will skip it
+        DocumentAct preLoaded = createPatientDocAct();
         File preloadedFile = createFile(preLoaded, source, null);
-        Document doc = DocumentHelper.create(preloadedFile, "image/gif",
-                                             new DocumentHandlers());
+        Document doc = DocumentHelper.create(preloadedFile, "image/gif", new DocumentHandlers());
         preLoaded.setDocument(doc.getObjectReference());
         service.save(Arrays.asList(doc, preLoaded));
 
@@ -93,29 +139,14 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
         load(idLoader, listener);
 
-        int expectedErrors = 5;
-        assertEquals(count, listener.getLoaded());
-        assertEquals(expectedErrors, listener.getErrors());
-        assertEquals(count + expectedErrors, listener.getProcessed());
-        assertEquals(4, listener.getMissingAct());
+        assertEquals(0, listener.getLoaded());
+        assertEquals(1, listener.getErrors());
+        assertEquals(1, listener.getProcessed());
+        assertEquals(0, listener.getMissingAct());
         assertEquals(1, listener.getAlreadyLoaded());
 
-        Set<File> files = getFiles(source);
-        assertEquals(expectedErrors, files.size());
-        assertTrue(files.contains(noActFile));
-        assertTrue(files.contains(invalidF1));
-        assertTrue(files.contains(invalidF2));
-        assertTrue(files.contains(invalidF3));
-
-        checkFiles(target, expectedNames);
-
-        // verify the acts have associated documents
-        for (DocumentAct act : acts) {
-            act = (DocumentAct) service.get(act.getObjectReference());
-            assertNotNull(act);
-            assertNotNull(act.getDocument());
-            assertNotNull(service.get(act.getDocument()));
-        }
+        checkFiles(source, preloadedFile);
+        checkFiles(target);
     }
 
     /**
@@ -126,13 +157,12 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      */
     public void testTimestampOrdering() throws Exception {
         final int count = 3;
-        final String patientAct = "act.patientDocumentAttachment";
         File source = new File("target/sdocs" + System.currentTimeMillis());
         File target = new File("target/tdocs" + System.currentTimeMillis());
         assertTrue(source.mkdirs());
         assertTrue(target.mkdirs());
 
-        DocumentAct act = createPatientDocAct(patientAct);
+        DocumentAct act = createPatientDocAct();
 
         // generate 3 files for the same act, and assign last modification timestamps to ensure that they are
         // processed in the correct order
@@ -155,8 +185,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         assertEquals(2, listener1.getAlreadyLoaded());
 
         // verify first is moved, but second and third remain
-        checkFiles(target, first.getName());
-        checkFiles(source, second.getName(), third.getName()); // not moved as overwrite = false
+        checkFiles(target, first);
+        checkFiles(source, second, third); // not moved as overwrite = false
 
         // now re-run with overwrite = true. The second and third file should now be loaded
         overwrite = true;
@@ -171,7 +201,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         assertEquals(0, listener2.getAlreadyLoaded());
 
         checkFiles(source);
-        checkFiles(target, first.getName(), second.getName(), third.getName());
+        checkFiles(target, first, second, third);
 
         // verify the act has a document, and it is the third instance
         act = (DocumentAct) service.get(act.getObjectReference());
@@ -183,18 +213,15 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
     }
 
     /**
-     * Verifies that a directory contains the expected files.
+     * Verify an act exists and has a document.
      *
-     * @param dir   the directory
-     * @param names the expected file names
+     * @param act the act to check
      */
-    private void checkFiles(File dir, String... names) {
-        Set<File> files = getFiles(dir);
-        assertEquals(names.length, files.size());
-        List<String> list = Arrays.asList(names);
-        for (File file : files) {
-            assertTrue(list.contains(file.getName()));
-        }
+    private void checkAct(DocumentAct act) {
+        act = (DocumentAct) service.get(act.getObjectReference());
+        assertNotNull(act);
+        assertNotNull(act.getDocument());
+        assertNotNull(service.get(act.getDocument()));
     }
 
 }
