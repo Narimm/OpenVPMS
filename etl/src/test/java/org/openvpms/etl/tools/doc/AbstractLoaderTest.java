@@ -19,6 +19,7 @@ package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -130,30 +131,30 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
     }
 
     /**
-     * Creaets a new <em>act.patientDocumentAttachment</em>.
+     * Creates a new <em>act.patientDocumentAttachment</em>.
      *
-     * @return a new act
+     * @return a new <em>act.patientDocumentAttachment</em>
      */
     protected DocumentAct createPatientDocAct() {
-        return createPatientDocAct("act.patientDocumentAttachment");
+        return createPatientDocAct(null);
+    }
+
+    /**
+     * Creates a new <em>act.patientDocumentAttachment</em>.
+     *
+     * @param fileName the file name. May be <tt>null</tt>
+     * @return a new <em>act.patientDocumentAttachment</em>
+     */
+    protected DocumentAct createPatientDocAct(String fileName) {
+        return createPatientDocAct("act.patientDocumentAttachment", fileName);
     }
 
     /**
      * Creates a new document act.
      *
-     * @param shortName the document act short name
-     * @return a new document act
-     */
-    protected DocumentAct createPatientDocAct(String shortName) {
-        return createPatientDocAct(shortName, null);
-    }
-
-    /**
-     * Creates a new patient document act.
-     *
-     * @param shortName the document act short name
+     * @param shortName the archetype short name
      * @param fileName  the file name. May be <tt>null</tt>
-     * @return a new document act
+     * @return a new <em>act.patientDocumentAttachment</em>
      */
     protected DocumentAct createPatientDocAct(String shortName, String fileName) {
         Party patient = (Party) service.create("party.patientpet");
@@ -201,6 +202,20 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
         DocumentLoader docLoader = new DocumentLoader(loader);
         docLoader.setFailOnError(false);
         docLoader.load();
+    }
+
+    /**
+     * Verify an act exists and has a document.
+     *
+     * @param act the act to check
+     */
+    protected void checkAct(DocumentAct act) {
+        act = (DocumentAct) service.get(act.getObjectReference());
+        assertNotNull(act);
+        assertNotNull(act.getDocument());
+        Document doc = (Document) service.get(act.getDocument());
+        assertNotNull(doc);
+        assertEquals(act.getFileName(), doc.getName());
     }
 
     /**

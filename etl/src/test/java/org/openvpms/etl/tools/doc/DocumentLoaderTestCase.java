@@ -17,6 +17,7 @@
  */
 package org.openvpms.etl.tools.doc;
 
+import org.apache.commons.io.FileUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 
 import java.io.File;
@@ -37,20 +38,6 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
 
 
     /**
-     * Tests the behaviour of using --byname
-     */
-    public void testByName() {
-        File source = new File(parent, "sdocs" + System.currentTimeMillis());
-        File target = new File(parent, "tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
-
-        String[] args = {"--byname", "-s", source.getPath(), "-d", target.getPath()};
-        DocumentLoader loader = new DocumentLoader(args, service);
-        loader.load();
-    }
-
-    /**
      * Verifies that an exception is thrown if no arguments are specified.
      */
     public void testNoArgs() {
@@ -59,7 +46,83 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
     }
 
     /**
-     * Tests the behaviour of using --byid with various combinations of invalid directory araguemnts.
+     * Tests the behaviour of using --byname.
+     *
+     * @throws Exception for any error
+     */
+    public void testByName() throws Exception {
+        File source = new File(parent, "sdocs1" + System.currentTimeMillis());
+        File target = new File(parent, "tdocs1" + System.currentTimeMillis());
+        assertTrue(source.mkdirs());
+        assertTrue(target.mkdirs());
+
+        File file1 = new File(source, "file1-" + System.currentTimeMillis() + ".gif");
+        File file2 = new File(source, "file2-" + System.currentTimeMillis() + ".gif");
+        File file3 = new File(source, "file3-" + System.currentTimeMillis() + ".gif");
+        File file4 = new File(source, "file4-" + System.currentTimeMillis() + ".gif");
+
+        DocumentAct act1 = createPatientDocAct(file1.getName());
+        DocumentAct act2 = createPatientDocAct(file2.getName());
+        DocumentAct act3 = createPatientDocAct(file3.getName());
+        DocumentAct act4 = createPatientDocAct(file4.getName());
+
+        FileUtils.touch(file1);
+        FileUtils.touch(file2);
+        FileUtils.touch(file3);
+        FileUtils.touch(file4);
+
+        String[] args = {"--byname", "-s", source.getPath(), "-d", target.getPath()};
+        DocumentLoader loader = new DocumentLoader(args, service);
+        loader.load();
+
+        // verify documents have been loaded.
+        checkAct(act1);
+        checkAct(act2);
+        checkAct(act3);
+        checkAct(act4);
+
+        // verify files have been moved from source to target
+        checkFiles(source);
+        checkFiles(target, file1, file2, file3, file4);
+
+    }
+
+    /**
+     * Tests the behaviour of using --byid with --recurse.
+     *
+     * @throws Exception for any error
+     */
+    public void testByIdRecurse() throws Exception {
+        File root = new File(parent, "root" + System.currentTimeMillis());
+        File sub1 = new File(root, "sub1");
+        File sub2 = new File(root, "sub2");
+        File target = new File(parent, "tdocs2" + System.currentTimeMillis());
+        assertTrue(root.mkdirs());
+        assertTrue(target.mkdirs());
+        assertTrue(sub1.mkdirs());
+        assertTrue(sub2.mkdirs());
+
+        DocumentAct act1 = createPatientDocAct();
+        DocumentAct act2 = createPatientDocAct();
+        DocumentAct act3 = createPatientDocAct();
+        DocumentAct act4 = createPatientDocAct();
+
+        File file1 = createFile(act1, sub1);
+        File file2 = createFile(act2, sub1);
+        File file3 = createFile(act3, sub2);
+        File file4 = createFile(act4, sub2);
+
+        String[] args = {"--byid", "-s", root.getPath(), "-d", target.getPath(), "--recurse"};
+        DocumentLoader loader = new DocumentLoader(args, service);
+        loader.load();
+
+        checkFiles(target, file1, file2, file3, file4);
+        checkFiles(sub1);
+        checkFiles(sub2);
+    }
+
+    /**
+     * Tests the behaviour of using --byid with various combinations of invalid directory arguments.
      */
     public void testByIdInvalidDirs() {
         String[] args1 = {"--byid", "-s", "target/invalidsource"};
@@ -84,8 +147,8 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      * @throws Exception for any error
      */
     public void testByIdCustomRegexp() throws Exception {
-        File source = new File(parent, "sdocs" + System.currentTimeMillis());
-        File target = new File(parent, "tdocs" + System.currentTimeMillis());
+        File source = new File(parent, "sdocs2" + System.currentTimeMillis());
+        File target = new File(parent, "tdocs2" + System.currentTimeMillis());
         assertTrue(source.mkdirs());
         assertTrue(target.mkdirs());
 
@@ -100,7 +163,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         File act3File = createFile(act3, source, null, "-12345");
         File act4File = createFile(act4, source, "P", "-123456");
 
-        // load all files which have a an <act id>.gif extension
+        // load all files which have an <act id>.gif extension
         String[] args = {"--byid", "-s", source.getPath(), "-d", target.getPath(), "--regexp", "(\\d+).gif"};
         DocumentLoader loader = new DocumentLoader(args, service);
         loader.load();

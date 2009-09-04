@@ -212,16 +212,5 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         assertEquals(third.getName(), doc.getName());
     }
 
-    /**
-     * Verify an act exists and has a document.
-     *
-     * @param act the act to check
-     */
-    private void checkAct(DocumentAct act) {
-        act = (DocumentAct) service.get(act.getObjectReference());
-        assertNotNull(act);
-        assertNotNull(act.getDocument());
-        assertNotNull(service.get(act.getDocument()));
-    }
 
 }
