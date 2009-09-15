@@ -27,8 +27,11 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
@@ -154,10 +157,13 @@ public class BatchPrintDialog extends PopupDialog {
             } else if (column.getModelIndex() == DESCRIPTION_INDEX) {
                 String description = object.getDescription();
                 if (StringUtils.isEmpty(description) && object instanceof DocumentAct) {
-                   result = ((DocumentAct) object).getFileName();
-                } else {
-                   result = description;
+                    ActBean bean = new ActBean((Act) object);
+                    Entity template = bean.getParticipant("participation.documentTemplate");
+                    if (template != null) {
+                       description = template.getName();
+                    }
                 }
+                result = description;
             } else {
             	result = super.getValue(object, column, row);     
             }
