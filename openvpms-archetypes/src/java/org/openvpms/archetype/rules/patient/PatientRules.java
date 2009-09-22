@@ -229,6 +229,7 @@ public class PatientRules {
         EntityBean bean = new EntityBean(patient, service);
         if (!bean.getBoolean("deceased")) {
             bean.setValue("deceased", true);
+            bean.setValue("active", false);
             if (bean.hasNode("deceasedDate")) {
             	bean.setValue("deceasedDate", new Date());
             }
