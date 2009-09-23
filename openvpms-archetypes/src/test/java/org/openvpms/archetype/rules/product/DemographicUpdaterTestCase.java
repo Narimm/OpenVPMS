@@ -45,10 +45,12 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
      * without a node name.
      */
     public void testEvaluate() {
-        Lookup desex = createDemographicUpdate(null,
-                                               "party:setPatientDesexed(.)");
+        Lookup desex = createDemographicUpdate(null, "party:setPatientDesexed(.)");
         Party patient = TestHelper.createPatient();
         checkEvaluateDesex(desex, patient, patient);
+
+        Lookup deceased = createDemographicUpdate(null, "openvpms:set(., 'deceased', true())");
+        checkEvaluateDeceased(deceased, patient, patient);
     }
 
     /**
@@ -61,9 +63,11 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(invoiceItem);
         bean.addParticipation("participation.patient", patient);
 
-        Lookup desex = createDemographicUpdate("patient.entity",
-                                               "party:setPatientDesexed(.)");
+        Lookup desex = createDemographicUpdate("patient.entity", "party:setPatientDesexed(.)");
         checkEvaluateDesex(desex, invoiceItem, patient);
+
+        Lookup deceased = createDemographicUpdate("patient.entity", "openvpms:set(., 'deceased', true())");
+        checkEvaluateDeceased(deceased, invoiceItem, patient);
     }
 
     /**
@@ -72,10 +76,8 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
      */
     public void testEvaluateCollection() {
         // Verify that a patient is flagged as desexed and deceased.
-        Lookup desex = createDemographicUpdate(null,
-                                               "party:setPatientDesexed(.)");
-        Lookup deceased = createDemographicUpdate(null,
-                                                  "party:setPatientDeceased(.)");
+        Lookup desex = createDemographicUpdate(null, "party:setPatientDesexed(.)");
+        Lookup deceased = createDemographicUpdate(null, "party:setPatientDeceased(.)");
 
         List<Lookup> lookups = Arrays.asList(desex, deceased);
         Party patient = TestHelper.createPatient();
@@ -94,17 +96,35 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
      * @param context the context object to evaluate against
      * @param patient the patient that will be updated
      */
-    private void checkEvaluateDesex(Lookup desex, IMObject context,
-                                    Party patient) {
+    private void checkEvaluateDesex(Lookup desex, IMObject context, Party patient) {
         IMObjectBean bean = new IMObjectBean(patient);
         assertFalse(bean.getBoolean("desexed"));
 
         DemographicUpdater updater = new DemographicUpdater();
         updater.evaluate(context, desex);
 
-        patient = (Party) get(patient);
+        patient = get(patient);
         bean = new IMObjectBean(patient);
         assertTrue(bean.getBoolean("desexed"));
+    }
+
+    /**
+     * Verifies that a deceased lookup evaluates correctly to mark a patient deceased.
+     *
+     * @param deceased the deceased <em>lookup.demographicUpdate</em>
+     * @param context  the context object to evaluate against
+     * @param patient  the patient that will be updated
+     */
+    private void checkEvaluateDeceased(Lookup deceased, IMObject context, Party patient) {
+        IMObjectBean bean = new IMObjectBean(patient);
+        assertFalse(bean.getBoolean("deceased"));
+
+        DemographicUpdater updater = new DemographicUpdater();
+        updater.evaluate(context, deceased);
+
+        patient = get(patient);
+        bean = new IMObjectBean(patient);
+        assertTrue(bean.getBoolean("deceased"));
     }
 
     /**
