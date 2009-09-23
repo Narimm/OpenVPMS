@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolver;
@@ -147,6 +148,20 @@ public class ArchetypeServiceFunctions {
         } catch (PropertyResolverException exception) {
             return defaultValue;
         }
+    }
+
+    /**
+     * Updates the value of the specified node and saves the object.
+     *
+     * @param object the object
+     * @param node the node
+     * @param value the value to set
+     * @throws OpenVPMSException if the node cannot be updated or the object cannot be saved
+     */
+    public static void set(IMObject object, String node, Object value) {
+        IMObjectBean bean = new IMObjectBean(object, ArchetypeServiceHelper.getArchetypeService());
+        bean.setValue(node, value);
+        bean.save();
     }
 
     /**

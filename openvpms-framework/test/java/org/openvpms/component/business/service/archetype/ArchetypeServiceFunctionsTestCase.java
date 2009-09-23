@@ -220,6 +220,19 @@ public class ArchetypeServiceFunctionsTestCase
     }
 
     /**
+     * Tests the openvpms:set() function.
+     */
+    public void testSet() {
+        Party party = createCustomer();
+        JXPathContext context = JXPathHelper.newContext(party);
+        context.getValue("openvpms:set(., 'lastName', 'testSet')");
+        party = (Party) service.get(party.getObjectReference());
+        assertNotNull(party);
+        IMObjectBean bean = new IMObjectBean(party);
+        assertEquals("testSet", bean.getString("lastName"));
+    }
+
+    /**
      * Tests the openvpms:lookup() function.
      */
     public void testLookup() {
