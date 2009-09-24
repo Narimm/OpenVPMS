@@ -387,7 +387,7 @@
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils-core</artifactId>
-            <version>1.7.0</version>
+            <version>1.8.0</version>
             <url>http://jakarta.apache.org/commons/jxpath/</url>
         </dependency>
         <dependency>
@@ -411,7 +411,7 @@
         <dependency>
             <groupId>jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
-            <version>1.3.4</version>
+            <version>3.6.0</version>
             <url>http://jasperforge.org/sf/projects/jasperreports</url>
         </dependency>
         <dependency>
