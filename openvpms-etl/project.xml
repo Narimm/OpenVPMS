@@ -469,7 +469,7 @@
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils-core</artifactId>
-            <version>1.7.0</version>
+            <version>1.8.0</version>
             <url>http://jakarta.apache.org/commons/jxpath/</url>
             <properties>
                 <kettle.plugin>true</kettle.plugin>
