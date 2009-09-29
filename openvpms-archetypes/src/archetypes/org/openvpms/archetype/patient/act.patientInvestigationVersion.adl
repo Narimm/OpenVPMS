@@ -11,14 +11,14 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="act.patientInvestigation.1.0" latest="true"
+    <archetype name="act.patientInvestigationVersion.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.act.DocumentAct"
-               displayName="Investigation">
+               displayName="Investigation Version">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true"
@@ -29,20 +29,7 @@
         <node name="investigationType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.investigationType"/>
         <node name="description" displayName="Notes" type="java.lang.String" path="/description"/>
-        <node name="status" path="/status" type="java.lang.String"
-              minCardinality="1" defaultValue="'IN_PROGRESS'">
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="IN_PROGRESS" value="In Progress"/>
-                    <property name="COMPLETED" value="Completed"/>
-                    <property name="CANCELLED" value="Cancelled"/>
-                    <property name="PRELIMINARY" value="Preliminary"/>
-                    <property name="FINAL" value="Final"/>
-                </propertyList>
-                <errorMessage>An error message</errorMessage>
-            </assertion>
-        </node>
-		<node name="reviewed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
+		<node name="reviewed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.clinician" />
         <node displayName="Report" name="document" path="/document" minCardinality="0"
