@@ -29,6 +29,7 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.archetype.rules.doc.DocumentRules;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -146,12 +147,11 @@ public class DocumentGenerator {
                           Map<String, Object> parameters, boolean save) {
         List<IMObject> objects = Arrays.asList((IMObject) act);
         document = report.generate(objects.iterator(), parameters);
-        act.setFileName(document.getName());
-        act.setMimeType(document.getMimeType());
 
         if (save) {
-            act.setDocument(document.getObjectReference());
-            if (SaveHelper.save(act, document)) {
+            DocumentRules rules = new DocumentRules();
+            List<IMObject> changes = rules.addDocument(act, document);
+            if (SaveHelper.save(changes)) {
                 listener.generated(document);
             }
         } else {

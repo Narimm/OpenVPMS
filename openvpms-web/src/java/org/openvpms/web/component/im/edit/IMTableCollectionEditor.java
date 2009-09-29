@@ -303,6 +303,7 @@ public abstract class IMTableCollectionEditor<T>
     /**
      * Creates the row of controls.
      *
+     * @param focus the focus group
      * @return the row of controls
      */
     protected Row createControls(FocusGroup focus) {

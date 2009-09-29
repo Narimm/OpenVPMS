@@ -134,8 +134,19 @@ public class DocumentEditor extends AbstractPropertyEditor
      * @throws ArchetypeServiceException for any error
      */
     public void setDocument(Document document) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+        setDocument(document, false);
+    }
+
+    /**
+     * Sets the document.
+     *
+     * @param document the new document
+     * @param keepOld if <tt>true</tt> any existing document won't be deleted at commit
+     * @throws ArchetypeServiceException for any error
+     */
+    protected void setDocument(Document document, boolean keepOld) {
+        IMObjectReference old = getReference();
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         service.save(document);
 
         // update cached properties
@@ -145,6 +156,10 @@ public class DocumentEditor extends AbstractPropertyEditor
         // update the reference. This will notify any registered listeners
         IMObjectReference ref = document.getObjectReference();
         getProperty().setValue(ref);
+
+        if (old != null && keepOld) {
+            refMgr.remove(old);
+        }
 
         // queue for addition
         refMgr.add(ref);
@@ -169,6 +184,15 @@ public class DocumentEditor extends AbstractPropertyEditor
      */
     public String getMimeType() {
         return mimeType;
+    }
+
+    /**
+     * Returns the document reference.
+     *
+     * @return the document reference. May be <tt>null</tt>
+     */
+    public IMObjectReference getReference() {
+        return (IMObjectReference) getProperty().getValue();
     }
 
     /**

@@ -122,7 +122,7 @@ public abstract class PopupWindow extends WindowPane {
 
     /**
      * Restrict dialog dimensions to 70% of screen height and 90% of screen width to try and prevent dialogs from
-     * exceeding screen bounds. See OVPMS-
+     * exceeding screen bounds. See OVPMS-883
      */
     private void restrictDimensions() {
         ApplicationInstance app = ApplicationInstance.getActive();

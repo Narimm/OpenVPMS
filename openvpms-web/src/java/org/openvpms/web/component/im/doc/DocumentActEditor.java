@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.doc;
 
+import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -27,13 +28,16 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,7 +45,7 @@ import java.util.List;
 
 
 /**
- * Editor for <em>act.patientDocument</em> acts.
+ * Editor for {@link DocumentAct}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -54,14 +58,34 @@ public class DocumentActEditor extends AbstractActEditor {
     private IMObjectReference lastTemplate;
 
     /**
+     * The document editor. May be <tt>null</tt>.
+     */
+    private DocumentEditor docEditor;
+
+    /**
+     * The document versions editor. May be <tt>null</tt>.
+     */
+    private ActRelationshipCollectionEditor versionsEditor;
+
+    /**
      * The document template node.
      */
     private static final String DOC_TEMPLATE = "documentTemplate";
 
     /**
-     * The document reference node.
+     * The document node.
+     */
+    private static final String DOCUMENT = "document";
+
+    /**
+     * The legacy document reference node name.
      */
     private static final String DOC_REFERENCE = "docReference";
+
+    /**
+     * The versions node.
+     */
+    private static final String VERSIONS = "versions";
 
 
     /**
@@ -74,17 +98,26 @@ public class DocumentActEditor extends AbstractActEditor {
     public DocumentActEditor(DocumentAct act, IMObject parent,
                              LayoutContext context) {
         super(act, parent, context);
-        DocumentEditor editor = getDocumentEditor();
-        if (editor != null) {
+        Property document = getProperty(DOCUMENT);
+        if (document == null) {
+            document = getProperty(DOC_REFERENCE);
+        }
+        if (document != null) {
+            docEditor = new VersioningDocumentEditor(document);
             ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
-                    updateFileProperties();
+                    onDocumentUpdate();
                 }
             };
-            editor.addModifiableListener(listener);
+            docEditor.addModifiableListener(listener);
+            getEditors().add(docEditor);
         }
-        IMObjectCollectionEditor template
-                = (IMObjectCollectionEditor) getEditor(DOC_TEMPLATE);
+        Property versions = getProperty(VERSIONS);
+        if (versions != null) {
+            versionsEditor = new ActRelationshipCollectionEditor((CollectionProperty) versions, act, context);
+            getEditors().add(versionsEditor);
+        }
+        IMObjectCollectionEditor template = (IMObjectCollectionEditor) getEditor(DOC_TEMPLATE);
         if (template != null) {
             lastTemplate = getTemplate();
             template.addModifiableListener(new ModifiableListener() {
@@ -138,10 +171,9 @@ public class DocumentActEditor extends AbstractActEditor {
      * </p>
      * Updates the fileName and mimeType properties.
      */
-    private void updateFileProperties() {
-        DocumentEditor editor = getDocumentEditor();
-        getProperty("fileName").setValue(editor.getName());
-        getProperty("mimeType").setValue(editor.getMimeType());
+    private void onDocumentUpdate() {
+        getProperty("fileName").setValue(docEditor.getName());
+        getProperty("mimeType").setValue(docEditor.getMimeType());
     }
 
     /**
@@ -149,9 +181,8 @@ public class DocumentActEditor extends AbstractActEditor {
      */
     private void onTemplateUpdate() {
         IMObjectReference template = getTemplate();
-        if ((template != null && lastTemplate != null
-                && !template.equals(lastTemplate))
-                || (template != null && lastTemplate == null)) {
+        if ((template != null && lastTemplate != null && !template.equals(lastTemplate))
+            || (template != null && lastTemplate == null)) {
             lastTemplate = template;
             generateDoc(template);
         }
@@ -166,34 +197,46 @@ public class DocumentActEditor extends AbstractActEditor {
         DocumentAct act = (DocumentAct) getObject();
         final DocumentGenerator generator = new DocumentGenerator(
                 act, template, new DocumentGenerator.Listener() {
-            public void generated(Document document) {
-                updateDocument(document);
-            }
-        });
+                    public void generated(Document document) {
+                        updateDocument(document);
+                    }
+                });
         generator.generate(false);
     }
 
     /**
-     * Updates the document reference.
+     * Updates the document.
+     * <p/>
+     * If the act supports versioning, any existing saved document will be copied to new version act.
      *
      * @param document the new document
      */
     private void updateDocument(Document document) {
-        DocumentEditor editor = getDocumentEditor();
-        if (editor != null) {
-            editor.setDocument(document);
+        if (docEditor != null) {
+            docEditor.setDocument(document);
         }
     }
 
     /**
-     * Returns the document editor.
+     * Versions the existing document if necessary.
      *
-     * @return the document editor or <tt>null</tt> if there is no
-     *         <tt>docReference</tt> node
+     * @param reference the old document reference. May be <tt>null</tt>
+     * @return <tt>true</tt> if it the document was versioned
      */
-    private DocumentEditor getDocumentEditor() {
-        return (DocumentEditor) getEditor(DOC_REFERENCE);
+    private boolean versionOldDocument(IMObjectReference reference) {
+        boolean versioned = false;
+        if (reference != null && !reference.isNew() && versionsEditor != null) {
+            DocumentRules rules = new DocumentRules();
+            DocumentAct version = rules.createVersion((DocumentAct) getObject());
+            if (version != null) {
+                versionsEditor.add(version);
+                versionsEditor.refresh();
+                versioned = true;
+            }
+        }
+        return versioned;
     }
+
 
     /**
      * Helper to return a reference to the current template, an instance of
@@ -202,8 +245,7 @@ public class DocumentActEditor extends AbstractActEditor {
      * @return a reference to the current template. May be <tt>null</tt>
      */
     private IMObjectReference getTemplate() {
-        CollectionProperty property
-                = (CollectionProperty) getProperty(DOC_TEMPLATE);
+        CollectionProperty property = (CollectionProperty) getProperty(DOC_TEMPLATE);
         Collection values = property.getValues();
         if (!values.isEmpty()) {
             Participation p = (Participation) values.toArray()[0];
@@ -213,7 +255,7 @@ public class DocumentActEditor extends AbstractActEditor {
     }
 
     /**
-     * Layout strategy that treats the 'docReference' node as a simple node.
+     * Layout strategy that treats the 'document' node as a simple node.
      */
     private class LayoutStrategy extends AbstractLayoutStrategy {
 
@@ -225,22 +267,26 @@ public class DocumentActEditor extends AbstractActEditor {
          * @see ArchetypeDescriptor#getSimpleNodeDescriptors()
          */
         @Override
-        protected List<NodeDescriptor> getSimpleNodes(
-                ArchetypeDescriptor archetype) {
+        protected List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
             List<NodeDescriptor> nodes = new ArrayList<NodeDescriptor>();
             nodes.addAll(super.getSimpleNodes(archetype));
             boolean found = false;
             for (NodeDescriptor node : nodes) {
-                if (node.getName().equals(DOC_REFERENCE)) {
+                String name = node.getName();
+                if (DOCUMENT.equals(name) || DOC_REFERENCE.equals(name)) {
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                NodeDescriptor node = archetype.getNodeDescriptor(
-                        DOC_REFERENCE);
+                NodeDescriptor node = archetype.getNodeDescriptor(DOCUMENT);
                 if (node != null) {
-                    nodes.add(archetype.getNodeDescriptor(DOC_REFERENCE));
+                    nodes.add(node);
+                } else {
+                    node = archetype.getNodeDescriptor(DOC_REFERENCE);
+                    if (node != null) {
+                        nodes.add(node);
+                    }
                 }
             }
             return nodes;
@@ -257,9 +303,54 @@ public class DocumentActEditor extends AbstractActEditor {
         protected List<NodeDescriptor> getComplexNodes(
                 ArchetypeDescriptor archetype) {
             return filter(getObject(), super.getComplexNodes(archetype),
-                          new NamedNodeFilter(DOC_REFERENCE));
+                          new NamedNodeFilter(DOCUMENT, DOC_REFERENCE));
         }
 
+        /**
+         * Creates a component for a property.
+         *
+         * @param property the property
+         * @param parent   the parent object
+         * @param context  the layout context
+         * @return a component to display <code>property</code>
+         */
+        @Override
+        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+            String name = property.getName();
+            if (DOCUMENT.equals(name) || DOC_REFERENCE.equals(name)) {
+                return new ComponentState(docEditor.getComponent(), docEditor.getProperty());
+            } else if (VERSIONS.equals(name)) {
+                return new ComponentState(versionsEditor.getComponent(), versionsEditor.getProperty());
+            }
+            return super.createComponent(property, parent, context);
+        }
+    }
+
+    private class VersioningDocumentEditor extends DocumentEditor {
+
+        /**
+         * Creates a new <tt>VersioningDocumentEditor</tt>.
+         *
+         * @param property the property being edited
+         * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
+         *          for any archetype service error
+         */
+        public VersioningDocumentEditor(Property property) {
+            super(property);
+        }
+
+        /**
+         * Sets the document.
+         *
+         * @param document the new document
+         * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
+         *          for any error
+         */
+        @Override
+        public void setDocument(Document document) {
+            boolean versioned = versionOldDocument(getReference());
+            super.setDocument(document, versioned);
+        }
     }
 
 }
