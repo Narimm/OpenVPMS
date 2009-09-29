@@ -25,6 +25,18 @@
 		<node name="initials" path="/details/initials" type="java.lang.String" />
 		<node name="lastName" path="/details/lastName" type="java.lang.String"
 		      minCardinality="1" maxLength="30" />
+        <node name="patients" path="/sourceEntityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.patient*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityRelationship.patientOwner"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
@@ -78,5 +90,8 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
+        <node name="sourceRelationships" path="/sourceEntityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship"
+              minCardinality="0" maxCardinality="*" hidden="true"/>
 	</archetype>
 </archetypes>

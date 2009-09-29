@@ -45,9 +45,9 @@ public class IMObjectCopier {
     private final IArchetypeService service;
 
     /**
-     * Map of original -> copied references, to avoid duplicate copying.
+     * Map of original -> copied objects, to avoid duplicate copying.
      */
-    private Map<IMObjectReference, IMObjectReference> references;
+    private Map<IMObjectReference, Copy> copies;
 
     /**
      * The copy handler.
@@ -68,6 +68,7 @@ public class IMObjectCopier {
      * Construct a new <tt>IMObjectCopier</tt>.
      *
      * @param handler the copy handler
+     * @param service the archetype service
      */
     public IMObjectCopier(IMObjectCopyHandler handler,
                           IArchetypeService service) {
@@ -88,7 +89,7 @@ public class IMObjectCopier {
      */
     public List<IMObject> apply(IMObject object) {
         List<IMObject> result = new ArrayList<IMObject>();
-        references = new HashMap<IMObjectReference, IMObjectReference>();
+        copies = new HashMap<IMObjectReference, Copy>();
         IMObject target = apply(object, result, false);
         result.add(0, target);
         return result;
@@ -106,7 +107,7 @@ public class IMObjectCopier {
      */
     @Deprecated
     public IMObject copy(IMObject object) {
-        references = new HashMap<IMObjectReference, IMObjectReference>();
+        copies = new HashMap<IMObjectReference, Copy>();
         List<IMObject> children = new ArrayList<IMObject>();
         return apply(object, children, true);
     }
@@ -126,12 +127,13 @@ public class IMObjectCopier {
         IMObject target = handler.getObject(source, service);
         if (target != null) {
             // cache the references to avoid copying the same object twice
-            references.put(source.getObjectReference(),
-                           target.getObjectReference());
+            Copy copy = new Copy(target);
+            copies.put(source.getObjectReference(), copy);
 
             if (target != source) {
                 doCopy(source, target, children, save);
             }
+            copy.complete();
         }
         return target;
     }
@@ -160,23 +162,13 @@ public class IMObjectCopier {
                     IMObjectReference ref
                             = (IMObjectReference) sourceDesc.getValue(source);
                     if (ref != null) {
-                        ref = copyReference(ref, children, save);
+                        ref = copyReference(ref, source, children, save);
                         sourceDesc.setValue(target, ref);
                     }
                 } else if (!sourceDesc.isCollection()) {
                     targetDesc.setValue(target, sourceDesc.getValue(source));
                 } else {
-                    for (IMObject child : sourceDesc.getChildren(source)) {
-                        IMObject value;
-                        if (sourceDesc.isParentChild()) {
-                            value = apply(child, children, save);
-                        } else {
-                            value = child;
-                        }
-                        if (value != null) {
-                            targetDesc.addChildToCollection(target, value);
-                        }
-                    }
+                    copyChildren(source, target, children, save, sourceDesc, targetDesc);
                 }
             }
         }
@@ -185,22 +177,66 @@ public class IMObjectCopier {
     }
 
     /**
+     * Copies collections.
+     *
+     * @param source     the object to copy
+     * @param target     the target to copy to
+     * @param children   a list of child objects created during copying
+     * @param save       determines if child objects should be saved
+     * @param sourceDesc the source collection node descriptor
+     * @param targetDesc the target collection node descriptor
+     */
+    private void copyChildren(IMObject source, IMObject target, List<IMObject> children, boolean save,
+                              NodeDescriptor sourceDesc, NodeDescriptor targetDesc) {
+        for (IMObject child : sourceDesc.getChildren(source)) {
+            IMObject value;
+            Copy copy = null;
+            if (sourceDesc.isParentChild()) {
+                copy = copies.get(child.getObjectReference());
+                if (copy == null) {
+                    value = apply(child, children, save);
+                } else {
+                    // referencing an object already present in another collection
+                    value = copy.getObject();
+                }
+            } else {
+                value = child;
+            }
+            if (value != null) {
+                if (copy == null || copy.isComplete()) {
+                    targetDesc.addChildToCollection(target, value);
+                } else {
+                    // can't safely add an incomplete object to the collection, so queue it for later
+                    copy.queue(target, targetDesc);
+                }
+            }
+        }
+    }
+
+    /**
      * Helper to copy the object referred to by a reference, and return the new
      * reference.
      *
      * @param reference the reference
+     * @param parent    the parent object
      * @param children  a list of child objects created during copying
      * @param save      determines if child objects should be saved
      * @return a new reference, or one from <tt>references</tt> if the
      *         reference has already been copied
      */
-    private IMObjectReference copyReference(IMObjectReference reference,
-                                            List<IMObject> children,
+    private IMObjectReference copyReference(IMObjectReference reference, IMObject parent, List<IMObject> children,
                                             boolean save) {
-        IMObjectReference result = references.get(reference);
-        if (result == null) {
+        Copy copy = copies.get(reference);
+        IMObject object;
+        if (copy != null) {
+            object = copy.getObject();
+        } else {
             IMObject original = service.get(reference);
-            IMObject object = apply(original, children, save);
+            if (original == null) {
+                throw new IMObjectCopierException(IMObjectCopierException.ErrorCode.ObjectNotFound, reference,
+                                                  parent.getObjectReference());
+            }
+            object = apply(original, children, save);
             if (object != original && object != null) {
                 // child was copied
                 children.add(object);
@@ -208,11 +244,124 @@ public class IMObjectCopier {
                     service.save(object);
                 }
             }
-            if (object != null) {
-                result = object.getObjectReference();
-            }
         }
-        return result;
+        return (object != null) ? object.getObjectReference() : null;
     }
 
+    /**
+     * Manages the state of a copied object.
+     */
+    private static class Copy {
+
+        /**
+         * The copied object.
+         */
+        private final IMObject object;
+
+        /**
+         * Determines if the object is complete.
+         */
+        private boolean complete;
+
+        /**
+         * A queue of collection objects.
+         */
+        private List<CollectionAdder> queue;
+
+        /**
+         * Creates a new <tt>Copy</tt>.
+         *
+         * @param object the copied object
+         */
+        public Copy(IMObject object) {
+            this.object = object;
+        }
+
+        /**
+         * Returns the copied object.
+         *
+         * @return the copied object
+         */
+        public IMObject getObject() {
+            return object;
+        }
+
+        /**
+         * Determines if the object is complete.
+         *
+         * @return <tt>true</tt> if the object is complete, otherwise <tt>false</tt>
+         */
+        public boolean isComplete() {
+            return complete;
+        }
+
+        /**
+         * Marks the object as being complete, adding it to any queued collections.
+         */
+        public void complete() {
+            this.complete = true;
+            if (queue != null) {
+                for (CollectionAdder adder : queue) {
+                    adder.add();
+                }
+                queue.clear();
+            }
+        }
+
+        /**
+         * Queues the object for addition to a collection.
+         * <p/>
+         * This should be used to queue incomplete objects for addition until such time as they are complete.
+         *
+         * @param target     the target object owns the collection
+         * @param descriptor the collection node descriptor
+         */
+        public void queue(IMObject target, NodeDescriptor descriptor) {
+            if (queue == null) {
+                queue = new ArrayList<CollectionAdder>();
+            }
+            queue.add(new CollectionAdder(target, descriptor, object));
+        }
+    }
+
+    /**
+     * Helper to add an object to a collection.
+     */
+    private static class CollectionAdder {
+
+        /**
+         * The parent object.
+         */
+        private final IMObject parent;
+
+        /**
+         * The collection node descriptor.
+         */
+        private final NodeDescriptor descriptor;
+
+        /**
+         * The object to add.
+         */
+        private final IMObject value;
+
+        /**
+         * Creates a new <tt>CollectionAdder</tt>.
+         *
+         * @param parent     the parent object
+         * @param descriptor the collection node descriptor
+         * @param value      the value to add
+         */
+        public CollectionAdder(IMObject parent, NodeDescriptor descriptor, IMObject value) {
+            this.parent = parent;
+            this.descriptor = descriptor;
+            this.value = value;
+        }
+
+        /**
+         * Adds the object to the collection.
+         */
+        public void add() {
+            descriptor.addChildToCollection(parent, value);
+        }
+    }
 }
