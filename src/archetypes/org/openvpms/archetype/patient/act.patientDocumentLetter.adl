@@ -44,8 +44,12 @@
         <node name="documentTemplate" displayName="Template" path="/participations"
               type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.documentTemplate"/>
-        <node displayName="Document" name="docReference" path="/document" minCardinality="0"
+        <node displayName="Document" name="document" path="/document" minCardinality="0"
               maxCardinality="1"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+        </node>
+        <node displayName="Document" name="docReference" path="/document" minCardinality="0"
+              maxCardinality="1" hidden="true"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference">
         </node>
         <node name="patient" path="/participations" type="java.util.HashSet"
@@ -56,5 +60,15 @@
               filter="participation.author" hidden="true"/>
         <node name="fileName" type="java.lang.String" path="/fileName" hidden="true" />
         <node name="mimeType" type="java.lang.String" path="/mimeType" readOnly="true" hidden="true" />
+        <node name="versions" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0"
+              readOnly="true" maxCardinality="*" filter="actRelationship.patientDocumentLetterVersion">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.patientDocumentLetterVersion"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>        
     </archetype>
 </archetypes>

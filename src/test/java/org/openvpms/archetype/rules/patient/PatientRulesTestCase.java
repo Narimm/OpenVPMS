@@ -260,6 +260,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      * Helper to convert a string to a date.
      *
      * @param value the date string
+     * @return the date
      */
     private Date getDate(String value) {
         return java.sql.Date.valueOf(value);

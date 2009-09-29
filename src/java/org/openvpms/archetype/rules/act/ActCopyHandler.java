@@ -62,9 +62,7 @@ public abstract class ActCopyHandler extends MappingCopyHandler {
     /**
      * Helper to determine if a node is copyable.
      * <p/>
-     * In addition to that provided by the superclass, this implementation
-     * excludes the <em>startTime</em>, <em>status</em> and <em>printed</em>
-     * from acts.
+     * If the superclass implementation returns <tt>true</tt>, this implementation delegates to {@link #checkCopyable}.
      *
      * @param archetype the archetype descriptor
      * @param node      the node descriptor
@@ -73,13 +71,28 @@ public abstract class ActCopyHandler extends MappingCopyHandler {
      * @return <tt>true</tt> if the node is copyable; otherwise <tt>false</tt>
      */
     @Override
-    protected boolean isCopyable(ArchetypeDescriptor archetype,
-                                 NodeDescriptor node, boolean source) {
+    protected boolean isCopyable(ArchetypeDescriptor archetype, NodeDescriptor node, boolean source) {
         boolean result = super.isCopyable(archetype, node, source);
-        if (result && TypeHelper.matches(archetype.getShortName(), "act.*")) {
+        if (result) {
+            result = checkCopyable(archetype, node);
+        }
+        return result;
+    }
+
+    /**
+     * Determines if a node is copyable.
+     * <p/>
+     * This implementation excludes act nodes named <em>startTime</em>, <em>status</em>, and <em>printed</em>.
+     *
+     * @param archetype the node's archetype descriptor
+     * @param node the node
+     * @return <tt>true</tt> if the node is copyable, otherwise <tt>false</tt>
+     */
+    protected boolean checkCopyable(ArchetypeDescriptor archetype, NodeDescriptor node) {
+        boolean result = true;
+        if (TypeHelper.matches(archetype.getShortName(), "act.*")) {
             String name = node.getName();
-            result = !"startTime".equals(name) && !"status".equals(name)
-                    && !"printed".equals(name);
+            result = !"startTime".equals(name) && !"status".equals(name) && !"printed".equals(name);
         }
         return result;
     }
