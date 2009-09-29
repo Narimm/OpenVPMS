@@ -20,6 +20,8 @@ package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -94,11 +96,11 @@ public class ActBean extends IMObjectBean {
      * @param target    the target act
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if <tt>shortName</tt> is an invalid archetype
      */
     public ActRelationship addRelationship(String shortName, Act target) {
         Act act = getAct();
-        ActRelationship r = (ActRelationship) getArchetypeService().create(
-                shortName);
+        ActRelationship r = (ActRelationship) getArchetypeService().create(shortName);
         if (r == null) {
             throw new IMObjectBeanException(ArchetypeNotFound, shortName);
         }
@@ -183,6 +185,36 @@ public class ActBean extends IMObjectBean {
             }
         }
         return result;
+    }
+
+    /**
+     * Adds a new relationship between the current act (the source), and the supplied target.
+     *
+     * @param name   the act relationship node name, used to determine which relationship to create
+     * @param target the target act
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, or a relationship cannot be added
+     */
+    public void addNodeRelationship(String name, Act target) {
+        String[] range = getNode(name).getArchetypeRange();
+        IArchetypeService service = getArchetypeService();
+        IMObjectReference targetRef = target.getObjectReference();
+        boolean found = false;
+        for (String shortName : range) {
+            ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(shortName);
+            if (descriptor != null) {
+                NodeDescriptor node = descriptor.getNodeDescriptor("target");
+                if (node != null && TypeHelper.isA(targetRef, node.getArchetypeRange())) {
+                    addRelationship(shortName, target);
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            throw new IMObjectBeanException(IMObjectBeanException.ErrorCode.CannotAddTargetToNode,
+                                            targetRef.getArchetypeId().getShortName(), name);
+        }
     }
 
     /**
@@ -330,9 +362,10 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Removes a participation.
+     * Removes the first participation matching the specified short name.
      *
      * @param shortName the participation short name
+     * @return the removed participation, or <tt>null</tt> if none is found
      */
     public Participation removeParticipation(String shortName) {
         Participation p = getParticipation(shortName);

@@ -148,6 +148,34 @@ public class ActBeanTestCase
     }
 
     /**
+     * Tests the {@link ActBean#addNodeRelationship} method.
+     */
+    public void testAddNodeRelationship() {
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        ActBean bean = createBean("act.customerEstimation");
+        Act[] expected = new Act[3];
+        for (int i = 0; i < 3; ++i) {
+            Act target = (Act) create("act.customerEstimationItem");
+            service.save(target);
+            bean.addNodeRelationship("items", target);
+            expected[i] = target;
+        }
+        List<Act> acts = bean.getNodeActs("items");
+        assertEquals(expected.length, acts.size());
+        for (Act exp : expected) {
+            assertTrue(acts.contains(exp));
+        }
+
+        try {
+            Act target = (Act) create("act.customerEstimation");
+            bean.addNodeRelationship("items", target);
+            fail("Expected addNodeRelationship() to fail");
+        } catch (IMObjectBeanException exception) {
+            assertEquals(IMObjectBeanException.ErrorCode.CannotAddTargetToNode, exception.getErrorCode());
+        }
+    }
+
+    /**
      * Tests the {@link ActBean#addParticipation),
      * {@link ActBean#getParticipation(String),
      * {@link ActBean#removeParticipation} and
@@ -275,14 +303,15 @@ public class ActBeanTestCase
 
     /**
      * Helper to create a customer.
+     *
+     * @return a new customer
      */
     private Party createCustomer() {
         Party party = (Party) create("party.customerperson");
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("title", "MR");
         bean.setValue("firstName", "ZFoo");
-        bean.setValue("lastName", "ZActBeanTestCase.Customer" +
-                party.hashCode());
+        bean.setValue("lastName", "ZActBeanTestCase.Customer" + party.hashCode());
         return party;
     }
 

@@ -30,8 +30,11 @@ import static org.openvpms.component.business.service.archetype.helper.IMObjectB
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -111,6 +114,22 @@ public class IMObjectBeanTestCase
         // version of the node name
         IMObjectBean pet = createBean("party.animalpet");
         assertEquals("Date Of Birth", pet.getDisplayName("dateOfBirth"));
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#getArchetypeRange(String)} method.
+     */
+    public void testGetArchetypeRange() {
+        IMObjectBean bean = createBean("party.customerperson");
+
+        // check a node with an archetype range assertion
+        Set<String> shortNames = new HashSet<String>(Arrays.asList(bean.getArchetypeRange("contacts")));
+        assertEquals(2, shortNames.size());
+        assertTrue(shortNames.contains("contact.location"));
+        assertTrue(shortNames.contains("contact.phoneNumber"));
+
+        // check a node with no assertion
+        assertEquals(0, bean.getArchetypeRange("name").length);
     }
 
     /**
@@ -397,9 +416,11 @@ public class IMObjectBeanTestCase
 
     /**
      * Verifies that two lists of objects match.
+     *
+     * @param actual the actual result
+     * @param expected the expected result
      */
-    private <T extends IMObject> void checkEquals(List<T> actual,
-                                                  T ... expected) {
+    private <T extends IMObject> void checkEquals(List<T> actual, T ... expected) {
         assertEquals(actual.size(), expected.length);
         for (IMObject e : expected) {
             boolean found = false;

@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -132,8 +133,7 @@ public final class DescriptorHelper {
         //TODO This is a work around until we resolve the current
         // problem with archetyping and archetype.
         if (object instanceof AssertionDescriptor) {
-            AssertionTypeDescriptor atDesc = service.getAssertionTypeDescriptor(
-                    object.getName());
+            AssertionTypeDescriptor atDesc = service.getAssertionTypeDescriptor(object.getName());
             archId = new ArchetypeId(atDesc.getPropertyArchetype());
         }
 
@@ -203,6 +203,7 @@ public final class DescriptorHelper {
      * Any wildcards are expanded.
      *
      * @param descriptor the node descriptor
+     * @param service    the archetype service
      * @return a list of short names
      * @throws ArchetypeServiceException for any error
      */
@@ -227,6 +228,7 @@ public final class DescriptorHelper {
      * @deprecated see {@link #getShortNames(String, String)}
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     public static String[] getShortNames(String refModelName,
                                          String entityName,
                                          String conceptName) {
@@ -260,6 +262,7 @@ public final class DescriptorHelper {
      * @throws ArchetypeServiceException for any error
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     public static String[] getShortNames(String refModelName,
                                          String entityName,
                                          String conceptName,
@@ -268,7 +271,7 @@ public final class DescriptorHelper {
                                                             entityName,
                                                             conceptName,
                                                             true);
-        return names.toArray(new String[0]);
+        return names.toArray(new String[names.size()]);
     }
 
     /**
@@ -284,7 +287,7 @@ public final class DescriptorHelper {
                                          IArchetypeService service) {
         List<String> names = service.getArchetypeShortNames(
                 entityName, conceptName, true);
-        return names.toArray(new String[0]);
+        return names.toArray(new String[names.size()]);
     }
 
     /**
@@ -385,7 +388,24 @@ public final class DescriptorHelper {
                     shortName, primaryOnly);
             result.addAll(matches);
         }
-        return result.toArray(new String[0]);
+        return result.toArray(new String[result.size()]);
+    }
+
+    /**
+     * Returns archetype short names from a node for the matching archetype where
+     * the node is present. This expands any wildcards.
+     * <p/>
+     * If the {@link NodeDescriptor#getFilter} is non-null, matching shortnames
+     * are returned, otherwise matching short names from
+     * {@link NodeDescriptor#getArchetypeRange()} are returned.
+     *
+     * @param shortName the archetype short name. May contain wildcards
+     * @param node      the node name
+     * @return a list of short names, with any wildcards expanded
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getNodeShortNames(String shortName, String node) {
+        return getNodeShortNames(shortName, node, ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
@@ -396,14 +416,31 @@ public final class DescriptorHelper {
      * are returned, otherwise matching short names from
      * {@link NodeDescriptor#getArchetypeRange()} are returned.
      *
-     * @param shortNames the archetype short names
+     * @param shortNames the archetype short names. May contain wildcards
      * @param node       the node name
-     * @return a list of short names
+     * @return a list of short names, with any wildcards expanded
      * @throws ArchetypeServiceException for any error
      */
     public static String[] getNodeShortNames(String[] shortNames, String node) {
-        return getNodeShortNames(
-                shortNames, node, ArchetypeServiceHelper.getArchetypeService());
+        return getNodeShortNames(shortNames, node, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns archetype short names from a node for each archetype matching <tt>shortName</tt> where
+     * the specified node is present. This expands any wildcards.
+     * <p/>
+     * This uses short names from {@link NodeDescriptor#getArchetypeRange()}, or
+     * if none are present, those from {@link NodeDescriptor#getFilter()}.
+     *
+     * @param shortName the archetype short name. May contain wildcards
+     * @param node      the node name
+     * @param service   the archetype service
+     * @return a list of short names
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getNodeShortNames(String shortName, String node,
+                                             IArchetypeService service) {
+        return getNodeShortNames(new String[]{shortName}, node, service);
     }
 
     /**
@@ -413,28 +450,27 @@ public final class DescriptorHelper {
      * This uses short names from {@link NodeDescriptor#getArchetypeRange()}, or
      * if none are present, those from {@link NodeDescriptor#getFilter()}.
      *
-     * @param shortNames the archetype short names
+     * @param shortNames the archetype short names. May contain wildcards
      * @param node       the node name
+     * @param service    the archetype service
      * @return a list of short names
      * @throws ArchetypeServiceException for any error
      */
     public static String[] getNodeShortNames(String[] shortNames, String node,
                                              IArchetypeService service) {
         Set<String> matches = new LinkedHashSet<String>();
-        String[] expanded = getShortNames(shortNames, true, service);
+        String[] expanded = getShortNames(shortNames, false, service);
         for (String shortName : expanded) {
             ArchetypeDescriptor archetype
                     = getArchetypeDescriptor(shortName, service);
             if (archetype != null) {
                 NodeDescriptor desc = archetype.getNodeDescriptor(node);
                 if (desc != null) {
-                    for (String match : getShortNames(desc, service)) {
-                        matches.add(match);
-                    }
+                    matches.addAll(Arrays.asList(getShortNames(desc, service)));
                 }
             }
         }
-        return matches.toArray(new String[0]);
+        return matches.toArray(new String[matches.size()]);
     }
 
     /**
