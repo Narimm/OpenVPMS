@@ -36,10 +36,14 @@ import java.util.LinkedList;
 class DocReferenceMgr {
 
     /**
+     * The original reference.
+     */
+    private final IMObjectReference original;
+
+    /**
      * The set of references to manage.
      */
-    private LinkedList<IMObjectReference> references
-            = new LinkedList<IMObjectReference>();
+    private LinkedList<IMObjectReference> references = new LinkedList<IMObjectReference>();
 
     /**
      * Constructs a new <tt>DocReferenceMgr</ttt>.
@@ -50,6 +54,7 @@ class DocReferenceMgr {
         if (original != null) {
             references.add(original);
         }
+        this.original = original;
     }
 
     /**
@@ -62,24 +67,37 @@ class DocReferenceMgr {
     }
 
     /**
+     * Removes a document reference.
+     *
+     * @param reference the reference to remove
+     */
+    public void remove(IMObjectReference reference) {
+        references.remove(reference);
+    }
+
+    /**
      * Commits the changes. Every document bar the most recent will be removed.
      *
      * @throws ArchetypeServiceException for any error
      */
     public void commit() {
         while (references.size() > 1) {
-            remove(references.removeFirst());
+            delete(references.removeFirst());
         }
     }
 
     /**
-     * Rolls back the changes. Every document bar the oldest will be removed.
+     * Rolls back the changes. Every document bar the original will be removed.
      *
      * @throws ArchetypeServiceException for any error
      */
     public void rollback() {
         while (references.size() > 1) {
-            remove(references.removeLast());
+            IMObjectReference reference = references.removeLast();
+            delete(reference);
+        }
+        if (references.size() == 1 && original != null && !references.get(0).equals(original)) {
+            delete(references.removeLast());
         }
     }
 
@@ -90,7 +108,7 @@ class DocReferenceMgr {
      */
     public void delete() {
         while (!references.isEmpty()) {
-            remove(references.removeLast());
+            delete(references.removeLast());
         }
     }
 
@@ -100,7 +118,7 @@ class DocReferenceMgr {
      * @param reference the reference of the document to remove
      * @throws ArchetypeServiceException for any error
      */
-    private void remove(IMObjectReference reference) {
+    private void delete(IMObjectReference reference) {
         IMObject object = IMObjectHelper.getObject(reference);
         if (object != null) {
             ArchetypeServiceHelper.getArchetypeService().remove(object);

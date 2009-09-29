@@ -70,7 +70,7 @@ public class ModifiableListeners {
         try {
             if (listeners != null) {
                 ModifiableListener[] list =
-                        listeners.toArray(new ModifiableListener[0]);
+                        listeners.toArray(new ModifiableListener[listeners.size()]);
                 for (ModifiableListener listener : list) {
                     listener.modified(modifiable);
                 }
