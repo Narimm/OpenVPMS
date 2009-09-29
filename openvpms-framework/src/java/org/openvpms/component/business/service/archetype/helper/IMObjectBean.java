@@ -160,6 +160,19 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the archetype range associated with a node, expanding any wildcards.
+     *
+     * @param name the node name
+     * @return the archetype range associated with a node, or an empty array if there is none
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException if the node does't exist
+     */
+    public String[] getArchetypeRange(String name) {
+        NodeDescriptor node = getNode(name);
+        return DescriptorHelper.getShortNames(node, getArchetypeService());
+    }
+
+    /**
      * Returns the boolean value of a node.
      *
      * @param name the node name
@@ -496,7 +509,7 @@ public class IMObjectBean {
      * @return the descriptor corresponding to <tt>name</tt>
      * @throws IMObjectBeanException if the descriptor does't exist
      */
-    private NodeDescriptor getNode(String name) {
+    protected NodeDescriptor getNode(String name) {
         NodeDescriptor node = getArchetype().getNodeDescriptor(name);
         if (node == null) {
             String shortName = object.getArchetypeId().getShortName();

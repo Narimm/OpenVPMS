@@ -31,7 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 public class IMObjectBeanException extends OpenVPMSException {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
@@ -41,7 +41,8 @@ public class IMObjectBeanException extends OpenVPMSException {
     public enum ErrorCode {
         NodeDescriptorNotFound,
         ArchetypeNotFound,
-        InvalidClassCast
+        InvalidClassCast,
+        CannotAddTargetToNode
     }
 
     /**
@@ -62,6 +63,7 @@ public class IMObjectBeanException extends OpenVPMSException {
      * Constructs a new <code>IMObjectBeanException</code>.
      *
      * @param errorCode the error code
+     * @param args arguments to format the message with
      */
     public IMObjectBeanException(ErrorCode errorCode, Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args));
