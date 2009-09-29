@@ -19,9 +19,12 @@
 package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.archetype.rules.stock.StockRules;
+import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -47,6 +50,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
      * Tests the {@link ProductRules#copy(Product)} method.
      */
     public void testCopy() {
+        StockRules stockRules = new StockRules();
         BigDecimal price = new BigDecimal("2.00");
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();
@@ -54,6 +58,10 @@ public class ProductRulesTestCase extends AbstractProductTest {
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         save(Arrays.asList(product, supplier));
 
+        Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
+        stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
+        stockRules.updateStock(product, stockLocation, BigDecimal.ONE);
+        
         String name = "Copy";
         Product copy = rules.copy(product, name);
 
@@ -62,10 +70,14 @@ public class ProductRulesTestCase extends AbstractProductTest {
         assertEquals(product.getArchetypeId(), copy.getArchetypeId());
         assertEquals(name, copy.getName());
 
+        // verify the copy refers to the same stock location
+        EntityBean copyBean = new EntityBean(copy);
+        assertEquals(copyBean.getNodeTargetEntity("stockLocations"), stockLocation);
+
         // verify the product price has been copied
         Set<ProductPrice> productPrices = copy.getProductPrices();
         assertEquals(1, productPrices.size());
-        ProductPrice priceCopy = productPrices.toArray(new ProductPrice[0])[0];
+        ProductPrice priceCopy = productPrices.toArray(new ProductPrice[productPrices.size()])[0];
         assertTrue(unitPrice.getId() != priceCopy.getId());
         assertEquals(unitPrice.getPrice(), priceCopy.getPrice());
 
