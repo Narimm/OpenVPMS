@@ -95,7 +95,13 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      * @return the corresponding appointment, or <tt>null</tt> if none is found
      */
     public PropertySet getEvent(Schedule schedule, int slot) {
-        return grid.getEvent(schedule, startSlot + slot);
+        PropertySet result = grid.getEvent(schedule, startSlot + slot);
+        if (result == null && slot == 0) {
+            // see if there is an event in an earlier slot that intersects this one
+            Date time = getStartTime(schedule, slot);
+            result = schedule.getIntersectingEvent(time);
+        }
+        return result;
     }
 
     /**
