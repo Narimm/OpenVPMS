@@ -29,9 +29,14 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JRDefaultCompiler;
+import net.sf.jasperreports.engine.export.JRCsvExporter;
+import net.sf.jasperreports.engine.export.JRCsvExporterParameter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
+import net.sf.jasperreports.engine.export.JRXlsExporter;
+import net.sf.jasperreports.engine.export.JRXlsExporterParameter;
+import net.sf.jasperreports.engine.export.JRXmlExporter;
 import net.sf.jasperreports.engine.fill.JREvaluator;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
@@ -93,7 +98,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * The supported mime types.
      */
     private static final String[] MIME_TYPES = {DocFormats.PDF_TYPE,
-                                                DocFormats.RTF_TYPE};
+                                                DocFormats.RTF_TYPE,
+                                                DocFormats.XLS_TYPE,
+                                                DocFormats.CSV_TYPE};
 
     /**
      * The logger.
@@ -198,6 +205,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         if (parameters != null) {
             properties.putAll(parameters);
         }
+        if(mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
+            properties.put(JRParameter.IS_IGNORE_PAGINATION, true);
+        }
         try {
             JasperPrint print = JasperFillManager.fillReport(getReport(),
                                                              properties);
@@ -286,6 +296,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
                              Map<String, Object> parameters, String mimeType) {
         Document document;
         try {
+            if(mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
+                parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);            	
+            }
             JasperPrint print = report(objects, parameters);
             document = convert(print, mimeType);
         } catch (JRException exception) {
@@ -479,6 +492,15 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             } else if (DocFormats.RTF_TYPE.equals(mimeType)) {
                 data = exportToRTF(report);
                 ext = DocFormats.RTF_EXT;
+            } else if (DocFormats.XLS_TYPE.equals(mimeType)) {
+            	data = exportToXLS(report);
+            	ext = DocFormats.XLS_EXT;
+            } else if (DocFormats.CSV_TYPE.equals(mimeType)) {
+            	data = exportToCSV(report);
+            	ext = DocFormats.CSV_EXT;
+            } else if (DocFormats.XML_TYPE.equals(mimeType)) {
+            	data = exportToXML(report);
+            	ext = DocFormats.XML_EXT;
             } else {
                 throw new ReportException(UnsupportedMimeType, mimeType);
             }
@@ -493,6 +515,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport,
                                       exception.getMessage());
+        } catch (Exception exception) {
+            throw new ReportException(exception, FailedToGenerateReport,
+                    exception.getMessage());
         }
         return document;
     }
@@ -507,6 +532,63 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     protected byte[] exportToRTF(JasperPrint report) throws JRException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         JRRtfExporter exporter = new JRRtfExporter();
+        exporter.setParameter(JRExporterParameter.JASPER_PRINT, report);
+        exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, stream);
+        exporter.exportReport();
+        return stream.toByteArray();
+    }
+
+    /**
+     * Exports a generated jasper report to an XLS stream.
+     *
+     * @param report the report
+     * @return a new serialized XLS
+     * @throws JRException if the export fails
+     */
+    protected byte[] exportToXLS(JasperPrint report) throws JRException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        JRXlsExporter exporter = new JRXlsExporter();
+        exporter.setParameter(JRXlsExporterParameter.IS_DETECT_CELL_TYPE, Boolean.TRUE);
+        exporter.setParameter(JRXlsExporterParameter.IS_WHITE_PAGE_BACKGROUND, Boolean.FALSE);
+        exporter.setParameter(JRXlsExporterParameter.IGNORE_PAGE_MARGINS, Boolean.TRUE);
+        exporter.setParameter(JRXlsExporterParameter.IS_COLLAPSE_ROW_SPAN, Boolean.TRUE);
+        exporter.setParameter(JRXlsExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, Boolean.TRUE);
+        exporter.setParameter(JRXlsExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_COLUMNS, Boolean.TRUE);
+        exporter.setParameter(JRExporterParameter.JASPER_PRINT, report);
+        exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, stream);
+        exporter.exportReport();
+        return stream.toByteArray();
+    }
+
+    /**
+     * Exports a generated jasper report to a CSV stream.
+     *
+     * @param report the report
+     * @return a new serialized CSV
+     * @throws JRException if the export fails
+     */
+    protected byte[] exportToCSV(JasperPrint report) throws JRException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        JRCsvExporter exporter = new JRCsvExporter();
+        exporter.setParameter(JRCsvExporterParameter.FIELD_DELIMITER,",");
+        exporter.setParameter(JRCsvExporterParameter.RECORD_DELIMITER,"\n");
+        exporter.setParameter(JRCsvExporterParameter.IGNORE_PAGE_MARGINS,Boolean.TRUE);
+        exporter.setParameter(JRExporterParameter.JASPER_PRINT, report);
+        exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, stream);
+        exporter.exportReport();
+        return stream.toByteArray();
+    }
+
+    /**
+     * Exports a generated jasper report to a XML stream.
+     *
+     * @param report the report
+     * @return a new serialized XML
+     * @throws JRException if the export fails
+     */
+    protected byte[] exportToXML(JasperPrint report) throws JRException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        JRXmlExporter exporter = new JRXmlExporter();
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, report);
         exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, stream);
         exporter.exportReport();
