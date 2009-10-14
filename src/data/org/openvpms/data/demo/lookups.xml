@@ -95,11 +95,6 @@
     <data archetype="lookup.customerType" code="STUD" />
     <data archetype="lookup.customerType" code="FARM" />
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" />
-    <data archetype="lookup.paymentType" code="CASH" />
-    <data archetype="lookup.paymentType" code="CHEQUE" />
-    <data archetype="lookup.paymentType" code="CREDIT" />
-    <data archetype="lookup.paymentType" code="EFT" />
-    <data archetype="lookup.paymentType" code="POSTAL_NOTE" />
     <data archetype="lookup.productIncomeType" code="PROFESSIONAL" />
     <data archetype="lookup.productIncomeType" code="MEDICATION" />
     <data archetype="lookup.productIncomeType" code="MERCHANDISE" />
