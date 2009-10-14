@@ -43,6 +43,16 @@ public class DocFormats {
     public static final String PDF_EXT = "pdf";
 
     /**
+     * Excel mime-type.
+     */
+    public static final String XLS_TYPE = "application/excel";
+
+    /**
+     * Excel file extension.
+     */
+    public static final String XLS_EXT = "xls";
+
+    /**
      * OpenDocument Text mime-type.
      */
     public static final String ODT_TYPE
@@ -73,5 +83,25 @@ public class DocFormats {
      * MS Word Document file extension.
      */
     public static final String DOC_EXT = "doc";
+
+    /**
+     * CSV Format mime-type.
+     */
+    public static final String CSV_TYPE = "text/csv";
+
+    /**
+     * CSV file extension.
+     */
+    public static final String CSV_EXT = "csv";
+
+    /**
+     * XML Format mime-type.
+     */
+    public static final String XML_TYPE = "text/xml";
+
+    /**
+     * XML file extension.
+     */
+    public static final String XML_EXT = "xml";
 
 }
