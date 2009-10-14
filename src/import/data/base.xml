@@ -39,11 +39,6 @@
     <data archetype="lookup.contactPurpose" code="REMINDER" />
     <data archetype="lookup.contactPurpose" code="BILLING" />
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" />
-    <data archetype="lookup.paymentType" code="CASH" />
-    <data archetype="lookup.paymentType" code="CHEQUE" />
-    <data archetype="lookup.paymentType" code="CREDIT" />
-    <data archetype="lookup.paymentType" code="EFT" />
-    <data archetype="lookup.paymentType" code="POSTAL_NOTE" />
 	<data archetype="lookup.alertType" code="ALLLERGY" />
 	<data archetype="lookup.alertType" code="AGGRESSION" />
 	<data archetype="lookup.alertType" code="OTHER" defaultLookup="true"/>
