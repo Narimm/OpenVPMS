@@ -111,6 +111,16 @@ public abstract class AbstractIMPrinter<T>
     }
 
     /**
+     * Returns a document corresponding to that which would be printed.
+     * @param format the document format to return
+     * @return a document
+     * @throws OpenVPMSException for any error
+     */
+    public Document getDocument(String format) {
+        return reporter.getDocument();
+    }
+
+    /**
      * Returns the object being printed.
      *
      * @return the object being printed, or <tt>null</tt> if a collection

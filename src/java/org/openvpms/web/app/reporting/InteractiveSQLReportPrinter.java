@@ -18,9 +18,13 @@
 
 package org.openvpms.web.app.reporting;
 
+import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.servlet.DownloadServlet;
 
 
 /**
@@ -60,6 +64,16 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
             protected void doPreview() {
                 printer.setParameters(getValues());
                 doPrintPreview();
+            }
+            @Override
+            protected void doExport() {
+            	printer.setParameters(getValues());
+                try {
+                    Document document = getDocument(DocFormats.CSV_TYPE);
+                    DownloadServlet.startDownload(document);
+                } catch (OpenVPMSException exception) {
+                    failed(exception);
+                }           	
             }
         };
     }
