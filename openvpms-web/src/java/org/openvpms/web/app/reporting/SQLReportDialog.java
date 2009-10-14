@@ -19,6 +19,9 @@
 package org.openvpms.web.app.reporting;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.im.doc.ReportParameters;
@@ -40,6 +43,11 @@ public class SQLReportDialog extends PrintDialog {
      * The report parameters.
      */
     private final ReportParameters parameters;
+
+    /**
+     * The preview button identifier.
+     */
+    private static final String EXPORT_ID = "export";
 
 
     /**
@@ -101,6 +109,23 @@ public class SQLReportDialog extends PrintDialog {
     }
 
     /**
+     * Invoked when the export button is pressed. If the parameters are valid,
+     * invokes {@link #doExport}.
+     */
+    protected void onExport() {
+        if (parameters.validate()) {
+            doExport();
+        }
+    }
+
+    /**
+     * Invoked when the report should be exported.
+     * This implementation does nothing.
+     */
+    protected void doExport() {
+    }
+
+    /**
      * Lays out the dialog.
      *
      * @param container the container
@@ -108,6 +133,12 @@ public class SQLReportDialog extends PrintDialog {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
+        addButton(EXPORT_ID, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onExport();
+            }
+        });
+
         Component component = GroupBoxFactory.create("reporting.run.parameters",
                                                      parameters.getComponent());
         container.add(component);

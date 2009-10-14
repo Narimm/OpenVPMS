@@ -64,6 +64,15 @@ public interface Printer {
     Document getDocument();
 
     /**
+     * Returns a document corresponding to that which would be printed.
+     *
+     * @param format the document format to return
+     * @return a document
+     * @throws OpenVPMSException for any error
+     */
+    Document getDocument(String format);
+
+    /**
      * Determines if printing should occur interactively.
      *
      * @return <tt>true</tt> if printing should occur interactively,

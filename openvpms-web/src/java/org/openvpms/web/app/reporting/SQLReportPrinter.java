@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.reporting;
 
+import net.sf.jasperreports.engine.JRParameter;
+
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
@@ -167,12 +169,24 @@ public class SQLReportPrinter extends AbstractPrinter {
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
+    	return getDocument(DocFormats.PDF_TYPE);
+    }
+
+    /**
+     * Returns a document for the object, corresponding to that which would be
+     * printed.
+     *
+     * @param format a document format to return
+     * @return a document
+     * @throws OpenVPMSException for any error
+     */
+    public Document getDocument(String format) {
         Map<String, Object> params = new HashMap<String, Object>(parameters);
         Connection connection = null;
         try {
             connection = getConnection();
             params.put(connectionName, connection);
-            return report.generate(params, DocFormats.PDF_TYPE);
+            return report.generate(params, format);
         } finally {
             closeConnection(connection);
         }

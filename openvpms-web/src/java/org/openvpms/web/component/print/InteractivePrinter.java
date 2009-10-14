@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.VetoListener;
@@ -163,7 +164,19 @@ public class InteractivePrinter implements Printer {
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
-        return printer.getDocument();
+        return getDocument(DocFormats.PDF_TYPE);
+    }
+
+    /**
+     * Returns a document for the object, corresponding to that which would be
+     * printed.
+     *
+     * @param format the document format to return
+     * @return a document
+     * @throws OpenVPMSException for any error
+     */
+    public Document getDocument(String format) {
+        return printer.getDocument(format);
     }
 
     /**
