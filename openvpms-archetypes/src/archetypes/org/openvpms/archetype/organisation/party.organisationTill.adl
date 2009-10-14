@@ -45,17 +45,5 @@
                 <errorMessage>Duplicate active till location relationship</errorMessage>
             </assertion>
         </node>
-        <node name="paymentTypes" path="/classifications" parentChild="false"
-              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.paymentType"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
     </archetype>
 </archetypes>
