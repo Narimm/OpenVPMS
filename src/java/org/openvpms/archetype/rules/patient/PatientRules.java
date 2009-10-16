@@ -135,6 +135,19 @@ public class PatientRules {
     }
 
     /**
+     * Returns the most current owner of a patient associated with an act.
+     *
+     * @param act the act
+     * @return the patient's owner, or <tt>null</tt> if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getCurrentOwner(Act act) {
+        ActBean bean = new ActBean(act, service);
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        return getOwner(patient, new Date(), true);
+    }
+
+    /**
      * Returns the owner of a patient for a specified date
      *
      * @param patient the patient

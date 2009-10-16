@@ -199,6 +199,16 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the most current owner of a patient associated with an act.
+     *
+     * @param act the act
+     * @return the associated patients owner, or <tt>null</tt>
+     */
+    public Party getPatientCurrentOwner(Act act) {
+        return getPatientRules().getCurrentOwner(act);
+    }
+
+    /**
      * Marks a patient as being deceased.
      *
      * @param patient the patient
