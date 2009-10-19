@@ -192,29 +192,30 @@ public class ActBean extends IMObjectBean {
      *
      * @param name   the act relationship node name, used to determine which relationship to create
      * @param target the target act
+     * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, or a relationship cannot be added
      */
-    public void addNodeRelationship(String name, Act target) {
+    public ActRelationship addNodeRelationship(String name, Act target) {
         String[] range = getNode(name).getArchetypeRange();
         IArchetypeService service = getArchetypeService();
         IMObjectReference targetRef = target.getObjectReference();
-        boolean found = false;
+        ActRelationship result = null;
         for (String shortName : range) {
             ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(shortName);
             if (descriptor != null) {
                 NodeDescriptor node = descriptor.getNodeDescriptor("target");
                 if (node != null && TypeHelper.isA(targetRef, node.getArchetypeRange())) {
-                    addRelationship(shortName, target);
-                    found = true;
+                    result = addRelationship(shortName, target);
                     break;
                 }
             }
         }
-        if (!found) {
+        if (result == null) {
             throw new IMObjectBeanException(IMObjectBeanException.ErrorCode.CannotAddTargetToNode,
                                             targetRef.getArchetypeId().getShortName(), name);
         }
+        return result;
     }
 
     /**
