@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.service.security;
 
-import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
@@ -29,7 +28,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
 /**
- * Exercises the security test cases using a hibernate user details service
+ * Exercises the security test cases using a hibernate user details service.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
@@ -79,7 +78,8 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
      * @return User
      */
     private User createUser(String name, String password) {
-        User user = (User) archetype.create("security.user");
+        User user = new User();
+        user.setArchetypeIdAsString("security.user.1.0");
         user.setUsername(name + System.currentTimeMillis()); // ensure unique
         user.setName(name);
         user.setPassword(password);
@@ -91,9 +91,11 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
      * Create a role with the given name
      *
      * @param name the name of the role
+     * @return a new role
      */
     private SecurityRole createSecurityRole(String name) {
-        SecurityRole role = (SecurityRole) archetype.create("security.role");
+        SecurityRole role = new SecurityRole();
+        role.setArchetypeIdAsString("security.role.1.0");
         role.setName(name);
 
         return role;
@@ -111,17 +113,15 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
         User user = createUser(name, password);
 
         SecurityRole role = createSecurityRole("role1");
-        GrantedAuthority[] granted = new GrantedAuthority[authorities.length];
-        for (int i = 0; i < granted.length; ++i) {
+        for (String authority : authorities) {
             // bit of a hack. The authority should be created via the archetype
             // service, but there is no facility to populate it from an
             // authority string.
             ArchetypeAwareGrantedAuthority auth
-                    = new ArchetypeAwareGrantedAuthority(authorities[i]);
+                    = new ArchetypeAwareGrantedAuthority(authority);
             auth.setArchetypeIdAsString("security.archetypeAuthority.1.0");
             dao.save(auth);
             role.addAuthority(auth);
-            granted[i] = auth;
         }
 
         user.addRole(role);

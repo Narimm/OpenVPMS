@@ -154,6 +154,19 @@
         </constructor-arg>
     </bean>
 
+    <!-- The JXPathHelper class, used to register extension functions -->
+    <bean id="jxpathHelper"
+          class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+        <constructor-arg>
+            <map>
+                <entry key="openvpms"
+                       value="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions"/>
+                <entry key="date"
+                       value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
+            </map>
+        </constructor-arg>
+    </bean>
+    
     <!--  The Audit Service -->
     <bean id="auditService"
           class="org.openvpms.component.business.service.audit.AuditService">
@@ -222,6 +235,7 @@
         <property name='accessDecisionManager' ref='accessDecisionManager'/>
         <property name='objectDefinitionSource'>
             <value>
+                org.openvpms.component.business.service.archetype.IArchetypeService.create=archetypeService.create
                 org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
                 org.openvpms.component.business.service.archetype.IArchetypeService.remove=archetypeService.remove
             </value>
@@ -241,9 +255,7 @@
     <!--  Define the authentication provider -->
     <bean id='daoAuthenticationProvider'
           class='org.acegisecurity.providers.dao.DaoAuthenticationProvider'>
-        <property name="userDetailsService">
-            <ref bean="userDetailsService"/>
-        </property>
+        <property name="userDetailsService" ref="userDetailsService"/>
     </bean>
 
     <!--  Define thew access decision manager for authorization -->
