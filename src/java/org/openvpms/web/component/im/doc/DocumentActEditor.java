@@ -20,17 +20,14 @@ package org.openvpms.web.component.im.doc;
 
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
+import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.DOCUMENT;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -39,9 +36,7 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 
 /**
@@ -73,16 +68,6 @@ public class DocumentActEditor extends AbstractActEditor {
     private static final String DOC_TEMPLATE = "documentTemplate";
 
     /**
-     * The document node.
-     */
-    private static final String DOCUMENT = "document";
-
-    /**
-     * The legacy document reference node name.
-     */
-    private static final String DOC_REFERENCE = "docReference";
-
-    /**
      * The versions node.
      */
     private static final String VERSIONS = "versions";
@@ -99,9 +84,6 @@ public class DocumentActEditor extends AbstractActEditor {
                              LayoutContext context) {
         super(act, parent, context);
         Property document = getProperty(DOCUMENT);
-        if (document == null) {
-            document = getProperty(DOC_REFERENCE);
-        }
         if (document != null) {
             docEditor = new VersioningDocumentEditor(document);
             ModifiableListener listener = new ModifiableListener() {
@@ -257,54 +239,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Layout strategy that treats the 'document' node as a simple node.
      */
-    private class LayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * Returns the 'simple' nodes.
-         *
-         * @param archetype the archetype
-         * @return the simple nodes
-         * @see ArchetypeDescriptor#getSimpleNodeDescriptors()
-         */
-        @Override
-        protected List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
-            List<NodeDescriptor> nodes = new ArrayList<NodeDescriptor>();
-            nodes.addAll(super.getSimpleNodes(archetype));
-            boolean found = false;
-            for (NodeDescriptor node : nodes) {
-                String name = node.getName();
-                if (DOCUMENT.equals(name) || DOC_REFERENCE.equals(name)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                NodeDescriptor node = archetype.getNodeDescriptor(DOCUMENT);
-                if (node != null) {
-                    nodes.add(node);
-                } else {
-                    node = archetype.getNodeDescriptor(DOC_REFERENCE);
-                    if (node != null) {
-                        nodes.add(node);
-                    }
-                }
-            }
-            return nodes;
-        }
-
-        /**
-         * Returns the 'complex' nodes.
-         *
-         * @param archetype the archetype
-         * @return the complex nodes
-         * @see ArchetypeDescriptor#getComplexNodeDescriptors()
-         */
-        @Override
-        protected List<NodeDescriptor> getComplexNodes(
-                ArchetypeDescriptor archetype) {
-            return filter(getObject(), super.getComplexNodes(archetype),
-                          new NamedNodeFilter(DOCUMENT, DOC_REFERENCE));
-        }
+    private class LayoutStrategy extends DocumentActLayoutStrategy {
 
         /**
          * Creates a component for a property.
@@ -317,7 +252,7 @@ public class DocumentActEditor extends AbstractActEditor {
         @Override
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
             String name = property.getName();
-            if (DOCUMENT.equals(name) || DOC_REFERENCE.equals(name)) {
+            if (DOCUMENT.equals(name)) {
                 return new ComponentState(docEditor.getComponent(), docEditor.getProperty());
             } else if (VERSIONS.equals(name)) {
                 return new ComponentState(versionsEditor.getComponent(), versionsEditor.getProperty());

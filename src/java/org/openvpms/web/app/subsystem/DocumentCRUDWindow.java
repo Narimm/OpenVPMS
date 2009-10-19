@@ -175,8 +175,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         Act act = getObject();
         if (!ActStatus.POSTED.equals(act.getStatus())) {
             ActBean bean = new ActBean(getObject());
-            if (bean.hasNode("documentTemplate")
-                    && bean.hasNode("docReference")) {
+            if (bean.hasNode("documentTemplate") && bean.hasNode("document")) {
                 refresh = true;
             }
         }

@@ -61,7 +61,7 @@ class InvestigationsTableModel extends AbstractActTableModel {
      */
     @Override
     protected String[] getNodeNames() {
-        return new String[]{"startTime", "investigationType", "patient", "status", "docReference"};
+        return new String[]{"startTime", "investigationType", "patient", "status", "document"};
     }
 
     /**
