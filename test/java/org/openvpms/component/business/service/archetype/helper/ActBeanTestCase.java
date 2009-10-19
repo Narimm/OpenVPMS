@@ -156,9 +156,13 @@ public class ActBeanTestCase
         Act[] expected = new Act[3];
         for (int i = 0; i < 3; ++i) {
             Act target = (Act) create("act.customerEstimationItem");
-            service.save(target);
-            bean.addNodeRelationship("items", target);
             expected[i] = target;
+            service.save(target);
+
+            ActRelationship r = bean.addNodeRelationship("items", target);
+            assertNotNull(r);
+            assertEquals(bean.getReference(), r.getSource());
+            assertEquals(target.getObjectReference(), r.getTarget());
         }
         List<Act> acts = bean.getNodeActs("items");
         assertEquals(expected.length, acts.size());
