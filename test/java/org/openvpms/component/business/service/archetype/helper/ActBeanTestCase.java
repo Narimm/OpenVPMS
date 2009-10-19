@@ -239,6 +239,27 @@ public class ActBeanTestCase
     }
 
     /**
+     * Tests the {@link ActBean#addNodeParticipation} method.
+     */
+    public void testAddNodeParticipation() {
+        ActBean bean = createBean("act.customerEstimation");
+        Party customer = createCustomer();
+        Participation participation = bean.addNodeParticipation("customer", customer);
+        assertNotNull(participation);
+        assertEquals(bean.getReference(), participation.getAct());
+        assertEquals(customer.getObjectReference(), participation.getEntity());
+
+        Party patient = (Party) create("party.patientpet");
+
+        try {
+            bean.addNodeParticipation("customer", patient);
+            fail("Expected addNodeParticipation() to fail");
+        } catch (IMObjectBeanException exception) {
+            assertEquals(IMObjectBeanException.ErrorCode.CannotAddTargetToNode, exception.getErrorCode());
+        }
+    }
+
+    /**
      * Verifies that an act relationship matches that expected.
      *
      * @param relationship the relationship
