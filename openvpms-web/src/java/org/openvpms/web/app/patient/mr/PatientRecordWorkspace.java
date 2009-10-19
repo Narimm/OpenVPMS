@@ -68,10 +68,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
             "act.patientDocumentLetter",
             "act.patientDocumentAttachment",
             "act.patientDocumentImage",
-            "act.patientInvestigationBiochemistry",
-            "act.patientInvestigationCytology",
-            "act.patientInvestigationHaematology",
-            "act.patientInvestigationRadiology"
+            "act.patientInvestigation"
     };
 
     /**
