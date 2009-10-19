@@ -30,8 +30,7 @@
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.clinician" />
-        <node displayName="Image" name="docReference" path="/document" minCardinality="0"
-              maxCardinality="1"
+        <node displayName="Image" name="document" path="/document" minCardinality="0" maxCardinality="1"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference">
         </node>
         <node name="author" path="/participations" type="java.util.HashSet"

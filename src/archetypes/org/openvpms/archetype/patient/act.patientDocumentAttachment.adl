@@ -42,11 +42,9 @@
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
         <node displayName="Attachment" name="document" path="/document" minCardinality="0"
-              maxCardinality="1" type="org.openvpms.component.business.domain.im.common.IMObjectReference">
-        </node>
-        <node displayName="Attachment" name="docReference" path="/document" minCardinality="0" hidden="true"
-              maxCardinality="1" type="org.openvpms.component.business.domain.im.common.IMObjectReference">
-        </node>
+              maxCardinality="1" type="org.openvpms.component.business.domain.im.common.IMObjectReference"/>
+        <node name="docReference" path="/document" minCardinality="0" hidden="true"
+              maxCardinality="1" type="org.openvpms.component.business.domain.im.common.IMObjectReference"/>
         <node name="patient" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true"/>
@@ -56,7 +54,7 @@
         <node name="fileName" type="java.lang.String" path="/fileName" hidden="true"/>
         <node name="mimeType" type="java.lang.String" path="/mimeType" readOnly="true" hidden="true"/>
         <node name="versions" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0"
-              readOnly="true" maxCardinality="*" filter="actRelationship.patientDocumentAttachmentVersion">
+              maxCardinality="*" filter="actRelationship.patientDocumentAttachmentVersion">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
