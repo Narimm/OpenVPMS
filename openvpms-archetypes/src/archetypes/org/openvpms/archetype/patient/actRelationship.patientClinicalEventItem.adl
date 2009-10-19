@@ -57,7 +57,16 @@
                         <property name="shortName" value="act.patientInvestigation"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName" value="act.patientDocument*"/>
+                        <property name="shortName" value="act.patientDocumentAttachment"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientDocumentForm"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientDocumentImage"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientDocumentLetter"/>
                     </propertyMap>
                 </propertyList>
 				<errorMessage>errorMessage</errorMessage>
