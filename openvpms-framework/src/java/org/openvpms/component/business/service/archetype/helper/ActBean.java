@@ -197,7 +197,7 @@ public class ActBean extends IMObjectBean {
      * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, or a relationship cannot be added
      */
     public ActRelationship addNodeRelationship(String name, Act target) {
-        String[] range = getNode(name).getArchetypeRange();
+        String[] range = getArchetypeRange(name);
         IArchetypeService service = getArchetypeService();
         IMObjectReference targetRef = target.getObjectReference();
         ActRelationship result = null;
@@ -461,6 +461,37 @@ public class ActBean extends IMObjectBean {
     public Entity getNodeParticipant(String name) {
         IMObjectReference ref = getNodeParticipantRef(name);
         return (Entity) resolve(ref);
+    }
+
+    /**
+     * Adds a new participation relationship between the act (the source), and the supplied target entity.
+     *
+     * @param name   the participation relationship node name, used to determine which relationship to create
+     * @param target the target entity
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, or a relationship cannot be added
+     */
+    public Participation addNodeParticipation(String name, Entity target) {
+        String[] range = getArchetypeRange(name);
+        IArchetypeService service = getArchetypeService();
+        IMObjectReference targetRef = target.getObjectReference();
+        Participation result = null;
+        for (String shortName : range) {
+            ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(shortName);
+            if (descriptor != null) {
+                NodeDescriptor node = descriptor.getNodeDescriptor("entity");
+                if (node != null && TypeHelper.isA(targetRef, node.getArchetypeRange())) {
+                    result = addParticipation(shortName, target);
+                    break;
+                }
+            }
+        }
+        if (result == null) {
+            throw new IMObjectBeanException(IMObjectBeanException.ErrorCode.CannotAddTargetToNode,
+                                            targetRef.getArchetypeId().getShortName(), name);
+        }
+        return result;
     }
 
     /**
