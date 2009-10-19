@@ -22,10 +22,6 @@ package org.openvpms.component.business.service.security;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.IMObject;
-
-import java.util.Collection;
 
 
 /**
@@ -53,21 +49,7 @@ public class OpenVPMSMethodSecurityInterceptor
         try {
             return super.invoke(mi);
         } catch (AccessDeniedException exception) {
-            Object arg = mi.getArguments()[0];
-            String shortName = null;
-            if (arg instanceof IMObject) {
-                shortName = ((IMObject) arg).getArchetypeId().getShortName();
-            } else if (arg instanceof Collection) {
-                Object[] values = ((Collection<Object>) arg).toArray(
-                        new Object[0]);
-                if (values.length != 0 && values[0] instanceof IMObject) {
-                    ArchetypeId id = ((IMObject) values[0]).getArchetypeId();
-                    shortName = id.getShortName();
-                }
-            }
-            throw new OpenVPMSAccessDeniedException(
-                    OpenVPMSAccessDeniedException.ErrorCode.AccessDenied,
-                    exception);
+            throw new OpenVPMSAccessDeniedException(OpenVPMSAccessDeniedException.ErrorCode.AccessDenied, exception);
         }
     }
 

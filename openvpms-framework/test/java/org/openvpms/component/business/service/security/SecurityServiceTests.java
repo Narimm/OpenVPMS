@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.service.security;
 
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -29,155 +30,94 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * This base class contains all the security test cases
+ * This base class contains all the security test cases.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public abstract class SecurityServiceTests extends
-                                           AbstractDependencyInjectionSpringContextTests {
+public abstract class SecurityServiceTests extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Holds a reference to the archetectype service
+     * The archetype service.
      */
     protected IArchetypeService archetype;
 
+    /**
+     * User name seed.
+     */
+    private int seed;
 
     /**
-     * Test that the caller has the credentials to make the call
+     * Verifies that authentication is checked when creating objects.
      */
-    public void testValidAuthorizationOnSave()
-            throws Exception {
-        // create a security contect before executing a method
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:party.person");
-        Party person = createPerson("MR", "Jim", "Alateras");
-        archetype.save(person);
-    }
-
-    /**
-     * Test that the caller does not have the credentials to make the call
-     */
-    public void testInvalidAuthorizationOnSave()
-            throws Exception {
-        // create a security contect before executing a method
-        createSecurityContext("bernief", "bernief",
-                              "archetype:archetypeService.save:person.person");
-        Party person = createPerson("MR", "Peter", "Alateras");
-
-        try {
-            archetype.save(person);
-            fail("The caller does not have the authority to call IArchetypeService.save");
-        } catch (OpenVPMSAccessDeniedException exception) {
-            if (exception.getErrorCode() != OpenVPMSAccessDeniedException.ErrorCode.AccessDenied)
-            {
-                fail("Incorrect error code was specified during the exception");
+    public void testCreate() {
+        final String shortName = "party.person";
+        Runnable createByShortName = new Runnable() {
+            public void run() {
+                archetype.create(shortName);
             }
-            exception.printStackTrace();
-            // this is the correct action
-        }
+        };
+        Runnable createByArchetypeId = new Runnable() {
+            public void run() {
+                ArchetypeId id = new ArchetypeId(shortName);
+                assertNotNull(archetype.create(id));
+            }
+        };
+
+        // createSecurityContext("jima", "jima", "archetype:archetypeService.create:party.noauth");
+        checkOperation(createByShortName, true);
+        checkOperation(createByArchetypeId, true);
+
+        String auth = "archetype:archetypeService.create:party.person";
+        checkOperation(createByShortName, false, auth);
+        checkOperation(createByArchetypeId, false, auth);
     }
 
     /**
-     * Test archetype wild card authorization
+     * Verifies that authentication is checked when saving objects.
      */
-    public void testArchetypeWildcardAuthorizationOnSave()
-            throws Exception {
-        // create a security contect before executing a method
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:party.per*");
-        Party person = createPerson("MR", "Peter1", "Alateras");
-        archetype.save(person);
+    public void testSave() {
+        final Party person = createPerson("MR", "Jim", "Alateras");
+        Runnable save = new Runnable() {
+            public void run() {
+                archetype.save(person);
+            }
+        };
 
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:part*.person");
-        person = createPerson("MR", "Peter2", "Alateras");
-        archetype.save(person);
+        // verify that the save fails when no save authority is granted
+        checkOperation(save, true);
+        checkOperation(save, true, "archetype:archetypeService.save:party.invalid");
 
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:party.*erson");
-        person = createPerson("MR", "Peter3", "Alateras");
-        archetype.save(person);
+        // ... and succeeds when it is
+        checkOperation(save, false, "archetype:archetypeService.save:party.person");
 
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:*rty.person");
-        person = createPerson("MR", "Peter4", "Alateras");
-        archetype.save(person);
+        // now check with authorities with wildcarded archetypes
+        checkOperation(save, true, "archetype:archetypeService.save:person.*");
+        checkOperation(save, true, "archetype:archetypeService.*:person.*");
+        checkOperation(save, false, "archetype:archetypeService.save:party.*");
+        checkOperation(save, false, "archetype:archetypeService.save:*.person");
+        checkOperation(save, false, "archetype:archetypeService.save:party.per*");
+        checkOperation(save, false, "archetype:archetypeService.save:part*.person");
+        checkOperation(save, false, "archetype:archetypeService.save:party.*erson");
+        checkOperation(save, false, "archetype:archetypeService.save:*rty.person");
+        checkOperation(save, false, "archetype:archetypeService.save:*rty.per*");
+        checkOperation(save, false, "archetype:archetypeService.save:par*.*son*");
+        checkOperation(save, false, "archetype:archetypeService.save:*.*");
 
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:*rty.per*");
-        person = createPerson("MR", "Peter5", "Alateras");
-        archetype.save(person);
+        // now check with authorities with wildcarded methods
+        checkOperation(save, true, "archetype:archetypeService.*:party.invalid");
+        checkOperation(save, true, "archetype:archetypeService.s*:party.invalid");
+        checkOperation(save, false, "archetype:archetypeService.s*:party.person");
+        checkOperation(save, false, "archetype:archetypeService.*ave:party.person");
+        checkOperation(save, false, "archetype:archetypeService.*:party.person");
 
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:par*.*son*");
-        person = createPerson("MR", "Peter6", "Alateras");
-        archetype.save(person);
-
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:*.*");
-        person = createPerson("MR", "Peter7", "Alateras");
-        archetype.save(person);
-    }
-
-    /**
-     * Test method wild card on save
-     */
-    public void testMethodWildcardAuthorizationOnSave()
-            throws Exception {
-        // create a security contect before executing a method
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:party.person");
-        Party person = createPerson("MR", "Save", "Alateras");
-        archetype.save(person);
-
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.s*:party.person");
-        person = createPerson("MR", "Save2", "Alateras");
-        archetype.save(person);
-
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.*ave:party.person");
-        person = createPerson("MR", "Save3", "Alateras");
-        archetype.save(person);
-
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.*:party.person");
-        person = createPerson("MR", "Save4", "Alateras");
-        archetype.save(person);
-    }
-
-    /**
-     * Test method  and archetype wild card on save
-     */
-    public void testMethodAndArchetypeWildcardAuthorizationOnSave()
-            throws Exception {
-        // create a security contect before executing a method
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.save:party.person");
-        Party person = createPerson("MR", "Bob", "Alateras");
-        archetype.save(person);
-
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.s*:part*.*son");
-        person = createPerson("MR", "Bob2", "Alateras");
-        archetype.save(person);
-
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.*ave:*.*");
-        person = createPerson("MR", "Bob3", "Alateras");
-        archetype.save(person);
-
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.*:party.*");
-        person = createPerson("MR", "Bob4", "Alateras");
-        archetype.save(person);
-
-        createSecurityContext("jima", "jima",
-                              "archetype:archetypeService.*:*.*");
-        person = createPerson("MR", "Bob4", "Alateras");
-        archetype.save(person);
+        // now check with authorities with both wildcarded methods and archetypes
+        checkOperation(save, true, "archetype:archetypeService.s*:part*.invalid");
+        checkOperation(save, false, "archetype:archetypeService.s*:part*.*son");
+        checkOperation(save, false, "archetype:archetypeService.*ave:*.*");
+        checkOperation(save, false, "archetype:archetypeService.*:party.*");
+        checkOperation(save, false, "archetype:archetypeService.*:*.*");
     }
 
     /**
@@ -187,18 +127,39 @@ public abstract class SecurityServiceTests extends
     public void testSaveCollection() {
         Party party1 = createPerson("MR", "Jim", "Alateras");
         Party party2 = createPet("Fido");
-        List<IMObject> objects = new ArrayList<IMObject>();
+        final List<IMObject> objects = new ArrayList<IMObject>();
         objects.add(party1);
         objects.add(party2);
 
-        checkSave(objects, false,
-                  "archetype:archetypeService.save:party.*");
-        checkSave(objects, false,
-                  "archetype:archetypeService.save:party.person",
-                  "archetype:archetypeService.save:party.animalpet");
-        checkSave(objects, false, "archetype:archetypeService.save:*.*");
-        checkSave(objects, true,
-                  "archetype:archetypeService.save:party.person");
+        Runnable save = new Runnable() {
+            public void run() {
+                archetype.save(objects);
+            }
+        };
+        checkOperation(save, false, "archetype:archetypeService.save:party.*");
+        checkOperation(save, false, "archetype:archetypeService.save:party.person",
+                       "archetype:archetypeService.save:party.animalpet");
+        checkOperation(save, false, "archetype:archetypeService.save:*.*");
+        checkOperation(save, true, "archetype:archetypeService.save:party.person");
+    }
+
+    /**
+     * Verifies that authentication is checked when removing objects.
+     */
+    public void testRemove() {
+        final Party person = createPerson("MR", "Jim", "Alateras");
+        createSecurityContext("jima", "jima", "archetype:archetypeService.save:*");
+        archetype.save(person);
+
+        Runnable remove = new Runnable() {
+            public void run() {
+                archetype.remove(person);
+            }
+        };
+
+        checkOperation(remove, true);
+        checkOperation(remove, true, "archetype:archetypeService.*:party.invalid");
+        checkOperation(remove, false, "archetype:archetypeService.remove:party.person");
     }
 
     /**
@@ -209,10 +170,12 @@ public abstract class SecurityServiceTests extends
      * @param authorities the authorities of the person
      */
     protected abstract void createSecurityContext(String user, String password,
-                                                  String ... authorities);
+                                                  String... authorities);
 
     /**
-     * Create a person
+     * Creates a person.
+     * <p/>
+     * Note that this method grants authorities in order to perform the creation.
      *
      * @param title     the person's title
      * @param firstName the person's first name
@@ -221,6 +184,7 @@ public abstract class SecurityServiceTests extends
      */
     private Party createPerson(String title, String firstName,
                                String lastName) {
+        createSecurityContext("jima", "jima", "archetype:archetypeService.create:*");
         Party person = (Party) archetype.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
@@ -232,11 +196,14 @@ public abstract class SecurityServiceTests extends
 
     /**
      * Creates a pet.
+     * <p/>
+     * Note that this method grants authorities in order to perform the creation.
      *
      * @param name the pet's name
      * @return a new pet
      */
     private Party createPet(String name) {
+        createSecurityContext("jima", "jima", "archetype:archetypeService.create:*");
         Party pet = (Party) archetype.create("party.animalpet");
         pet.setName(name);
         pet.getDetails().put("species", "CANINE");
@@ -258,26 +225,26 @@ public abstract class SecurityServiceTests extends
     }
 
     /**
-     * Checks if a collection can be saved, given a set of authorities.
+     * Executes an operation by a user with the specified authorities.
      *
-     * @param objects     the collection to save
-     * @param fail        if <tt>true</tt> the save is expected to fail
+     * @param operation   the operation to execute
+     * @param fail        if <tt>true</tt>, expect the operation to fail, otherwise expect it to succeed
      * @param authorities the user's authorities
      */
-    private void checkSave(Collection<IMObject> objects,
-                           boolean fail, String ... authorities) {
-        createSecurityContext("jima", "jima", authorities);
+    private void checkOperation(Runnable operation, boolean fail,
+                                String... authorities) {
+        createSecurityContext("jima" + seed, "jima", authorities);
+        ++seed;
         try {
-            archetype.save(objects);
+            operation.run();
             if (fail) {
-                fail("Save of collection should have failed");
+                fail("Expected operation to fail");
             }
         } catch (OpenVPMSAccessDeniedException exception) {
             if (!fail) {
-                fail("Save of collection should not have failed: " + exception);
+                fail("Didn't expect operation to fail");
             }
-            if (exception.getErrorCode()
-                    != OpenVPMSAccessDeniedException.ErrorCode.AccessDenied) {
+            if (exception.getErrorCode() != OpenVPMSAccessDeniedException.ErrorCode.AccessDenied) {
                 fail("Incorrect error code was specified during the exception");
             }
         }
