@@ -1,12 +1,26 @@
-# Remove any entity classifications linked to lookup.paymentType
-delete from entity_classifications c
-using lookups l, entity_classifications c
+#
+# Delete lookup.paymentType as per ARCH-21
+#
+
+# remove any entity classifications linked to lookup.paymentType
+delete entity_classifications c
+from lookups l, entity_classifications c
 where c.lookup_id = l.Lookup_id and arch_short_name = "lookup.paymentType";
 
-# Remove lookup.paymentType entries
+# remove lookup.paymentType entries
 delete
 from lookups
 where arch_short_name = "lookup.paymentType";
+
+# remove lookup.paymentType archetype
+delete d
+from assertion_descriptors d, node_descriptors n, archetype_descriptors a
+where d.node_desc_id = n.node_desc_id and n.archetype_desc_id = a.archetype_desc_id
+      and a.name = "lookup.paymentType.1.0";
+
+delete a, n
+from node_descriptors n, archetype_descriptors a
+where n.archetype_desc_id = a.archetype_desc_id and a.name = "lookup.paymentType.1.0";
 
 
 #
