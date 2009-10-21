@@ -28,14 +28,16 @@ package org.openvpms.archetype.rules.customer;
 public class CustomerArchetypes {
 
     /**
-     * Person customer short name.
+     * Customer short name.
      */
     public static final String PERSON = "party.customerperson";
 
     /**
      * Organisation customer short name.
+     * @deprecated use {@link #PERSON} instead.
      */
-    public static final String ORGANISATION = "party.customerorganisation";
+    @Deprecated
+    public static final String ORGANISATION = PERSON;
 
     /**
      * 'Over the counter' short name.

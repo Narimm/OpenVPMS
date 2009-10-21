@@ -34,12 +34,7 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="party.customerperson"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="party.customerorganisation"/>
+                        <property name="shortName" value="party.customerperson"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>

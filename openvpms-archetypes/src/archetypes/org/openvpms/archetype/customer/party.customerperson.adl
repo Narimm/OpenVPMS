@@ -17,7 +17,7 @@
 -->
 <archetypes>
     <archetype name="party.customerperson.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.party.Party" displayName="Customer(Person)">
+               type="org.openvpms.component.business.domain.im.party.Party" displayName="Customer">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
