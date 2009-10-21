@@ -22,6 +22,7 @@ import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
@@ -37,10 +38,10 @@ import org.openvpms.web.component.util.SelectFieldFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SpeciesLookupEditor extends LookupEditor {
+public class SpeciesLookupEditor extends AbstractLookupEditor {
 
     /**
-     * Construct a new <tt>LookupEditor</tt>.
+     * Creates a new <tt>SpeciesLookupEditor</tt>.
      *
      * @param object  the object to edit
      * @param parent  the parent object. May be <tt>null</tt>
@@ -61,7 +62,7 @@ public class SpeciesLookupEditor extends LookupEditor {
         return new SpeciesLayoutStrategy();
     }
 
-    private class SpeciesLayoutStrategy extends LayoutStrategy {
+    private class SpeciesLayoutStrategy extends AbstractLayoutStrategy {
 
         @Override
         protected ComponentState createComponent(Property property,

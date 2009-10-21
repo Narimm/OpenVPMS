@@ -18,137 +18,28 @@
 
 package org.openvpms.web.app.admin.lookup;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.AbstractProperty;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertyTransformer;
-import org.openvpms.web.component.property.StringPropertyTransformer;
 
 
 /**
- * Lookup editor. For lookups where there is are both code and name nodes, and
- * the code is hidden, this derives the initial value of code from the name.
- * The derived value is the name with letters converted to uppercase, and
- * anything it is not in the range [A-Z,0-9] replaced with underscores.
+ * Default lookup editor.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class LookupEditor extends AbstractIMObjectEditor {
+public class LookupEditor extends AbstractLookupEditor {
 
     /**
-     * The code component.
-     */
-    private Component code;
-
-
-    /**
-     * Construct a new <code>LookupEditor</code>.
+     * Construct a new <tt>LookupEditor</tt>.
      *
      * @param object  the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>.
+     * @param parent  the parent object. May be <tt>null</tt>
+     * @param context the layout context. May be <tt>null</tt>.
      */
     public LookupEditor(Lookup object, IMObject parent, LayoutContext context) {
         super(object, parent, context);
-
-        Property code = getProperty("code");
-        if (code != null && code instanceof AbstractProperty) {
-            // disable macro expansion for the code node to avoid the node expanding itself
-            PropertyTransformer transformer = ((AbstractProperty) code).getTransformer();
-            if (transformer instanceof StringPropertyTransformer) {
-                ((StringPropertyTransformer) transformer).setExpandMacros(false);
-            }
-        }
-
-        if (object.isNew()) {
-            Property name = getProperty("name");
-            if (code != null && name != null) {
-                if (code.isHidden()) {
-                    // derive the code from the name
-                    name.addModifiableListener(new ModifiableListener() {
-                        public void modified(Modifiable modifiable) {
-                            onNameModified();
-                        }
-                    });
-                }
-            }
-        }
     }
 
-    /**
-     * Save any edits.
-     *
-     * @return <code>true</code> if the save was successful
-     */
-    @Override
-    public boolean save() {
-        boolean saved = super.save();
-        if (saved && code != null) {
-            code.setEnabled(false);
-        }
-        return saved;
-    }
-
-    /**
-     * Creates the layout strategy.
-     *
-     * @return a new layout strategy
-     */
-    @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy();
-    }
-
-    /**
-     * Invoked when layout has completed.
-     * Disables the code property editor if the object has been saved.
-     */
-    @Override
-    protected void onLayoutCompleted() {
-        if (code != null && !getObject().isNew()) {
-            code.setEnabled(false);
-        }
-    }
-
-    /**
-     * Invoked when the name is nodified. Derives the code, but only for
-     * new objects.
-     */
-    private void onNameModified() {
-        if (getObject().isNew()) {
-            String code = null;
-            String name = (String) getProperty("name").getValue();
-            if (name != null) {
-                code = name.toUpperCase();
-                code = code.replaceAll("[^A-Z0-9]+", "_");
-            }
-            getProperty("code").setValue(code);
-        }
-    }
-
-    protected class LayoutStrategy extends AbstractLayoutStrategy {
-
-        @Override
-        protected ComponentState createComponent(Property property,
-                                                 IMObject parent,
-                                                 LayoutContext context) {
-            ComponentState state = super.createComponent(property,
-                                                         parent,
-                                                         context);
-            if ("code".equals(property.getName())) {
-                code = state.getComponent();
-            }
-            return state;
-        }
-    }
 }
