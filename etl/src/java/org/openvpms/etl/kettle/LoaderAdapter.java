@@ -18,9 +18,6 @@
 
 package org.openvpms.etl.kettle;
 
-import be.ibridge.kettle.core.Row;
-import be.ibridge.kettle.core.exception.KettleException;
-import be.ibridge.kettle.core.value.Value;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -32,13 +29,16 @@ import org.openvpms.etl.load.Loader;
 import org.openvpms.etl.load.LoaderException;
 import org.openvpms.etl.load.Mapping;
 import org.openvpms.etl.load.Mappings;
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.row.ValueMetaInterface;
 
 import java.sql.Timestamp;
 import java.util.List;
 
 
 /**
- * Wrapper around a {@link Loader}, that converts Kettle <tt>Row</tt> instances
+ * Wrapper around a {@link Loader}, that converts Kettle <tt>RowMetaInterface</tt> instances
  * to {@link ETLRow}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -76,36 +76,34 @@ public class LoaderAdapter {
      * If the row has already been successfully processed, no objects will
      * be returned.
      *
-     * @param row the row to load
+     * @param metaData the row meta data
+     * @param row      the row to load
      * @return the objects generated from the row, or an empty collection if
      *         the row has already been successfully processed
      * @throws KettleException for any error
      */
-    public List<IMObject> load(Row row) throws KettleException {
-        Value idValue = row.searchValue(mappings.getIdColumn());
-        if (idValue == null) {
-            String msg = Messages.get("LoaderAdapter.MissingColumn",
-                                      mappings.getIdColumn());
+    public List<IMObject> load(RowMetaInterface metaData, Object[] row) throws KettleException {
+        int idIndex = metaData.indexOfValue(mappings.getIdColumn());
+        if (idIndex == -1) {
+            String msg = Messages.get("LoaderAdapter.MissingColumn", mappings.getIdColumn());
             throw new KettleException(msg);
         }
-        String id = getLegacyId(idValue);
+        ValueMetaInterface valueMeta = metaData.getValueMeta(idIndex);
+        String id = getLegacyId(valueMeta, row[idIndex]);
         if (StringUtils.isEmpty(id)) {
-            String msg = Messages.get("LoaderAdapter.NullIdColumn",
-                                      mappings.getIdColumn());
+            String msg = Messages.get("LoaderAdapter.NullIdColumn", mappings.getIdColumn());
             throw new KettleException(msg);
         }
         ETLRow mapRow = new ETLRow(id);
         for (Mapping mapping : mappings.getMapping()) {
-            Value value = row.searchValue(mapping.getSource());
-            if (value == null) {
-                String msg = Messages.get("LoaderAdapter.MissingColumn",
-                                          mapping.getSource());
+            int index = metaData.indexOfValue(mapping.getSource());
+            if (index == -1) {
+                String msg = Messages.get("LoaderAdapter.MissingColumn", mapping.getSource());
                 throw new KettleException(msg);
             }
-        }
-        for (int i = 0; i < row.size(); ++i) {
-            Value value = row.getValue(i);
-            mapRow.add(value.getName(), getValue(value));
+            valueMeta = metaData.getValueMeta(index);
+            Object value = getValue(valueMeta, row[index]);
+            mapRow.add(valueMeta.getName(), value);
         }
         return loader.load(mapRow);
     }
@@ -130,35 +128,32 @@ public class LoaderAdapter {
     }
 
     /**
-     * Converts a kettle <tt>Value</tt> to an object.
+     * Converts a kettle value to an object.
      *
-     * @param value the value to convert
+     * @param valueMeta the value meta data
+     * @param value     the value to convert
      * @return the converted value
+     * @throws KettleException if the value cannot be converted
      */
-    private Object getValue(Value value) {
-        Object result = null;
-        if (value.getType() == Value.VALUE_TYPE_STRING) {
-            // need to trim whitespace
-            if (!value.isNull()) {
-                String str = value.toString(false);
-                result = StringUtils.trimToNull(str);
-            }
-        } else if (!value.isNull()) {
-            if (value.getType() == Value.VALUE_TYPE_DATE) {
-                result = value.getDate();
-            } else if (value.getType() == Value.VALUE_TYPE_NUMBER) {
-                if (value.getPrecision() == 0) {
-                    result = value.getBigNumber().toBigIntegerExact();
-                } else {
-                    result = value.getBigNumber();
-                }
-            } else if (value.getType() == Value.VALUE_TYPE_INTEGER) {
-                result = value.getInteger();
-            } else if (value.getType() == Value.VALUE_TYPE_BIGNUMBER) {
-                result = value.getBigNumber();
+    private Object getValue(ValueMetaInterface valueMeta, Object value) throws KettleException {
+        Object result;
+        int type = valueMeta.getType();
+        if (type == ValueMetaInterface.TYPE_DATE) {
+            result = valueMeta.getDate(value);
+        } else if (type == ValueMetaInterface.TYPE_NUMBER) {
+            if (valueMeta.getPrecision() == 0) {
+                result = valueMeta.getBigNumber(value).toBigIntegerExact();
             } else {
-                result = value.toString(false); // no padding
+                result = valueMeta.getBigNumber(value);
             }
+        } else if (type == ValueMetaInterface.TYPE_INTEGER) {
+            result = valueMeta.getInteger(value);
+        } else if (type == ValueMetaInterface.TYPE_BIGNUMBER) {
+            result = valueMeta.getBigNumber(value);
+        } else {
+            // handle everything else as a string
+            String str = valueMeta.getString(value);
+            result = StringUtils.trimToNull(str);
         }
         return result;
     }
@@ -168,17 +163,19 @@ public class LoaderAdapter {
      * This ensures that any date identifiers are formatted using
      * <em>java.sql.Timestamp.toString()</em> to avoid localisation issues.
      *
-     * @param id the legacy id
+     * @param valueMeta the value meta data
+     * @param id        the legacy id
      * @return the stringified form of the legacy identifier
+     * @throws KettleException if the id cannot be coverted
      */
-    private String getLegacyId(Value id) {
+    private String getLegacyId(ValueMetaInterface valueMeta, Object id) throws KettleException {
         String result = null;
-        if (!id.isNull()) {
-            if (id.getType() == Value.VALUE_TYPE_DATE) {
-                Timestamp datetime = new Timestamp(id.getDate().getTime());
+        if (!valueMeta.isNull(id)) {
+            if (valueMeta.getType() == ValueMetaInterface.TYPE_DATE) {
+                Timestamp datetime = new Timestamp(valueMeta.getDate(id).getTime());
                 result = datetime.toString();
             } else {
-                Object value = getValue(id);
+                Object value = getValue(valueMeta, id);
                 if (value != null) {
                     result = value.toString();
                 }

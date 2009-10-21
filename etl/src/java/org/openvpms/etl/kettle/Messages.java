@@ -18,7 +18,7 @@
 
 package org.openvpms.etl.kettle;
 
-import be.ibridge.kettle.i18n.BaseMessages;
+import org.pentaho.di.i18n.BaseMessages;
 
 
 /**
@@ -38,31 +38,25 @@ public class Messages {
      * @param args message arguments
      * @return a formatted message
      */
-    public static String get(String key, Object ... args) {
+    public static String get(String key, Object... args) {
         switch (args.length) {
             case 0:
                 return BaseMessages.getString(PACKAGE, key);
             case 1:
                 return BaseMessages.getString(PACKAGE, key, getArg(args[0]));
             case 2:
-                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
-                                              getArg(args[1]));
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]), getArg(args[1]));
             case 3:
-                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
-                                              getArg(args[1]), getArg(args[2]));
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]), getArg(args[1]), getArg(args[2]));
             case 4:
-                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
-                                              getArg(args[1]), getArg(args[2]),
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]), getArg(args[1]), getArg(args[2]),
                                               getArg(args[3]));
             case 5:
-                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
-                                              getArg(args[1]), getArg(args[2]),
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]), getArg(args[1]), getArg(args[2]),
                                               getArg(args[3]), getArg(args[4]));
             default:
-                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
-                                              getArg(args[1]), getArg(args[2]),
-                                              getArg(args[3]), getArg(args[4]),
-                                              getArg(args[5]));
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]), getArg(args[1]), getArg(args[2]),
+                                              getArg(args[3]), getArg(args[4]), getArg(args[5]));
         }
     }
 

@@ -13,7 +13,6 @@
         <library name="asm-${asm.version}.jar"/>
         <library name="asm-attrs-${asm.version}.jar"/>
         <library name="antlr-${antlr.version}.jar"/>
-        <library name="c3p0-${c3p0.version}.jar"/>
         <library name="cglib-${cglib.version}.jar"/>
         <library name="castor-xml-${castor.version}.jar"/>
         <library name="commons-jxpath-${commons.jxpath.version}.jar"/>

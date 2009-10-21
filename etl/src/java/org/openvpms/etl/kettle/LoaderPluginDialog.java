@@ -18,16 +18,6 @@
 
 package org.openvpms.etl.kettle;
 
-import be.ibridge.kettle.core.ColumnInfo;
-import be.ibridge.kettle.core.Const;
-import be.ibridge.kettle.core.Props;
-import be.ibridge.kettle.core.Row;
-import be.ibridge.kettle.core.dialog.ErrorDialog;
-import be.ibridge.kettle.core.exception.KettleException;
-import be.ibridge.kettle.core.widget.TableView;
-import be.ibridge.kettle.trans.TransMeta;
-import be.ibridge.kettle.trans.step.BaseStepDialog;
-import be.ibridge.kettle.trans.step.StepDialogInterface;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.CTabFolder;
@@ -52,6 +42,16 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.openvpms.etl.load.Mapping;
 import org.openvpms.etl.load.Mappings;
+import org.pentaho.di.core.Const;
+import org.pentaho.di.core.Props;
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.trans.TransMeta;
+import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.ui.core.dialog.ErrorDialog;
+import org.pentaho.di.ui.core.widget.ColumnInfo;
+import org.pentaho.di.ui.core.widget.TableView;
+import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 
 /**
@@ -94,6 +94,7 @@ public class LoaderPluginDialog extends BaseStepDialog
     private CCombo connection;
 
     private static final String YES = "Y";  // NON-NLS
+
     private static final String NO = "N";   // NON-NLS
 
     /**
@@ -130,8 +131,7 @@ public class LoaderPluginDialog extends BaseStepDialog
         Shell parent = getParent();
         Display display = parent.getDisplay();
 
-        shell = new Shell(parent,
-                          SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
+        shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
         props.setLook(shell);
         setShellImage(shell, input);
 
@@ -175,7 +175,7 @@ public class LoaderPluginDialog extends BaseStepDialog
         // connection line
         connection = addConnectionLine(shell, wStepname, middle, margin);
         if (input.getMappings().getConnection() == null
-                && transMeta.nrDatabases() == 1) {
+            && transMeta.nrDatabases() == 1) {
             connection.select(0);
         }
         connection.addModifyListener(modifyListener);
@@ -237,8 +237,7 @@ public class LoaderPluginDialog extends BaseStepDialog
         wSelectComp.setLayout(selectLayout);
 
         Label wlFields = new Label(wSelectComp, SWT.NONE);
-        wlFields.setText(Messages.get(
-                "LoaderPluginDialog.Fields.Label"));
+        wlFields.setText(Messages.get("LoaderPluginDialog.Fields.Label"));
         props.setLook(wlFields);
         FormData fdlFields = new FormData();
         fdlFields.left = new FormAttachment(0, 0);
@@ -248,31 +247,20 @@ public class LoaderPluginDialog extends BaseStepDialog
         final int rowCount = input.getMappings().getMappingCount();
 
         ColumnInfo[] columns = new ColumnInfo[]{
-                new ColumnInfo(Messages.get(
-                        "LoaderPluginDialog.ColumnInfo.Fieldname"),
+                new ColumnInfo(Messages.get("LoaderPluginDialog.ColumnInfo.Fieldname"),
                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                new ColumnInfo(Messages.get(
-                        "LoaderPluginDialog.ColumnInfo.MapTo"),
-                               ColumnInfo.COLUMN_TYPE_TEXT, false),
-                new ColumnInfo(Messages.get(
-                        "LoaderPluginDialog.ColumnInfo.ExcludeIfNull"),
-                               ColumnInfo.COLUMN_TYPE_CCOMBO,
-                               getYesNo(), true),
-                new ColumnInfo(Messages.get(
-                        "LoaderPluginDialog.ColumnInfo.Value"),
-                               ColumnInfo.COLUMN_TYPE_TEXT, false),
-                new ColumnInfo(Messages.get(
-                        "LoaderPluginDialog.ColumnInfo.RemoveDefaultObjects"),
-                               ColumnInfo.COLUMN_TYPE_CCOMBO,
-                               getYesNo(), true)};
+                new ColumnInfo(Messages.get("LoaderPluginDialog.ColumnInfo.MapTo"), ColumnInfo.COLUMN_TYPE_TEXT, false),
+                new ColumnInfo(Messages.get("LoaderPluginDialog.ColumnInfo.ExcludeIfNull"),
+                               ColumnInfo.COLUMN_TYPE_CCOMBO, getYesNo(), true),
+                new ColumnInfo(Messages.get("LoaderPluginDialog.ColumnInfo.Value"), ColumnInfo.COLUMN_TYPE_TEXT, false),
+                new ColumnInfo(Messages.get("LoaderPluginDialog.ColumnInfo.RemoveDefaultObjects"),
+                               ColumnInfo.COLUMN_TYPE_CCOMBO, getYesNo(), true)};
 
-        mappingTable = new TableView(
-                wSelectComp, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI,
-                columns, rowCount, modifyListener, props);
+        mappingTable = new TableView(transMeta, wSelectComp, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI,
+                                     columns, rowCount, modifyListener, props);
 
         Button getButton = new Button(wSelectComp, SWT.PUSH);
-        getButton.setText(
-                Messages.get("LoaderPluginDialog.GetMap.Button"));
+        getButton.setText(Messages.get("LoaderPluginDialog.GetMap.Button"));
         getButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 get();
@@ -471,21 +459,18 @@ public class LoaderPluginDialog extends BaseStepDialog
      */
     private void get() {
         try {
-            Row row = transMeta.getPrevStepFields(stepname);
+            RowMetaInterface row = transMeta.getPrevStepFields(stepname);
             if (row != null) {
                 switch (tabFolder.getSelectionIndex()) {
-                    case 0 :
-                        BaseStepDialog.getFieldsFromPrevious(
-                                row, mappingTable, 1, new int[]{1}, new int[]{},
-                                -1, -1, null);
+                    case 0:
+                        BaseStepDialog.getFieldsFromPrevious(row, mappingTable, 1, new int[]{1}, new int[]{},
+                                                             -1, -1, null);
                         break;
                 }
             }
         } catch (KettleException exception) {
-            new ErrorDialog(shell, Messages.get(
-                    "LoaderPluginDialog.FailedToGetFields.DialogTitle"),
-                            Messages.get(
-                                    "LoaderPluginDialog.FailedToGetFields.DialogMessage"),
+            new ErrorDialog(shell, Messages.get("LoaderPluginDialog.FailedToGetFields.DialogTitle"),
+                            Messages.get("LoaderPluginDialog.FailedToGetFields.DialogMessage"),
                             exception);
         }
     }
