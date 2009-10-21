@@ -1,5 +1,5 @@
 # Remove any entity classifications linked to lookup.paymentType
-delete from entity_classifications c 
+delete from entity_classifications c
 using lookups l, entity_classifications c
 where c.lookup_id = l.Lookup_id and arch_short_name = "lookup.paymentType";
 
@@ -7,6 +7,33 @@ where c.lookup_id = l.Lookup_id and arch_short_name = "lookup.paymentType";
 delete
 from lookups
 where arch_short_name = "lookup.paymentType";
+
+
+#
+# Migrate party.customerorganisation to party.customerperson as per ARCH-16
+#
+insert into entity_details (entity_id, type, value, name)
+select entity_id, "string", name, "companyName"
+from entities
+where arch_short_name = "party.customerorganisation";
+
+insert into entity_details (entity_id, type, value, name)
+select entity_id, "string", name, "lastName"
+from entities
+where arch_short_name = "party.customerorganisation";
+
+update entities set arch_short_name = "party.customerperson"
+where arch_short_name = "party.customerorganisation";
+
+# remove party.customerorganisation archetype
+delete d
+from assertion_descriptors d, node_descriptors n, archetype_descriptors a
+where d.node_desc_id = n.node_desc_id and n.archetype_desc_id = a.archetype_desc_id
+      and a.name = "party.customerorganisation.1.0";
+
+delete a, n
+from node_descriptors n, archetype_descriptors a
+where n.archetype_desc_id = a.archetype_desc_id and a.name = "party.customerorganisation.1.0";
 
 #
 # Migrate act.patientInvestigationBiochemistry, act.patientInvestigationCytology,
