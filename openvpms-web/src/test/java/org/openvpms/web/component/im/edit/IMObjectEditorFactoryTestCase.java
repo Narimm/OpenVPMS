@@ -22,6 +22,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.admin.lookup.LookupEditor;
+import org.openvpms.web.app.admin.lookup.SuburbLookupEditor;
+import org.openvpms.web.app.admin.lookup.SpeciesLookupEditor;
 import org.openvpms.web.app.admin.template.DocumentTemplatePrinterEditor;
 import org.openvpms.web.app.customer.CustomerEditor;
 import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
@@ -399,6 +401,20 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     public void testCreateLookupEditor() {
         checkCreate("lookup.alertType", LookupEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link SuburbLookupEditor} is created for <em>lookup.suburb</em>
+     */
+    public void testCreateSpeciesLookupEditor() {
+        checkCreate("lookup.species", SpeciesLookupEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link SuburbLookupEditor} is created for <em>lookup.suburb</em>
+     */
+    public void testCreateSuburbLookupEditor() {
+        checkCreate("lookup.suburb", SuburbLookupEditor.class);
     }
 
     /**
