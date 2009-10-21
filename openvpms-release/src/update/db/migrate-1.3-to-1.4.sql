@@ -22,6 +22,25 @@ delete a, n
 from node_descriptors n, archetype_descriptors a
 where n.archetype_desc_id = a.archetype_desc_id and a.name = "lookup.paymentType.1.0";
 
+#
+# Delete lookup.postcode as per ARCH-22
+#
+
+# remove lookup.postcode entries
+delete
+from lookups
+where arch_short_name = "lookup.postcode";
+
+# remove lookup.postcode archetype
+delete d
+from assertion_descriptors d, node_descriptors n, archetype_descriptors a
+where d.node_desc_id = n.node_desc_id and n.archetype_desc_id = a.archetype_desc_id
+      and a.name = "lookup.postcode.1.0";
+
+delete a, n
+from node_descriptors n, archetype_descriptors a
+where n.archetype_desc_id = a.archetype_desc_id and a.name = "lookup.postcode.1.0";
+
 
 #
 # Migrate party.customerorganisation to party.customerperson as per ARCH-16
