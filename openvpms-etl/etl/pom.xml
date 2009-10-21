@@ -28,8 +28,26 @@
         </dependency>
         <dependency>
             <groupId>org.pentaho</groupId>
-            <artifactId>kettle</artifactId>
-            <version>2.4.0</version>
+            <artifactId>kettle-core</artifactId>
+            <version>${kettle.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.pentaho</groupId>
+            <artifactId>kettle-db</artifactId>
+            <version>${kettle.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.pentaho</groupId>
+            <artifactId>kettle-engine</artifactId>
+            <version>${kettle.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.pentaho</groupId>
+            <artifactId>kettle-ui-swt</artifactId>
+            <version>${kettle.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -148,5 +166,9 @@
             </testResource>
         </testResources>
     </build>
+
+    <properties>
+        <kettle.version>3.2.0</kettle.version>
+    </properties>
 
 </project>

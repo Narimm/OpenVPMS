@@ -17,8 +17,9 @@
  */
 package org.openvpms.etl.kettle;
 
-import be.ibridge.kettle.trans.step.BaseStepData;
-import be.ibridge.kettle.trans.step.StepDataInterface;
+import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.trans.step.BaseStepData;
+import org.pentaho.di.trans.step.StepDataInterface;
 import org.springframework.context.ApplicationContext;
 
 
@@ -35,6 +36,11 @@ public class LoaderPluginData extends BaseStepData
      * The application context.
      */
     private ApplicationContext context;
+
+    /**
+     * The row meta data.
+     */
+    private RowMetaInterface rowMeta;
 
 
     /**
@@ -59,5 +65,23 @@ public class LoaderPluginData extends BaseStepData
      */
     public void setContext(ApplicationContext context) {
         this.context = context;
+    }
+
+    /**
+     * Returns the row meta data.
+     *
+     * @return the row meta data
+     */
+    public RowMetaInterface getRowMeta() {
+        return rowMeta;
+    }
+
+    /**
+     * Sets the row meta data.
+     *
+     * @param rowMeta the row meta data
+     */
+    public void setRowMeta(RowMetaInterface rowMeta) {
+        this.rowMeta = rowMeta;
     }
 }

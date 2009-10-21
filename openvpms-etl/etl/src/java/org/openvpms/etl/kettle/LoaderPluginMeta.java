@@ -17,23 +17,6 @@
  */
 package org.openvpms.etl.kettle;
 
-import be.ibridge.kettle.core.CheckResult;
-import be.ibridge.kettle.core.Const;
-import be.ibridge.kettle.core.LogWriter;
-import be.ibridge.kettle.core.Row;
-import be.ibridge.kettle.core.XMLHandler;
-import be.ibridge.kettle.core.database.DatabaseMeta;
-import be.ibridge.kettle.core.exception.KettleException;
-import be.ibridge.kettle.core.exception.KettleXMLException;
-import be.ibridge.kettle.repository.Repository;
-import be.ibridge.kettle.trans.Trans;
-import be.ibridge.kettle.trans.TransMeta;
-import be.ibridge.kettle.trans.step.BaseStepMeta;
-import be.ibridge.kettle.trans.step.StepDataInterface;
-import be.ibridge.kettle.trans.step.StepDialogInterface;
-import be.ibridge.kettle.trans.step.StepInterface;
-import be.ibridge.kettle.trans.step.StepMeta;
-import be.ibridge.kettle.trans.step.StepMetaInterface;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.widgets.Shell;
 import org.exolab.castor.xml.Marshaller;
@@ -41,17 +24,35 @@ import org.exolab.castor.xml.Unmarshaller;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.etl.load.LoaderHelper;
 import org.openvpms.etl.load.Mapping;
 import org.openvpms.etl.load.Mappings;
 import org.openvpms.etl.load.NodeParser;
 import org.openvpms.etl.load.ReferenceParser;
-import org.openvpms.etl.load.LoaderHelper;
+import org.pentaho.di.core.CheckResult;
+import org.pentaho.di.core.CheckResultInterface;
+import org.pentaho.di.core.Counter;
+import org.pentaho.di.core.database.DatabaseMeta;
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.exception.KettleXMLException;
+import org.pentaho.di.core.logging.LogWriter;
+import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.xml.XMLHandler;
+import org.pentaho.di.repository.Repository;
+import org.pentaho.di.trans.Trans;
+import org.pentaho.di.trans.TransMeta;
+import org.pentaho.di.trans.step.BaseStepMeta;
+import org.pentaho.di.trans.step.StepDataInterface;
+import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.trans.step.StepInterface;
+import org.pentaho.di.trans.step.StepMeta;
+import org.pentaho.di.trans.step.StepMetaInterface;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Node;
 
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -60,8 +61,7 @@ import java.util.Hashtable;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class LoaderPluginMeta extends BaseStepMeta
-        implements StepMetaInterface {
+public class LoaderPluginMeta extends BaseStepMeta implements StepMetaInterface {
 
     /**
      * The database.
@@ -82,14 +82,21 @@ public class LoaderPluginMeta extends BaseStepMeta
      * Repository attribute names.
      */
     private static final String CONNECTION = "connection"; // NON-NLS
+
     private static final String ID_COLUMN = "idColumn"; // NON-NLS
+
     private static final String SOURCE = "source";  // NON-NLS
+
     private static final String TARGET = "target"; // NON-NLS
+
     private static final String VALUE = "value"; // NON-NLS
+
     private static final String EXCLUDE_NULL = "excludeNull"; // NON-NLS
+
     private static final String SKIP_PROCESSED = "skipProcessed"; // NON-NLS
-    private static final String REMOVE_DEFAULT_OBJECTS
-            = "removeDefaultObjects"; // NON-NLS
+
+    private static final String REMOVE_DEFAULT_OBJECTS = "removeDefaultObjects"; // NON-NLS
+
     private static final String BATCH_SIZE = "batchSize"; // NON-NLS
 
 
@@ -107,8 +114,7 @@ public class LoaderPluginMeta extends BaseStepMeta
      * @param counters  counters to reference
      * @throws KettleXMLException for any XML error
      */
-    public LoaderPluginMeta(Node stepNode, ArrayList databases,
-                            Hashtable counters)
+    public LoaderPluginMeta(Node stepNode, List<DatabaseMeta> databases, Map<String, Counter> counters)
             throws KettleXMLException {
         loadXML(stepNode, databases, counters);
     }
@@ -122,9 +128,8 @@ public class LoaderPluginMeta extends BaseStepMeta
      * @param counters   the counters to reference
      * @throws KettleException for any error
      */
-    public LoaderPluginMeta(Repository repository, long stepId,
-                            ArrayList databases,
-                            Hashtable counters)
+    public LoaderPluginMeta(Repository repository, long stepId, List<DatabaseMeta> databases,
+                            Map<String, Counter> counters)
             throws KettleException {
         readRep(repository, stepId, databases, counters);
     }
@@ -153,22 +158,21 @@ public class LoaderPluginMeta extends BaseStepMeta
     }
 
     /**
-     * Load the values for this step from an XML Node.
+     * Load the values for this step from an XML Node
      *
-     * @param stepNode  the Node to get the info from
+     * @param stepNode  the node to get the info from
      * @param databases the available list of databases to reference to
-     * @param counters  counters to reference
-     * @throws KettleXMLException for any XML error
+     * @param counters  the counters to reference
+     * @throws KettleXMLException when an unexpected XML error occurred. (malformed etc.)
      */
-    public void loadXML(Node stepNode, ArrayList databases,
-                        Hashtable counters) throws KettleXMLException {
+    public void loadXML(Node stepNode, List<DatabaseMeta> databases, Map<String, Counter> counters)
+            throws KettleXMLException {
         try {
             Node node = XMLHandler.getSubNode(stepNode, "mappings"); // NON-NLS
             mappings = (Mappings) Unmarshaller.unmarshal(Mappings.class, node);
-            database = Const.findDatabase(databases, mappings.getConnection());
+            database = DatabaseMeta.findDatabase(databases, mappings.getConnection());
         } catch (Exception exception) {
-            throw new KettleXMLException(
-                    "Unable to read step info from XML node", exception);
+            throw new KettleXMLException("Unable to read step info from XML node", exception);
         }
     }
 
@@ -188,37 +192,27 @@ public class LoaderPluginMeta extends BaseStepMeta
      * @param counters   the counters to reference
      * @throws KettleException for any error
      */
-    public void readRep(Repository repository, long stepId, ArrayList databases,
-                        Hashtable counters) throws KettleException {
+    public void readRep(Repository repository, long stepId, List<DatabaseMeta> databases,
+                        Map<String, Counter> counters) throws KettleException {
         mappings = new Mappings();
-        String connection = repository.getStepAttributeString(
-                stepId, CONNECTION);
+        String connection = repository.getStepAttributeString(stepId, CONNECTION);
         mappings.setConnection(connection);
-        database = Const.findDatabase(databases, connection);
+        database = DatabaseMeta.findDatabase(databases, connection);
 
-        String idColumn = repository.getStepAttributeString(
-                stepId, ID_COLUMN);
+        String idColumn = repository.getStepAttributeString(stepId, ID_COLUMN);
         mappings.setIdColumn(idColumn);
 
-        mappings.setSkipProcessed(repository.getStepAttributeBoolean(
-                stepId, SKIP_PROCESSED));
+        mappings.setSkipProcessed(repository.getStepAttributeBoolean(stepId, SKIP_PROCESSED));
 
-        mappings.setBatchSize((int) repository.getStepAttributeInteger(
-                stepId, BATCH_SIZE));
+        mappings.setBatchSize((int) repository.getStepAttributeInteger(stepId, BATCH_SIZE));
 
         int count = repository.countNrStepAttributes(stepId, SOURCE);
         for (int i = 0; i < count; ++i) {
-            String source = repository.getStepAttributeString(
-                    stepId, i, SOURCE);
-            String target = repository.getStepAttributeString(
-                    stepId, i, TARGET);
-            String value = repository.getStepAttributeString(
-                    stepId, i, VALUE);
-            boolean excludeNull = repository.getStepAttributeBoolean(
-                    stepId, i, EXCLUDE_NULL);
-            boolean removeDefaultObjects
-                    = repository.getStepAttributeBoolean(
-                    stepId, i, REMOVE_DEFAULT_OBJECTS);
+            String source = repository.getStepAttributeString(stepId, i, SOURCE);
+            String target = repository.getStepAttributeString(stepId, i, TARGET);
+            String value = repository.getStepAttributeString(stepId, i, VALUE);
+            boolean excludeNull = repository.getStepAttributeBoolean(stepId, i, EXCLUDE_NULL);
+            boolean removeDefaultObjects = repository.getStepAttributeBoolean(stepId, i, REMOVE_DEFAULT_OBJECTS);
             Mapping mapping = new Mapping();
             mapping.setSource(source);
             mapping.setTarget(target);
@@ -239,31 +233,19 @@ public class LoaderPluginMeta extends BaseStepMeta
      */
     public void saveRep(Repository repository, long transformationId,
                         long stepId) throws KettleException {
-        repository.saveStepAttribute(transformationId, stepId, CONNECTION,
-                                     mappings.getConnection());
-        repository.saveStepAttribute(transformationId, stepId, ID_COLUMN,
-                                     mappings.getIdColumn());
-
-        repository.saveStepAttribute(transformationId, stepId, SKIP_PROCESSED,
-                                     mappings.getSkipProcessed());
-
-        repository.saveStepAttribute(transformationId, stepId, BATCH_SIZE,
-                                     mappings.getBatchSize());
+        repository.saveStepAttribute(transformationId, stepId, CONNECTION, mappings.getConnection());
+        repository.saveStepAttribute(transformationId, stepId, ID_COLUMN, mappings.getIdColumn());
+        repository.saveStepAttribute(transformationId, stepId, SKIP_PROCESSED, mappings.getSkipProcessed());
+        repository.saveStepAttribute(transformationId, stepId, BATCH_SIZE, mappings.getBatchSize());
 
         for (int i = 0; i < mappings.getMappingCount(); ++i) {
             Mapping mapping = mappings.getMapping(i);
-            repository.saveStepAttribute(transformationId, stepId, i,
-                                         SOURCE, mapping.getSource());
-            repository.saveStepAttribute(transformationId, stepId, i,
-                                         TARGET, mapping.getTarget());
-            repository.saveStepAttribute(transformationId, stepId, i,
-                                         VALUE, mapping.getValue());
-            repository.saveStepAttribute(
-                    transformationId, stepId, i, EXCLUDE_NULL,
-                    mapping.getExcludeNull());
-            repository.saveStepAttribute(
-                    transformationId, stepId, i, REMOVE_DEFAULT_OBJECTS,
-                    mapping.getRemoveDefaultObjects());
+            repository.saveStepAttribute(transformationId, stepId, i, SOURCE, mapping.getSource());
+            repository.saveStepAttribute(transformationId, stepId, i, TARGET, mapping.getTarget());
+            repository.saveStepAttribute(transformationId, stepId, i, VALUE, mapping.getValue());
+            repository.saveStepAttribute(transformationId, stepId, i, EXCLUDE_NULL, mapping.getExcludeNull());
+            repository.saveStepAttribute(transformationId, stepId, i, REMOVE_DEFAULT_OBJECTS,
+                                         mapping.getRemoveDefaultObjects());
         }
     }
 
@@ -278,31 +260,26 @@ public class LoaderPluginMeta extends BaseStepMeta
      * @param info     the fields that are used as information by the step
      */
     @SuppressWarnings({"unchecked", "HardCodedStringLiteral"})
-    public void check(ArrayList remarks, StepMeta stepMeta, Row prev,
-                      String input[], String output[], Row info) {
+    public void check(List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta, RowMetaInterface prev,
+                      String[] input, String[] output, RowMetaInterface info) {
         Thread thread = Thread.currentThread();
         ClassLoader loader = thread.getContextClassLoader();
         try {
-            thread.setContextClassLoader(
-                    LoaderPluginMeta.class.getClassLoader());
+            thread.setContextClassLoader(LoaderPluginMeta.class.getClassLoader());
             if (database == null) {
-                addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                          "LoaderPluginMeta.NoConnection");
+                addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta, "LoaderPluginMeta.NoConnection");
             }
 
             if (prev == null || prev.size() == 0) {
-                addRemark(remarks, CheckResult.TYPE_RESULT_WARNING,
-                          stepMeta, "LoaderPluginMeta.NoFields");
+                addRemark(remarks, CheckResult.TYPE_RESULT_WARNING, stepMeta, "LoaderPluginMeta.NoFields");
             } else {
                 // check mappings
                 String idColumn = mappings.getIdColumn();
                 if (StringUtils.isEmpty(idColumn)) {
-                    addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                              "LoaderPluginMeta.NoId");
+                    addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta, "LoaderPluginMeta.NoId");
                 } else {
-                    if (prev.searchValueIndex(idColumn) == -1) {
-                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
-                                  stepMeta, "LoaderPluginMeta.NoField",
+                    if (prev.searchValueMeta(idColumn) == null) {
+                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta, "LoaderPluginMeta.NoField",
                                   idColumn);
                     }
                 }
@@ -310,16 +287,13 @@ public class LoaderPluginMeta extends BaseStepMeta
                 for (Mapping mapping : mappings.getMapping()) {
                     checkMapping(remarks, mapping, prev, stepMeta, service);
                 }
-                addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
-                          "LoaderPluginMeta.StepConnected", prev.size());
+                addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta, "LoaderPluginMeta.StepConnected", prev.size());
             }
             // See if we have input streams leading to this step
             if (input.length > 0) {
-                addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
-                          "LoaderPluginMeta.StepReceiveInput");
+                addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta, "LoaderPluginMeta.StepReceiveInput");
             } else {
-                addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
-                          "LoaderPluginMeta.StepReceiveNoInput");
+                addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta, "LoaderPluginMeta.StepReceiveNoInput");
             }
         } finally {
             thread.setContextClassLoader(loader);
@@ -337,8 +311,7 @@ public class LoaderPluginMeta extends BaseStepMeta
      */
     public StepDialogInterface getDialog(Shell shell, StepMetaInterface meta,
                                          TransMeta transMeta, String stepname) {
-        return new LoaderPluginDialog(shell, (LoaderPluginMeta) meta,
-                                      transMeta, stepname);
+        return new LoaderPluginDialog(shell, (LoaderPluginMeta) meta, transMeta, stepname);
     }
 
     /**
@@ -417,21 +390,20 @@ public class LoaderPluginMeta extends BaseStepMeta
      *
      * @param remarks  the remarks to add to
      * @param mapping  the mapping to check
+     * @param row      the row
      * @param stepMeta the step meta
      * @param service  the archetype service. May be <tt>null</tt>
      */
-    private void checkMapping(ArrayList remarks, Mapping mapping,
-                              Row row, StepMeta stepMeta,
+    private void checkMapping(List<CheckResultInterface> remarks, Mapping mapping, RowMetaInterface row,
+                              StepMeta stepMeta,
                               IArchetypeService service) {
-        if (row.searchValueIndex(mapping.getSource()) == -1) {
-            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                      "LoaderPluginMeta.NoField",
+        if (row.searchValueMeta(mapping.getSource()) == null) {
+            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta, "LoaderPluginMeta.NoField",
                       mapping.getSource());
         }
         org.openvpms.etl.load.Node node = NodeParser.parse(mapping.getTarget());
         if (node == null) {
-            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                      "LoaderPluginMeta.InvalidMapping",
+            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta, "LoaderPluginMeta.InvalidMapping",
                       mapping.getSource(), mapping.getTarget());
         } else if (service != null) {
             while (node != null) {
@@ -450,57 +422,46 @@ public class LoaderPluginMeta extends BaseStepMeta
      * @param stepMeta the step meta
      * @param service  the archetype service
      */
-    private void checkNode(ArrayList remarks, org.openvpms.etl.load.Node node,
-                           Mapping mapping,
-                           StepMeta stepMeta, IArchetypeService service) {
+    private void checkNode(List<CheckResultInterface> remarks, org.openvpms.etl.load.Node node,
+                           Mapping mapping, StepMeta stepMeta, IArchetypeService service) {
         ArchetypeDescriptor archetype
                 = service.getArchetypeDescriptor(node.getArchetype());
         if (archetype == null) {
-            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                      "LoaderPluginMeta.InvalidArchetype",
+            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta, "LoaderPluginMeta.InvalidArchetype",
                       node.getArchetype(), mapping.getTarget());
         } else {
             NodeDescriptor descriptor = archetype.getNodeDescriptor(
                     node.getName());
             if (descriptor == null) {
-                addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
-                          stepMeta,
-                          "LoaderPluginMeta.InvalidNode",
-                          node.getArchetype(), node.getName(),
-                          mapping.getTarget());
+                addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta, "LoaderPluginMeta.InvalidNode",
+                          node.getArchetype(), node.getName(), mapping.getTarget());
             } else {
                 boolean checkReference = false;
                 if (descriptor.isCollection()) {
                     checkReference = true;
                     if (node.getIndex() < 0) {
                         addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
-                                  stepMeta,
-                                  "LoaderPluginMeta.ExpectedCollection",
-                                  node.getArchetype(), node.getName(),
+                                  stepMeta, "LoaderPluginMeta.ExpectedCollection", node.getArchetype(), node.getName(),
                                   mapping.getTarget());
                     }
                 } else {
                     if (node.getIndex() >= 0) {
-                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
-                                  stepMeta,
+                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
                                   "LoaderPluginMeta.NodeNotCollection",
-                                  node.getArchetype(), node.getName(),
-                                  mapping.getTarget());
+                                  node.getArchetype(), node.getName(), mapping.getTarget());
                     }
                     if (descriptor.isObjectReference()) {
                         checkReference = true;
                     }
                 }
                 if (checkReference &&
-                        !StringUtils.isEmpty(mapping.getValue())) {
+                    !StringUtils.isEmpty(mapping.getValue())) {
                     // replace any instances of $value with 'dummy' in order
                     // to check the reference
                     String ref = LoaderHelper.replaceValue(mapping.getValue(),
                                                            "dummy");  // NON-NLS
                     if (ReferenceParser.parse(ref) == null) {
-                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
-                                  stepMeta,
-                                  "LoaderPluginMeta.InvalidReference",
+                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta, "LoaderPluginMeta.InvalidReference",
                                   mapping.getValue(), mapping.getTarget());
                     }
                 }
@@ -517,11 +478,9 @@ public class LoaderPluginMeta extends BaseStepMeta
      * @param key      the localisation message key
      * @param args     the localisation message args
      */
-    @SuppressWarnings("unchecked")
-    private void addRemark(ArrayList remarks, int type, StepMeta stepMeta,
-                           String key, Object ... args) {
-        CheckResult remark = new CheckResult(type, Messages.get(key, args),
-                                             stepMeta);
+    private void addRemark(List<CheckResultInterface> remarks, int type, StepMeta stepMeta, String key,
+                           Object... args) {
+        CheckResult remark = new CheckResult(type, Messages.get(key, args), stepMeta);
         remarks.add(remark);
     }
 
@@ -534,8 +493,7 @@ public class LoaderPluginMeta extends BaseStepMeta
     private IArchetypeService getService() {
         ApplicationContext context = getContext();
         if (context != null) {
-            return (IArchetypeService) context.getBean(
-                    "archetypeService"); // NON-NLS
+            return (IArchetypeService) context.getBean("archetypeService"); // NON-NLS
         }
         return null;
     }

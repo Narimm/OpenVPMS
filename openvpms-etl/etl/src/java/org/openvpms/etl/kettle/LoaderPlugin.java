@@ -18,25 +18,24 @@
 
 package org.openvpms.etl.kettle;
 
-import be.ibridge.kettle.core.Const;
-import be.ibridge.kettle.core.Row;
-import be.ibridge.kettle.core.exception.KettleException;
-import be.ibridge.kettle.trans.Trans;
-import be.ibridge.kettle.trans.TransMeta;
-import be.ibridge.kettle.trans.step.BaseStep;
-import be.ibridge.kettle.trans.step.StepDataInterface;
-import be.ibridge.kettle.trans.step.StepInterface;
-import be.ibridge.kettle.trans.step.StepMeta;
-import be.ibridge.kettle.trans.step.StepMetaInterface;
-import be.ibridge.kettle.trans.step.StepStatus;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.etl.load.ETLLogDAO;
 import org.openvpms.etl.load.ErrorListener;
+import org.pentaho.di.core.Const;
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.trans.Trans;
+import org.pentaho.di.trans.TransMeta;
+import org.pentaho.di.trans.step.BaseStep;
+import org.pentaho.di.trans.step.StepDataInterface;
+import org.pentaho.di.trans.step.StepInterface;
+import org.pentaho.di.trans.step.StepMeta;
+import org.pentaho.di.trans.step.StepMetaInterface;
+import org.pentaho.di.trans.step.StepStatus;
 import org.springframework.context.ApplicationContext;
 
 import java.util.List;
@@ -98,36 +97,40 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
      *
      * @param stepMeta The metadata to work with
      * @param stepData the temporary working data to work with
-     * @return <tt>false</tt> if no more rows can be processed or an error
-     *         occurred.
+     * @return <tt>false</tt> if no more rows can be processed or an error occurred.
      * @throws KettleException for any error
      */
-    public boolean processRow(StepMetaInterface stepMeta,
-                              StepDataInterface stepData)
-            throws KettleException {
+    public boolean processRow(StepMetaInterface stepMeta, StepDataInterface stepData) throws KettleException {
         boolean result = false;
         metaData = (LoaderPluginMeta) stepMeta;
         data = (LoaderPluginData) stepData;
 
-        Row row = getRow();    // get row, blocks when needed
+        Object[] row = getRow();    // get row, blocks when needed
         if (row != null) {
+            if (first) {
+                first = false;
+                data.setRowMeta(getInputRowMeta().clone());
+            }
+
             ClassLoader prior = setClassLoader();
+
             try {
-                List<IMObject> loaded = loader.load(row);
+                List<IMObject> loaded = loader.load(data.getRowMeta(), row);
                 if (loaded.isEmpty()) {
-                    ++linesSkipped;
+                    incrementLinesSkipped();
                 } else {
                     count += loaded.size();
                 }
             } finally {
                 setClassLoader(prior);
             }
-            putRow(row);
+            putRow(data.getRowMeta(), row);
 
             result = true;
-            if ((linesRead % Const.ROWS_UPDATE) == 0) {
+            long read = getLinesRead();
+            if (checkFeedback(read)) {
                 // log progress
-                logBasic(Messages.get("LoaderPlugin.Processed", linesRead));
+                logBasic(Messages.get("LoaderPlugin.Processed", read));
             }
         } else {
             // no more input to be expected...
@@ -141,12 +144,10 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
      *
      * @param stepMeta the metadata to work with
      * @param stepData the data to initialize
-     * @return <tt>true</tt> if the step is initialised successfully, otherwise
-     *         <tt>false</tt>
+     * @return <tt>true</tt> if the step is initialised successfully, otherwise <tt>false</tt>
      */
     @Override
-    public boolean init(StepMetaInterface stepMeta,
-                        StepDataInterface stepData) {
+    public boolean init(StepMetaInterface stepMeta, StepDataInterface stepData) {
         this.metaData = (LoaderPluginMeta) stepMeta;
         this.data = (LoaderPluginData) stepData;
         return super.init(stepMeta, stepData);
@@ -159,16 +160,14 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
      * @param stepData The data to dispose of
      */
     @Override
-    public void dispose(StepMetaInterface stepMeta,
-                        StepDataInterface stepData) {
+    public void dispose(StepMetaInterface stepMeta, StepDataInterface stepData) {
         metaData = (LoaderPluginMeta) stepMeta;
         data = (LoaderPluginData) stepData;
 
         try {
             closeLoader();
         } catch (Throwable exception) {
-            logError(Messages.get("LoaderPlugin.UnexpectedError",
-                                  exception.getMessage()));
+            logError(Messages.get("LoaderPlugin.UnexpectedError", exception.getMessage()));
             logError(Const.getStackTracker(exception));
         }
 
@@ -189,8 +188,7 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
             }
             closeLoader();
         } catch (Throwable exception) {
-            logError(Messages.get("LoaderPlugin.UnexpectedError",
-                                  exception.getMessage()));
+            logError(Messages.get("LoaderPlugin.UnexpectedError", exception.getMessage()));
             logError(Const.getStackTracker(exception));
             setErrors(1);
             stopAll();
@@ -203,8 +201,7 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
                 speed = Math.floor(10 * (count / lapsed)) / 10;
             }
 
-            logBasic(Messages.get("LoaderPlugin.Finished",
-                                  status.getLinesRead(), status.getSeconds(),
+            logBasic(Messages.get("LoaderPlugin.Finished", status.getLinesRead(), status.getSeconds(),
                                   status.getSpeed(), count, speed));
             markStop();
         }
@@ -220,28 +217,20 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
         if (loader == null) {
             ApplicationContext context = data.getContext();
             if (context == null) {
-                throw new KettleException(
-                        Messages.get("LoaderPlugin.NoContext"));
+                throw new KettleException(Messages.get("LoaderPlugin.NoContext"));
             }
             ETLLogDAO dao = (ETLLogDAO) context.getBean("ETLLogDAO"); // NON-NLS
-            IArchetypeService service
-                    = (IArchetypeService) context.getBean(
-                    "archetypeService"); // NON-NLS
-            loader = new LoaderAdapter(getStepname(),
-                                       metaData.getMappings(),
-                                       dao, service);
+            IArchetypeService service = (IArchetypeService) context.getBean("archetypeService"); // NON-NLS
+            loader = new LoaderAdapter(getStepname(), metaData.getMappings(), dao, service);
             loader.setErrorListener(new ErrorListener() {
-                public void error(String legacyId, String message,
-                                  Throwable exception) {
-                    String msg = Messages.get("LoaderPlugin.FailedToProcessRow",
-                                              legacyId, message);
+                public void error(String legacyId, String message, Throwable exception) {
+                    String msg = Messages.get("LoaderPlugin.FailedToProcessRow", legacyId, message);
                     logBasic(msg);
                     log.error(msg, exception);
                 }
 
                 public void error(String message, Throwable exception) {
-                    String msg = Messages.get("LoaderPlugin.FailedToProcess",
-                                              message);
+                    String msg = Messages.get("LoaderPlugin.FailedToProcess", message);
                     logBasic(msg);
                     log.error(msg, exception);
                 }

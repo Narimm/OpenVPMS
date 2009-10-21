@@ -18,10 +18,10 @@
 
 package org.openvpms.etl.kettle;
 
-import be.ibridge.kettle.core.LogWriter;
-import be.ibridge.kettle.core.database.DatabaseMeta;
-import be.ibridge.kettle.core.exception.KettleException;
 import org.apache.commons.lang.ObjectUtils;
+import org.pentaho.di.core.database.DatabaseMeta;
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.logging.LogWriter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -71,14 +71,13 @@ public class ApplicationContextMgr {
      * @throws KettleException for any kettle error
      * @throws BeansException  for any Spring error
      */
-    public static synchronized ApplicationContext getContext(
-            DatabaseMeta database) throws KettleException {
+    public static synchronized ApplicationContext getContext(DatabaseMeta database) throws KettleException {
         if (context == null || !ObjectUtils.equals(db, database)) {
             if (context != null) {
                 context.close();
             }
             log.println(LogWriter.LOG_LEVEL_BASIC,
-                        Messages.get("ApplicationContextMgr.BeginInit", 
+                        Messages.get("ApplicationContextMgr.BeginInit",
                                      database.getURL()));
             Thread thread = Thread.currentThread();
             ClassLoader loader = thread.getContextClassLoader();
@@ -102,7 +101,8 @@ public class ApplicationContextMgr {
      *
      * @param database the database properties
      * @return a new application context
-     * @throws BeansException for any error
+     * @throws BeansException for any spring error
+     * @throws KettleException for any kettle errror
      */
     private static ConfigurableApplicationContext load(DatabaseMeta database)
             throws KettleException {
