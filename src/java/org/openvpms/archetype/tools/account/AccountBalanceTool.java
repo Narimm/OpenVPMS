@@ -98,8 +98,7 @@ public class AccountBalanceTool {
      * The short names to query.
      */
     private static final String[] SHORT_NAMES = new String[]{
-            CustomerArchetypes.PERSON, CustomerArchetypes.ORGANISATION,
-            CustomerArchetypes.OTC};
+            CustomerArchetypes.PERSON, CustomerArchetypes.OTC};
 
 
     /**
@@ -311,6 +310,7 @@ public class AccountBalanceTool {
      * query.
      *
      * @param query the query
+     * @return <tt>true</tt> if the account balances are correct otherwise <tt>false</tt>
      */
     private boolean check(ArchetypeQuery query) {
         boolean result = true;
@@ -416,6 +416,8 @@ public class AccountBalanceTool {
 
     /**
      * Prints usage information.
+     *
+     * @param parser the command line parser
      */
     private static void displayUsage(JSAP parser) {
         System.err.println();

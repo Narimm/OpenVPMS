@@ -62,7 +62,7 @@
     <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C5" target="id:A7"  />
 </data>
 <data id="A7" archetype="party.patientpet" name="Bozo" species="CANINE" breed="GERMAN_SHEPHERD_DOG" colour="Black" sex="FEMALE" dateOfBirth="01/01/1993" desexed="False" deceased="False" active="True" />
-<data id="C6" archetype="party.customerorganisation" name="Kiora Park Stud" >
+<data id="C6" archetype="party.customerperson" title="MR" firstName="Jim" lastName="Smith" companyName="Kiora Park Stud" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="52341123" preferred="True"  />
     <data collection="contacts" archetype="contact.location" address="Lot 36 Brocks Road" suburb="DOREEN_3754" state="VIC" postcode="3754" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
@@ -70,7 +70,7 @@
     <data collection="patients" archetype="entityRelationship.patientLocation" source="id:C6" target="id:A8"  />
 </data>
 <data id="A8" archetype="party.patientpet" name="False Start ( 890-56)" species="EQUINE" breed="THOROUGHBRED" colour="Brown" sex="FEMALE" dateOfBirth="01/01/1986" desexed="False" deceased="False" active="True" />
-<data id="C7" archetype="party.customerorganisation" name="Strathmore Gallopers Stud" >
+<data id="C7" archetype="party.customerperson" firstName="Kathy" lastName="Nguyen" companyName="Strathmore Gallopers Stud" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9876 5678" preferred="True"  />
     <data collection="contacts" archetype="contact.location" address="Cherry Drive" suburb="STRATHMORE_3041" state="VIC" postcode="3041" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
@@ -80,7 +80,7 @@
 </data>
 <data id="A9" archetype="party.patientpet" name="Tuxedo" species="EQUINE" breed="THOROUGHBRED" colour="Chestnut" sex="MALE" dateOfBirth="01/01/1987" desexed="True" deceased="False" active="True" />
 <data id="A10" archetype="party.patientpet" name="Wishful Thinking" species="EQUINE" breed="ARAB" colour="Chestnut" sex="MALE" dateOfBirth="01/01/1970" desexed="True" deceased="False" active="True" />
-<data id="C8" archetype="party.customerorganisation" name="Williams Way Stud" >
+<data id="C8" archetype="party.customerperson" firstName="Joe" lastName="Bloggs" companyName="Williams Way Stud" >
     <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9712 0965" preferred="True"  />
     <data collection="contacts" archetype="contact.location" address="Pretty Lane" suburb="KANGAROO_GROUND_3097" state="VIC" postcode="3097" preferred="True"  />
     <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
@@ -114,7 +114,7 @@
 <data id="A14" archetype="party.patientpet" name="Libby" species="CANINE" breed="GERMAN_SHEPHERD_DOG" colour="Sable" sex="FEMALE" dateOfBirth="01/01/1986" desexed="True" deceased="False" active="True" >
 </data>
 <data archetype="entityRelationship.patientOwner" source="id:C10" target="id:A14"  />
-<data id="C11" archetype="party.customerorganisation" name="Gainsway Stud" >
+<data id="C11" archetype="party.customerperson" firstName="Kim" lastName="Gainsway" companyName="Gainsway Stud" >
 <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9716 4329" preferred="True"  />
 <data collection="contacts" archetype="contact.location" address="Lot 21 Plenty Road" suburb="WHITTLESEA_3757" state="VIC" postcode="3757" preferred="True"  />
 <data collection="classifications" archetype="lookup.customerAccountType" childId="id:Normal"  />
