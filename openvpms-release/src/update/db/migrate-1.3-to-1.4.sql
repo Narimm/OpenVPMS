@@ -26,6 +26,8 @@ where n.archetype_desc_id = a.archetype_desc_id and a.name = "lookup.paymentType
 #
 # Migrate party.customerorganisation to party.customerperson as per ARCH-16
 #
+begin;
+
 insert into entity_details (entity_id, type, value, name)
 select entity_id, "string", name, "companyName"
 from entities
@@ -38,6 +40,8 @@ where arch_short_name = "party.customerorganisation";
 
 update entities set arch_short_name = "party.customerperson"
 where arch_short_name = "party.customerorganisation";
+
+commit;
 
 # remove party.customerorganisation archetype
 delete d
