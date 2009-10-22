@@ -24,16 +24,15 @@
               derivedValue="'Phone Number'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat('(',/details/areaCode,') ', /details/telephoneNumber, ' ',party:getContactPurposes())"/>
-
+              derivedValue="concat(substring(concat('(', /details/areaCode, ') '), 0, string-length(/details/areaCode) * (string-length(/details/areaCode) + 4)), /details/telephoneNumber, ' ',party:getContactPurposes())"/>
         <node name="areaCode" path="/details/areaCode"
               type="java.lang.String" minCardinality="0" maxLength="6">
         </node>
         <node name="telephoneNumber" path="/details/telephoneNumber"
               type="java.lang.String" minCardinality="0" maxLength="30">
         </node>
-        <node name="preferred" path="/details/preferred"
-              type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="preferred" path="/details/preferred" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="sms" displayName="Allow SMS" path="/details/sms" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="startDate" path="/activeStartTime"
               type="java.util.Date" minCardinality="1" hidden="true" defaultValue="java.util.Date.new()"/>
         <node name="endDate" path="/activeEndTime"

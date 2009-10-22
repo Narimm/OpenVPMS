@@ -65,10 +65,6 @@
                         <property name="shortName"
                                   value="contact.faxNumber"/>
                     </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.mobileNumber"/>
-                    </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
