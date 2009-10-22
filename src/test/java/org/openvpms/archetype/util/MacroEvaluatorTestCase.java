@@ -59,7 +59,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
         assertEquals("test macro 1 text onetwothree endtest", text3);
 
         Object text4 = macros.evaluate("displayName", person);
-        assertEquals("Customer(Person)", text4);
+        assertEquals("Customer", text4);
     }
 
     /**
