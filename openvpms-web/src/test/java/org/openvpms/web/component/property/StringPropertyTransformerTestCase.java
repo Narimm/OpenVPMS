@@ -99,7 +99,7 @@ public class StringPropertyTransformerTestCase
         assertEquals("macro 1 text onetwothree", text3);
 
         Object text4 = handler.apply("displayName");
-        assertEquals("Customer(Person)", text4);
+        assertEquals("Customer", text4);
 
         // verifies that invalid macros don't expand
         Object text5 = handler.apply("invalidNode");
