@@ -391,8 +391,7 @@ public class ReminderRules {
     }
 
     /**
-     * Returns the first phone contact (either an <em>contact.phoneNumber</em> or <em>contact.mobileNumber</em>)
-     * with classification 'REMINDER' or
+     * Returns the first phone contact with classification 'REMINDER' or
      * the preferred phone contact if no contact has this classification.
      *
      * @param contacts the contacts
@@ -400,7 +399,7 @@ public class ReminderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getPhoneContact(Set<Contact> contacts) {
-        return getContact(contacts, false, ContactArchetypes.PHONE, ContactArchetypes.MOBILE);
+        return getContact(contacts, false, ContactArchetypes.PHONE);
     }
 
     /**
