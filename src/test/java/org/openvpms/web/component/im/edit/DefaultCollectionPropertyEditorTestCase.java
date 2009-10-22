@@ -54,11 +54,10 @@ public class DefaultCollectionPropertyEditorTestCase
         CollectionProperty property = getCollectionProperty(parent);
         CollectionPropertyEditor editor = createEditor(property, parent);
         String[] range = editor.getArchetypeRange();
-        assertEquals(5, range.length);
+        assertEquals(4, range.length);
         Set<String> set = new HashSet<String>(Arrays.asList(range));
         assertTrue(set.contains(ContactArchetypes.LOCATION));
         assertTrue(set.contains(ContactArchetypes.PHONE));
-        assertTrue(set.contains(ContactArchetypes.MOBILE));
         assertTrue(set.contains(ContactArchetypes.EMAIL));
         assertTrue(set.contains(ContactArchetypes.FAX));
     }
