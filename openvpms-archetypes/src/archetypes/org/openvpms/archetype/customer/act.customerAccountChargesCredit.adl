@@ -29,10 +29,18 @@
               type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" readOnly="true"/>
         <node name="amount" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-              defaultValue="'0.0'" readOnly="true"/>
+              defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="tax" path="/taxAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-              defaultValue="'0.0'" readOnly="true"/>
+              defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="allocatedAmount" path="/allocatedAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" hidden="true"/>
