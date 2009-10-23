@@ -648,8 +648,14 @@ public class NodeDescriptor extends Descriptor {
      * @return Returns the displayName.
      */
     public String getDisplayName() {
-        return StringUtils.isEmpty(displayName) ? StringUtilities.unCamelCase(getName())
-                : displayName;
+        String result = displayName;
+        if (StringUtils.isEmpty(result)) {
+            String name = getName();
+            if (name != null) {
+               result = StringUtilities.unCamelCase(name);
+            }
+        }
+        return result;
     }
 
     /**
@@ -880,7 +886,6 @@ public class NodeDescriptor extends Descriptor {
     public boolean isBoolean() {
         Class aclass = getClazz();
         return (Boolean.class == aclass) || (boolean.class == aclass);
-
     }
 
     /**
