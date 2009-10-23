@@ -26,7 +26,6 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -85,6 +84,11 @@ public class ArchetypeService implements IArchetypeService {
             = new HashMap<String, List<IArchetypeServiceListener>>();
 
     /**
+     * The object factory.
+     */
+    private final IMObjectFactory factory;
+
+    /**
      * The validator.
      */
     private final IMObjectValidator validator;
@@ -97,6 +101,7 @@ public class ArchetypeService implements IArchetypeService {
      */
     public ArchetypeService(IArchetypeDescriptorCache cache) {
         dCache = cache;
+        factory = new ObjectFactory();
         validator = new IMObjectValidator(cache);
     }
 
@@ -179,16 +184,9 @@ public class ArchetypeService implements IArchetypeService {
      */
     public IMObject create(ArchetypeId id) {
         if (log.isDebugEnabled()) {
-            log.debug("ArchetypeService.create: Creating object of type "
-                      + id.getShortName());
+            log.debug("ArchetypeService.create: Creating object of type " + id.getShortName());
         }
-
-        ArchetypeDescriptor desc = dCache.getArchetypeDescriptor(id);
-        if (desc != null) {
-            return create(desc);
-        } else {
-            return null;
-        }
+        return factory.create(id);
     }
 
     /*
@@ -201,13 +199,7 @@ public class ArchetypeService implements IArchetypeService {
             log.debug("ArchetypeService.create: Creating object of type "
                       + name);
         }
-
-        ArchetypeDescriptor desc = dCache.getArchetypeDescriptor(name);
-        if (desc != null) {
-            return create(desc);
-        } else {
-            return null;
-        }
+        return factory.create(name);
     }
 
     /*
@@ -701,122 +693,6 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /**
-     * This method will create a default object using the specified archetype
-     * descriptor. Fundamentally, it will set the default value when specified
-     * and it will also create an object through a default constructur if a
-     * cardinality constraint is specified.
-     *
-     * @param descriptor the archetype descriptor
-     * @return IMObject
-     * @throws ArchetypeServiceException if it failed to create the object
-     */
-    private IMObject create(ArchetypeDescriptor descriptor) {
-        IMObject imobj;
-        try {
-            Class domainClass = Thread.currentThread().getContextClassLoader()
-                    .loadClass(descriptor.getClassName());
-            if (!IMObject.class.isAssignableFrom(domainClass)) {
-                throw new ArchetypeServiceException(
-                        ArchetypeServiceException.ErrorCode.InvalidDomainClass,
-                        descriptor.getClassName());
-            }
-
-            imobj = (IMObject) domainClass.newInstance();
-            imobj.setArchetypeId(descriptor.getType());
-
-            // first create a JXPath context and use it to process the nodes
-            // in the archetype
-            JXPathContext context = JXPathHelper.newContext(imobj);
-            context.setFactory(new JXPathGenericObjectCreationFactory());
-            create(context, descriptor.getNodeDescriptors());
-        } catch (Exception exception) {
-            // rethrow as a runtime exception
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.FailedToCreateObject,
-                    exception, descriptor.getType().getShortName());
-        }
-
-        return imobj;
-    }
-
-    /**
-     * Iterate through all the nodes in the archetype definition and create the
-     * default object.
-     *
-     * @param context the JXPath
-     * @param nodes   the node descriptors for the archetype
-     * @throws ArchetypeServiceException if the create fails
-     */
-    private void create(JXPathContext context,
-                        Map<String, NodeDescriptor> nodes) {
-        for (NodeDescriptor node : nodes.values()) {
-
-            // only create a node if it is a collection, or it has child nodes,
-            // or it has a default value
-            if (node.isCollection() || node.getNodeDescriptorCount() > 0
-                || !StringUtils.isEmpty(node.getDefaultValue())) {
-                create(context, node);
-            }
-
-            for (AssertionDescriptor assertion : node.getAssertionDescriptorsAsArray()) {
-                try {
-                    assertion.create(context.getContextBean(), node);
-                } catch (Exception exception) {
-                    throw new ArchetypeServiceException(
-                            ArchetypeServiceException.ErrorCode.FailedToExecuteCreateFunction,
-                            exception, assertion.getName());
-                }
-            }
-
-            // if this node has children then process them recursively
-            if (node.getNodeDescriptors().size() > 0) {
-                create(context, node.getNodeDescriptors());
-            }
-        }
-    }
-
-    /**
-     * Creates a node in the context, populating any default value.
-     *
-     * @param context the jxpath context
-     * @param node    the node to create
-     * @throws ArchetypeServiceException if the create fails
-     */
-    private void create(JXPathContext context, NodeDescriptor node) {
-        if (log.isDebugEnabled()) {
-            log.debug("Attempting to create path " + node.getPath()
-                      + " for node " + node.getName());
-        }
-
-        context.getVariables().declareVariable("node", node);
-        context.createPath(node.getPath());
-
-        String expression = node.getDefaultValue();
-        if (!StringUtils.isEmpty(expression)) {
-            if (log.isDebugEnabled()) {
-                log.debug("evaluating default value expression for node "
-                          + node.getName() + " path " + node.getPath()
-                          + " and expression " + expression);
-            }
-            Object value = context.getValue(expression);
-            IMObject object = (IMObject) context.getContextBean();
-            if (node.isCollection()) {
-                if (value != null) {
-                    if (Collection.class.isAssignableFrom(value.getClass())) {
-                        for (Object v : (Collection) value) {
-                            node.addChildToCollection(object, v);
-                        }
-                    } else {
-                        node.addChildToCollection(object, value);
-                    }
-                }
-            } else {
-                node.setValue(object, value);
-            }
-        }
-    }
-
-    /**
      * Updates the descriptor cache. If a transaction is in progress, the
      * cache will only be updated on transaction commit. This means that the
      * descriptor will only be available via the <em>get*Descriptor</em> methods
@@ -940,6 +816,17 @@ public class ArchetypeService implements IArchetypeService {
                     notifier.notifyRemoved(object, list);
                 }
             }
+        }
+    }
+
+    private class ObjectFactory extends AbstractIMObjectFactory {
+
+        protected ArchetypeDescriptor getArchetypeDescriptor(String shortName) {
+            return dCache.getArchetypeDescriptor(shortName);
+        }
+
+        protected ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id) {
+            return dCache.getArchetypeDescriptor(id);
         }
     }
 
