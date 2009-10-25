@@ -56,6 +56,22 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
+        <node displayName="Preferred Vet" name="preferredVet" path="/details/preferredVet" type="java.lang.String"
+              minCardinality="0" maxLength="20">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.customerVet"/>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
+        </node>
+        <node displayName="Insurance Plan" name="insurancePlan" path="/details/insurancePlan" type="java.lang.String"
+              minCardinality="0" maxLength="20">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.customerInsurance"/>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
+        </node>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="createdDate" path="/details/createdDate" type="java.util.Date"
               minCardinality="0" defaultValue="java.util.Date.new()" hidden="true"/>
