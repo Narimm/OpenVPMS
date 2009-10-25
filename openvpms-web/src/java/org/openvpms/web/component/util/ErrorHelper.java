@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: ErrorHelper.java 3317 2009-04-16 04:23:11Z tanderson $
  */
 
 package org.openvpms.web.component.util;
@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.error.ErrorReportingDialog;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -39,7 +40,7 @@ import java.util.List;
  * Helper for displaying and logging errors.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2009-04-16 14:23:11 +1000 (Thu, 16 Apr 2009) $
  */
 public class ErrorHelper {
 
@@ -155,7 +156,7 @@ public class ErrorHelper {
         String message = getError(error);
         log.error(message, error);
         if (!inError()) {
-            ErrorDialog.show(message);
+            ErrorReportingDialog.show(message, error);
         }
     }
 
@@ -186,7 +187,7 @@ public class ErrorHelper {
     public static void show(Throwable error, WindowPaneListener listener) {
         String message = getError(error);
         log.error(message, error);
-        ErrorDialog dialog = new ErrorDialog(message);
+        ErrorDialog dialog = new ErrorReportingDialog(message, error);
         dialog.addWindowPaneListener(listener);
         dialog.show();
     }
@@ -296,5 +297,4 @@ public class ErrorHelper {
         }
         return false;
     }
-
 }
