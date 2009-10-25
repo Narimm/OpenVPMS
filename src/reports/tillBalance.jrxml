@@ -47,7 +47,7 @@
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<variable name="TILL_TOTAL" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
-		<variableExpression><![CDATA[$F{amount}]]></variableExpression>
+		<variableExpression><![CDATA[$F{item.displayName}.equals("Credit") ? new BigDecimal("0.00"): $F{amount}]]></variableExpression>
 	</variable>
 	<variable name="isCash" class="java.lang.Boolean" resetType="None" calculation="Nothing">
 		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("Cash"))]]></variableExpression>
@@ -414,6 +414,7 @@
 		</columnHeader>
 		<detail>
 			<band height="17"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[new Boolean(!$F{item.displayName}.equals("Credit"))]]></printWhenExpression>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="78"
