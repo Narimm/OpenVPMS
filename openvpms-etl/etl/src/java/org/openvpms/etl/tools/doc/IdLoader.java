@@ -56,10 +56,10 @@ import java.util.regex.Pattern;
 class IdLoader extends AbstractLoader {
 
     /**
-     * The default regular expression for extract act ids from file names.
+     * The default regular expression for extracting act ids from file names.
      */
     public static final String DEFAULT_REGEXP = "[^\\d]*(\\d+).*";
-    
+
     /**
      * The document act short names.
      */
@@ -202,12 +202,9 @@ class IdLoader extends AbstractLoader {
         boolean result = false;
         try {
             String mimeType = getMimeType(file);
-            act.setMimeType(mimeType);
-            act.setFileName(file.getName());
-            act.setStatus(ActStatus.COMPLETED);
             Document doc = createDocument(file, mimeType);
-            act.setDocument(doc.getObjectReference());
-            save(act, doc);
+            act.setStatus(ActStatus.COMPLETED);
+            addDocument(act, doc);
             notifyLoaded(file);
             result = true;
         } catch (Exception exception) {

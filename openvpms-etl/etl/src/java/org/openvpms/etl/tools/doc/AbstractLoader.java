@@ -18,12 +18,14 @@
 
 package org.openvpms.etl.tools.doc;
 
+import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -49,6 +51,10 @@ abstract class AbstractLoader implements Loader {
      */
     private LoaderListener listener;
 
+    /**
+     * The document rules.
+     */
+    private final DocumentRules rules;
 
     /**
      * Creates a new <tt>AbstractLoader</tt>.
@@ -60,6 +66,7 @@ abstract class AbstractLoader implements Loader {
                           DocumentFactory factory) {
         this.service = service;
         this.factory = factory;
+        this.rules = new DocumentRules(service);
     }
 
     /**
@@ -92,13 +99,16 @@ abstract class AbstractLoader implements Loader {
     }
 
     /**
-     * Helper to save a document and document act via the archetype service.
+     * Adds a document to a document act, and saves it.
      *
-     * @param act      the document act
-     * @param document the associated document
+     * @param act      the act
+     * @param document the document to add
+     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
+     *          for any archetype service error
      */
-    protected void save(DocumentAct act, Document document) {
-        service.save(Arrays.asList(act, document));
+    protected void addDocument(DocumentAct act, Document document) {
+        List<IMObject> objects = rules.addDocument(act, document);
+        service.save(objects);
     }
 
     /**

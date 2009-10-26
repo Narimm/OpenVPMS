@@ -107,12 +107,9 @@ class NameLoader extends AbstractLoader {
         DocumentAct act = getDocumentAct(ref);
         if (act != null) {
             File file = new File(dir, act.getFileName());
-            Document doc;
             try {
-                doc = createDocument(file, act.getMimeType());
-                act.setDocument(doc.getObjectReference());
-                act.setMimeType(doc.getMimeType());
-                save(act, doc);
+                Document doc = createDocument(file, act.getMimeType());
+                addDocument(act, doc);
                 notifyLoaded(file);
             } catch (Throwable exception) {
                 notifyError(file, exception);
@@ -149,7 +146,7 @@ class NameLoader extends AbstractLoader {
             log.info("Querying archetypes: " + buff);
         }
         List<IMObjectReference> refs = new ArrayList<IMObjectReference>();
-        query.add(new NodeConstraint("docReference", RelationalOp.IsNULL));
+        query.add(new NodeConstraint("document", RelationalOp.IsNULL));
         query.setMaxResults(1000);
         List<String> nodes = Arrays.asList("fileName");
         Iterator<NodeSet> iter = new NodeSetQueryIterator(query, nodes);
@@ -177,7 +174,7 @@ class NameLoader extends AbstractLoader {
     }
 
     /**
-     * Returns all document act short names with a docReference node.
+     * Returns all document act short names with a document node.
      *
      * @return a list of short names
      */
@@ -186,11 +183,11 @@ class NameLoader extends AbstractLoader {
         for (ArchetypeDescriptor archetype
                 : getService().getArchetypeDescriptors()) {
             if (DocumentAct.class.getName().equals(archetype.getClassName())
-                    && archetype.getNodeDescriptor("docReference") != null) {
+                && archetype.getNodeDescriptor("document") != null) {
                 result.add(archetype.getType().getShortName());
             }
         }
-        return result.toArray(new String[0]);
+        return result.toArray(new String[result.size()]);
     }
 
 }
