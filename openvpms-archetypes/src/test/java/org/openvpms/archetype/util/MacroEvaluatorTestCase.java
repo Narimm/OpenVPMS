@@ -42,6 +42,15 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
      */
     MacroEvaluator macros;
 
+    /**
+     * The first macro.
+     */
+    private Lookup macro1;
+
+    /**
+     * The second macro.
+     */
+    private Lookup macro2;
 
     /**
      * Tests {@link MacroEvaluator#evaluate(String, Object)}.
@@ -69,7 +78,6 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
         Party person = TestHelper.createCustomer();
         Object text = macros.evaluate("exceptionMacro", person);
         assertEquals("exceptionMacro", text);
-
     }
 
     /**
@@ -113,6 +121,35 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that inactive macros aren't picked up.
+     */
+    public void testDeactivateMacro() {
+        Party person = TestHelper.createCustomer();
+        Object text = macros.evaluate("macro1", person);
+        assertEquals("macro 1 text", text);
+
+        macro1.setActive(false);
+        save(macro1);
+
+        text = macros.evaluate("macro1", person);
+        assertEquals("macro1", text);
+    }
+
+    /**
+     * Verifies that deleted macros aren't picked up.
+     */
+    public void testDeleteMacro() {
+        Party person = TestHelper.createCustomer();
+        Object text2 = macros.evaluate("macro2", person);
+        assertEquals("onetwothree", text2);
+
+        remove(macro2);
+
+        text2 = macros.evaluate("macro2", person);
+        assertEquals("macro2", text2);
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -120,8 +157,8 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        createMacro("macro1", "'macro 1 text'");
-        createMacro("macro2", "concat('one', 'two', 'three')");
+        macro1 = createMacro("macro1", "'macro 1 text'");
+        macro2 = createMacro("macro2", "concat('one', 'two', 'three')");
         createMacro("displayName", "openvpms:get(., 'displayName')");
         createMacro("exceptionMacro", "openvpms:get(., 'invalidnode')");
         createMacro("nested", "concat('nested test: ', $macro1)");
@@ -134,8 +171,9 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
      *
      * @param code       the macro code
      * @param expression the macro expression
+     * @return the macro
      */
-    private void createMacro(String code, String expression) {
+    private Lookup createMacro(String code, String expression) {
         deleteExisting(code);
         Lookup macro = (Lookup) create("lookup.macro");
         IMObjectBean bean = new IMObjectBean(macro);
@@ -143,6 +181,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
         bean.setValue("name", code);
         bean.setValue("expression", expression);
         bean.save();
+        return macro;
     }
 
     /**
