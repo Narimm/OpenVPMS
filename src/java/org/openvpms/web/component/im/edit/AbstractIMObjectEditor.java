@@ -42,7 +42,6 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
@@ -185,11 +184,11 @@ public abstract class AbstractIMObjectEditor
         IMObjectLayoutStrategyFactory strategyFactory
                 = context.getLayoutStrategyFactory();
         if (strategyFactory == null
-                || strategyFactory instanceof ViewLayoutStrategyFactory) {
+            || strategyFactory instanceof ViewLayoutStrategyFactory) {
             context.setLayoutStrategyFactory(new EditLayoutStrategyFactory());
         }
 
-        archetype = DescriptorHelper.getArchetypeDescriptor(object);
+        archetype = context.getArchetypeDescriptor(object);
         properties = new PropertySet(object, archetype);
         IMObjectComponentFactory factory = new ComponentFactory(context);
         context.setComponentFactory(factory);
@@ -328,7 +327,7 @@ public abstract class AbstractIMObjectEditor
      */
     public boolean isModified() {
         return editors.isModified() || properties.isModified()
-                || getObject().isNew() || (active != object.isActive());
+               || getObject().isNew() || (active != object.isActive());
     }
 
     /**
@@ -545,14 +544,8 @@ public abstract class AbstractIMObjectEditor
      * @return <tt>true</tt> if the delete was successfule
      */
     protected boolean deleteObject() {
-        boolean result;
         IMObject object = getObject();
-        if (object.isNew()) {
-            result = true;
-        } else {
-            result = SaveHelper.delete(object);
-        }
-        return result;
+        return object.isNew() || SaveHelper.delete(object);
     }
 
     /**

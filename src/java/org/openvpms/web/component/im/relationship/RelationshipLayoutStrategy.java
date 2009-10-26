@@ -101,8 +101,7 @@ public class RelationshipLayoutStrategy implements IMObjectLayoutStrategy {
                         = context.getLayoutStrategyFactory();
                 IMObjectLayoutStrategy strategy
                         = factory.create(entity, object);
-                result = strategy.apply(entity, new PropertySet(entity), object,
-                                        context);
+                result = strategy.apply(entity, new PropertySet(entity, context), object, context);
             } else {
                 result = new ComponentState(LabelFactory.create());
             }
@@ -119,8 +118,8 @@ public class RelationshipLayoutStrategy implements IMObjectLayoutStrategy {
      * relationship is used.
      *
      * @param relationship the relationship
-     * @return the "non-current" object of the relationship.
-     *         May be <tt>null</tt>
+     * @param context      the layout context
+     * @return the "non-current" object of the relationship. May be <tt>null</tt>
      */
     public static IMObjectReference getObject(IMObjectRelationship relationship,
                                               LayoutContext context) {
@@ -132,10 +131,10 @@ public class RelationshipLayoutStrategy implements IMObjectLayoutStrategy {
             IMObjectReference ref = current.getObjectReference();
 
             if (relationship.getSource() != null
-                    && ref.equals(relationship.getSource())) {
+                && ref.equals(relationship.getSource())) {
                 result = relationship.getTarget();
             } else if (relationship.getTarget() != null
-                    && ref.equals(relationship.getTarget())) {
+                       && ref.equals(relationship.getTarget())) {
                 result = relationship.getSource();
             } else {
                 result = relationship.getTarget();

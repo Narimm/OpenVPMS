@@ -39,6 +39,8 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -144,6 +146,16 @@ public class ArchetypeCRUDWindow
         if (updateDerived || updateAssertions) {
             confirmUpdateNodes(Arrays.asList(change));
         }
+    }
+
+    /**
+     * Creates a new edit dialog.
+     *
+     * @param editor the editor
+     */
+    @Override
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        return new ArchetypeEditDialog(editor);
     }
 
     /**

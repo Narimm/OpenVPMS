@@ -119,8 +119,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected void doLayout(IMObject object, PropertySet properties,
                             Component container, LayoutContext context) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(object);
+        ArchetypeDescriptor archetype = context.getArchetypeDescriptor(object);
         List<NodeDescriptor> simple = getSimpleNodes(archetype);
         List<NodeDescriptor> complex = getComplexNodes(archetype);
 
@@ -218,6 +217,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param context the context
      * @param filter  the node filter
+     * @return a new chained node filter
      */
     protected ChainedNodeFilter getNodeFilter(LayoutContext context,
                                               NodeFilter filter) {
@@ -253,8 +253,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                 LayoutContext context) {
         ComponentSet set = createComponentSet(object, descriptors, properties,
                                               context);
-        ComponentState[] states =
-                set.getComponents().toArray(new ComponentState[0]);
+        ComponentState[] states = set.getComponents().toArray(new ComponentState[set.getComponents().size()]);
         Component[] components = new Component[states.length];
         String[] labels = new String[states.length];
         for (int i = 0; i < states.length; ++i) {
@@ -317,6 +316,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param object      the parent object
      * @param descriptors the property descriptors
      * @param properties  the properties
+     * @param container   the container
      * @param context     the layout context
      * @return the tab model
      */
@@ -449,7 +449,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected Grid createGrid(List<NodeDescriptor> descriptors) {
         return (descriptors.size() <= 4) ? GridFactory.create(2)
-                : GridFactory.create(4);
+                                         : GridFactory.create(4);
     }
 
     /**
@@ -523,7 +523,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * Returns a shortcut for a tab.
      * Shortcuts no.s must be from 1..10, and will be displayed as '1..9, 0'.
      *
-     * @param name
+     * @param name     the tab name
      * @param shortcut the shortcut no.
      * @return the shortcut text
      */

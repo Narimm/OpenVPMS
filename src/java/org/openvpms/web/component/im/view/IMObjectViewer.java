@@ -76,7 +76,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
     public IMObjectViewer(IMObject object, IMObject parent,
                           IMObjectLayoutStrategy layout,
                           LayoutContext context) {
-        super(object, new PropertySet(object), parent, layout);
+        super(object, new PropertySet(object, context), parent, layout);
         if (context == null) {
             this.context = new DefaultLayoutContext();
         } else {
