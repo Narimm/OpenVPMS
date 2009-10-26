@@ -18,7 +18,9 @@
 
 package org.openvpms.archetype.util;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -46,14 +48,14 @@ public class MacroCache {
     private Map<String, String> macros = new HashMap<String, String>();
 
     /**
-     * The lookup service.
-     */
-    private final ILookupService service;
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService archetypeService;
+
+    /**
+     * Lookup macro archetype short name.
+     */
+    private static final String LOOKUP_MACRO = "lookup.macro";
 
 
     /**
@@ -75,9 +77,23 @@ public class MacroCache {
      */
     public MacroCache(ILookupService service,
                       IArchetypeService archetypeService) {
-        this.service = service;
         this.archetypeService = archetypeService;
-        refresh();
+
+        Collection<Lookup> lookups = service.getLookups(LOOKUP_MACRO);
+        for (Lookup lookup : lookups) {
+            if (lookup.isActive()) {
+                add(lookup);
+            }
+        }
+        archetypeService.addListener(LOOKUP_MACRO, new AbstractArchetypeServiceListener() {
+            public void saved(IMObject object) {
+                onSaved((Lookup) object);
+            }
+
+            public void removed(IMObject object) {
+                delete((Lookup) object);
+            }
+        });
     }
 
     /**
@@ -91,16 +107,34 @@ public class MacroCache {
     }
 
     /**
-     * Refreshes the cache.
+     * Invoked when a lookup is saved.
      *
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param lookup the lookup
      */
-    public synchronized void refresh() {
-        macros.clear();
-        Collection<Lookup> lookups = service.getLookups("lookup.macro");
-        for (Lookup lookup : lookups) {
-            IMObjectBean bean = new IMObjectBean(lookup, archetypeService);
-            macros.put(lookup.getCode(), bean.getString("expression"));
+    private void onSaved(Lookup lookup) {
+        if (lookup.isActive()) {
+            add(lookup);
+        } else {
+            delete(lookup);
         }
+    }
+
+    /**
+     * Adds a lookup to the cache.
+     *
+     * @param lookup the lookup to add
+     */
+    private synchronized void add(Lookup lookup) {
+        IMObjectBean bean = new IMObjectBean(lookup, archetypeService);
+        macros.put(lookup.getCode(), bean.getString("expression"));
+    }
+
+    /**
+     * Removes a lookup from the cache.
+     *
+     * @param lookup the lookup to remove
+     */
+    private synchronized void delete(Lookup lookup) {
+        macros.remove(lookup.getCode());
     }
 }

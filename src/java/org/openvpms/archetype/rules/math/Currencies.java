@@ -21,7 +21,9 @@ package org.openvpms.archetype.rules.math;
 import org.apache.commons.lang.StringUtils;
 import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.InvalidCurrencyCode;
 import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.NoLookupForCode;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -55,6 +57,11 @@ public class Currencies {
      */
     private Map<String, Currency> currencies = new HashMap<String, Currency>();
 
+    /**
+     * The currency lookup archeype short name.
+     */
+    private static final String LOOKUP_CURRENCY = "lookup.currency";
+
 
     /**
      * Constructs a new <tt>Currencies</tt>, using the default archetype service
@@ -75,6 +82,17 @@ public class Currencies {
                       ILookupService lookupService) {
         this.service = service;
         this.lookupService = lookupService;
+        service.addListener(LOOKUP_CURRENCY, new AbstractArchetypeServiceListener() {
+            @Override
+            public void saved(IMObject object) {
+                add((Lookup) object);
+            }
+
+            @Override
+            public void removed(IMObject object) {
+                delete((Lookup) object);
+            }
+        });
     }
 
     /**
@@ -92,21 +110,34 @@ public class Currencies {
         }
         Currency currency = currencies.get(code);
         if (currency == null) {
-            Lookup lookup = lookupService.getLookup("lookup.currency", code);
+            Lookup lookup = lookupService.getLookup(LOOKUP_CURRENCY, code);
             if (lookup == null) {
                 throw new CurrencyException(NoLookupForCode, code);
             }
-            currency = new Currency(lookup, service);
-            currencies.put(code, currency);
+            currency = add(lookup);
         }
         return currency;
     }
 
     /**
-     * Refreshes the cache.
+     * Adds a currency.
+     *
+     * @param lookup the currency lookup
+     * @return the added currency
      */
-    public synchronized void refresh() {
-        currencies.clear();
+    private synchronized Currency add(Lookup lookup) {
+        Currency currency = new Currency(lookup, service);
+        currencies.put(lookup.getCode(), currency);
+        return currency;
+    }
+
+    /**
+     * Removes a currency.
+     *
+     * @param lookup the currency lookup
+     */
+    private synchronized void delete(Lookup lookup) {
+        currencies.remove(lookup.getCode());
     }
 
 }
