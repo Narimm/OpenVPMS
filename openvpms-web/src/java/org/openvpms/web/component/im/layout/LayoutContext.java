@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.layout;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
@@ -131,6 +132,7 @@ public interface LayoutContext {
      * Determines if a component has been created to display an object.
      *
      * @param object the object
+     * @return <tt>true</tt> if a component has been rendered
      */
     boolean isRendered(IMObject object);
 
@@ -138,7 +140,16 @@ public interface LayoutContext {
      * Determines if a component has been created to display an object.
      *
      * @param object the object
+     * @return <tt>true</tt> if a component has been rendered
      */
     boolean isRendered(IMObjectReference object);
+
+    /**
+     * Returns an archetype descriptor for an object.
+     *
+     * @param object the object
+     * @return an archetype descriptor for the object, or <tt>null</tt> if none can be found
+     */
+    ArchetypeDescriptor getArchetypeDescriptor(IMObject object);
 
 }

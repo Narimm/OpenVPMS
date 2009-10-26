@@ -25,6 +25,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ObjectHelper;
 
 import java.util.Collection;
@@ -59,10 +60,11 @@ public class PropertySet {
     /**
      * Constructs a new <tt>PropertySet</tt> from an object.
      *
-     * @param object the object
+     * @param object  the object
+     * @param context the layout context. May be <tt>null</tt>
      */
-    public PropertySet(IMObject object) {
-        this(object, DescriptorHelper.getArchetypeDescriptor(object));
+    public PropertySet(IMObject object, LayoutContext context) {
+        this(object, getArchetypeDescriptor(object, context));
     }
 
     /**
@@ -165,6 +167,18 @@ public class PropertySet {
                 property.refresh();
             }
         }
+    }
+
+    /**
+     * Returns the archetype descriptor for an object.
+     *
+     * @param object  the object
+     * @param context the layout context. May be <tt>null</tt>
+     * @return the archetype descriptor for the object
+     */
+    private static ArchetypeDescriptor getArchetypeDescriptor(IMObject object, LayoutContext context) {
+        return (context != null) ? context.getArchetypeDescriptor(object)
+                                 : DescriptorHelper.getArchetypeDescriptor(object);
     }
 
 }
