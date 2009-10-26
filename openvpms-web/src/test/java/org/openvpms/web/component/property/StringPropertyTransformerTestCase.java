@@ -29,7 +29,6 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.test.TestHelper;
 
@@ -140,9 +139,6 @@ public class StringPropertyTransformerTestCase
         createMacro("exceptionMacro", "openvpms:get(., 'invalidnode')");
         createMacro("nested", "concat('nested test: ', $macro1)");
         createMacro("numbertest", "concat('input number: ', $number)");
-
-        // load the new macros
-        ServiceHelper.getMacroCache().refresh();
     }
 
     /**
