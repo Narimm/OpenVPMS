@@ -22,7 +22,7 @@
         <node name="name" type="java.lang.String" path="/name" defaultValue="'Phone Number'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(substring(concat('(', /details/areaCode, ') '), 0, string-length(/details/areaCode) * (string-length(/details/areaCode) + 4)), /details/telephoneNumber, ' ',party:getContactPurposes())"/>
+              derivedValue="concat(substring(concat('(',/details/areaCode, ') '), 0, number(boolean(/details/areaCode)) * (string-length(/details/areaCode) + 4)), /details/telephoneNumber, ' ', party:getContactPurposes())"/>
         <node name="areaCode" path="/details/areaCode"
               type="java.lang.String" minCardinality="0" maxLength="6">
         </node>
