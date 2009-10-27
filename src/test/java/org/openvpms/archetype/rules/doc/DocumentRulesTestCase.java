@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.CRC32;
 
 
 /**
@@ -41,6 +42,9 @@ import java.util.Set;
  */
 public class DocumentRulesTestCase extends ArchetypeServiceTest {
 
+    /**
+     * Tests the {@link DocumentRules#supportsVersions} method.
+     */
     public void testSupportsVersions() {
         DocumentRules rules = new DocumentRules();
 
@@ -138,6 +142,47 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link DocumentRules#isDuplicate} method.
+     */
+    public void testIsDuplicate() {
+        // create an act.patientDocumentImage and link a patient
+        Party patient = TestHelper.createPatient();
+        DocumentAct act = (DocumentAct) create("act.patientDocumentImage");
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+
+        // now add a document.
+        DocumentRules rules = new DocumentRules();
+        Document document1 = createDocument();
+        assertFalse(document1.getDocSize() == 0);
+        assertFalse(document1.getChecksum() == 0);
+
+        List<IMObject> objects = rules.addDocument(act, document1);
+        save(objects);
+
+        // verify that for the same document, isDuplicate returns true
+        assertTrue(rules.isDuplicate(act, document1));
+
+        // now change the checksum to 0 and verify that isDuplicate returns false
+        document1.setChecksum(0);
+        save(document1);
+        assertFalse(rules.isDuplicate(act, document1));
+
+        // verify that for a different document with different content, isDuplicate returns false
+        Document document2 = createDocument();
+        assertFalse(document2.getDocSize() == 0);
+        assertFalse(document2.getChecksum() == 0);
+        assertFalse(rules.isDuplicate(act, document2));
+
+        // verify that for a different document with same checksum and length, isDuplicate returns tue
+        document1.setChecksum(1);
+        save(document1);
+        document2.setDocSize(document1.getDocSize());
+        document2.setChecksum(document1.getChecksum());
+        assertTrue(rules.isDuplicate(act, document2));
+    }
+
+    /**
      * Verifies that versioning works for a patient document act.
      *
      * @param actShortName    the act archetype short name
@@ -214,6 +259,11 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
         Document document = (Document) create("document.other");
         document.setName("test" + System.currentTimeMillis() + ".gif");
         document.setMimeType("image/gif");
+        document.setContents(document.getName().getBytes());
+        document.setDocSize(document.getContents().length);
+        CRC32 checksum = new CRC32();
+        checksum.update(document.getContents());
+        document.setChecksum(checksum.getValue());
         return document;
     }
 

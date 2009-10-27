@@ -25,8 +25,14 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -145,6 +151,51 @@ public class DocumentRules {
             }
         }
         return result;
+    }
+
+    /**
+     * Determines if a document associated with an act duplicates that specified.
+     * <p/>
+     * The documents are considered duplicates if they both have the same size and checksum.
+     * <p/>
+     * If any of the sizes or checksums are zero, they are not considered duplicates.
+     *
+     * @param act      the document act
+     * @param document the document to compare
+     * @return <tt>true</tt> if the documents have the same length and checksum
+     */
+    public boolean isDuplicate(DocumentAct act, Document document) {
+        boolean result = false;
+        if (act.getDocument() != null && document.getDocSize() != 0 && document.getChecksum() != 0) {
+            ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint("doc", act.getDocument()));
+            query.add(new NodeSelectConstraint("doc.size"));
+            query.add(new NodeSelectConstraint("doc.checksum"));
+            IPage<ObjectSet> page = service.getObjects(query);
+            if (!page.getResults().isEmpty()) {
+                ObjectSet set = page.getResults().get(0);
+                long size = set.getLong("doc.size");
+                long checksum = set.getLong("doc.checksum");
+                if (size != 0 && checksum != 0
+                    && (size == document.getDocSize() && checksum == document.getChecksum())) {
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the versions of a document.
+     *
+     * @param act the document act
+     * @return the versions of the document, or an empty list if the document has no versions
+     */
+    public List<DocumentAct> getVersions(DocumentAct act) {
+        ActBean bean = new ActBean(act, service);
+        if (bean.hasNode(VERSIONS)) {
+            return bean.getNodeActs(VERSIONS, DocumentAct.class);
+        }
+        return Collections.emptyList();
     }
 
 }
