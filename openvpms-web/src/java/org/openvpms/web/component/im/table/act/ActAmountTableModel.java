@@ -73,36 +73,45 @@ public class ActAmountTableModel<T extends Act>
 
 
     /**
-     * Construct a new <code>ActAmountTableModel</code>.
+     * Constructs a <tt>ActAmountTableModel</tt>.
      */
     public ActAmountTableModel() {
         this(true, false);
     }
 
     /**
-     * Construct a new <code>ActAmountTableModel</code>.
+     * Constructs a <tt>ActAmountTableModel</tt>.
      *
      * @param showStatus determines if the status colunn should be displayed
-     * @param showAmount determines if the credit/debit amount should be
-     *                   displayed
+     * @param showAmount determines if the credit/debit amount should be displayed
      */
     public ActAmountTableModel(boolean showStatus, boolean showAmount) {
-        this(showStatus, showAmount, false);
+        this(true, showStatus, showAmount);
     }
 
     /**
-     * Construct a new <code>ActAmountTableModel</code>.
+     * Constructs a <tt>ActAmountTableModel</tt>.
      *
-     * @param showStatus   determines if the status colunn should be displayed
-     * @param showAmount   determines if the credit/debit amount should be
-     *                     displayed
-     * @param negateAmount determines if the credit/debit amount should be
-     *                     negated
+     * @param showArchetype determines if the archetype column should be displayed
+     * @param showStatus    determines if the status colunn should be displayed
+     * @param showAmount    determines if the credit/debit amount should be displayed
      */
-    public ActAmountTableModel(boolean showStatus, boolean showAmount,
+    public ActAmountTableModel(boolean showArchetype, boolean showStatus, boolean showAmount) {
+        this(showArchetype, showStatus, showAmount, false);
+    }
+
+    /**
+     * Constructs a <tt>ActAmountTableModel</tt>.
+     *
+     * @param showArchetype determines if the archetype column should be displayed
+     * @param showStatus    determines if the status colunn should be displayed
+     * @param showAmount    determines if the credit/debit amount should be displayed
+     * @param negateAmount  determines if the credit/debit amount should be negated
+     */
+    public ActAmountTableModel(boolean showArchetype, boolean showStatus, boolean showAmount,
                                boolean negateAmount) {
         super(null);
-        setTableColumnModel(createColumnModel(showStatus, showAmount));
+        setTableColumnModel(createColumnModel(showArchetype, showStatus, showAmount));
         this.negateAmount = negateAmount;
     }
 
@@ -110,9 +119,9 @@ public class ActAmountTableModel<T extends Act>
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
+     *                  sort in <tt>descending</tt> order
+     * @return the sort criteria, or <tt>null</tt> if the column isn't
      *         sortable
      */
     @Override
@@ -143,26 +152,25 @@ public class ActAmountTableModel<T extends Act>
     /**
      * Helper to create a column model.
      *
-     * @param showStatus determines if the status colunn should be displayed
-     * @param showAmount determines if the credit/debit amount should be
-     *                   displayed
+     * @param showArchetype determines if the archetype column should be displayed
+     * @param showStatus    determines if the status colunn should be displayed
+     * @param showAmount    determines if the credit/debit amount should be
+     *                      displayed   @return a new column model
      * @return a new column model
      */
-    protected TableColumnModel createColumnModel(boolean showStatus,
-                                                 boolean showAmount) {
+    protected TableColumnModel createColumnModel(boolean showArchetype, boolean showStatus, boolean showAmount) {
         TableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(createTableColumn(DATE_INDEX, "table.act.date"));
-        model.addColumn(createTableColumn(ARCHETYPE_INDEX, "table.act.type"));
+        if (showArchetype) {
+            model.addColumn(createTableColumn(ARCHETYPE_INDEX, "table.act.type"));
+        }
         if (showStatus) {
-            model.addColumn(createTableColumn(STATUS_INDEX,
-                                              "table.act.status"));
+            model.addColumn(createTableColumn(STATUS_INDEX, "table.act.status"));
         }
         if (showAmount) {
-            model.addColumn(createTableColumn(AMOUNT_INDEX,
-                                              "table.act.amount"));
+            model.addColumn(createTableColumn(AMOUNT_INDEX, "table.act.amount"));
         }
-        model.addColumn(createTableColumn(DESCRIPTION_INDEX,
-                                          "table.act.description"));
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX, "table.act.description"));
         return model;
     }
 

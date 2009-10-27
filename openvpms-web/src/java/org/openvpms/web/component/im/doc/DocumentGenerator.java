@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.doc;
 
+import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -29,7 +30,6 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.archetype.rules.doc.DocumentRules;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +66,11 @@ public class DocumentGenerator {
     private final DocumentAct act;
 
     /**
+     * If <tt>true</tt> version any old document if the act supports it.
+     */
+    private final boolean version;
+
+    /**
      * Reference to the document template.
      */
     private final IMObjectReference template;
@@ -85,10 +90,12 @@ public class DocumentGenerator {
      * Creates a new <tt>DocumentGenerator</tt>.
      *
      * @param act      the document act
+     * @param version  if <tt>true</tt> version any old document if the act supports it
      * @param listener the listener to notify when generation completes
      */
-    public DocumentGenerator(DocumentAct act, Listener listener) {
+    public DocumentGenerator(DocumentAct act, boolean version, Listener listener) {
         this.act = act;
+        this.version = version;
         this.listener = listener;
         ActBean bean = new ActBean(act);
         template = bean.getNodeParticipantRef("documentTemplate");
@@ -97,13 +104,14 @@ public class DocumentGenerator {
     /**
      * Creates a new <tt>DocumentGenerator</tt>.
      *
-     * @param template the document template reference
      * @param act      the document act
+     * @param template the document template reference
+     * @param version  if <tt>true</tt> version any old document if the act supports it
      * @param listener the listener to notify when generation completes
      */
-    public DocumentGenerator(DocumentAct act, IMObjectReference template,
-                             Listener listener) {
+    public DocumentGenerator(DocumentAct act, IMObjectReference template, boolean version, Listener listener) {
         this.act = act;
+        this.version = version;
         this.template = template;
         this.listener = listener;
     }
@@ -150,7 +158,7 @@ public class DocumentGenerator {
 
         if (save) {
             DocumentRules rules = new DocumentRules();
-            List<IMObject> changes = rules.addDocument(act, document);
+            List<IMObject> changes = rules.addDocument(act, document, version);
             if (SaveHelper.save(changes)) {
                 listener.generated(document);
             }
