@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.zip.CRC32;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -115,8 +116,10 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
         DeflaterOutputStream output = new DeflaterOutputStream(bytes);
         int read = 0;
         int length;
+        CRC32 checksum = new CRC32();
         try {
             while ((length = stream.read(buffer)) != -1) {
+                checksum.update(buffer, 0, length);
                 output.write(buffer, 0, length);
                 read += length;
             }
@@ -128,7 +131,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
             throw new DocumentException(ReadError, exception, name);
         }
         byte[] data = bytes.toByteArray();
-        return create(name, data, mimeType, size);
+        return create(name, data, mimeType, size, checksum.getValue());
     }
 
     /**
@@ -166,8 +169,24 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
      */
+    public Document create(String name, byte[] content, String mimeType, int size) {
+        return create(name, content, mimeType, size, calculateChecksum(content));
+    }
+
+    /**
+     * Creates a new {@link Document}.
+     *
+     * @param name     the document name. Any path information is removed.
+     * @param content  the serialized content
+     * @param mimeType the mime type of the content. May be <code>null</code>
+     * @param size     the uncompressed document size
+     * @param checksum the uncompressed document CRC32 checksum
+     * @return a new document
+     * @throws DocumentException         if the document can't be created
+     * @throws ArchetypeServiceException for any archetype service error
+     */
     public Document create(String name, byte[] content, String mimeType,
-                           int size) {
+                           int size, long checksum) {
         if (name != null) {
             // strip path information
             File file = new File(name);
@@ -178,6 +197,19 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
         document.setMimeType(mimeType);
         document.setContents(content);
         document.setDocSize(size);
+        document.setChecksum(checksum);
         return document;
+    }
+
+    /**
+     * Calculates a CRC32 checksum for a document.
+     *
+     * @param content the document content
+     * @return the CRC32 checksum of the document
+     */
+    protected long calculateChecksum(byte[] content) {
+        CRC32 checksum = new CRC32();
+        checksum.update(content);
+        return checksum.getValue();
     }
 }
