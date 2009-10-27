@@ -178,7 +178,7 @@ public class DocumentActEditor extends AbstractActEditor {
     private void generateDoc(IMObjectReference template) {
         DocumentAct act = (DocumentAct) getObject();
         final DocumentGenerator generator = new DocumentGenerator(
-                act, template, new DocumentGenerator.Listener() {
+                act, template, false, new DocumentGenerator.Listener() {
                     public void generated(Document document) {
                         updateDocument(document);
                     }

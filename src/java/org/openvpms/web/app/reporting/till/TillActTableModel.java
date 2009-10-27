@@ -53,7 +53,7 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
      * Constructs a new <code>TillActTableModel</code>.
      */
     public TillActTableModel() {
-        super(false, true, true);
+        super(true, false, true, true);
     }
 
     /**
@@ -94,16 +94,15 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
      * Helper to create a column model.
      * Adds a customer column before the amount index.
      *
-     * @param showStatus determines if the status colunn should be displayed
-     * @param showAmount determines if the credit/debit amount should be
-     *                   displayed
+     * @param showArchetype determines if the archetype column should be displayed
+     * @param showStatus    determines if the status colunn should be displayed
+     * @param showAmount    determines if the credit/debit amount should be displayed
      * @return a new column model
      */
     @Override
-    protected TableColumnModel createColumnModel(boolean showStatus,
-                                                 boolean showAmount) {
+    protected TableColumnModel createColumnModel(boolean showArchetype, boolean showStatus, boolean showAmount) {
         DefaultTableColumnModel model
-                = (DefaultTableColumnModel) super.createColumnModel(showStatus,
+                = (DefaultTableColumnModel) super.createColumnModel(showArchetype, showStatus,
                                                                     showAmount);
         customerIndex = getNextModelIndex(model);
         TableColumn column = createTableColumn(

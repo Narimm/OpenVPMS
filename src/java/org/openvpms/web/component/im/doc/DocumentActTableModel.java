@@ -38,11 +38,22 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
      */
     private int docIndex;
 
+
     /**
-     * Construct a new <code>DocumentActTableModel</code>.
+     * Constructs a <tt>DocumentActTableModel</tt>.
      */
     public DocumentActTableModel() {
-        super(true, false);
+        this(true, true);
+    }
+
+    /**
+     * Constructs a <tt>DocumentActTableModel</tt>.
+     *
+     * @param showArchetype determines if the archetype column should be displayed
+     * @param showStatus    determines if the status colunn should be displayed
+     */
+    public DocumentActTableModel(boolean showArchetype, boolean showStatus) {
+        super(showArchetype, showStatus, false);
     }
 
     /**
@@ -69,16 +80,16 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
      * Helper to create a column model.
      * Adds a customer column before the amount index.
      *
-     * @param showStatus determines if the status colunn should be displayed
-     * @param showAmount determines if the credit/debit amount should be
-     *                   displayed
+     * @param showArchetype determines if the showArchetype column should be displayed
+     * @param showStatus    determines if the status column should be displayed
+     * @param showAmount    determines if the credit/debit amount should be displayed
      * @return a new column model
      */
     @Override
-    protected TableColumnModel createColumnModel(boolean showStatus,
+    protected TableColumnModel createColumnModel(boolean showArchetype, boolean showStatus,
                                                  boolean showAmount) {
         DefaultTableColumnModel model
-                = (DefaultTableColumnModel) super.createColumnModel(showStatus,
+                = (DefaultTableColumnModel) super.createColumnModel(showArchetype, showStatus,
                                                                     showAmount);
         docIndex = getNextModelIndex(model);
         TableColumn column = createTableColumn(docIndex,

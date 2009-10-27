@@ -19,20 +19,28 @@
 package org.openvpms.web.app.subsystem;
 
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -114,7 +122,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         if (act.getDocument() == null) {
             if (canRefresh()) {
                 // regenerate the document, and print
-                refresh(true);
+                refresh(true, false);
             } else {
                 ActBean bean = new ActBean(act);
                 if (bean.hasNode("documentTemplate")) {
@@ -131,15 +139,11 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * Invoked when the 'refresh' button is pressed.
      */
     private void onRefresh() {
-        String title = Messages.get("document.refresh.title");
-        String message = Messages.get("document.refresh.message");
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    refresh(false);
-                }
+        final RefreshDialog dialog = new RefreshDialog(getObject());
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                refresh(false, dialog.version());
             }
         });
         dialog.show();
@@ -148,12 +152,13 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     /**
      * Refreshes the current document act, optionally printing it.
      *
-     * @param print if <tt>true</tt> print it
+     * @param print   if <tt>true</tt> print it
+     * @param version if <tt>true</tt> version the document
      */
-    private void refresh(final boolean print) {
+    private void refresh(final boolean print, boolean version) {
         final DocumentAct act = getObject();
         DocumentGenerator generator
-                = new DocumentGenerator(act, new DocumentGenerator.Listener() {
+                = new DocumentGenerator(act, version, new DocumentGenerator.Listener() {
             public void generated(Document document) {
                 onSaved(act, false);
                 if (print) {
@@ -180,6 +185,54 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
             }
         }
         return refresh;
+    }
+
+    private class RefreshDialog extends ConfirmationDialog {
+
+        /**
+         * Determines if the existing version of the document should be retained.
+         */
+        private CheckBox version;
+
+
+        /**
+         * Constructs a new <tt>RefreshDialog</tt>.
+         *
+         * @param act the document act
+         */
+        public RefreshDialog(DocumentAct act) {
+            super(Messages.get("document.refresh.title"), Messages.get("document.refresh.message"));
+            DocumentRules rules = new DocumentRules();
+            if (act.getDocument() != null && rules.supportsVersions(act)) {
+                version = CheckBoxFactory.create("document.refresh.version", true);
+            }
+        }
+
+        /**
+         * Determines if the existing version of the document should be retained.
+         *
+         * @return <tt>true</tt> if the existing version should be kept
+         */
+        public boolean version() {
+            return (version != null) && version.isSelected();
+        }
+
+        /**
+         * Lays out the component prior to display.
+         */
+        @Override
+        protected void doLayout() {
+            if (version != null) {
+                Label content = LabelFactory.create(true, true);
+                content.setText(getMessage());
+                Column column = ColumnFactory.create("WideCellSpacing", content, version);
+                Row row = RowFactory.create("Inset", column);
+                getLayout().add(row);
+            } else {
+                super.doLayout();
+            }
+        }
+
     }
 
 }
