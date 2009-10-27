@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Document rules.
  *
@@ -65,6 +66,17 @@ public class DocumentRules {
     }
 
     /**
+     * Determines if a document act support multiple document versions.
+     *
+     * @param act the document act
+     * @return <tt>true</tt> if the act supports versioning
+     */
+    public boolean supportsVersions(DocumentAct act) {
+        ActBean bean = new ActBean(act, service);
+        return bean.hasNode(VERSIONS);
+    }
+
+    /**
      * Adds a document to a document act.
      * <p/>
      * If the act is currently has a document, and the act supports versioning, the original document will be saved
@@ -75,15 +87,30 @@ public class DocumentRules {
      * @return a list of objects to save
      */
     public List<IMObject> addDocument(DocumentAct act, Document document) {
+        return addDocument(act, document, true);
+    }
+
+    /**
+     * Adds a document to a document act.
+     * <p/>
+     * If <tt>version</tt> is <tt>true</tt>, the act is currently has a document, and the act supports versioning,
+     * the original document will be saved as a version using {@link #createVersion}.
+     *
+     * @param act      the act to add the document to
+     * @param document the document to add
+     * @param version  if <tt>true</tt> version any old document if the act supports it
+     * @return a list of objects to save
+     */
+    public List<IMObject> addDocument(DocumentAct act, Document document, boolean version) {
         List<IMObject> objects = new ArrayList<IMObject>();
         objects.add(act);
 
-        if (act.getDocument() != null) {
-            DocumentAct version = createVersion(act);
-            if (version != null) {
+        if (version && act.getDocument() != null) {
+            DocumentAct oldVersion = createVersion(act);
+            if (oldVersion != null) {
                 ActBean bean = new ActBean(act, service);
-                bean.addNodeRelationship(VERSIONS, version);
-                objects.add(version);
+                bean.addNodeRelationship(VERSIONS, oldVersion);
+                objects.add(oldVersion);
             }
         }
         act.setDocument(document.getObjectReference());
@@ -111,8 +138,7 @@ public class DocumentRules {
         DocumentAct result = null;
         IMObjectReference existing = source.getDocument();
         if (existing != null) {
-            ActBean bean = new ActBean(source, service);
-            if (bean.hasNode(VERSIONS)) {
+            if (supportsVersions(source)) {
                 IMObjectCopier copier = new IMObjectCopier(new VersioningCopyHandler(source, service));
                 List<IMObject> objects = copier.apply(source);
                 result = (DocumentAct) objects.get(0);
