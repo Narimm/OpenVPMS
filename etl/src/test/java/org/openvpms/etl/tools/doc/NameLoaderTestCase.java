@@ -53,7 +53,7 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
         // find all documents matching the short name with null doc references
         // and non-null filenames
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
-        query.add(new NodeConstraint("docReference", RelationalOp.IsNULL));
+        query.add(new NodeConstraint("document", RelationalOp.IsNULL));
         List<DocumentAct> expected = new ArrayList<DocumentAct>();
         Iterator<DocumentAct> iter = new IMObjectQueryIterator<DocumentAct>(query);
         while (iter.hasNext()) {

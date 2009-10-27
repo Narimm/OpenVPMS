@@ -183,6 +183,8 @@ public class LoaderTestCase
     /**
      * Verifies that the string <em>$value</em> is expanded with the input
      * value.
+     *
+     * @throws Exception for any error
      */
     public void testValueExpansion() throws Exception {
         Mappings mappings = new Mappings();
@@ -216,6 +218,8 @@ public class LoaderTestCase
     /**
      * Verifies that an object isn't created if 'excludeNull' is specified
      * and the input field is null.
+     *
+     * @throws Exception for any error
      */
     public void testExcludeNull() throws Exception {
         Mappings mappings = new Mappings();
@@ -383,9 +387,7 @@ public class LoaderTestCase
      * error handler is invoked if an object fails to be processed.
      */
     public void testErrorLogging() {
-        final String expectedError
-                = "Failed to validate Last Name of Customer(Person): "
-                + "value is required";
+        final String expectedError = "Failed to validate Last Name of Customer: value is required";
 
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
@@ -425,9 +427,7 @@ public class LoaderTestCase
      * other rows.
      */
     public void testPartialFailure() {
-        final String expectedError
-                = "Failed to validate Last Name of Customer(Person): "
-                + "value is required";
+        final String expectedError = "Failed to validate Last Name of Customer: value is required";
 
         // create a patient
         Party patient = (Party) service.create("party.patientpet");
@@ -532,9 +532,9 @@ public class LoaderTestCase
         boolean found = false;
         for (ETLLog log : logs) {
             if (log.getLoader().equals(loaderName)
-                    && log.getRowId().equals(legacyId)
-                    && log.getArchetype().equals(archetype)
-                    && log.getIndex() == index) {
+                && log.getRowId().equals(legacyId)
+                && log.getArchetype().equals(archetype)
+                && log.getIndex() == index) {
                 found = true;
                 break;
             }
@@ -747,8 +747,11 @@ public class LoaderTestCase
     private class Listener implements ErrorListener {
 
         private String expectedRowId;
+
         private String expectedMessage;
+
         private Class expectedException;
+
         private int count;
 
         public Listener(String rowId, String message, Class exception) {

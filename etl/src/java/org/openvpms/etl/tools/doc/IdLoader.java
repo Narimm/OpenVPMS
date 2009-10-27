@@ -20,14 +20,21 @@ package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.doc.DocumentRules;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +56,14 @@ import java.util.regex.Pattern;
  * <li>for each file, parses its name for a <em>DocumentAct</em> identifier</li>
  * <li>retrieves the corresponding <em>DocumentAct</em> and attaches the file as a new <em>Document</em></li>
  * </ul>
+ * <p/>
+ * <h4>Duplicate documents</h4>
+ * When <tt>overwrite</tt> is <tt>true</tt>, the following applies to files that have the same content as
+ * documents already loaded for any act:
+ * <ul>
+ * <li>if they have the same file name, they will be skipped
+ * <li>if they have a different file name, the existing document will be removed, and the new file loaded
+ * </ul>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -59,6 +74,11 @@ class IdLoader extends AbstractLoader {
      * The default regular expression for extracting act ids from file names.
      */
     public static final String DEFAULT_REGEXP = "[^\\d]*(\\d+).*";
+
+    /**
+     * The transaction manager.
+     */
+    private final PlatformTransactionManager transactionManager;
 
     /**
      * The document act short names.
@@ -89,30 +109,34 @@ class IdLoader extends AbstractLoader {
     /**
      * Constructs a new <tt>IdLoader</tt>.
      *
-     * @param dir       the source directory
-     * @param service   the archetype service
-     * @param factory   the document factory
-     * @param recurse   if <tt>true</tt> recursively scan the source dir
-     * @param overwrite if <tt>true</tt> overwrite existing documents
+     * @param dir                the source directory
+     * @param service            the archetype service
+     * @param factory            the document factory
+     * @param transactionManager the transaction manager
+     * @param recurse            if <tt>true</tt> recursively scan the source dir
+     * @param overwrite          if <tt>true</tt> overwrite existing documents
      */
-    public IdLoader(File dir, IArchetypeService service, DocumentFactory factory, boolean recurse,
-                    boolean overwrite) {
-        this(dir, service, factory, recurse, overwrite, DEFAULT_PATTERN);
+    public IdLoader(File dir, IArchetypeService service, DocumentFactory factory,
+                    PlatformTransactionManager transactionManager, boolean recurse, boolean overwrite) {
+        this(dir, service, factory, transactionManager, recurse, overwrite, DEFAULT_PATTERN);
     }
 
     /**
      * Constructs a new <tt>IdLoader</tt>.
      *
-     * @param dir       the source directory
-     * @param service   the archetype service
-     * @param factory   the document factory
-     * @param recurse   if <tt>true</tt> recursively scan the source dir
-     * @param overwrite if <tt>true</tt> overwrite existing documents
-     * @param pattern   the pattern to extract act ids from file names
+     * @param dir                the source directory
+     * @param service            the archetype service
+     * @param factory            the document factory
+     * @param recurse            if <tt>true</tt> recursively scan the source dir
+     * @param transactionManager the transaction manager
+     * @param overwrite          if <tt>true</tt> overwrite existing documents
+     * @param pattern            the pattern to extract act ids from file names
      */
-    public IdLoader(File dir, IArchetypeService service, DocumentFactory factory, boolean recurse,
-                    boolean overwrite, Pattern pattern) {
+    public IdLoader(File dir, IArchetypeService service, DocumentFactory factory,
+                    PlatformTransactionManager transactionManager, boolean recurse, boolean overwrite,
+                    Pattern pattern) {
         super(service, factory);
+        this.transactionManager = transactionManager;
         shortNames = getDocumentActShortNames();
         this.overwrite = overwrite;
         List<File> files = getFiles(dir, recurse);
@@ -203,14 +227,82 @@ class IdLoader extends AbstractLoader {
         try {
             String mimeType = getMimeType(file);
             Document doc = createDocument(file, mimeType);
-            act.setStatus(ActStatus.COMPLETED);
-            addDocument(act, doc);
-            notifyLoaded(file);
-            result = true;
+            DocumentAct duplicate = getDuplicate(act, doc);
+            if (duplicate != null && file.getName().equals(duplicate.getFileName())) {
+                // identical content and file name
+                notifyAlreadyLoaded(file);
+            } else {
+                act.setStatus(ActStatus.COMPLETED);
+                boolean version = (duplicate != act);
+                addDocument(act, doc, version);
+                notifyLoaded(file);
+                result = true;
+            }
         } catch (Exception exception) {
             notifyError(file, exception);
         }
         return result;
+    }
+
+    private DocumentAct getDuplicate(DocumentAct act, Document document) {
+        DocumentRules rules = getRules();
+        if (rules.isDuplicate(act, document)) {
+            return act;
+        }
+        for (DocumentAct version : rules.getVersions(act)) {
+            if (rules.isDuplicate(version, document)) {
+                return version;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Adds a document to a document act, and saves it.
+     *
+     * @param act      the act
+     * @param document the document to add
+     * @param version  if <tt>true</tt> version any old document if the act supports it
+     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
+     *          for any archetype service error
+     */
+    protected void addDocument(final DocumentAct act, final Document document, final boolean version) {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                IArchetypeService service = getService();
+                removeDuplicate(act, document);
+                List<IMObject> objects = getRules().addDocument(act, document, version);
+                service.save(objects);
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Removes any document act and document that duplicates that supplied.
+     *
+     * @param act      the act
+     * @param document the new document
+     */
+    private void removeDuplicate(DocumentAct act, Document document) {
+        DocumentRules rules = getRules();
+        IArchetypeService service = getService();
+        ActBean bean = new ActBean(act, service);
+        for (DocumentAct version : rules.getVersions(act)) {
+            if (rules.isDuplicate(version, document)) {
+                ActRelationship r = bean.getRelationship(version);
+                version.removeActRelationship(r);
+                bean.removeRelationship(r);
+                service.save(act);
+                service.remove(version);
+                Document dupDoc = (Document) service.get(version.getDocument());
+                if (dupDoc != null) {
+                    service.remove(dupDoc);
+                }
+                break;
+            }
+        }
     }
 
     /**

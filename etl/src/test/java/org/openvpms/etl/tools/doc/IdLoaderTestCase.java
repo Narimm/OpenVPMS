@@ -23,9 +23,11 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 
@@ -59,10 +61,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         File act3File = createFile(act3, source, null, "-12345");
         File act4File = createFile(act4, source, "P", "-123456");
 
-        IdLoader idLoader = new IdLoader(source, service, new DefaultDocumentFactory(), true, false);
-        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
-        load(idLoader, listener);
-
+        LoaderListener listener = load(source, target, false);
         assertEquals(4, listener.getLoaded());
         assertEquals(0, listener.getErrors());
         assertEquals(4, listener.getProcessed());
@@ -75,10 +74,10 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         checkFiles(target, act1File, act2File, act3File, act4File);
 
         // verify the acts have associated documents
-        checkAct(act1);
-        checkAct(act2);
-        checkAct(act3);
-        checkAct(act4);
+        checkAct(act1, act1File.getName());
+        checkAct(act2, act2File.getName());
+        checkAct(act3, act3File.getName());
+        checkAct(act4, act4File.getName());
     }
 
     /**
@@ -102,9 +101,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         File noAct3 = new File(source, "0000-12345.gif");
         FileUtils.touch(noAct3);
 
-        IdLoader idLoader = new IdLoader(source, service, new DefaultDocumentFactory(), true, false);
-        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
-        load(idLoader, listener);
+        LoaderListener listener = load(source, target, false);
 
         int expectedErrors = 3;
         assertEquals(0, listener.getLoaded());
@@ -135,10 +132,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         preLoaded.setDocument(doc.getObjectReference());
         service.save(Arrays.asList(doc, preLoaded));
 
-        IdLoader idLoader = new IdLoader(source, service, new DefaultDocumentFactory(), true, false);
-        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
-        load(idLoader, listener);
-
+        LoaderListener listener = load(source, target, false);
         assertEquals(0, listener.getLoaded());
         assertEquals(1, listener.getErrors());
         assertEquals(1, listener.getProcessed());
@@ -174,9 +168,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
 
         // for the first load, set overwrite = false. Only first should be loaded.
         boolean overwrite = false;
-        Loader loader1 = new IdLoader(source, service, new DefaultDocumentFactory(), true, overwrite);
-        LoaderListener listener1 = new LoggingLoaderListener(DocumentLoader.log, target);
-        load(loader1, listener1);
+        LoaderListener listener1 = load(source, target, overwrite);
 
         assertEquals(1, listener1.getLoaded());
         assertEquals(2, listener1.getErrors()); // errors as overwrite = false
@@ -190,9 +182,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
 
         // now re-run with overwrite = true. The second and third file should now be loaded
         overwrite = true;
-        Loader loader2 = new IdLoader(source, service, new DefaultDocumentFactory(), true, overwrite);
-        LoaderListener listener2 = new LoggingLoaderListener(DocumentLoader.log, target);
-        load(loader2, listener2);
+        LoaderListener listener2 = load(source, target, overwrite);
 
         assertEquals(2, listener2.getLoaded());
         assertEquals(0, listener2.getErrors());
@@ -205,12 +195,144 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
 
         // verify the act has a document, and it is the third instance
         act = (DocumentAct) service.get(act.getObjectReference());
-        assertNotNull(act);
-        assertNotNull(act.getDocument());
-        Document doc = (Document) service.get(act.getDocument());
-        assertNotNull(doc);
-        assertEquals(third.getName(), doc.getName());
+        checkAct(act, third.getName());
+
+        // now check the first and second versions are present.
+        ActBean bean = new ActBean(act);
+        List<DocumentAct> versions = bean.getNodeActs("versions", DocumentAct.class);
+        assertEquals(2, versions.size());
+
+        DocumentAct firstVersion = getVersion(versions, first.getName());
+        assertNotNull(firstVersion);
+
+        DocumentAct secondVersion = getVersion(versions, second.getName());
+        assertNotNull(secondVersion);
+
+        // verify each version as an associated document
+        checkAct(firstVersion, first.getName());
+        checkAct(secondVersion, second.getName());
     }
 
+    /**
+     * Verifies that duplicate documents are only loaded if they have a different file name to the original
+     * content.
+     *
+     * @throws Exception for any error
+     */
+    public void testDuplicates() throws Exception {
+        File source = new File("target/sdocs" + System.currentTimeMillis());
+        File target = new File("target/tdocs" + System.currentTimeMillis());
+        assertTrue(source.mkdirs());
+        assertTrue(target.mkdirs());
+
+        DocumentAct act = createPatientDocAct();
+
+        int alreadyLoaded = 0;
+
+        // create a file and load it
+        File first = createFile(act, source, null, "-Z", "A");
+        LoaderListener listener1 = load(source, target, true);
+        assertEquals(1, listener1.getLoaded());
+        assertEquals(0, listener1.getErrors());
+        assertEquals(1, listener1.getProcessed());
+        assertEquals(0, listener1.getMissingAct());
+        assertEquals(alreadyLoaded, listener1.getAlreadyLoaded());
+
+        // verify the act has a document, and it is the first instance
+        Document firstDoc = checkAct(act, first.getName());
+
+        // create a file that duplicates the first in name and content
+        createFile(source, first.getName(), "A");
+        alreadyLoaded++;
+        LoaderListener listenerDup = load(source, target, true);
+        assertEquals(0, listenerDup.getLoaded());
+        assertEquals(1, listenerDup.getErrors());
+        assertEquals(1, listenerDup.getProcessed());
+        assertEquals(0, listenerDup.getMissingAct());
+        assertEquals(alreadyLoaded, listenerDup.getAlreadyLoaded());
+
+        File second = createFile(act, source, null, "-A", "B");
+        LoaderListener listener2 = load(source, target, true);
+        assertEquals(1, listener2.getLoaded());
+        assertEquals(1, listener2.getErrors());
+        assertEquals(2, listener2.getProcessed());
+        assertEquals(0, listener2.getMissingAct());
+        assertEquals(alreadyLoaded, listener2.getAlreadyLoaded());
+
+        // verify the act has a document, and it is the second instance
+        Document secondDoc = checkAct(act, second.getName());
+        checkVersions(act, firstDoc);
+
+        // create a third file that duplicates the content of the first. This should be loaded
+        File third = createFile(act, source, null, "-X", "A");
+        assertTrue(third.setLastModified(second.lastModified() + 1000));
+        LoaderListener listener3 = load(source, target, true);
+        assertEquals(1, listener3.getLoaded());
+        assertEquals(1, listener3.getErrors());
+        assertEquals(2, listener3.getProcessed());
+        assertEquals(0, listener3.getMissingAct());
+        assertEquals(alreadyLoaded, listener3.getAlreadyLoaded());
+
+        // verify the act has a document, and it is the third instance, and only the second version remains
+        // i.e that the first version has been removed
+        checkAct(act, third.getName());
+        checkVersions(act, secondDoc);
+    }
+
+    /**
+     * Returns the document act version with the matching file name.
+     *
+     * @param versions the document act versions
+     * @param fileName the file name
+     * @return the corresponding document act version, or <tt>null</tt> if none is found
+     */
+    private DocumentAct getVersion(List<DocumentAct> versions, String fileName) {
+        for (DocumentAct version : versions) {
+            if (fileName.equals(version.getFileName())) {
+                return version;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper to load files.
+     *
+     * @param source    the source directory to load from
+     * @param target    the target directory to move processed files to
+     * @param overwrite if <tt>true</tt> overwrite existing documents
+     * @return the loader listener
+     */
+    private LoaderListener load(File source, File target, boolean overwrite) {
+        Loader loader = new IdLoader(source, service, new DefaultDocumentFactory(), transactionManager,
+                                     true, overwrite);
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
+        load(loader, listener);
+        return listener;
+    }
+
+    /**
+     * Verifies the document versions associated with the version node of document act.
+     *
+     * @param act      the document act
+     * @param versions the expected document versions
+     */
+    private void checkVersions(DocumentAct act, Document... versions) {
+        act = (DocumentAct) service.get(act.getObjectReference());
+        ActBean bean = new ActBean(act);
+        List<DocumentAct> acts = bean.getNodeActs("versions", DocumentAct.class);
+        assertEquals(versions.length, acts.size());
+        for (DocumentAct childAct : acts) {
+            checkAct(childAct);
+            boolean found = false;
+            for (Document version : versions) {
+                if (childAct.getDocument().equals(version.getObjectReference())) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found);
+        }
+    }
 
 }

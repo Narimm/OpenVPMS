@@ -25,9 +25,12 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +49,11 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
      * The archetype service.
      */
     protected IArchetypeService service;
+
+    /**
+     * The transaction manager.
+     */
+    protected PlatformTransactionManager transactionManager;
 
 
     /**
@@ -67,6 +75,7 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
         super.onSetUp();
 
         service = (IArchetypeService) applicationContext.getBean("archetypeService");
+        transactionManager = (PlatformTransactionManager) applicationContext.getBean("txnManager");
     }
 
     /**
@@ -116,6 +125,22 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
      * @throws java.io.IOException for any I/O error
      */
     protected File createFile(DocumentAct act, File dir, String prefix, String suffix) throws IOException {
+        return createFile(act, dir, prefix, suffix, null);
+    }
+
+    /**
+     * Creates a dummy <em>.gif</em> file for a document act.
+     *
+     * @param act     the act
+     * @param dir     the parent directory
+     * @param prefix  the file name prefix. May be <tt>null</tt>
+     * @param suffix  the file name suffix (pre extension). May be <tt>null</tt>
+     * @param content the file content. May be <tt>null</tt>
+     * @return a new file
+     * @throws java.io.IOException for any I/O error
+     */
+    protected File createFile(DocumentAct act, File dir, String prefix, String suffix, String content)
+            throws IOException {
         StringBuffer buff = new StringBuffer();
         if (prefix != null) {
             buff.append(prefix);
@@ -125,8 +150,27 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
             buff.append(suffix);
         }
         buff.append(".gif");
-        File file = new File(dir, buff.toString());
-        FileUtils.touch(file);
+        return createFile(dir, buff.toString(), content);
+    }
+
+    /**
+     * Creates a test file.
+     *
+     * @param dir     the parent directory
+     * @param name    the file name
+     * @param content the file content. May be <tt>null</tt>
+     * @return a new file
+     * @throws IOException for any I/O error
+     */
+    protected File createFile(File dir, String name, String content) throws IOException {
+        File file = new File(dir, name);
+        if (content != null) {
+            PrintStream stream = new PrintStream(new FileOutputStream(file));
+            stream.print(content);
+            stream.close();
+        } else {
+            FileUtils.touch(file);
+        }
         return file;
     }
 
@@ -210,12 +254,25 @@ public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContext
      * @param act the act to check
      */
     protected void checkAct(DocumentAct act) {
+        checkAct(act, act.getFileName());
+    }
+
+    /**
+     * Verify an act exists and has a document, and expected file name.
+     *
+     * @param act  the act to check
+     * @param name the expected file name
+     * @return the document
+     */
+    protected Document checkAct(DocumentAct act, String name) {
         act = (DocumentAct) service.get(act.getObjectReference());
         assertNotNull(act);
         assertNotNull(act.getDocument());
         Document doc = (Document) service.get(act.getDocument());
         assertNotNull(doc);
-        assertEquals(act.getFileName(), doc.getName());
+        assertEquals(name, act.getFileName());
+        assertEquals(name, doc.getName());
+        return doc;
     }
 
     /**

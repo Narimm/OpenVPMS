@@ -121,6 +121,15 @@ abstract class AbstractLoader implements Loader {
     }
 
     /**
+     * Returns the document rules.
+     *
+     * @return the document rules
+     */
+    protected DocumentRules getRules() {
+        return rules;
+    }
+
+    /**
      * Notifies any registered listener that a file has been loaded.
      *
      * @param file the file
