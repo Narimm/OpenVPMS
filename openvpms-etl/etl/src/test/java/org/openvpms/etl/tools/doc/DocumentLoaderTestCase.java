@@ -72,7 +72,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         FileUtils.touch(file4);
 
         String[] args = {"--byname", "-s", source.getPath(), "-d", target.getPath()};
-        DocumentLoader loader = new DocumentLoader(args, service);
+        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
         loader.load();
 
         // verify documents have been loaded.
@@ -113,7 +113,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         File file4 = createFile(act4, sub2);
 
         String[] args = {"--byid", "-s", root.getPath(), "-d", target.getPath(), "--recurse"};
-        DocumentLoader loader = new DocumentLoader(args, service);
+        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
         loader.load();
 
         checkFiles(target, file1, file2, file3, file4);
@@ -165,7 +165,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
 
         // load all files which have an <act id>.gif extension
         String[] args = {"--byid", "-s", source.getPath(), "-d", target.getPath(), "--regexp", "(\\d+).gif"};
-        DocumentLoader loader = new DocumentLoader(args, service);
+        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
         loader.load();
 
         // verify only act1 was processed
@@ -195,7 +195,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      */
     private void checkConstructException(String[] args, DocumentLoaderException.ErrorCode expected) {
         try {
-            new DocumentLoader(args, service);
+            new DocumentLoader(args, service, transactionManager);
             fail("Expected a DocumentLoaderException");
         } catch (DocumentLoaderException exception) {
             assertEquals(expected, exception.getErrorCode());

@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.File;
 import java.util.Date;
@@ -63,6 +64,16 @@ public class DocumentLoader {
     private boolean failOnError = true;
 
     /**
+     * The application context path.
+     */
+    private String contextPath;
+
+    /**
+     * The application context.
+     */
+    private ApplicationContext context;
+
+    /**
      * The logger.
      */
     static final Log log = LogFactory.getLog(DocumentLoader.class);
@@ -85,12 +96,15 @@ public class DocumentLoader {
     /**
      * Creates a new <tt>DocumentLoader</tt> from command line arguments.
      *
-     * @param args    the arguments to parse
-     * @param service the achetype service. If <tt>null</tt> it will be bootstrapped from the default spring context
+     * @param args               the arguments to parse
+     * @param service            the achetype service. If <tt>null</tt> it will be bootstrapped from the default
+     *                           spring context
+     * @param transactionManager the transaction manager. If <tt>null</tt> it will be bootstrapped from the default
+     *                           spring context
      * @throws DocumentLoaderException if the arguments are invalid
      */
-    protected DocumentLoader(String[] args, IArchetypeService service) {
-        this(args, createParser(), service);
+    protected DocumentLoader(String[] args, IArchetypeService service, PlatformTransactionManager transactionManager) {
+        this(args, createParser(), service, transactionManager);
     }
 
     /**
@@ -101,18 +115,22 @@ public class DocumentLoader {
      * @throws DocumentLoaderException if the arguments are invalid
      */
     protected DocumentLoader(String[] args, JSAP parser) {
-        this(args, parser, null);
+        this(args, parser, null, null);
     }
 
     /**
      * Creates a new <tt>DocumentLoader</tt> from command line arguments.
      *
-     * @param args    the arguments to parse
-     * @param parser  the argument parser
-     * @param service the achetype service. If <tt>null</tt> it will be bootstrapped from the default spring context
+     * @param args               the arguments to parse
+     * @param parser             the argument parser
+     * @param service            the achetype service. If <tt>null</tt> it will be bootstrapped from the default
+     *                           spring context
+     * @param transactionManager the transaction manager. If <tt>null</tt> it will be bootstrapped from the default
+     *                           spring context
      * @throws DocumentLoaderException if the arguments are invalid
      */
-    protected DocumentLoader(String[] args, JSAP parser, IArchetypeService service) {
+    protected DocumentLoader(String[] args, JSAP parser, IArchetypeService service,
+                             PlatformTransactionManager transactionManager) {
         JSAPResult config = parser.parse(args);
         boolean byId = config.getBoolean("byid");
         boolean byName = config.getBoolean("byname");
@@ -131,15 +149,10 @@ public class DocumentLoader {
             File target = config.getFile("dest");
             checkDirs(source, target);
 
+            contextPath = config.getString("context");
+
             if (service == null) {
-                String contextPath = config.getString("context");
-                ApplicationContext context;
-                if (!new File(contextPath).exists()) {
-                    context = new ClassPathXmlApplicationContext(contextPath);
-                } else {
-                    context = new FileSystemXmlApplicationContext(contextPath);
-                }
-                service = (IArchetypeService) context.getBean("archetypeService");
+                service = (IArchetypeService) getContext().getBean("archetypeService");
             }
             DocumentFactory factory = new DefaultDocumentFactory();
             LoaderListener listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log, target)
@@ -150,7 +163,10 @@ public class DocumentLoader {
                 boolean overwrite = config.getBoolean("overwrite");
                 String regexp = config.getString("regexp");
                 Pattern pattern = Pattern.compile(regexp);
-                loader = new IdLoader(source, service, factory, recurse, overwrite, pattern);
+                if (transactionManager == null) {
+                    transactionManager = (PlatformTransactionManager) getContext().getBean("txnManager");
+                }
+                loader = new IdLoader(source, service, factory, transactionManager, recurse, overwrite, pattern);
             } else {
                 String type = config.getString("type");
                 loader = new NameLoader(source, type, service, factory);
@@ -213,6 +229,22 @@ public class DocumentLoader {
             log.error(throwable, throwable);
             System.exit(1);
         }
+    }
+
+    /**
+     * Returns the application context, creating it if necessary.
+     *
+     * @return the application context
+     */
+    private ApplicationContext getContext() {
+        if (context == null) {
+            if (!new File(contextPath).exists()) {
+                context = new ClassPathXmlApplicationContext(contextPath);
+            } else {
+                context = new FileSystemXmlApplicationContext(contextPath);
+            }
+        }
+        return context;
     }
 
     /**
