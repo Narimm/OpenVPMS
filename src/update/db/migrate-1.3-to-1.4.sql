@@ -1,4 +1,30 @@
 #
+# Migrate contact.mobileNumber to contact.phoneNumber as per ARCH-19
+#
+
+update contacts c, contact_details d
+set d.name = "telephoneNumber"
+where c.arch_short_name = "contact.mobileNumber" and c.contact_id = d.contact_id and d.name = "mobileNumber";
+
+update contacts c, contact_details d
+set d.name = "sms"
+where c.arch_short_name = "contact.mobileNumber" and c.contact_id = d.contact_id and d.name = "useSms";
+
+update contacts
+set arch_short_name = "contact.phoneNumber"
+where arch_short_name = "contact.mobileNumber";
+
+# remove contact.mobileNumber archetype
+delete d
+from assertion_descriptors d, node_descriptors n, archetype_descriptors a
+where d.node_desc_id = n.node_desc_id and n.archetype_desc_id = a.archetype_desc_id
+      and a.name = "contact.mobileNumber.1.0";
+
+delete a, n
+from node_descriptors n, archetype_descriptors a
+where n.archetype_desc_id = a.archetype_desc_id and a.name = "contact.mobileNumber.1.0";
+
+#
 # Delete lookup.paymentType as per ARCH-21
 #
 
