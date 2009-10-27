@@ -28,8 +28,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -40,6 +40,16 @@ import java.util.Set;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DocumentRulesTestCase extends ArchetypeServiceTest {
+
+    public void testSupportsVersions() {
+        DocumentRules rules = new DocumentRules();
+
+        DocumentAct image = (DocumentAct) create("act.patientDocumentImage");
+        assertTrue(rules.supportsVersions(image));
+
+        DocumentAct form = (DocumentAct) create("act.patientDocumentForm");
+        assertFalse(rules.supportsVersions(form));
+    }
 
     /**
      * Tests the {@link DocumentRules#addDocument} method.
@@ -90,7 +100,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
         acts = bean.getNodeActs("versions", DocumentAct.class);
         assertEquals(2, acts.size());
         Set<IMObjectReference> docs = new HashSet<IMObjectReference>();
-        for (DocumentAct version :acts) {
+        for (DocumentAct version : acts) {
             assertEquals(1, version.getActRelationships().size()); // only one relationship, back to parent
             docs.add(version.getDocument());
         }
@@ -167,7 +177,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that versioning works for an act.
      *
-     * @param act the act
+     * @param act             the act
      * @param expectedVersion the act version archetype short name
      * @return the version
      */
