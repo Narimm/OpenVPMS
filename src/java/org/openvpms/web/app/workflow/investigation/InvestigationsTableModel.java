@@ -22,6 +22,7 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -29,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -46,7 +48,6 @@ class InvestigationsTableModel extends AbstractActTableModel {
      */
     private int supplierIndex;
 
-
     /**
      * Creates a new <tt>InvestigationsTableModel</tt>.
      */
@@ -61,7 +62,7 @@ class InvestigationsTableModel extends AbstractActTableModel {
      */
     @Override
     protected String[] getNodeNames() {
-        return new String[]{"startTime", "investigationType", "patient", "status", "document"};
+        return new String[]{"startTime", "investigationType", "patient", "id", "status", "document"};
     }
 
     /**
@@ -101,6 +102,23 @@ class InvestigationsTableModel extends AbstractActTableModel {
         return model;
     }
 
+    /**
+    * Creates a new column for a node.
+    *
+    * @param archetypes the archetypes
+    * @param name Ê Ê Ê the node name
+    * @param index Ê Ê Êthe index to assign the column
+    * @return a new column
+    */
+    @Override
+    protected TableColumn createColumn(List<ArchetypeDescriptor> archetypes,String name, int index) {
+    	TableColumn column = super.createColumn(archetypes, name, index);
+    	if ("id".equals(name)) {
+    		column.setHeaderValue(Messages.get("investigationstablemodel.requestId"));
+    	}
+    	return column;
+    }
+    
     /**
      * Returns a component representing the supplier for the specified investigation type associated with the act.
      *
