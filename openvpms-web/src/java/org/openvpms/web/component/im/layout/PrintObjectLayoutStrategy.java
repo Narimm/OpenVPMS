@@ -17,24 +17,17 @@
  */
 package org.openvpms.web.component.im.layout;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.layout.ColumnLayoutData;
-import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -46,14 +39,9 @@ import org.openvpms.web.component.util.RowFactory;
 public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * The button label.
+     * The layout helper.
      */
-    private final String label;
-
-    /**
-     * Determines if the button should be enabled.
-     */
-    private boolean enableButton = true;
+    private PrintObjectLayoutHelper layout;
 
 
     /**
@@ -62,7 +50,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      * @param label the button label
      */
     public PrintObjectLayoutStrategy(String label) {
-        this.label = label;
+        layout = new PrintObjectLayoutHelper(label);
     }
 
     /**
@@ -71,7 +59,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      * @param enable if <tt>true</tt>, enable the button
      */
     public void setEnableButton(boolean enable) {
-        this.enableButton = enable;
+        layout.setEnableButton(enable);
     }
 
     /**
@@ -85,24 +73,12 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     protected void doLayout(final IMObject object, PropertySet properties,
                             Component container, LayoutContext context) {
-        Button button = ButtonFactory.create(
-                label, new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        onPrint(object);
-                    }
-                });
-        button.setEnabled(enableButton);
-
-        RowLayoutData rowLayout = new RowLayoutData();
-        Alignment topRight = new Alignment(Alignment.RIGHT, Alignment.TOP);
-        rowLayout.setAlignment(topRight);
-        rowLayout.setWidth(new Extent(100, Extent.PERCENT));
-        button.setLayoutData(rowLayout);
-        Row row = RowFactory.create("InsetX", button);
-        ColumnLayoutData columnLayout = new ColumnLayoutData();
-        columnLayout.setAlignment(topRight);
-        row.setLayoutData(columnLayout);
-        container.add(row);
+        Button button = layout.doLayout(container);
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onPrint(object);
+            }
+        });
         super.doLayout(object, properties, container, context);
         getFocusGroup().add(button);
     }

@@ -19,9 +19,10 @@ package org.openvpms.web.component.im.edit.investigation;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.web.component.im.edit.act.PatientActEditor;
+import org.openvpms.web.app.patient.document.PatientDocumentActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
@@ -33,8 +34,11 @@ import org.openvpms.web.component.property.Property;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientInvestigationActEditor extends PatientActEditor {
+public class PatientInvestigationActEditor extends PatientDocumentActEditor {
 
+    /**
+     * Determines if the button to print the form should be enabled.
+     */
     private boolean enableButton;
 
     /**
@@ -44,7 +48,7 @@ public class PatientInvestigationActEditor extends PatientActEditor {
      * @param parent  the parent act. May be <tt>null</tt>
      * @param context the layout context
      */
-    public PatientInvestigationActEditor(Act act, Act parent, LayoutContext context) {
+    public PatientInvestigationActEditor(DocumentAct act, Act parent, LayoutContext context) {
         super(act, parent, context);
         enableButton = !act.isNew();
     }
@@ -99,7 +103,8 @@ public class PatientInvestigationActEditor extends PatientActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        PatientInvestigationActLayoutStrategy strategy = new PatientInvestigationActLayoutStrategy();
+        PatientInvestigationActLayoutStrategy strategy = new PatientInvestigationActLayoutStrategy(getDocumentEditor(),
+                                                                                                   getVersionsEditor());
         strategy.setEnableButton(enableButton);
         return strategy;
     }

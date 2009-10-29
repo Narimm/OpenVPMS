@@ -25,12 +25,12 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.DOCUMENT;
+import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.VERSIONS;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -66,11 +66,6 @@ public class DocumentActEditor extends AbstractActEditor {
      * The document template node.
      */
     private static final String DOC_TEMPLATE = "documentTemplate";
-
-    /**
-     * The versions node.
-     */
-    private static final String VERSIONS = "versions";
 
 
     /**
@@ -145,7 +140,25 @@ public class DocumentActEditor extends AbstractActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy();
+        return new DocumentActLayoutStrategy(docEditor, versionsEditor);
+    }
+
+    /**
+     * Returns the document editor.
+     *
+     * @return the document editor. May be <tt>null</tt>
+     */
+    protected DocumentEditor getDocumentEditor() {
+        return docEditor;
+    }
+
+    /**
+     * Returns the document versions editor.
+     *
+     * @return the document versions editor. May be <tt>null</tt>
+     */
+    protected ActRelationshipCollectionEditor getVersionsEditor() {
+        return versionsEditor;
     }
 
     /**
@@ -234,31 +247,6 @@ public class DocumentActEditor extends AbstractActEditor {
             return p.getEntity();
         }
         return null;
-    }
-
-    /**
-     * Layout strategy that treats the 'document' node as a simple node.
-     */
-    private class LayoutStrategy extends DocumentActLayoutStrategy {
-
-        /**
-         * Creates a component for a property.
-         *
-         * @param property the property
-         * @param parent   the parent object
-         * @param context  the layout context
-         * @return a component to display <code>property</code>
-         */
-        @Override
-        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-            String name = property.getName();
-            if (DOCUMENT.equals(name)) {
-                return new ComponentState(docEditor.getComponent(), docEditor.getProperty());
-            } else if (VERSIONS.equals(name)) {
-                return new ComponentState(versionsEditor.getComponent(), versionsEditor.getProperty());
-            }
-            return super.createComponent(property, parent, context);
-        }
     }
 
     private class VersioningDocumentEditor extends DocumentEditor {
