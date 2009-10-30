@@ -33,6 +33,24 @@ import java.util.Collections;
 
 /**
  * Lookup assertion denoting the target in a lookup relationship.
+ * <p/>
+ * The lookups of the node are constrained by the <em>value</em> property which represents the source lookup.
+ * E.g:
+ * <pre>
+ * &lt;node name="breed" path="/details/breed" type="java.lang.String" maxLength="30"&gt;
+ *   &lt;assertion name="lookup"&gt;
+ *     &lt;property name="type" value="targetLookup"/&gt;
+ *     &lt;property name="relationship" value="lookupRelationship.speciesBreed"/&gt;
+ *     &lt;property name="value" value="/details/species"/&gt;
+ *   &lt;/assertion&gt;
+ * &lt;/node&gt;'
+ * &lt;node name="species" path="/details/species" type="java.lang.String" minCardinality="1" maxLength="15"&gt;
+ *   &lt;assertion name="lookup"&gt;
+ *       &lt;property name="type" value="lookup"/&gt;
+ *       &lt;property name="source" value="lookup.species"/&gt;
+ *   &lt;/assertion&gt;
+ * &lt;/node&gt;
+ * </pre>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -72,6 +90,15 @@ class TargetLookup extends AbstractLookupAssertion {
             throw new LookupHelperException(
                     LookupHelperException.ErrorCode.InvalidTargetLookupSpec);
         }
+    }
+
+    /**
+     * Returns the lookup relationship archetype short name.
+     *
+     * @return the lookup relationship archetype short name
+     */
+    public String getRelationship() {
+        return relationship;
     }
 
     /**

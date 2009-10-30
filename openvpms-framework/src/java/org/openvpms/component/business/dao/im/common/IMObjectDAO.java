@@ -21,10 +21,11 @@ package org.openvpms.component.business.dao.im.common;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
+import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.Collection;
 import java.util.Map;
@@ -219,5 +220,12 @@ public interface IMObjectDAO {
                          ResultCollector collector, int firstResult,
                          int maxResults, boolean count);
 
+    /**
+     * Replaces the uses of one lookup with another.
+     *
+     * @param source the lookup to replace
+     * @param target the lookup to replace <tt>source</tt> it with
+     */
+    void replace(Lookup source, Lookup target);
 }
 

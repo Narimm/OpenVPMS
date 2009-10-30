@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.service.lookup;
 
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
@@ -33,9 +34,10 @@ public class LookupService extends AbstractLookupService {
      * Constructs a new <tt>LookupService</tt>.
      *
      * @param service the archetype service
+     * @param dao     the data access object
      */
-    public LookupService(IArchetypeService service) {
-        super(service);
+    public LookupService(IArchetypeService service, IMObjectDAO dao) {
+        super(service, dao);
     }
 
 }

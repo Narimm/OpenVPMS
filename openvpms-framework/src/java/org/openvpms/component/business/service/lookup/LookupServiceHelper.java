@@ -18,10 +18,6 @@
 
 package org.openvpms.component.business.service.lookup;
 
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-
-
 /**
  * This is a helper class for the lookup service.
  *
@@ -46,16 +42,14 @@ public class LookupServiceHelper {
     }
 
     /**
-     * Return a reference to the {@link ILookupService}, creating an
-     * instance of {@link LookupService} if one is not set.
+     * Return a reference to the {@link ILookupService}.
      *
      * @return the lookup service
-     * @throws ArchetypeServiceException for any error
+     * @throws LookupServiceException if the look service is not registered
      */
-    public static synchronized ILookupService getLookupService() {
+    public static ILookupService getLookupService() {
         if (lookupService == null) {
-            lookupService = new LookupService(
-                    ArchetypeServiceHelper.getArchetypeService());
+            throw new LookupServiceException(LookupServiceException.ErrorCode.LookupServiceNotSet);
         }
         return lookupService;
     }

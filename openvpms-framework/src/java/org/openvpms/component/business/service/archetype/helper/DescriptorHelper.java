@@ -145,6 +145,28 @@ public final class DescriptorHelper {
         return descriptor;
     }
 
+    /**
+     * Returns the archetype descriptors for an archetype short name.
+     *
+     * @param shortName the archetype short name. May contain wildcards
+     * @return a list of archetype descriptors
+     * @throws ArchetypeServiceException for any error
+     */
+    public static List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName) {
+        return getArchetypeDescriptors(new String[]{shortName});
+    }
+
+    /**
+     * Returns the archetype descriptors for an archetype short name.
+     *
+     * @param shortName the archetype short name. May contain wildcards
+     * @param service   the archetype service
+     * @return a list of archetype descriptors
+     * @throws ArchetypeServiceException for any error
+     */
+    public static List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName, IArchetypeService service) {
+        return getArchetypeDescriptors(new String[]{shortName}, service);
+    }
 
     /**
      * Returns the archetype descriptors for an archetype range.

@@ -20,10 +20,8 @@
 package org.openvpms.component.business.service.archetype.assertion;
 
 // hibernate
-import org.hibernate.SessionFactory;
 
-// log4j
-import org.apache.log4j.Logger;
+import org.hibernate.SessionFactory;
 
 
 /**
@@ -36,13 +34,8 @@ import org.apache.log4j.Logger;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
+@Deprecated
 public class DatabaseAssertions {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(DatabaseAssertions.class);
 
     /**
      * This is a reference to a hibernate session factory, which can be used

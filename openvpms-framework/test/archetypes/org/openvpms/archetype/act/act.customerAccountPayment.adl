@@ -22,13 +22,7 @@
         <node name="printed" path="/details/printed" type="java.lang.Boolean"
               defaultValue="false()"/>
         <node name="status" path="/status" type="java.lang.String"
-              minCardinality="1">
-            <assertion name="lookup">
-                <property name="type" value="lookup"/>
-                <property name="concept" value="paymentStatus"/>
-                <errorMessage>An error message</errorMessage>
-            </assertion>
-        </node>
+              minCardinality="1"/>
         <node name="participants" path="/participations" parentChild="true"
               type="java.util.HashSet" baseName="Participation"
               minCardinality="0" maxCardinality="*">

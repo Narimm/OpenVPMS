@@ -9,7 +9,7 @@
               derivedValue="concat(/details/lastName, ',', /details/firstName)"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(openvpms:lookup(.,'title'), ' ', /details/firstName, ' ', /details/initials,' ',/details/lastName)"/>
+              derivedValue="concat(/details/firstName, ' ', /details/initials,' ',/details/lastName)"/>
         <node name="title" path="/details/title" type="java.lang.String"
               minCardinality="0">
             <assertion name="lookup.local">

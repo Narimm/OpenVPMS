@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.lookup;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -296,6 +297,8 @@ public class LookupTestCase
 
         service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
+        LookupService lookups = new LookupService(service, (IMObjectDAO) applicationContext.getBean("imObjectDao"));
+        new LookupServiceHelper(lookups);
     }
 
     /*

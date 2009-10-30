@@ -88,7 +88,7 @@ public class ArchetypeServiceTestCase
 
         NodeDescriptor ndesc = service.getArchetypeDescriptor(
                 person.getArchetypeId()).getNodeDescriptor("description");
-        assertTrue(ndesc.getValue(person).equals("Mr Jim  Alateras"));
+        assertTrue(ndesc.getValue(person).equals("Jim  Alateras"));
 
         ndesc = service.getArchetypeDescriptor(person.getArchetypeId())
                 .getNodeDescriptor("name");

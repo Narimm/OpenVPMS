@@ -178,7 +178,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>-Xmx256m</argLine>
-                    <forkMode>once</forkMode>
+                    <forkMode>always</forkMode>
                     <excludes>
                         <exclude>**/BaseTestCase.java</exclude>
                         <exclude>**/HibernateInfoModelTestCase.java</exclude>
