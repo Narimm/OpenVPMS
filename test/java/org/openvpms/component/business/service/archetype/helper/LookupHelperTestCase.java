@@ -126,10 +126,10 @@ public class LookupHelperTestCase
      */
     public void testDefaultLookup() {
         // create two new colour lookups. Make RED the default.
-        Lookup red = LookupUtil.createLookup("lookup.colour", "RED");
+        Lookup red = LookupUtil.createLookup(service, "lookup.colour", "RED");
         red.setDefaultLookup(true);
 
-        Lookup blue = LookupUtil.createLookup("lookup.colour", "BLUE");
+        Lookup blue = LookupUtil.createLookup(service, "lookup.colour", "BLUE");
         blue.setDefaultLookup(false);
 
         service.save(red);

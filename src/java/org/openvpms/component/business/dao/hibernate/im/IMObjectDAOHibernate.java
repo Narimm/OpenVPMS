@@ -44,6 +44,7 @@ import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectNodeResul
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectResultCollector;
 import org.openvpms.component.business.dao.hibernate.im.entity.NodeSetResultCollector;
 import org.openvpms.component.business.dao.hibernate.im.entity.ObjectSetResultCollector;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupReplacer;
 import org.openvpms.component.business.dao.hibernate.im.query.QueryBuilder;
 import org.openvpms.component.business.dao.hibernate.im.query.QueryContext;
 import org.openvpms.component.business.dao.im.Page;
@@ -54,6 +55,7 @@ import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
@@ -550,11 +552,31 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
     }
 
+    /**
+     * Replaces the uses of one lookup with another.
+     *
+     * @param source the lookup to replace
+     * @param target the lookup to replace <tt>source</tt> it with
+     */
+    public void replace(final Lookup source, final Lookup target) {
+        try {
+            update(new HibernateCallback() {
+                public Object doInHibernate(Session session) throws HibernateException {
+                    LookupReplacer replacer = new LookupReplacer(cache);
+                    replacer.replace(source, target, session);
+                    return null;
+                }
+            });
+        } catch (Throwable exception) {
+            throw new IMObjectDAOException(FailedToSaveIMObject, exception, source.getId());
+        }
+    }
     /*
     * (non-Javadoc)
     *
     * @see org.springframework.orm.hibernate3.support.HibernateDaoSupport#createHibernateTemplate(org.hibernate.SessionFactory)
     */
+
     @Override
     protected HibernateTemplate createHibernateTemplate(
             SessionFactory sessionFactory) {

@@ -156,6 +156,6 @@ public class ArchetypeServiceFilteredTestCase
      * @return a new lookup
      */
     private Lookup createLookup(String shortName, String code) {
-        return LookupUtil.createLookup(shortName, code);
+        return LookupUtil.createLookup(service, shortName, code);
     }
 }

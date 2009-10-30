@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.lookup;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -53,10 +54,11 @@ public class CachingLookupService extends AbstractLookupService {
      * Creates a new <tt>CachingLookupService</tt>.
      *
      * @param service the archetype service
+     * @param dao     the data access object
      * @param cache   the cache
      */
-    public CachingLookupService(IArchetypeService service, Cache cache) {
-        super(service);
+    public CachingLookupService(IArchetypeService service, IMObjectDAO dao, Cache cache) {
+        super(service, dao);
         this.cache = cache;
         service.addListener(
                 "lookup.*", new AbstractArchetypeServiceListener() {

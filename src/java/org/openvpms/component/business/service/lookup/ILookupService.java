@@ -98,4 +98,14 @@ public interface ILookupService {
      */
     Collection<Lookup> getTargetLookups(Lookup lookup,
                                         String relationshipShortName);
+
+    /**
+     * Replaces one lookup with another.
+     * <p/>
+     * Each lookup must be of the same archetype.
+     *
+     * @param source the lookup to replace
+     * @param target the lookup to replace <tt>source</tt> with
+     */
+    void replace(Lookup source, Lookup target);
 }

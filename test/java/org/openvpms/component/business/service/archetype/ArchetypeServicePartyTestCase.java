@@ -256,7 +256,7 @@ public class ArchetypeServicePartyTestCase
      * @return a new lookup
      */
     private Lookup createStaff(String code) {
-        Lookup lookup = LookupUtil.createLookup("lookup.staff", code);
+        Lookup lookup = LookupUtil.createLookup(service, "lookup.staff", code);
         lookup.setDescription(code);
         return lookup;
     }
@@ -268,7 +268,7 @@ public class ArchetypeServicePartyTestCase
      * @return a new lookup
      */
     private Lookup createContactPurpose(String code) {
-        return LookupUtil.createLookup("lookup.contactPurpose", code);
+        return LookupUtil.createLookup(service, "lookup.contactPurpose", code);
     }
 
     /**

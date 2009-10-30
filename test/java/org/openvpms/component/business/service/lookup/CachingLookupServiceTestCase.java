@@ -38,8 +38,7 @@ public class CachingLookupServiceTestCase extends AbstractLookupServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         Cache cache = (Cache) applicationContext.getBean("lookupCache");
-        setLookupService(new CachingLookupService(getArchetypeService(),
-                                                  cache));
+        setLookupService(new CachingLookupService(getArchetypeService(), getDAO(), cache));
     }
 
 }

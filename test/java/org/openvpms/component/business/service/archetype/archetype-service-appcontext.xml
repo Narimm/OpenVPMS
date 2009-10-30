@@ -156,4 +156,21 @@
         </constructor-arg>
     </bean>
 
+    <!--  The Lookup Service -->
+    <bean id="lookupService" class="org.openvpms.component.business.service.lookup.LookupService">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <ref local="imObjectDao"/>
+        </constructor-arg>
+    </bean>
+
+    <!--  Instantiate the lookup service helper bean and inject their dependencies -->
+    <bean id="lookupServiceHelper" class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
+        <constructor-arg>
+            <ref local="lookupService"/>
+        </constructor-arg>
+    </bean>
+
 </beans>

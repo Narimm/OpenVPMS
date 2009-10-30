@@ -40,13 +40,12 @@ import java.util.List;
  * specifying the lookup shortname.
  * E.g:
  * <pre>
- *   <node name="country" path="/details/country"
- *         type="java.lang.String">
- *     <assertion name="lookup">
- * 	     <property name="type" value="lookup" />
- *       <property name="source" value="lookup.country" />
- *     </assertion>
- *   </node>
+ *   &lt;node name="country" path="/details/country" type="java.lang.String"&gt;
+ *     &lt;assertion name="lookup"&gt;
+ * 	     &lt;property name="type" value="lookup" /&gt;
+ *       &lt;property name="source" value="lookup.country" /&gt;
+ *     &lt;/assertion&gt;
+ *   &lt;/node&gt;
  * </pre>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -66,7 +65,7 @@ class RemoteLookup extends AbstractLookupAssertion {
 
 
     /**
-     * Constructs a new <code>BasicLookup</code>.
+     * Constructs a new <code>RemoteLookup</code>.
      *
      * @param assertion     the assertion descriptor
      * @param service       the archetype service
@@ -83,6 +82,15 @@ class RemoteLookup extends AbstractLookupAssertion {
                     LookupHelperException.ErrorCode.SourceNotSpecified,
                     new Object[]{assertion.getName(), "lookup"});
         }
+    }
+
+    /**
+     * Returns the lookup archetype short name.
+     *
+     * @return the lookup archetype short name
+     */
+    public String getShortName() {
+        return source;
     }
 
     /**

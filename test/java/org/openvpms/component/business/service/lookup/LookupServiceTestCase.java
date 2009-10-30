@@ -35,7 +35,7 @@ public class LookupServiceTestCase extends AbstractLookupServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        setLookupService(new LookupService(getArchetypeService()));
+        setLookupService(new LookupService(getArchetypeService(), getDAO()));
     }
 
 }

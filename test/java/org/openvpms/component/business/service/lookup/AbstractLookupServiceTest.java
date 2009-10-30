@@ -18,12 +18,11 @@
 
 package org.openvpms.component.business.service.lookup;
 
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 
@@ -34,13 +33,12 @@ import java.util.Collection;
  * @version $LastChangedDate: 2006-11-27 05:03:46Z $
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class AbstractLookupServiceTest
-        extends AbstractDependencyInjectionSpringContextTests {
+public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
 
     /**
-     * The archetype service
+     * The DAO.
      */
-    private IArchetypeService service;
+    private IMObjectDAO dao;
 
     /**
      * The lookup service.
@@ -56,15 +54,14 @@ public class AbstractLookupServiceTest
     /**
      * Tests the {@link ILookupService#getLookup} method.
      */
-    public void testGetLookup() throws Exception {
-        Lookup lookup = LookupUtil.createLookup(service, "lookup.breed",
-                                                "CANINE");
+    public void testGetLookup() {
+        Lookup lookup = createLookup("lookup.breed", "CANINE");
         String code = lookup.getCode();
 
         Lookup found = lookupService.getLookup("lookup.breed", code);
         assertNull(found);
 
-        service.save(lookup);
+        save(lookup);
 
         found = lookupService.getLookup("lookup.breed", code);
         assertNotNull(found);
@@ -74,15 +71,13 @@ public class AbstractLookupServiceTest
     /**
      * Tests the {@link ILookupService#getLookups} method.
      */
-    public void testGetLookups() throws Exception {
-        Collection<Lookup> lookups1
-                = lookupService.getLookups("lookup.country");
+    public void testGetLookups() {
+        Collection<Lookup> lookups1 = lookupService.getLookups("lookup.country");
 
-        Lookup lookup = LookupUtil.createLookup("lookup.country", "AU");
-        service.save(lookup);
+        Lookup lookup = createLookup("lookup.country", "AU");
+        save(lookup);
 
-        Collection<Lookup> lookups2
-                = lookupService.getLookups("lookup.country");
+        Collection<Lookup> lookups2 = lookupService.getLookups("lookup.country");
         assertEquals(lookups1.size() + 1, lookups2.size());
         assertTrue(lookups2.contains(lookup));
     }
@@ -93,13 +88,11 @@ public class AbstractLookupServiceTest
     public void testGetDefaultLookups() {
         removeLookups("lookup.country");
 
-        Lookup au = LookupUtil.createLookup(service, "lookup.country", "AU");
+        Lookup au = createLookup("lookup.country", "AU");
         au.setDefaultLookup(true);
+        save(au);
 
-        Lookup uk = LookupUtil.createLookup(service, "lookup.country", "UK");
-
-        service.save(au);
-        service.save(uk);
+        createLookup("lookup.country", "UK");
 
         Lookup lookup = lookupService.getDefaultLookup("lookup.country");
         assertEquals(au, lookup);
@@ -113,16 +106,11 @@ public class AbstractLookupServiceTest
         removeLookups("lookup.country");
         removeLookups("lookup.state");
 
-        Lookup au = LookupUtil.createLookup("lookup.country", "AU");
-        Lookup uk = LookupUtil.createLookup("lookup.country", "UK");
-
-        service.save(au);
-        service.save(uk);
-
-        Lookup vic = LookupUtil.createLookup("lookup.state", "VIC");
-        LookupUtil.addRelationship(service, "lookupRelationship.countryState",
-                                   au, vic);
-        service.save(Arrays.asList(au, vic));
+        Lookup au = createLookup("lookup.country", "AU");
+        createLookup("lookup.country", "UK");
+        Lookup vic = createLookup("lookup.state", "VIC");
+        LookupUtil.addRelationship(getArchetypeService(), "lookupRelationship.countryState", au, vic);
+        save(au, vic);
 
         assertEquals(0, lookupService.getSourceLookups(au).size());
         Collection<Lookup> targets = lookupService.getTargetLookups(au);
@@ -142,36 +130,42 @@ public class AbstractLookupServiceTest
         removeLookups("lookup.country");
         removeLookups("lookup.state");
 
-        Lookup au = LookupUtil.createLookup("lookup.country", "AU");
-        service.save(au);
-
-        Lookup vic = LookupUtil.createLookup("lookup.state", "VIC");
+        Lookup au = createLookup("lookup.country", "AU");
+        Lookup vic = createLookup("lookup.state", "VIC");
         LookupRelationship rel = LookupUtil.addRelationship(
-                service, "lookupRelationship.countryState", au, vic);
-        service.save(Arrays.asList(au, vic));
+                getArchetypeService(), "lookupRelationship.countryState", au, vic);
+        save(au, vic);
 
-        au = (Lookup) service.get(au.getObjectReference());
-        vic = (Lookup) service.get(vic.getObjectReference());
+        au = get(au);
+        vic = get(vic);
 
-        assertEquals(au, lookupService.getLookup("lookup.country",
-                                                 au.getCode()));
-        assertEquals(vic, lookupService.getLookup("lookup.state",
-                                                  vic.getCode()));
+        assertEquals(au, lookupService.getLookup("lookup.country", au.getCode()));
+        assertEquals(vic, lookupService.getLookup("lookup.state", vic.getCode()));
 
         au.setDescription("Australia");
-        service.save(au);
+        save(au);
 
         assertEquals(au.getDescription(), lookupService.getLookup(
                 "lookup.country", au.getCode()).getDescription());
 
         au.removeLookupRelationship(rel);
         vic.removeLookupRelationship(rel);
-        service.save(Arrays.asList(au, vic));
-        service.remove(vic);
+        save(au, vic);
+        remove(vic);
 
-        assertEquals(au, lookupService.getLookup("lookup.country",
-                                                 au.getCode()));
+        assertEquals(au, lookupService.getLookup("lookup.country", au.getCode()));
         assertNull(lookupService.getLookup("lookup.state", vic.getCode()));
+    }
+
+    /**
+     * Helper to create and save a lookup.
+     *
+     * @param code the lookup code
+     * @param name the lookup name
+     * @return a new lookup
+     */
+    protected Lookup createLookup(String code, String name) {
+        return LookupUtil.createLookup(getArchetypeService(), code, name);
     }
 
     /**
@@ -182,9 +176,7 @@ public class AbstractLookupServiceTest
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
+        dao = (IMObjectDAO) applicationContext.getBean("imObjectDao");
     }
 
     /**
@@ -206,12 +198,12 @@ public class AbstractLookupServiceTest
     }
 
     /**
-     * Returns the archetype service.
+     * Returns the DAO.
      *
-     * @return the archetype service
+     * @return the DAO
      */
-    protected IArchetypeService getArchetypeService() {
-        return service;
+    protected IMObjectDAO getDAO() {
+        return dao;
     }
 
     /*
@@ -235,8 +227,8 @@ public class AbstractLookupServiceTest
     protected void removeLookups(String shortName) {
         Collection<Lookup> lookups = lookupService.getLookups(shortName);
         for (Lookup lookup : lookups) {
-            lookup = (Lookup) service.get(lookup.getObjectReference());
-            service.remove(lookup);
+            lookup = (Lookup) get(lookup.getObjectReference());
+            remove(lookup);
         }
 
     }

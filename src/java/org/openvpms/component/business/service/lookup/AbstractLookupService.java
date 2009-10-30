@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.service.lookup;
 
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -49,59 +50,26 @@ public abstract class AbstractLookupService implements ILookupService {
     private final IArchetypeService service;
 
     /**
+     * The data access object.
+     */
+    private final IMObjectDAO dao;
+
+    /**
      * The default lookup node.
      */
     private static final String DEFAULT_LOOKUP = "defaultLookup"; // NON-NLS
 
 
     /**
-     * Constructs a new <tt>AbstractLookupService</tt>.
+     * Constructs an <tt>AbstractLookupService</tt>.
      *
      * @param service the archetype service
+     * @param dao     the data access object
      */
-    public AbstractLookupService(IArchetypeService service) {
+    public AbstractLookupService(IArchetypeService service, IMObjectDAO dao) {
         this.service = service;
+        this.dao = dao;
     }
-
-    /**
-     * Returns the archetype service.
-     *
-     * @return the archetype service
-     */
-    protected IArchetypeService getService() {
-        return service;
-    }
-
-    /**
-     * Returns the lookup with the specified lookup archetype short name and
-     * code.
-     *
-     * @param shortName the lookup archetype short name
-     * @param code      the lookup code
-     * @return the corresponding lookup or <tt>null</tt> if none is found
-     */
-    protected Lookup query(String shortName, String code) {
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
-        query.add(new NodeConstraint("code", code)); // NON-NLS
-        query.setMaxResults(1);
-        List<IMObject> results = service.get(query).getResults();
-        return (!results.isEmpty()) ? (Lookup) results.get(0) : null;
-    }
-
-    /**
-     * Returns all lookups with the specified lookup archetype short name.
-     *
-     * @param shortName the lookup archetype short name
-     * @return a collection of lookups with the specified short name
-     */
-    @SuppressWarnings("unchecked")
-    protected Collection<Lookup> query(String shortName) {
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List results = service.get(query).getResults();
-        return (List<Lookup>) results;
-    }
-
 
     /**
      * Returns the lookup with the specified lookup archetype short name and
@@ -194,6 +162,66 @@ public abstract class AbstractLookupService implements ILookupService {
                 = getRelationships(relationshipShortName,
                                    lookup.getSourceLookupRelationships());
         return getTargetLookups(relationships);
+    }
+
+    /**
+     * Replaces one lookup with another.
+     * <p/>
+     * Each lookup must be of the same archetype.
+     *
+     * @param source the lookup to replace
+     * @param target the lookup to replace <tt>source</tt> with
+     */
+    public void replace(Lookup source, Lookup target) {
+        dao.replace(source, target);
+    }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
+    }
+
+    /**
+     * Returns the DAO.
+     *
+     * @return the DAO
+     */
+    protected IMObjectDAO getDAO() {
+        return dao;
+    }
+
+    /**
+     * Returns the lookup with the specified lookup archetype short name and
+     * code.
+     *
+     * @param shortName the lookup archetype short name
+     * @param code      the lookup code
+     * @return the corresponding lookup or <tt>null</tt> if none is found
+     */
+    protected Lookup query(String shortName, String code) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
+        query.add(new NodeConstraint("code", code)); // NON-NLS
+        query.setMaxResults(1);
+        List<IMObject> results = service.get(query).getResults();
+        return (!results.isEmpty()) ? (Lookup) results.get(0) : null;
+    }
+
+    /**
+     * Returns all lookups with the specified lookup archetype short name.
+     *
+     * @param shortName the lookup archetype short name
+     * @return a collection of lookups with the specified short name
+     */
+    @SuppressWarnings("unchecked")
+    protected Collection<Lookup> query(String shortName) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List results = service.get(query).getResults();
+        return (List<Lookup>) results;
     }
 
     /**
