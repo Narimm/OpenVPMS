@@ -17,6 +17,7 @@
  */
 package org.openvpms.component.business.service.lookup;
 
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -32,179 +33,179 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 
 /**
- * Tests lookup replacement via the {@link ILookupService#replace} method.
+ * Verifies that lookup instances can only be deleted when they aren't referred to by another object.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
-
-    /**
-     * The lookup service.
-     */
-    private ILookupService lookupService;
+public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
 
 
     /**
-     * Verifies that an entity that has a node that refers to a lookup by its code can have the lookup code replaced.
+     * Verifies that a lookup that is referred to by an entity via its code can only be deleted once the entity
+     * no longer refers to it.
      */
-    public void testEntityCodeReplace() {
+    public void testEntityCodeDelete() {
         Party party = (Party) create("party.basic");
-        checkCodeReplace(party, "description", "lookup.description", false);
-        checkCodeReplace(party, "title", "lookup.title", true);
+        checkCodeDelete(party, "description", "lookup.description", false);
+        checkCodeDelete(party, "title", "lookup.title", true);
     }
 
     /**
-     * Verifies that an entity that has a classifications node can have the lookup replaced.
+     * Verifies that a lookup that is referred to by an entity as a classification can only be deleted once the entity
+     * no longer refers to it.
      */
-    public void testEntityClassificationReplace() {
+    public void testEntityClassificationDelete() {
         Party party = (Party) create("party.basic");
-        checkClassificationReplace(party, "classifications", "lookup.category");
+        checkClassificationDelete(party, "classifications", "lookup.category");
     }
 
     /**
-     * Verifies that an act that has a node that refers to a lookup by its code can have the lookup code replaced.
+     * Verifies that a lookup that is referred to by an act via its code can only be deleted once the act no longer
+     * refers to it.
      */
-    public void testActCodeReplace() {
+    public void testActCodeDelete() {
         Act act = (Act) create("act.basic");
-        checkCodeReplace(act, "status", "lookup.status", false);
-        checkCodeReplace(act, "category", "lookup.category", true);
+        checkCodeDelete(act, "status", "lookup.status", false);
+        checkCodeDelete(act, "category", "lookup.category", true);
     }
 
     /**
-     * Verifies that an act relationship that has a node that refers to a lookup by its code can have the lookup code
-     * replaced.
+     * Verifies that a lookup that is referred to by an act relationship via its code can only be deleted once the
+     * act relationship no longer refers to it.
      */
-    public void testActRelationshipCodeReplace() {
+    public void testActRelationshipCodeDelete() {
         Act act1 = (Act) create("act.basic");
         Act act2 = (Act) create("act.basic");
         ActBean bean = new ActBean(act1);
         ActRelationship relationship = bean.addRelationship("actRelationship.basic", act2);
         save(act1, act2);
 
-        checkCodeReplace(relationship, "description", "lookup.description", false);
-        checkCodeReplace(relationship, "category", "lookup.category", true);
+        checkCodeDelete(relationship, "description", "lookup.description", false);
+        checkCodeDelete(relationship, "category", "lookup.category", true);
     }
 
     /**
-     * Verifies that a contact that has a node that refers to a lookup by its code can have the lookup code
-     * replaced.
+     * Verifies that a lookup that is referred to by a contact via its code can only be deleted once the contact no
+     * longer refers to it.
      */
-    public void testContactCodeReplace() {
+    public void testContactCodeDelete() {
         Contact contact = (Contact) create("contact.location");
-        checkCodeReplace(contact, "description", "lookup.description", false);
+        checkCodeDelete(contact, "description", "lookup.description", false);
 
         // Now check the suburb node, which is handled internally by the /details map and contact_details table
         // NOTE: in this instance, the archetype definition restricts the suburbs by the state node but no validation
         // is used to enforce this. It does however demonstrate that nodes with 'targetLookup' lookup assertions are
         // processed correctly.
-        checkCodeReplace(contact, "suburb", "lookup.suburb", true);
+        checkCodeDelete(contact, "suburb", "lookup.suburb", true);
     }
 
     /**
-     * Verifies that a contact that has a classifications node can have the lookup replaced.
+     * Verifies that a lookup that is referred to by an contact as a classification can only be deleted once the contact
+     * no longer refers to it.
      */
-    public void testContactClassificationReplace() {
+    public void testContactClassificationDelete() {
         Contact contact = (Contact) create("contact.location");
-        checkClassificationReplace(contact, "classifications", "lookup.category");
+        checkClassificationDelete(contact, "classifications", "lookup.category");
     }
 
     /**
-     * Verifies that a document that has a node that refers to a lookup by its code can have the lookup code
-     * replaced.
+     * Verifies that a lookup that is referred to by a document via its code can only be deleted once the document no
+     * longer refers to it.
      */
-    public void testDocumentCodeReplace() {
+    public void testDocumentCodeDelete() {
         Document document = (Document) create("document.basic");
-        checkCodeReplace(document, "mimeType", "lookup.category", false);
-        checkCodeReplace(document, "title", "lookup.title", true);
+        checkCodeDelete(document, "mimeType", "lookup.category", false);
+        checkCodeDelete(document, "title", "lookup.title", true);
     }
 
     /**
-     * Verifies that an entity identity that has a node that refers to a lookup by its code can have the lookup code
-     * replaced.
+     * Verifies that a lookup that is referred to by an entity identity via its code can only be deleted once the
+     * entity identity no longer refers to it.
      */
-    public void testEntityIdentityCodeReplace() {
+    public void testEntityIdentityCodeDelete() {
         EntityIdentity identity = (EntityIdentity) create("entityIdentity.code");
-        checkCodeReplace(identity, "description", "lookup.description", false);
-        checkCodeReplace(identity, "status", "lookup.status", true);
+        checkCodeDelete(identity, "description", "lookup.description", false);
+        checkCodeDelete(identity, "status", "lookup.status", true);
     }
 
     /**
-     * Verifies that an entity relationship that has a node that refers to a lookup by its code can have the lookup code
-     * replaced.
+     * Verifies that a lookup that is referred to by an entity relationship via its code can only be deleted once the
+     * entity relationship no longer refers to it.
      */
-    public void testEntityRelationshipCodeReplace() {
+    public void testEntityRelationshipCodeDelete() {
         Party party1 = (Party) create("party.basic");
         Party party2 = (Party) create("party.basic");
         EntityBean bean = new EntityBean(party1);
         EntityRelationship relationship = bean.addRelationship("entityRelationship.basic", party2);
         save(party1, party2);
 
-        checkCodeReplace(relationship, "description", "lookup.description", false);
-        checkCodeReplace(relationship, "category", "lookup.category", true);
+        checkCodeDelete(relationship, "description", "lookup.description", false);
+        checkCodeDelete(relationship, "category", "lookup.category", true);
     }
 
     /**
-     * Verifies that a lookup that has a node that refers to a lookup by its code can have the lookup code
-     * replaced.
+     * Verifies that a lookup that is referred to by another lookup via its code can only be deleted once the
+     * lookup no longer refers to it.
      */
-    public void testLookupCodeReplace() {
+    public void testLookupCodeDelete() {
         Lookup lookup = createLookup("lookup.staff", "STAFF1");
-        checkCodeReplace(lookup, "description", "lookup.description", false);
-        checkCodeReplace(lookup, "category", "lookup.category", true);
+        checkCodeDelete(lookup, "description", "lookup.description", false);
+        checkCodeDelete(lookup, "category", "lookup.category", true);
     }
 
     /**
-     * Verifies that a lookup relationship that has a node that refers to a lookup by its code can have the lookup code
-     * replaced.
+     * Verifies that a lookup that is referred to by a lookup relationship via its code can only be deleted once the
+     * lookup relationship no longer refers to it.
      */
-    public void testLookupRelationshipCodeReplace() {
+    public void testLookupRelationshipCodeDelete() {
         Lookup state = createLookup("lookup.state", "VIC");
         Lookup suburb = createLookup("lookup.suburb", "CAPE_WOOLAMAI");
         LookupRelationship relationship = LookupUtil.addRelationship(getArchetypeService(),
                                                                      "lookupRelationship.stateSuburb", state, suburb);
         save(state, suburb);
-        checkCodeReplace(relationship, "description", "lookup.description", true);
+        checkCodeDelete(relationship, "description", "lookup.description", true);
         // lookup relationship has no top-level nodes suitable for lookup codes.
-
     }
 
     /**
-     * Verifies that a participation that has a node that refers to a lookup by its code can have the lookup code
-     * replaced.
+     * Verifies that a lookup that is referred to by a participation via its code can only be deleted once the
+     * participation no longer refers to it.
      */
-    public void testParticipationCodeReplace() {
+    public void testParticipationCodeDelete() {
         Act act = (Act) create("act.basic");
         Party party = (Party) create("party.basic");
         ActBean bean = new ActBean(act);
         Participation participation = bean.addParticipation("participation.basic", party);
         save(act, party);
-        checkCodeReplace(participation, "description", "lookup.description", false);
-        checkCodeReplace(participation, "category", "lookup.category", true);
+        checkCodeDelete(participation, "description", "lookup.description", false);
+        checkCodeDelete(participation, "category", "lookup.category", true);
     }
 
     /**
-     * Verifies that a product price that has a node that refers to a lookup by its code can have the lookup code
-     * replaced.
+     * Verifies that a product price that is referred to by a participation via its code can only be deleted once the
+     * product price no longer refers to it.
      */
-    public void testProductPriceCodeReplace() {
+    public void testProductPriceCodeDelete() {
         ProductPrice price = (ProductPrice) create("productPrice.basic");
-        checkCodeReplace(price, "description", "lookup.description", false);
-        checkCodeReplace(price, "category", "lookup.category", true);
+        checkCodeDelete(price, "description", "lookup.description", false);
+        checkCodeDelete(price, "category", "lookup.category", true);
     }
 
     /**
-     * Verifies that a product price that has a classifications node can have the lookup replaced.
+     * Verifies that a lookup that is referred to by an product price as a classification can only be deleted once the
+     * product price no longer refers to it.
      */
-    public void testProductPriceClassificationReplace() {
+    public void testProductPriceClassificationDelete() {
         ProductPrice price = (ProductPrice) create("productPrice.basic");
-        checkClassificationReplace(price, "classifications", "lookup.category");
+        checkClassificationDelete(price, "classifications", "lookup.category");
     }
 
     /**
@@ -215,7 +216,6 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        lookupService = (ILookupService) applicationContext.getBean("lookupService");
     }
 
     /*
@@ -231,18 +231,19 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Verifies that an object that has a node that refers to a lookup via its code, can have the lookup replaced.
+     * Verifies that a lookup that is referred to by an object via its code can only be deleted once the object
+     * no longer refers to it.
      * <p/>
      * The <tt>isDetailsNode</tt> argument is used to indicate nodes that are handled internally via the
      * {@link org.openvpms.component.business.domain.im.common.IMObject#getDetails()} map. These are mapped to a
-     * '*_details' table by hibernate and are handled differently by the replacement code.
+     * '*_details' table by hibernate and are handled differently by the usage code.
      *
      * @param object        the object
      * @param node          the lookup code node
      * @param lookup        the lookup archetype short name
      * @param isDetailsNode determines if the node is a 'details' node.
      */
-    private void checkCodeReplace(IMObject object, String node, String lookup, boolean isDetailsNode) {
+    private void checkCodeDelete(IMObject object, String node, String lookup, boolean isDetailsNode) {
         save(object);
         ArchetypeDescriptor archetype = getArchetypeService().getArchetypeDescriptor(object.getArchetypeId());
         assertNotNull(archetype);
@@ -258,53 +259,55 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
         bean.setValue(node, lookup1.getCode());
         bean.save();
 
-        lookupService.replace(lookup1, lookup2);
-
-        object = get(object);
-        bean = new IMObjectBean(object);
-        assertEquals(lookup2.getCode(), bean.getValue(node));
+        try {
+            remove(lookup1);
+            fail("Expected an ArchetypeServiceException to be thrown");
+        } catch (ArchetypeServiceException exception) {
+            assertEquals(ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
+                         exception.getErrorCode());
+            Throwable cause = exception.getCause();
+            assertTrue(cause instanceof IMObjectDAOException);
+            assertEquals(IMObjectDAOException.ErrorCode.CannotDeleteInUseLookup,
+                         ((IMObjectDAOException) cause).getErrorCode());
+        }
+        bean.setValue(node, lookup2.getCode());
+        bean.save();
+        remove(lookup1); // should now be able to remove the lookup
     }
 
     /**
-     * Verifies that an object that has a classifications node can have the lookup replaced.
+     * Verifies that a lookup that is referred to by an object as a classification can only be deleted once the object
+     * no longer refers to it.
      *
      * @param object         the object
      * @param node           the classification node
      * @param classification the classification lookup archetype short name
      */
-    private void checkClassificationReplace(IMObject object, String node, String classification) {
+    private void checkClassificationDelete(IMObject object, String node, String classification) {
         Lookup class1 = createLookup(classification, "CLASS_1");
         Lookup class2 = createLookup(classification, "CLASS_2");
-        Lookup class3 = createLookup(classification, "CLASS_3");
-        save(class1, class2, class3);
+        save(class1, class2);
 
         // add classification 'CLASS_1'
         IMObjectBean bean = new IMObjectBean(object);
         bean.addValue(node, class1);
         bean.save();
 
-        // replace 'CLASS_1' with 'CLASS_2'
-        lookupService.replace(class1, class2);
-
-        // verify it has been replaced
-        bean = new IMObjectBean(get(object));
-        assertEquals(1, bean.getValues(node).size());
-        assertTrue(bean.getValues(node).contains(class2));
-        assertFalse(bean.getValues(node).contains(class1));
-
-        // add 'CLASS_3'. The object will now have 2 classifications, 'CLASS_1' and 'CLASS_3'
-        bean.addValue(node, class3);
+        try {
+            remove(class1);
+            fail("Expected an ArchetypeServiceException to be thrown");
+        } catch (ArchetypeServiceException exception) {
+            assertEquals(ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
+                         exception.getErrorCode());
+            Throwable cause = exception.getCause();
+            assertTrue(cause instanceof IMObjectDAOException);
+            assertEquals(IMObjectDAOException.ErrorCode.CannotDeleteInUseLookup,
+                         ((IMObjectDAOException) cause).getErrorCode());
+        }
+        bean.removeValue(node, class1);
+        bean.addValue(node, class2);
         bean.save();
-
-        // now replace 'CLASS_2' with 'CLASS_3'. As duplicates aren't allowed, there will only be a single
-        // 'CLASS_3' on replacement.
-        lookupService.replace(class2, class3);
-
-        // verify it has been replaced
-        bean = new IMObjectBean(get(object));
-        assertEquals(1, bean.getValues(node).size());
-        assertTrue(bean.getValues(node).contains(class3));
-        assertFalse(bean.getValues(node).contains(class2));
+        remove(class1); // should now be able to remove the lookup
     }
 
     /**

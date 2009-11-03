@@ -108,7 +108,7 @@
     <!--  The Archetype Descriptor Cache -->
     <bean id="archetypeDescriptorCache"
           class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
-        <constructor-arg index="0" value="org/openvpms/component/business/service/lookup/ReplaceLookupTestCaseArchetypes.xml"/>
+        <constructor-arg index="0" value="org/openvpms/component/business/service/lookup/ReplaceDeleteLookupTestCaseArchetypes.xml"/>
         <constructor-arg index="1" value="org/openvpms/archetype/assertionTypes.xml"/>
     </bean>
 
@@ -141,7 +141,7 @@
         </constructor-arg>
     </bean>
 
-    <!--  Instantiate the lookup service helper bean and inject their dependencies -->
+    <!--  Instantiate the lookup service helper bean and inject its dependencies -->
     <bean id="lookupServiceHelper" class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
         <constructor-arg>
             <ref local="lookupService"/>

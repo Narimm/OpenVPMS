@@ -42,7 +42,7 @@ public class ProductPriceAssembler
      * Assembles sets of lookups.
      */
     private SetAssembler<Lookup, LookupDO> LOOKUPS
-            = SetAssembler.create(Lookup.class, LookupDO.class);
+            = SetAssembler.create(Lookup.class, LookupDO.class, true);
 
 
     /**

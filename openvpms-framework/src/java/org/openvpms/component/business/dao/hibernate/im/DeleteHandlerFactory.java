@@ -19,15 +19,16 @@
 package org.openvpms.component.business.dao.hibernate.im;
 
 import org.openvpms.component.business.dao.hibernate.im.act.ActDeleteHandler;
-import org.openvpms.component.business.dao.hibernate.im.entity.EntityDeleteHandler;
-import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.DefaultDeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityDeleteHandler;
+import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDeleteHandler;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 
 
 /**
@@ -62,11 +63,12 @@ public class DeleteHandlerFactory {
      * Creates a new <tt>DeleteHandlerFactory</tt>.
      *
      * @param assembler the assembler
+     * @param archetypes the archetype descriptor cache
      */
-    public DeleteHandlerFactory(CompoundAssembler assembler) {
+    public DeleteHandlerFactory(CompoundAssembler assembler, IArchetypeDescriptorCache archetypes) {
         act = new ActDeleteHandler(assembler);
         entity = new EntityDeleteHandler(assembler);
-        lookup = new LookupDeleteHandler(assembler);
+        lookup = new LookupDeleteHandler(assembler, archetypes);
         defaultHandler = new DefaultDeleteHandler(assembler);
     }
 

@@ -62,14 +62,9 @@ public class LookupReplacer {
     private final IArchetypeDescriptorCache archetypes;
 
     /**
-     * Maps an archetype class to its corresponding SQL update statement.
+     * The entity_classifications table select statement.
      */
-    private static final Map<Class, String> sqlMappings = new HashMap<Class, String>();
-
-    /**
-     * Maps an archetype class to its corresponding Hibernate class.
-     */
-    private static final Map<Class, Class> hqlMappings = new HashMap<Class, Class>();
+    private static final String entityClassificationsSelect;
 
     /**
      * The entity_classifications table update statement.
@@ -82,6 +77,11 @@ public class LookupReplacer {
     private static final String entityClassificationsDelete;
 
     /**
+     * The contact_classifications table select statement.
+     */
+    private static final String contactClassificationsSelect;
+
+    /**
      * The contact_classifications table update statement.
      */
     private static final String contactClassificationsUpdate;
@@ -90,6 +90,11 @@ public class LookupReplacer {
      * The contact_classifications table delete statement.
      */
     private static final String contactClassificationsDelete;
+
+    /**
+     * The product_price_classifications table select statement.
+     */
+    private static final String priceClassificationsSelect;
 
     /**
      * The product_price_classifications table update statement.
@@ -101,42 +106,67 @@ public class LookupReplacer {
      */
     private static final String priceClassificationsDelete;
 
+    private static class Mapping {
+
+        private final String updateSQL;
+
+        private final String isUsedSQL;
+
+        private final Class impl;
+
+        public Mapping(String table, String details, String joinId, Class impl) {
+            this.updateSQL = createUpdateSQL(table, details, joinId);
+            this.isUsedSQL = createIsUsedSQL(table, details, joinId);
+            this.impl = impl;
+        }
+
+        public String getUpdateSQL() {
+            return updateSQL;
+        }
+
+        public String getIsUsedSQL() {
+            return isUsedSQL;
+        }
+
+        public Class getImpl() {
+            return impl;
+        }
+    }
+
+    private static final Map<Class, Mapping> mappings = new HashMap<Class, Mapping>();
+
+    private static void addMapping(Class clazz, String table, String details, String joinId, Class impl) {
+        mappings.put(clazz, new Mapping(table, details, joinId, impl));
+    }
 
     static {
-        sqlMappings.put(Act.class, createSQL("acts", "act_details", "act_id"));
-        sqlMappings.put(ActRelationship.class, createSQL("act_relationships", "act_relationship_details",
-                                                         "act_relationship_id"));
-        sqlMappings.put(Contact.class, createSQL("contacts", "contact_details", "contact_id"));
-        sqlMappings.put(Document.class, createSQL("documents", "document_details", "document_id"));
-        sqlMappings.put(Entity.class, createSQL("entities", "entity_details", "entity_id"));
-        sqlMappings.put(EntityIdentity.class, createSQL("entity_identities", "entity_identity_details",
-                                                        "entity_identity_id"));
-        sqlMappings.put(EntityRelationship.class, createSQL("entity_relationships", "entity_relationship_details",
-                                                            "entity_relationship_id"));
-        sqlMappings.put(Lookup.class, createSQL("lookups", "lookup_details", "lookup_id"));
-        sqlMappings.put(LookupRelationship.class, createSQL("lookup_relationships", "lookup_relationship_details",
-                                                            "lookup_relationship_id"));
-        sqlMappings.put(Participation.class, createSQL("participations", "participation_details", "participation_id"));
-        sqlMappings.put(ProductPrice.class, createSQL("product_prices", "product_price_details", "product_price_id"));
+        addMapping(Act.class, "acts", "act_details", "act_id", ActDOImpl.class);
+        addMapping(ActRelationship.class, "act_relationships", "act_relationship_details", "act_relationship_id",
+                   ActRelationshipDOImpl.class);
+        addMapping(Contact.class, "contacts", "contact_details", "contact_id", ContactDOImpl.class);
+        addMapping(Document.class, "documents", "document_details", "document_id", DocumentDOImpl.class);
+        addMapping(Entity.class, "entities", "entity_details", "entity_id", EntityDOImpl.class);
+        addMapping(EntityIdentity.class, "entity_identities", "entity_identity_details", "entity_identity_id",
+                   EntityIdentityDOImpl.class);
+        addMapping(EntityRelationship.class, "entity_relationships", "entity_relationship_details",
+                   "entity_relationship_id", EntityRelationshipDOImpl.class);
+        addMapping(Lookup.class, "lookups", "lookup_details", "lookup_id", LookupDOImpl.class);
+        addMapping(LookupRelationship.class, "lookup_relationships", "lookup_relationship_details",
+                   "lookup_relationship_id", LookupRelationshipDOImpl.class);
+        addMapping(Participation.class, "participations", "participation_details", "participation_id",
+                   ParticipationDOImpl.class);
+        addMapping(ProductPrice.class, "product_prices", "product_price_details", "product_price_id",
+                   ProductPriceDOImpl.class);
 
-        hqlMappings.put(Act.class, ActDOImpl.class);
-        hqlMappings.put(ActRelationship.class, ActRelationshipDOImpl.class);
-        hqlMappings.put(Contact.class, ContactDOImpl.class);
-        hqlMappings.put(Document.class, DocumentDOImpl.class);
-        hqlMappings.put(Entity.class, EntityDOImpl.class);
-        hqlMappings.put(EntityIdentity.class, EntityIdentityDOImpl.class);
-        hqlMappings.put(EntityRelationship.class, EntityRelationshipDOImpl.class);
-        hqlMappings.put(Lookup.class, LookupDOImpl.class);
-        hqlMappings.put(LookupRelationship.class, LookupRelationshipDOImpl.class);
-        hqlMappings.put(Participation.class, ParticipationDOImpl.class);
-        hqlMappings.put(ProductPrice.class, ProductPriceDOImpl.class);
-
+        entityClassificationsSelect = createClassificationsSelectSQL("entity_classifications");
         entityClassificationsUpdate = createClassificationsUpdateSQL("entity_classifications", "entity_id");
         entityClassificationsDelete = createClassificationsDeleteSQL("entity_classifications");
 
+        contactClassificationsSelect = createClassificationsSelectSQL("contact_classifications");
         contactClassificationsUpdate = createClassificationsUpdateSQL("contact_classifications", "contact_id");
         contactClassificationsDelete = createClassificationsDeleteSQL("contact_classifications");
 
+        priceClassificationsSelect = createClassificationsSelectSQL("product_price_classifications");
         priceClassificationsUpdate = createClassificationsUpdateSQL("product_price_classifications",
                                                                     "product_price_id");
         priceClassificationsDelete = createClassificationsDeleteSQL("product_price_classifications");
@@ -152,6 +182,41 @@ public class LookupReplacer {
     }
 
     /**
+     * Determines if a lookup is being used.
+     *
+     * @param lookup  the lookup
+     * @param session the session
+     * @return <tt>true</tt> if the lookup is being used
+     */
+    public boolean isUsed(Lookup lookup, Session session) {
+        if (isClassificationInUse(lookup, entityClassificationsSelect, session)
+            || isClassificationInUse(lookup, contactClassificationsSelect, session)
+            || isClassificationInUse(lookup, priceClassificationsSelect, session)) {
+            return true;
+        }
+
+        // find all uses of the lookup where it is referred to by a node descriptor using the lookup's code
+        LookupUsageFinder finder = new LookupUsageFinder(archetypes);
+        Map<NodeDescriptor, ArchetypeDescriptor> refs
+                = finder.getCodeReferences(lookup.getArchetypeId().getShortName());
+
+        for (Map.Entry<NodeDescriptor, ArchetypeDescriptor> entry : refs.entrySet()) {
+            NodeDescriptor node = entry.getKey();
+            ArchetypeDescriptor archetype = entry.getValue();
+            if (isDetailsNode(node)) {
+                if (isUsedSQL(lookup, node, archetype, session)) {
+                    return true;
+                }
+            } else {
+                if (isUsedHQL(lookup, node, archetype, session)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Replaces instances of the source lookup with the target.
      *
      * @param source  the lookup to replace
@@ -159,7 +224,7 @@ public class LookupReplacer {
      * @param session the session
      */
     public void replace(Lookup source, Lookup target, Session session) {
-        if (source.getObjectReference().equals(target.getObjectReference())) {
+        if (source.getId() == target.getId()) {
             throw new IllegalArgumentException("Source and target lookups are identical");
         }
         if (!source.getArchetypeId().equals(target.getArchetypeId())) {
@@ -189,6 +254,29 @@ public class LookupReplacer {
         replaceClassifications(source, target, priceClassificationsUpdate, priceClassificationsDelete, session);
     }
 
+    private boolean isUsedSQL(Lookup lookup, NodeDescriptor node, ArchetypeDescriptor archetype, Session session) {
+        Mapping mapping = getMapping(archetype, node);
+        SQLQuery query = session.createSQLQuery(mapping.getIsUsedSQL());
+        query.setMaxResults(1);
+        query.setString("archetype", archetype.getType().getShortName());
+        query.setString("name", node.getName());
+        query.setString("code", lookup.getCode());
+        return !query.list().isEmpty();
+    }
+
+    private boolean isUsedHQL(Lookup lookup, NodeDescriptor node, ArchetypeDescriptor archetype, Session session) {
+        Mapping mapping = getMapping(archetype, node);
+        String name = node.getPath().substring(1);
+        StringBuilder hql = new StringBuilder("select id from ").append(mapping.getImpl().getName())
+                .append(" where archetypeId.shortName = :archetype and ")
+                .append(name).append(" = :code");
+        Query query = session.createQuery(hql.toString());
+        query.setString("archetype", archetype.getType().getShortName());
+        query.setString("code", lookup.getCode());
+        query.setMaxResults(1);
+        return !query.list().isEmpty();
+    }
+
     /**
      * Determines if a node is a 'details' node. These are mapped to a <em>*_details</em> table by hibernate,
      * and must be updated using SQL rather than HQL.
@@ -213,17 +301,8 @@ public class LookupReplacer {
      */
     private void replaceCodeSQL(NodeDescriptor node, ArchetypeDescriptor archetype, Lookup source, Lookup target,
                                 Session session) {
-        Class clazz = archetype.getClazz();
-        String sql = sqlMappings.get(clazz);
-        while (sql == null && !clazz.equals(Object.class)) {
-            clazz = clazz.getSuperclass();
-            sql = sqlMappings.get(clazz);
-        }
-        if (sql == null) {
-            throw new IllegalStateException("Cannot update code node=" + node.getName() + ", archetype="
-                                            + archetype.getType() + ". Unsupported class: " + clazz);
-        }
-        SQLQuery query = session.createSQLQuery(sql);
+        Mapping mapping = getMapping(archetype, node);
+        SQLQuery query = session.createSQLQuery(mapping.getUpdateSQL());
         query.setString("archetype", archetype.getType().getShortName());
         query.setString("name", node.getName());
         query.setString("oldCode", source.getCode());
@@ -242,18 +321,9 @@ public class LookupReplacer {
      */
     private void replaceCodeHQL(NodeDescriptor node, ArchetypeDescriptor archetype, Lookup source, Lookup target,
                                 Session session) {
-        Class clazz = archetype.getClazz();
-        Class doClass = hqlMappings.get(clazz);
-        while (doClass == null && !clazz.equals(Object.class)) {
-            clazz = clazz.getSuperclass();
-            doClass = hqlMappings.get(clazz);
-        }
-        if (doClass == null) {
-            throw new IllegalStateException("Cannot update code node=" + node.getName() + ", archetype="
-                                            + archetype.getType() + ". Unsupported class: " + clazz);
-        }
+        Mapping mapping = getMapping(archetype, node);
         String name = node.getPath().substring(1);
-        StringBuilder hql = new StringBuilder("update ").append(doClass.getName())
+        StringBuilder hql = new StringBuilder("update ").append(mapping.getImpl().getName())
                 .append(" set ").append(name).append(" = :newCode where archetypeId.shortName = :archetype and ")
                 .append(name).append(" = :oldCode");
         Query query = session.createQuery(hql.toString());
@@ -261,6 +331,13 @@ public class LookupReplacer {
         query.setString("oldCode", source.getCode());
         query.setString("newCode", target.getCode());
         query.executeUpdate();
+    }
+
+    private boolean isClassificationInUse(Lookup lookup, String sql, Session session) {
+        Query query = session.createSQLQuery(sql);
+        query.setLong("id", lookup.getId());
+        query.setMaxResults(1);
+        return !query.list().isEmpty();
     }
 
     /**
@@ -294,6 +371,27 @@ public class LookupReplacer {
     }
 
     /**
+     * Returns a mapping for a given archetype.
+     *
+     * @param archetype the archetype descriptor
+     * @param node      the node, for error reporting
+     * @return the corresponding mapping
+     */
+    private Mapping getMapping(ArchetypeDescriptor archetype, NodeDescriptor node) {
+        Class clazz = archetype.getClazz();
+        Mapping mapping = mappings.get(clazz);
+        while (mapping == null && !clazz.equals(Object.class)) {
+            clazz = clazz.getSuperclass();
+            mapping = mappings.get(clazz);
+        }
+        if (mapping == null) {
+            throw new IllegalStateException("Cannot update code node=" + node.getName() + ", archetype="
+                                            + archetype.getType() + ". Unsupported class: " + clazz);
+        }
+        return mapping;
+    }
+
+    /**
      * Helper to create an SQL update statement that updates the value column of a 'details' table
      * for a given archetype and value.
      *
@@ -302,10 +400,33 @@ public class LookupReplacer {
      * @param id      the join column name
      * @return an SQL update statement
      */
-    private static String createSQL(String table, String details, String id) {
+    private static String createUpdateSQL(String table, String details, String id) {
         return "update " + table + " t join " + details + " d on t." + id + " = d." + id
                + " set d.value = :newCode"
                + " where t.arch_short_name=:archetype and d.name = :name and d.value = :oldCode";
+    }
+
+    /**
+     * Helper to create an SQL statement the determines if a lookup is used by a 'details' node.
+     *
+     * @param table   the table name, used to restrict on archetype
+     * @param details the details table name
+     * @param id      the join column name
+     * @return an SQL query statement
+     */
+    private static String createIsUsedSQL(String table, String details, String id) {
+        return "select t." + id + " from " + table + " t join " + details + " d on t." + id + " = d." + id
+               + " where t.arch_short_name=:archetype and d.name = :name and d.value = :code";
+    }
+
+    /**
+     * Helper to create an SQL query statement that determines if a lookup is used by a classifications node.
+     *
+     * @param table the classification table
+     * @return a new SQL statement
+     */
+    private static String createClassificationsSelectSQL(String table) {
+        return "select * from " + table + " t where t.lookup_id = :id";
     }
 
     /**

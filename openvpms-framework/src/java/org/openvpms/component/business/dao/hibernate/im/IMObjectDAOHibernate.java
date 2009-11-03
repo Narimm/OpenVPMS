@@ -142,7 +142,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     public void setArchetypeDescriptorCache(IArchetypeDescriptorCache cache) {
         this.cache = cache;
         assembler = new AssemblerImpl(cache);
-        handlerFactory = new DeleteHandlerFactory(assembler);
+        handlerFactory = new DeleteHandlerFactory(assembler, cache);
     }
 
     /**
@@ -206,6 +206,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                     return null;
                 }
             });
+        } catch (IMObjectDAOException exception) {
+            throw exception;
         } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToDeleteIMObject, exception,
                                            object.getObjectReference());
