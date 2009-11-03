@@ -173,6 +173,9 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param target the lookup to replace <tt>source</tt> with
      */
     public void replace(Lookup source, Lookup target) {
+        if (!source.getArchetypeId().equals(target.getArchetypeId())) {
+            throw new LookupServiceException(LookupServiceException.ErrorCode.CannotReplaceArchetypeMismatch);
+        }
         dao.replace(source, target);
     }
 

@@ -38,7 +38,8 @@ public class LookupServiceException extends OpenVPMSException {
      * An enumeration of error codes.
      */
     public enum ErrorCode {
-        LookupServiceNotSet
+        LookupServiceNotSet,
+        CannotReplaceArchetypeMismatch
     }
 
     /**

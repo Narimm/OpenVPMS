@@ -67,8 +67,8 @@ class LookupUsageFinder {
         for (ArchetypeDescriptor archetype : archetypes.getArchetypeDescriptors()) {
             if (!TypeHelper.isA(archetype.getType(), shortName)) {
                 for (NodeDescriptor descriptor : archetype.getAllNodeDescriptors()) {
-                    if (descriptor.isLookup()) {
-                        AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup");
+                    AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup");
+                    if (assertion != null) {
                         String type = getValue(assertion, "type");
                         if ("lookup".equals(type)) {
                             if (referencesLookup(assertion, id)) {
@@ -95,7 +95,7 @@ class LookupUsageFinder {
      */
     private boolean referencesLookup(AssertionDescriptor assertion, ArchetypeId lookup) {
         String shortName = getValue(assertion, "source");
-        return  (shortName != null) && TypeHelper.isA(lookup, shortName);
+        return (shortName != null) && TypeHelper.isA(lookup, shortName);
     }
 
     /**

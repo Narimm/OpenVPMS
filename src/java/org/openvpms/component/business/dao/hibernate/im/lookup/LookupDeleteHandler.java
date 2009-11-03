@@ -24,7 +24,10 @@ import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 
 
 /**
@@ -36,12 +39,36 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 public class LookupDeleteHandler extends AbstractDeleteHandler {
 
     /**
+     * The archetypes.
+     */
+    private IArchetypeDescriptorCache archetypes;
+
+    /**
      * Creates a new <tt>LookupDeleteHandler<tt>.
      *
-     * @param assembler the assembler
+     * @param assembler  the assembler
+     * @param archetypes the archetype descriptor cache
      */
-    public LookupDeleteHandler(CompoundAssembler assembler) {
+    public LookupDeleteHandler(CompoundAssembler assembler,
+                               IArchetypeDescriptorCache archetypes) {
         super(assembler);
+        this.archetypes = archetypes;
+    }
+
+    /**
+     * Deletes an object.
+     *
+     * @param object  the object to delete
+     * @param session the session
+     * @param context the assembly context
+     */
+    @Override
+    public void delete(IMObject object, Session session, Context context) {
+        if (isInUse((Lookup) object, session)) {
+            throw new IMObjectDAOException(IMObjectDAOException.ErrorCode.CannotDeleteInUseLookup,
+                                           object.getObjectReference());
+        }
+        super.delete(object, session, context);
     }
 
     /**
@@ -52,7 +79,7 @@ public class LookupDeleteHandler extends AbstractDeleteHandler {
      *
      * @param object  the object to delete
      * @param session the session
-     * @param context
+     * @param context the assembly context
      */
     @Override
     protected void delete(IMObjectDO object, Session session, Context context) {
@@ -60,7 +87,7 @@ public class LookupDeleteHandler extends AbstractDeleteHandler {
         // remove relationships where the lookup is the source.
         LookupRelationshipDO[] relationships
                 = lookup.getSourceLookupRelationships().toArray(
-                new LookupRelationshipDO[0]);
+                new LookupRelationshipDO[lookup.getSourceLookupRelationships().size()]);
         for (LookupRelationshipDO relationhip : relationships) {
             lookup.removeSourceLookupRelationship(relationhip);
             LookupDO target = (LookupDO) relationhip.getTarget();
@@ -71,7 +98,7 @@ public class LookupDeleteHandler extends AbstractDeleteHandler {
 
         // now remove relationships where the lookup is the target
         relationships = lookup.getTargetLookupRelationships().toArray(
-                new LookupRelationshipDO[0]);
+                new LookupRelationshipDO[lookup.getTargetLookupRelationships().size()]);
         for (LookupRelationshipDO relationship : relationships) {
             lookup.removeTargetLookupRelationship(relationship);
             LookupDO source = (LookupDO) relationship.getSource();
@@ -80,6 +107,12 @@ public class LookupDeleteHandler extends AbstractDeleteHandler {
             }
         }
         context.remove(lookup);
+    }
+
+    private boolean isInUse(Lookup lookup, Session session) {
+        LookupReplacer replacer = new LookupReplacer(archetypes);
+        return replacer.isUsed(lookup, session);
+
     }
 
 }
