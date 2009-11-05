@@ -24,6 +24,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -47,6 +49,7 @@ public class SaveHelper {
      * Saves an editor in a transaction.
      *
      * @param editor the editor to save
+     * @return <tt>true</tt> if the object was saved successfully
      */
     public static boolean save(final IMObjectEditor editor) {
         Object result = null;
@@ -106,7 +109,7 @@ public class SaveHelper {
      * @param objects the objects to save
      * @return <tt>true</tt> if the objects were saved; otherwise <tt>false</tt>
      */
-    public static boolean save(IMObject ... objects) {
+    public static boolean save(IMObject... objects) {
         return save(Arrays.asList(objects));
     }
 
@@ -136,7 +139,7 @@ public class SaveHelper {
             saved = true;
         } catch (OpenVPMSException exception) {
             // use the first object's display name when displaying the exception
-            IMObject object = objects.toArray(new IMObject[0])[0];
+            IMObject object = objects.toArray(new IMObject[objects.size()])[0];
             error(object, exception);
         }
         return saved;
@@ -149,60 +152,38 @@ public class SaveHelper {
      * @return <tt>true</tt> if the object was removed; otherwise <tt>false</tt>
      */
     public static boolean delete(IMObject object) {
-        return delete(object, ServiceHelper.getArchetypeService());
+        return delete(object, new DefaultIMObjectDeletionListener());
     }
 
     /**
      * Removes an object.
      *
-     * @param object  the object to remove
-     * @param service the archetype service
-     * @return <tt>true</tt> if the object was removed; otherwise
-     *         <tt>false</tt>
+     * @param object   the object to remove
+     * @param listener the listener to notify
+     * @return <tt>true</tt> if the object was removed; otherwise <tt>false</tt>
      */
-    public static boolean delete(IMObject object, IArchetypeService service) {
+    public static boolean delete(IMObject object, IMObjectDeletionListener<IMObject> listener) {
+        return delete(object, listener, ServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Removes an object.
+     *
+     * @param object   the object to remove
+     * @param listener the listener to notify
+     * @param service  the archetype service
+     * @return <tt>true</tt> if the object was removed; otherwise <tt>false</tt>
+     */
+    public static boolean delete(IMObject object, IMObjectDeletionListener<IMObject> listener,
+                                 IArchetypeService service) {
         boolean removed = false;
         try {
             service.remove(object);
             removed = true;
         } catch (OpenVPMSException exception) {
-            String displayName = DescriptorHelper.getDisplayName(object);
-            String title = Messages.get("imobject.delete.failed", displayName);
-            String context = Messages.get(
-                    "imobject.delete.failed", object.getObjectReference());
-            ErrorHelper.show(title, context, exception);
+            listener.failed(object, exception);
         }
         return removed;
-    }
-
-    /**
-     * Helper to invoke {@link IMObjectEditor#delete()} in a transaction.
-     *
-     * @param editor the editor
-     * @return <tt>true</tt> if the object was deleted successfully
-     */
-    public static boolean delete(final IMObjectEditor editor) {
-        Object result = null;
-        try {
-            TransactionTemplate template = new TransactionTemplate(
-                    ServiceHelper.getTransactionManager());
-            result = template.execute(new TransactionCallback() {
-                public Object doInTransaction(TransactionStatus status) {
-                    return editor.delete();
-                }
-            });
-        } catch (Throwable exception) {
-            String title = Messages.get("imobject.delete.failed.title");
-            IMObject object = editor.getObject();
-            User user = GlobalContext.getInstance().getUser();
-            String userName = (user != null) ? user.getUsername() : null;
-            String context = Messages.get("logging.error.editcontext",
-                                          object.getObjectReference(),
-                                          editor.getClass().getName(),
-                                          userName);
-            ErrorHelper.show(title, context, exception);
-        }
-        return (result != null) && (Boolean) result;
     }
 
     /**

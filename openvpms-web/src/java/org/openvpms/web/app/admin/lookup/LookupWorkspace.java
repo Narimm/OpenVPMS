@@ -20,6 +20,7 @@ package org.openvpms.web.app.admin.lookup;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
+import org.openvpms.web.app.subsystem.CRUDWindow;
 
 
 /**
@@ -38,4 +39,13 @@ public class LookupWorkspace extends BasicCRUDWorkspace<Lookup> {
         setArchetypes(Lookup.class, "lookup.*");
     }
 
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    @Override
+    protected CRUDWindow<Lookup> createCRUDWindow() {
+        return new LookupCRUDWindow(getArchetypes());
+    }
 }

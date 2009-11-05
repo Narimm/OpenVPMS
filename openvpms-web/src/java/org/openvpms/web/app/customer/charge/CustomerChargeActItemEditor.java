@@ -247,7 +247,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (medication != null) {
                 // need to delete the medication after the parent act is saved
                 // to avoid stale object exceptions
-                saved = SaveHelper.delete(medication);
+                saved = SaveHelper.delete(medication, getLayoutContext().getDeletionListener());
             }
         }
         return saved;
