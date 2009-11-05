@@ -139,6 +139,23 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+    <!--  The Lookup Service -->
+    <bean id="lookupService" class="org.openvpms.component.business.service.lookup.LookupService">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <ref local="imObjectDao"/>
+        </constructor-arg>
+    </bean>
+
+    <!--  Instantiate the lookup service helper bean and inject its dependencies -->
+    <bean id="lookupServiceHelper" class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
+        <constructor-arg>
+            <ref local="lookupService"/>
+        </constructor-arg>
+    </bean>
+    
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
           class="org.openvpms.component.system.common.jxpath.JXPathHelper">
@@ -156,4 +173,5 @@
             </map>
         </constructor-arg>
     </bean>
+
 </beans>
