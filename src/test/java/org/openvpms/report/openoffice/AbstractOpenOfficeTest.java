@@ -60,7 +60,7 @@ public abstract class AbstractOpenOfficeTest extends ArchetypeServiceTest {
      */
     protected Document getDocument(String path, String mimeType) {
         File file = new File(path);
-        return DocumentHelper.create(file, DocFormats.ODT_TYPE, handlers);
+        return DocumentHelper.create(file, mimeType, handlers);
     }
 
     /**
