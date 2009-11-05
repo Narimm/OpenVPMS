@@ -29,6 +29,8 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
+import org.openvpms.web.component.im.util.IMObjectDeletionListener;
+import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -78,6 +80,11 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     private int depth;
 
     /**
+     * The deletion listener.
+     */
+    private IMObjectDeletionListener<IMObject> deletionListener = DEFAULT_DELETION_LISTENER;
+
+    /**
      * The set of rendered objects.
      */
     private Set<IMObjectReference> rendered = new HashSet<IMObjectReference>();
@@ -87,6 +94,13 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      */
     private static final IMObjectLayoutStrategyFactory DEFAULT_LAYOUT_FACTORY
             = new ViewLayoutStrategyFactory();
+
+    /**
+     * The default deletion listener.
+     */
+    private static final IMObjectDeletionListener<IMObject> DEFAULT_DELETION_LISTENER
+            = new DefaultIMObjectDeletionListener();
+
 
     /**
      * Construct a new <tt>AbstractLayoutContext</tt>.
@@ -132,6 +146,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
         edit = context.isEdit();
         layoutFactory = context.getLayoutStrategyFactory();
         depth = context.getLayoutDepth() + 1;
+        deletionListener = context.getDeletionListener();
     }
 
     /**
@@ -291,5 +306,23 @@ public abstract class AbstractLayoutContext implements LayoutContext {
             result = parent.getArchetypeDescriptor(object);
         }
         return (result == null) ? DescriptorHelper.getArchetypeDescriptor(object) : result;
+    }
+
+    /**
+     * Registers a listener for deletion events.
+     *
+     * @param listener the listener
+     */
+    public void setDeletionListener(IMObjectDeletionListener<IMObject> listener) {
+        this.deletionListener = listener;
+    }
+
+    /**
+     * Returns the deletion listener.
+     *
+     * @return the listener, or a default listener if none is registered
+     */
+    public IMObjectDeletionListener<IMObject> getDeletionListener() {
+        return deletionListener;
     }
 }

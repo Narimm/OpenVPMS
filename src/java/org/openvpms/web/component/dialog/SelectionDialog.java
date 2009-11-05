@@ -25,8 +25,10 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
+import nextapp.echo2.app.list.AbstractListComponent;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.resource.util.Styles;
 
 import java.util.List;
 
@@ -40,19 +42,19 @@ import java.util.List;
 public class SelectionDialog extends PopupDialog {
 
     /**
-     * The list box.
+     * The list.
      */
-    private ListBox _list;
+    private AbstractListComponent list;
 
     /**
      * The selected value.
      */
-    private Object _selected;
+    private Object selected;
 
     /**
      * The selected index;
      */
-    private int _index = -1;
+    private int index = -1;
 
     /**
      * Dialog style name.
@@ -89,19 +91,20 @@ public class SelectionDialog extends PopupDialog {
      * @param message the message to display
      * @param list    the list of items to select from
      */
-    public SelectionDialog(String title, String message, ListBox list) {
+    public SelectionDialog(String title, String message, AbstractListComponent list) {
         super(title, STYLE, CANCEL);
         setModal(true);
 
-        _list = list;
-        _list.addActionListener(new ActionListener() {
+        this.list = list;
+        this.list.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelected();
             }
         });
-        Label prompt = LabelFactory.create(null, "bold");
+        Label prompt = LabelFactory.create(true, true);
+        prompt.setStyleName(Styles.getStyle(Label.class, "bold"));
         prompt.setText(message);
-        Column column = ColumnFactory.create(prompt, _list);
+        Column column = ColumnFactory.create(prompt, this.list);
         getLayout().add(column);
     }
 
@@ -111,7 +114,7 @@ public class SelectionDialog extends PopupDialog {
      * @return the selected item, or <code>null</code> if no item was selected.
      */
     public Object getSelected() {
-        return _selected;
+        return selected;
     }
 
     /**
@@ -120,15 +123,15 @@ public class SelectionDialog extends PopupDialog {
      * @return the selected index, or <code>-1</code> if no item was selected.
      */
     public int getSelectedIndex() {
-        return _index;
+        return index;
     }
 
     /**
      * Get the selected object (if any), and close the window.
      */
     protected void onSelected() {
-        _selected = _list.getSelectedValue();
-        _index = _list.getSelectionModel().getMinSelectedIndex();
+        index = list.getSelectionModel().getMinSelectedIndex();
+        selected = (index != -1) ? list.getModel().get(index) : null;
         close();
     }
 }

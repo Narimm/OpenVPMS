@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 
@@ -152,4 +153,18 @@ public interface LayoutContext {
      */
     ArchetypeDescriptor getArchetypeDescriptor(IMObject object);
 
+
+    /**
+     * Registers a listener for deletion events.
+     *
+     * @param listener the listener
+     */
+    void setDeletionListener(IMObjectDeletionListener<IMObject> listener);
+
+    /**
+     * Returns the deletion listener.
+     *
+     * @return the listener, or a default listener if none is registered
+     */
+    IMObjectDeletionListener<IMObject> getDeletionListener();
 }

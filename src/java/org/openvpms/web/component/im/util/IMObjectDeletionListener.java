@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.util;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 
 
 /**
@@ -27,7 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectDeletorListener<T extends IMObject> {
+public interface IMObjectDeletionListener<T extends IMObject> {
 
     /**
      * Notifies that an object has been deleted.
@@ -42,5 +43,23 @@ public interface IMObjectDeletorListener<T extends IMObject> {
      * @param object the deactivated object
      */
     void deactivated(T object);
+
+    /**
+     * Notifies that an object has failed to be deleted.
+     *
+     * @param object the object that failed to be deleted
+     * @param cause  the reason for the failure
+     */
+    void failed(T object, Throwable cause);
+
+
+    /**
+     * Notifies that an object has failed to be deleted.
+     *
+     * @param object the object that failed to be deleted
+     * @param cause  the reason for the failure
+     * @param editor the editor that performed the deletion
+     */
+    void failed(T object, Throwable cause, IMObjectEditor editor);
 
 }

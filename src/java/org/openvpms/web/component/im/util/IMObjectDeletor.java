@@ -28,7 +28,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -37,8 +36,11 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 
 /**
@@ -58,11 +60,12 @@ public final class IMObjectDeletor {
     /**
      * Attempts to delete an object.
      *
-     * @param object the object to delete
+     * @param object   the object to delete
+     * @param listener the listener to notify
      */
     @SuppressWarnings("unchecked")
     public static <T extends IMObject> void delete(
-            T object, IMObjectDeletorListener<T> listener) {
+            T object, IMObjectDeletionListener<T> listener) {
         try {
             if (object instanceof Entity) {
                 Entity entity = (Entity) object;
@@ -87,9 +90,8 @@ public final class IMObjectDeletor {
             } else {
                 confirmDelete(object, listener, "imobject.delete.message");
             }
-        } catch (OpenVPMSException exception) {
-            String title = Messages.get("imobject.delete.failed.title");
-            ErrorHelper.show(title, exception);
+        } catch (Throwable exception) {
+            listener.failed(object, exception);
         }
     }
 
@@ -140,7 +142,7 @@ public final class IMObjectDeletor {
     @SuppressWarnings("unchecked")
     private static <T extends IMObject> void confirmDelete(
             final T object,
-            final IMObjectDeletorListener<T> listener, String messageKey) {
+            final IMObjectDeletionListener<T> listener, String messageKey) {
         String type = DescriptorHelper.getDisplayName(object);
         String title = Messages.get("imobject.delete.title", type);
         String name = (object.getName() != null) ? object.getName() : type;
@@ -150,21 +152,41 @@ public final class IMObjectDeletor {
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    try {
-                        IMObjectEditor editor = IMObjectEditorFactory.create(
-                                object, new DefaultLayoutContext(true));
-                        if (SaveHelper.delete(editor)) {
-                            listener.deleted(object);
-                        }
-                    } catch (OpenVPMSException exception) {
-                        String title = Messages.get(
-                                "imobject.delete.failed.title");
-                        ErrorHelper.show(title, exception);
-                    }
+                    doDelete(object, listener);
                 }
             }
         });
         dialog.show();
+    }
+
+    /**
+     * Performs the deletion in a transaction context.
+     *
+     * @param object   the object to delete
+     * @param listener the listener to notify
+     * @return <tt>true</tt> if the object was deleted successfully
+     */
+    private static <T extends IMObject> boolean doDelete(final T object,
+                                                         final IMObjectDeletionListener<T> listener) {
+        boolean deleted = false;
+        try {
+            DefaultLayoutContext context = new DefaultLayoutContext(true);
+            context.setDeletionListener(new DeletionListenerAdapter<T>(object, listener));
+            final IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
+            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
+            Object result = template.execute(new TransactionCallback() {
+                public Object doInTransaction(TransactionStatus status) {
+                    return editor.delete();
+                }
+            });
+            deleted = (result != null) && (Boolean) result;
+            if (deleted) {
+                listener.deleted(object);
+            }
+        } catch (Throwable exception) {
+            listener.failed(object, exception);
+        }
+        return deleted;
     }
 
     /**
@@ -176,7 +198,7 @@ public final class IMObjectDeletor {
      */
     @SuppressWarnings("unchecked")
     private static <T extends IMObject> void confirmDeactivate(
-            final T object, final IMObjectDeletorListener<T> listener) {
+            final T object, final IMObjectDeletionListener<T> listener) {
         String type = DescriptorHelper.getDisplayName(object);
         String title = Messages.get("imobject.deactivate.title", type);
         String message = Messages.get("imobject.deactivate.message",
@@ -196,4 +218,70 @@ public final class IMObjectDeletor {
         dialog.show();
     }
 
+    /**
+     * Deletion listener that ensures type parameters aren't violated.
+     */
+    private static class DeletionListenerAdapter<T extends IMObject>
+            implements IMObjectDeletionListener<IMObject> {
+
+        /**
+         * The object to pass to the listener.
+         */
+        private T object;
+
+        /**
+         * The listener to delegate to.
+         */
+        private IMObjectDeletionListener<T> listener;
+
+        /**
+         * Constructs a <tt>DeletionListenerAdapter</tt>.
+         *
+         * @param object   the object to pass to the listener
+         * @param listener the listener to delegate to
+         */
+        public DeletionListenerAdapter(T object, IMObjectDeletionListener<T> listener) {
+            this.object = object;
+            this.listener = listener;
+        }
+
+        /**
+         * Notifies that an object has been deleted.
+         *
+         * @param object the deleted object
+         */
+        public void deleted(IMObject object) {
+            listener.deleted(this.object);
+        }
+
+        /**
+         * Notifies that an object has been deactivated.
+         *
+         * @param object the deactivated object
+         */
+        public void deactivated(IMObject object) {
+            listener.deactivated(this.object);
+        }
+
+        /**
+         * Notifies that an object has failed to be deleted.
+         *
+         * @param object the object that failed to be deleted
+         * @param cause  the reason for the failure
+         */
+        public void failed(IMObject object, Throwable cause) {
+            listener.failed(this.object, cause);
+        }
+
+        /**
+         * Notifies that an object has failed to be deleted.
+         *
+         * @param object the object that failed to be deleted
+         * @param cause  the reason for the failure
+         * @param editor the editor that performed the deletion
+         */
+        public void failed(IMObject object, Throwable cause, IMObjectEditor editor) {
+            listener.failed(this.object, cause, editor);
+        }
+    }
 }

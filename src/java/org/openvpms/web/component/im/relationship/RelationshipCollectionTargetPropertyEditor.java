@@ -33,6 +33,7 @@ import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.ErrorHelper;
 
@@ -205,7 +206,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     protected boolean doSave() {
         boolean saved = true;
         if (!removed.isEmpty()) {
-            IMObject[] toRemove = removed.toArray(new IMObject[0]);
+            IMObject[] toRemove = removed.toArray(new IMObject[removed.size()]);
             boolean deleted;
             for (IMObject object : toRemove) {
                 IMObjectEditor editor = getEditor(object);
@@ -215,7 +216,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
                         setEditor(object, null);
                     }
                 } else {
-                    deleted = SaveHelper.delete(object);
+                    deleted = SaveHelper.delete(object, new DefaultIMObjectDeletionListener());
                 }
                 if (deleted) {
                     removed.remove(object);

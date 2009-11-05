@@ -545,7 +545,7 @@ public abstract class AbstractIMObjectEditor
      */
     protected boolean deleteObject() {
         IMObject object = getObject();
-        return object.isNew() || SaveHelper.delete(object);
+        return object.isNew() || SaveHelper.delete(object, getLayoutContext().getDeletionListener());
     }
 
     /**

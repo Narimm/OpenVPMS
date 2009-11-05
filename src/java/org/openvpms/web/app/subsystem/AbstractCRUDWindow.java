@@ -39,11 +39,11 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
-import org.openvpms.web.component.im.util.IMObjectDeletorListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
@@ -244,6 +244,8 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
 
     /**
      * Lays out the component.
+     *
+     * @return the component
      */
     protected Component doLayout() {
         buttons = new ButtonRow("ControlRow");
@@ -344,6 +346,8 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * @param enable  determines if buttons should be enabled
      */
     protected void enableButtons(ButtonSet buttons, boolean enable) {
+        Button edit = getEditButton();
+        Button delete = getDeleteButton();
         if (enable) {
             if (!buttons.contains(edit)) {
                 buttons.add(edit);
@@ -362,6 +366,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      *
      * @param archetypes the archetypes
      */
+    @SuppressWarnings("unchecked")
     protected void onCreate(Archetypes archetypes) {
         IMObjectCreatorListener listener = new IMObjectCreatorListener() {
             public void created(IMObject object) {
@@ -427,19 +432,15 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     protected void onDelete() {
         T object = IMObjectHelper.reload(getObject());
         if (object == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist"),
-                             archetypes.getDisplayName());
+            ErrorDialog.show(Messages.get("imobject.noexist"), archetypes.getDisplayName());
         } else {
-            IMObjectDeletor.delete(object, new IMObjectDeletorListener<T>() {
+            IMObjectDeletor.delete(object, new AbstractIMObjectDeletionListener<T>() {
                 public void deleted(T object) {
                     onDeleted(object);
                 }
 
                 public void deactivated(T object) {
                     onSaved(object, false);
-                }
-
-                public void cancelled() {
                 }
             });
         }
@@ -468,6 +469,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * Creates a new edit dialog.
      *
      * @param editor the editor
+     * @return a new edit dialog
      */
     protected EditDialog createEditDialog(IMObjectEditor editor) {
         return new EditDialog(editor);
@@ -479,6 +481,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * @param editor the editor
      * @param isNew  determines if the object is a new instance
      */
+    @SuppressWarnings("unchecked")
     protected void onEditCompleted(IMObjectEditor editor, boolean isNew) {
         if (editor.isDeleted()) {
             onDeleted((T) editor.getObject());
