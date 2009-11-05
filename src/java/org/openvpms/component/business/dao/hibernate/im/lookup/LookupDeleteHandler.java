@@ -65,7 +65,7 @@ public class LookupDeleteHandler extends AbstractDeleteHandler {
     @Override
     public void delete(IMObject object, Session session, Context context) {
         if (isInUse((Lookup) object, session)) {
-            throw new IMObjectDAOException(IMObjectDAOException.ErrorCode.CannotDeleteInUseLookup,
+            throw new IMObjectDAOException(IMObjectDAOException.ErrorCode.CannotDeleteLookupInUse,
                                            object.getObjectReference());
         }
         super.delete(object, session, context);

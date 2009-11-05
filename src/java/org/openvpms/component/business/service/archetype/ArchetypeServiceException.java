@@ -59,7 +59,8 @@ public class ArchetypeServiceException extends OpenVPMSException {
         InvalidNodeDescriptor,
         FailedToExecuteRule,
         RuleEngineNotSupported,
-        ArchetypeServiceNotSet
+        ArchetypeServiceNotSet,
+        CannotDeleteLookupInUse,
     }
 
     /**

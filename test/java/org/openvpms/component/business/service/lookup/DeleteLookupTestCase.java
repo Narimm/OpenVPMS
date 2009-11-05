@@ -267,7 +267,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
                          exception.getErrorCode());
             Throwable cause = exception.getCause();
             assertTrue(cause instanceof IMObjectDAOException);
-            assertEquals(IMObjectDAOException.ErrorCode.CannotDeleteInUseLookup,
+            assertEquals(IMObjectDAOException.ErrorCode.CannotDeleteLookupInUse,
                          ((IMObjectDAOException) cause).getErrorCode());
         }
         bean.setValue(node, lookup2.getCode());
@@ -301,7 +301,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
                          exception.getErrorCode());
             Throwable cause = exception.getCause();
             assertTrue(cause instanceof IMObjectDAOException);
-            assertEquals(IMObjectDAOException.ErrorCode.CannotDeleteInUseLookup,
+            assertEquals(IMObjectDAOException.ErrorCode.CannotDeleteLookupInUse,
                          ((IMObjectDAOException) cause).getErrorCode());
         }
         bean.removeValue(node, class1);
