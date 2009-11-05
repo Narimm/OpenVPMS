@@ -448,6 +448,10 @@ public class ArchetypeService implements IArchetypeService {
             dao.delete(entity);
             notifyRemove(entity, false);
         } catch (IMObjectDAOException exception) {
+            if (IMObjectDAOException.ErrorCode.CannotDeleteLookupInUse.equals(exception.getErrorCode())) {
+                throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.CannotDeleteLookupInUse,
+                                                    exception, entity.getObjectReference());
+            }
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
                     exception, entity.getObjectReference());
