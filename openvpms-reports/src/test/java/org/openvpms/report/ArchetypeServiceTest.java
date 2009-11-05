@@ -123,7 +123,7 @@ public abstract class ArchetypeServiceTest
         contactBean.setValue("address", "1234 Foo St");
         Lookup state = getLookup("lookup.state", "VIC");
         Lookup suburb = getLookup("lookup.suburb", "MELBOURNE",
-                                  state, "lookupRelationship.stateSuburb");
+                                  "Melbourne", state, "lookupRelationship.stateSuburb");
         contactBean.setValue("suburb", suburb.getCode());
         contactBean.setValue("state", state.getCode());
         contactBean.setValue("postcode", "3001");
@@ -141,27 +141,48 @@ public abstract class ArchetypeServiceTest
      * @return the lookup
      */
     protected Lookup getLookup(String shortName, String code) {
-        return getLookup(shortName, code, true);
+        return getLookup(shortName, code, code, true);
     }
 
     /**
-     * Gets a classification lookup, creating it if it doesn't exist.
+     * Returns a lookup, creating and saving it if it doesn't exist.
      *
-     * @param shortName the clasification short name
-     * @param code      the classification code
-     * @param save      if <tt>true</tt>, save the classification
-     * @return the classification
+     * @param shortName the lookup short name
+     * @param code      the lookup code
+     * @param name      the lookup name
+     * @return the lookup
      */
-    protected Lookup getLookup(String shortName, String code, boolean save) {
+    protected Lookup getLookup(String shortName, String code, String name) {
+        return getLookup(shortName, code, name, true);
+    }
+
+    /**
+     * Gets a lookup, creating it if it doesn't exist.
+     *
+     * @param shortName the lookup short name
+     * @param code      the lookup code
+     * @param name      the lookup name
+     * @param save      if <tt>true</tt>, save the lookup
+     * @return the lookup
+     */
+    protected Lookup getLookup(String shortName, String code, String name, boolean save) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
         query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);
         QueryIterator<Lookup> iter = new IMObjectQueryIterator<Lookup>(query);
         if (iter.hasNext()) {
-            return iter.next();
+            Lookup lookup = iter.next();
+            if (!lookup.getName().equals(name)) {
+                lookup.setName(name);
+                if (save) {
+                    getArchetypeService().save(lookup);
+                }
+            }
+            return lookup;
         }
         Lookup lookup = (Lookup) create(shortName);
         lookup.setCode(code);
+        lookup.setName(name);
         if (save) {
             getArchetypeService().save(lookup);
         }
@@ -174,12 +195,14 @@ public abstract class ArchetypeServiceTest
      *
      * @param shortName             the target lookup short name
      * @param code                  the lookup code
+     * @param name                  the lookup name
      * @param source                the source lookup
      * @param relationshipShortName the lookup relationship short name
+     * @return the lookup
      */
-    protected Lookup getLookup(String shortName, String code, Lookup source,
+    protected Lookup getLookup(String shortName, String code, String name, Lookup source,
                                String relationshipShortName) {
-        Lookup target = getLookup(shortName, code);
+        Lookup target = getLookup(shortName, code, name);
         for (LookupRelationship relationship
                 : source.getLookupRelationships()) {
             if (relationship.getTarget().equals(target.getObjectReference())) {

@@ -52,14 +52,14 @@ public class IMObjectDataSourceTestCase extends ArchetypeServiceTest {
      * @throws Exception for any error
      */
     public void testDataSource() throws Exception {
-        IMObject object = createCustomer("foo", "bar");
+        IMObject object = createCustomer("Foo", "Bar");
         IMObjectDataSource ds = createDataSource(object);
         JRField firstName = createField("firstName", String.class);
         JRField lastName = createField("lastName", String.class);
 
         assertTrue(ds.next());
-        assertEquals("foo", ds.getFieldValue(firstName));
-        assertEquals("bar", ds.getFieldValue(lastName));
+        assertEquals("Foo", ds.getFieldValue(firstName));
+        assertEquals("Bar", ds.getFieldValue(lastName));
         assertFalse(ds.next());
     }
 
@@ -74,12 +74,12 @@ public class IMObjectDataSourceTestCase extends ArchetypeServiceTest {
         File file = new File("src/test/images/openvpms.gif");
         Document doc = DocumentHelper.create(file, "image/gif", handlers);
         getArchetypeService().save(doc);
-        act.setValue("docReference", doc.getObjectReference());
+        act.setValue("document", doc.getObjectReference());
         IMObjectDataSource ds = createDataSource(act.getAct());
 
         // get the image field
-        JRField docReference = createField("docReference", InputStream.class);
-        InputStream stream = (InputStream) ds.getFieldValue(docReference);
+        JRField document = createField("document", InputStream.class);
+        InputStream stream = (InputStream) ds.getFieldValue(document);
 
         // verify the image contents match that expected
         FileInputStream expectedStream = new FileInputStream(file);
