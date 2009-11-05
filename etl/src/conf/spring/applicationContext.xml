@@ -136,8 +136,11 @@
     </bean>
 
     <bean id="lookupService" class="org.openvpms.etl.load.CachingLookupService">
-        <constructor-arg>
+        <constructor-arg index="0" >
             <ref local="archetypeService"/>
+        </constructor-arg>
+        <constructor-arg index="1" >
+            <ref local="imObjectDao"/>
         </constructor-arg>
     </bean>
 
