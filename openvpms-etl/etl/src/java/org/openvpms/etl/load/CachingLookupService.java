@@ -21,6 +21,7 @@ package org.openvpms.etl.load;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.resources.Messages;
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -83,9 +84,10 @@ public class CachingLookupService extends AbstractLookupService {
      * Constructs a new <tt>CachingLookupService</tt>.
      *
      * @param service the archetype service
+     * @param dao     the data access object
      */
-    public CachingLookupService(IArchetypeService service) {
-        super(service);
+    public CachingLookupService(IArchetypeService service, IMObjectDAO dao) {
+        super(service, dao);
     }
 
     /**
