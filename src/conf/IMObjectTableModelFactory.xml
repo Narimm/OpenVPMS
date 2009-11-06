@@ -23,11 +23,6 @@
                             "status"), "]")</string>
                     </entry>
                     <entry>
-                        <string>act.patientInvestigation*</string>
-                        <string>concat("Request No: ",/id,"-",/description, " [", openvpms:lookup(.,
-                            "status"), "]")</string>
-                    </entry>
-                    <entry>
                         <string>act.patientMedication</string>
                         <string>concat(openvpms:get(.,'product.entity.name'), ' - ',/details/label,' Qty : ',/details/quantity,' Expiry : ', date:formatDate(/activityEndTime))</string>
                     </entry>

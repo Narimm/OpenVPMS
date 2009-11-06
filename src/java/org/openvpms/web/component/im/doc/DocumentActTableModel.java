@@ -18,11 +18,18 @@
 
 package org.openvpms.web.component.im.doc;
 
+import echopointng.layout.TableLayoutDataEx;
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
@@ -38,23 +45,36 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
      */
     private int docIndex;
 
+    /**
+     * The versions model index.
+     */
+    private int versionsIndex = -1;
+
 
     /**
      * Constructs a <tt>DocumentActTableModel</tt>.
      */
     public DocumentActTableModel() {
-        this(true, true);
+        this(true, true, true);
     }
 
     /**
      * Constructs a <tt>DocumentActTableModel</tt>.
      *
      * @param showArchetype determines if the archetype column should be displayed
-     * @param showStatus    determines if the status colunn should be displayed
+     * @param showStatus    determines if the status column should be displayed
+     * @param showVersions  determines if the versions column should be displayed
      */
-    public DocumentActTableModel(boolean showArchetype, boolean showStatus) {
+    public DocumentActTableModel(boolean showArchetype, boolean showStatus, boolean showVersions) {
         super(showArchetype, showStatus, false);
+
+        if (showVersions) {
+            DefaultTableColumnModel model = (DefaultTableColumnModel) getColumnModel();
+            versionsIndex = getNextModelIndex(model);
+            model.addColumn(createTableColumn(versionsIndex, "document.acttablemodel.versions"));
+        }
     }
+
 
     /**
      * Returns the value found at the given coordinate within the table.
@@ -70,8 +90,32 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
         int index = column.getModelIndex();
         if (index == docIndex) {
             result = DocumentActTableHelper.getDocumentViewer(act, true);
+        } else if (index == versionsIndex) {
+            result = getVersions(act);
         } else {
             result = super.getValue(act, column, row);
+        }
+        return result;
+    }
+
+    private Object getVersions(DocumentAct act) {
+        Object result;
+        ActBean bean = new ActBean(act);
+        if (bean.hasNode(DocumentRules.VERSIONS)) {
+            int versions = bean.getValues(DocumentRules.VERSIONS).size();
+            if (versions > 0) {
+                Label label = LabelFactory.create();
+                label.setText(Integer.toString(versions));
+                TableLayoutData layout = new TableLayoutDataEx();
+                Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
+                layout.setAlignment(right);
+                label.setLayoutData(layout);
+                result = versions;
+            } else {
+                result = null;
+            }
+        } else {
+            result = null;
         }
         return result;
     }
@@ -92,9 +136,7 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
                 = (DefaultTableColumnModel) super.createColumnModel(showArchetype, showStatus,
                                                                     showAmount);
         docIndex = getNextModelIndex(model);
-        TableColumn column = createTableColumn(docIndex,
-                                               "document.acttablemodel.doc");
-        model.addColumn(column);
+        model.addColumn(createTableColumn(docIndex, "document.acttablemodel.doc"));
         if (showAmount) {
             model.moveColumn(model.getColumnCount() - 1,
                              getColumnOffset(model, AMOUNT_INDEX));

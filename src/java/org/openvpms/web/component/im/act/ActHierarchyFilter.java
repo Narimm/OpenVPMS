@@ -67,11 +67,10 @@ public class ActHierarchyFilter<T extends Act> {
     }
 
     /**
-     * Returns the act and its immediate children, after applying filters.
+     * Returns the immediate children of an act, after applying filters.
      *
      * @param act the act
-     * @return the act and its immediate children, or an empty array if they
-     *         have been filtered
+     * @return the immediate children of the act, or an empty list if they have been filtered
      */
     public List<T> filter(T act) {
         List<T> result = new ArrayList<T>();
@@ -88,7 +87,6 @@ public class ActHierarchyFilter<T extends Act> {
                 }
             }
             if (include(act, items)) {
-                result.add(act);
                 sortItems(items);
                 result.addAll(items);
             }
@@ -139,6 +137,7 @@ public class ActHierarchyFilter<T extends Act> {
      *
      * @param child  the child act
      * @param parent the parent act
+     * @return <tt>true</tt> if the child act should be included
      */
     protected boolean include(T child, T parent) {
         return true;

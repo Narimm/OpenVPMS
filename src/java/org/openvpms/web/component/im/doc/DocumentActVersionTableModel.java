@@ -22,7 +22,7 @@ package org.openvpms.web.component.im.doc;
 /**
  * Table model for document version acts.
  * <p/>
- * This suppresses the status and type columns.
+ * This suppresses the status, type and version columns.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -33,7 +33,7 @@ public class DocumentActVersionTableModel extends DocumentActTableModel {
      * Constructs a <tt>DocumentActTableModel</tt>.
      */
     public DocumentActVersionTableModel() {
-        super(false, false);
+        super(false, false, false);
     }
 
 }
