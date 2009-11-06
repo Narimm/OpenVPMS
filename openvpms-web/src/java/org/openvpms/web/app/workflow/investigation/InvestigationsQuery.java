@@ -38,7 +38,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     /**
      * The act short names.
      */
-    public static final String[] SHORT_NAMES = new String[]{InvestigationArchetypes.GENERAL};
+    public static final String[] SHORT_NAMES = new String[]{InvestigationArchetypes.PATIENT_INVESTIGATION};
 
     /**
      * The default sort constraint.
@@ -48,7 +48,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     /**
      * The act statuses to query..
      */
-    private static final ActStatuses STATUSES = new ActStatuses(InvestigationArchetypes.GENERAL);
+    private static final ActStatuses STATUSES = new ActStatuses(InvestigationArchetypes.PATIENT_INVESTIGATION);
 
 
     /**

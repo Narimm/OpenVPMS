@@ -116,6 +116,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             protected void filter(FinancialAct act,
                                   List<FinancialAct> results) {
                 List<FinancialAct> acts = filter.filter(act);
+                results.add(act);
                 results.addAll(acts);
             }
         };

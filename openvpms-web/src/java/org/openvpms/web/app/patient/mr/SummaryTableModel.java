@@ -195,6 +195,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      * Returns a component for an act item.
      *
      * @param act the act item
+     * @param row the current row
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
@@ -210,7 +211,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         type.setLayoutData(layout);
 
         if (TypeHelper.isA(act, "act.patientInvestigation*")
-                || TypeHelper.isA(act, "act.patientDocument*")) {
+            || TypeHelper.isA(act, "act.patientDocument*")) {
             detail = getDocumentDetail((DocumentAct) act);
         } else {
             detail = getDetail(act);
@@ -233,8 +234,8 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         if (row > 0) {
             Act prev = getObject(row - 1);
             if (!TypeHelper.isA(prev, PatientRecordTypes.CLINICAL_EVENT)
-                    && ObjectUtils.equals(act.getActivityStartTime(),
-                                          prev.getActivityStartTime())) {
+                && ObjectUtils.equals(act.getActivityStartTime(),
+                                      prev.getActivityStartTime())) {
                 // act belongs to the same parent act as the prior row,
                 // and has the same date, so don't display it again
                 showDate = false;
@@ -254,16 +255,26 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
 
     /**
      * Returns a component for the act type.
+     * <p/>
+     * This indents document version acts.
      *
      * @param act the act
      * @return a component representing the act type
      */
-    private LabelEx getType(Act act) {
-        LabelEx type = new LabelEx(DescriptorHelper.getDisplayName(act));
+    private Component getType(Act act) {
+        Component result;
+        String text = DescriptorHelper.getDisplayName(act);
+        LabelEx type = new LabelEx(text);
         type.setWidth(new Extent(150));
-        ComponentFactory.setDefaultStyle(type);
         // hack to work around lack of cell spanning facility in Table. todo
-        return type;
+        ComponentFactory.setDefaultStyle(type);
+        if (TypeHelper.isA(act, "act.patientDocument*Version")) {
+            result = RowFactory.create("InsetX", type);
+        } else {
+            result = type;
+        }
+
+        return result;
     }
 
     /**

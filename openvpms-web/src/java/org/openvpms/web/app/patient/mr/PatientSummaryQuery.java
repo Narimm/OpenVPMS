@@ -23,6 +23,9 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.apache.commons.lang.ArrayUtils;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.act.ActHelper;
@@ -42,6 +45,11 @@ import org.openvpms.web.component.util.SelectFieldFactory;
 public class PatientSummaryQuery extends DateRangeActQuery<Act> {
 
     /**
+     * The act item short names that can be filtered on.
+     */
+    private String[] actItemShortNames;
+
+    /**
      * The set of possible act item short names.
      */
     private String[] allShortNames;
@@ -49,7 +57,16 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
     /**
      * The act items to display.
      */
-    private String[] itemShortNames;
+    private String[] selectedShortNames;
+
+    /**
+     * Document act version short names.
+     */
+    private static final String[] DOC_VERSION_SHORT_NAMES = new String[]{
+                InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION,
+                PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION,
+                PatientArchetypes.DOCUMENT_IMAGE_VERSION,
+                PatientArchetypes.DOCUMENT_LETTER_VERSION};
 
 
     /**
@@ -58,12 +75,11 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
      * @param patient the patient to query
      */
     public PatientSummaryQuery(Party patient) {
-        super(patient, "patient", "participation.patient",
+        super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION,
               new String[]{PatientRecordTypes.CLINICAL_EVENT}, Act.class);
-        allShortNames = ActHelper.getTargetShortNames(
-                PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM);
-
-        itemShortNames = allShortNames;
+        actItemShortNames = ActHelper.getTargetShortNames(PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM);
+        allShortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
+        selectedShortNames = allShortNames;
         setAuto(true);
     }
 
@@ -73,7 +89,7 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
      * @return the act item short names
      */
     public String[] getActItemShortNames() {
-        return itemShortNames;
+        return selectedShortNames;
     }
 
     /**
@@ -85,17 +101,17 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
     @Override
     protected void doLayout(Component container) {
         final ShortNameListModel model
-                = new ShortNameListModel(allShortNames, true, false);
+                = new ShortNameListModel(actItemShortNames, true, false);
         final SelectField shortNameSelector = SelectFieldFactory.create(
                 model);
         shortNameSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 int index = shortNameSelector.getSelectedIndex();
                 if (model.isAll(index)) {
-                    itemShortNames = allShortNames;
+                    selectedShortNames = allShortNames;
                 } else {
                     String shortName = model.getShortName(index);
-                    itemShortNames = new String[]{shortName};
+                    selectedShortNames = getSelectedShortNames(shortName);
                 }
                 onQuery();
             }
@@ -109,4 +125,16 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
         super.doLayout(container);
     }
 
+    private String[] getSelectedShortNames(String shortName) {
+        if (InvestigationArchetypes.PATIENT_INVESTIGATION.equals(shortName)) {
+            return new String[]{shortName, InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION};
+        } else if (PatientArchetypes.DOCUMENT_ATTACHMENT.equals(shortName)) {
+            return new String[]{shortName, PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION};
+        } else if (PatientArchetypes.DOCUMENT_IMAGE.equals(shortName)) {
+            return new String[]{shortName, PatientArchetypes.DOCUMENT_IMAGE_VERSION};
+        } else if (PatientArchetypes.DOCUMENT_LETTER.equals(shortName)) {
+            return new String[]{shortName, PatientArchetypes.DOCUMENT_LETTER_VERSION};
+        }
+        return new String[]{shortName};
+    }
 }

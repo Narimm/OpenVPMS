@@ -25,8 +25,8 @@ import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Stack;
 
 
 /**
@@ -66,7 +66,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      *
      * @param acts the collection of acts
      */
-    public ActHierarchyIterator(Iterable<T>acts) {
+    public ActHierarchyIterator(Iterable<T> acts) {
         this(acts, (Predicate) null);
     }
 
@@ -126,18 +126,6 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
     }
 
     /**
-     * Determines if an act should be included.
-     * <p/>
-     * This implementation always returns <tt>true</tt>
-     *
-     * @param act the act
-     * @return <tt>true</tt> if the act should be included
-     */
-    protected boolean include(T act) {
-        return true;
-    }
-
-    /**
      * Helper to return a predicate that includes/excludes acts based on their
      * short name.
      *
@@ -155,21 +143,18 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
     private class ActIterator implements Iterator<T> {
 
         /**
-         * Iterator over the top level acts.
+         * Stack of iterators, top level acts pushed first.
          */
-        private Iterator<T> actIterator;
+        private Stack<Iterator<T>> stack = new Stack<Iterator<T>>();
 
-        /**
-         * Iterator over the current top level act's items.
-         */
-        private Iterator<T> itemsIterator;
+        private T current;
 
 
         /**
          * Creates a new <tt>ActIterator</tt>.
          */
         public ActIterator() {
-            this.actIterator = acts.iterator();
+            stack.push(acts.iterator());
         }
 
         /**
@@ -178,10 +163,10 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
          * @return <tt>true</tt> if the iterator has more elements.
          */
         public boolean hasNext() {
-            if (itemsIterator == null || !itemsIterator.hasNext()) {
+            if (current == null) {
                 advance();
             }
-            return itemsIterator != null && itemsIterator.hasNext();
+            return (current != null);
         }
 
         /**
@@ -191,12 +176,14 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
          * @throws NoSuchElementException iteration has no more elements.
          */
         public T next() {
-            if (itemsIterator == null || !itemsIterator.hasNext()) {
+            if (current == null) {
                 if (!advance()) {
                     throw new NoSuchElementException();
                 }
             }
-            return itemsIterator.next();
+            T result = current;
+            current = null;
+            return result;
         }
 
         /**
@@ -213,15 +200,22 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
          *
          * @return <tt>true</tt> if the advance was successful.
          */
-        @SuppressWarnings("unchecked")
         private boolean advance() {
-            while (actIterator.hasNext()) {
-                T act = actIterator.next();
-                List<T> acts = filter.filter(act);
-                if (!acts.isEmpty()) {
-                    itemsIterator = acts.iterator();
-                    return true;
+            current = null;
+            while (!stack.isEmpty()) {
+                Iterator<T> iterator = stack.peek();
+                while (iterator.hasNext()) {
+                    T act = iterator.next();
+                    if (filter.include(act)) {
+                        current = act;
+                        iterator = filter.filter(current).iterator();
+                        if (iterator.hasNext()) {
+                            stack.push(iterator);
+                        }
+                        return true;
+                    }
                 }
+                stack.pop();
             }
             return false;
         }
