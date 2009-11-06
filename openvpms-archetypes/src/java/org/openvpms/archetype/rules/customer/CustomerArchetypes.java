@@ -50,4 +50,28 @@ public class CustomerArchetypes {
     public static final String CUSTOMER_PARTICIPATION
             = "participation.customer";
 
+    /**
+     * Customer document attachment act short name.
+     */
+    public static final String DOCUMENT_ATTACHMENT = "act.customerDocumentAttachment";
+
+    /**
+     * Customer document attachment version act short name.
+     */
+    public static final String DOCUMENT_ATTACHMENT_VERSION = "act.customerDocumentAttachmentVersion";
+
+    /**
+     * Customer document form act short name.
+     */
+    public static final String DOCUMENT_FORM = "act.customerDocumentForm";
+
+    /**
+     * Customer document letter act short name.
+     */
+    public static final String DOCUMENT_LETTER = "act.customerDocumentLetter";
+
+    /**
+     * Customer document letter version act short name.
+     */
+    public static final String DOCUMENT_LETTER_VERSION = "act.customerDocumentLetterVersion";
 }

@@ -53,4 +53,38 @@ public class PatientArchetypes {
      */
     public static final String PATIENT_WEIGHT = "act.patientWeight";
 
+   /**
+     * Patient document attachment act short name.
+     */
+    public static final String DOCUMENT_ATTACHMENT = "act.patientDocumentAttachment";
+
+    /**
+     * Patient document attachment version act short name.
+     */
+    public static final String DOCUMENT_ATTACHMENT_VERSION = "act.patientDocumentAttachmentVersion";
+
+    /**
+     * Patient document form act short name.
+     */
+    public static final String DOCUMENT_FORM = "act.patientDocumentForm";
+
+    /**
+     * Patient document image act short name.
+     */
+    public static final String DOCUMENT_IMAGE = "act.patientDocumentImage";
+
+    /**
+     * Patient document image version act short name.
+     */
+    public static final String DOCUMENT_IMAGE_VERSION = "act.patientDocumentImageVersion";
+    
+    /**
+     * Patient document letter act short name.
+     */
+    public static final String DOCUMENT_LETTER = "act.patientDocumentLetter";
+
+    /**
+     * Patient document letter version act short name.
+     */
+    public static final String DOCUMENT_LETTER_VERSION = "act.patientDocumentLetterVersion";    
 }

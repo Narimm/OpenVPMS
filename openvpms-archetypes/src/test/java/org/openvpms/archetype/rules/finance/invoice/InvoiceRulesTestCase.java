@@ -531,7 +531,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     private List<Act> createInvestigationActs() {
         List<Act> result = new ArrayList<Act>();
         for (Entity investigationType : investigationTypes) {
-            Act act = createAct(InvestigationArchetypes.GENERAL);
+            Act act = createAct(InvestigationArchetypes.PATIENT_INVESTIGATION);
             ActBean bean = new ActBean(act);
             bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
             bean.addParticipation(InvestigationArchetypes.INVESTIGATION_TYPE_PARTICIPATION, investigationType);

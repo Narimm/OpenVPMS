@@ -29,27 +29,42 @@ public class InvestigationArchetypes {
 
     /**
      * Biochemistry investigation short name.
+     *
+     * @deprecated see {@link #PATIENT_INVESTIGATION}
      */
+    @Deprecated
     public static final String BIOCHEMISTRY = "act.patientInvestigationBiochemistry";
 
     /**
      * Cytology investigation short name.
+     *
+     * @deprecated see {@link #PATIENT_INVESTIGATION}
      */
+    @Deprecated
     public static final String CYTOLOGY = "act.patientInvestigationCytology";
 
     /**
      * Haematology investigation short name.
+     *
+     * @deprecated see {@link #PATIENT_INVESTIGATION}
      */
+    @Deprecated
     public static final String HAEMATOLOGY = "act.patientInvestigationHaematology";
 
     /**
      * Radiology investigation short name.
+     *
+     * @deprecated see {@link #PATIENT_INVESTIGATION}
      */
+    @Deprecated
     public static final String RADIOLOGY = "act.patientInvestigationRadiology";
 
     /**
      * General investigation short name.
+     *
+     * @deprecated see {@link #PATIENT_INVESTIGATION}
      */
+    @Deprecated
     public static final String GENERAL = "act.patientInvestigation";
 
     /**
@@ -66,4 +81,9 @@ public class InvestigationArchetypes {
      * Patient investigation act short name.
      */
     public static final String PATIENT_INVESTIGATION = "act.patientInvestigation";
+
+    /**
+     * Patient investigation version act short name.
+     */
+    public static final String PATIENT_INVESTIGATION_VERSION = "act.patientInvestigationVersion";
 }
