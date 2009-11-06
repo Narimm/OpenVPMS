@@ -136,4 +136,38 @@ public class SupplierArchetypes {
     public static final String SUPPLIER_PARTICIPATION
             = "participation.supplier";
 
+    /**
+     * Supplier document attachment act short name.
+     */
+    public static final String DOCUMENT_ATTACHMENT = "act.supplierDocumentAttachment";
+
+    /**
+     * Supplier document attachment version act short name.
+     */
+    public static final String DOCUMENT_ATTACHMENT_VERSION = "act.supplierDocumentAttachmentVersion";
+
+    /**
+     * Supplier document form act short name.
+     */
+    public static final String DOCUMENT_FORM = "act.supplierDocumentForm";
+
+    /**
+     * Supplier document image act short name.
+     */
+    public static final String DOCUMENT_IMAGE = "act.supplierDocumentImage";
+
+    /**
+     * Supplier document image version act short name.
+     */
+    public static final String DOCUMENT_IMAGE_VERSION = "act.supplierDocumentImageVersion";
+
+    /**
+     * Supplier document letter act short name.
+     */
+    public static final String DOCUMENT_LETTER = "act.supplierDocumentLetter";
+
+    /**
+     * Supplier document letter version act short name.
+     */
+    public static final String DOCUMENT_LETTER_VERSION = "act.supplierDocumentLetterVersion";
 }
