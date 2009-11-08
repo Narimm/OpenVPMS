@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl;
@@ -28,7 +29,10 @@ import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.product.ProductPriceDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.security.UserDOImpl;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -43,6 +47,8 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +56,14 @@ import java.util.Map;
 
 /**
  * Replaces an instance of a lookup with another lookup.
+ * <p/>
+ * This has the following limitations:
+ * <ol>
+ * <li>it uses SQL to perform updates and queries that cannot be implemented in HQL. If persistent classes are added,
+ * they may also need to be referenced by this class.</li>
+ * <li>it performs batch updates which do not update persistent version numbers. While it also clears the second lewel
+ * cache, other in-memory objects won't reflect the changes, potentially resulting in data-inconsistency.</li>
+ * </ol>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -106,38 +120,10 @@ public class LookupReplacer {
      */
     private static final String priceClassificationsDelete;
 
-    private static class Mapping {
-
-        private final String updateSQL;
-
-        private final String isUsedSQL;
-
-        private final Class impl;
-
-        public Mapping(String table, String details, String joinId, Class impl) {
-            this.updateSQL = createUpdateSQL(table, details, joinId);
-            this.isUsedSQL = createIsUsedSQL(table, details, joinId);
-            this.impl = impl;
-        }
-
-        public String getUpdateSQL() {
-            return updateSQL;
-        }
-
-        public String getIsUsedSQL() {
-            return isUsedSQL;
-        }
-
-        public Class getImpl() {
-            return impl;
-        }
-    }
-
+    /**
+     * The mappings.
+     */
     private static final Map<Class, Mapping> mappings = new HashMap<Class, Mapping>();
-
-    private static void addMapping(Class clazz, String table, String details, String joinId, Class impl) {
-        mappings.put(clazz, new Mapping(table, details, joinId, impl));
-    }
 
     static {
         addMapping(Act.class, "acts", "act_details", "act_id", ActDOImpl.class);
@@ -249,11 +235,27 @@ public class LookupReplacer {
 
         // replace any uses of the lookup as classifications. Don't do it based on the archetypes that use the lookup,
         // as these could change over time.
-        replaceClassifications(source, target, entityClassificationsUpdate, entityClassificationsDelete, session);
-        replaceClassifications(source, target, contactClassificationsUpdate, contactClassificationsDelete, session);
-        replaceClassifications(source, target, priceClassificationsUpdate, priceClassificationsDelete, session);
+        // NOTE: the list of persirstent classes needs to reflect the persistent class heirarchy if the second level
+        // caches are to be cleared correctly
+        replaceClassifications(source, target, entityClassificationsUpdate, entityClassificationsDelete, session,
+                               EntityDOImpl.class, PartyDOImpl.class, ProductDOImpl.class, UserDOImpl.class);
+        replaceClassifications(source, target, contactClassificationsUpdate, contactClassificationsDelete, session,
+                               ContactDOImpl.class);
+        replaceClassifications(source, target, priceClassificationsUpdate, priceClassificationsDelete, session,
+                               ProductPriceDOImpl.class);
     }
 
+    /**
+     * Determines if a lookup is used by a particular archetype 'details' node.
+     * <p/>
+     * This uses SQL rather than HQL as HQL cannot query the details table.
+     *
+     * @param lookup    the lookup to check
+     * @param node      the node
+     * @param archetype the archetype
+     * @param session   the hibernate session
+     * @return <tt>true</tt> if the lookup is used, otherwise <tt>false</tt>
+     */
     private boolean isUsedSQL(Lookup lookup, NodeDescriptor node, ArchetypeDescriptor archetype, Session session) {
         Mapping mapping = getMapping(archetype, node);
         SQLQuery query = session.createSQLQuery(mapping.getIsUsedSQL());
@@ -264,10 +266,19 @@ public class LookupReplacer {
         return !query.list().isEmpty();
     }
 
+    /**
+     * Determines if a lookup is used by a particular archetype node.
+     *
+     * @param lookup    the lookup to check
+     * @param node      the node
+     * @param archetype the archetype
+     * @param session   the hibernate session
+     * @return <tt>true</tt> if the lookup is used, otherwise <tt>false</tt>
+     */
     private boolean isUsedHQL(Lookup lookup, NodeDescriptor node, ArchetypeDescriptor archetype, Session session) {
         Mapping mapping = getMapping(archetype, node);
         String name = node.getPath().substring(1);
-        StringBuilder hql = new StringBuilder("select id from ").append(mapping.getImpl().getName())
+        StringBuilder hql = new StringBuilder("select id from ").append(mapping.getPersistentClass().getName())
                 .append(" where archetypeId.shortName = :archetype and ")
                 .append(name).append(" = :code");
         Query query = session.createQuery(hql.toString());
@@ -307,7 +318,7 @@ public class LookupReplacer {
         query.setString("name", node.getName());
         query.setString("oldCode", source.getCode());
         query.setString("newCode", target.getCode());
-        query.executeUpdate();
+        executeUpdate(query, session, mapping.getPersistentClass());
     }
 
     /**
@@ -323,16 +334,24 @@ public class LookupReplacer {
                                 Session session) {
         Mapping mapping = getMapping(archetype, node);
         String name = node.getPath().substring(1);
-        StringBuilder hql = new StringBuilder("update ").append(mapping.getImpl().getName())
+        StringBuilder hql = new StringBuilder("update ").append(mapping.getPersistentClass().getName())
                 .append(" set ").append(name).append(" = :newCode where archetypeId.shortName = :archetype and ")
                 .append(name).append(" = :oldCode");
         Query query = session.createQuery(hql.toString());
         query.setString("archetype", archetype.getType().getShortName());
         query.setString("oldCode", source.getCode());
         query.setString("newCode", target.getCode());
-        query.executeUpdate();
+        executeUpdate(query, session, mapping.getPersistentClass());
     }
 
+    /**
+     * Determines if a classification lookup is in use.
+     *
+     * @param lookup  the lookup
+     * @param sql     the SQL query
+     * @param session the hibernate session
+     * @return <tt>true</tt> if the lookup is in use, otherwise <tt>false</tt>
+     */
     private boolean isClassificationInUse(Lookup lookup, String sql, Session session) {
         Query query = session.createSQLQuery(sql);
         query.setLong("id", lookup.getId());
@@ -352,22 +371,68 @@ public class LookupReplacer {
      * The second SQL statement, <tt>deleteSQL</tt>, removes all of those source instances that couldn't be replaced
      * due to duplicates.
      *
-     * @param source    the lookup classification to replace
-     * @param target    the lookup classification to replace <tt>source</tt> with
-     * @param updateSQL the SQL to replace existing instances
-     * @param deleteSQL the SQL to delete the source classification with
-     * @param session   the session
+     * @param source            the lookup classification to replace
+     * @param target            the lookup classification to replace <tt>source</tt> with
+     * @param updateSQL         the SQL to replace existing instances
+     * @param deleteSQL         the SQL to delete the source classification with
+     * @param session           the session
+     * @param persistentClasses the persistent classes
      */
     private void replaceClassifications(Lookup source, Lookup target, String updateSQL, String deleteSQL,
-                                        Session session) {
+                                        Session session, Class... persistentClasses) {
         Query query = session.createSQLQuery(updateSQL);
         query.setLong("oldId", source.getId());
         query.setLong("newId", target.getId());
-        query.executeUpdate();
+        executeUpdate(query, session, persistentClasses);
 
         query = session.createSQLQuery(deleteSQL);
         query.setLong("oldId", source.getId());
         query.executeUpdate();
+    }
+
+    /**
+     * Executes an update query.
+     * <p/>
+     * If any updates are made, the second level caches associated with the persisent classes are also cleared.
+     * <p/>
+     * <strong>NOTE</strong>: There is a small window where the second level cache will not reflect the state of the
+     * database.
+     *
+     * @param query             the update query
+     * @param session           the hibernate session
+     * @param persistentClasses the persistent classes affected by the update
+     */
+    private void executeUpdate(Query query, final Session session, final Class... persistentClasses) {
+        int updates = query.executeUpdate();
+        if (updates != 0) {
+            final SessionFactory factory = session.getSessionFactory();
+            if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                // clear the cache when the transaction commits
+                TransactionSynchronizationManager.registerSynchronization(
+                        new TransactionSynchronizationAdapter() {
+                            @Override
+                            public void afterCompletion(int status) {
+                                if (status == STATUS_COMMITTED) {
+                                    clearCaches(persistentClasses, factory);
+                                }
+                            }
+                        });
+            } else {
+                clearCaches(persistentClasses, factory);
+            }
+        }
+    }
+
+    /**
+     * Clears the second level caches of the specified persisent classes.
+     *
+     * @param persistentClasses the persistent classes
+     * @param factory           the session factory
+     */
+    private void clearCaches(Class[] persistentClasses, SessionFactory factory) {
+        for (Class persistentClass : persistentClasses) {
+            factory.evict(persistentClass);
+        }
     }
 
     /**
@@ -452,6 +517,83 @@ public class LookupReplacer {
      */
     private static String createClassificationsDeleteSQL(String table) {
         return "delete from " + table + " where lookup_id = :oldId";
+    }
+
+    /**
+     * Helper to register a mapping.
+     *
+     * @param clazz        the archetype class
+     * @param table        the primary table that makes it persistent
+     * @param detailsTable the details table
+     * @param joinColumn   the column to join the table and details table on
+     * @param impl         the persistent class
+     */
+    private static void addMapping(Class clazz, String table, String detailsTable, String joinColumn, Class impl) {
+        mappings.put(clazz, new Mapping(table, detailsTable, joinColumn, impl));
+    }
+
+    /**
+     * Mapping information.
+     */
+    private static class Mapping {
+
+        /**
+         * SQL update statement that updates the value column of a 'details' table for a given archetype and value
+         */
+        private final String updateSQL;
+
+        /**
+         * SQL statement the determines if a lookup is used by a 'details' node.
+         */
+        private final String isUsedSQL;
+
+        /**
+         * The persistent class.
+         */
+        private final Class persistentClass;
+
+
+        /**
+         * Constructs a <tt>Mapping</tt>.
+         *
+         * @param table           the primary table
+         * @param details         the details table
+         * @param joinColumn      the column to join the two tables on
+         * @param persistentClass the persistent clas
+         */
+        public Mapping(String table, String details, String joinColumn, Class persistentClass) {
+            this.updateSQL = createUpdateSQL(table, details, joinColumn);
+            this.isUsedSQL = createIsUsedSQL(table, details, joinColumn);
+            this.persistentClass = persistentClass;
+        }
+
+        /**
+         * Returns an SQL update statement that updates the value column of a 'details' table for a given archetype and
+         * value.
+         *
+         * @return the update SQL
+         */
+        public String getUpdateSQL() {
+            return updateSQL;
+        }
+
+        /**
+         * Returns statement the determines if a lookup is used by a 'details' node.
+         *
+         * @return the is-used SQL
+         */
+        public String getIsUsedSQL() {
+            return isUsedSQL;
+        }
+
+        /**
+         * Returns the persistent class.
+         *
+         * @return the persistent class
+         */
+        public Class getPersistentClass() {
+            return persistentClass;
+        }
     }
 
 }
