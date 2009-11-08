@@ -17,7 +17,6 @@
  */
 package org.openvpms.component.business.service.lookup;
 
-import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -263,12 +262,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
             remove(lookup1);
             fail("Expected an ArchetypeServiceException to be thrown");
         } catch (ArchetypeServiceException exception) {
-            assertEquals(ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
-                         exception.getErrorCode());
-            Throwable cause = exception.getCause();
-            assertTrue(cause instanceof IMObjectDAOException);
-            assertEquals(IMObjectDAOException.ErrorCode.CannotDeleteLookupInUse,
-                         ((IMObjectDAOException) cause).getErrorCode());
+            assertEquals(ArchetypeServiceException.ErrorCode.CannotDeleteLookupInUse, exception.getErrorCode());
         }
         bean.setValue(node, lookup2.getCode());
         bean.save();
@@ -297,12 +291,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
             remove(class1);
             fail("Expected an ArchetypeServiceException to be thrown");
         } catch (ArchetypeServiceException exception) {
-            assertEquals(ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
-                         exception.getErrorCode());
-            Throwable cause = exception.getCause();
-            assertTrue(cause instanceof IMObjectDAOException);
-            assertEquals(IMObjectDAOException.ErrorCode.CannotDeleteLookupInUse,
-                         ((IMObjectDAOException) cause).getErrorCode());
+            assertEquals(ArchetypeServiceException.ErrorCode.CannotDeleteLookupInUse, exception.getErrorCode());
         }
         bean.removeValue(node, class1);
         bean.addValue(node, class2);
