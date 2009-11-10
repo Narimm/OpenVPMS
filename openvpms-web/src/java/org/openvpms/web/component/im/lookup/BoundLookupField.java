@@ -66,13 +66,15 @@ public class BoundLookupField extends LookupField {
      * @param source   the source of the lookups to display
      * @param all      if <tt>true</tt>, add a localised "All"
      */
-    public BoundLookupField(Property property, LookupQuery source,
-                            boolean all) {
+    public BoundLookupField(Property property, LookupQuery source, boolean all) {
         super(source, all, !property.isRequired());
         binder = new SelectFieldBinder(this, property);
         binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
+        }
+        if (getSelected() == null) {
+            setDefaultSelection();
         }
     }
 

@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.lookup;
 
 import nextapp.echo2.app.SelectField;
-import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -143,24 +142,41 @@ public class LookupField extends SelectField {
     /**
      * Refreshes the model if required.
      * <p/>
-     * If the model refreshes and selected lookup is different in the new model, the selection will be cleared,
-     * and if possible, set to 'none'.
+     * If the model refreshes {@link #setDefaultSelection()} is invoked.
      *
      * @return <tt>true</tt> if the model refreshed
      */
     public boolean refresh() {
         LookupListModel model = getModel();
-        Lookup selected = getSelected();
         boolean refreshed = model.refresh();
         if (refreshed) {
-            if (getSelectedIndex() >= model.size() || !ObjectUtils.equals(selected, getSelected())) {
-                getSelectionModel().clearSelection();
-                int none = model.getNoneIndex();
-                if (none != -1) {
-                    setSelectedIndex(none);
-                }
-            }
+            setDefaultSelection();
         }
         return refreshed;
+    }
+
+    /**
+     * Sets the default selection.
+     * <p/>
+     * This:
+     * <ol>
+     * <li>selects the default lookup is if present, otherwise;</li>
+     * <li>selects <em>All</em> is selected if present, otherwise;</li>
+     * <li>selects <em>None</em> is selected if present, otherwise;</li>
+     * <li>clears the selection</li>
+     * </ol>
+     */
+    protected void setDefaultSelection() {
+        LookupListModel model = getModel();
+        Lookup lookup = model.getDefaultLookup();
+        if (lookup != null) {
+            setSelected(lookup);
+        } else if (model.getAllIndex() != -1) {
+            setSelectedIndex(model.getAllIndex());
+        } else if (model.getNoneIndex() != -1) {
+            setSelectedIndex(model.getNoneIndex());
+        } else {
+            getSelectionModel().clearSelection();
+        }
     }
 }
