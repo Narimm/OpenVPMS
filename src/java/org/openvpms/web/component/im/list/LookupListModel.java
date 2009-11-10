@@ -145,6 +145,15 @@ public class LookupListModel extends AbstractIMObjectListModel<Lookup> {
     }
 
     /**
+     * Returns the default lookup.
+     *
+     * @return the default lookup, or <tt>null</tt> if none is defined
+     */
+    public Lookup getDefaultLookup() {
+        return source.getDefault();
+    }
+
+    /**
      * Retrieves the lookups from the lookup source.
      *
      * @return a list of lookups
