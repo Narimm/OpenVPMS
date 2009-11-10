@@ -65,6 +65,15 @@ public class BoundColorSelect extends ColorSelect {
         });
     }
 
+    /**
+     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        binder.dispose();
+    }
+
     private Color convert(Object value) {
         return value != null ? ColourHelper.getColor(value.toString()) : null;
     }

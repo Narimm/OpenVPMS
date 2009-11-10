@@ -72,6 +72,15 @@ public class BoundDateField extends DateFieldImpl {
     }
 
     /**
+     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        binder.dispose();
+    }
+
+    /**
      * Creates a new {@link DateBinder}.
      *
      * @param property the property to bind

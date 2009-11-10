@@ -37,17 +37,12 @@ public class SelectFieldBinder extends Binder {
     /**
      * The component to bind to.
      */
-    private final SelectField component;
-
-    /**
-     * The property to bind.
-     */
-    private final Property property;
+    private SelectField component;
 
     /**
      * The listener.
      */
-    private final ActionListener listener;
+    private ActionListener listener;
 
 
     /**
@@ -65,8 +60,19 @@ public class SelectFieldBinder extends Binder {
             }
         };
         component.addActionListener(listener);
+    }
 
-        this.property = property;
+    /**
+     * Disposes this binder.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (component != null) {
+            component.removeActionListener(listener);
+            component = null;
+            listener = null;
+        }
     }
 
     /**
@@ -90,7 +96,7 @@ public class SelectFieldBinder extends Binder {
             // current value not in the list, so default it to the first
             // list value.
             component.setSelectedIndex(0);
-            property.setValue(component.getSelectedItem());
+            setProperty();
         }
         component.addActionListener(listener);
     }

@@ -36,7 +36,7 @@ public class BoundLookupField extends LookupField {
     /**
      * The binder.
      */
-    private final Binder binder;
+    private Binder binder;
 
 
     /**
@@ -90,5 +90,14 @@ public class BoundLookupField extends LookupField {
             binder.setProperty();
         }
         return result;
+    }
+
+    /**
+     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        binder.dispose();
     }
 }

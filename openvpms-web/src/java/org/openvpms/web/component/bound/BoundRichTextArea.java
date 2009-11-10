@@ -33,7 +33,13 @@ import org.openvpms.web.component.util.TextDocument;
 public class BoundRichTextArea extends RichTextArea {
 
     /**
-     * Constructs a new <code>BoundRichTextArea</code>.
+     * The binder.
+     */
+    public Binder binder;
+
+
+    /**
+     * Constructs a <tt>BoundRichTextArea</tt>.
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display
@@ -41,8 +47,17 @@ public class BoundRichTextArea extends RichTextArea {
     public BoundRichTextArea(Property property, int columns) {
         super(new TextDocument());
         setWidth(new Extent(columns, Extent.EM));
-        Binder binder = new TextComponentBinder(this, property);
+        binder = new TextComponentBinder(this, property);
         binder.setField();
+    }
+
+    /**
+     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        binder.dispose();
     }
 
 }

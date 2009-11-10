@@ -76,4 +76,13 @@ public class BoundCheckBox extends CheckBox {
         }
     }
 
+    /**
+     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        binder.dispose();
+    }
+    
 }
