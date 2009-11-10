@@ -35,37 +35,40 @@ public abstract class Binder {
     /**
      * The property.
      */
-    private Property _property;
+    private Property property;
 
     /**
      * Listener for property updates.
      */
-    private final ModifiableListener _listener;
+    private ModifiableListener listener;
+
 
     /**
-     * Construct a new <code>Binder</code>.
+     * Constructs a <tt>Binder</tt>.
      *
      * @param property the property to bind
      */
     public Binder(Property property) {
-        _property = property;
-        _listener = new ModifiableListener() {
+        this.property = property;
+        listener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 setField();
             }
         };
-        _property.addModifiableListener(_listener);
+        this.property.addModifiableListener(listener);
     }
 
     /**
      * Updates the property from the field.
      */
     public void setProperty() {
-        _property.removeModifiableListener(_listener);
+        property.removeModifiableListener(listener);
         try {
-            setProperty(_property);
+            setProperty(property);
         } finally {
-            _property.addModifiableListener(_listener);
+            if (property != null) {  // binder may have been disposed
+                property.addModifiableListener(listener);
+            }
         }
     }
 
@@ -73,7 +76,22 @@ public abstract class Binder {
      * Updates the field from the property.
      */
     public void setField() {
-        setFieldValue(_property.getValue());
+        if (property != null) {
+            setFieldValue(property.getValue());
+        }
+    }
+
+    /**
+     * Disposes this binder.
+     * <p/>
+     * After disposal, the binder is invalid
+     */
+    public void dispose() {
+        if (property != null) {
+            property.removeModifiableListener(listener);
+            property = null;
+            listener = null;
+        }
     }
 
     /**
@@ -104,4 +122,13 @@ public abstract class Binder {
      * @param value the value to set
      */
     protected abstract void setFieldValue(Object value);
+
+    /**
+     * Returns the property.
+     *
+     * @return the property, or <tt>null</tt> if the binder has been disposed
+     */
+    protected Property getProperty() {
+        return property;
+    }
 }

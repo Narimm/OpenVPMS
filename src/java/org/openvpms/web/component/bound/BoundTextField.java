@@ -34,7 +34,13 @@ import org.openvpms.web.component.util.TextDocument;
 public class BoundTextField extends TextField {
 
     /**
-     * Construct a new <code>BoundTextField</code>.
+     * The binder.
+     */
+    public Binder binder;
+
+
+    /**
+     * Constructs a <tt>BoundTextField</tt>.
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display
@@ -47,11 +53,20 @@ public class BoundTextField extends TextField {
             setWidth(new Extent(columns, Extent.EX));
         }
 
-        Binder binder = new TextComponentBinder(this, property);
+        binder = new TextComponentBinder(this, property);
         binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
+    }
+
+    /**
+     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        binder.dispose();
     }
 
 }

@@ -801,10 +801,10 @@ public abstract class AbstractIMObjectEditor
         protected Editor createLookupEditor(Property property,
                                             IMObject context) {
             Editor editor = super.createLookupEditor(property, context);
-            LookupField lookup = (LookupField) editor.getComponent();
-            lookup.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    refreshLookups((LookupField) event.getSource());
+            final LookupField lookup = (LookupField) editor.getComponent();
+            property.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    refreshLookups(lookup);
                 }
             });
             lookups.add(lookup);

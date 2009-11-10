@@ -41,6 +41,11 @@ public class BoundFormattedField extends TextField {
      */
     private final Format format;
 
+    /**
+     * The binder.
+     */
+    public Binder binder;
+
 
     /**
      * Construct a new <tt>BoundFormattedField</tt>.
@@ -51,7 +56,7 @@ public class BoundFormattedField extends TextField {
     public BoundFormattedField(Property property, Format format) {
         super(new TextDocument());
         this.format = format;
-        Binder binder = new FormattingBinder(this, property);
+        binder = new FormattingBinder(this, property);
         binder.setField();
     }
 
@@ -69,8 +74,18 @@ public class BoundFormattedField extends TextField {
     }
 
     /**
+     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        binder.dispose();
+    }
+
+    /**
      * Parses the field value.
      *
+     * @param value the value to parse
      * @return the parsed value, or <tt>value</tt> if it can't be parsed
      */
     protected Object parse(String value) {

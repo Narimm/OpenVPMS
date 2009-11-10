@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.lookup;
 
 import nextapp.echo2.app.SelectField;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -103,7 +104,7 @@ public class LookupField extends SelectField {
     public Lookup getSelected() {
         int index = getSelectedIndex();
         if (index != -1) {
-            LookupListModel model = (LookupListModel) getModel();
+            LookupListModel model = getModel();
             return model.getLookup(index);
         }
         return null;
@@ -125,23 +126,40 @@ public class LookupField extends SelectField {
      * @param code the lookup code. May be <tt>null</tt>
      */
     public void setSelected(String code) {
-        LookupListModel model = (LookupListModel) getModel();
+        LookupListModel model = getModel();
         setSelectedIndex(model.indexOf(code));
+    }
 
+    /**
+     * Returns the model.
+     *
+     * @return the model
+     */
+    @Override
+    public LookupListModel getModel() {
+        return (LookupListModel) super.getModel();
     }
 
     /**
      * Refreshes the model if required.
      * <p/>
-     * If the model refreshes, the selection will be cleared.
+     * If the model refreshes and selected lookup is different in the new model, the selection will be cleared,
+     * and if possible, set to 'none'.
      *
      * @return <tt>true</tt> if the model refreshed
      */
     public boolean refresh() {
-        LookupListModel model = ((LookupListModel) getModel());
+        LookupListModel model = getModel();
+        Lookup selected = getSelected();
         boolean refreshed = model.refresh();
         if (refreshed) {
-            getSelectionModel().clearSelection();
+            if (getSelectedIndex() >= model.size() || !ObjectUtils.equals(selected, getSelected())) {
+                getSelectionModel().clearSelection();
+                int none = model.getNoneIndex();
+                if (none != -1) {
+                    setSelectedIndex(none);
+                }
+            }
         }
         return refreshed;
     }

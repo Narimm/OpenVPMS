@@ -35,6 +35,12 @@ import org.openvpms.web.component.util.TextDocument;
 public class BoundTextArea extends TextArea {
 
     /**
+     * The binder.
+     */
+    public Binder binder;
+
+
+    /**
      * Constructs a new <tt>BoundTextArea</tt>.
      * The property is associated with an {@link StringPropertyTransformer}
      * that doesn't trim leading and trailing spaces or new lines.
@@ -47,7 +53,7 @@ public class BoundTextArea extends TextArea {
         super(new TextDocument());
         setWidth(new Extent(columns, Extent.EX));
         setHeight(new Extent(rows, Extent.EM));
-        Binder binder = new TextComponentBinder(this, property);
+        binder = new TextComponentBinder(this, property);
         binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
@@ -55,4 +61,13 @@ public class BoundTextArea extends TextArea {
         property.setTransformer(new StringPropertyTransformer(property, false));
     }
 
+    /**
+     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        binder.dispose();
+    }
+    
 }
