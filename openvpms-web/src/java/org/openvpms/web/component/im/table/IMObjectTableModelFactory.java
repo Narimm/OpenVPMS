@@ -118,6 +118,9 @@ public class IMObjectTableModelFactory {
         if (shortNames != null && context != null) {
             methodParams.add(new Object[]{shortNames, context});
         }
+        if (shortNames != null) {
+            methodParams.add(new Object[]{shortNames});
+        }
         if (context != null) {
             methodParams.add(new Object[]{context});
         }

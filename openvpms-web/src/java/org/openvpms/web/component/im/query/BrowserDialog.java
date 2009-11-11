@@ -60,6 +60,11 @@ public class BrowserDialog<T> extends PopupDialog {
     private final Browser<T> browser;
 
     /**
+     * Determines if the dialog should close on selection.
+     */
+    private boolean closeOnSelection = true;
+
+    /**
      * Window style name.
      */
     private static final String STYLE = "BrowserDialog";
@@ -142,6 +147,17 @@ public class BrowserDialog<T> extends PopupDialog {
     }
 
     /**
+     * Determines if the dialog should close on selection.
+     * <p/>
+     * Defaults to <tt>true</tt>.
+     *
+     * @param close if <tt>true</tt>, close the dialog when an object is selected
+     */
+    public void setCloseOnSelection(boolean close) {
+        closeOnSelection = close;
+    }
+
+    /**
      * Returns the browser.
      *
      * @return the browser
@@ -170,13 +186,25 @@ public class BrowserDialog<T> extends PopupDialog {
     }
 
     /**
-     * Select the current object, and close the browser.
+     * Invoked when the 'OK' button is pressed. This closes the dialog if an object is selected.
+     */
+    @Override
+    protected void onOK() {
+        if (selected != null) {
+            super.onOK();
+        }
+    }
+
+    /**
+     * Select the current object, and if <tt>closeOnSelection</tt> is <tt>true</tt>, closes the browser.
      *
      * @param object the selected object
      */
     protected void onSelected(T object) {
         selected = object;
-        close();
+        if (closeOnSelection) {
+            close();
+        }
     }
 
     /**
