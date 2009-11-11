@@ -41,8 +41,10 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -174,8 +176,8 @@ class InvoiceItemSaveRules {
     private void addReminders() {
         linkActsToProductEntities("reminders", "reminders", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION,
                                   new ActLinker() {
-                                      public void link(Entity entity) {
-                                          addReminder(entity);
+                                      public void link(Entity entity, EntityRelationship relationship) {
+                                          addReminder(entity, relationship);
                                       }
                                   });
     }
@@ -184,15 +186,16 @@ class InvoiceItemSaveRules {
      * Adds an <em>act.patientReminder</em> to the invoice item.
      *
      * @param reminderType the reminder type
+     * @param relationship the product reminder relationship
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void addReminder(Entity reminderType) {
+    private void addReminder(Entity reminderType, EntityRelationship relationship) {
         Act reminder = (Act) service.create(ReminderArchetypes.REMINDER);
         Date startTime = item.getActivityStartTime();
         Date endTime = null;
         if (startTime != null) {
             ReminderRules rules = new ReminderRules(service);
-            endTime = rules.calculateReminderDueDate(startTime, reminderType);
+            endTime = rules.calculateProductReminderDueDate(startTime, relationship);
         }
         reminder.setActivityStartTime(startTime);
         reminder.setActivityEndTime(endTime);
@@ -216,7 +219,7 @@ class InvoiceItemSaveRules {
     private void addDocuments() {
         linkActsToProductEntities("documents", "documents", "participation.documentTemplate",
                                   new ActLinker() {
-                                      public void link(Entity entity) {
+                                      public void link(Entity entity, EntityRelationship relationship) {
                                           addDocument(entity);
                                       }
                                   });
@@ -307,20 +310,20 @@ class InvoiceItemSaveRules {
      */
     private void linkActsToProductEntities(String actNode, String entityNode, String archetype, ActLinker linker) {
         List<Act> acts = itemBean.getNodeActs(actNode);
-        Set<IMObjectReference> productTypes = new HashSet<IMObjectReference>();
+        Map<IMObjectReference, EntityRelationship> productTypes = new HashMap<IMObjectReference, EntityRelationship>();
         Set<IMObjectReference> actTypes = new HashSet<IMObjectReference>();
         if (product != null && productBean.hasNode(entityNode)) {
             for (EntityRelationship r : productBean.getValues(entityNode, EntityRelationship.class)) {
                 IMObjectReference target = r.getTarget();
                 if (target != null) {
-                    productTypes.add(target);
+                    productTypes.put(target, r);
                 }
             }
         }
         for (Act act : acts) {
             ActBean bean = new ActBean(act, service);
             IMObjectReference type = bean.getParticipantRef(archetype);
-            if (type != null && !productTypes.contains(type)) {
+            if (type != null && !productTypes.containsKey(type)) {
                 toRemove.add(act);
                 ActRelationship r = itemBean.getRelationship(act);
                 itemBean.removeRelationship(r);
@@ -331,11 +334,13 @@ class InvoiceItemSaveRules {
         }
 
         // add any entities associated with the current product
-        for (IMObjectReference typeRef : productTypes) {
+        for (Map.Entry<IMObjectReference, EntityRelationship> entry : productTypes.entrySet()) {
+            IMObjectReference typeRef = entry.getKey();
             if (!actTypes.contains(typeRef)) {
                 Entity entity = (Entity) getObject(typeRef);
                 if (entity != null) {
-                    linker.link(entity);
+                    EntityRelationship relationship = entry.getValue();
+                    linker.link(entity, relationship);
                 }
             }
         }
@@ -349,9 +354,10 @@ class InvoiceItemSaveRules {
         /**
          * Creates and links a new act to the invoice item.
          *
-         * @param entity the entity to create the act for
+         * @param entity       the entity to create the act for
+         * @param relationship the entity relationship that the entity was obtained from
          * @throws ArchetypeServiceException for any archetype service error
          */
-        void link(Entity entity);
+        void link(Entity entity, EntityRelationship relationship);
     }
 }

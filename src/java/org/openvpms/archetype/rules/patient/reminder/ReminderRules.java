@@ -20,6 +20,8 @@ package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -184,6 +186,21 @@ public class ReminderRules {
     public Date calculateReminderDueDate(Date startTime, Entity reminderType) {
         ReminderType type = new ReminderType(reminderType);
         return type.getDueDate(startTime);
+    }
+
+    /**
+     * Calculates the due date for a product reminder.
+     *
+     * @param startTime the start time
+     * @param relationship the product reminder relationship
+     * @return the due date for the reminder
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Date calculateProductReminderDueDate(Date startTime, EntityRelationship relationship) {
+        IMObjectBean bean = new IMObjectBean(relationship, service);
+        int period = bean.getInt("period");
+        String uom = bean.getString("periodUom");
+        return DateRules.getDate(startTime, period, DateUnits.valueOf(uom));
     }
 
     /**

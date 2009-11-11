@@ -22,11 +22,11 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.act.ActStatus.*;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.InvestigationActStatus;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import static org.openvpms.archetype.rules.patient.MedicalRecordRules.CLINICAL_EVENT_ITEM;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
-import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
@@ -36,6 +36,7 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -46,11 +47,11 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.ArrayList;
 
 
 /**
@@ -129,7 +130,10 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
 
         // verify the end time has been set
         ReminderRules rules = new ReminderRules(getArchetypeService());
-        Date endTime = rules.calculateReminderDueDate(startTime, reminderType);
+        EntityBean bean = new EntityBean(product);
+        List<EntityRelationship> relationships = bean.getNodeRelationships("reminders");
+        assertEquals(1, relationships.size());
+        Date endTime = rules.calculateProductReminderDueDate(startTime, relationships.get(0));
         assertEquals(endTime, reminder.getActivityEndTime());
 
         // make sure a document has been added
