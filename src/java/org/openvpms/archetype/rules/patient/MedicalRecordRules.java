@@ -18,16 +18,6 @@
 
 package org.openvpms.archetype.rules.patient;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -51,6 +41,16 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -133,20 +133,9 @@ public class MedicalRecordRules {
 
     /**
      * Adds an <em>act.patientMedication</em>/<em>act.patientInvestigation*</em>
-     * to an <em>act.patientClinicalEvent</em> associated with the act's
-     * patient.
+     * to an <em>act.patientClinicalEvent</em> associated with the act's patient.
      * <p/>
-     * The <em>act.patientClinicalEvent</em> is selected as follows:
-     * <ol>
-     * <li>find the most recent event for the patient
-     * <li>if it is an <em>IN_PROGRESS</em> and
-     * <pre>event.startTime &gt;= (startTime - 1 week)</pre>
-     * use it
-     * <li>if it is <em>COMPLETED</em> and
-     * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
-     * use it; otherwise
-     * <li>create a new event, with <em>COMPLETED</em> status and startTime
-     * </ol>
+     * The <em>act.patientClinicalEvent</em> is selected using {@link #getEventForAddition}.
      *
      * @param act       the act to add
      * @param startTime the startTime used to select the event
@@ -162,58 +151,16 @@ public class MedicalRecordRules {
      * to an <em>act.patientClinicalEvent</em> associated with each act's
      * patient.
      * <p/>
-     * The <em>act.patientClinicalEvent</em> is selected as follows:
-     * <ol>
-     * <li>find the most recent event for the patient
-     * <li>if it is an <em>IN_PROGRESS</em> and
-     * <pre>event.startTime &gt;= (startTime - 1 week)</pre>
-     * use it
-     * <li>if it is <em>COMPLETED</em> and
-     * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
-     * use it; otherwise
-     * <li>create a new event, with <em>COMPLETED</em> status and startTime
-     * </ol>
+     * The <em>act.patientClinicalEvent</em> is selected using {@link #getEventForAddition}.
      *
      * @param acts      the acts to add
      * @param startTime the startTime used to select the event
      */
     public void addToEvents(List<Act> acts, Date startTime) {
         Map<IMObjectReference, List<Act>> map = getByPatient(acts);
-        // Get Date component of start time so not comparing time components
-    	Date startTimeDate = DateRules.getDate(startTime);
         for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
             IMObjectReference patient = entry.getKey();
-            Act event = getEvent(patient);
-            if (event != null) {
-            	// get date component of event start and end datetimes           	
-                Date eventStart = DateRules.getDate(event.getActivityStartTime());
-                Date eventEnd = DateRules.getDate(event.getActivityEndTime());
-                if (ActStatus.IN_PROGRESS.equals(event.getStatus())) {
-                    Date date = DateRules.getDate(startTimeDate,
-                                                  -1, DateUnits.WEEKS);
-                    if (eventStart.before(date)) {
-                        event = null; // need to create a new event
-                    }
-                } else {  // COMPLETED
-                    if (startTimeDate.before(eventStart)
-                            || (eventEnd != null && startTimeDate.after(eventEnd))
-                            || (eventEnd == null && startTimeDate.after(eventStart)))
-                    {
-                        event = null; // need to create a new event
-                    }
-                }
-            }
-            if (event == null) {
-                event = (Act) service.create(CLINICAL_EVENT);
-                event.setActivityStartTime(startTime);
-                ActBean eventBean = new ActBean(event, service);
-                eventBean.addParticipation(PARTICIPATION_PATIENT, patient);
-                Entity clinician = getClinician(entry.getValue());
-                if (clinician != null) {
-                	eventBean.addParticipation(PARTICIPATION_CLINICIAN, clinician);
-                }
-                event.setStatus(ActStatus.COMPLETED);
-            }
+            Act event = getEventForAddition(patient, startTime, getClinician(entry.getValue()));
             boolean save = false;
             ActBean bean = new ActBean(event, service);
             for (Act a : entry.getValue()) {
@@ -226,6 +173,89 @@ public class MedicalRecordRules {
                 bean.save();
             }
         }
+    }
+
+    /**
+     * The <em>act.patientClinicalEvent</em> is selected as follows:
+     * <ol>
+     * <li>find the most recent event for the patient
+     * <li>if it is an <em>IN_PROGRESS</em> and
+     * <pre>event.startTime &gt;= (startTime - 1 week)</pre>
+     * use it
+     * <li>if it is <em>COMPLETED</em> and
+     * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
+     * use it; otherwise
+     * <li>create a new event, with <em>COMPLETED</em> status and startTime
+     * </ol>
+     *
+     * @param patient   the patient
+     * @param startTime the start time
+     * @param clinician the clinician. May be <tt>null</tt>
+     * @return an event. May be newly created
+     */
+    public Act getEventForAddition(Party patient, Date startTime, Entity clinician) {
+        IMObjectReference clinicianRef = (clinician != null) ? clinician.getObjectReference() : null;
+        return getEventForAddition(patient.getObjectReference(), startTime, clinicianRef);
+    }
+
+    /**
+     * The <em>act.patientClinicalEvent</em> is selected as follows:
+     * <ol>
+     * <li>find the most recent event for the patient
+     * <li>if it is an <em>IN_PROGRESS</em> and
+     * <pre>event.startTime &gt;= (startTime - 1 week)</pre>
+     * use it
+     * <li>if it is <em>COMPLETED</em> and
+     * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
+     * use it; otherwise
+     * <li>create a new event, with <em>COMPLETED</em> status and startTime
+     * </ol>
+     *
+     * @param patient   the patient
+     * @param startTime the start time
+     * @param clinician the clinician. May be <tt>null</tt>
+     * @return an event. May be newly created
+     */
+    public Act getEventForAddition(IMObjectReference patient, Date startTime, IMObjectReference clinician) {
+        Act event = getEvent(patient);
+        if (event != null) {
+            // get date component of start time so not comparing time components
+            Date startDate = DateRules.getDate(startTime);
+            // get date component of event start and end datetimes
+
+            Date eventStart = DateRules.getDate(event.getActivityStartTime());
+            Date eventEnd = DateRules.getDate(event.getActivityEndTime());
+            if (ActStatus.IN_PROGRESS.equals(event.getStatus())) {
+                Date date = DateRules.getDate(startDate, -1, DateUnits.WEEKS);
+                if (eventStart.before(date)) {
+                    event = null; // need to create a new event
+                }
+            } else {  // COMPLETED
+                if (startDate.before(eventStart)
+                    || (eventEnd != null && startDate.after(eventEnd))
+                    || (eventEnd == null && startDate.after(eventStart))) {
+                    event = null; // need to create a new event
+                }
+            }
+        }
+        if (event == null) {
+            event = createEvent(patient, startTime, clinician);
+            event.setStatus(ActStatus.COMPLETED);
+        }
+        return event;
+    }
+
+    /**
+     * Creates a new <em>act.patientClinicalEvent</em> for the patient and start time.
+     *
+     * @param patient   the patient
+     * @param startTime the event start time
+     * @param clinician the clinician. May be <tt>null</tt>
+     * @return a new event
+     */
+    public Act createEvent(Party patient, Date startTime, Entity clinician) {
+        IMObjectReference clinicianRef = (clinician != null) ? clinician.getObjectReference() : null;
+        return createEvent(patient.getObjectReference(), startTime, clinicianRef);
     }
 
     /**
@@ -248,10 +278,7 @@ public class MedicalRecordRules {
             IMObjectReference patient = entry.getKey();
             Act event = getEvent(patient, date);
             if (event == null) {
-                event = (Act) service.create(CLINICAL_EVENT);
-                event.setActivityStartTime(date);
-                ActBean eventBean = new ActBean(event, service);
-                eventBean.addParticipation(PARTICIPATION_PATIENT, patient);
+                event = createEvent(patient, date, null);
             }
             boolean save = false;
             ActBean bean = new ActBean(event, service);
@@ -291,14 +318,11 @@ public class MedicalRecordRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act getEvent(IMObjectReference patient) {
-        ArchetypeQuery query = new ArchetypeQuery(CLINICAL_EVENT,
-                                                  true, true);
-        query.add(new CollectionNodeConstraint("patient").add(
-                new ObjectRefNodeConstraint("entity", patient)));
+        ArchetypeQuery query = new ArchetypeQuery(CLINICAL_EVENT, true, true);
+        query.add(new CollectionNodeConstraint("patient").add(new ObjectRefNodeConstraint("entity", patient)));
         query.add(new NodeSortConstraint(START_TIME, false));
         query.setMaxResults(1);
-        QueryIterator<Act> iter
-                = new IMObjectQueryIterator<Act>(service, query);
+        QueryIterator<Act> iter = new IMObjectQueryIterator<Act>(service, query);
         return (iter.hasNext()) ? iter.next() : null;
     }
 
@@ -331,28 +355,22 @@ public class MedicalRecordRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act getEvent(IMObjectReference patient, Date date) {
-        ArchetypeQuery query = new ArchetypeQuery(CLINICAL_EVENT,
-                                                  true, true);
+        ArchetypeQuery query = new ArchetypeQuery(CLINICAL_EVENT, true, true);
         query.add(new CollectionNodeConstraint("patient").add(
                 new ObjectRefNodeConstraint("entity", patient)));
         OrConstraint or = new OrConstraint();
         Date lowerBound = DateRules.getDate(date);
         Date upperBound = getEndTime(date);
-        or.add(new NodeConstraint(START_TIME, RelationalOp.LTE,
-                                  lowerBound));
-        or.add(new NodeConstraint(START_TIME, RelationalOp.BTW,
-                                  lowerBound, upperBound));
+        or.add(new NodeConstraint(START_TIME, RelationalOp.LTE, lowerBound));
+        or.add(new NodeConstraint(START_TIME, RelationalOp.BTW, lowerBound, upperBound));
         query.add(or);
         OrConstraint or2 = new OrConstraint();
         or2.add(new NodeConstraint(END_TIME, RelationalOp.IsNULL));
-        or2.add(new NodeConstraint(END_TIME, RelationalOp.GTE,
-                                   getEndTime(date)));
-        or2.add(new NodeConstraint(END_TIME, RelationalOp.BTW,
-                                   lowerBound, upperBound));
+        or2.add(new NodeConstraint(END_TIME, RelationalOp.GTE, getEndTime(date)));
+        or2.add(new NodeConstraint(END_TIME, RelationalOp.BTW, lowerBound, upperBound));
         query.add(or2);
         query.add(new NodeSortConstraint(START_TIME));
-        QueryIterator<Act> iter
-                = new IMObjectQueryIterator<Act>(service, query);
+        QueryIterator<Act> iter = new IMObjectQueryIterator<Act>(service, query);
         Act result = null;
         while (iter.hasNext()) {
             Act event = iter.next();
@@ -364,6 +382,26 @@ public class MedicalRecordRules {
             }
         }
         return result;
+    }
+
+    /**
+     * Creates a new <em>act.patientClinicalEvent</em> for the patient and start time.
+     *
+     * @param patient   the patient reference
+     * @param startTime the event start time
+     * @param clinician the clinician reference. May be <tt>null</tt>
+     * @return a new event
+     */
+    private Act createEvent(IMObjectReference patient, Date startTime, IMObjectReference clinician) {
+        Act event;
+        event = (Act) service.create(CLINICAL_EVENT);
+        event.setActivityStartTime(startTime);
+        ActBean eventBean = new ActBean(event, service);
+        eventBean.addParticipation(PARTICIPATION_PATIENT, patient);
+        if (clinician != null) {
+            eventBean.addParticipation(PARTICIPATION_CLINICIAN, clinician);
+        }
+        return event;
     }
 
     /**
@@ -392,15 +430,12 @@ public class MedicalRecordRules {
      * @return the acts keyed on patient reference
      */
     private Map<IMObjectReference, List<Act>> getByPatient(List<Act> acts) {
-        Map<IMObjectReference, List<Act>> result
-                = new HashMap<IMObjectReference, List<Act>>();
+        Map<IMObjectReference, List<Act>> result = new HashMap<IMObjectReference, List<Act>>();
         for (Act act : acts) {
             ActBean bean = new ActBean(act, service);
-            List<ActRelationship> relationships
-                    = bean.getRelationships(CLINICAL_EVENT_ITEM);
+            List<ActRelationship> relationships = bean.getRelationships(CLINICAL_EVENT_ITEM);
             if (relationships.isEmpty()) {
-                IMObjectReference patient
-                        = bean.getParticipantRef(PARTICIPATION_PATIENT);
+                IMObjectReference patient = bean.getParticipantRef(PARTICIPATION_PATIENT);
                 if (patient != null) {
                     List<Act> list = result.get(patient);
                     if (list == null) {
@@ -444,22 +479,22 @@ public class MedicalRecordRules {
     private Act get(IMObjectReference ref) {
         return (Act) service.get(ref);
     }
-    
+
     /**
      * Returns the first clinician found in a Collection of Acts.
      *
      * @param acts a collection of Acts
-     * @return the Entity object for the clinician found or null if none found
+     * @return the clinician, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any error
      */
-    private Entity getClinician(Collection<Act> acts) {
-    	for (Act act : acts) {
-    	     ActBean bean = new ActBean(act, service);
-    	     Entity clinician = bean.getParticipant(UserArchetypes.CLINICIAN_PARTICIPATION);
-    	     if (clinician != null) {
-    	        return clinician;
-    	     }
-    	}
-    	return null;
+    private IMObjectReference getClinician(Collection<Act> acts) {
+        for (Act act : acts) {
+            ActBean bean = new ActBean(act, service);
+            IMObjectReference clinician = bean.getParticipantRef(UserArchetypes.CLINICIAN_PARTICIPATION);
+            if (clinician != null) {
+                return clinician;
+            }
+        }
+        return null;
     }
 }
