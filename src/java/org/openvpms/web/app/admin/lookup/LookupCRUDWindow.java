@@ -29,13 +29,10 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
-import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
-import org.openvpms.web.component.im.lookup.LookupField;
-import org.openvpms.web.component.im.lookup.LookupFieldFactory;
-import org.openvpms.web.component.im.lookup.LookupFilter;
-import org.openvpms.web.component.im.lookup.LookupQuery;
+import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
@@ -78,16 +75,6 @@ public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
     }
 
     /**
-     * Lays out the buttons.
-     *
-     * @param buttons the button row
-     */
-    @Override
-    protected void layoutButtons(ButtonSet buttons) {
-        enableButtons(buttons, true);
-    }
-
-    /**
      * Enables/disables the buttons that require an object to be selected.
      *
      * @param buttons the button set
@@ -125,19 +112,17 @@ public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
     private void replace() {
         final Lookup lookup = getObject();
         if (lookup != null) {
-            LookupQuery query = new ArchetypeLookupQuery(lookup.getArchetypeId().getShortName());
-            LookupFilter filter = new LookupFilter(query, false, lookup.getCode());
-            final LookupField field = LookupFieldFactory.create(filter);
+            String shortName = lookup.getArchetypeId().getShortName();
+            Query<Lookup> query = QueryFactory.create(shortName, null, Lookup.class);
+            query.setAuto(true);
+            final ReplaceLookupBrowser browser = new ReplaceLookupBrowser(query, lookup);
             String title = Messages.get("lookup.replace.title");
-            String message = Messages.get("lookup.replace.message", lookup.getName(), lookup.getCode());
-            final SelectionDialog dialog = new SelectionDialog(title, message, field);
+            BrowserDialog<Lookup> dialog = new BrowserDialog<Lookup>(title, BrowserDialog.OK_CANCEL, browser);
+            dialog.setCloseOnSelection(false);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
-                public void onAction(String action) {
-                    Lookup selected = field.getSelected();
-                    if (selected != null) {
-                        confirmReplace(lookup, selected);
-                    }
+                public void onOK() {
+                    confirmReplace(lookup, browser.getSelected(), browser.deleteLookup());
                 }
             });
             dialog.show();
@@ -149,16 +134,16 @@ public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
      *
      * @param source the source lookup
      * @param target the target lookup
+     * @param delete if <tt>true</tt> delete the source lookup
      */
-    private void confirmReplace(final Lookup source, final Lookup target) {
+    private void confirmReplace(final Lookup source, final Lookup target, final boolean delete) {
         String title = Messages.get("lookup.replace.title");
-        String message = Messages.get("lookup.replace.confirm", source.getName(), source.getCode(),
-                                      target.getName(), target.getCode());
+        String message = Messages.get(delete ? "lookup.replace.confirmDelete" : "lookup.replace.confirm");
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
-                doReplace(source, target);
+                doReplace(source, target, delete);
                 onRefresh(source);
             }
         });
@@ -170,15 +155,18 @@ public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
      *
      * @param source the source lookup
      * @param target the target lookup
+     * @param delete if <tt>true</tt> delete the source lookup
      */
-    private void doReplace(final Lookup source, final Lookup target) {
+    private void doReplace(final Lookup source, final Lookup target, final boolean delete) {
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
                 ILookupService lookupService = ServiceHelper.getLookupService();
                 lookupService.replace(source, target);
-                service.remove(source);
+                if (delete) {
+                    service.remove(source);
+                }
                 return null;
             }
         });
@@ -199,7 +187,6 @@ public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
         }
         return replace;
     }
-
 
     private class LookupDeletorListener extends AbstractIMObjectDeletionListener<Lookup> {
 

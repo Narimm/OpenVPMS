@@ -122,6 +122,16 @@ public abstract class AbstractQueryBrowser<T> extends AbstractBrowser<T> {
      * @param container the container
      */
     protected void doLayout(Component container) {
+        Component row = doQueryLayout();
+        container.add(row);
+    }
+
+    /**
+     * Lays out the query component.
+     *
+     * @return the query component
+     */
+    protected Component doQueryLayout() {
         // query component
         Component component = query.getComponent();
 
@@ -132,7 +142,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractBrowser<T> {
                 onQuery();
             }
         });
-        container.add(row);
+        return row;
     }
 
     /**
