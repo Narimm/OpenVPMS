@@ -19,9 +19,11 @@
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Button;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.button.ButtonSet;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -136,6 +138,25 @@ public class EditDialog extends PopupDialog {
     }
 
     /**
+     * Determines if a skip button should be added.
+     *
+     * @param skip if <tt>true</tt> add a skip button, otherwise remove it
+     */
+    public void addSkip(boolean skip) {
+        ButtonSet buttons = getButtons();
+        Button button = buttons.getButton(SKIP_ID);
+        if (skip) {
+            if (button == null) {
+                addButton(SKIP_ID, false);
+            }
+        } else {
+            if (button != null) {
+                buttons.remove(button);
+            }
+        }
+    }
+
+    /**
      * Saves the current object, if saving is enabled.
      */
     @Override
@@ -168,6 +189,8 @@ public class EditDialog extends PopupDialog {
 
     /**
      * Saves the current object, if saving is enabled.
+     * <p/>
+     * If it is, and the object is valid, invokes {@link #doSave()}.
      *
      * @return <tt>true</tt> if the object was saved
      */
@@ -176,7 +199,7 @@ public class EditDialog extends PopupDialog {
         if (save) {
             Validator validator = new Validator();
             if (editor.validate(validator)) {
-                result = SaveHelper.save(editor);
+                result = doSave();
                 if (!result) {
                     // workaround for OVPMS-855. If save fails, abort the edit
                     onCancel();
@@ -186,6 +209,15 @@ public class EditDialog extends PopupDialog {
             }
         }
         return result;
+    }
+
+    /**
+     * Saves the current object.
+     *
+     * @return <tt>true</tt> if the object was saved
+     */
+    protected boolean doSave() {
+        return SaveHelper.save(editor);
     }
 
     /**

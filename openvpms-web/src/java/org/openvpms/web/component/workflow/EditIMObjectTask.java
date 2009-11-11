@@ -28,6 +28,7 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
@@ -364,7 +365,9 @@ public class EditIMObjectTask extends AbstractTask {
     protected EditDialog createEditDialog(IMObjectEditor editor,
                                           TaskContext context,
                                           boolean skip) {
-        return new EditDialog(editor, true, skip);
+        EditDialog dialog = EditDialogFactory.create(editor);
+        dialog.addSkip(skip);
+        return dialog;
     }
 
     /**

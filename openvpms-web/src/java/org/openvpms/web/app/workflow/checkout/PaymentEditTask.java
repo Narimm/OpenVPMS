@@ -26,7 +26,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.workflow.EditAccountActTask;
+import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 
 import java.math.BigDecimal;
@@ -39,7 +39,7 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PaymentEditTask extends EditAccountActTask {
+public class PaymentEditTask extends EditIMObjectTask {
 
     /**
      * The charge amount that triggered the payment task.

@@ -34,6 +34,7 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -467,12 +468,14 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
 
     /**
      * Creates a new edit dialog.
+     * <p/>
+     * This implementation uses {@link EditDialogFactory#create}.
      *
      * @param editor the editor
      * @return a new edit dialog
      */
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new EditDialog(editor);
+        return EditDialogFactory.create(editor);
     }
 
     /**

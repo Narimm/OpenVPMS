@@ -31,7 +31,6 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
-import org.openvpms.web.component.workflow.EditAccountActTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
@@ -89,17 +88,15 @@ public class ConsultWorkflow extends WorkflowImpl {
         initial.setPractice(global.getPractice());
         initial.setLocation(global.getLocation());
 
-        // get the latest clinical event, or create one if none is available
-        // and edit it.
+        // get the latest clinical event and edit it.
         addTask(new GetClinicalEventTask());
-        addTask(new ConditionalCreateTask(EVENT_SHORTNAME));
         addTask(new EditIMObjectTask(EVENT_SHORTNAME));
 
         // get the latest invoice, or create one if none is available, and edit
         // it
         addTask(new GetInvoiceTask());
         addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
-        addTask(new EditAccountActTask(INVOICE_SHORTNAME));
+        addTask(new EditIMObjectTask(INVOICE_SHORTNAME));
 
         // update the task/appointment status to BILLED if the invoice
         // is COMPLETED
