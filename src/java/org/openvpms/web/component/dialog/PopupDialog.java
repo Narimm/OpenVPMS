@@ -24,6 +24,7 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
+import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
@@ -195,23 +196,27 @@ public abstract class PopupDialog extends PopupWindow {
      * @param button the button identifier
      */
     protected void onButton(String button) {
-        if (OK_ID.equals(button)) {
-            onOK();
-        } else if (CANCEL_ID.equals(button)) {
-            onCancel();
-        } else if (YES_ID.equals(button)) {
-            onYes();
-        } else if (NO_ID.equals(button)) {
-            onNo();
-        } else if (SKIP_ID.equals(button)) {
-            onSkip();
-        } else if (APPLY_ID.equals(button)) {
-            onApply();
-        } else if (RETRY_ID.equals(button)) {
-            onRetry();
-        } else {
-            setAction(button);
-            close();
+        try {
+            if (OK_ID.equals(button)) {
+                onOK();
+            } else if (CANCEL_ID.equals(button)) {
+                onCancel();
+            } else if (YES_ID.equals(button)) {
+                onYes();
+            } else if (NO_ID.equals(button)) {
+                onNo();
+            } else if (SKIP_ID.equals(button)) {
+                onSkip();
+            } else if (APPLY_ID.equals(button)) {
+                onApply();
+            } else if (RETRY_ID.equals(button)) {
+                onRetry();
+            } else {
+                setAction(button);
+                close();
+            }
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
         }
     }
 

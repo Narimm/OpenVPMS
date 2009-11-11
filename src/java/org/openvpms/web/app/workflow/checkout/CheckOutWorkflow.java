@@ -37,7 +37,7 @@ import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
-import org.openvpms.web.component.workflow.EditAccountActTask;
+import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
@@ -136,7 +136,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // it
         addTask(new GetInvoiceTask());
         addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
-        addTask(new EditAccountActTask(INVOICE_SHORTNAME));
+        addTask(new EditIMObjectTask(INVOICE_SHORTNAME));
 
         // on save, determine if the user wants to post the invoice, but
         // only if its not already posted

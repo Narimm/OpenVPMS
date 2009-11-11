@@ -18,25 +18,26 @@
 
 package org.openvpms.web.app.workflow;
 
-import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.web.component.app.ContextException;
-import org.openvpms.web.component.im.query.ParticipantConstraint;
-import org.openvpms.web.component.workflow.QueryIMObjectTask;
+import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Date;
 
 
 /**
- * Queries the most recent in progress <em>act.patientClinicalEvent</em> for
- * the context patient. If one is present, adds it to the context.
+ * Queries the most recent <em>act.patientClinicalEvent</em> for the context patient,
+ * creating one if it doesn't exist.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class GetClinicalEventTask extends QueryIMObjectTask {
+public class GetClinicalEventTask extends SynchronousTask {
 
     /**
      * The event short name.
@@ -45,22 +46,21 @@ public class GetClinicalEventTask extends QueryIMObjectTask {
 
 
     /**
-     * Returns the queries to execute.
+     * Executes the task.
      *
-     * @param context the task context
-     * @return the queries
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException for any error
      */
-    protected ArchetypeQuery[] getQueries(TaskContext context) {
+    public void execute(TaskContext context) {
         Party patient = context.getPatient();
         if (patient == null) {
             throw new ContextException(ContextException.ErrorCode.NoPatient);
         }
-        ArchetypeQuery query = new ArchetypeQuery(EVENT_SHORTNAME, false,
-                                                  true);
-        query.add(new ParticipantConstraint("patient", "participation.patient",
-                                            patient.getObjectReference()));
-        query.add(new NodeConstraint("status", ActStatus.IN_PROGRESS));
-        query.add(new NodeSortConstraint("startTime", false));
-        return new ArchetypeQuery[]{query};
+        Entity clinician = context.getClinician();
+        MedicalRecordRules rules = new MedicalRecordRules();
+        Act event = rules.getEventForAddition(patient, new Date(), clinician);
+        if (event.isNew()) {
+            ServiceHelper.getArchetypeService().save(event);
+        }
+        context.addObject(event);
     }
 }

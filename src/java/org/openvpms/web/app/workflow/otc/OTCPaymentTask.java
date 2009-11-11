@@ -23,8 +23,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentEditor;
-import org.openvpms.web.component.workflow.EditAccountActTask;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.EditIMObjectTask;
 
 
 /**
@@ -34,7 +34,7 @@ import org.openvpms.web.component.workflow.TaskContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class OTCPaymentTask extends EditAccountActTask {
+class OTCPaymentTask extends EditIMObjectTask {
 
     /**
      * Constructs a new <tt>OTCPaymentTask</tt>.

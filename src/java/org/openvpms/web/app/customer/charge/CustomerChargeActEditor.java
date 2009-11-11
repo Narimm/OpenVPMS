@@ -18,16 +18,23 @@
 
 package org.openvpms.web.app.customer.charge;
 
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.act.ActHelper;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -53,6 +60,39 @@ public class CustomerChargeActEditor extends FinancialActEditor {
         super(act, parent, context);
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("location", context.getContext().getLocation());
+    }
+
+    /**
+     * Helper to ensure that clinical events exist for each referenced patient.
+     * <p/>
+     * This is a workaround for OVPMS-823.
+     *
+     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
+     *          for any archetype service error
+     */
+    public void createClinicalEvents() {
+        MedicalRecordRules rules = new MedicalRecordRules();
+        ActRelationshipCollectionEditor editor = getEditor();
+        ActBean bean = new ActBean((Act) getObject());
+        Entity defaultClinician = bean.getNodeParticipant("clinician");
+        if (defaultClinician == null) {
+            defaultClinician = getLayoutContext().getContext().getClinician();
+        }
+        for (Act act : editor.getCurrentActs()) {
+            ActBean item = new ActBean(act);
+            Party patient = (Party) item.getNodeParticipant("patient");
+            if (patient != null) {
+                Entity clinician = item.getNodeParticipant("clinician");
+                if (clinician == null) {
+                    clinician = defaultClinician;
+                }
+                Date startTime = act.getActivityStartTime();
+                Act event = rules.getEventForAddition(patient, startTime, clinician);
+                if (event.isNew()) {
+                    ServiceHelper.getArchetypeService().save(event);
+                }
+            }
+        }
     }
 
     /**
