@@ -123,6 +123,16 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ReminderRules#calculateProductReminderDueDate} method.
+     */
+    public void testCalculateProductReminderDueDate() {
+        checkCalculateProductReminderDueDate(1, DateUnits.DAYS, "2007-01-01", "2007-01-02");
+        checkCalculateProductReminderDueDate(2, DateUnits.WEEKS, "2007-01-01", "2007-01-15");
+        checkCalculateProductReminderDueDate(2, DateUnits.MONTHS, "2007-01-01", "2007-03-01");
+        checkCalculateProductReminderDueDate(5, DateUnits.YEARS, "2007-01-01", "2012-01-01");
+    }
+
+    /**
      * Tests the {@link ReminderRules#countReminders(Party)} method.
      * Requires <em>Reminder.hbm.xml</em>.
      */
@@ -376,6 +386,26 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Date start = java.sql.Date.valueOf(startDate);
         Date expected = java.sql.Date.valueOf(expectedDate);
         Date to = rules.calculateReminderDueDate(start, reminderType);
+        assertEquals(expected, to);
+    }
+
+    /**
+     * Checks the {@link ReminderRules#calculateProductReminderDueDate} method.
+     *
+     * @param period       the reminder interval
+     * @param units        the interval units
+     * @param startDate    the reminder start date
+     * @param expectedDate the expected due date
+     */
+    private void checkCalculateProductReminderDueDate(int period, DateUnits units, String startDate,
+                                                      String expectedDate) {
+        EntityRelationship relationship = (EntityRelationship) create("entityRelationship.productReminder");
+        IMObjectBean bean = new IMObjectBean(relationship);
+        bean.setValue("period", period);
+        bean.setValue("periodUom", units.toString());
+        Date start = java.sql.Date.valueOf(startDate);
+        Date expected = java.sql.Date.valueOf(expectedDate);
+        Date to = rules.calculateProductReminderDueDate(start, relationship);
         assertEquals(expected, to);
     }
 
