@@ -20,13 +20,13 @@ package org.openvpms.web.app.reporting.statement;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.processor.RetryListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.VetoListener;
@@ -82,9 +82,10 @@ public abstract class AbstractStatementGenerator
     /**
      * Creates a new <tt>AbstractStatementGenerator</tt>.
      *
-     * @param title       the generator cancel title
-     * @param cancelTitle the generator cancel message
-     * @param retryTitle  the generator retry title
+     * @param title         the generation dialog title
+     * @param cancelTitle   the cancel dialog title
+     * @param cancelMessage the cancel dialog message
+     * @param retryTitle    the retry dialog title
      */
     public AbstractStatementGenerator(String title, String cancelTitle,
                                       String cancelMessage,
@@ -175,6 +176,8 @@ public abstract class AbstractStatementGenerator
     /**
      * Invoked when the 'cancel' button is pressed. This prompts for
      * confirmation.
+     *
+     * @param action the action to veto if cancel is selected
      */
     private void onCancel(final Vetoable action) {
         final StatementProgressBarProcessor processor = getProcessor();
@@ -182,7 +185,7 @@ public abstract class AbstractStatementGenerator
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(cancelTitle, cancelMessage);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
+            public void onClose(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
                     action.veto(false);
                     onCompletion();
@@ -207,7 +210,7 @@ public abstract class AbstractStatementGenerator
                 = new ConfirmationDialog(retryTitle, reason,
                                          ConfirmationDialog.RETRY_CANCEL);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
+            public void onClose(WindowPaneEvent e) {
                 if (ConfirmationDialog.RETRY_ID.equals(dialog.getAction())) {
                     action.veto(false);
                 } else {
@@ -229,6 +232,8 @@ public abstract class AbstractStatementGenerator
 
         /**
          * Creates a new <tt>GenerationDialog</tt>.
+         *
+         * @param processor the processor
          */
         public GenerationDialog(StatementProgressBarProcessor processor) {
             super(title, CANCEL);

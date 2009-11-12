@@ -20,11 +20,11 @@ package org.openvpms.web.component.im.select;
 
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.DocumentListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.DocumentEvent;
-import nextapp.echo2.app.event.DocumentListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -138,14 +138,14 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
         this.shortNames = shortNames;
         this.allowCreate = allowCreate;
         getSelect().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onSelect();
             }
         });
 
         TextField text = getText();
         textListener = new DocumentListener() {
-            public void documentUpdate(DocumentEvent event) {
+            public void onUpdate(DocumentEvent event) {
                 onTextChanged();
             }
         };
@@ -155,7 +155,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
         // Register an action listener to ensure document update events
         // are triggered in a timely fashion
         text.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 // no-op.
             }
         });
@@ -266,7 +266,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
                     type, browser, allowCreate);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
+                public void onClose(WindowPaneEvent event) {
                     setInSelect(false);
                     if (popup.createNew()) {
                         onCreate();
@@ -332,7 +332,6 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * Creates a query to select objects.
      *
      * @param name a name to filter on. May be <tt>null</tt>
-     * @param name
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes

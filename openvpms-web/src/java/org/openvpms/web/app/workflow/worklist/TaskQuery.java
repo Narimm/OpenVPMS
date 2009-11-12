@@ -21,7 +21,7 @@ package org.openvpms.web.app.workflow.worklist;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
@@ -81,7 +81,7 @@ public class TaskQuery extends ScheduleQuery {
     public TaskQuery() {
         super(ServiceHelper.getTaskService());
         statusRangeListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onQuery();
             }
         };

@@ -18,21 +18,12 @@
 
 package org.openvpms.web.app.customer;
 
-import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.GridLayoutData;
-
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.CustomerRules;
@@ -44,7 +35,9 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ParticipationConstraint;
+import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
@@ -60,6 +53,11 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -98,10 +96,10 @@ public class CustomerSummary {
             if ((type != null && type.showAlert()) || !notes.isEmpty()) {
                 alert = ButtonFactory.create(
                         null, "alert", new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        new AlertDialog(type, notes);
-                    }
-                });
+                            public void onAction(ActionEvent event) {
+                                new AlertDialog(type, notes);
+                            }
+                        });
                 alert = RowFactory.create(alert);
             } else {
                 alert = LabelFactory.create("customer.noalerts");
@@ -209,6 +207,9 @@ public class CustomerSummary {
 
         /**
          * Construct a new <tt>AlertDialog</tt>.
+         *
+         * @param type  the account type
+         * @param notes the customer notes
          */
         public AlertDialog(AccountType type, List<Act> notes) {
             super(Messages.get("customer.alert.title"),

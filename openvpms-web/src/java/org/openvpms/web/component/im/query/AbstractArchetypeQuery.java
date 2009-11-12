@@ -24,7 +24,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.CharSetUtils;
 import org.apache.commons.lang.StringUtils;
@@ -64,9 +64,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     private CheckBox inactive;
 
     /**
-     * The selected archetype short name. If <tt>null</tt>, or {@link
-     * ArchetypeShortNameListModel#ALL}, indicates to query using all matching
-     * short names.
+     * The selected archetype short name. May be <tt>null</tt>
      */
     private String shortName;
 
@@ -295,7 +293,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
             final SelectField shortNameSelector = SelectFieldFactory.create(
                     model);
             shortNameSelector.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     int index = shortNameSelector.getSelectedIndex();
                     String shortName = model.getShortName(index);
                     setShortName(shortName);
@@ -319,7 +317,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
         if (instanceName == null) {
             instanceName = TextComponentFactory.create();
             instanceName.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onInstanceNameChanged();
                 }
             });

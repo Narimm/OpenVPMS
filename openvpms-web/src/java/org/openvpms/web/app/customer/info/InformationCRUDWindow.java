@@ -20,7 +20,7 @@ package org.openvpms.web.app.customer.info;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -68,7 +68,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
         super.layoutButtons(buttons);
         if (merge == null) {
             merge = ButtonFactory.create("merge", new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onMerge();
                 }
             });

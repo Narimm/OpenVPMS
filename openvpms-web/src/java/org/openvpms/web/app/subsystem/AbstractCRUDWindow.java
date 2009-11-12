@@ -21,9 +21,9 @@ package org.openvpms.web.app.subsystem;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -275,7 +275,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     protected Button getEditButton() {
         if (edit == null) {
             edit = ButtonFactory.create(EDIT_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     edit();
                 }
             });
@@ -291,7 +291,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     protected Button getCreateButton() {
         if (create == null) {
             create = ButtonFactory.create(NEW_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     create();
                 }
             });
@@ -307,7 +307,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     protected Button getDeleteButton() {
         if (delete == null) {
             delete = ButtonFactory.create(DELETE_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onDelete();
                 }
             });
@@ -323,7 +323,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     protected Button getPrintButton() {
         if (print == null) {
             print = ButtonFactory.create(PRINT_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onPrint();
                 }
             });
@@ -418,7 +418,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
         final boolean isNew = object.isNew();
         EditDialog dialog = createEditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
+            public void onClose(WindowPaneEvent event) {
                 onEditCompleted(editor, isNew);
             }
         });

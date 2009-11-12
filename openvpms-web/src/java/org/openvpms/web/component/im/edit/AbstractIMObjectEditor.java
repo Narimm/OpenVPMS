@@ -38,7 +38,7 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -620,7 +620,7 @@ public abstract class AbstractIMObjectEditor
             }
         };
         view.setLayoutListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 onLayoutCompleted();
             }
         });
@@ -725,7 +725,7 @@ public abstract class AbstractIMObjectEditor
     protected ActionListener getLayoutChangeListener() {
         if (layoutChangeListener == null) {
             layoutChangeListener = new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onLayout();
                 }
             };

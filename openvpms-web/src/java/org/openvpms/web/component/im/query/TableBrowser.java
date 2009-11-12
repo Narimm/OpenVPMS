@@ -22,7 +22,7 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -195,7 +195,7 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
         if (table == null) {
             table = createTable(model);
             table.getTable().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     onSelect();
                 }
             });

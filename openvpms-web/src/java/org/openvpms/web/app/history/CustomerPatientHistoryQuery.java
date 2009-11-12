@@ -21,7 +21,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.comparators.TransformingComparator;
@@ -101,7 +101,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         history = getHistory(customers, patients);
         filter = TextComponentFactory.create();
         filter.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onQuery();
             }
         });

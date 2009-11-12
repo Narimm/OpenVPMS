@@ -148,7 +148,7 @@
                 <version>1.0-beta-1</version>
                 <configuration>
                     <server>openvpms-tomcat</server>
-                    <port>8081</port>
+                    <port>8080</port>
                     <path>/${project.build.finalName}</path>
                     <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
                 </configuration>
@@ -212,6 +212,11 @@
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
             <version>${commons.collections.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

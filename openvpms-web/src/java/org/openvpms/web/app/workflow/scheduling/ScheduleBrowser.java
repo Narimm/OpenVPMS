@@ -24,7 +24,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
@@ -102,6 +102,8 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
 
     /**
      * Creates a new <tt>ScheduleBrowser</tt>.
+     *
+     * @param query the schedule query
      */
     public ScheduleBrowser(ScheduleQuery query) {
         this.query = query;
@@ -254,9 +256,9 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      *
      * @param date   the query date
      * @param events the events
+     * @return a new grid
      */
-    protected abstract ScheduleEventGrid
-            createEventGrid(Date date, Map<Entity, List<PropertySet>> events);
+    protected abstract ScheduleEventGrid createEventGrid(Date date, Map<Entity, List<PropertySet>> events);
 
     /**
      * Creates a new table model.
@@ -289,6 +291,8 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
 
     /**
      * Lays out the component.
+     *
+     * @return a new component
      */
     protected Component doLayout() {
         Row row = RowFactory.create("CellSpacing");
@@ -315,7 +319,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         group.add(query.getFocusGroup());
         ButtonRow buttons = new ButtonRow(group);
         buttons.addButton("query", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onQuery();
             }
         });
@@ -373,7 +377,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         if (table == null) {
             table = createTable(model);
             table.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onSelected((TableActionEventEx) event);
                 }
             });

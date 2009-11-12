@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.table;
 
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 
 
 /**
@@ -27,26 +27,26 @@ import nextapp.echo2.app.event.ActionListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface PageListener extends ActionListener {
+public abstract class PageListener extends ActionListener {
 
     /**
      * Action command to indicate to move to the previous page.
      */
-    String PAGE_PREVIOUS = "previous";
+    public static final String PAGE_PREVIOUS = "previous";
 
     /**
      * Action command to indicate to move to the next page.
      */
-    String PAGE_NEXT = "next";
+    public static final String PAGE_NEXT = "next";
 
     /**
      * Action command to indicate to move to the first page.
      */
-    String PAGE_FIRST = "first";
+    public static final String PAGE_FIRST = "first";
 
     /**
      * Action command to indicate to move to the last page.
      */
-    String PAGE_LAST = "last";
+    public static final String PAGE_LAST = "last";
 
 }

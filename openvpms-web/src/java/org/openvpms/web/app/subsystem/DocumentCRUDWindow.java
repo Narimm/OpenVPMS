@@ -24,7 +24,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -81,7 +81,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         refresh = ButtonFactory.create(REFRESH_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onRefresh();
             }
         });

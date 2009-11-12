@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.query;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -69,7 +69,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     /**
      * The default sort constraint.
      */
-    private final SortConstraint[] DEFAULT_SORT
+    private static final SortConstraint[] DEFAULT_SORT
             = {new NodeSortConstraint("customer", "name")};
 
 
@@ -164,7 +164,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
         if (patientName == null) {
             patientName = TextComponentFactory.create();
             patientName.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onQuery();
                 }
             });
@@ -181,7 +181,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
         if (contact == null) {
             contact = TextComponentFactory.create();
             contact.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onQuery();
                 }
             });

@@ -34,9 +34,9 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.ProtectedListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -118,8 +118,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         if (checkIn == null) {
-            checkIn = ButtonFactory.create(CHECKIN_ID, new ProtectedListener() {
-                protected void onAction(ActionEvent event) {
+            checkIn = ButtonFactory.create(CHECKIN_ID, new ActionListener() {
+                public void onAction(ActionEvent event) {
                     onCheckIn();
                 }
             });

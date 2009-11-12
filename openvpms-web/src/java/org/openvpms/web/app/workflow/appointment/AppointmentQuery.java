@@ -21,7 +21,7 @@ package org.openvpms.web.app.workflow.appointment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -192,7 +192,7 @@ class AppointmentQuery extends ScheduleQuery {
         timeSelector = SelectFieldFactory.create(timeSelectorItems);
         timeSelector.setSelectedItem(timeSelectorItems[0]);
         timeSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onQuery();
             }
         });

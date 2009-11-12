@@ -26,7 +26,7 @@ import echopointng.model.CalendarSelectionModel;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -161,31 +161,31 @@ public class DateSelector {
     private void doLayout() {
         Button prevWeek = ButtonFactory.create(
                 null, "date.previousWeek", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 addDays(-7);
             }
         });
         Button prevDay = ButtonFactory.create(
                 null, "date.previousDay", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 addDays(-1);
             }
         });
         Button currentDay = ButtonFactory.create(
                 null, "date.currentDay", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 addDays(0);
             }
         });
         Button nextDay = ButtonFactory.create(
                 null, "date.nextDay", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 addDays(1);
             }
         });
         Button nextWeek = ButtonFactory.create(
                 null, "date.nextWeek", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 addDays(7);
             }
         });

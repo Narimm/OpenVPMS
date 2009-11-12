@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.doc;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -60,7 +60,7 @@ public class DocumentRefDownloader extends Downloader {
      */
     public Component getComponent() {
         Button button = ButtonFactory.create(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onDownload();
             }
         });

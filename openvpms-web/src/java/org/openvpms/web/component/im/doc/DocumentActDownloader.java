@@ -22,7 +22,7 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -81,7 +81,7 @@ public class DocumentActDownloader extends Downloader {
     public Component getComponent() {
         Component component;
         Button button = ButtonFactory.create(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onDownload();
             }
         });
@@ -110,7 +110,7 @@ public class DocumentActDownloader extends Downloader {
 
         if (convert) {
             Button asPDF = ButtonFactory.create(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onDownloadAsPDF();
                 }
             });

@@ -22,7 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -305,7 +305,7 @@ public abstract class ScheduleQuery {
         SelectField result = SelectFieldFactory.create(highlightSelectorItems);
         result.setSelectedItem(highlightSelectorItems[0]);
         result.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onQuery();
             }
         });
@@ -337,7 +337,7 @@ public abstract class ScheduleQuery {
 
         date = new DateSelector();
         date.setListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onDateChanged();
             }
         });
@@ -410,7 +410,7 @@ public abstract class ScheduleQuery {
             result.setSelectedItem(defaultView);
         }
         result.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onViewChanged();
             }
         });
@@ -427,7 +427,7 @@ public abstract class ScheduleQuery {
         SelectField result = SelectFieldFactory.create(model);
         result.setCellRenderer(IMObjectListCellRenderer.NAME);
         result.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onQuery();
             }
         });
@@ -478,7 +478,7 @@ public abstract class ScheduleQuery {
         result.setCellRenderer(IMObjectListCellRenderer.NAME);
 
         result.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onQuery();
             }
         });

@@ -20,9 +20,6 @@ package org.openvpms.web.app.reporting.deposit;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.finance.deposit.DepositQuery;
 import org.openvpms.archetype.rules.finance.deposit.DepositRules;
 import static org.openvpms.archetype.rules.finance.deposit.DepositStatus.UNDEPOSITED;
@@ -34,6 +31,8 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.reporting.FinancialActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
@@ -68,7 +67,9 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
 
 
     /**
-     * Create a new <tt>DepositCRUDWindow</tt>.
+     * Constructs a <tt>DepositCRUDWindow</tt>.
+     *
+     * @param archetypes the archetypes that this may create.
      */
     public DepositCRUDWindow(Archetypes<FinancialAct> archetypes) {
         super(archetypes);
@@ -83,8 +84,7 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
     protected void layoutButtons(ButtonSet buttons) {
         _deposit = ButtonFactory.create(DepositCRUDWindow.DEPOSIT_ID,
                                         new ActionListener() {
-                                            public void actionPerformed(
-                                                    ActionEvent event) {
+                                            public void onAction(ActionEvent event) {
                                                 onDeposit();
                                             }
                                         });
@@ -119,11 +119,10 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
         String message = Messages.get("deposit.deposit.message");
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    doDeposit(act);
-                }
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                doDeposit(act);
             }
         });
         dialog.show();
@@ -131,6 +130,8 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
 
     /**
      * Deposits a <em>act.bankDeposit</em>.
+     *
+     * @param act the act to deposit
      */
     private void doDeposit(FinancialAct act) {
         try {

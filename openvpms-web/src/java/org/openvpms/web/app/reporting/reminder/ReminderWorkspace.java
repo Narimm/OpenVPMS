@@ -21,9 +21,6 @@ package org.openvpms.web.app.reporting.reminder;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
@@ -33,6 +30,8 @@ import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -90,17 +89,17 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
      */
     protected void layoutButtons(ButtonSet buttons) {
         buttons.add("print", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onPrint();
             }
         });
         buttons.add("sendAll", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onSendAll();
             }
         });
         buttons.add("report", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onReport();
             }
         });
@@ -133,11 +132,10 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         String message = Messages.get("reporting.reminder.run.message");
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    generateReminders();
-                }
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                generateReminders();
             }
 
         });

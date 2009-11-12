@@ -18,7 +18,7 @@
 package org.openvpms.web.app.admin.archetype;
 
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.AbstractIMObjectFactory;
@@ -56,7 +56,7 @@ public class ArchetypeEditDialog extends EditDialog {
         super(editor);
         factory = new ObjectFactory();
         addButton("test", new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 onTest();
             }
         });
@@ -150,7 +150,7 @@ public class ArchetypeEditDialog extends EditDialog {
         public TestEditDialog(IMObjectEditor editor) {
             super(editor, false, false, false, false);
             addButton("validate", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     onCheck();
                 }
             });

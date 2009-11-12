@@ -22,7 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -135,7 +135,7 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
                     property, parent);
             Component field = state.getComponent();
             Button test = ButtonFactory.create("test", new ActionListener() {
-                public void actionPerformed(ActionEvent onEvent) {
+                public void onAction(ActionEvent onEvent) {
                     onTest();
                 }
             });

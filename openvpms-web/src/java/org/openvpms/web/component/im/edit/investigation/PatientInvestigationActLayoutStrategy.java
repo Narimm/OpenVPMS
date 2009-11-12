@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.edit.investigation;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -109,7 +109,7 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     protected void doLayout(final IMObject object, PropertySet properties, Component container, LayoutContext context) {
         Button print = printLayout.doLayout(container);
         print.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 onPrint(object);
             }
         });

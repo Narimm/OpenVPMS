@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.relationship;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -128,7 +128,7 @@ public class RelationshipCollectionEditor
         hideInactive = CheckBoxFactory.create(null, true);
         hideInactive.setText(label);
         hideInactive.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onHideInactiveChanged();
             }
         });

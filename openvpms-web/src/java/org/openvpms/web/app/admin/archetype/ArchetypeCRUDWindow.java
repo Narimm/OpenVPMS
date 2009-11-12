@@ -20,7 +20,7 @@ package org.openvpms.web.app.admin.archetype;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -166,7 +166,7 @@ public class ArchetypeCRUDWindow
     private Button getImportButton() {
         if (importButton == null) {
             importButton = ButtonFactory.create(IMPORT_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onImport();
                 }
             });
@@ -182,7 +182,7 @@ public class ArchetypeCRUDWindow
     private Button getExportButton() {
         if (exportButton == null) {
             exportButton = ButtonFactory.create(EXPORT_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onExport();
                 }
             });

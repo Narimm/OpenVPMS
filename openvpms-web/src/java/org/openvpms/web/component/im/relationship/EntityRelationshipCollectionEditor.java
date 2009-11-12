@@ -23,7 +23,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -215,13 +215,13 @@ public class EntityRelationshipCollectionEditor
             container.add(row);
         }
         Button moveUp = ButtonFactory.create("moveup", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onMoveUp();
             }
         });
         Button moveDown = ButtonFactory.create(
                 "movedown", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onMoveDown();
             }
         });

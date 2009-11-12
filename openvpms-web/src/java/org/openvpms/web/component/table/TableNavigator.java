@@ -25,11 +25,11 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.DefaultListSelectionModel;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -177,22 +177,20 @@ public class TableNavigator extends Row {
 
         first = ButtonFactory.create(
                 null, "navigation.first", new ActionListener() {
-            public void actionPerformed(
-                    ActionEvent event) {
-                first();
-            }
-        });
+                    public void onAction(ActionEvent event) {
+                        first();
+                    }
+                });
         previous = ButtonFactory.create(
                 null, "navigation.previous", new ActionListener() {
-            public void actionPerformed(
-                    ActionEvent event) {
-                previous();
-            }
-        });
+                    public void onAction(ActionEvent event) {
+                        previous();
+                    }
+                });
 
         pageSelector = new SelectField();
         pageSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 int selected = pageSelector.getSelectedIndex();
                 PageableTableModel model = getModel();
                 model.setPage(selected);
@@ -203,19 +201,17 @@ public class TableNavigator extends Row {
 
         next = ButtonFactory.create(
                 null, "navigation.next", new ActionListener() {
-            public void actionPerformed(
-                    ActionEvent event) {
-                next();
-            }
-        });
+                    public void onAction(ActionEvent event) {
+                        next();
+                    }
+                });
 
         last = ButtonFactory.create(
                 null, "navigation.last", new ActionListener() {
-            public void actionPerformed(
-                    ActionEvent event) {
-                last();
-            }
-        });
+                    public void onAction(ActionEvent event) {
+                        last();
+                    }
+                });
 
         add(page);
         add(first);

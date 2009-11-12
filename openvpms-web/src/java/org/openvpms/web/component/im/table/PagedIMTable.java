@@ -62,7 +62,7 @@ public class PagedIMTable<T> extends Column {
         table.setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
         add(table);
         table.addPageListener(new PageListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 doPage(event);
             }
         });

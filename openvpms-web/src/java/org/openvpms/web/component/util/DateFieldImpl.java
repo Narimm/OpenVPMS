@@ -20,7 +20,7 @@ package org.openvpms.web.component.util;
 
 import echopointng.DateField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
 import java.text.DateFormat;
@@ -59,7 +59,7 @@ public class DateFieldImpl extends DateField {
 
         // add an ActionListener to ensure updates happen in a timely fashion
         getTextField().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
             }
         });
     }

@@ -23,8 +23,8 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -178,6 +178,8 @@ public abstract class IMTableCollectionViewer<T>
 
     /**
      * Lays out the component.
+     *
+     * @return a new component
      */
     protected Component doLayout() {
         Column column = ColumnFactory.create("WideCellSpacing", getTable());
@@ -260,7 +262,7 @@ public abstract class IMTableCollectionViewer<T>
         IMTableModel<T> tableModel = createTableModel(getLayoutContext());
         PagedIMTable<T> table = new PagedIMTable<T>(tableModel);
         table.getTable().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 onBrowse();
             }
         });
@@ -278,7 +280,7 @@ public abstract class IMTableCollectionViewer<T>
             // if no column is currently sorted, sort on the default (if any)
             SortableTableModel sortable = ((SortableTableModel) model);
             if (sortable.getSortColumn() == -1
-                    && sortable.getDefaultSortColumn() != -1) {
+                && sortable.getDefaultSortColumn() != -1) {
                 sortable.sort(sortable.getDefaultSortColumn(), true);
             }
         }

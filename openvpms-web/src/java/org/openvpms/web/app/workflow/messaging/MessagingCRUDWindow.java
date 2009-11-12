@@ -20,9 +20,9 @@ package org.openvpms.web.app.workflow.messaging;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
@@ -75,7 +75,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
     protected void layoutButtons(ButtonSet buttons) {
         if (forward == null) {
             forward = ButtonFactory.create("forward", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     onForward();
                 }
             });
@@ -83,7 +83,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
         if (completed == null) {
             completed = ButtonFactory.create("completed", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     onCompleted();
                 }
             });
@@ -127,7 +127,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
         String title = Messages.get("workflow.messaging.forward.title");
         final SelectUserDialog dialog = new SelectUserDialog(title);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
+            public void onClose(WindowPaneEvent event) {
                 if (dialog.getUser() != null) {
                     forward(dialog.getUser());
                 }

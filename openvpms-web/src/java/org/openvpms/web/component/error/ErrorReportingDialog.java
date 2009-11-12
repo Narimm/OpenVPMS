@@ -21,7 +21,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -51,7 +51,7 @@ public class ErrorReportingDialog extends ErrorDialog {
     private ErrorReporter reporter;
 
     /**
-     * The error report.
+     * The error report, or <tt>null</tt> if the exception isn't reportable.
      */
     private ErrorReport report;
 
@@ -72,10 +72,10 @@ public class ErrorReportingDialog extends ErrorDialog {
         ApplicationContext context = ServiceHelper.getContext();
         if (context.containsBean("errorReporter")) {
             reporter = (ErrorReporter) context.getBean("errorReporter");
-            report = new ErrorReport(message, exception);
             if (reporter.isReportable(exception)) {
+                report = new ErrorReport(message, exception);
                 addButton("errorreportdialog.report", new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
+                    public void onAction(ActionEvent e) {
                         reportError();
                     }
                 });
@@ -153,12 +153,12 @@ public class ErrorReportingDialog extends ErrorDialog {
             super(Messages.get("errorreportdialog.title"),
                   Messages.get("errorreportdialog.message"), new String[0]);
             addButton("errorreportdialog.send", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     onOK();
                 }
             });
             addButton("errorreportdialog.nosend", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     onCancel();
                 }
             });
@@ -172,7 +172,7 @@ public class ErrorReportingDialog extends ErrorDialog {
             Label message = LabelFactory.create();
             message.setText(getMessage());
             Button show = ButtonFactory.create("errorreportdialog.showlink", "hyperlink", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     showReport();
                 }
             });

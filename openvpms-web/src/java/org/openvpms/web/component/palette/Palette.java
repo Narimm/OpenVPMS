@@ -24,7 +24,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.list.ListSelectionModel;
@@ -131,12 +131,12 @@ public class Palette extends Row {
         _selectedList.setSelectionMode(mode);
 
         _add = ButtonFactory.create("right_add", new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 onAdd();
             }
         });
         _remove = ButtonFactory.create("left_remove", new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 onRemove();
             }
         });

@@ -23,9 +23,9 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -120,7 +120,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
         if (showSelector) {
             selector = new BasicSelector<T>();
             selector.getSelect().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
+                public void onAction(ActionEvent actionEvent) {
                     onSelect();
                 }
             });
@@ -260,7 +260,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
                     title, browser);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
+                public void onClose(WindowPaneEvent event) {
                     T object = popup.getSelected();
                     if (object != null) {
                         onSelected(object);

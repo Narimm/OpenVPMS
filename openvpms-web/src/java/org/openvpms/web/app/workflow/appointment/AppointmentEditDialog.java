@@ -18,8 +18,6 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -28,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.resource.util.Messages;
@@ -127,16 +126,14 @@ public class AppointmentEditDialog extends EditDialog {
                             "workflow.scheduling.doubleschedule.message");
                     final ConfirmationDialog dialog = new ConfirmationDialog(
                             title, message);
-                    dialog.addWindowPaneListener(new WindowPaneListener() {
-                        public void windowPaneClosing(WindowPaneEvent e) {
-                            if (ConfirmationDialog.OK_ID.equals(
-                                    dialog.getAction())) {
-                                if (save()) {
-                                    if (close) {
-                                        close();
-                                    } else {
-                                        getAppointmentTimes();
-                                    }
+                    dialog.addWindowPaneListener(new PopupDialogListener() {
+                        @Override
+                        public void onOK() {
+                            if (save()) {
+                                if (close) {
+                                    close();
+                                } else {
+                                    getAppointmentTimes();
                                 }
                             }
                         }
@@ -198,8 +195,8 @@ public class AppointmentEditDialog extends EditDialog {
         Act act = getAppointment();
         return !ObjectUtils.equals(getDate(startTime),
                                    getDate(act.getActivityStartTime()))
-                || !ObjectUtils.equals(getDate(endTime),
-                                       getDate(act.getActivityEndTime()));
+               || !ObjectUtils.equals(getDate(endTime),
+                                      getDate(act.getActivityEndTime()));
     }
 
     /**

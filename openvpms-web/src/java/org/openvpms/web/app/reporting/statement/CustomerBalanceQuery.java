@@ -27,7 +27,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -217,7 +217,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
         balanceType = SelectFieldFactory.create(balanceTypeItems);
         balanceType.setCellRenderer(new BalanceTypeListCellRenderer());
         balanceType.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 onBalanceTypeChanged();
             }
         });

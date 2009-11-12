@@ -21,9 +21,6 @@ package org.openvpms.web.app.reporting.statement;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -33,8 +30,9 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -121,22 +119,22 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         buttons.add("sendAll", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onSendAll();
             }
         });
         buttons.add("print", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onPrint();
             }
         });
         buttons.add("report", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onReport();
             }
         });
         buttons.add("endPeriod", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onEndPeriod();
             }
         });
@@ -151,11 +149,10 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             String message = Messages.get("reporting.statements.run.message");
             final SendStatementsDialog dialog
                     = new SendStatementsDialog(title, message);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        doSendAll(dialog.reprint());
-                    }
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    doSendAll(dialog.reprint());
                 }
             });
             dialog.show();
@@ -164,12 +161,13 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
 
     /**
      * Processes all customers matching the criteria.
+     *
+     * @param reprint if <tt>true</tt>, process statements that have been printed.
      */
     private void doSendAll(boolean reprint) {
         try {
             GlobalContext context = GlobalContext.getInstance();
-            StatementGenerator generator = new StatementGenerator(query,
-                                                                  context);
+            StatementGenerator generator = new StatementGenerator(query, context);
             generator.setReprint(reprint);
             generateStatements(generator, true);
         } catch (OpenVPMSException exception) {
@@ -210,11 +208,10 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             String message = Messages.get("reporting.statements.eop.message");
             final EndOfPeriodDialog dialog
                     = new EndOfPeriodDialog(title, message);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        doEndPeriod(dialog.postCompletedInvoices());
-                    }
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    doEndPeriod(dialog.postCompletedInvoices());
                 }
             });
             dialog.show();

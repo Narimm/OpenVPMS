@@ -21,9 +21,7 @@ package org.openvpms.web.app.reporting.till;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.finance.till.TillBalanceQuery;
 import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.archetype.rules.finance.till.TillRules;
@@ -45,7 +43,10 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.reporting.FinancialActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.dialog.SelectionDialog;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -143,7 +144,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             final IMObjectEditor editor = createEditor(childAct, context);
             EditDialog dialog = new EditDialog(editor);
             dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
+                public void onClose(WindowPaneEvent event) {
                     onEditCompleted(editor, false);
                 }
             });
@@ -159,17 +160,17 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         clear = ButtonFactory.create(CLEAR_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onClear();
             }
         });
         adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onAdjust();
             }
         });
         transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onTransfer();
             }
         });
@@ -226,12 +227,10 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
                                                           BigDecimal.ZERO);
                 final ClearTillDialog dialog = new ClearTillDialog();
                 dialog.setAmount(lastFloat);
-                dialog.addWindowPaneListener(new WindowPaneListener() {
-                    public void windowPaneClosing(WindowPaneEvent e) {
-                        if (ClearTillDialog.OK_ID.equals(dialog.getAction())) {
-                            doClear(act, dialog.getAmount(),
-                                    dialog.getAccount());
-                        }
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        doClear(act, dialog.getAmount(), dialog.getAccount());
                     }
                 });
                 dialog.show();
@@ -287,7 +286,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         final SelectionDialog dialog
                 = new SelectionDialog(title, message, list);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
+            public void onClose(WindowPaneEvent e) {
                 Party selected = (Party) dialog.getSelected();
                 if (selected != null) {
                     doTransfer(act, childAct, selected);

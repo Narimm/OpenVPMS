@@ -22,7 +22,7 @@ import echopointng.KeyStrokeListener;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -145,7 +145,7 @@ public class ShortcutButtons implements KeyStrokeHandler {
             listener = new KeyStrokeListener();
             listener.setCancelMode(true);
             listener.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onKeyStroke(event);
                 }
             });

@@ -19,7 +19,7 @@ package org.openvpms.web.app.admin.lookup;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -180,7 +180,7 @@ public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
     private Button getReplaceButton() {
         if (replace == null) {
             replace = ButtonFactory.create(REPLACE_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     replace();
                 }
             });

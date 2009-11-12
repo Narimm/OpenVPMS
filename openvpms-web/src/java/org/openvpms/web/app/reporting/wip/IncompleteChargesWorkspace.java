@@ -21,7 +21,7 @@ package org.openvpms.web.app.reporting.wip;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
@@ -84,7 +84,7 @@ public class IncompleteChargesWorkspace
      */
     protected void layoutButtons(ButtonSet buttons) {
         buttons.add("report", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onReport();
             }
         });

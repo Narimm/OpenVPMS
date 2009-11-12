@@ -20,7 +20,7 @@ package org.openvpms.web.app.customer.estimation;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import static org.openvpms.archetype.rules.act.EstimationActStatus.INVOICED;
 import static org.openvpms.archetype.rules.act.FinancialActStatus.*;
 import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
@@ -92,12 +92,12 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         copy = ButtonFactory.create(COPY_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onCopy();
             }
         });
         invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onInvoice();
             }
         });

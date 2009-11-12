@@ -20,7 +20,7 @@ package org.openvpms.web.app.reporting;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PrintDialog;
@@ -134,7 +134,7 @@ public class SQLReportDialog extends PrintDialog {
     protected void doLayout(Component container) {
         super.doLayout(container);
         addButton(EXPORT_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 onExport();
             }
         });

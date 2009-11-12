@@ -19,8 +19,7 @@
 package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.event.WindowPaneListener;
 
 
 /**
@@ -29,21 +28,17 @@ import org.openvpms.web.component.util.ErrorHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class PopupDialogListener implements WindowPaneListener {
+public abstract class PopupDialogListener extends WindowPaneListener {
 
     /**
      * Invoked when a user attempts to close a <tt>WindowPane</tt>.
      *
      * @param event the <tt>WindowPaneEvent</tt> describing the change
      */
-    public void windowPaneClosing(WindowPaneEvent event) {
+    public void onClose(WindowPaneEvent event) {
         if (event.getSource() instanceof PopupDialog) {
             PopupDialog dialog = (PopupDialog) event.getSource();
-            try {
-                onAction(dialog);
-            } catch (Throwable exception) {
-                ErrorHelper.show(exception);
-            }
+            onAction(dialog);
         }
     }
 
@@ -91,6 +86,8 @@ public abstract class PopupDialogListener implements WindowPaneListener {
 
     /**
      * Invoked when an unknown button is selected.
+     *
+     * @param action the dialog action
      */
     public void onAction(String action) {
     }

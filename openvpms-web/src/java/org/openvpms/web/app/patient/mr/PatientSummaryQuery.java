@@ -22,7 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -105,7 +105,7 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
         final SelectField shortNameSelector = SelectFieldFactory.create(
                 model);
         shortNameSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 int index = shortNameSelector.getSelectedIndex();
                 if (model.isAll(index)) {
                     selectedShortNames = allShortNames;

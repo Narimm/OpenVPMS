@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.query;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.util.ButtonRow;
@@ -138,7 +138,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractBrowser<T> {
         ButtonRow row = new ButtonRow(getFocusGroup());
         row.add(component);
         row.addButton(QUERY_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onQuery();
             }
         });
