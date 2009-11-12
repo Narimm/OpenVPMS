@@ -32,10 +32,10 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.ProtectedListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.Workflow;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -146,8 +146,8 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
      */
     protected Button getConsultButton() {
         if (consult == null) {
-            consult = ButtonFactory.create(CONSULT_ID, new ProtectedListener() {
-                protected void onAction(ActionEvent event) {
+            consult = ButtonFactory.create(CONSULT_ID, new ActionListener() {
+                public void onAction(ActionEvent event) {
                     onConsult();
                 }
             });
@@ -163,8 +163,8 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     protected Button getCheckOutButton() {
         if (checkOut == null) {
             checkOut = ButtonFactory.create(
-                    CHECKOUT_ID, new ProtectedListener() {
-                protected void onAction(ActionEvent event) {
+                    CHECKOUT_ID, new ActionListener() {
+                public void onAction(ActionEvent event) {
                     onCheckOut();
                 }
             });
@@ -180,8 +180,8 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     protected Button getOverTheCounterButton() {
         if (overTheCounter == null) {
             overTheCounter = ButtonFactory.create(
-                    OVER_THE_COUNTER_ID, new ProtectedListener() {
-                protected void onAction(ActionEvent event) {
+                    OVER_THE_COUNTER_ID, new ActionListener() {
+                public void onAction(ActionEvent event) {
                     onOverTheCounter();
                 }
             });

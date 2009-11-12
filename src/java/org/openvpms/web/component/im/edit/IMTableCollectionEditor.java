@@ -25,15 +25,14 @@ import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -273,7 +272,7 @@ public abstract class IMTableCollectionEditor<T>
 
         table = new PagedIMTable<T>(createTableModel(context));
         table.getTable().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent event) {
                 onEdit();
             }
         });
@@ -320,14 +319,14 @@ public abstract class IMTableCollectionEditor<T>
         disableShortcut = getContext().getLayoutDepth() > 1;
 
         ActionListener addListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onNew();
             }
         };
         buttons.addButton("add", addListener, disableShortcut);
 
         ActionListener deleteListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onDelete();
             }
         };
@@ -343,7 +342,7 @@ public abstract class IMTableCollectionEditor<T>
             shortName = model.getShortName(index);
 
             archetypeNames.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     int index = archetypeNames.getSelectedIndex();
                     if (index != -1) {
                         shortName = model.getShortName(index);
@@ -465,7 +464,7 @@ public abstract class IMTableCollectionEditor<T>
             // if no column is currently sorted, sort on the default (if any)
             SortableTableModel sortable = ((SortableTableModel) model);
             if (sortable.getSortColumn() == -1
-                    && sortable.getDefaultSortColumn() != -1) {
+                && sortable.getDefaultSortColumn() != -1) {
                 sortable.sort(sortable.getDefaultSortColumn(), true);
             }
         }
@@ -510,11 +509,10 @@ public abstract class IMTableCollectionEditor<T>
                                       displayName);
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    remove(object);
-                }
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                remove(object);
             }
         });
         dialog.show();

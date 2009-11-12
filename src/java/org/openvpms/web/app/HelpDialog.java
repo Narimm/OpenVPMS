@@ -27,7 +27,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -50,7 +50,7 @@ public class HelpDialog extends PopupDialog {
     /**
      * The project logo.
      */
-    private final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
+    private static final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
 
     /**
      * Constructs a new <code>HelpDialog</code>.
@@ -78,7 +78,7 @@ public class HelpDialog extends PopupDialog {
                                                "hyperlink");
         helpLink.setBackground(null); // want to inherit style of parent
         helpLink.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 String link = Messages.get("helpdialog.topics.link");
                 ApplicationInstance.getActive().enqueueCommand(
                         new BrowserOpenWindowCommand(link, null, null));

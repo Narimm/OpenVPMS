@@ -19,7 +19,6 @@
 package org.openvpms.web.app.workflow.checkout;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -40,6 +39,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
@@ -104,7 +104,7 @@ class PrintDocumentsTask extends AbstractTask {
             final BatchPrintDialog dialog = new BatchPrintDialog(title, buttons,
                                                                  unprinted);
             dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
+                public void onClose(WindowPaneEvent event) {
                     String action = dialog.getAction();
                     if (BatchPrintDialog.OK_ID.equals(action)) {
                         print(dialog.getSelected(), context);
@@ -163,6 +163,7 @@ class PrintDocumentsTask extends AbstractTask {
      * @param party         the party to query
      * @param node          the participation node to query
      * @param participation the participation short name to query
+     * @return the unprinted acts
      */
     private List<IMObject> getUnprintedActs(String[] shortNames, Party party,
                                             String node, String participation) {
@@ -213,6 +214,7 @@ class PrintDocumentsTask extends AbstractTask {
          * Constructs a new <code>BatchPrinter</code>.
          *
          * @param objects the objects to print
+         * @param context the task context
          */
         public BatchPrinter(List<IMObject> objects, TaskContext context) {
             iterator = objects.iterator();
@@ -244,7 +246,7 @@ class PrintDocumentsTask extends AbstractTask {
         /**
          * Invoked when an object has been successfully printed.
          *
-         * @param printer
+         * @param printer the printer that was used. May be <tt>null</tt>
          */
         public void printed(String printer) {
             boolean next = false;
@@ -285,7 +287,7 @@ class PrintDocumentsTask extends AbstractTask {
          */
         public void failed(Throwable cause) {
             ErrorHelper.show(cause, new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
+                public void onClose(WindowPaneEvent event) {
                     start(context);
                 }
             });

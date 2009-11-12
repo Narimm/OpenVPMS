@@ -19,9 +19,9 @@
 package org.openvpms.web.component.workflow;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.WindowPaneListener;
 
 
 /**
@@ -89,7 +89,7 @@ public class ConfirmationTask extends EvalTask<Boolean> {
         final ConfirmationDialog dialog = new ConfirmationDialog(
                 title, message, buttons);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
+            public void onClose(WindowPaneEvent event) {
                 String action = dialog.getAction();
                 if (ConfirmationDialog.YES_ID.equals(action)
                         || ConfirmationDialog.OK_ID.equals(action)) {

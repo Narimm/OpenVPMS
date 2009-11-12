@@ -20,7 +20,7 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.list.ListModel;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.web.component.property.Property;
@@ -55,7 +55,7 @@ public class SelectFieldBinder extends Binder {
         super(property);
         this.component = component;
         listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 setProperty();
             }
         };

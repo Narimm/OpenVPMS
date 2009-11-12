@@ -22,7 +22,7 @@ import echopointng.DropDown;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -235,7 +235,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
         final PagedIMTable<ProductPrice> table
                 = new PagedIMTable<ProductPrice>(new PriceTableModel(), set);
         table.getTable().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onSelected(table.getTable().getSelected());
             }
         });

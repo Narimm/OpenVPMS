@@ -19,16 +19,16 @@
 package org.openvpms.web.component.workflow;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
@@ -299,7 +299,7 @@ public class EditIMObjectTask extends AbstractTask {
         GlobalContext.getInstance().setCurrent(object);
         final EditDialog dialog = createEditDialog(editor, context, skip);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
+            public void onClose(WindowPaneEvent event) {
                 if (EditDialog.SKIP_ID.equals(dialog.getAction())) {
                     if (deleteOnCancelOrSkip) {
                         delete(editor.getObject());

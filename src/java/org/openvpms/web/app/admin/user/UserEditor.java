@@ -20,7 +20,6 @@ package org.openvpms.web.app.admin.user;
 
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.DocumentEvent;
-import nextapp.echo2.app.event.DocumentListener;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -35,6 +34,7 @@ import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.component.event.DocumentListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Arrays;
@@ -78,14 +78,14 @@ public class UserEditor extends AbstractIMObjectEditor {
         password = TextComponentFactory.createPassword(width);
         password.setText(value);
         password.getDocument().addDocumentListener(new DocumentListener() {
-            public void documentUpdate(DocumentEvent event) {
+            public void onUpdate(DocumentEvent event) {
                 onPasswordChanged();
             }
         });
         confirm = TextComponentFactory.createPassword(width);
         confirm.setText(value);
         confirm.getDocument().addDocumentListener(new DocumentListener() {
-            public void documentUpdate(DocumentEvent event) {
+            public void onUpdate(DocumentEvent event) {
             }
         });
     }

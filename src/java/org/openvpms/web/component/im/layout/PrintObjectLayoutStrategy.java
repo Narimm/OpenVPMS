@@ -20,7 +20,7 @@ package org.openvpms.web.component.im.layout;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
@@ -75,7 +75,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
                             Component container, LayoutContext context) {
         Button button = layout.doLayout(container);
         button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onPrint(object);
             }
         });

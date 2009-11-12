@@ -20,7 +20,7 @@ package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -292,6 +292,7 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
      * short name.
      *
      * @param shortName the short name
+     * @return the archetype constraint
      */
     protected ShortNameConstraint getArchetypeConstraint(String shortName) {
         ShortNameConstraint result;
@@ -388,7 +389,7 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
         if (statusLookups != null) {
             statusSelector = LookupFieldFactory.create(statusLookups, true);
             statusSelector.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     onStatusChanged();
                 }
             });

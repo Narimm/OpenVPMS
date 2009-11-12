@@ -26,7 +26,7 @@ import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
@@ -101,7 +101,7 @@ public class TitlePane extends ContentPane {
             locationUserRow.add(location, 0);
             locationUserRow.add(locationSelector, 1);
             locationSelector.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     changeLocation();
                 }
             });

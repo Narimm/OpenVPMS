@@ -19,7 +19,7 @@ package org.openvpms.web.app.history;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -203,7 +203,7 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
                 }
 
                 ActionListener listener = new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
+                    public void onAction(ActionEvent e) {
                         HistoryModel.this.party = party;
                         browser.setSelected(pair);
                         browser.notifySelected(pair);

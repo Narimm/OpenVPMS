@@ -22,9 +22,9 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -468,7 +468,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             String msg = Messages.get("reporting.reminder.run.cancel.message");
             final ConfirmationDialog dialog = new ConfirmationDialog(title, msg);
             dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent e) {
+                public void onClose(WindowPaneEvent e) {
                     if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
                         workflow.cancel();
                         GenerationDialog.this.close(CANCEL_ID);
@@ -496,7 +496,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
          */
         private Button addReprintButton(final ReminderBatchProcessor processor) {
             Button button = ButtonFactory.create("reprint", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     restart(processor);
                 }
             });

@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.product;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.archetype.rules.product.ProductSupplier;
@@ -36,6 +35,7 @@ import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
@@ -87,7 +87,7 @@ class ProductReferenceEditor
     @Override
     protected void onSelected(Product product) {
         if (product != null && editor.getSupplier() != null
-                && hasSuppliers(product)) {
+            && hasSuppliers(product)) {
             checkSupplier(product);
         } else {
             setProduct(product, null);
@@ -120,7 +120,6 @@ class ProductReferenceEditor
     /**
      * Creates a query to select objects.
      *
-     * @param name a name to filter on. May be <tt>null</tt>
      * @param name the name to filter on. May be <tt>null</tt>
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
@@ -133,9 +132,10 @@ class ProductReferenceEditor
     }
 
     /**
-     * Creates a query to select objects.
+     * Constrains the query on species and stock location, if a patient and stock location is present.
      *
-     * @return a new query
+     * @param query the query
+     * @return the query
      */
     protected Query<Product> getQuery(Query<Product> query) {
         if (query instanceof ProductQuery) {
@@ -194,7 +194,7 @@ class ProductReferenceEditor
         Entity otherSupplier;
 
         if (!rules.isSuppliedBy(editor.getSupplier(), product)
-                && (otherSupplier = getSupplier(product)) != null) {
+            && (otherSupplier = getSupplier(product)) != null) {
             String title = Messages.get("product.othersupplier.title");
             String message = Messages.get("product.othersupplier.message",
                                           product.getName(),
@@ -202,7 +202,7 @@ class ProductReferenceEditor
             final ConfirmationDialog dialog
                     = new ConfirmationDialog(title, message);
             dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
+                public void onClose(WindowPaneEvent event) {
                     if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
                         checkProductSupplierRelationships(product);
                     } else {
@@ -273,7 +273,7 @@ class ProductReferenceEditor
                     = new BrowserDialog<EntityRelationship>(title, browser);
 
             dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
+                public void onClose(WindowPaneEvent event) {
                     EntityRelationship selected = browser.getSelected();
                     if (selected != null) {
                         setProduct(product, selected);

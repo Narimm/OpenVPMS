@@ -20,9 +20,6 @@ package org.openvpms.web.app.subsystem;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -31,6 +28,8 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
@@ -103,8 +102,7 @@ public abstract class ActCRUDWindow<T extends Act>
 
 
     /**
-     * Invoked when the edit button is pressed. This popups up an {@link
-     * EditDialog}.
+     * Invoked when the edit button is pressed. This popups up an {@link org.openvpms.web.component.im.edit.EditDialog}.
      */
     @Override
     public void edit() {
@@ -166,19 +164,18 @@ public abstract class ActCRUDWindow<T extends Act>
             String message = Messages.get("act.post.message", displayName);
             final ConfirmationDialog dialog = new ConfirmationDialog(
                     title, message);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent e) {
-                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        try {
-                            boolean saved = post(act);
-                            if (saved) {
-                                // act was saved. Need to refresh
-                                saved(act);
-                                onPosted(act);
-                            }
-                        } catch (OpenVPMSException exception) {
-                            ErrorHelper.show(exception);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    try {
+                        boolean saved = post(act);
+                        if (saved) {
+                            // act was saved. Need to refresh
+                            saved(act);
+                            onPosted(act);
                         }
+                    } catch (OpenVPMSException exception) {
+                        ErrorHelper.show(exception);
                     }
                 }
             });
@@ -322,7 +319,7 @@ public abstract class ActCRUDWindow<T extends Act>
     protected Button getPostButton() {
         if (post == null) {
             post = ButtonFactory.create(POST_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onPost();
                 }
             });
@@ -338,7 +335,7 @@ public abstract class ActCRUDWindow<T extends Act>
     protected Button getPreviewButton() {
         if (preview == null) {
             preview = ButtonFactory.create(PREVIEW_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onPreview();
                 }
             });

@@ -19,10 +19,10 @@
 package org.openvpms.web.component.workflow;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -127,8 +127,8 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
 
     /**
      * Sets the dialog message.
-     * <p/>
-     * If none is specified, no message will be displayed.
+     *
+     * @param message the message. May be <tt>null</tt>
      */
     public void setMessage(String message) {
         this.message = message;
@@ -148,13 +148,13 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
             title = Messages.get("imobject.select.title", type);
         }
         String[] buttons = isRequired()
-                ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
+                           ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
         boolean addNew = (createTask != null);
         final BrowserDialog<T> dialog
                 = new BrowserDialog<T>(title, message, buttons, browser,
                                        addNew);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
+            public void onClose(WindowPaneEvent event) {
                 if (dialog.createNew()) {
                     createTask.addTaskListener(getTaskListeners());
                     createTask.start(context);

@@ -22,7 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.ContextApplicationInstance;
@@ -84,7 +84,7 @@ public class IMObjectReferenceViewer {
         this.name = name;
         if (link) {
             linkListener = new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onView();
                 }
             };
@@ -106,7 +106,7 @@ public class IMObjectReferenceViewer {
         this.reference = reference;
         this.name = name;
         this.linkListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 event = new ActionEvent(IMObjectReferenceViewer.this, event.getActionCommand());
                 listener.actionPerformed(event);
             }

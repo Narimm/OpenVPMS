@@ -20,7 +20,7 @@ package org.openvpms.web.app.reporting;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -102,7 +102,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
                 = new NodeLookupQuery("entity.documentTemplate", "reportType");
         typeSelector = LookupFieldFactory.create(source, true);
         typeSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onTypeChanged();
             }
         });

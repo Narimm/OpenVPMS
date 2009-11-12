@@ -25,7 +25,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.table.TableCellRenderer;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -131,7 +131,7 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
         button.setText(label);
         button.setFocusTraversalParticipant(false);
         button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 boolean ascending = false;
                 if (column == model.getSortColumn()) {
                     ascending = model.isSortedAscending();

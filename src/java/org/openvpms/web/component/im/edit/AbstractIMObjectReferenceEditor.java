@@ -21,7 +21,6 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -43,6 +42,7 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.event.WindowPaneListener;
 
 
 /**
@@ -273,7 +273,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                 = IMObjectEditorFactory.create(object, parent, layoutContext);
         final EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
+            public void onClose(WindowPaneEvent event) {
                 onEditCompleted(editor);
             }
         });
@@ -296,7 +296,6 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Creates a query to select objects.
      *
-     * @param name a name to filter on. May be <tt>null</tt>
      * @param name the name to filter on. May be <tt>null</tt>
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any

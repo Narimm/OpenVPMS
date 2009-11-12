@@ -20,9 +20,6 @@ package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -32,6 +29,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -98,17 +97,17 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         _reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onReverse();
             }
         });
         _statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onStatement();
             }
         });
         _adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onAdjust();
             }
         });
@@ -145,11 +144,10 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
                                           name);
             final ConfirmationDialog dialog
                     = new ConfirmationDialog(title, message);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent e) {
-                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        reverse(act);
-                    }
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    reverse(act);
                 }
             });
             dialog.show();

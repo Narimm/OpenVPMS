@@ -20,12 +20,12 @@ package org.openvpms.web.component.im.util;
 
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.SelectionDialog;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -78,18 +78,20 @@ public final class IMObjectCreator {
      * Create a new object, selected from a list. This implementation pops up a
      * selection dialog if needed.
      *
+     * @param type       the type of object being created, for display purposes
      * @param shortNames the archetype shortnames
      * @param listener   the listener to notify
      */
     public static void create(String type, List<String> shortNames,
                               final IMObjectCreatorListener listener) {
-        create(type, shortNames.toArray(new String[0]), listener);
+        create(type, shortNames.toArray(new String[shortNames.size()]), listener);
     }
 
     /**
      * Create a new object, selected from a list. This implementation pops up a
      * selection dialog if needed.
      *
+     * @param type       the type of object being created, for display purposes
      * @param shortNames the archetype shortnames
      * @param listener   the listener to notify
      */
@@ -110,7 +112,7 @@ public final class IMObjectCreator {
             final SelectionDialog dialog
                     = new SelectionDialog(title, message, list);
             dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
+                public void onClose(WindowPaneEvent event) {
                     int selected = dialog.getSelectedIndex();
                     if (selected != -1) {
                         IMObject object = create(model.getShortName(selected));

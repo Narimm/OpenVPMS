@@ -20,9 +20,8 @@ package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -33,12 +32,13 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 
 
 /**
@@ -84,7 +84,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
         buttons.add(getCreateButton());
         buttons.add(getDeleteButton());
         resend = ButtonFactory.create(RESEND_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onResend();
             }
         });
@@ -144,7 +144,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
             ResendReminderDialog dialog = ResendReminderDialog.create(getObject());
             if (dialog != null) {
                 dialog.addWindowPaneListener(new WindowPaneListener() {
-                    public void windowPaneClosing(WindowPaneEvent event) {
+                    public void onClose(WindowPaneEvent event) {
                         onRefresh(getObject());
                     }
                 });

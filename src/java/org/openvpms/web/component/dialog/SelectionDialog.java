@@ -22,7 +22,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
 import nextapp.echo2.app.list.AbstractListComponent;
@@ -97,7 +97,7 @@ public class SelectionDialog extends PopupDialog {
 
         this.list = list;
         this.list.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onSelected();
             }
         });

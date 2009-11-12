@@ -20,7 +20,7 @@ package org.openvpms.web.app.patient.info;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
@@ -75,14 +75,14 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
         super.layoutButtons(buttons);
         if (checkIn == null) {
             checkIn = ButtonFactory.create("checkin", new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onCheckIn();
                 }
             });
         }
         if (merge == null) {
             merge = ButtonFactory.create("merge", new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onMerge();
                 }
             });

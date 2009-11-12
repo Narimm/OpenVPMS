@@ -33,9 +33,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.TaskQueueHandle;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -52,6 +50,9 @@ import org.openvpms.web.app.workflow.WorkflowSubsystem;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.subsystem.Refreshable;
@@ -209,7 +210,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         }
 
         menu.addButton("help", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 new HelpDialog().show();
             }
         });
@@ -278,7 +279,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         List<Workspace> workspaces = subsystem.getWorkspaces();
         for (final Workspace workspace : workspaces) {
             ActionListener listener = new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     select(subsystem, workspace);
                 }
             };
@@ -331,7 +332,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      */
     protected Button addSubsystem(final Subsystem subsystem) {
         ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 select(subsystem);
             }
         };
@@ -352,18 +353,18 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         newWindow.setIcon(NEW_WINDOW);
         newWindow.setToolTipText(Messages.get("newwindow.tooltip"));
         newWindow.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onNewWindow();
             }
         });
         row.addButton(newWindow);
         row.addButton("recent", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 showHistory();
             }
         });
         row.addButton("logout", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onLogout();
             }
         });
@@ -415,11 +416,10 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         }
         String title = Messages.get("logout.title");
         final ConfirmationDialog dialog = new ConfirmationDialog(title, msg);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    doLogout();
-                }
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                doLogout();
             }
         });
         dialog.show();
@@ -441,7 +441,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         final CustomerPatientHistoryBrowser browser = new CustomerPatientHistoryBrowser();
         BrowserDialog<CustomerPatient> dialog = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser);
         dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
+            public void onClose(WindowPaneEvent event) {
                 CustomerPatient selected = browser.getSelected();
                 if (selected != null) {
                     GlobalContext context = GlobalContext.getInstance();

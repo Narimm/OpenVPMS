@@ -22,7 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.GlobalContext;
@@ -146,7 +146,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
     protected Button getRunButton() {
         if (run == null) {
             run = ButtonFactory.create(RUN_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onRun();
                 }
             });

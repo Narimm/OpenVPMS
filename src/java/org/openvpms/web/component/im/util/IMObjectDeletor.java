@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.im.util;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -32,6 +30,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -149,11 +148,10 @@ public final class IMObjectDeletor {
         String message = Messages.get(messageKey, name);
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message, true);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    doDelete(object, listener);
-                }
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                doDelete(object, listener);
             }
         });
         dialog.show();
@@ -205,13 +203,12 @@ public final class IMObjectDeletor {
                                       object.getName());
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message, true);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    object.setActive(false);
-                    if (SaveHelper.save(object)) {
-                        listener.deactivated(object);
-                    }
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                object.setActive(false);
+                if (SaveHelper.save(object)) {
+                    listener.deactivated(object);
                 }
             }
         });

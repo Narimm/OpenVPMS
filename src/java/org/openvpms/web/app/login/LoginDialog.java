@@ -24,7 +24,7 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.util.GridFactory;
@@ -94,12 +94,12 @@ public class LoginDialog extends PopupDialog {
         password = TextComponentFactory.createPassword();
 
         username.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 setFocus(password);
             }
         });
         password.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onOK();
             }
         });

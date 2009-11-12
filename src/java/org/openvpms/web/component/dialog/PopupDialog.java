@@ -20,7 +20,7 @@ package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
@@ -306,7 +306,7 @@ public abstract class PopupDialog extends PopupWindow {
      */
     protected Button addButton(final String id, boolean disableShortcut) {
         ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onButton(id);
             }
         };

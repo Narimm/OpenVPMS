@@ -20,7 +20,7 @@ package org.openvpms.web.app.product;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -76,7 +76,7 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
         if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
             if (copy == null) {
                 copy = ButtonFactory.create(COPY_ID, new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
+                    public void onAction(ActionEvent event) {
                         onCopy();
                     }
                 });

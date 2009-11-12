@@ -19,7 +19,6 @@
 package org.openvpms.web.app.subsystem;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.query.Browser;
@@ -28,6 +27,7 @@ import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -116,7 +116,7 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
                     title, browser, true);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
+                public void onClose(WindowPaneEvent event) {
                     if (popup.createNew()) {
                         getCRUDWindow().create();
                     } else {
@@ -126,7 +126,6 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
                         }
                     }
                 }
-
             });
 
             popup.show();

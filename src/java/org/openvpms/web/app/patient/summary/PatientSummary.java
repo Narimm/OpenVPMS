@@ -22,7 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -126,7 +126,7 @@ public class PatientSummary {
             } else {
                 alertCount = ButtonFactory.create(
                         null, "alert", new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
+                    public void onAction(ActionEvent event) {
                         onShowAlerts(patient);
                     }
                 });
@@ -141,7 +141,7 @@ public class PatientSummary {
             } else {
                 reminderCount = ButtonFactory.create(
                         null, "reminder", new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
+                    public void onAction(ActionEvent event) {
                         onShowReminders(patient);
                     }
                 });

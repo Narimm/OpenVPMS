@@ -20,9 +20,6 @@ package org.openvpms.web.app.supplier.order;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
@@ -36,6 +33,8 @@ import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -78,7 +77,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         copy = ButtonFactory.create(COPY_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onCopy();
             }
         });
@@ -102,7 +101,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
             buttons.add(getCreateButton());
             String status = object.getStatus();
             if (!ActStatus.POSTED.equals(status) &&
-                    !ActStatus.CANCELLED.equals(status)) {
+                !ActStatus.CANCELLED.equals(status)) {
                 buttons.add(getDeleteButton());
                 buttons.add(getPostButton());
             }
@@ -128,14 +127,13 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
         final SelectStockDetailsDialog dialog
                 = new SelectStockDetailsDialog(title,
                                                GlobalContext.getInstance());
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (SelectStockDetailsDialog.OK_ID.equals(dialog.getAction())) {
-                    Party supplier = dialog.getSupplier();
-                    Party location = dialog.getStockLocation();
-                    addParticipations(act, supplier, location);
-                    edit(act);
-                }
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                Party supplier = dialog.getSupplier();
+                Party location = dialog.getStockLocation();
+                addParticipations(act, supplier, location);
+                edit(act);
             }
         });
         dialog.show();
@@ -169,7 +167,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     @Override
     protected boolean canEdit(Act act) {
         IMObjectBean bean = new IMObjectBean(act);
-        return !DeliveryStatus.FULL.equals(bean.getString("deliveryStatus"));
+        return !DeliveryStatus.FULL.toString().equals(bean.getString("deliveryStatus"));
     }
 
     /**

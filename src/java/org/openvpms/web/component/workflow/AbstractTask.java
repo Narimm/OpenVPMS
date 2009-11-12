@@ -19,12 +19,12 @@
 package org.openvpms.web.component.workflow;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.event.WindowPaneListener;
 
 import java.util.Collection;
 
@@ -145,7 +145,7 @@ public abstract class AbstractTask implements Task {
      */
     protected void notifyCancelledOnError(Throwable cause) {
         ErrorHelper.show(cause, new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
+            public void onClose(WindowPaneEvent event) {
                 notifyCancelled();
             }
         });

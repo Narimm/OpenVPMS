@@ -26,7 +26,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.ClassUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -128,7 +128,7 @@ public abstract class Selector<T extends IMObject> {
                 && style != ButtonStyle.RIGHT_NO_ACCEL) {
             listener = new KeyStrokeListener();
             listener.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onSelected(event);
                 }
             });

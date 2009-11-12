@@ -20,7 +20,7 @@ package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.workflow.LocalClinicianContext;
@@ -134,7 +134,7 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
     private Button getTransferButton() {
         if (transfer == null) {
             transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+                public void onAction(ActionEvent event) {
                     onTransfer();
                 }
             });

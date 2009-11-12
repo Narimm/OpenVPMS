@@ -17,15 +17,20 @@
  */
 package org.openvpms.web.component.error;
 
-import com.thoughtworks.xstream.XStream;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.system.ServiceHelper;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 import javax.mail.internet.MimeMessage;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -45,12 +50,12 @@ public class ErrorReporter {
     /**
      * The from address.
      */
-    private String from = "noreply" + "@" + "openvpms.org";
+    private String from = "bm9yZXBseUBvcGVudnBtcy5vcmc=";
 
     /**
      * The to address.
      */
-    private String to;
+    private String to = "ZXJyb3ItcmVwb3J0c0BsaXN0cy5vcGVudnBtcy5vcmc=";
 
     /**
      * Exception class names to exclude.
@@ -78,6 +83,8 @@ public class ErrorReporter {
      */
     public ErrorReporter() {
         bundle = ResourceBundle.getBundle(RESOURCE);
+        from = new String(Base64.decodeBase64(from)); // poor persons anti spam....
+        to = new String(Base64.decodeBase64(to));
         for (Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
             String key = keys.nextElement();
             if (key.startsWith("exclude.")) {
@@ -109,16 +116,25 @@ public class ErrorReporter {
      *
      * @param report the error report
      */
-    public void report(ErrorReport report) {
+    public void report(final ErrorReport report) {
         try {
             JavaMailSender sender = ServiceHelper.getMailSender();
             MimeMessage message = sender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message);
-            String subject = getString("subject", report.getVersion(), report.getMessage());
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            String subject = getString("report.subject", report.getVersion(), report.getMessage());
             helper.setSubject(subject);
             helper.setFrom(from);
             helper.setTo(to);
-            helper.setText(new XStream().toXML(report));
+            String text = getText(report);
+            if (text != null) {
+                helper.setText(text);
+            }
+            InputStreamSource source = new InputStreamSource() {
+                public InputStream getInputStream() {
+                    return new ByteArrayInputStream(report.toXML().getBytes());
+                }
+            };
+            helper.addAttachment("error-report.xml", source, DocFormats.XML_TYPE);
             sender.send(message);
         } catch (Throwable exception) {
             log.error(exception, exception);
@@ -134,6 +150,21 @@ public class ErrorReporter {
      */
     public boolean isReportable(Throwable exception) {
         return !exclude.contains(exception.getClass().getName());
+    }
+
+    /**
+     * Returns the message body from a report.
+     *
+     * @param report the report
+     * @return the message body, or <tt>null</tt> if the report doesn't contain an exception
+     */
+    @SuppressWarnings({"ThrowableResultOfMethodCallIgnored"})
+    private String getText(ErrorReport report) {
+        Throwable exception = report.getException();
+        if (exception != null) {
+            return ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(exception));
+        }
+        return null;
     }
 
     /**
@@ -155,6 +186,5 @@ public class ErrorReporter {
             result = '!' + key + '!';
         }
         return result;
-
     }
 }

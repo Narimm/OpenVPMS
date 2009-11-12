@@ -20,7 +20,7 @@ package org.openvpms.web.app.customer.note;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -63,6 +63,8 @@ public class NoteQuery extends DateRangeActQuery<Act> {
 
     /**
      * Constructs a new <tt>NoteQuery</tt>.
+     *
+     * @param customer the customer to query notes for
      */
     public NoteQuery(Party customer) {
         super(customer, "customer", "participation.customer",
@@ -72,7 +74,7 @@ public class NoteQuery extends DateRangeActQuery<Act> {
                 = new ArchetypeLookupQuery("lookup.customerNoteCategory");
         categories = LookupFieldFactory.create(source, true);
         categories.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void onAction(ActionEvent e) {
                 onCategoryChanged();
             }
         });

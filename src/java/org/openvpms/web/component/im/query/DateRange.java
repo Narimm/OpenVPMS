@@ -24,7 +24,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.ComponentHelper;
@@ -173,7 +173,7 @@ public class DateRange {
         if (showAll) {
             allDates = CheckBoxFactory.create("daterange.all", true);
             allDates.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     onAllDatesChanged();
                 }
             });

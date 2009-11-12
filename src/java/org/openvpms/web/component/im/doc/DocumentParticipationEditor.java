@@ -19,7 +19,7 @@
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
@@ -101,7 +101,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
         act = getDocumentAct();
         selector = new BasicSelector<DocumentAct>();
         selector.getSelect().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+            public void onAction(ActionEvent event) {
                 onSelect();
             }
         });

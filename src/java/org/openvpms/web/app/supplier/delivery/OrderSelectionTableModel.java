@@ -20,7 +20,7 @@ package org.openvpms.web.app.supplier.delivery;
 
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -233,7 +233,7 @@ public class OrderSelectionTableModel
 
         public Toggle(final int row) {
             addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void onAction(ActionEvent e) {
                     onSelected(e, row, isSelected());
                 }
             });
