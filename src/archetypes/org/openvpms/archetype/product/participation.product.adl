@@ -26,8 +26,20 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="product.*" />
+							value="product.medication" />
 					</propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                            value="product.merchandise" />
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                            value="product.service" />
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                            value="product.template" />
+                    </propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
