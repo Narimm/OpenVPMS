@@ -101,8 +101,10 @@ public class LoaderAdapter {
                 String msg = Messages.get("LoaderAdapter.MissingColumn", mapping.getSource());
                 throw new KettleException(msg);
             }
-            valueMeta = metaData.getValueMeta(index);
-            Object value = getValue(valueMeta, row[index]);
+        }
+        for (int i = 0; i < row.length; ++i) {
+            valueMeta = metaData.getValueMeta(i);
+            Object value = getValue(valueMeta, row[i]);
             mapRow.add(valueMeta.getName(), value);
         }
         return loader.load(mapRow);
