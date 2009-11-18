@@ -268,6 +268,10 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
                      set.get(ScheduleEvent.CLINICIAN_REFERENCE));
         assertEquals(bean.getNodeParticipant("clinician").getName(),
                      set.get(ScheduleEvent.CLINICIAN_NAME));
+        assertEquals(bean.getNodeParticipantRef("worklist"),
+                     set.get(ScheduleEvent.SCHEDULE_REFERENCE));
+        assertEquals(bean.getNodeParticipant("worklist").getName(),
+                     set.get(ScheduleEvent.SCHEDULE_NAME));
         assertEquals(bean.getNodeParticipantRef("taskType"),
                      set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
         assertEquals(bean.getNodeParticipant("taskType").getName(),
