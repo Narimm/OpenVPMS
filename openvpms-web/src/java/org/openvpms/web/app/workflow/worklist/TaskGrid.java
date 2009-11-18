@@ -66,8 +66,9 @@ public class TaskGrid implements ScheduleEventGrid {
     /**
      * Creates a new <tt>TaskGrid</tt>.
      *
-     * @param date  the date
-     * @param tasks the tasks
+     * @param scheduleView the schedule view
+     * @param date         the date
+     * @param tasks        the tasks
      */
     public TaskGrid(Entity scheduleView, Date date,
                     Map<Entity, List<PropertySet>> tasks) {
@@ -166,7 +167,7 @@ public class TaskGrid implements ScheduleEventGrid {
     public Date getStartTime(Schedule schedule, int slot) {
         PropertySet event = getEvent(schedule, slot);
         return (event != null)
-                ? event.getDate(ScheduleEvent.ACT_START_TIME) : null;
+               ? event.getDate(ScheduleEvent.ACT_START_TIME) : null;
     }
 
     /**

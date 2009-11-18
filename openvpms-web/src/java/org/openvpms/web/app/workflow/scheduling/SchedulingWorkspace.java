@@ -21,11 +21,9 @@ package org.openvpms.web.app.workflow.scheduling;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
@@ -35,7 +33,6 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
@@ -214,7 +211,7 @@ public abstract class SchedulingWorkspace
      * @param event the event. May be <tt>null</tt>
      */
     protected void eventSelected(PropertySet event) {
-        Act act = getAct(event);
+        Act act = browser.getAct(event);
         window.setObject(act);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
@@ -225,7 +222,7 @@ public abstract class SchedulingWorkspace
      * @param event the event
      */
     protected void onEdit(PropertySet event) {
-        Act act = getAct(event);
+        Act act = browser.getAct(event);
         window.setObject(act);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
         if (act != null) {
@@ -403,21 +400,6 @@ public abstract class SchedulingWorkspace
         } else if (!ObjectUtils.equals(location, newLocation)) {
             setObject(getDefaultView(newLocation));
         }
-    }
-
-    /**
-     * Returns the act associated with an event.
-     *
-     * @param event the event. May be <tt>null</tt>
-     * @return the associated act, or <tt>null</tt> if <tt>event</tt> is null
-     */
-    private Act getAct(PropertySet event) {
-        if (event != null) {
-            IMObjectReference actRef = event.getReference(
-                    ScheduleEvent.ACT_REFERENCE);
-            return (Act) IMObjectHelper.getObject(actRef);
-        }
-        return null;
     }
 
 }

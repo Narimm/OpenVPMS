@@ -28,7 +28,7 @@ import org.openvpms.web.component.util.ButtonFactory;
 
 /**
  * A set of buttons, rendered in a component.
- * If a {@link ShortcutButton}s with a valid keycode is added to this, it
+ * If a {@link ShortcutButton} with a valid keycode is added to this, it
  * will receive keystroke notification.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -199,7 +199,7 @@ public class ButtonSet implements KeyStrokeHandler {
      */
     public void remove(Button button) {
         if (button.getParent() != null
-                && button.getParent().equals(container)) {
+            && button.getParent().equals(container)) {
             container.remove(button);
         }
         if (button instanceof ShortcutButton) {
@@ -239,6 +239,26 @@ public class ButtonSet implements KeyStrokeHandler {
      */
     public Button getButton(String id) {
         return (Button) container.getComponent(id);
+    }
+
+    /**
+     * Adds a listener for a specific key code.
+     *
+     * @param keyCode  the key code
+     * @param listener the listener to add
+     */
+    public void addKeyListener(int keyCode, ActionListener listener) {
+        buttons.addListener(keyCode, listener);
+
+    }
+
+    /**
+     * Removes a listener for a key code.
+     *
+     * @param keyCode the key code
+     */
+    public void removeKeyListener(int keyCode) {
+        buttons.removeListener(keyCode);
     }
 
     /**

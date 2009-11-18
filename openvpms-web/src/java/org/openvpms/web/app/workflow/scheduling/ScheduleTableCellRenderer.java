@@ -105,9 +105,13 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     public Component getTableCellRendererComponent(Table table, Object value,
                                                    int column, int row) {
         Component component = getComponent(table, value, column, row);
-        if (component != null && canHighlightCell(table, column, row)) {
-            // highlight the selected cell.
-            highlightCell(table, component);
+        if (component != null) {
+            if (isCut(table, column, row)) {
+                cutCell(table, component);
+            } else if (canHighlightCell(table, column, row)) {
+                // highlight the selected cell.
+                highlightCell(table, component);
+            }
         }
         return component;
     }
@@ -231,10 +235,23 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
         boolean highlight = false;
         if (!model.isSingleScheduleView() && model.isSelectedCell(column, row)
-                && model.getAvailability(column, row) == Availability.BUSY) {
+            && model.getAvailability(column, row) == Availability.BUSY) {
             highlight = true;
         }
         return highlight;
+    }
+
+    /**
+     * Determines if a cell has been 'cut'.
+     *
+     * @param table  the table
+     * @param column the column
+     * @param row    the row
+     * @return <tt>true</tt> if the cell has been 'cut'
+     */
+    protected boolean isCut(Table table, int column, int row) {
+        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
+        return model.isCutCell(column, row);
     }
 
     /**
@@ -253,6 +270,21 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         Font font = getFont(table);
         if (font != null) {
             int style = Font.BOLD | Font.ITALIC;
+            font = new Font(font.getTypeface(), style, font.getSize());
+            component.setFont(font);
+        }
+    }
+
+    /**
+     * Marks a cell as being cut.
+     *
+     * @param table     the table
+     * @param component the cell component
+     */
+    protected void cutCell(Table table, Component component) {
+        Font font = getFont(table);
+        if (font != null) {
+            int style = Font.BOLD | Font.LINE_THROUGH;
             font = new Font(font.getTypeface(), style, font.getSize());
             component.setFont(font);
         }
@@ -377,11 +409,8 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     private boolean isSelectedClinician(PropertySet event,
                                         ScheduleTableModel model) {
         IMObjectReference clinician = model.getClinician();
-        if (clinician == null) {
-            return true;
-        }
-        return ObjectUtils.equals(clinician, event.getReference(
-                ScheduleEvent.CLINICIAN_REFERENCE));
+        return clinician == null
+               || ObjectUtils.equals(clinician, event.getReference(ScheduleEvent.CLINICIAN_REFERENCE));
     }
 
     /**
@@ -402,7 +431,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         if (selected == column) {
             result = true;
         } else if (model.isSingleScheduleView()
-                && (column == selected - 1 || column == selected + 1)) {
+                   && (column == selected - 1 || column == selected + 1)) {
             // if the column is adjacent to the selected column
             if (model.getValueAt(selected, row) != null) {
                 // render the prompt in the current column if the selected

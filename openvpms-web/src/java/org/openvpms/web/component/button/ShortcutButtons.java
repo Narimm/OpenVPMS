@@ -18,11 +18,9 @@
 
 package org.openvpms.web.component.button;
 
-import echopointng.KeyStrokeListener;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -37,12 +35,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ShortcutButtons implements KeyStrokeHandler {
-
-    /**
-     * The container.
-     */
-    private final Component container;
+public class ShortcutButtons extends AbstractKeystrokeHandler {
 
     /**
      * The buttons.
@@ -51,15 +44,10 @@ public class ShortcutButtons implements KeyStrokeHandler {
             = new HashMap<String, ShortcutButton>();
 
     /**
-     * The keystroke listener. May be <tt>null</tt>.
-     */
-    private KeyStrokeListener listener;
-
-
-    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(ShortcutButtons.class);
+
 
     /**
      * Creates a new <tt>ShortcutButtons</tt>.
@@ -67,7 +55,7 @@ public class ShortcutButtons implements KeyStrokeHandler {
      * @param container the container to register the keystroke listener in
      */
     public ShortcutButtons(Component container) {
-        this.container = container;
+        super(container);
     }
 
     /**
@@ -91,21 +79,33 @@ public class ShortcutButtons implements KeyStrokeHandler {
     }
 
     /**
-     * Returns the keystroke listener.
-     *
-     * @return the keystroke listener, or <tt>null</tt> if none is required
-     */
-    public KeyStrokeListener getKeyStrokeListener() {
-        return listener;
-    }
-
-    /**
      * Re-registers keystroke listeners.
      */
     public void reregisterKeyStrokeListeners() {
         for (ShortcutButton button : buttons.values()) {
             removeKeystrokeListener(button);
             addKeyStrokeListener(button);
+        }
+    }
+
+    /**
+     * Invoked when a keystroke is pressed.
+     *
+     * @param event the action event
+     */
+    protected void onKeyStroke(ActionEvent event) {
+        String command = event.getActionCommand();
+        if (command != null) {
+            Button button = buttons.get(command);
+            if (button != null && button.isEnabled()) {
+                ActionEvent buttonEvent = new ActionEvent(button, command);
+                button.fireActionPerformed(buttonEvent);
+            } else {
+                log.warn("Keystroke received but not handled, actionCommand="
+                         + command);
+            }
+        } else {
+            log.warn("Keystroke received but not handled");
         }
     }
 
@@ -117,7 +117,7 @@ public class ShortcutButtons implements KeyStrokeHandler {
     private void addKeyStrokeListener(ShortcutButton button) {
         int code = button.getKeyCode();
         if (code != -1) {
-            getListener().addKeyCombination(code, button.getActionCommand());
+            addKey(code, button.getActionCommand());
         }
     }
 
@@ -129,53 +129,7 @@ public class ShortcutButtons implements KeyStrokeHandler {
     private void removeKeystrokeListener(ShortcutButton button) {
         int code = button.getKeyCode();
         if (code != -1) {
-            if (listener != null) {
-                listener.removeKeyCombination(code);
-            }
-        }
-    }
-
-    /**
-     * Returns the keystroke listener, creating it if it doesn't exist.
-     *
-     * @return the keystroke listener
-     */
-    private KeyStrokeListener getListener() {
-        if (listener == null) {
-            listener = new KeyStrokeListener();
-            listener.setCancelMode(true);
-            listener.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onKeyStroke(event);
-                }
-            });
-            container.add(listener);
-        } else if (container.indexOf(listener) == -1) {
-            // someone has done a removeAll() or similar on the container.
-            // Need to re-register the listener
-            container.add(listener);
-        }
-        return listener;
-    }
-
-    /**
-     * Invoked when a keystroke is pressed.
-     *
-     * @param event the action event
-     */
-    private void onKeyStroke(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (command != null) {
-            Button button = buttons.get(command);
-            if (button != null && button.isEnabled()) {
-                ActionEvent buttonEvent = new ActionEvent(button, command);
-                button.fireActionPerformed(buttonEvent);
-            } else {
-                log.warn("Keystroke received but not handled, actionCommand="
-                        + command);
-            }
-        } else {
-            log.warn("Keystroke received but not handled");
+            removeKey(code);
         }
     }
 

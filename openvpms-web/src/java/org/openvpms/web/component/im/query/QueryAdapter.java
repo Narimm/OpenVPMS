@@ -135,6 +135,23 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     }
 
     /**
+     * Determines if the query selects a particular object.
+     *
+     * @param object the object to check
+     * @return <tt>true</tt> if the object is selected by the query
+     */
+    public boolean selects(T object) {
+        Iterator<T> iterator = iterator();
+        while (iterator.hasNext()) {
+            T next = iterator.next();
+            if (next.equals(object)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Performs the query using the default sort constraint (if any), and
      * adapts the results to an iterator.
      *
@@ -188,7 +205,7 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     /**
      * Sets the minimum length of a name before queries can be performed.
      *
-     * @param length
+     * @param length the length
      */
     public void setNameMinLength(int length) {
         query.setNameMinLength(length);

@@ -21,7 +21,6 @@ package org.openvpms.web.app.workflow.appointment;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -41,10 +40,9 @@ public class AppointmentTypeParticipationEditor
         extends ParticipationEditor<Entity> {
 
     /**
-     * The schedule, used to constrain appointment types. Nay be
-     * <code>null</code>.
+     * The schedule, used to constrain appointment types. May be <tt>null</tt>.
      */
-    private Party _schedule;
+    private Entity schedule;
 
 
     /**
@@ -70,8 +68,8 @@ public class AppointmentTypeParticipationEditor
      *
      * @param schedule the schedule. May be <code>null</code>
      */
-    public void setSchedule(Party schedule) {
-        _schedule = schedule;
+    public void setSchedule(Entity schedule) {
+        this.schedule = schedule;
     }
 
     /**
@@ -89,7 +87,7 @@ public class AppointmentTypeParticipationEditor
 
             @Override
             protected Query<Entity> createQuery(String name) {
-                Query<Entity> query = new AppointmentTypeQuery(_schedule);
+                Query<Entity> query = new AppointmentTypeQuery(schedule);
                 query.setName(name);
                 return query;
             }

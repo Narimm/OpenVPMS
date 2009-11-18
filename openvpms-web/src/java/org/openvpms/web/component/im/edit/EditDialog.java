@@ -160,7 +160,7 @@ public class EditDialog extends PopupDialog {
      * Saves the current object, if saving is enabled.
      */
     @Override
-    protected void onApply() {
+    public void onApply() {
         save();
     }
 
@@ -168,7 +168,7 @@ public class EditDialog extends PopupDialog {
      * Saves the current object, if saving is enabled, and closes the editor.
      */
     @Override
-    protected void onOK() {
+    public void onOK() {
         if (save) {
             if (save()) {
                 close(OK_ID);
@@ -182,7 +182,7 @@ public class EditDialog extends PopupDialog {
      * Close the editor, discarding any unsaved changes.
      */
     @Override
-    protected void onCancel() {
+    public void onCancel() {
         editor.cancel();
         close(CANCEL_ID);
     }

@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -34,6 +35,7 @@ import static org.openvpms.component.system.common.query.ParticipationConstraint
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 
 import java.util.Date;
 
@@ -278,6 +280,9 @@ public abstract class AbstractActResultSet<T>
         if (constraints != null) {
             query.add(constraints);
         }
+        if (getReferenceConstraint() != null) {
+            addReferenceConstraint(query, getReferenceConstraint());
+        }
         for (SortConstraint sort : getSortConstraints()) {
             if (sort instanceof NodeSortConstraint) {
                 NodeSortConstraint node = (NodeSortConstraint) sort;
@@ -299,6 +304,17 @@ public abstract class AbstractActResultSet<T>
             }
         }
         return query;
+    }
+
+    /**
+     * Adds a reference constraint.
+     *
+     * @param query     the archetype query
+     * @param reference the reference to constrain the query on
+     */
+    @Override
+    protected void addReferenceConstraint(ArchetypeQuery query, IMObjectReference reference) {
+        query.add(new ObjectRefConstraint(archetypes.getAlias(), reference));
     }
 
     /**

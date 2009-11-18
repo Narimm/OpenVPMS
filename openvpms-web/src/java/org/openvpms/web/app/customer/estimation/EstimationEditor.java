@@ -83,11 +83,11 @@ public class EstimationEditor extends ActEditor {
             Date now = new Date();
             if (DateHelper.compareDates(start, now) < 0) {
                 // ensure start date isn't before the current date
-                setStartTime(now);
+                setStartTime(now, true);
             } else {
                 Date end = getEndTime();
                 if (end != null && end.compareTo(start) < 0) {
-                    setEndTime(start);
+                    setEndTime(start, true);
                 }
             }
         }

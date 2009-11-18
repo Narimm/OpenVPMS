@@ -71,7 +71,7 @@ public class TaskActEditor extends AbstractActEditor {
 
         if (getStartTime() == null) {
             Date date = context.getContext().getWorkListDate();
-            setStartTime(getDefaultStartTime(date));
+            setStartTime(getDefaultStartTime(date), true);
         }
 
         addStartEndTimeListeners();
@@ -101,10 +101,7 @@ public class TaskActEditor extends AbstractActEditor {
      */
     @Override
     public boolean save() {
-        if (checkMaxSlots()) {
-            return super.save();
-        }
-        return false;
+        return checkMaxSlots() && super.save();
     }
 
     /**

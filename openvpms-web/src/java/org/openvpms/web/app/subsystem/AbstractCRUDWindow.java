@@ -411,9 +411,10 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * Edits an object.
      *
      * @param editor the object editor
+     * @return the edit dialog
      */
     @SuppressWarnings("unchecked")
-    protected void edit(final IMObjectEditor editor) {
+    protected EditDialog edit(final IMObjectEditor editor) {
         T object = (T) editor.getObject();
         final boolean isNew = object.isNew();
         EditDialog dialog = createEditDialog(editor);
@@ -424,6 +425,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
         });
         GlobalContext.getInstance().setCurrent(object);
         dialog.show();
+        return dialog;
     }
 
     /**

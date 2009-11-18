@@ -18,25 +18,29 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
+import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.LocalClinicianContext;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -51,9 +55,9 @@ import java.util.Date;
 public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
     /**
-     * The appointment start time.
+     * The browser.
      */
-    private Date startTime;
+    private final AppointmentBrowser browser;
 
     /**
      * The check-in button.
@@ -68,11 +72,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
     /**
      * Constructs a new <tt>AppointmentCRUDWindow</tt>.
+     *
+     * @param browser the browser
      */
-    public AppointmentCRUDWindow() {
-        super(Archetypes.create(
-                "act.customerAppointment", Act.class,
-                Messages.get("workflow.scheduling.createtype")));
+    public AppointmentCRUDWindow(AppointmentBrowser browser) {
+        super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")));
+        this.browser = browser;
     }
 
     /**
@@ -80,33 +85,26 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     @Override
     public void create() {
-        if (GlobalContext.getInstance().getSchedule() != null) {
+        if (browser.getSelectedSchedule() != null && browser.getSelectedTime() != null) {
             super.create();
         }
     }
 
     /**
-     * Sets the start time for new appointments.
-     *
-     * @param startTime the start time. If <tt>null</tt>, specifies to use the
-     *                  default start time
-     */
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
-
-    /**
+     * /**
      * Edits an object.
      *
      * @param editor the object editor
+     * @return the edit dialog
      */
     @Override
-    protected void edit(IMObjectEditor editor) {
+    protected EditDialog edit(IMObjectEditor editor) {
+        Date startTime = browser.getSelectedTime();
         if (startTime != null && editor.getObject().isNew()
             && editor instanceof AppointmentActEditor) {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
-        super.edit(editor);
+        return super.edit(editor);
     }
 
     /**
@@ -124,6 +122,16 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 }
             });
         }
+        buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'X', new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onCut();
+            }
+        });
+        buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'V', new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onPaste();
+            }
+        });
     }
 
     /**
@@ -150,6 +158,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 buttons.add(checkOut);
             }
         }
+
         buttons.add(getOverTheCounterButton());
     }
 
@@ -208,6 +217,32 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             workflow.start();
         } else {
             onRefresh(getObject());
+        }
+    }
+
+    /**
+     * Invoked to cut an appointment.
+     */
+    private void onCut() {
+        PropertySet selected = browser.getSelected();
+        browser.setCut(selected);
+    }
+
+    /**
+     * Invoked to paste an appointment.
+     */
+    private void onPaste() {
+        Act appointment = browser.getAct(browser.getCut());
+        Entity schedule = browser.getSelectedSchedule();
+        Date startTime = browser.getSelectedTime();
+        if (appointment != null && schedule != null && startTime != null
+            && AppointmentStatus.PENDING.equals(appointment.getStatus())) {
+            browser.setCut(null);
+            AppointmentActEditor editor = new AppointmentActEditor(appointment, null, new DefaultLayoutContext());
+            editor.setSchedule(schedule);
+            editor.setStartTime(startTime); // will recalc end time
+            EditDialog dialog = edit(editor);
+            dialog.onOK(); // checks for overlapping appointments
         }
     }
 

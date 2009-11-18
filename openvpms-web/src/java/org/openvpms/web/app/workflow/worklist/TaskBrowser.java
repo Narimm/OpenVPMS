@@ -19,8 +19,6 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import echopointng.TableEx;
-import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -73,24 +71,13 @@ public class TaskBrowser extends ScheduleBrowser {
         if (worklist != null) {
             IMObjectReference taskRef = task.getObjectReference();
             ScheduleTableModel model = getModel();
-            List<Schedule> schedules = model.getSchedules();
-            for (int i = 0; i < schedules.size(); ++i) {
-                Schedule schedule = schedules.get(i);
-                IMObjectReference scheduleRef
-                        = schedule.getSchedule().getObjectReference();
-                if (scheduleRef.equals(worklist)) {
-                    List<PropertySet> events = schedule.getEvents();
-                    for (int j = 0; j < events.size(); ++j) {
-                        PropertySet event = events.get(j);
-                        IMObjectReference ref = event.getReference(
-                                ScheduleEvent.ACT_REFERENCE);
-                        if (ObjectUtils.equals(taskRef, ref)) {
-                            model.setSelectedCell(i, j);
-                            selected = event;
-                            break;
-                        }
-                    }
-
+            int column = model.getColumn(worklist);
+            if (column != -1) {
+                Schedule schedule = model.getSchedule(column);
+                int row = model.getRow(schedule, taskRef);
+                if (row != -1) {
+                    model.setSelectedCell(column, row);
+                    selected = model.getEvent(column, row);
                 }
             }
         }

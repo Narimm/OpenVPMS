@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.query;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -27,6 +28,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
@@ -59,11 +61,11 @@ public abstract class NameResultSet<T>
      *
      * @param archetypes   the archetypes to query
      * @param instanceName the instance name
-     * @param constraints  additional query constraints. May be
-     *                     <code<null</tt>
+     * @param constraints  additional query constraints. May be <tt>null</tt>
      * @param sort         the sort criteria. May be <tt>null</tt>
      * @param rows         the maximum no. of rows per page
      * @param distinct     if <tt>true</tt> filter duplicate rows
+     * @param executor     the query executor
      */
     public NameResultSet(ShortNameConstraint archetypes,
                          String instanceName, IConstraint constraints,
@@ -104,6 +106,17 @@ public abstract class NameResultSet<T>
             query.add(new NodeConstraint("name", instanceName));
         }
         return query;
+    }
+
+    /**
+     * Adds a reference constraint.
+     *
+     * @param query     the archetype query
+     * @param reference the reference to constrain the query on
+     */
+    @Override
+    protected void addReferenceConstraint(ArchetypeQuery query, IMObjectReference reference) {
+        query.add(new ObjectRefConstraint(archetypes.getAlias(), reference));
     }
 
     /**

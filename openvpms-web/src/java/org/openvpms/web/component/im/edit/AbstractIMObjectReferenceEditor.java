@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -42,7 +43,8 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -216,7 +218,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      *         otherwise <tt>false</tt>
      */
     public boolean validate(Validator validator) {
-        return (!selector.inSelect()) && super.validate(validator);
+        return (!selector.inSelect()) && super.validate(validator) && isValidReference(validator);
     }
 
     /**
@@ -322,8 +324,20 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      *
      * @return the current object, or <tt>null</tt> if there is none
      */
-    @SuppressWarnings("unchecked")
     private T updateSelector() {
+        T object = getObject();
+        selector.setObject(object);
+        return object;
+    }
+
+    /**
+     * Returns the object corresponding to the reference.
+     *
+     * @return the object, or <tt>null</tt> if the reference is <tt>null</tt> or the object no
+     *         longer exists
+     */
+    @SuppressWarnings("unchecked")
+    private T getObject() {
         Property property = getProperty();
         IMObjectReference reference = (IMObjectReference) property.getValue();
         T object = null;
@@ -332,7 +346,6 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                                                   property.getArchetypeRange(),
                                                   context);
         }
-        selector.setObject(object);
         return object;
     }
 
@@ -353,6 +366,29 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         } finally {
             addModifiableListener(propertyListener);
         }
+    }
+
+    /**
+     * Determines if the reference is valid.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the reference is valid, otherwise <tt>false</tt>
+     */
+    private boolean isValidReference(Validator validator) {
+        IMObjectReference reference = (IMObjectReference) getProperty().getValue();
+        boolean result = true;
+        if (reference != null && !reference.isNew()) {
+            T object = getObject();
+            if (object != null) {
+                Query<T> query = createQuery(null);
+                if (!query.selects(object)) {
+                    result = false;
+                    String message = Messages.get("imobject.invalidreference", object.getName());
+                    validator.add(this, new ValidatorError(getProperty(), message));
+                }
+            }
+        }
+        return result;
     }
 
 }

@@ -18,9 +18,11 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -77,6 +79,7 @@ public class Schedule {
      * @param schedule  the event schedule
      * @param startMins the schedule start time, as minutes since midnight
      * @param endMins   the schedule end time, as minutes since midnight
+     * @param slotSize  the schedule slot size, in minutes
      */
     public Schedule(Entity schedule, int startMins, int endMins, int slotSize) {
         this.schedule = schedule;
@@ -161,13 +164,41 @@ public class Schedule {
     }
 
     /**
+     * Returns the event given its reference.
+     *
+     * @param event the event reference
+     * @return the event, or <tt>null</tt> if it is not found
+     */
+    public PropertySet getEvent(IMObjectReference event) {
+        int index = indexOf(event);
+        return (index != -1) ? events.get(index) : null;
+    }
+    
+
+    /**
+     * Returns the index of an event, given its reference.
+     *
+     * @param event the event reference
+     * @return the index, or <tt>-1</tt> if the event is not found
+     */
+    public int indexOf(IMObjectReference event) {
+        for (int i = 0; i < events.size(); ++i) {
+            PropertySet set = events.get(i);
+            if (ObjectUtils.equals(event, set.getReference(ScheduleEvent.ACT_REFERENCE))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Determines if the schedule has an event that intersects the specified
      * event.
      *
      * @param event the event
      * @return <tt>true</tt> if the schedule has an intersecting event
      */
-    public boolean hasEvent(PropertySet event) {
+    public boolean hasIntersectingEvent(PropertySet event) {
         return Collections.binarySearch(events, event,
                                         IntersectComparator.INSTANCE) >= 0;
     }
@@ -263,11 +294,11 @@ public class Schedule {
             Date start2 = o2.getDate(ScheduleEvent.ACT_START_TIME);
             Date end2 = o2.getDate(ScheduleEvent.ACT_END_TIME);
             if (DateRules.compareTo(start1, start2) < 0
-                    && DateRules.compareTo(end1, start2) <= 0) {
+                && DateRules.compareTo(end1, start2) <= 0) {
                 return -1;
             }
             if (DateRules.compareTo(start1, end2) >= 0
-                    && DateRules.compareTo(end1, end2) > 0) {
+                && DateRules.compareTo(end1, end2) > 0) {
                 return 1;
             }
             return 0;

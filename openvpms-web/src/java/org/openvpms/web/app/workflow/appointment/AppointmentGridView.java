@@ -176,4 +176,16 @@ class AppointmentGridView extends AbstractAppointmentGrid {
     public int getLastSlot(int minutes) {
         return grid.getLastSlot(minutes);
     }
+
+    /**
+     * Returns the slot that a time falls in.
+     *
+     * @param time     the time
+     * @return the slot, or <tt>-1</tt> if the time doesn't intersect any slot
+     */
+    @Override
+    public int getSlot(Date time) {
+        int slot = grid.getSlot(time);
+        return (slot >= startSlot) ? slot - startSlot : -1;
+    }
 }
