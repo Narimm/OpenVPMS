@@ -24,13 +24,15 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.CharSetUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
@@ -40,6 +42,8 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
+
+import java.util.Iterator;
 
 
 /**
@@ -161,6 +165,29 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     public ResultSet<T> query(SortConstraint[] sort) {
         return createResultSet(sort);
+    }
+
+    /**
+     * Determines if the query selects a particular object.
+     *
+     * @param object the object to check
+     * @return <tt>true</tt> if the object is selected by the query
+     */
+    @Override
+    public boolean selects(T object) {
+        ResultSet<T> set = query();
+        if (set instanceof AbstractArchetypeServiceResultSet && object instanceof IMObject) {
+            IMObjectReference reference = ((IMObject) object).getObjectReference();
+            ((AbstractArchetypeServiceResultSet<T>) set).setReferenceConstraint(reference);
+            return set.hasNext();
+        }
+        Iterator<T> iter = new ResultSetIterator<T>(set);
+        while (iter.hasNext()) {
+            if (iter.next().equals(object)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

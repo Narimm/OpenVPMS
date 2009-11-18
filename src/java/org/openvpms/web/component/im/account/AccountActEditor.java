@@ -60,7 +60,7 @@ public abstract class AccountActEditor extends ActEditor {
     public boolean save() {
         Property status = getProperty("status");
         if (status != null && ActStatus.POSTED.equals(status.getValue())) {
-            setStartTime(new Date());
+            setStartTime(new Date(), true);
         }
         return super.save();
     }

@@ -18,17 +18,14 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
+import echopointng.BalloonHelp;
+import echopointng.layout.TableLayoutDataEx;
+import echopointng.table.TableColumnEx;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
-
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -43,9 +40,10 @@ import org.openvpms.web.component.util.BalloonHelpFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
-import echopointng.BalloonHelp;
-import echopointng.layout.TableLayoutDataEx;
-import echopointng.table.TableColumnEx;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -57,6 +55,7 @@ import echopointng.table.TableColumnEx;
 public abstract class ScheduleTableModel extends AbstractTableModel {
 
     public enum Highlight {
+
         EVENT, CLINICIAN, STATUS
     }
 
@@ -85,6 +84,16 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * The selected row.
      */
     private int selectedRow = -1;
+
+    /**
+     * The cut cell column.
+     */
+    private int cutColumn = -1;
+
+    /**
+     * The cut cell row.
+     */
+    private int cutRow = -1;
 
     /**
      * Determines cell colour.
@@ -123,6 +132,33 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     public List<Schedule> getSchedules() {
         return grid.getSchedules();
     }
+
+    /**
+     * Returns the column index of a schedule.
+     *
+     * @param scheduleRef the schedule reference
+     * @return the index of the schedule, or <tt>-1</tt> if the schedule isn't found
+     */
+    public int getColumn(IMObjectReference scheduleRef) {
+        for (Column column : getColumns()) {
+            if (column.getSchedule() != null) {
+                Entity schedule = column.getSchedule().getSchedule();
+                if (schedule.getObjectReference().equals(scheduleRef)) {
+                    return column.getModelIndex();
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the row of the specified event.
+     *
+     * @param schedule the schedule
+     * @param eventRef the event reference
+     * @return the row, or <tt>-1</tt> if the event is not found
+     */
+    public abstract int getRow(Schedule schedule, IMObjectReference eventRef);
 
     /**
      * Sets the clinician to display appointments for.
@@ -187,9 +223,58 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      *
      * @param column the column
      * @param row    the row
+     * @return <tt>true</tt> if the cell is selected
      */
     public boolean isSelectedCell(int column, int row) {
         return selectedColumn == column && selectedRow == row;
+    }
+
+    /**
+     * Sets the cut cell. This flags a cell as being 'cut', for cutting and pasting purposes.
+     *
+     * @param column the cut column, or <tt>-1</tt> to 'uncut' the cell
+     * @param row    the cut row, or <tt>-1</tt> to 'uncut' the cell
+     */
+    public void setCutCell(int column, int row) {
+        int oldColumn = cutColumn;
+        int oldRow = cutRow;
+        cutColumn = column;
+        cutRow = row;
+        if (oldColumn != -1 && oldRow != -1) {
+            fireTableCellUpdated(oldColumn, oldRow);
+        }
+        if (cutColumn != -1 && cutRow != -1) {
+            fireTableCellUpdated(cutColumn, cutRow);
+        }
+    }
+
+    /**
+     * Returns the cut column.
+     *
+     * @return the cut column, or <tt>-1</tt> if no cell is selected to be cut
+     */
+    public int getCutColumn() {
+        return cutColumn;
+    }
+
+    /**
+     * Returns the cut row.
+     *
+     * @return the cut row, or <tt>-1</tt> if no cell is selected to be cut
+     */
+    public int getCutRow() {
+        return cutRow;
+    }
+
+    /**
+     * Determines if a cell is cut.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return <tt>true</tt> if the cell is cut
+     */
+    public boolean isCutCell(int column, int row) {
+        return cutColumn == column && cutRow == row;
     }
 
     /**
@@ -335,7 +420,8 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Returns the event start time at the specified row.
      *
-     * @param row the row
+     * @param schedule the schedule
+     * @param row      the row
      * @return the start time. May be <tt>null</tt>
      */
     public Date getStartTime(Schedule schedule, int row) {
@@ -446,7 +532,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * Evaluates the view's displayExpression expression against the supplied
      * event. If no displayExpression is present, <tt>null</tt> is returned.
      * <p/>
-     * If the event has an {@link ScheduleEvent.ARRIVAL_TIME} property,
+     * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
      * a formatted string named <em>waiting</em> will be added to the set prior
      * to evaluation of the expression. This indicates the waiting time, and
      * is the difference between the arrival time and the current time.

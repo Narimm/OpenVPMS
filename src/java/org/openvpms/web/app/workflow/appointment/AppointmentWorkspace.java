@@ -72,7 +72,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * @return a new CRUD window
      */
     protected ScheduleCRUDWindow createCRUDWindow() {
-        return new AppointmentCRUDWindow();
+        return new AppointmentCRUDWindow((AppointmentBrowser) getBrowser());
     }
 
     /**
@@ -97,11 +97,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      */
     @Override
     protected void eventSelected(PropertySet event) {
-        // update selected start time
-        AppointmentCRUDWindow window = (AppointmentCRUDWindow) getCRUDWindow();
-        window.setStartTime(getBrowser().getSelectedTime());
-
-        // update the context work list
+        // update the context schedule
         updateContext();
         super.eventSelected(event);
     }

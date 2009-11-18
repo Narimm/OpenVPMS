@@ -111,4 +111,11 @@ public interface AppointmentGrid extends ScheduleEventGrid {
      */
     int getLastSlot(int minutes);
 
+    /**
+     * Returns the slot that a time falls in.
+     *
+     * @param time     the time
+     * @return the slot, or <tt>-1</tt> if the time doesn't intersect any slot
+     */
+    int getSlot(Date time);
 }

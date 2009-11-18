@@ -24,19 +24,21 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.util.PropertySet;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.QueryListener;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
 import org.openvpms.web.component.util.ButtonRow;
@@ -99,6 +101,16 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      */
     private Entity selectedSchedule;
 
+    /**
+     * The event selected to be cut. May be <tt>null</tt>
+     */
+    private PropertySet cut;
+
+    /**
+     * The last click time, to detect double click.
+     */
+    private Date lastClick;
+
 
     /**
      * Creates a new <tt>ScheduleBrowser</tt>.
@@ -138,6 +150,26 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      */
     public void setSelected(PropertySet object) {
         selected = object;
+    }
+
+    /**
+     * Returns the event selected to be cut.
+     *
+     * @return the cut event, or <tt>null</tt> if none has been selected to be cut.
+     */
+    public PropertySet getCut() {
+        return cut;
+    }
+
+    /**
+     * Sets the event selected to be cut.
+     *
+     * @param event the event to cut, or <tt>null</tt> to deselect the event
+     */
+    public void setCut(PropertySet event) {
+        cut = event;
+        updateCutSelection();
+
     }
 
     /**
@@ -225,6 +257,20 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
+     * Helper to return the act associated with an event.
+     *
+     * @param event the event. May be <tt>null</tt>
+     * @return the associated act, or <tt>null</tt> if <tt>event</tt> is null or has been deleted
+     */
+    public Act getAct(PropertySet event) {
+        if (event != null) {
+            IMObjectReference actRef = event.getReference(ScheduleEvent.ACT_REFERENCE);
+            return (Act) IMObjectHelper.getObject(actRef);
+        }
+        return null;
+    }
+
+    /**
      * Returns the table model.
      *
      * @return the table model. May be <tt>null</tt>
@@ -266,8 +312,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * @param grid the schedule event grid
      * @return the table model
      */
-    protected abstract ScheduleTableModel createTableModel(
-            ScheduleEventGrid grid);
+    protected abstract ScheduleTableModel createTableModel(ScheduleEventGrid grid);
 
     /**
      * Creates a new table.
@@ -299,9 +344,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         layoutQueryRow(row);
 
         Component column = ColumnFactory.create("WideCellSpacing", row);
-        SplitPane component = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL,
-                "ScheduleBrowser", column);
+        SplitPane component = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "ScheduleBrowser", column);
         if (getScheduleView() != null && table != null) {
             addTable(table, component);
         }
@@ -365,13 +408,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         if (model != null) {
             lastRow = model.getSelectedRow();
             lastColumn = model.getSelectedColumn();
-            if (lastRow != -1 && lastColumn != -1) {
-                PropertySet event = model.getEvent(lastColumn, lastRow);
-                if (event != null) {
-                    lastEventId = event.getReference(
-                            ScheduleEvent.ACT_REFERENCE);
-                }
-            }
+            lastEventId = getEventReference(lastColumn, lastRow);
         }
         model = createTableModel(grid);
         if (table == null) {
@@ -395,24 +432,45 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         model.setHighlight(query.getHighlight());
 
         if (reselect) {
+            boolean sameSchedules = ObjectUtils.equals(lastSchedules, results.keySet());
+            Date selectedDate = (selectedTime != null) ? DateRules.getDate(selectedTime) : null;
+
             // if the schedules and date haven't changed and there was no
             // previously selected object or the object hasn't changed,
             // reselect the selected cell
-            if (lastRow != -1 && lastColumn != -1
-                    && ObjectUtils.equals(lastSchedules, results.keySet())
-                    && lastColumn < model.getColumnCount()) {
-                Date selectedDate = (selectedTime != null)
-                        ? DateRules.getDate(selectedTime) : null;
-                PropertySet event = model.getEvent(lastColumn, lastRow);
-                IMObjectReference eventId = (event != null)
-                        ? event.getReference(ScheduleEvent.ACT_REFERENCE)
-                        : null;
+            if (lastRow != -1 && lastColumn != -1 && sameSchedules && lastColumn < model.getColumnCount()) {
+                IMObjectReference eventId = getEventReference(lastColumn, lastRow);
                 if (ObjectUtils.equals(selectedDate, query.getDate())
-                        && (lastEventId == null
-                        || ObjectUtils.equals(lastEventId, eventId))) {
+                    && (lastEventId == null || ObjectUtils.equals(lastEventId, eventId))) {
                     model.setSelectedCell(lastColumn, lastRow);
                 }
             }
+
+            updateCutSelection();
+        }
+    }
+
+    /**
+     * Updates the cut selection.
+     */
+    private void updateCutSelection() {
+        boolean found = false;
+        if (cut != null) {
+            IMObjectReference scheduleRef = cut.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
+            IMObjectReference eventRef = cut.getReference(ScheduleEvent.ACT_REFERENCE);
+            ScheduleTableModel model = getModel();
+            int column = model.getColumn(scheduleRef);
+            if (column != -1) {
+                Schedule schedule = model.getSchedule(column);
+                int row = model.getRow(schedule, eventRef);
+                if (row != -1) {
+                    model.setCutCell(column, row);
+                    found = true;
+                }
+            }
+        }
+        if (!found) {
+            model.setCutCell(-1, -1);
         }
     }
 
@@ -439,19 +497,21 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         int column = event.getColumn();
         int row = event.getRow();
         boolean doubleClick = false;
-        if (model.isSingleScheduleView()) {
-            // click the same row to get double click in single schedule view
-            if (model.getSelectedRow() == row) {
-                doubleClick = true;
-            }
-        } else {
-            // click the same cell to get double click in multi schedule view
-            if (model.isSelectedCell(column, row)) {
-                doubleClick = true;
+        if (isDoubleClick()) {
+            if (model.isSingleScheduleView()) {
+                // click the same row to get double click in single schedule view
+                if (model.getSelectedRow() == row) {
+                    doubleClick = true;
+                }
+            } else {
+                // click the same cell to get double click in multi schedule view
+                if (model.isSelectedCell(column, row)) {
+                    doubleClick = true;
+                }
             }
         }
         model.setSelectedCell(column, row);
-        selected = model.getEvent(column, row);
+        setSelected(model.getEvent(column, row));
         if (model.getAvailability(column, row) != Availability.UNAVAILABLE) {
             Schedule schedule = model.getSchedule(column);
             if (schedule != null) {
@@ -467,15 +527,13 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         }
         if (doubleClick) {
             if (selected == null) {
-                for (QueryBrowserListener<PropertySet> listener
-                        : getQueryListeners()) {
+                for (QueryBrowserListener<PropertySet> listener : getQueryListeners()) {
                     if (listener instanceof ScheduleBrowserListener) {
                         ((ScheduleBrowserListener) listener).create();
                     }
                 }
             } else {
-                for (QueryBrowserListener<PropertySet> listener
-                        : getQueryListeners()) {
+                for (QueryBrowserListener<PropertySet> listener : getQueryListeners()) {
                     if (listener instanceof ScheduleBrowserListener) {
                         ((ScheduleBrowserListener) listener).edit(selected);
                     }
@@ -490,11 +548,36 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
-     * Deselects the selected cell.
+     * Returns the reference of the event at the speciifed column and row.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the corresponding event reference, or <tt>null</tt> if none exists
      */
-    protected void clearSelection() {
-        selectedTime = null;
-        model.setSelectedCell(-1, -1);
+    private IMObjectReference getEventReference(int column, int row) {
+        IMObjectReference result = null;
+        if (column != -1 && row != -1) {
+            PropertySet event = model.getEvent(column, row);
+            if (event != null) {
+                result = event.getReference(ScheduleEvent.ACT_REFERENCE);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if the mouse has been clicked twice on the table.
+     * <p/>
+     * This implementation returns <tt>true</tt> if the table has been clicked twice within 2 seconds
+     *
+     * @return <tt>true</tt> if the mouse has been clicked twice
+     */
+    private boolean isDoubleClick() {
+        boolean result;
+        Date now = new Date();
+        result = (lastClick != null && (lastClick.getTime() + 2000) >= now.getTime());
+        lastClick = now;
+        return result;
     }
 
 }

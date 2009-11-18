@@ -38,23 +38,44 @@ import org.openvpms.web.component.util.KeyStrokeHelper;
 public class ShortcutButton extends ButtonEx {
 
     /**
-     * The shortcut key.
+     * The key code.
      */
-    String key;
+    private int code = -1;
+
 
     /**
-     * Constructs a new <tt>ShortcutButton</tt>.
+     * Constructs a <tt>ShortcutButton</tt>.
      */
     public ShortcutButton() {
     }
 
     /**
-     * Constructs a new <tt>ShortcutButton</tt>.
+     * Constructs a <tt>ShortcutButton</tt>.
      *
      * @param text the button text
      */
     public ShortcutButton(String text) {
         setText(text);
+    }
+
+    /**
+     * Sets the key code.
+     * <p/>
+     * This replaces any code that may have been specified by the button text.
+     *
+     * @param code the key code
+     */
+    public void setKeyCode(int code) {
+        this.code = code;
+    }
+
+    /**
+     * Returns the keycode for this button.
+     *
+     * @return the keycode for this button, or <tt>-1</tt> if none is present
+     */
+    public int getKeyCode() {
+        return code;
     }
 
     /**
@@ -65,28 +86,15 @@ public class ShortcutButton extends ButtonEx {
      */
     @Override
     public void setText(String text) {
-        key = ShortcutHelper.getShortcut(text);
-        if (key != null) {
-            XhtmlFragment fragment = new XhtmlFragment(
-                    ShortcutHelper.getHTML(text));
+        String key = ShortcutHelper.getShortcut(text);
+        if (!StringUtils.isEmpty(key)) {
+            XhtmlFragment fragment = new XhtmlFragment(ShortcutHelper.getHTML(text));
             setText(fragment);
+            char ch = key.toUpperCase().toCharArray()[0];
+            code = KeyStrokeHelper.getKeyCode(ch);
         } else {
             super.setText(text);
         }
-    }
-
-    /**
-     * Returns the keycode for this button.
-     *
-     * @return the keycode for this button, or <tt>-1</tt> if none is
-     *         present
-     */
-    public int getKeyCode() {
-        if (!StringUtils.isEmpty(key)) {
-            char code = key.toUpperCase().toCharArray()[0];
-            return KeyStrokeHelper.getKeyCode(code);
-        }
-        return -1;
     }
 
 }

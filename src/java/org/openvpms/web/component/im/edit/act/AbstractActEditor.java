@@ -90,15 +90,12 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Sets the act start time, temporarily disabling callbacks.
+     * Sets the act start time.
      *
      * @param time the start time
      */
     public void setStartTime(Date time) {
-        Property startTime = getProperty("startTime");
-        removeStartEndTimeListeners();
-        startTime.setValue(time);
-        addStartEndTimeListeners();
+        setStartTime(time, false);
     }
 
     /**
@@ -111,12 +108,12 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Sets the act end time, temporarily disabling callbacks.
+     * Sets the act end time.
      *
      * @param time the end time
      */
     public void setEndTime(Date time) {
-        setEndTime(time, true);
+        setEndTime(time, false);
     }
 
     /**
@@ -134,7 +131,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     /**
      * Helper to initialises a participant, if it exists and is empty.
      *
-     * @param name the participation property name
+     * @param name   the participation property name
+     * @param entity the entity reference. May be <tt>null</tt>
      */
     protected void initParticipant(String name, IMObjectReference entity) {
         Property property = getProperty(name);
@@ -267,8 +265,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      *         none exists or hasn't been created
      */
     @SuppressWarnings("unchecked")
-    protected <T extends Entity> ParticipationEditor<T>
-            getParticipationEditor(String name, boolean create) {
+    protected <T extends Entity> ParticipationEditor<T> getParticipationEditor(String name, boolean create) {
         ParticipationEditor<T> result = null;
         Editor editor = getEditor(name, create);
         if (editor instanceof ParticipationEditor) {
@@ -289,11 +286,27 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Sets the act start time.
+     *
+     * @param time    the start time
+     * @param disable if <tt>true</tt> disable the {@link #onStartTimeChanged} callback
+     */
+    protected void setStartTime(Date time, boolean disable) {
+        Property startTime = getProperty("startTime");
+        if (disable) {
+            removeStartEndTimeListeners();
+        }
+        startTime.setValue(time);
+        if (disable) {
+            addStartEndTimeListeners();
+        }
+    }
+
+    /**
      * Sets the act end time.
      *
      * @param time    the end time
-     * @param disable if <tt>true</tt> disable the {@link #onEndTimeChanged}
-     *                callback
+     * @param disable if <tt>true</tt> disable the {@link #onEndTimeChanged} callback
      */
     protected void setEndTime(Date time, boolean disable) {
         Property endTime = getProperty("endTime");
@@ -348,7 +361,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         Date end = getEndTime();
         if (start != null && end != null) {
             if (start.compareTo(end) > 0) {
-                setStartTime(end);
+                setStartTime(end, true);
             }
         }
     }
@@ -362,7 +375,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         Date end = getEndTime();
         if (start != null && end != null) {
             if (end.compareTo(start) < 0) {
-                setEndTime(start);
+                setEndTime(start,true);
             }
         }
     }

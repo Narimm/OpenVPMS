@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
@@ -40,10 +41,23 @@ import java.util.List;
 public class TaskTableModel extends ScheduleTableModel {
 
     /**
-     * Creates a new <tt>TaskTableModel</tt>.
+     * Constructs a <tt>TaskTableModel</tt>.
+     *
+     * @param grid the task grid
      */
     public TaskTableModel(TaskGrid grid) {
         super(grid);
+    }
+
+    /**
+     * Returns the row of the specified event.
+     *
+     * @param schedule the schedule
+     * @param eventRef the event reference
+     * @return the row, or <tt>-1</tt> if the event is not found
+     */
+    public int getRow(Schedule schedule, IMObjectReference eventRef) {
+        return schedule.indexOf(eventRef);
     }
 
     /**

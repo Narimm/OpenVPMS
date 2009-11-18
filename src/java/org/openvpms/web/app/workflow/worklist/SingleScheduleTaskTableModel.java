@@ -24,6 +24,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
@@ -100,6 +101,17 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
      */
     public SingleScheduleTaskTableModel(TaskGrid grid) {
         super(grid);
+    }
+
+    /**
+     * Returns the row of the specified event.
+     *
+     * @param schedule the schedule
+     * @param eventRef the event reference
+     * @return the row, or <tt>-1</tt> if the event is not found
+     */
+    public int getRow(Schedule schedule, IMObjectReference eventRef) {
+        return schedule.indexOf(eventRef);
     }
 
     /**

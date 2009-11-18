@@ -208,7 +208,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         for (int i = 0; i < columns.size(); ++i) {
             column = columns.get(i);
             if (column.getSchedule().equals(schedule)) {
-                if (column.hasEvent(set)) {
+                if (column.hasIntersectingEvent(set)) {
                     match = column;
                     index = i;
                 } else {

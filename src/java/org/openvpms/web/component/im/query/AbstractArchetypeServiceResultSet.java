@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -30,6 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.List;
@@ -59,6 +61,11 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * The sort criteria. May be <tt>null</tt>.
      */
     private SortConstraint[] sort;
+
+    /**
+     * The reference to constrain results to. May be <tt>null</tt>
+     */
+    private IMObjectReference reference;
 
     /**
      * The query executor.
@@ -229,6 +236,24 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     }
 
     /**
+     * Sets a reference to constrain the query on.
+     *
+     * @param reference the reference. May be <tt>null</tt>
+     */
+    public void setReferenceConstraint(IMObjectReference reference) {
+        this.reference = reference;
+    }
+
+    /**
+     * Returns the reference to constrain the query on.
+     *
+     * @return the reference. May be <tt>null</tt>
+     */
+    public IMObjectReference getReferenceConstraint() {
+        return reference;
+    }
+
+    /**
      * Sets the sort criteria.
      *
      * @param sort the sort criteria. May be <tt>null</tt>
@@ -273,8 +298,21 @@ public abstract class AbstractArchetypeServiceResultSet<T>
         if (constraints != null) {
             query.add(constraints);
         }
+        if (reference != null) {
+            addReferenceConstraint(query, reference);
+        }
         addSortConstraints(query);
         return query;
+    }
+
+    /**
+     * Adds a reference constraint.
+     *
+     * @param query     the archetype query
+     * @param reference the reference to constrain the query on
+     */
+    protected void addReferenceConstraint(ArchetypeQuery query, IMObjectReference reference) {
+        query.add(new ObjectRefConstraint(reference));
     }
 
     /**

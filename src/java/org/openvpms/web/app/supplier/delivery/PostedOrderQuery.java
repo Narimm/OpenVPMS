@@ -58,6 +58,8 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
 
     /**
      * Constructs a new <tt>PostedOrderQuery</tt>.
+     *
+     * @param includeDateRange if <tt>true</tt> include the date range
      */
     public PostedOrderQuery(boolean includeDateRange) {
         super(ACTS, null, FinancialAct.class);
@@ -115,7 +117,7 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
      * @param sort         the sort criteria
      * @return a new result set
      */
-    protected ResultSet<FinancialAct> createResultSet(
+    protected ActResultSet<FinancialAct> createResultSet(
             ParticipantConstraint[] participants, SortConstraint[] sort) {
         return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
                                               participants, null, null,

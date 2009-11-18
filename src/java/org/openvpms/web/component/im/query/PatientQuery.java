@@ -284,10 +284,9 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
             if (TypeHelper.isA(relationship,
                                "entityRelationship.patientOwner")) {
                 if (source.equals(relationship.getSource()) &&
-                        ((relationship.getActiveEndTime() == null) ||
-                                (relationship.getActiveEndTime().after(
-                                        new Date(System.currentTimeMillis())))))
-                {
+                    ((relationship.getActiveEndTime() == null) ||
+                     (relationship.getActiveEndTime().after(
+                             new Date(System.currentTimeMillis()))))) {
                     Party object = (Party) IMObjectHelper.getObject(
                             relationship.getTarget());
                     if (object != null) {

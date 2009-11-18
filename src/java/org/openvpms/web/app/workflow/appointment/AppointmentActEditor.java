@@ -94,7 +94,7 @@ public class AppointmentActEditor extends AbstractActEditor {
             Date scheduleDate = context.getContext().getScheduleDate();
             startTime = getDefaultStartTime(scheduleDate);
 
-            setStartTime(startTime);
+            setStartTime(startTime, true);
         }
 
         startTimeField = DateTimeFieldFactory.create(getProperty("startTime"));
@@ -109,6 +109,18 @@ public class AppointmentActEditor extends AbstractActEditor {
             }
         });
         addStartEndTimeListeners();
+    }
+
+    /**
+     * Sets the schedule.
+     *
+     * @param schedule the schedule
+     */
+    public void setSchedule(Entity schedule) {
+        setParticipant("schedule", schedule);
+        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
+        editor.setSchedule(schedule);
+        calculateEndTime();
     }
 
     /**

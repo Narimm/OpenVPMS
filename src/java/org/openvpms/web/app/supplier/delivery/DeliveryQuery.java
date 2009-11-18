@@ -26,7 +26,6 @@ import org.openvpms.web.app.supplier.SupplierActQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 
@@ -82,7 +81,7 @@ public class DeliveryQuery extends SupplierActQuery<FinancialAct> {
      * @param sort         the sort criteria
      * @return a new result set
      */
-    protected ResultSet<FinancialAct> createResultSet(
+    protected ActResultSet<FinancialAct> createResultSet(
             ParticipantConstraint[] participants, SortConstraint[] sort) {
         return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
                                               participants, getFrom(), getTo(),

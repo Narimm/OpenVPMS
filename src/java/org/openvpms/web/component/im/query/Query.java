@@ -95,6 +95,14 @@ public interface Query<T> extends Iterable<T> {
     ResultSet<T> query(SortConstraint[] sort);
 
     /**
+     * Determines if the query selects a particular object.
+     *
+     * @param object the object to check
+     * @return <tt>true</tt> if the object is selected by the query
+     */
+    boolean selects(T object);
+
+    /**
      * Performs the query using the default sort constraint (if any), and
      * adapts the results to an iterator.
      *
@@ -138,7 +146,7 @@ public interface Query<T> extends Iterable<T> {
     /**
      * Sets the minimum length of a name before queries can be performed.
      *
-     * @param length
+     * @param length the minimum length
      */
     void setNameMinLength(int length);
 
@@ -172,7 +180,7 @@ public interface Query<T> extends Iterable<T> {
     void setDistinct(boolean distinct);
 
     /**
-     * Determines if dusplicate rows should be filtered.
+     * Determines if duplicate rows should be filtered.
      *
      * @return <tt>true</tt> if duplicate rows should be removed;
      *         otherwise <tt>false</tt>

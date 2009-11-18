@@ -21,7 +21,9 @@ package org.openvpms.web.app.workflow.appointment;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -44,6 +46,8 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
 
     /**
      * Creates a new <tt>AppointmentTableModel</tt>.
+     *
+     * @param grid the appointment grid
      */
     public AppointmentTableModel(AppointmentGrid grid) {
         super(grid);
@@ -67,6 +71,21 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
     @Override
     public AppointmentGrid getGrid() {
         return (AppointmentGrid) super.getGrid();
+    }
+
+    /**
+     * Returns the row of the specified event.
+     *
+     * @param schedule the schedule
+     * @param eventRef the event reference
+     * @return the row, or <tt>-1</tt> if the event is not found
+     */
+    public int getRow(Schedule schedule, IMObjectReference eventRef) {
+        PropertySet event = schedule.getEvent(eventRef);
+        if (event != null) {
+            return getGrid().getSlot(event.getDate(ScheduleEvent.ACT_START_TIME));
+        }
+        return -1;
     }
 
     /**

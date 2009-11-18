@@ -43,7 +43,7 @@ public class TableHelper {
     /**
      * Helper to ensure that empty cells render with non-zero height.
      */
-    public static final String SPACER = "<br/>";
+    public static final String SPACER = "<div>&#160;</div>";
 
     /**
      * Helper to return an <tt>XhtmlFragment</tt> for text.
