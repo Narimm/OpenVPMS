@@ -102,7 +102,7 @@ public class LoaderAdapter {
                 throw new KettleException(msg);
             }
         }
-        for (int i = 0; i < row.length; ++i) {
+        for (int i = 0; i < metaData.size(); ++i) {
             valueMeta = metaData.getValueMeta(i);
             Object value = getValue(valueMeta, row[i]);
             mapRow.add(valueMeta.getName(), value);
