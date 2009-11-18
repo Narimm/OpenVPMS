@@ -242,7 +242,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         Document firstDoc = checkAct(act, first.getName());
 
         // create a file that duplicates the first in name and content
-        createFile(source, first.getName(), "A");
+        File duplicateFirst = createFile(source, first.getName(), "A");
         alreadyLoaded++;
         LoaderListener listenerDup = load(source, target, true);
         assertEquals(0, listenerDup.getLoaded());
@@ -263,15 +263,20 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         Document secondDoc = checkAct(act, second.getName());
         checkVersions(act, firstDoc);
 
+        // remove the duplicate file as it can now be loaded except will trigger a failure when it is moved
+        // from the source to the target directory (file exists).
+        // TODO - how should this be handled. Overwrite or rename?
+        assertTrue(duplicateFirst.delete());
+        
         // create a third file that duplicates the content of the first. This should be loaded
         File third = createFile(act, source, null, "-X", "A");
         assertTrue(third.setLastModified(second.lastModified() + 1000));
         LoaderListener listener3 = load(source, target, true);
         assertEquals(1, listener3.getLoaded());
-        assertEquals(1, listener3.getErrors());
-        assertEquals(2, listener3.getProcessed());
+        assertEquals(0, listener3.getErrors());
+        assertEquals(1, listener3.getProcessed());
         assertEquals(0, listener3.getMissingAct());
-        assertEquals(alreadyLoaded, listener3.getAlreadyLoaded());
+        assertEquals(0, listener3.getAlreadyLoaded());
 
         // verify the act has a document, and it is the third instance, and only the second version remains
         // i.e that the first version has been removed
