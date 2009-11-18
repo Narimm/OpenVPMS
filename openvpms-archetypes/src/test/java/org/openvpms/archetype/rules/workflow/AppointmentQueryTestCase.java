@@ -111,6 +111,8 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
                          set.get(ScheduleEvent.CLINICIAN_REFERENCE));
             assertEquals(clinicians[i].getName(),
                          set.get(ScheduleEvent.CLINICIAN_NAME));
+            assertEquals(schedule.getObjectReference(), set.get(ScheduleEvent.SCHEDULE_REFERENCE));
+            assertEquals(schedule.getName(), set.get(ScheduleEvent.SCHEDULE_NAME));
             assertEquals(appointmentTypes[i].getObjectReference(),
                          set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
             assertEquals(appointmentTypes[i].getName(),

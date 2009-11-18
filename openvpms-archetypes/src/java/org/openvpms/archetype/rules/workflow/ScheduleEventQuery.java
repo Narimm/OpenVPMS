@@ -84,9 +84,10 @@ abstract class ScheduleEventQuery {
     /**
      * Creates a new <tt>ScheduleEventQuery</tt>.
      *
-     * @param schedule the schedule
-     * @param from     the 'from' start time
-     * @param to       the 'to' start time
+     * @param schedule       the schedule
+     * @param from           the 'from' start time
+     * @param to             the 'to' start time
+     * @param eventShortName the event archetype short name
      */
     public ScheduleEventQuery(Entity schedule, Date from, Date to,
                               String eventShortName) {
@@ -97,10 +98,11 @@ abstract class ScheduleEventQuery {
     /**
      * Creates a new <tt>ScheduleEventQuery</tt>.
      *
-     * @param schedule the schedule
-     * @param from     the 'from' start time
-     * @param to       the 'to' start time
-     * @param service  the archetype service
+     * @param schedule       the schedule
+     * @param from           the 'from' start time
+     * @param to             the 'to' start time
+     * @param eventShortName the event archetype short name
+     * @param service        the archetype service
      */
     public ScheduleEventQuery(Entity schedule, Date from, Date to,
                               String eventShortName,
@@ -180,6 +182,8 @@ abstract class ScheduleEventQuery {
     /**
      * Creates a new query.
      *
+     * @param from the from date
+     * @param to   the to date
      * @return the query
      */
     protected IArchetypeQuery createQuery(Date from, Date to) {
@@ -229,6 +233,8 @@ abstract class ScheduleEventQuery {
         result.set(ScheduleEvent.CUSTOMER_NAME, null);
         result.set(ScheduleEvent.PATIENT_REFERENCE, null);
         result.set(ScheduleEvent.PATIENT_NAME, null);
+        result.set(ScheduleEvent.SCHEDULE_REFERENCE, schedule.getObjectReference());
+        result.set(ScheduleEvent.SCHEDULE_NAME, schedule.getName());
         result.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, null);
         result.set(ScheduleEvent.SCHEDULE_TYPE_NAME, null);
         result.set(ScheduleEvent.CLINICIAN_REFERENCE, null);

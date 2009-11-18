@@ -251,6 +251,10 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
                      set.get(ScheduleEvent.CLINICIAN_NAME));
         assertEquals(bean.getNodeParticipantRef("appointmentType"),
                      set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
+        assertEquals(bean.getNodeParticipantRef("schedule"),
+                     set.get(ScheduleEvent.SCHEDULE_REFERENCE));
+        assertEquals(bean.getNodeParticipant("schedule").getName(),
+                     set.get(ScheduleEvent.SCHEDULE_NAME));
         assertEquals(bean.getNodeParticipant("appointmentType").getName(),
                      set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
         assertEquals(bean.getDate("arrivalTime"),
