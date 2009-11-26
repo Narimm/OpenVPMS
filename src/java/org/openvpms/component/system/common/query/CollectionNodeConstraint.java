@@ -33,6 +33,11 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 public class CollectionNodeConstraint extends JoinConstraint {
 
     /**
+     * The type name alias. May be <tt>null</tt>.
+     */
+    private String alias;
+
+    /**
      * The node name.
      */
     private final String nodeName;
@@ -126,14 +131,29 @@ public class CollectionNodeConstraint extends JoinConstraint {
      * @param nodeName   the node name, optionaly prefixed by the type alias
      * @param constraint the archetype constraint to use for the collection node
      */
-    public CollectionNodeConstraint(String nodeName,
-                                    BaseArchetypeConstraint constraint) {
+    public CollectionNodeConstraint(String nodeName, BaseArchetypeConstraint constraint) {
         super(constraint);
         if (StringUtils.isEmpty(nodeName)) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);
         }
-        this.nodeName = nodeName;
+        int index = nodeName.indexOf(".");
+        if (index != -1) {
+            this.alias = nodeName.substring(0, index);
+            this.nodeName = nodeName.substring(index + 1);
+        } else {
+            this.alias = constraint.getAlias();
+            this.nodeName = nodeName;
+        }
+    }
+    
+    /**
+     * Returns the type name alias.
+     *
+     * @return the type name alias. May be <tt>null</tt>
+     */
+    public String getAlias() {
+        return alias;
     }
 
     /**

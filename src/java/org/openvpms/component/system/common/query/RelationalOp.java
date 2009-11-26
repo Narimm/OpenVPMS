@@ -24,7 +24,9 @@ package org.openvpms.component.system.common.query;
  * @version  $LastChangedDate$
  */
 public enum RelationalOp {
-    IsNULL(0),
+    @Deprecated IsNULL(0),
+    IS_NULL(0),
+    NOT_NULL(0),
     EQ(1),
     NE(1),
     LT(1),
