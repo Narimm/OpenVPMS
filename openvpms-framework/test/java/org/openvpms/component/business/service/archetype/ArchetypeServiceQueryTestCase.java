@@ -18,14 +18,15 @@
 
 package org.openvpms.component.business.service.archetype;
 
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.LookupUtil;
-import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -67,7 +68,7 @@ public class ArchetypeServiceQueryTestCase
      * Test the query by name in the lookup entity. This will support
      * OVPMS-35.
      */
-    public void testOVPMS35() throws Exception {
+    public void testOVPMS35() {
         ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Belarus"));
@@ -84,8 +85,7 @@ public class ArchetypeServiceQueryTestCase
     /**
      * Test query by name with wildcard.
      */
-    public void testGetByCodeWithWildcard()
-            throws Exception {
+    public void testGetByCodeWithWildcard() {
         ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
@@ -102,8 +102,7 @@ public class ArchetypeServiceQueryTestCase
     /**
      * Test query by name with wild in short name.
      */
-    public void testGetCodeWithWildCardShortName()
-            throws Exception {
+    public void testGetCodeWithWildCardShortName() {
         ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false,
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
@@ -120,8 +119,7 @@ public class ArchetypeServiceQueryTestCase
     /**
      * Test query by name with wild in short name and an order clause.
      */
-    public void testGetCodeWithWildCardShortNameAndOrdered()
-            throws Exception {
+    public void testGetCodeWithWildCardShortNameAndOrdered() {
         ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false, true)
                 .add(new NodeConstraint("name", RelationalOp.EQ, "Bel*"))
                 .add(new NodeSortConstraint("name", true));
@@ -136,27 +134,82 @@ public class ArchetypeServiceQueryTestCase
     }
 
     /**
-     * Test OVPMS245
+     * Tests product queries constrained by a species classification.
+     * <p/>
+     * This should return all products that have a canine species classification, or
+     * no species classification.
+     * <p/>
+     * This tests the fix for OBF-20 (was OVPMS-245)
      */
-    public void testOVPMS245()
-            throws Exception {
-        ArchetypeQuery query = new ArchetypeQuery(
-                new ShortNameConstraint("product.product", false,
-                                        true))
-                .add(new CollectionNodeConstraint("classifications", true)
-                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
-                        .add(new OrConstraint()
-                        .add(new ArchetypeNodeConstraint(
-                                RelationalOp.IsNULL))
-                        .add(new AndConstraint()
-                        .add(new ArchetypeNodeConstraint(RelationalOp.EQ,
-                                                         "lookup.species"))
-                        .add(new NodeConstraint("name", RelationalOp.EQ,
-                                                "Canine"))
-                        .add(new NodeSortConstraint("name", true)))));
+    public void testGetProductBySpecies() {
+        Lookup canine = LookupUtil.createLookup(service, "lookup.species", "CANINE");
+        Lookup feline = LookupUtil.createLookup(service, "lookup.species", "FELINE");
+        service.save(canine);
+        service.save(feline);
 
-        IPage<IMObject> page = service.get(query);
-        assertNotNull(page);
+        Product canineProduct = createProduct(); // a product for canines only
+        canineProduct.addClassification(canine);
+        service.save(canineProduct);
+
+        Product felineProduct = createProduct(); // a product for felines only
+        felineProduct.addClassification(feline);
+        service.save(felineProduct);
+
+        Product bothProduct = createProduct();  // a product for both canines and felines
+        bothProduct.addClassification(canine);
+        bothProduct.addClassification(feline);
+        service.save(bothProduct);
+
+        Product genericProduct = createProduct(); // a product foro all pets
+        service.save(genericProduct);
+
+        ArchetypeQuery query = new ArchetypeQuery("product.product", false, false)
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS)
+                .add(new CollectionNodeConstraint("c.classifications")
+                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
+                        .add(new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.species")))
+                .add(new OrConstraint()
+                        .add(new NodeConstraint("c.code", RelationalOp.EQ, canine.getCode()))
+                        .add(new NodeConstraint("c.code", RelationalOp.IS_NULL)));
+
+        List<IMObject> objects = service.get(query).getResults();
+        assertTrue(objects.contains(canineProduct));
+        assertFalse(objects.contains(felineProduct));
+        assertTrue(objects.contains(bothProduct));
+        assertTrue(objects.contains(genericProduct));
+    }
+
+    public void testQueryEntityByClassificationAndId() {
+        Party person1 = createPerson();
+        person1.addIdentity(createIdentity("IDENT1"));
+        service.save(person1);
+
+        Party person2 = createPerson();
+        person1.addIdentity(createIdentity("IDENT2"));
+        service.save(person2);
+
+        Party person3 = createPerson();
+        person3.addIdentity(createIdentity("IDENT12"));
+        service.save(person3);
+
+        ArchetypeQuery query = new ArchetypeQuery("party.person", false, false)
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS)
+                .add(new CollectionNodeConstraint("i.identities", "entityIdentity.personAlias", false, false)
+                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
+                        .add(new NodeConstraint("identity", "IDENT1*")))
+                .add(new OrConstraint()
+                        .add(new NodeConstraint("id", person1.getId()))
+                        .add(new NodeConstraint("i.identity", RelationalOp.NOT_NULL)));
+        List<IMObject> objects = service.get(query).getResults();
+        assertTrue(objects.contains(person1));
+        assertFalse(objects.contains(person2));
+        assertTrue(objects.contains(person3));
+    }
+
+    private EntityIdentity createIdentity(String identity) {
+        EntityIdentity result = (EntityIdentity) service.create("entityIdentity.personAlias");
+        result.setIdentity(identity);
+        return result;
     }
 
     /**
@@ -202,10 +255,11 @@ public class ArchetypeServiceQueryTestCase
         // verify the values of the contact node. If the classification hasn't
         // been loaded, a LazyInitializationException will be raised by
         // hibernate
+        @SuppressWarnings("unchecked")
         Collection<Contact> contacts
                 = (Collection<Contact>) nodes.get("contacts");
         assertEquals(1, contacts.size());
-        contact = contacts.toArray(new Contact[0])[0];
+        contact = contacts.toArray(new Contact[contacts.size()])[0];
         assertEquals("03", contact.getDetails().get("areaCode"));
         assertEquals("0123456789",
                      contact.getDetails().get("telephoneNumber"));
@@ -260,7 +314,7 @@ public class ArchetypeServiceQueryTestCase
         // verify the values of the contact node. If the classification hasn't
         // been loaded, a LazyInitializationException will be raised by
         // hibernate
-        Contact contact2 = contacts.toArray(new Contact[0])[0];
+        Contact contact2 = contacts.toArray(new Contact[contacts.size()])[0];
         assertEquals("03", contact2.getDetails().get("areaCode"));
         assertEquals("0123456789",
                      contact2.getDetails().get("telephoneNumber"));
@@ -304,7 +358,7 @@ public class ArchetypeServiceQueryTestCase
         petBean.setValue("breed", "Australian Terrier");
         bean.addRelationship("entityRelationship.animalOwner", pet);
 
-        service.save(Arrays.asList( person, pet));
+        service.save(Arrays.asList(person, pet));
 
         ShortNameConstraint partyPerson
                 = new ShortNameConstraint("person", "party.person");
@@ -373,6 +427,17 @@ public class ArchetypeServiceQueryTestCase
         bean.setValue("lastName", "Anderson");
         bean.setValue("title", "MR");
         return person;
+    }
+
+    /**
+     * Helper to create a product of type <em>product.product</em>.
+     *
+     * @return a new product
+     */
+    private Product createProduct() {
+        Product product = (Product) service.create("product.product");
+        product.setName("XProduct-" + System.currentTimeMillis());
+        return product;
     }
 
 }
