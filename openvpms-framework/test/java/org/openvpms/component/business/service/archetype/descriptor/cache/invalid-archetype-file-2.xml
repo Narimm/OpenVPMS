@@ -1,5 +1,0 @@
-<archetypes>
-  <archetype className="org.openvpms.component.business.domain.im.party.Party">
-    <node />
-  </archetype>
-</archetypes>

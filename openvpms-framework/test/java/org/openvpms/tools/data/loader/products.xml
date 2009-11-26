@@ -1,7 +1,0 @@
-<archetype>
-    <data id="P1" archetype="product.product" name="Troy 7-Dust 100g">
-        <data collection="identities" archetype="entityIdentity.code" code="7DUST1"/>
-        <data collection="productPrices" archetype="product.productPrice" name="special"
-              price="0.10" fromDate="2008-01-01 12:00:00 GMT" thruDate="2008-06-01 12:00:00 GMT"/>
-    </data>
-</archetype>
