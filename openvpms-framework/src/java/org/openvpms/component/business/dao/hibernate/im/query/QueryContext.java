@@ -26,17 +26,14 @@ import java.util.Stack;
 public class QueryContext {
 
     /**
-     * The default select clause part of the hql query. This is used if no
-     * select constraints are specified.
+     * The select clause.
      */
-    private StringBuffer defaultSelectClause = new StringBuffer("select ");
-
-    private int initSelectClauseLen = defaultSelectClause.length();
+    private StringBuilder selectClause = new StringBuilder("select ");
 
     /**
-     * The select clause used when select constraints are specified
+     * The default select name, if none are specified.
      */
-    private StringBuffer selectClause = new StringBuffer("select ");
+    private String defaultSelect;
 
     /**
      * The qualified names in the select clause.
@@ -49,24 +46,23 @@ public class QueryContext {
     private List<String> refSelectNames = new ArrayList<String>();
 
     /**
-     * The from clause part of the hql query
-     */
-    private StringBuilder fromClause = new StringBuilder("from ");
-
-    private int initFromClauseLen = fromClause.length();
-
-    /**
      * The where clause part of the hql query
      */
-    private StringBuilder whereClause = new StringBuilder("where ");
+    private Clause whereClause = new Clause();
 
-    private int initWhereClauseLen = whereClause.length();
+    /**
+     * The from clauses.
+     */
+    private List<FromClause> fromClauses = new ArrayList<FromClause>();
 
     /**
      * The ordered clause part of the hql query
      */
-    private StringBuffer orderedClause = new StringBuffer(" order by ");
+    private StringBuilder orderedClause = new StringBuilder(" order by ");
 
+    /**
+     * The initial order length.
+     */
     private int initOrderedClauseLen = orderedClause.length();
 
     /**
@@ -90,22 +86,14 @@ public class QueryContext {
     private NameAllocator paramNames = new NameAllocator();
 
     /**
-     * a stack of parameters while processing the {@link ArchetypeQuery}
+     * a stack of parameters while processing the {@link ArchetypeQuery}.
      */
     private Stack<String> varStack = new Stack<String>();
 
     /**
-     * A stack of the current logical operators for the where clause.
+     * A stack of join types.
      */
-    private Stack<Counter<LogicalOperator>> whereOpStack = new Stack<Counter<LogicalOperator>>();
-
-    /**
-     * A stack of the current logical operators for the from clause.
-     */
-    private Stack<Counter<LogicalOperator>> fromOpStack = new Stack<Counter<LogicalOperator>>();
-
-    private Stack<Counter<JoinConstraint.JoinType>> joinStack
-            = new Stack<Counter<JoinConstraint.JoinType>>();
+    private Stack<Counter<JoinConstraint.JoinType>> joinStack = new Stack<Counter<JoinConstraint.JoinType>>();
 
     /**
      * Holds a reference to the parameters and the values used to process
@@ -114,22 +102,20 @@ public class QueryContext {
 
 
     /**
-     * Default constructor. Initialize the operational stack
+     * Default constructor.
      */
     QueryContext() {
         this(false);
     }
 
     /**
-     * Constructs a <code>QueryContext</code>.
+     * Constructs a <tt>QueryContext</tt>.
      *
-     * @param distinct if <code>true</code> filter duplicate rows
+     * @param distinct if <tt>true</tt> filter duplicate rows
      */
     QueryContext(boolean distinct) {
         if (distinct) {
-            defaultSelectClause.append("distinct ");
             selectClause.append("distinct ");
-            initSelectClauseLen = defaultSelectClause.length();
         }
     }
 
@@ -139,17 +125,28 @@ public class QueryContext {
      * @return the HQL query string
      */
     public String getQueryString() {
-        StringBuffer result = new StringBuffer();
-        if (selectClause.length() != initSelectClauseLen) {
-            result.append(selectClause).append(" ");
-        } else if (defaultSelectClause.length() != initSelectClauseLen) {
-            result.append(defaultSelectClause).append(" ");
+        StringBuilder result = new StringBuilder(selectClause);
+        if (selectNames.isEmpty()) {
+            result.append(defaultSelect);
         }
-        if (fromClause.length() != initFromClauseLen) {
-            result.append(fromClause).append(" ");
+        if (!fromClauses.isEmpty()) {
+            result.append(" from ");
+            boolean first = true;
+            for (FromClause from : fromClauses) {
+                if (!first) {
+                    if (from.needsComma()) {
+                        result.append(", ");
+                    } else {
+                        result.append(" ");
+                    }
+                } else {
+                    first = false;
+                }
+                result.append(from);
+            }
         }
-        if (whereClause.length() != initWhereClauseLen) {
-            result.append(whereClause);
+        if (!whereClause.isEmpty()) {
+            result.append(" where ").append(whereClause);
         }
         if (orderedClause.length() != initOrderedClauseLen) {
             result.append(orderedClause);
@@ -213,61 +210,25 @@ public class QueryContext {
      * @param op the operator to push
      * @return the operator context
      */
-    Object pushLogicalOperator(LogicalOperator op) {
-        Stack<Counter<LogicalOperator>> stack;
-        StringBuilder clause;
-        boolean append = true;
-        if (isJoin()) {
-            if (joinStack.peek().count == 0) {
-                fromClause.append(" with ");
-                append = false;
-            }
-            joinStack.peek().count++;
-
-            clause = fromClause;
-            stack = fromOpStack;
-        } else {
-            clause = whereClause;
-            stack = whereOpStack;
-        }
-
-        if (append) {
-            appendLogicalOperator();
-        }
-        clause.append("(");
-        Counter<LogicalOperator> state = new Counter<LogicalOperator>(op);
-        stack.push(state);
-
-        return state;
+    OpState pushLogicalOperator(LogicalOperator op) {
+        Clause clause = getClause();
+        return new OpState(clause, clause.push(op));
     }
 
-    /**
-     * Pop the logical operator on the stack
-     *
-     * @return LogicalOperator
-     */
-    LogicalOperator popLogicalOperator(Object state) {
-        Counter<LogicalOperator> marker = (Counter<LogicalOperator>) state;
-        Stack<Counter<LogicalOperator>> stack;
-        StringBuilder clause;
-        if (isJoin()) {
-            stack = fromOpStack;
-            clause = fromClause;
-        } else {
-            stack = whereOpStack;
-            clause = whereClause;
+    public static class OpState {
+
+        private final Clause clause;
+
+        private final Counter<LogicalOperator> counter;
+
+        private OpState(Clause clause, Counter<LogicalOperator> counter) {
+            this.clause = clause;
+            this.counter = counter;
         }
-        if (stack.contains(marker)) {
-            Counter<LogicalOperator> top = null;
-            while (top != marker) {
-                top = stack.pop();
-                if (top.count > 0) {
-                    clause.append(")");
-                }
-            }
-            return top.operator;
+
+        public void pop() {
+            clause.pop(counter);
         }
-        return null;
     }
 
     /**
@@ -280,16 +241,17 @@ public class QueryContext {
         String alias = addTypeSet(types, types.getAlias());
         popJoin();
 
-        boolean first = typeStack.empty();
-        if (!first) {
-            fromClause.append(" inner join ");
-        }
+
+        boolean first = typeStack.isEmpty();
+        FromClause fromClause;
         if (first) {
-            defaultSelectClause.append(alias);
+            fromClause = new FromClause(types.getClassName(), alias);
+            defaultSelect = alias;
+        } else {
+            fromClause = new FromClause(JoinType.InnerJoin, types.getClassName(), alias);
         }
-        fromClause.append(types.getClassName());
-        fromClause.append(" as ");
-        fromClause.append(alias);
+
+        fromClauses.add(fromClause);
 
         typeStack.push(types);
         varStack.push(alias);
@@ -299,11 +261,8 @@ public class QueryContext {
 
     private void popJoin() {
         if (!joinStack.isEmpty()) {
-            int count = joinStack.peek().count;
-            while (count > 0) {
-                popLogicalOperator(fromOpStack.peek());
-                --count;
-            }
+            Clause clause = getFromClause();
+            clause.popAll();
         }
     }
 
@@ -319,36 +278,8 @@ public class QueryContext {
                              JoinConstraint.JoinType joinType) {
         popJoin();
         String alias = addTypeSet(types, property);
-        switch (joinType) {
-            case InnerJoin:
-                fromClause.append(" inner join ")
-                        .append(varStack.peek())
-                        .append(".")
-                        .append(property)
-                        .append(" as ")
-                        .append(alias);
-                break;
-            case LeftOuterJoin:
-                fromClause.append(" left outer join ")
-                        .append(varStack.peek())
-                        .append(".")
-                        .append(property)
-                        .append(" as ")
-                        .append(alias);
-                break;
-            case RightOuterJoin:
-                fromClause.append(" right outer  join ")
-                        .append(varStack.peek())
-                        .append(".")
-                        .append(property)
-                        .append(" as ")
-                        .append(alias);
-                break;
-            default:
-                // todo throw an exception
-                break;
-        }
-
+        FromClause fromClause = new FromClause(joinType, varStack.peek(), property, alias);
+        fromClauses.add(fromClause);
         typeStack.push(types);
         varStack.push(alias);
         joinStack.push(new Counter<JoinType>(joinType));
@@ -386,20 +317,20 @@ public class QueryContext {
     }
 
     /**
-     * Determines if the current constraint is a join.
+     * Determines if the current constraint is an outer join.
      *
      * @return <tt>true</tt> if there is a join
      */
-    boolean isJoin() {
-        return joinStack.size() > 1;
+    boolean isOuterJoin() {
+        return !joinStack.isEmpty() && joinStack.peek().operator != JoinType.InnerJoin;
     }
 
     /**
      * Returns the type associated with an alias, or the type on type top
      * of the stack if the alias is null.
      *
-     * @param alias the type alias. May be <code>null</code>
-     * @return the associated result set or <code>null</code> if none is found
+     * @param alias the type alias. May be <tt>null</tt>
+     * @return the associated result set or <tt>null</tt> if none is found
      */
     TypeSet getTypeSet(String alias) {
         TypeSet result = null;
@@ -434,15 +365,15 @@ public class QueryContext {
     /**
      * Adds a select constraint.
      *
-     * @param alias    the type alias. May be <code>null</code>
-     * @param node     the node name. May be <code>null</code>
-     * @param property the property. May be <code>null</code>
+     * @param alias    the type alias. May be <tt>null</tt>
+     * @param node     the node name. May be <tt>null</tt>
+     * @param property the property. May be <tt>null</tt>
      */
     void addSelectConstraint(String alias, String node, String property) {
         if (alias == null) {
             alias = varStack.peek();
         }
-        if (selectClause.length() != initSelectClauseLen) {
+        if (!selectNames.isEmpty()) {
             selectClause.append(", ");
         }
 
@@ -468,7 +399,7 @@ public class QueryContext {
         if (alias == null) {
             alias = varStack.peek();
         }
-        if (selectClause.length() != initSelectClauseLen) {
+        if (!selectNames.isEmpty()) {
             selectClause.append(", ");
         }
 
@@ -489,7 +420,7 @@ public class QueryContext {
     /**
      * Adds a where constraint.
      *
-     * @param alias    the type alias. May be <code>null</code>
+     * @param alias    the type alias. May be <tt>null</tt>
      * @param property the property
      * @param op       the relational operator to apply
      * @param value    the object value
@@ -512,9 +443,8 @@ public class QueryContext {
      * @param value    the object value
      * @return this context
      */
-    QueryContext addWhereConstraint(String property, RelationalOp op,
-                                    Object value) {
-        appendLogicalOperator();
+    QueryContext addWhereConstraint(String property, RelationalOp op, Object value) {
+        whereClause.appendOperator();
         whereClause.append(property)
                 .append(" ")
                 .append(getOperator(op, value));
@@ -526,7 +456,6 @@ public class QueryContext {
                     .append(varName);
             params.put(varName, getValue(op, value));
         }
-        whereOpStack.peek().count++;
         return this;
     }
 
@@ -539,7 +468,8 @@ public class QueryContext {
     }
 
     QueryContext addWithConstraint(String property, RelationalOp op, Object value) {
-        appendLogicalOperator();
+        Clause fromClause = getFromClause();
+        fromClause.appendOperator();
         fromClause.append(property)
                 .append(" ")
                 .append(getOperator(op, value));
@@ -550,12 +480,11 @@ public class QueryContext {
             fromClause.append(" :").append(varName);
             params.put(varName, getValue(op, value));
         }
-        fromOpStack.peek().count++;
         return this;
     }
 
     void addConstraint(String alias, String property, RelationalOp op, Object value) {
-        if (isJoin()) {
+        if (isOuterJoin()) {
             addWithConstraint(alias, property, op, value);
         } else {
             addWhereConstraint(alias, property, op, value);
@@ -563,7 +492,7 @@ public class QueryContext {
     }
 
     void addConstraint(String property, RelationalOp op, Object value) {
-        if (isJoin()) {
+        if (isOuterJoin()) {
             addWithConstraint(property, op, value);
         } else {
             addWhereConstraint(property, op, value);
@@ -573,7 +502,7 @@ public class QueryContext {
     /**
      * Add the specified sort constraint.
      *
-     * @param alias     the type alias. May be <code>null</code>
+     * @param alias     the type alias. May be <tt>null</tt>
      * @param property  the property to be sorted.
      * @param ascending whether it is ascending or not
      * @return this context
@@ -606,7 +535,7 @@ public class QueryContext {
      * @return this context
      */
     QueryContext addNodeConstraint(String property, NodeConstraint constraint) {
-        StringBuilder clause = (isJoin()) ? fromClause : whereClause;
+        Clause clause = getClause();
         String varName;
         RelationalOp op = constraint.getOperator();
         String qname = getQualifiedPropertyName(property);
@@ -615,32 +544,28 @@ public class QueryContext {
             case BTW:
                 if (parameters[0] != null || parameters[1] != null) {
                     // process left hand side
-                    Object state = pushLogicalOperator(LogicalOperator.And);
+                    Counter<LogicalOperator> state = clause.push(LogicalOperator.And);
                     if (parameters[0] != null) {
-                        appendLogicalOperator();
+                        clause.appendOperator();
                         varName = paramNames.getName(property);
                         clause.append(qname)
-                                .append(getOperator(RelationalOp.GTE,
-                                                    parameters[0]))
+                                .append(getOperator(RelationalOp.GTE, parameters[0]))
                                 .append(" :")
                                 .append(varName);
-                        params.put(varName, getValue(RelationalOp.GTE,
-                                                     parameters[0]));
+                        params.put(varName, getValue(RelationalOp.GTE, parameters[0]));
                     }
 
                     // process right hand side
                     if (parameters[1] != null) {
-                        appendLogicalOperator();
+                        clause.appendOperator();
                         varName = paramNames.getName(property);
                         clause.append(qname)
-                                .append(getOperator(RelationalOp.LTE,
-                                                    parameters[1]))
+                                .append(getOperator(RelationalOp.LTE, parameters[1]))
                                 .append(" :")
                                 .append(varName);
-                        params.put(varName, getValue(RelationalOp.LTE,
-                                                     parameters[1]));
+                        params.put(varName, getValue(RelationalOp.LTE, parameters[1]));
                     }
-                    popLogicalOperator(state);
+                    clause.pop(state);
                 }
                 break;
 
@@ -650,7 +575,7 @@ public class QueryContext {
             case LT:
             case LTE:
             case NE:
-                appendLogicalOperator();
+                clause.appendOperator();
 
                 varName = paramNames.getName(property);
                 clause.append(qname)
@@ -664,7 +589,7 @@ public class QueryContext {
             case IsNULL:
             case IS_NULL:
             case NOT_NULL:
-                appendLogicalOperator();
+                clause.appendOperator();
                 String opNull = " " + getOperator(op, null);
                 if (isReference(property)) {
                     clause.append(qname).append(".id").append(opNull);
@@ -674,7 +599,7 @@ public class QueryContext {
                 break;
 
             case IN:
-                appendLogicalOperator();
+                clause.appendOperator();
                 boolean ref = isReference(property);
                 clause.append(qname);
                 if (ref) {
@@ -709,7 +634,7 @@ public class QueryContext {
      * @return this context
      */
     QueryContext addPropertyConstraint(String lhs, RelationalOp operator, String rhs) {
-        StringBuilder clause = (isJoin()) ? fromClause : whereClause;
+        Clause clause = getClause();
         switch (operator) {
             case EQ:
             case GT:
@@ -717,7 +642,7 @@ public class QueryContext {
             case LT:
             case LTE:
             case NE:
-                appendLogicalOperator();
+                clause.appendOperator();
                 clause.append(lhs)
                         .append(" ")
                         .append(getOperator(operator, rhs))
@@ -795,28 +720,11 @@ public class QueryContext {
     }
 
     /**
-     * Append the logical operator to the current clause if required.
+     * Qualifies a property with the current alias.
+     *
+     * @param property the property
+     * @return the qualified property
      */
-    private void appendLogicalOperator() {
-        StringBuilder clause;
-        Stack<Counter<LogicalOperator>> opStack;
-        if (isJoin()) {
-            clause = fromClause;
-            opStack = fromOpStack;
-        } else {
-            clause = whereClause;
-            opStack = whereOpStack;
-        }
-
-        if (!opStack.isEmpty()) {
-            if (opStack.peek().count > 0) {
-                String op = opStack.peek().operator.getValue();
-                clause.append(op);
-            }
-            opStack.peek().count++;
-        }
-    }
-
     private String getQualifiedPropertyName(String property) {
         int index = property.indexOf('.');
         if (index == -1) {
@@ -829,6 +737,13 @@ public class QueryContext {
         return property;
     }
 
+    /**
+     * Adds  a type set, creating an alias for it if one is not specified
+     *
+     * @param types the type set
+     * @param alias an alias for the type if it doesn't have one. May be <tt>null</tt>
+     * @return the type set's alias
+     */
     private String addTypeSet(TypeSet types, String alias) {
         if (types.getAlias() != null) {
             typeNames.reserve(types.getAlias());
@@ -844,6 +759,12 @@ public class QueryContext {
         return alias;
     }
 
+    /**
+     * Determines if a property is an object reference.
+     *
+     * @param property the property
+     * @return <tt>true</tt> if the property is an object reference
+     */
     private boolean isReference(String property) {
         int index = property.indexOf('.');
         String node;
@@ -866,6 +787,24 @@ public class QueryContext {
             }
         }
         return true;
+    }
+
+    /**
+     * Returns the current clause.
+     *
+     * @return the current clause
+     */
+    private Clause getClause() {
+        return (isOuterJoin()) ? getFromClause() : whereClause;
+    }
+
+    /**
+     * Returns the current from clause.
+     *
+     * @return the current from clause
+     */
+    private FromClause getFromClause() {
+        return fromClauses.get(fromClauses.size() - 1);
     }
 
     /**
@@ -900,8 +839,120 @@ public class QueryContext {
         }
     }
 
+    private static class Clause {
 
-    static class Counter<T> {
+        StringBuilder clause = new StringBuilder();
+
+        Stack<Counter<LogicalOperator>> stack = new Stack<Counter<LogicalOperator>>();
+
+        public Counter<LogicalOperator> push(LogicalOperator operator) {
+            appendOperator();
+            Counter<LogicalOperator> result = new Counter<LogicalOperator>(operator);
+            stack.push(result);
+            append("(");
+            return result;
+        }
+
+        public void pop(Counter<LogicalOperator> state) {
+            if (stack.contains(state)) {
+                Counter<LogicalOperator> top = null;
+                while (top != state) {
+                    top = stack.pop();
+                    append(")");
+                }
+            }
+        }
+
+        public void popAll() {
+            if (!stack.isEmpty()) {
+                pop(stack.lastElement());
+            }
+        }
+
+        /**
+         * Append the logical operator if required.
+         */
+        public void appendOperator() {
+            if (!stack.isEmpty()) {
+                if (stack.peek().count > 0) {
+                    String op = stack.peek().operator.getValue();
+                    clause.append(op);
+                }
+                stack.peek().count++;
+            }
+        }
+
+        public boolean isEmpty() {
+            return clause.length() == 0;
+        }
+
+        public String toString() {
+            return clause.toString();
+        }
+
+        public Clause append(String value) {
+            clause.append(value);
+            return this;
+        }
+    }
+
+    private static class FromClause extends Clause {
+
+        private boolean with;
+
+        private final boolean needsComma;
+
+        public FromClause(String type, String alias) {
+            this(null, type, alias);
+
+        }
+
+        public FromClause(JoinType join, String type, String alias) {
+            this(join, null, type, alias);
+        }
+
+        public FromClause(JoinType join, String variable, String property, String alias) {
+            if (join == JoinType.InnerJoin && variable == null) {
+                needsComma = true;
+            } else {
+                needsComma = false;
+                appendJoin(join);
+            }
+            if (variable != null) {
+                super.append(variable);
+                super.append(".");
+            }
+            super.append(property);
+            super.append(" as ");
+            super.append(alias);
+            with = false;
+        }
+
+        public boolean needsComma() {
+            return needsComma;
+        }
+
+        private void appendJoin(JoinType join) {
+            if (join == JoinType.InnerJoin) {
+                super.append("inner join ");
+            } else if (join == JoinType.LeftOuterJoin) {
+                super.append("left outer join ");
+            } else if (join == JoinType.RightOuterJoin) {
+                super.append("right outer join ");
+            }
+        }
+
+        public Clause append(String value) {
+            if (!with) {
+                super.append(" with ");
+                with = true;
+            }
+            super.append(value);
+            return this;
+        }
+    }
+
+    private static class Counter<T> {
 
         /**
          * The operator.
