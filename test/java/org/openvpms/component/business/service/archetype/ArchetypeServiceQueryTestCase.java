@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
@@ -165,12 +166,12 @@ public class ArchetypeServiceQueryTestCase
 
         ArchetypeQuery query = new ArchetypeQuery("product.product", false, false)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
-                .add(new CollectionNodeConstraint("c.classifications")
+                .add(new CollectionNodeConstraint("classifications")
                         .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
                         .add(new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.species")))
                 .add(new OrConstraint()
-                        .add(new NodeConstraint("c.code", RelationalOp.EQ, canine.getCode()))
-                        .add(new NodeConstraint("c.code", RelationalOp.IS_NULL)));
+                        .add(new NodeConstraint("classifications.code", RelationalOp.EQ, canine.getCode()))
+                        .add(new NodeConstraint("classifications.code", RelationalOp.IS_NULL)));
 
         List<IMObject> objects = service.get(query).getResults();
         assertTrue(objects.contains(canineProduct));
@@ -179,6 +180,9 @@ public class ArchetypeServiceQueryTestCase
         assertTrue(objects.contains(genericProduct));
     }
 
+    /**
+     * Test party queries where the parties may have a particular identity (i.e identities node) or ID.
+     */
     public void testQueryEntityByClassificationAndId() {
         Party person1 = createPerson();
         person1.addIdentity(createIdentity("IDENT1"));
@@ -194,12 +198,10 @@ public class ArchetypeServiceQueryTestCase
 
         ArchetypeQuery query = new ArchetypeQuery("party.person", false, false)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
-                .add(new CollectionNodeConstraint("i.identities", "entityIdentity.personAlias", false, false)
-                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
-                        .add(new NodeConstraint("identity", "IDENT1*")))
-                .add(new OrConstraint()
-                        .add(new NodeConstraint("id", person1.getId()))
-                        .add(new NodeConstraint("i.identity", RelationalOp.NOT_NULL)));
+                .add(Constraints.leftJoin("identities", Constraints.shortName("entityIdentity.personAlias"))
+                        .add(Constraints.eq("identity", "IDENT1*")))
+                .add(Constraints.or(Constraints.eq("id", person1.getId()),
+                                    Constraints.notNull("identities.identity")));
         List<IMObject> objects = service.get(query).getResults();
         assertTrue(objects.contains(person1));
         assertFalse(objects.contains(person2));

@@ -175,7 +175,7 @@ public class QueryBuilder {
         ArchetypeId id = constraint.getArchetypeId();
         String alias = constraint.getAlias();
 
-        QueryContext.OpState state = context.pushLogicalOperator(LogicalOperator.And);
+        context.pushLogicalOperator(LogicalOperator.And);
 
         context.addConstraint(alias, "archetypeId.shortName", RelationalOp.EQ, id.getShortName());
 
@@ -186,7 +186,7 @@ public class QueryBuilder {
         for (IConstraint oc : constraint.getConstraints()) {
             processConstraint(oc, context);
         }
-        state.pop();
+        context.popLogicalOperator();
     }
 
     /**
@@ -217,26 +217,28 @@ public class QueryBuilder {
      * @param context    the hql context
      */
     private void processArchetypeConstraint(ShortNameConstraint constraint, QueryContext context) {
-        QueryContext.OpState and = null;
+        boolean and = false;
 
         if (constraint.isActiveOnly() || !constraint.getConstraints().isEmpty()) {
-            and = context.pushLogicalOperator(LogicalOperator.And);
+            context.pushLogicalOperator(LogicalOperator.And);
+            and = true;
         }
 
         String alias = constraint.getAlias();
         String[] shortNames = constraint.getShortNames();
 
-        QueryContext.OpState or = null;
+        boolean or = false;
         if (shortNames.length > 1) {
-            or = context.pushLogicalOperator(LogicalOperator.Or);
+            context.pushLogicalOperator(LogicalOperator.Or);
+            or = true;
         }
 
         for (String shortName : shortNames) {
             String value = shortName.replace('*', '%'); // convert wildcards to SQL
             context.addConstraint(alias, "archetypeId.shortName", RelationalOp.EQ, value);
         }
-        if (or != null) {
-            or.pop();
+        if (or) {
+            context.popLogicalOperator();
         }
 
         // process the active flag
@@ -246,8 +248,8 @@ public class QueryBuilder {
         for (IConstraint oc : constraint.getConstraints()) {
             processConstraint(oc, context);
         }
-        if (and != null) {
-            and.pop();
+        if (and) {
+            context.popLogicalOperator();
         }
     }
 
@@ -284,10 +286,11 @@ public class QueryBuilder {
      */
     private void processArchetypeConstraint(ArchetypeConstraint constraint,
                                             QueryContext context) {
-        QueryContext.OpState and = null;
+        boolean and = false;
         // process the active flag
         if (constraint.isActiveOnly() && !constraint.getConstraints().isEmpty()) {
-            and = context.pushLogicalOperator(LogicalOperator.And);
+            context.pushLogicalOperator(LogicalOperator.And);
+            and = true;
         }
 
         addActiveConstraint(constraint, context);
@@ -296,8 +299,8 @@ public class QueryBuilder {
         for (IConstraint oc : constraint.getConstraints()) {
             processConstraint(oc, context);
         }
-        if (and != null) {
-            and.pop();
+        if (and) {
+            context.popLogicalOperator();
         }
     }
 
@@ -360,7 +363,7 @@ public class QueryBuilder {
      */
     private void process(OrConstraint constraint, QueryContext context) {
         // push the operator
-        QueryContext.OpState or = context.pushLogicalOperator(LogicalOperator.Or);
+        context.pushLogicalOperator(LogicalOperator.Or);
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
@@ -368,7 +371,7 @@ public class QueryBuilder {
         }
 
         // pop the stack attributes
-        or.pop();
+        context.popLogicalOperator();
     }
 
     /**
@@ -379,7 +382,7 @@ public class QueryBuilder {
      */
     private void process(AndConstraint constraint, QueryContext context) {
         // push the operator
-        QueryContext.OpState and = context.pushLogicalOperator(LogicalOperator.And);
+        context.pushLogicalOperator(LogicalOperator.And);
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
@@ -387,7 +390,7 @@ public class QueryBuilder {
         }
 
         // pop the stack attributes
-        and.pop();
+        context.popLogicalOperator();
     }
 
     /**
@@ -457,7 +460,7 @@ public class QueryBuilder {
         ArchetypeId id = constraint.getArchetypeId();
         TypeSet types = TypeSet.create(constraint, cache, assembler);
 
-        QueryContext.OpState state = context.pushLogicalOperator(LogicalOperator.And);
+        context.pushLogicalOperator(LogicalOperator.And);
         context.pushTypeSet(types);
 
         String alias = constraint.getAlias();
@@ -471,7 +474,7 @@ public class QueryBuilder {
 
         // pop the stack when we have finished processing this constraint
         context.popTypeSet();
-        state.pop();
+        context.popLogicalOperator();
     }
 
     /**
@@ -505,7 +508,7 @@ public class QueryBuilder {
      */
     private void process(CollectionNodeConstraint constraint, QueryContext context) {
         TypeSet types = context.peekTypeSet();
-        final String nodeName = constraint.getNodeName();
+        final String nodeName = constraint.getUnqualifiedName();
         NodeDescriptor ndesc = getMatchingNodeDescriptor(types.getDescriptors(), nodeName);
 
         if (ndesc == null) {
@@ -524,22 +527,24 @@ public class QueryBuilder {
         types.setAlias(constraint.getAlias());
         context.pushTypeSet(types, getProperty(ndesc), constraint.getJoinType());
 
-        QueryContext.OpState and = null;
+        boolean and = false;
 
         if (archetypeConstraint == null || !constrainsByShortName(archetypeConstraint)) {
             if (archetypeConstraint != null && activeOnly) {
-                and = context.pushLogicalOperator(LogicalOperator.And);
+                context.pushLogicalOperator(LogicalOperator.And);
+                and = true;
             }
             Set<String> shortNames = types.getShortNames();
-            QueryContext.OpState or = null;
+            boolean or = false;
             if (shortNames.size() > 1) {
-                or = context.pushLogicalOperator(LogicalOperator.Or);
+                context.pushLogicalOperator(LogicalOperator.Or);
+                or = true;
             }
             for (String shortName : shortNames) {
                 process(new ArchetypeNodeConstraint(RelationalOp.EQ, shortName), context);
             }
-            if (or != null) {
-                or.pop();
+            if (or) {
+                context.popLogicalOperator();
             }
         }
 
@@ -549,8 +554,8 @@ public class QueryBuilder {
         }
 
         // pop the stack when we have finished processing this constraint
-        if (and != null) {
-            and.pop();
+        if (and) {
+            context.popLogicalOperator();
         }
         context.popTypeSet();
     }
