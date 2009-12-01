@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 /**
  * A constraint on object reference nodes.
  * When constructed with an {@link IMObjectReference},
- * the {@link IMObjectReference#getLinkId} is used to constrain the node.
+ * the {@link IMObjectReference#getId} is used to constrain the node.
  * When constructed with an {@link ArchetypeId}, the
  * {@link ArchetypeId#getShortName()} is used to constrain the node.
  *

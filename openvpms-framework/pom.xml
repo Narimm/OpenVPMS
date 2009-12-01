@@ -140,11 +140,6 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-c3p0</artifactId>
-                        <version>${hibernate.version}</version>
-                    </dependency>
-                    <dependency>
                         <groupId>${jdbc.groupId}</groupId>
                         <artifactId>${jdbc.artifactId}</artifactId>
                         <version>${jdbc.version}</version>
@@ -391,12 +386,6 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
-            <version>${hibernate.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-c3p0</artifactId>
             <version>${hibernate.version}</version>
             <scope>runtime</scope>
         </dependency>
