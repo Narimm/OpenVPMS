@@ -306,7 +306,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     protected Query<T> createQuery(String name) {
         String[] shortNames = getProperty().getArchetypeRange();
         Query<T> query = QueryFactory.create(shortNames, context);
-        query.setName(name);
+        query.setValue(name);
         return query;
     }
 

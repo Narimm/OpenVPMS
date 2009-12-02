@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.5-SNAPSHOT</version>
         <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
@@ -171,7 +171,8 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-reports</artifactId>
-            <version>${pom.version}</version>
+            <!-- <version>${pom.version}</version> -->
+            <version>1.4-SNAPSHOT</version>      <!-- TODO -->
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
@@ -306,11 +307,30 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>${log4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.mail</groupId>
+                    <artifactId>mail</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.jms</groupId>
+                    <artifactId>jms</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jdmk</groupId>
+                    <artifactId>jmxtools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jmx</groupId>
+                    <artifactId>jmxri</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache</artifactId>
             <version>${ehcache.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.acegisecurity</groupId>
@@ -337,8 +357,15 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate</artifactId>
+            <artifactId>hibernate-core</artifactId>
             <version>${hibernate.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-ehcache</artifactId>
+            <version>${hibernate.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

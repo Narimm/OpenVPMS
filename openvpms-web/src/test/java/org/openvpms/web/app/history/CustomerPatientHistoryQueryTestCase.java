@@ -152,7 +152,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
 
         // filter results containing "XA" and verify customer2 and patient1 are returned
-        query.setName("XA");
+        query.setValue("XA");
         List<CustomerPatient> list = query.query().getPage(0).getResults();
         assertEquals(2, list.size());
         assertNull(list.get(0).getCustomer());

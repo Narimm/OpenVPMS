@@ -261,11 +261,11 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
-     * Sets the name to query on.
+     * Sets the value to query on.
      *
      * @param name the name. May contain wildcards, or be <tt>null</tt>
      */
-    public void setName(String name) {
+    public void setValue(String name) {
         this.name = name;
     }
 
@@ -274,7 +274,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      *
      * @return the name. May contain wildcards, or be <tt>null</tt>
      */
-    public String getName() {
+    public String getValue() {
         return name;
     }
 
@@ -284,7 +284,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      *
      * @param length the minimum name length
      */
-    public void setNameMinLength(int length) {
+    public void setValueMinLength(int length) {
         nameMinLength = length;
     }
 
@@ -293,7 +293,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      *
      * @return the minimum length
      */
-    public int getNameMinLength() {
+    public int getValueMinLength() {
         return nameMinLength;
     }
 

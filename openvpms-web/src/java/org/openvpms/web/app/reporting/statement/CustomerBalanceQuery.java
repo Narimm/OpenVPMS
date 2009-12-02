@@ -295,7 +295,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
         group.add(customerFrom);
         group.add(customerTo);
 
-        FocusHelper.setFocus(getInstanceName());
+        FocusHelper.setFocus(getSearchField());
     }
 
     /**

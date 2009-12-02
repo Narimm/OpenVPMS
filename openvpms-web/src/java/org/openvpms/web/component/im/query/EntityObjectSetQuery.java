@@ -50,7 +50,7 @@ public class EntityObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * @return a new result set
      */
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        return new EntityObjectSetResultSet(getArchetypeConstraint(), getName(),
+        return new EntityObjectSetResultSet(getArchetypeConstraint(), getValue(),
                                             isIdentitySearch(), sort,
                                             getMaxResults(),
                                             isDistinct());

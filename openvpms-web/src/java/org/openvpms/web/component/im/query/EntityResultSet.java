@@ -37,19 +37,18 @@ public class EntityResultSet<T extends Entity>
      * Construct a new <tt>EntityResultSet</tt>.
      *
      * @param archetypes       the archetypes to query
-     * @param instanceName     the instance name. May be <tt>null</tt>
+     * @param value            the value to query on. May be <tt>null</tt>
      * @param searchIdentities if <tt>true</tt> search on identity name
-     * @param constraints      additional query constraints. May be
-     *                         <tt>null</tt>
+     * @param constraints      additional query constraints. May be <tt>null</tt>
      * @param sort             the sort criteria. May be <tt>null</tt>
      * @param rows             the maximum no. of rows per page
      * @param distinct         if <tt>true</tt> filter duplicate rows
      */
     public EntityResultSet(ShortNameConstraint archetypes,
-                           String instanceName, boolean searchIdentities,
+                           String value, boolean searchIdentities,
                            IConstraint constraints, SortConstraint[] sort,
                            int rows, boolean distinct) {
-        super(archetypes, instanceName, searchIdentities, constraints, sort,
+        super(archetypes, value, searchIdentities, constraints, sort,
               rows, distinct, new DefaultQueryExecutor<T>());
     }
 

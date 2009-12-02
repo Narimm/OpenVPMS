@@ -38,18 +38,12 @@ import org.openvpms.web.component.im.query.TableBrowser;
 public class CustomerBrowser extends BrowserAdapter<ObjectSet, Party> {
 
     /**
-     * The table model.
-     */
-    private final CustomerTableModel model = new CustomerTableModel();
-
-
-    /**
      * Creates a new <tt>CustomerBrowser</tt>.
      *
      * @param query the query
      */
     public CustomerBrowser(CustomerQuery query) {
-        setBrowser(createBrowser(query, model));
+        setBrowser(createBrowser(query));
     }
 
     /**
@@ -63,19 +57,15 @@ public class CustomerBrowser extends BrowserAdapter<ObjectSet, Party> {
     }
 
     /**
-     * Creates a table browser that changes the model depending on what
-     * columns have been queried on.
+     * Creates a table browser that changes the model depending on what columns have been queried on.
      *
      * @param query the query
-     * @param model the model
      * @return a new browser
      */
-    private static Browser<ObjectSet> createBrowser(
-            final CustomerQuery query, final CustomerTableModel model) {
+    private static Browser<ObjectSet> createBrowser(final CustomerQuery query) {
+        final CustomerTableModel model = new CustomerTableModel();
         Query<ObjectSet> delegate = query.getQuery();
-        return new TableBrowser<ObjectSet>(delegate,
-                                           delegate.getDefaultSortConstraint(),
-                                           model) {
+        return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model) {
             /**
              * Performs the query.
              *
@@ -85,10 +75,9 @@ public class CustomerBrowser extends BrowserAdapter<ObjectSet, Party> {
             protected ResultSet<ObjectSet> doQuery() {
                 ResultSet<ObjectSet> result = super.doQuery();
                 if (result instanceof CustomerResultSet) {
-                    CustomerResultSet set
-                            = (CustomerResultSet) result;
-                    model.showColumns(set.isSearchingOnPatient(),
-                                      set.isSearchingOnContact());
+                    CustomerResultSet set = (CustomerResultSet) result;
+                    model.showColumns(set.isSearchingOnPatient(), set.isSearchingOnContact(),
+                                      set.isSearchingIdentities());
                 }
                 return result;
             }

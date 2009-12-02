@@ -90,18 +90,14 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     @Override
     protected TableColumnModel createTableColumnModel() {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
-        //createTableColumnModel(false, model);
-        model.addColumn(createTableColumn(NAME_INDEX, "table.imobject.name"));
-        model.addColumn(createTableColumn(DESCRIPTION_INDEX,
-                                          "table.imobject.description"));
-        model.addColumn(
-                createTableColumn(ARCHETYPE_INDEX, "table.imobject.archetype"));
+        model.addColumn(createTableColumn(ID_INDEX, ID));
+        model.addColumn(createTableColumn(NAME_INDEX, NAME));
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX, DESCRIPTION));
+        model.addColumn(createTableColumn(ARCHETYPE_INDEX, ARCHETYPE));
         fixedPriceIndex = getNextModelIndex(model);
         unitPriceIndex = fixedPriceIndex + 1;
-        TableColumn fixedPrice = createTableColumn(
-                fixedPriceIndex, "producttablemodel.fixedPrice");
-        TableColumn unitPrice = createTableColumn(
-                unitPriceIndex, "producttablemodel.unitPrice");
+        TableColumn fixedPrice = createTableColumn(fixedPriceIndex, "producttablemodel.fixedPrice");
+        TableColumn unitPrice = createTableColumn(unitPriceIndex, "producttablemodel.unitPrice");
         model.addColumn(fixedPrice);
         model.addColumn(unitPrice);
         return model;

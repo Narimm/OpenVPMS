@@ -189,8 +189,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      *
      * @param name the name. May contain wildcards, or be <tt>null</tt>
      */
-    public void setName(String name) {
-        query.setName(name);
+    public void setValue(String name) {
+        query.setValue(name);
     }
 
     /**
@@ -198,8 +198,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      *
      * @return the name. May contain wildcards, or be <tt>null</tt>
      */
-    public String getName() {
-        return query.getName();
+    public String getValue() {
+        return query.getValue();
     }
 
     /**
@@ -207,8 +207,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      *
      * @param length the length
      */
-    public void setNameMinLength(int length) {
-        query.setNameMinLength(length);
+    public void setValueMinLength(int length) {
+        query.setValueMinLength(length);
     }
 
     /**
@@ -216,8 +216,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      *
      * @return the minimum length
      */
-    public int getNameMinLength() {
-        return query.getNameMinLength();
+    public int getValueMinLength() {
+        return query.getValueMinLength();
     }
 
     /**
