@@ -36,6 +36,7 @@ public class LookupTableModel extends BaseIMObjectTableModel<Lookup> {
      * This displays the archetype column.
      */
     public LookupTableModel() {
+        super(null);
         setTableColumnModel(createTableColumnModel(true));
     }
 
@@ -47,9 +48,10 @@ public class LookupTableModel extends BaseIMObjectTableModel<Lookup> {
      * @param shortNames the archetype short names
      */
     public LookupTableModel(String[] shortNames) {
+        super(null);
         shortNames = DescriptorHelper.getShortNames(shortNames); // expand any wildcards
         boolean showArchetypes = shortNames.length > 1;
-        setTableColumnModel(createTableColumnModel(showArchetypes));
+        setTableColumnModel(createTableColumnModel(true, showArchetypes));
     }
 
 }

@@ -48,6 +48,8 @@ import org.openvpms.web.component.util.TextComponentFactory;
  * <pre>Party patient = (Party) set.get("patient");</pre>
  * <li>the contact, if searching on contacts:
  * <pre>Contact contact = (Contact) set.get("contact");</pre>
+ * <li>the identity, if searching on identities:
+ * <pre>EntityIdentity identity = (EntityIdentity) set.get("identity");</pre>
  * </ul>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -96,7 +98,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
         String patientWildcard = getWildcardedText(getPatientName());
         String contactWildcard = getWildcardedText(getContact(), true);
 
-        return new CustomerResultSet(getArchetypeConstraint(), getName(),
+        return new CustomerResultSet(getArchetypeConstraint(), getValue(),
                                      isIdentitySearch(), patientWildcard,
                                      contactWildcard, sort, getMaxResults(),
                                      isDistinct());
@@ -123,12 +125,12 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     @Override
     protected void doLayout(Component container) {
         addShortNameSelector(container);
-        addInstanceName(container);
+        addSearchField(container);
         addIdentitySearch(container);
         addInactive(container);
         addPatientName(container);
         addContact(container);
-        FocusHelper.setFocus(getInstanceName());
+        FocusHelper.setFocus(getSearchField());
     }
 
     /**

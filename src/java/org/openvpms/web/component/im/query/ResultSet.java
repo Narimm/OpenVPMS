@@ -72,7 +72,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      * Returns the number of results returned per page.
      *
      * @return the maximum no. of results returned in each page, or {@link
-     *         ArchetypeQuery#ALL_RESULTS} for all results.
+     *         org.openvpms.component.system.common.query.ArchetypeQuery#ALL_RESULTS} for all results.
      */
     int getPageSize();
 

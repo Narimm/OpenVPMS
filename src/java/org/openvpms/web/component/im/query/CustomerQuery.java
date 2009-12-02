@@ -55,7 +55,6 @@ public class CustomerQuery extends QueryAdapter<ObjectSet, Party> {
      * @return the converted set
      */
     protected ResultSet<Party> convert(ResultSet<ObjectSet> set) {
-        return new ObjectSetResultSetAdapter<Party>(set, "customer",
-                                                    Party.class);
+        return new ObjectSetResultSetAdapter<Party>(set, "customer", Party.class);
     }
 }

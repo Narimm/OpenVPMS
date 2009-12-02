@@ -115,7 +115,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
     public Component getComponent() {
         if (component == null) {
             component = RowFactory.create("ControlRow");
-            Label nameLabel = LabelFactory.create("name");
+            Label nameLabel = LabelFactory.create("query.search");
             component.add(nameLabel);
             component.add(filter);
             focusGroup.add(filter);
@@ -154,7 +154,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
      *
      * @param filter the name filter
      */
-    public void setName(String filter) {
+    public void setValue(String filter) {
         this.filter.setText(filter);
     }
 

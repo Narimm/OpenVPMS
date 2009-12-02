@@ -42,36 +42,33 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
         extends AbstractIMObjectTableModel<T> {
 
     /**
+     * ID column index.
+     */
+    public static final int ID_INDEX = 0;
+
+    /**
      * Archetype column index.
      */
-    public static final int ARCHETYPE_INDEX = 0;
+    public static final int ARCHETYPE_INDEX = 1;
 
     /**
      * Name column index.
      */
-    public static final int NAME_INDEX = 1;
+    public static final int NAME_INDEX = 2;
 
     /**
      * Description column index.
      */
-    public static final int DESCRIPTION_INDEX = 2;
+    public static final int DESCRIPTION_INDEX = 3;
 
     /**
      * Next unused model index.
      */
-    public static final int NEXT_INDEX = 3;
+    public static final int NEXT_INDEX = 4;
 
 
     /**
-     * Table column identifiers.
-     */
-    private static final String[] COLUMNS = {
-            "table.imobject.archetype", "table.imobject.name",
-            "table.imobject.description"};
-
-
-    /**
-     * Constructs a new <code>BaseIMObjectTableModel</code>, using
+     * Constructs a new <tt>BaseIMObjectTableModel</tt>, using
      * a new column model created by {@link #createTableColumnModel}.
      */
     public BaseIMObjectTableModel() {
@@ -79,9 +76,9 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
     }
 
     /**
-     * Construct a new <code>BaseIMObjectTableModel</code>.
+     * Construct a new <tt>BaseIMObjectTableModel</tt>.
      *
-     * @param model the column model. May be <code>null</code>
+     * @param model the column model. May be <tt>null</tt>
      */
     public BaseIMObjectTableModel(TableColumnModel model) {
         super(model);
@@ -89,6 +86,8 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
 
     /**
      * Creates a new column model.
+     * <p/>
+     * This implementation suppresses the archetype and ID columns.
      *
      * @return a new column model
      */
@@ -98,28 +97,45 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
 
     /**
      * Creates a new column model.
+     * <p/>
+     * This implementation suppresses the ID column.
      *
-     * @param showArchetype if <code>true</code> show the archetype
+     * @param showArchetype if <tt>true</tt> show the archetype
      * @return a new column model
      */
     protected TableColumnModel createTableColumnModel(boolean showArchetype) {
+        return createTableColumnModel(false, showArchetype);
+    }
+
+    /**
+     * Creates a new column model.
+     *
+     * @param showId        if <tt>true</tt>, show the ID
+     * @param showArchetype if <tt>true</tt> show the archetype
+     * @return a new column model
+     */
+    protected TableColumnModel createTableColumnModel(boolean showId, boolean showArchetype) {
         TableColumnModel model = new DefaultTableColumnModel();
-        return createTableColumnModel(showArchetype, model);
+        return createTableColumnModel(showId, showArchetype, model);
     }
 
     /**
      * Adds columns to an existing model.
      *
-     * @param showArchetype if <code>true</code> show the archetype
+     * @param showId        if <tt>true</tt>, show the ID
+     * @param showArchetype if <tt>true</tt> show the archetype
      * @param model         the column model
      * @return the column model
      */
-    protected TableColumnModel createTableColumnModel(boolean showArchetype,
-                                                      TableColumnModel model) {
-        int index = (showArchetype) ? 0 : 1;
-        for (int i = index; i < COLUMNS.length; ++i) {
-            model.addColumn(createTableColumn(i, COLUMNS[i]));
+    protected TableColumnModel createTableColumnModel(boolean showId, boolean showArchetype, TableColumnModel model) {
+        if (showId) {
+            model.addColumn(createTableColumn(ID_INDEX, ID));
         }
+        if (showArchetype) {
+            model.addColumn(createTableColumn(ARCHETYPE_INDEX, ARCHETYPE));
+        }
+        model.addColumn(createTableColumn(NAME_INDEX, NAME));
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX, DESCRIPTION));
         return model;
     }
 
@@ -134,6 +150,9 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
     protected Object getValue(T object, TableColumn column, int row) {
         Object result;
         switch (column.getModelIndex()) {
+            case ID_INDEX:
+                result = object.getId();
+                break;
             case ARCHETYPE_INDEX:
                 result = DescriptorHelper.getDisplayName(object);
                 break;
@@ -158,17 +177,20 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
+     *                  sort in <tt>descending</tt> order
+     * @return the sort criteria, or <tt>null</tt> if the column isn't
      *         sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         SortConstraint[] result;
         switch (column) {
+            case ID_INDEX:
+                SortConstraint id = new NodeSortConstraint("id", ascending);
+                result = new SortConstraint[]{id};
+                break;
             case ARCHETYPE_INDEX:
-                ArchetypeSortConstraint archetype
-                        = new ArchetypeSortConstraint(ascending);
+                ArchetypeSortConstraint archetype = new ArchetypeSortConstraint(ascending);
                 result = new SortConstraint[]{archetype};
                 break;
             case NAME_INDEX:
@@ -176,8 +198,7 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
                 result = new SortConstraint[]{name};
                 break;
             case DESCRIPTION_INDEX:
-                SortConstraint description = new NodeSortConstraint(
-                        "description", ascending);
+                SortConstraint description = new NodeSortConstraint("description", ascending);
                 result = new SortConstraint[]{description};
                 break;
             default:

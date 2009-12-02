@@ -18,14 +18,10 @@
 
 package org.openvpms.web.app.workflow.checkout;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -37,6 +33,9 @@ import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.util.CheckBoxFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -106,7 +105,8 @@ public class BatchPrintDialog extends PopupDialog {
          * Constructs a new <code>PrintTableModel</code>.
          */
         public PrintTableModel() {
-            createTableColumnModel(true);
+            super(null);
+            setTableColumnModel(createTableColumnModel(false, true));
         }
 
         /**
@@ -151,7 +151,7 @@ public class BatchPrintDialog extends PopupDialog {
         @Override
         protected Object getValue(IMObject object, TableColumn column,
                                   int row) {
-        	Object result;
+            Object result;
             if (column.getModelIndex() == PRINT_INDEX) {
                 result = print.get(row);
             } else if (column.getModelIndex() == DESCRIPTION_INDEX) {
@@ -160,12 +160,12 @@ public class BatchPrintDialog extends PopupDialog {
                     ActBean bean = new ActBean((Act) object);
                     Entity template = bean.getParticipant("participation.documentTemplate");
                     if (template != null) {
-                       description = template.getName();
+                        description = template.getName();
                     }
                 }
                 result = description;
             } else {
-            	result = super.getValue(object, column, row);     
+                result = super.getValue(object, column, row);
             }
             return result;
         }
@@ -173,16 +173,15 @@ public class BatchPrintDialog extends PopupDialog {
         /**
          * Creates a new column model.
          *
-         * @param showArchetype if <code>true</code> show the archetype
+         * @param showId        if <tt>true</tt>, show the ID
+         * @param showArchetype if <tt>true</tt> show the archetype
          * @return a new column model
          */
-        protected TableColumnModel createTableColumnModel(
-                boolean showArchetype) {
+        protected TableColumnModel createTableColumnModel(boolean showId, boolean showArchetype) {
             TableColumnModel model = new DefaultTableColumnModel();
-            TableColumn column = createTableColumn(
-                    PRINT_INDEX, "workflow.checkout.printtablemodel.print");
+            TableColumn column = createTableColumn(PRINT_INDEX, "workflow.checkout.printtablemodel.print");
             model.addColumn(column);
-            return super.createTableColumnModel(showArchetype, model);
+            return super.createTableColumnModel(showId, showArchetype, model);
         }
 
     }

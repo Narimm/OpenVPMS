@@ -19,11 +19,14 @@
 package org.openvpms.web.app.patient;
 
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserAdapter;
 import org.openvpms.web.component.im.query.PatientQuery;
+import org.openvpms.web.component.im.query.PatientResultSet;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.query.TableBrowser;
 
 
 /**
@@ -32,30 +35,53 @@ import org.openvpms.web.component.im.table.IMTableModel;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientBrowser extends IMObjectTableBrowser<Party> {
+public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
 
     /**
-     * Construct a new <code>PatientBrowser</code> that queries IMObjects
-     * using the specified query, displaying them in the table.
+     * Constructs a <tt>PatientBrowser</tt>.
      *
      * @param query the query
-     * @param sort  the sort criteria. May be <code>null</code>
      */
-    public PatientBrowser(Query<Party> query, SortConstraint[] sort) {
-        super(query, sort, new PatientTableModel(false));
+    public PatientBrowser(PatientQuery query) {
+        setBrowser(createBrowser(query));
     }
 
     /**
-     * Query using the specified criteria, and populate the table with matches.
+     * Converts an object.
+     *
+     * @param set the object to convert
+     * @return the converted object
      */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void query() {
-        IMTableModel tableModel = getTableModel();
-        PatientTableModel model = (PatientTableModel) tableModel;
-        PatientQuery query = (PatientQuery) getQuery();
-        model.setShowOwner(query.isAllPatientsSelected());
-        super.query();
+    protected Party convert(ObjectSet set) {
+        return (Party) set.get("patient");
+    }
+
+    /**
+     * Creates a table browser that changes the model depending on what
+     * columns have been queried on.
+     *
+     * @param query the query
+     * @return a new browser
+     */
+    private static Browser<ObjectSet> createBrowser(final PatientQuery query) {
+        final PatientTableModel model = new PatientTableModel();
+        Query<ObjectSet> delegate = query.getQuery();
+        return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model) {
+            /**
+             * Performs the query.
+             *
+             * @return the query result set
+             */
+            @Override
+            protected ResultSet<ObjectSet> doQuery() {
+                ResultSet<ObjectSet> result = super.doQuery();
+                if (result instanceof PatientResultSet) {
+                    PatientResultSet set = (PatientResultSet) result;
+                    model.showColumns(set.isSearchingAllPatients(), set.isSearchingIdentities());
+                }
+                return result;
+            }
+        };
     }
 
 }

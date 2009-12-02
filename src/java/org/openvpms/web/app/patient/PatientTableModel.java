@@ -18,26 +18,27 @@
 
 package org.openvpms.web.app.patient;
 
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.im.table.AbstractEntityObjectSetTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
 
 /**
- * Add description here.
+ * Patient table model that can display the owner of a patient.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientTableModel extends BaseIMObjectTableModel<Party> {
+public class PatientTableModel extends AbstractEntityObjectSetTableModel {
 
     /**
      * The patient rules.
@@ -50,19 +51,21 @@ public class PatientTableModel extends BaseIMObjectTableModel<Party> {
     private boolean showOwner;
 
     /**
-     * The owner model index.
+     * Determines if the identity should be displayed.
+     */
+    private boolean showIdentity;
+
+    /**
+     * The owner index.
      */
     private static final int OWNER_INDEX = NEXT_INDEX;
 
 
     /**
-     * Constructs a new <tt>PatientTableModel</tt>.
-     *
-     * @param showOwner if <code>true</code> display the owner
+     * Constructs a <tt>PatientTableModel</tt>.
      */
-    public PatientTableModel(boolean showOwner) {
-        super(null);
-        this.showOwner = showOwner;
+    public PatientTableModel() {
+        super("patient", "identity");
         rules = new PatientRules();
         setTableColumnModel(createTableColumnModel());
     }
@@ -70,71 +73,98 @@ public class PatientTableModel extends BaseIMObjectTableModel<Party> {
     /**
      * Determines if the patient-owner column should be displayed.
      *
-     * @param showOwner if <code>true</code> show the patient-owner column
+     * @param owner    if <code>true</code> show the patient-owner column
+     * @param identity if <tt>true</tt> show the identity column
      */
-    public void setShowOwner(boolean showOwner) {
-        if (showOwner != this.showOwner) {
-            this.showOwner = showOwner;
+    public void showColumns(boolean owner, boolean identity) {
+        if (owner != showOwner || identity != showIdentity) {
+            showOwner = owner;
+            showIdentity = identity;
             setTableColumnModel(createTableColumnModel());
         }
     }
-
-    /**
-     * Determines if the patient-owner column should be displayed.
-     *
-     * @return <code>true</code> if the patient-owner column should be displayed
-     */
-    public boolean isShowOwner() {
-        return showOwner;
-    }
-
 
     /**
      * Creates a new column model.
      *
      * @return a new column model
      */
-    @Override
     protected TableColumnModel createTableColumnModel() {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
-        model.addColumn(createTableColumn(NAME_INDEX, "table.imobject.name"));
+        model.addColumn(createTableColumn(ID_INDEX, ID));
+        model.addColumn(createTableColumn(NAME_INDEX, NAME));
         if (showOwner) {
-            model.addColumn(
-                    createTableColumn(OWNER_INDEX, "patienttablemodel.owner"));
+            model.addColumn(createTableColumn(OWNER_INDEX, "patienttablemodel.owner"));
         }
-        model.addColumn(createTableColumn(DESCRIPTION_INDEX,
-                                          "table.imobject.description"));
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX, DESCRIPTION));
+        if (showIdentity) {
+            model.addColumn(createTableColumn(IDENTITY_INDEX, IDENTITY));
+        }
         return model;
     }
 
     /**
      * Returns the value found at the given coordinate within the table.
      *
-     * @param object the object
+     * @param set    the object
      * @param column the column
      * @param row    the row
-     * @return the value at the given coordinate
+     * @return the value at the given coordinate.
      */
-    @Override
-    protected Object getValue(Party object, TableColumn column, int row) {
-        if (column.getModelIndex() == OWNER_INDEX) {
-            Party owner = rules.getOwner(object);
-            IMObjectReference ref = (owner != null)
-                    ? owner.getObjectReference() : null;
-            IMObjectReferenceViewer viewer
-                    = new IMObjectReferenceViewer(ref, false);
-            return viewer.getComponent();
-        } else if (column.getModelIndex() == DESCRIPTION_INDEX
-                && rules.isDeceased(object)) {
-            String description = object.getDescription();
-            Label label = LabelFactory.create();
-            label.setText(description);
-            Label deceased = LabelFactory.create("patient.deceased",
-                                                 "Patient.Deceased");
-            return RowFactory.create("CellSpacing", label, deceased);
-        } else {
-            return super.getValue(object, column, row);
+    protected Object getValue(ObjectSet set, TableColumn column, int row) {
+        Object result;
+        int index = column.getModelIndex();
+        switch (index) {
+            case OWNER_INDEX:
+                result = getOwner(set);
+                break;
+            case DESCRIPTION_INDEX:
+                result = getDescriptionLabel(set);
+                break;
+            default:
+                result = super.getValue(set, column, row);
+                break;
         }
+        return result;
+    }
+
+    /**
+     * Returns the patient description.
+     *
+     * @param set the set
+     * @return the customer description, or <tt>null</tt> if none is found
+     */
+    protected Component getDescriptionLabel(ObjectSet set) {
+        Component result;
+        Party patient = (Party) getEntity(set);
+        Label label = LabelFactory.create();
+        label.setText(getDescription(set));
+        if (rules.isDeceased(patient)) {
+            Label deceased = LabelFactory.create("patient.deceased", "Patient.Deceased");
+            result = RowFactory.create("CellSpacing", label, deceased);
+        } else {
+            result = label;
+        }
+        return result;
+    }
+
+    /**
+     * Returns a component to display the owner of a patient.
+     *
+     * @param set the object set
+     * @return a component for the patient's owner, or <tt>null</tt> if the patient has no owner
+     */
+    protected Component getOwner(ObjectSet set) {
+        Component result = null;
+        Party patient = (Party) getEntity(set);
+        if (patient != null) {
+            Party owner = rules.getOwner(patient);
+            if (owner != null) {
+                IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(owner.getObjectReference(), false);
+                result = viewer.getComponent();
+            }
+        }
+        return result;
     }
 
 }
