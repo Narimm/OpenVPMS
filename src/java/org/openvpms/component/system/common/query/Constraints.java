@@ -150,7 +150,7 @@ public class Constraints {
     /**
      * Creates a new <em>short-name</em> constraint for primary/non-primary instances.
      *
-     * @param shortName the short name to constrain on. May contain wildcards.
+     * @param shortName  the short name to constrain on. May contain wildcards.
      * @param activeOnly if <tt>true</tt> only query active objects
      * @return a new <em>short-name</em> constraint
      */
@@ -172,8 +172,8 @@ public class Constraints {
     /**
      * Creates a new <em>short-name</em> constraint for active/inactive instances.
      *
-     * @param alias     the constraint alias
-     * @param shortName the short name to constrain on. May contain wildcards.
+     * @param alias      the constraint alias
+     * @param shortName  the short name to constrain on. May contain wildcards.
      * @param activeOnly if <tt>true</tt> only query active objects
      * @return a new <em>short-name</em> constraint
      */
@@ -210,7 +210,7 @@ public class Constraints {
      * @return a new <em>short-name</em> constraint
      */
     public static ShortNameConstraint shortName(String alias, String[] shortNames) {
-        return shortName(alias, shortNames,  false);
+        return shortName(alias, shortNames, false);
     }
 
     /**
@@ -306,4 +306,51 @@ public class Constraints {
         return result;
     }
 
+    /**
+     * Creates a new <em>sort</em> constraint on a node.
+     * <p/>
+     * The node will be sorted in ascending order.
+     *
+     * @param name the node name. May be qualified
+     * @return a new sort constraint
+     */
+    public static SortConstraint sort(String name) {
+        return sort(null, name);
+    }
+
+    /**
+     * Creates a new <em>sort</em> constraint on a node.
+     * <p/>
+     * The node will be sorted in ascending order.
+     *
+     * @param alias the type alias. May be <tt>null</tt>
+     * @param name  the node name
+     * @return a new sort constraint
+     */
+    public static SortConstraint sort(String alias, String name) {
+        return sort(alias, name, true);
+    }
+
+    /**
+     * Creates a new <em>sort</em> constraint on a node.
+     *
+     * @param name      the node name. May be qualified
+     * @param ascending whether to sort in ascending or descending order
+     * @return a new sort constraint
+     */
+    public static SortConstraint sort(String name, boolean ascending) {
+        return sort(null, name, ascending);
+    }
+
+    /**
+     * Creates a new <em>sort</em> constraint on a node.
+     *
+     * @param alias the type alias. May be <tt>null</tt>
+     * @param name      the node name
+     * @param ascending whether to sort in ascending or descending order
+     * @return a new sort constraint
+     */
+    public static SortConstraint sort(String alias, String name, boolean ascending) {
+        return new NodeSortConstraint(alias, name, ascending);
+    }
 }
