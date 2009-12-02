@@ -41,7 +41,6 @@ import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
@@ -60,7 +59,7 @@ public class QueryBuilderTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Holds a reference to the entity service
+     * The query builder.
      */
     private QueryBuilder builder;
 
@@ -73,9 +72,8 @@ public class QueryBuilderTestCase
                                 + "from " + PartyDO.class.getName() + " as party0 "
                                 + "where (party0.archetypeId.shortName = :shortName0 and "
                                 + "party0.id = :id0)";
-        ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeId("party.person.1.0"), false)
-                .add(new NodeConstraint("id", "1"));
+        ArchetypeQuery query = new ArchetypeQuery(new ArchetypeId("party.person.1.0"), false)
+                .add(Constraints.eq("id", "1"));
         checkQuery(query, expected);
     }
 
@@ -88,7 +86,7 @@ public class QueryBuilderTestCase
                                 + "where (party0.archetypeId.shortName = :shortName0 and "
                                 + "party0.id = :id0)";
         ArchetypeQuery query = new ArchetypeQuery("party.person", false, false)
-                .add(new NodeConstraint("id", "1"));
+                .add(Constraints.eq("id", "1"));
         checkQuery(query, expected);
     }
 
@@ -100,9 +98,8 @@ public class QueryBuilderTestCase
                                 + "from " + PartyDO.class.getName() + " as party0 "
                                 + "where (party0.archetypeId.shortName = :shortName0 and "
                                 + "party0.name like :name0)";
-        ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeId("party.person.1.0"), false)
-                .add(new NodeConstraint("name", "sa*"));
+        ArchetypeQuery query = new ArchetypeQuery(new ArchetypeId("party.person.1.0"), false)
+                .add(Constraints.eq("name", "sa*"));
         checkQuery(query, expected);
     }
 
@@ -118,12 +115,9 @@ public class QueryBuilderTestCase
                                 + "order by party0.name asc";
         ArchetypeQuery query = new ArchetypeQuery(
                 new ArchetypeId("party.person.1.0"), false)
-                .add(new NodeConstraint("name", "sa*"))
-                .add(new NodeSortConstraint("name", true))
-                .add(new CollectionNodeConstraint("contacts",
-                                                  new ShortNameConstraint(
-                                                          "contact.location",
-                                                          false, false)));
+                .add(Constraints.eq("name", "sa*"))
+                .add(Constraints.sort("name", true))
+                .add(Constraints.join("contacts", Constraints.shortName("contact.location")));
         checkQuery(query, expected);
     }
 
@@ -140,14 +134,11 @@ public class QueryBuilderTestCase
                                 + "contacts.archetypeId.shortName = :shortName2) "
                                 + "order by party0.name asc";
         ArchetypeQuery query = new ArchetypeQuery(
-                new ShortNameConstraint(
-                        new String[]{"party.person", "organization.organization"},
-                        false, false))
-                .add(new NodeConstraint("id", "1"))
-                .add(new NodeConstraint("name", "sa*"))
-                .add(new NodeSortConstraint("name", true))
-                .add(new CollectionNodeConstraint("contacts",
-                                                  new ShortNameConstraint("contact.location", false, false)));
+                Constraints.shortName(new String[]{"party.person", "organization.organization"}))
+                .add(Constraints.eq("id", "1"))
+                .add(Constraints.eq("name", "sa*"))
+                .add(Constraints.sort("name", true))
+                .add(Constraints.join("contacts", new ShortNameConstraint("contact.location", false, false)));
         checkQuery(query, expected);
     }
 
@@ -165,14 +156,11 @@ public class QueryBuilderTestCase
                                 + "contacts.archetypeId.shortName like :shortName2) "
                                 + "order by party0.name asc";
         ArchetypeQuery query = new ArchetypeQuery(
-                new ShortNameConstraint(
-                        new String[]{"party.person",
-                                     "organization.organization"},
-                        false, false))
-                .add(new NodeConstraint("id", "1"))
-                .add(new NodeConstraint("name", "sa*"))
-                .add(new NodeSortConstraint("name", true))
-                .add(new CollectionNodeConstraint("contacts", new ShortNameConstraint("contact.*", false, false)));
+                Constraints.shortName(new String[]{"party.person", "organization.organization"}))
+                .add(Constraints.eq("id", "1"))
+                .add(Constraints.eq("name", "sa*"))
+                .add(Constraints.sort("name", true))
+                .add(Constraints.join("contacts", new ShortNameConstraint("contact.*", false, false)));
         checkQuery(query, expected);
     }
 
@@ -190,12 +178,12 @@ public class QueryBuilderTestCase
                           + "order by party0.name asc, party0.archetypeId.shortName asc, "
                           + "contacts.archetypeId.shortName desc";
         ArchetypeQuery query = new ArchetypeQuery(
-                new ShortNameConstraint(new String[]{"party.person", "organization.organization"}, false, false))
-                .add(new NodeConstraint("id", "1"))
-                .add(new NodeConstraint("name", "sa*"))
-                .add(new NodeSortConstraint("name", true))
+                Constraints.shortName(new String[]{"party.person", "organization.organization"}))
+                .add(Constraints.eq("id", "1"))
+                .add(Constraints.eq("name", "sa*"))
+                .add(Constraints.sort("name", true))
                 .add(new ArchetypeSortConstraint(true))
-                .add(new CollectionNodeConstraint("contacts", new ShortNameConstraint("contact.*", false, false))
+                .add(Constraints.join("contacts", Constraints.shortName("contact.*"))
                         .add(new ArchetypeSortConstraint(false)));
         checkQuery(query, expected);
     }
@@ -212,10 +200,8 @@ public class QueryBuilderTestCase
                                 + "order by lookup0.name asc";
         ArchetypeQuery query = new ArchetypeQuery("lookup", "country",
                                                   false, false)
-                .add(new CollectionNodeConstraint(
-                        "target", "lookupRelationship.countryState",
-                        false, false))
-                .add(new NodeSortConstraint("name", true))
+                .add(Constraints.join("target", Constraints.shortName("lookupRelationship.countryState")))
+                .add(Constraints.sort("name"))
                 .setFirstResult(0)
                 .setMaxResults(-1);
 
@@ -313,8 +299,8 @@ public class QueryBuilderTestCase
         ArchetypeQuery query = new ArchetypeQuery(act);
         query.setDistinct(true);
 
-        query.add(new NodeConstraint("status", "IN_PROGRESS"));
-        query.add(new CollectionNodeConstraint("patient", participation));
+        query.add(Constraints.eq("status", "IN_PROGRESS"));
+        query.add(Constraints.join("patient", participation));
         query.add(new IdConstraint("act", "participation.act"));
         query.add(owner);
         query.add(patient);
@@ -322,8 +308,8 @@ public class QueryBuilderTestCase
         query.add(new IdConstraint("participation.entity", "patient"));
         query.add(new IdConstraint("patient", "owner.target"));
         query.add(new IdConstraint("customer", "owner.source"));
-        query.add(new NodeSortConstraint("customer", "name"));
-        query.add(new NodeSortConstraint("patient", "name"));
+        query.add(Constraints.sort("customer", "name"));
+        query.add(Constraints.sort("patient", "name"));
 
         checkQuery(query, expected);
     }
