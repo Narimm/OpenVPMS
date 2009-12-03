@@ -145,6 +145,15 @@ public abstract class ScheduleQuery {
     }
 
     /**
+     * Sets the date.
+     *
+     * @param date the date
+     */
+    public void setDate(Date date) {
+        this.date.setDate(date);
+    }
+
+    /**
      * Returns the selected schedule view.
      *
      * @return the selected schedule view. May be <tt>null</tt>
