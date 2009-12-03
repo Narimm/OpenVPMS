@@ -51,7 +51,7 @@ public class LookupTableModel extends BaseIMObjectTableModel<Lookup> {
         super(null);
         shortNames = DescriptorHelper.getShortNames(shortNames); // expand any wildcards
         boolean showArchetypes = shortNames.length > 1;
-        setTableColumnModel(createTableColumnModel(true, showArchetypes));
+        setTableColumnModel(createTableColumnModel(showArchetypes));
     }
 
 }
