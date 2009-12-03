@@ -83,7 +83,7 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
      * Create a query for the specified archetype id.
      *
      * @param archetypeId a valid archetype identity
-     * @param activeOnly  constraint to active only objects
+     * @param activeOnly  if <tt>true</tt> only return active objects
      */
     public ArchetypeQuery(ArchetypeId archetypeId, boolean activeOnly) {
         archetypeConstraint = new ArchetypeIdConstraint(archetypeId,
@@ -98,7 +98,7 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
      * @param entityName  the entity name (optional)
      * @param conceptName the concept name (optional)
      * @param primaryOnly only deal with the primary archetypes
-     * @param activeOnly  constraint to active only objects
+     * @param activeOnly  if <tt>true</tt> only return active objects
      */
     @Deprecated
     public ArchetypeQuery(String rmName, String entityName,
@@ -115,7 +115,7 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
      * @param entityName  the entity name (optional)
      * @param conceptName the concept name (optional)
      * @param primaryOnly only deal with the primary archetypes
-     * @param activeOnly  constraint to active only objects
+     * @param activeOnly  if <tt>true</tt> only return active objects
      */
     public ArchetypeQuery(String entityName, String conceptName,
                           boolean primaryOnly, boolean activeOnly) {
@@ -136,30 +136,46 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
     }
 
     /**
-     * Create an instance of this constraint with the specified short name
+     * Create an instance of this constraint with the specified short name,
+     * for primary/non-primary archetypes and active/inactive objects.
      *
      * @param shortName   the short name
-     * @param primaryOnly only deal with the primary archetypes
-     * @param activeOnly  constraint to active only objects
      */
-    public ArchetypeQuery(String shortName, boolean primaryOnly,
-                          boolean activeOnly) {
-        archetypeConstraint = new ShortNameConstraint(
-                shortName, primaryOnly, activeOnly);
+    public ArchetypeQuery(String shortName) {
+        this(shortName, false);
     }
 
     /**
-     * Create an instance of this class with the specified archetype
-     * short names
+     * Create an instance of this constraint with the specified short name,
+     * for primary/non-primary archetypes and active/inactive objects.
+     *
+     * @param shortName   the short name
+     * @param activeOnly  if <tt>true</tt> only return active objects
+     */
+    public ArchetypeQuery(String shortName, boolean activeOnly) {
+        this(shortName, false, activeOnly);
+    }
+
+    /**
+     * Create an instance of this constraint with the specified short name.
+     *
+     * @param shortName   the short name
+     * @param primaryOnly only deal with the primary archetypes
+     * @param activeOnly  if <tt>true</tt> only return active objects
+     */
+    public ArchetypeQuery(String shortName, boolean primaryOnly, boolean activeOnly) {
+        archetypeConstraint = new ShortNameConstraint(shortName, primaryOnly, activeOnly);
+    }
+
+    /**
+     * Create an instance of this class with the specified archetype short names.
      *
      * @param shortNames  an array of archetype short names
      * @param primaryOnly only deal with the primary archetypes
-     * @param activeOnly  constraint to active only objects
+     * @param activeOnly  if <tt>true</tt> only return active objects
      */
-    public ArchetypeQuery(String[] shortNames, boolean primaryOnly,
-                          boolean activeOnly) {
-        this.archetypeConstraint = new ShortNameConstraint(
-                shortNames, primaryOnly, activeOnly);
+    public ArchetypeQuery(String[] shortNames, boolean primaryOnly, boolean activeOnly) {
+        archetypeConstraint = new ShortNameConstraint(shortNames, primaryOnly, activeOnly);
     }
 
     /**
@@ -168,7 +184,7 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
      * @param reference the object reference
      */
     public ArchetypeQuery(IMObjectReference reference) {
-        this.archetypeConstraint = new ObjectRefConstraint(reference);
+        archetypeConstraint = new ObjectRefConstraint(reference);
     }
 
     /**
