@@ -333,6 +333,22 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         } else {
             model = new TabPaneModel();
         }
+        doTabLayout(object, descriptors, properties, model, context, shortcuts);
+        return model;
+    }
+
+    /**
+     * Lays out child components in a tab model.
+     *
+     * @param object      the parent object
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param model       the tab model
+     * @param context     the layout context
+     * @param shortcuts   if <tt>true</tt> include short cuts
+     */
+    protected void doTabLayout(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
+                               TabPaneModel model, LayoutContext context, boolean shortcuts) {
         int shortcut = 1;
         for (NodeDescriptor nodeDesc : descriptors) {
             Property property = properties.get(nodeDesc);
@@ -351,7 +367,6 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             }
             model.addTab(text, inset);
         }
-        return model;
     }
 
     /**
@@ -527,7 +542,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param shortcut the shortcut no.
      * @return the shortcut text
      */
-    private String getShortcut(String name, int shortcut) {
+    protected String getShortcut(String name, int shortcut) {
         if (shortcut == 10) {
             shortcut = 0;
         }

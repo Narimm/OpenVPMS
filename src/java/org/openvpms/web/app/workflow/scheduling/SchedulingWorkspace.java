@@ -36,6 +36,8 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
+import java.util.Date;
+
 
 /**
  * Scheduling workspace.
@@ -102,10 +104,7 @@ public abstract class SchedulingWorkspace
      */
     @Override
     public void setObject(Entity object) {
-        location = GlobalContext.getInstance().getLocation();
-        super.setObject(object);
-        layoutWorkspace(object);
-        initQuery(object);
+        setScheduleView(object, new Date());
     }
 
     /**
@@ -138,6 +137,19 @@ public abstract class SchedulingWorkspace
     @Override
     public void hide() {
         GlobalContext.getInstance().removeListener(locationListener);
+    }
+
+    /**
+     * Sets the schedule view and date.
+     *
+     * @param view the schedule view
+     * @param date   the date to view
+     */
+    protected void setScheduleView(Entity view, Date date) {
+        location = GlobalContext.getInstance().getLocation();
+        super.setObject(view);
+        layoutWorkspace();
+        initQuery(view, date);
     }
 
     /**
@@ -232,10 +244,8 @@ public abstract class SchedulingWorkspace
 
     /**
      * Lays out the workspace.
-     *
-     * @param view the schedule view
      */
-    protected void layoutWorkspace(Entity view) {
+    protected void layoutWorkspace() {
         setBrowser(createBrowser());
         setCRUDWindow(createCRUDWindow());
         setWorkspace(createWorkspace());
@@ -338,9 +348,11 @@ public abstract class SchedulingWorkspace
      * Perform an initial query, selecting the first available act.
      *
      * @param view the party
+     * @param date the date to query
      */
-    protected void initQuery(Entity view) {
+    protected void initQuery(Entity view, Date date) {
         browser.setScheduleView(view);
+        browser.setDate(date);
         browser.query();
         onQuery();
     }
@@ -375,7 +387,7 @@ public abstract class SchedulingWorkspace
         if (latest != getObject()) {
             setObject(latest);
         } else if (browser == null) {
-            layoutWorkspace(null);
+            layoutWorkspace();
             latest = browser.getScheduleView();
             setObject(latest);
         } else {

@@ -174,6 +174,17 @@ public abstract class AbstractWorkspace<T extends IMObject>
     }
 
     /**
+     * Switch to the specified object.
+     * <p/>
+     * The object need not be of the same type supported by {@link #setObject}.
+     *
+     * @param object the object to switch to
+     */
+    public void switchTo(IMObject object) {
+       setIMObject(object);
+    }
+
+    /**
      * Add a property change listener.
      *
      * @param name     the property name to listen on
