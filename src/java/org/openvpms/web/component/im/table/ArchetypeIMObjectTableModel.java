@@ -36,6 +36,6 @@ public class ArchetypeIMObjectTableModel<T extends IMObject>
      */
     public ArchetypeIMObjectTableModel() {
         super(null);
-        setTableColumnModel(createTableColumnModel(true, true));
+        setTableColumnModel(createTableColumnModel(true));
     }
 }

@@ -23,24 +23,22 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.TextField;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 
 /**
- * Add description here.
+ * Clear Till dialog.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -50,40 +48,38 @@ public class ClearTillDialog extends PopupDialog {
     /**
      * The amount field.
      */
-    private final TextField _amount;
+    private final TextField amount;
 
     /**
      * The bank account selector.
      */
-    private final SelectField _account;
+    private final SelectField account;
 
 
     /**
-     * Construct a new <code>ClearTillDialog</code>.
+     * Constructs a <tt>ClearTillDialog</tt>.
      */
     public ClearTillDialog() {
         super(Messages.get("till.clear.title"), "ClearTillDialog", OK_CANCEL);
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+        IArchetypeService service = ServiceHelper.getArchetypeService();
         setModal(true);
 
-        _amount = new TextField();
+        amount = new TextField();
 
-        String[] shortNames = {"party.organisationDeposit"};
-        IPage<IMObject> page = ArchetypeQueryHelper.get(
-                service, shortNames, true, 0, ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> accounts = page.getResults();
-        _account = SelectFieldFactory.create(accounts);
-        _account.setCellRenderer(IMObjectListCellRenderer.NAME);
+        ArchetypeQuery query = new ArchetypeQuery("party.organisationDeposit", true)
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> accounts = service.get(query).getResults();
+        account = SelectFieldFactory.create(accounts);
+        account.setCellRenderer(IMObjectListCellRenderer.NAME);
         if (!accounts.isEmpty()) {
-            _account.setSelectedIndex(0);
+            account.setSelectedIndex(0);
         }
 
         Grid grid = GridFactory.create(2);
         grid.add(LabelFactory.create("till.clear.amount"));
-        grid.add(_amount);
+        grid.add(amount);
         grid.add(LabelFactory.create("till.clear.account"));
-        grid.add(_account);
+        grid.add(account);
         getLayout().add(grid);
     }
 
@@ -93,18 +89,18 @@ public class ClearTillDialog extends PopupDialog {
      * @param amount the till float amount
      */
     public void setAmount(BigDecimal amount) {
-        _amount.setText(amount.toString());
+        this.amount.setText(amount.toString());
     }
 
     /**
      * Returns the till float amount.
      *
-     * @return the till float amount. May be <code>null</code>
+     * @return the till float amount. May be <tt>null</tt>
      */
     public BigDecimal getAmount() {
         BigDecimal amount = null;
         try {
-            amount = new BigDecimal(_amount.getText());
+            amount = new BigDecimal(this.amount.getText());
         } catch (NumberFormatException ignore) {
             // no-op
         }
@@ -117,7 +113,7 @@ public class ClearTillDialog extends PopupDialog {
      * @return the bank deposit organisation
      */
     public Party getAccount() {
-        return (Party) _account.getSelectedItem();
+        return (Party) account.getSelectedItem();
     }
 
     /**
