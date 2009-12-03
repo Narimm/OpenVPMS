@@ -118,6 +118,18 @@ public class Constraints {
     }
 
     /**
+     * Creates a <em>between</em> constraint for the named node.
+     *
+     * @param name the node name
+     * @param lo   the low value
+     * @param hi   the high value
+     * @return a new <em>between</em> constraint
+     */
+    public static NodeConstraint between(String name, Object lo, Object hi) {
+        return new NodeConstraint(name, RelationalOp.BTW, lo, hi);
+    }
+
+    /**
      * Creates an <em>is-null</em> constraint for the named node.
      *
      * @param name the node name
@@ -170,7 +182,7 @@ public class Constraints {
     }
 
     /**
-     * Creates a new <em>short-name</em> constraint for active/inactive instances.
+     * Creates a new <em>short-name</em> constraint for primary/non-primary instances.
      *
      * @param alias      the constraint alias
      * @param shortName  the short name to constrain on. May contain wildcards.
@@ -182,7 +194,7 @@ public class Constraints {
     }
 
     /**
-     * Creates a new <em>short-name</em> constraint for both active/inactive and primary/non-primary and instances.
+     * Creates a new <em>short-name</em> constraint for both active/inactive and primary/non-primary instances.
      *
      * @param shortNames the short names to constrain on. May contain wildcards.
      * @return a new <em>short-name</em> constraint
@@ -192,7 +204,7 @@ public class Constraints {
     }
 
     /**
-     * Creates a new <em>short-name</em> constraint for primary/non-primary and instances.
+     * Creates a new <em>short-name</em> constraint for primary/non-primary instances.
      *
      * @param shortNames the short names to constrain on. May contain wildcards.
      * @param activeOnly if <tt>true</tt> only query active objects
@@ -223,17 +235,6 @@ public class Constraints {
      */
     public static ShortNameConstraint shortName(String alias, String[] shortNames, boolean activeOnly) {
         return new ShortNameConstraint(alias, shortNames, false, activeOnly);
-    }
-
-    /**
-     * Creates a new object reference constraint.
-     *
-     * @param name      the node name
-     * @param reference the object reference
-     * @return a new object reference constraint
-     */
-    public static ObjectRefNodeConstraint ref(String name, IMObjectReference reference) {
-        return new ObjectRefNodeConstraint(name, reference);
     }
 
     /**
@@ -345,7 +346,7 @@ public class Constraints {
     /**
      * Creates a new <em>sort</em> constraint on a node.
      *
-     * @param alias the type alias. May be <tt>null</tt>
+     * @param alias     the type alias. May be <tt>null</tt>
      * @param name      the node name
      * @param ascending whether to sort in ascending or descending order
      * @return a new sort constraint
