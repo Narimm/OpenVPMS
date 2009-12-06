@@ -125,6 +125,24 @@ public abstract class JoinConstraint implements IConstraintContainer {
         return this;
     }
 
+    /**
+     * Returns the type name alias.
+     *
+     * @return the type name alias. May be <tt>null</tt>
+     */
+    public String getAlias() {
+        return getArchetypeConstraint().getAlias();
+    }
+
+    /**
+     * Sets the type name alias.
+     *
+     * @param alias the alias. May be <tt>null</tt>
+     */
+    public void setAlias(String alias) {
+        getArchetypeConstraint().setAlias(alias);
+    }
+
     /* (non-Javadoc)
     * @see java.lang.Object#equals(java.lang.Object)
     */

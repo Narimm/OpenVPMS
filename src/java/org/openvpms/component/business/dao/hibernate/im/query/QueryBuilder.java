@@ -529,8 +529,8 @@ public class QueryBuilder {
 
         boolean and = false;
 
-        if (archetypeConstraint == null || !constrainsByShortName(archetypeConstraint)) {
-            if (archetypeConstraint != null && activeOnly) {
+        if (!constrainsByShortName(archetypeConstraint)) {
+            if (activeOnly || !archetypeConstraint.getConstraints().isEmpty()) {
                 context.pushLogicalOperator(LogicalOperator.And);
                 and = true;
             }
@@ -549,9 +549,7 @@ public class QueryBuilder {
         }
 
         // process common portion of constraint
-        if (archetypeConstraint != null) {
-            processArchetypeConstraint(archetypeConstraint, context);
-        }
+        processArchetypeConstraint(archetypeConstraint, context);
 
         // pop the stack when we have finished processing this constraint
         if (and) {

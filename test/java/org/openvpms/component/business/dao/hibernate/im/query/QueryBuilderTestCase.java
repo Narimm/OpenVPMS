@@ -356,9 +356,9 @@ public class QueryBuilderTestCase
                                 + ActDO.class.getName() + " as act0 "
                                 + "inner join act0.participations as participants "
                                 + "where (act0.archetypeId.shortName = :shortName0 and "
-                                + "participants.archetypeId.shortName = :shortName1 and "
+                                + "(participants.archetypeId.shortName = :shortName1 and "
                                 + "(participants.entity.id = :id0 or "
-                                + "participants.entity.archetypeId.shortName = :shortName2))";
+                                + "participants.entity.archetypeId.shortName = :shortName2)))";
 
         // create a query that returns all customer estimations for a particular
         // customer or that has an author.
@@ -437,17 +437,29 @@ public class QueryBuilderTestCase
         checkQuery(query2, expected);
     }
 
-    public void testQ() {
-        final String expected = "select act0 from " + ActDO.class.getName() + " as act0 "
-                                + "inner join act0.participations as customer "
-                                + "where (act0.archetypeId.shortName = :shortName0 and act0.active = :active0 and "
-                                + "customer.archetypeId.shortName = :shortName1 and customer.entity.id = :id0)";
-        ArchetypeQuery query = new ArchetypeQuery("act.customerEstimation", false, true);
-        CollectionNodeConstraint participant
-                = new CollectionNodeConstraint("customer");
-        participant.add(new ObjectRefNodeConstraint("entity", new IMObjectReference(
-                new ArchetypeId("party.customerperson"), 12345)));
-        query.add(participant);
+    /**
+     * Verifies that nested left outer joins are supported.
+     */
+    public void testNestedLeftOuterJoin() {
+        String expected = "select act0 from "
+                          + ActDO.class.getName() + " as act0 "
+                          + "left outer join act0.participations as clinician "
+                          + "with (clinician.archetypeId.shortName = :shortName1 and clinician.entity.id = :id0) "
+                          + "left outer join act0.participations as patient "
+                          + "with (patient.archetypeId.shortName = :shortName2) "
+                          + "left outer join patient.entity as entity "
+                          + "with entity.archetypeId.shortName = :shortName3 "
+                          + "where (act0.archetypeId.shortName = :shortName0) order by entity.name asc";
+        ArchetypeQuery query = new ArchetypeQuery("act.patientReminder");
+        IMObjectReference clinicanRef = new IMObjectReference(new ArchetypeId("security.user"), 12345);
+        JoinConstraint clinician = Constraints.leftJoin("clinician");
+        clinician.add(Constraints.eq("entity", clinicanRef));
+        query.add(clinician);
+        JoinConstraint patient = Constraints.leftJoin("patient");
+        JoinConstraint entity = Constraints.leftJoin("entity");
+        patient.add(entity);
+        query.add(patient);
+        query.add(Constraints.sort(entity.getAlias(), "name"));
         checkQuery(query, expected);
     }
 
