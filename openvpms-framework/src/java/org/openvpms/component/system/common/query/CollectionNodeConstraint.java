@@ -124,18 +124,9 @@ public class CollectionNodeConstraint extends JoinConstraint {
                     ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);
         }
         if (constraint.getAlias() == null) {
-            constraint.setAlias(getUnqualifiedName(nodeName));
+            setAlias(getUnqualifiedName(nodeName));
         }
         this.nodeName = nodeName;
-    }
-
-    /**
-     * Returns the type name alias.
-     *
-     * @return the type name alias. May be <tt>null</tt>
-     */
-    public String getAlias() {
-        return getArchetypeConstraint().getAlias();
     }
 
     /**

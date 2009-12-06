@@ -62,6 +62,7 @@
                 <directory>${basedir}/test/java</directory>
                 <includes>
                     <include>**/*.xml</include>
+                    <include>**/*.adl</include>
                 </includes>
             </testResource>
             <testResource>
@@ -435,29 +436,9 @@
             <version>${xmlapis.version}</version>
         </dependency>
         <dependency>
-            <!-- used by jtestcase -->
-            <groupId>jaxen</groupId>
-            <artifactId>jaxen</artifactId>
-            <version>${jaxen.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <!-- same as xml-apis -->
-                    <groupId>xerces</groupId>
-                    <artifactId>xmlParserAPIs</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jtestcase</groupId>
-            <artifactId>jtestcase</artifactId>
-            <version>${jtestcase.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

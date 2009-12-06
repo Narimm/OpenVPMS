@@ -130,6 +130,17 @@ public class Constraints {
     }
 
     /**
+     * Creates an <em>in</em> constraint for the named node.
+     *
+     * @param name   the node name
+     * @param values the values
+     * @return a new <em>in</em> constraint
+     */
+    public static NodeConstraint in(String name, Object... values) {
+        return new NodeConstraint(name, RelationalOp.IN, values);
+    }
+
+    /**
      * Creates an <em>is-null</em> constraint for the named node.
      *
      * @param name the node name
@@ -271,12 +282,39 @@ public class Constraints {
     /**
      * Creates a left outer join on a node.
      *
+     * @param name  the node name
+     * @param alias an alias for the join. May be <tt>null</tt>
+     * @return a new left outer join constraint
+     */
+    public static JoinConstraint leftJoin(String name, String alias) {
+        JoinConstraint result = leftJoin(name);
+        result.setAlias(alias);
+        return result;
+    }
+
+    /**
+     * Creates a left outer join on a node.
+     *
      * @param name       the node name
      * @param constraint the archetype constraint to use for the collection node
      * @return a new left outer join constraint
      */
     public static JoinConstraint leftJoin(String name, BaseArchetypeConstraint constraint) {
         return new CollectionNodeConstraint(name, constraint).setJoinType(JoinConstraint.JoinType.LeftOuterJoin);
+    }
+
+    /**
+     * Creates a left outer join on a node.
+     *
+     * @param name       the node name
+     * @param alias      an alias for the join. May be <tt>null</tt>
+     * @param constraint the archetype constraint to use for the collection node
+     * @return a new left outer join constraint
+     */
+    public static JoinConstraint leftJoin(String name, String alias, BaseArchetypeConstraint constraint) {
+        JoinConstraint result = leftJoin(name, constraint);
+        result.setAlias(alias);
+        return result;
     }
 
     /**

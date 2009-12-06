@@ -134,13 +134,6 @@
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>jtestcase</groupId>
-      <artifactId>jtestcase</artifactId>
-      <version>3.0.0</version>
-      <type>jar</type>
-      <url>http://jtestcase.sourceforge.net/</url>
-    </dependency>
-    <dependency>
       <groupId>jdom</groupId>
       <artifactId>jdom</artifactId>
       <version>1.0</version>
@@ -160,13 +153,6 @@
       <version>1.1.2-dev</version>
       <type>jar</type>
       <url>http://stax.codehaus.org/</url>
-    </dependency>
-    <dependency>
-      <groupId>jaxen</groupId>
-      <artifactId>jaxen</artifactId>
-      <version>1.1-beta-6</version>
-      <type>jar</type>
-      <url>http://www.jaxen.org/</url>
     </dependency>
     <dependency>
       <groupId>springframework</groupId>

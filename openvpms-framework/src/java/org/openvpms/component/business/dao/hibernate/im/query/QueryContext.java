@@ -56,6 +56,11 @@ public class QueryContext {
     private List<FromClause> fromClauses = new ArrayList<FromClause>();
 
     /**
+     * The from clause stack.
+     */
+    private Stack<FromClause> fromStack = new Stack<FromClause>();
+
+    /**
      * The ordered clause part of the hql query
      */
     private StringBuilder orderedClause = new StringBuilder(" order by ");
@@ -240,6 +245,7 @@ public class QueryContext {
         }
 
         fromClauses.add(fromClause);
+        fromStack.push(fromClause);
 
         typeStack.push(types);
         varStack.push(alias);
@@ -260,6 +266,7 @@ public class QueryContext {
         String alias = addTypeSet(types, property);
         FromClause fromClause = new FromClause(joinType, varStack.peek(), property, alias);
         fromClauses.add(fromClause);
+        fromStack.push(fromClause);
         typeStack.push(types);
         varStack.push(alias);
         joinStack.push(new Counter<JoinType>(joinType));
@@ -275,6 +282,7 @@ public class QueryContext {
     TypeSet popTypeSet() {
         varStack.pop();
         joinStack.pop();
+        fromStack.pop();
         return typeStack.pop();
     }
 
@@ -742,7 +750,7 @@ public class QueryContext {
      * @return the current from clause
      */
     private FromClause getFromClause() {
-        return fromClauses.get(fromClauses.size() - 1);
+        return fromStack.peek();
     }
 
     /**
