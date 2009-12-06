@@ -23,11 +23,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 
@@ -43,10 +41,10 @@ public class QueryHelper {
      * Determines if a node is a participation node.
      *
      * @param descriptor the node descriptor
+     * @return <tt>true</tt> if the node is a participation node
      */
     public static boolean isParticipationNode(NodeDescriptor descriptor) {
-        return descriptor.isCollection() && "/participations".equals(
-                descriptor.getPath());
+        return descriptor.isCollection() && "/participations".equals(descriptor.getPath());
     }
 
     /**
@@ -81,34 +79,26 @@ public class QueryHelper {
                                               ArchetypeQuery query,
                                               NodeDescriptor descriptor,
                                               boolean ascending) {
-        String[] particShortNames = DescriptorHelper.getShortNames(descriptor);
-        String particAlias = getAlias("partic", query);
-        ShortNameConstraint participation = new ShortNameConstraint(
-                particAlias, particShortNames, false, false);
-        acts.add(new CollectionNodeConstraint(descriptor.getName(),
-                                              participation)
-                .setJoinType(JoinConstraint.JoinType.LeftOuterJoin));
-        ShortNameConstraint entity = new ShortNameConstraint(
-                getAlias("entity", query),
-                getEntityShortNames(particShortNames), false, false);
-        query.add(entity);
-        query.add(new IdConstraint(acts.getAlias(), particAlias + ".act"));
-        query.add(new IdConstraint(entity.getAlias(), particAlias + ".entity"));
-        query.add(new NodeSortConstraint(entity.getAlias(), "name", ascending));
+        JoinConstraint particJoin = Constraints.leftJoin(descriptor.getName(), getAlias(descriptor.getName(), query));
+        JoinConstraint entityJoin = Constraints.leftJoin("entity", getAlias("entity", query));
+
+        particJoin.add(entityJoin);
+        acts.add(particJoin);
+        query.add(Constraints.sort(entityJoin.getAlias(), "name", ascending));
     }
 
     /**
      * Returns a unique alias for an entity constraint.
      *
+     * @param prefix the alias prefix
+     * @param query  the archetype query
      * @return the alias
      */
     private static String getAlias(String prefix, ArchetypeQuery query) {
-        return prefix + getAliasSuffix(prefix, query.getArchetypeConstraint(),
-                                       0);
+        return prefix + getAliasSuffix(prefix, query.getArchetypeConstraint(), 0);
     }
 
-    private static int getAliasSuffix(String prefix, IConstraint constraint,
-                                      int maxId) {
+    private static int getAliasSuffix(String prefix, IConstraint constraint, int maxId) {
         if (constraint instanceof BaseArchetypeConstraint) {
             BaseArchetypeConstraint arch = (BaseArchetypeConstraint) constraint;
             String alias = arch.getAlias();
@@ -130,10 +120,6 @@ public class QueryHelper {
             }
         }
         return maxId;
-    }
-
-    private static String[] getEntityShortNames(String[] shortNames) {
-        return DescriptorHelper.getNodeShortNames(shortNames, "entity");
     }
 
 }
