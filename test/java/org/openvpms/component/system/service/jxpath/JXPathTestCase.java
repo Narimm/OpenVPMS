@@ -18,6 +18,7 @@
 
 package org.openvpms.component.system.service.jxpath;
 
+import junit.framework.TestCase;
 import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
@@ -39,14 +40,12 @@ import org.openvpms.component.business.service.archetype.descriptor.cache.IArche
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
-import org.openvpms.component.system.common.test.BaseTestCase;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -58,13 +57,7 @@ import java.util.Properties;
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class JXPathTestCase extends BaseTestCase {
-
-    /**
-     * A reference to the JXPathHelper. Configures jxpath.
-     */
-    @SuppressWarnings("unused")
-    private JXPathHelper context = new JXPathHelper();
+public class JXPathTestCase extends TestCase {
 
     /**
      * Cache a reference to the Archetype service
@@ -75,7 +68,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test JXPath on node descriptors
      */
-    public void testPersonNodeDescriptors() throws Exception {
+    public void testPersonNodeDescriptors() {
 
         // retrieve the node descriptor for animal.pet
         ArchetypeDescriptor adesc = service
@@ -93,8 +86,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test the path to collection bug ovpms-131
      */
-    public void testOVPMS131()
-            throws Exception {
+    public void testOVPMS131() {
         Party person = createPerson("MR", "jima", "alateras");
         EntityIdentity id1 = new EntityIdentity();
         id1.setName("jimbo");
@@ -110,8 +102,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test that the bug to ovpms-135 is resolved
      */
-    public void testNonMandatoryNodes()
-            throws Exception {
+    public void testNonMandatoryNodes() {
         IMObject object = service.create("lookup.staff");
         assertNotNull(object);
 
@@ -125,7 +116,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test that JXPath can evaulate complex boolean expressions
      */
-    public void testBooleanExpressionEvaulation() throws Exception {
+    public void testBooleanExpressionEvaulation() {
         ArchetypeDescriptor adesc = service
                 .getArchetypeDescriptor("party.person");
         assertTrue(((Boolean) getValue(
@@ -142,7 +133,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test that jxpath derive values atually work
      */
-    public void testDerivedValueNodes() throws Exception {
+    public void testDerivedValueNodes() {
         // we know that both name and description are derived nodes
         // for person.person
         Party person = createPerson("MR", "Jim", "Alateras");
@@ -160,7 +151,7 @@ public class JXPathTestCase extends BaseTestCase {
      * Test that the entityRelationship.animalCarer create default object
      * initializes the date correctly using the jxpath expression
      */
-    public void testJXPathDateFunction() throws Exception {
+    public void testJXPathDateFunction() {
         // create a default animalCarer object
         Date start = new Date();
         EntityRelationship er = (EntityRelationship) service
@@ -173,8 +164,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test that packaged functions work as expects
      */
-    public void testPackagedFunctions()
-            throws Exception {
+    public void testPackagedFunctions() {
         JXPathContext ctx = JXPathHelper.newContext(this);
         assertTrue(ctx.getValue("java.util.Date.new()") instanceof Date);
         assertTrue(ctx.getValue("'jimbo'").equals("jimbo"));
@@ -183,8 +173,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test the JXPath expressions into collections
      */
-    public void testJXPathCollectionExpressions()
-            throws Exception {
+    public void testJXPathCollectionExpressions() {
         List<Party> list = new ArrayList<Party>();
         list.add(createPerson("MR", "Jim", "Alateras"));
         list.add(createPerson("MS", "Bernadette", "Feeney"));
@@ -200,7 +189,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test that path to collection works
      */
-    public void testPathToCollection() throws Exception {
+    public void testPathToCollection() {
 
         // retrieve the node descriptor for animal.pet
         ArchetypeDescriptor adesc = (ArchetypeDescriptor) service
@@ -218,8 +207,7 @@ public class JXPathTestCase extends BaseTestCase {
      * Test the JXPath expressions for retrieving an object with an id
      * from a collection
      */
-    public void testJXPathSearchCollectionForMatchingUid()
-            throws Exception {
+    public void testJXPathSearchCollectionForMatchingUid() {
         List<Party> list = new ArrayList<Party>();
         Party person = createPerson("MR", "Jim", "Alateras");
         person.setId(1);
@@ -257,10 +245,11 @@ public class JXPathTestCase extends BaseTestCase {
     }
 
     /**
-     * Test the setting and getting of values on collections
+     * Test the setting and getting of values on collections.
+     *
+     * @throws Exception for any error
      */
-    public void testCollectionManipulation()
-            throws Exception {
+    public void testCollectionManipulation() throws Exception {
         ArrayList list = new ArrayList();
         MethodUtils.invokeMethod(list, "add", "object1");
         MethodUtils.invokeMethod(list, "add", "object2");
@@ -271,8 +260,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test the set value on a PropertyMap
      */
-    public void testSetValueOnPropertyMap()
-            throws Exception {
+    public void testSetValueOnPropertyMap() {
         PropertyMap map = new PropertyMap();
         map.setName("archetypes");
 
@@ -290,8 +278,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test that we can sum correctly over a list of objects
      */
-    public void testSumOverBigDecimal()
-            throws Exception {
+    public void testSumOverBigDecimal() {
         FunctionLibrary lib = new FunctionLibrary();
         lib.addFunctions(new ClassFunctions(TestFunctions.class, "ns"));
 
@@ -316,8 +303,7 @@ public class JXPathTestCase extends BaseTestCase {
      * Test that we can still sum using a conversion function in the
      * expression
      */
-    public void testSumOverDouble()
-            throws Exception {
+    public void testSumOverDouble() {
         FunctionLibrary lib = new FunctionLibrary();
         lib.addFunctions(new ClassFunctions(TestFunctions.class, "ns"));
 
@@ -342,8 +328,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test that the extension functions are called through JXPathHelper
      */
-    public void testJXPathHelperExtensionFunctions()
-            throws Exception {
+    public void testJXPathHelperExtensionFunctions() {
         // prepare the helper
         Properties props = new Properties();
         props.put("tf", TestFunctions.class.getName());
@@ -364,8 +349,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test for bug OVPMS-236
      */
-    public void testOVPMS236()
-            throws Exception {
+    public void testOVPMS236() {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 "productPrice.margin");
         NodeDescriptor ndesc = adesc.getNodeDescriptor("margin");
@@ -378,8 +362,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test for bug OVPMS-228
      */
-    public void testOVPMS228()
-            throws Exception {
+    public void testOVPMS228() {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 "productPrice.margin");
         NodeDescriptor ndesc = adesc.getNodeDescriptor("margin");
@@ -395,8 +378,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test for bug OVPMD-210
      */
-    public void testOVPMS210()
-            throws Exception {
+    public void testOVPMS210() {
         BigDecimalValues values = new BigDecimalValues(new BigDecimal(100),
                                                        new BigDecimal(200));
         JXPathContext ctx = JXPathHelper.newContext(values);
@@ -408,8 +390,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test for bug OBf-54
      */
-    public void testOBF54()
-            throws Exception {
+    public void testOBF54() {
         OpenVPMSTypeConverter converter = new OpenVPMSTypeConverter();
         Object obj;
 
@@ -426,8 +407,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Test normal maths operations
      */
-    public void testJXPathMaths()
-            throws Exception {
+    public void testJXPathMaths() {
         JXPathContext ctx = JXPathHelper.newContext(new Object());
         ctx.getValue("2 + 2");
         ctx.getValue("2 - 2");
@@ -461,19 +441,21 @@ public class JXPathTestCase extends BaseTestCase {
     }
 
     /*
-     * @see BaseTestCase#setUp()
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
      */
     protected void setUp() throws Exception {
         super.setUp();
 
-        Hashtable gparams = getTestData().getGlobalParams();
-        String afile = (String) gparams.get("assertionFile");
-        String dir = (String) gparams.get("dir");
-        String extension = (String) gparams.get("extension");
+        // configure jxpath
+        new JXPathHelper();
 
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
-                                                                         new String[]{extension},
-                                                                         afile);
+        String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
+        String dir = "org/openvpms/archetype";
+        String extension = "adl";
+
+        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir, new String[]{extension}, assertionFile);
         service = new ArchetypeService(cache);
     }
 
@@ -489,7 +471,7 @@ public class JXPathTestCase extends BaseTestCase {
         /**
          * Object obj = JXPathHelper.newContext(source).getValue(path); if (obj
          * instanceof Pointer) { obj = ((Pointer)obj).getValue(); }
-         * 
+         *
          * return obj;
          */
 
@@ -516,46 +498,3 @@ public class JXPathTestCase extends BaseTestCase {
     }
 }
 
-
-class ValueHolder {
-    private Object target;
-    private Object source;
-
-
-    /**
-     * @param source
-     * @param target
-     */
-    public ValueHolder(Object source, Object target) {
-        this.source = source;
-        this.target = target;
-    }
-
-    /**
-     * @return Returns the source.
-     */
-    public Object getSource() {
-        return source;
-    }
-
-    /**
-     * @param source The source to set.
-     */
-    public void setSource(Object source) {
-        this.source = source;
-    }
-
-    /**
-     * @return Returns the target.
-     */
-    public Object getTarget() {
-        return target;
-    }
-
-    /**
-     * @param target The target to set.
-     */
-    public void setTarget(Object target) {
-        this.target = target;
-    }
-}
