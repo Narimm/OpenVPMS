@@ -95,9 +95,9 @@ public class ArchetypeServiceAssertionDescriptorTestCase extends TestCase {
         }
     }
 
-    /* (non-Javadoc)
-    * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
-    */
+    /**
+     * Sets up the test case.
+     */
     @Override
     protected void setUp() throws Exception {
         super.setUp();
