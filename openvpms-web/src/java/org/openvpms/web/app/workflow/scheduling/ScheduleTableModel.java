@@ -274,7 +274,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return <tt>true</tt> if the cell is cut
      */
     public boolean isCutCell(int column, int row) {
-        return cutColumn == column && cutRow == row;
+        return cutColumn == column && cutColumn != -1 && cutRow == row && cutRow != -1;
     }
 
     /**
