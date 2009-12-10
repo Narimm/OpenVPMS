@@ -25,8 +25,8 @@
     </issueManagement-->
 
     <scm>
-        <connection>scm:svn:svn://svn.openvpms.org/openvpms/maven-plugins/trunk</connection>
-        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/maven-plugins/trunk</developerConnection>
+        <connection>scm:svn:svn://svn.openvpms.org/openvpms/maven/trunk</connection>
+        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/maven/trunk</developerConnection>
         <url>http://svn.openvpms.org</url>
     </scm>
 
