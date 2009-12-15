@@ -68,9 +68,14 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     private FocusGroup focusGroup;
 
+    /**
+     * Sanity checker to detect recursion.
+     */
+    boolean inApply;
+
 
     /**
-     * Constructs a new <code>AbstractLayoutStrategy</code>.
+     * Constructs a <tt>AbstractLayoutStrategy</tt>.
      */
     public AbstractLayoutStrategy() {
     }
@@ -89,13 +94,22 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     public ComponentState apply(IMObject object, PropertySet properties,
                                 IMObject parent, LayoutContext context) {
-        focusGroup = new FocusGroup(DescriptorHelper.getDisplayName(object));
-        Column column = ColumnFactory.create("CellSpacing");
-        doLayout(object, properties, column, context);
-        setFocus();
-        ComponentState state = new ComponentState(column, focusGroup);
-        components.clear();
-        focusGroup = null;
+        ComponentState state;
+        if (inApply) {
+            throw new IllegalStateException("Cannot call apply() recursively");
+        }
+        inApply = true;
+        try {
+            focusGroup = new FocusGroup(DescriptorHelper.getDisplayName(object));
+            Column column = ColumnFactory.create("CellSpacing");
+            doLayout(object, properties, column, context);
+            setFocus();
+            state = new ComponentState(column, focusGroup);
+            components.clear();
+            focusGroup = null;
+        } finally {
+            inApply = false;
+        }
         return state;
     }
 

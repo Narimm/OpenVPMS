@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.customer.charge;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
@@ -49,21 +51,22 @@ import org.openvpms.web.component.im.edit.act.PatientActEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.edit.investigation.PatientInvestigationActEditor;
 import org.openvpms.web.component.im.edit.medication.PatientMedicationActEditor;
-import org.openvpms.web.component.im.edit.medication.PatientMedicationActLayoutStrategy;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
+import org.openvpms.web.component.im.util.LookupNameHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -111,11 +114,10 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     private StockRules rules;
 
     /**
-     * Layout strategy factory that returns customized instances of
-     * {@link PatientMedicationActLayoutStrategy}.
+     * Selling units label.
      */
-    private static final IMObjectLayoutStrategyFactory FACTORY
-            = new MedicationLayoutStrategyFactory();
+    private Label sellingUnits;
+
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -163,6 +165,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateQuantity();
             }
         };
+
+        sellingUnits = LabelFactory.create();
 
         if (act.isNew()) {
             // default the act start time to today
@@ -254,6 +258,26 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new PriceItemLayoutStrategy() {
+            @Override
+            protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+                ComponentState state = super.createComponent(property, parent, context);
+                if ("quantity".equals(property.getName())) {
+                    Component component = RowFactory.create("CellSpacing", state.getComponent(), sellingUnits);
+                    state = new ComponentState(component, property);
+                }
+                return state;
+            }
+        };
+    }
+
+    /**
      * Invoked when layout has completed.
      */
     @Override
@@ -301,6 +325,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
         NodeFilter expectedFilter = getFilterForProduct(productRef);
         if (currentFilter != expectedFilter) {
+
+            // need to change the layout. Remove any dispensing act first as the editors won't be available afterwards
+            if (product == null) {
+                removeDispensingAct();
+            }
+
             changeLayout(expectedFilter);
         }
 
@@ -316,6 +346,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             unitPrice.setValue(BigDecimal.ZERO);
             fixedCost.setValue(BigDecimal.ZERO);
             unitCost.setValue(BigDecimal.ZERO);
+            updateSellingUnits(null);
         } else {
             updateMedicationProduct(product);
             updateInvestigations(product);
@@ -347,6 +378,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 unitCost.setValue(BigDecimal.ZERO);
             }
             updateStockLocation(product);
+            updateSellingUnits(product);
         }
     }
 
@@ -414,7 +446,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (!medicationEditors.isEmpty()) {
                 // set the product on the existing acts
                 for (PatientMedicationActEditor editor : medicationEditors) {
-                    editor.setProduct(product.getObjectReference());
+                    editor.setProduct(product);
                 }
                 editors.refresh();
             } else {
@@ -422,12 +454,24 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 Act act = (Act) editors.create();
                 if (act != null) {
                     boolean dispensingLabel = hasDispensingLabel(product);
-                    IMObjectEditor editor = createMedicationEditor(act, dispensingLabel);
+                    IMObjectEditor editor = createMedicationEditor(act);
                     if (dispensingLabel) {
                         // queue editing of the act
                         queuePatientActEditor(editor);
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Removes the dispensing act.
+     */
+    private void removeDispensingAct() {
+        ActRelationshipCollectionEditor editors = getDispensingCollection();
+        if (editors != null) {
+            for (Act act : editors.getCurrentActs()) {
+                editors.remove(act);
             }
         }
     }
@@ -458,6 +502,19 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
             }
         }
+    }
+
+    /**
+     * Updates the selling units label.
+     *
+     * @param product the product. May be <tt>null</tt>
+     */
+    private void updateSellingUnits(Product product) {
+        String units = "";
+        if (product != null) {
+            units = LookupNameHelper.getName(product, "sellingUnits");
+        }
+        sellingUnits.setText(units);
     }
 
     /**
@@ -494,18 +551,17 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Creates a new editor for a medication act.
      *
-     * @param act             the medication act
-     * @param dispensingLabel <tt>true</tt> if a dispensing label is required
+     * @param act the medication act
      * @return a new editor for the act
      */
-    private IMObjectEditor createMedicationEditor(Act act, boolean dispensingLabel) {
+    private IMObjectEditor createMedicationEditor(Act act) {
         ActRelationshipCollectionEditor editors = getDispensingCollection();
 
         LayoutContext context = new DefaultLayoutContext(true);
-        if (dispensingLabel) {
-            context.setLayoutStrategyFactory(FACTORY);
-        }
         IMObjectEditor editor = editors.createEditor(act, context);
+        if (editor instanceof PatientMedicationActEditor) {
+            ((PatientMedicationActEditor) editor).setProductReadOnly(true);
+        }
         editors.addEdited(editor);
         return editor;
     }
@@ -725,28 +781,5 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         return result;
     }
 
-    /**
-     * Factory that invokes <code>setProductReadOnly(true)</code> on
-     * {@link PatientMedicationActLayoutStrategy} instances.
-     */
-    private static class MedicationLayoutStrategyFactory
-            extends EditLayoutStrategyFactory {
 
-        /**
-         * Creates a new layout strategy for an object.
-         *
-         * @param object the object to create the layout strategy for
-         * @param parent the parent object. May be <code>null</code>
-         */
-        @Override
-        public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {
-            IMObjectLayoutStrategy result = super.create(object, parent);
-            if (result instanceof PatientMedicationActLayoutStrategy) {
-                PatientMedicationActLayoutStrategy strategy
-                        = ((PatientMedicationActLayoutStrategy) result);
-                strategy.setProductReadOnly(true);
-            }
-            return result;
-        }
-    }
 }
