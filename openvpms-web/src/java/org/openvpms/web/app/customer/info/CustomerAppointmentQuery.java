@@ -19,10 +19,14 @@ package org.openvpms.web.app.customer.info;
 
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
+
+import java.util.Date;
 
 /**
  * Customer appointment query.
@@ -46,6 +50,13 @@ public class CustomerAppointmentQuery extends DateRangeActQuery<Act> {
     public CustomerAppointmentQuery(Party customer) {
         super(customer, "customer", CustomerArchetypes.CUSTOMER_PARTICIPATION,
               new String[]{ScheduleArchetypes.APPOINTMENT}, STATUSES, Act.class);
+
+        getComponent(); // force creation of component to enable initialisation of fields
+        
+        // default the date range from a month in the past to 2 years into the future
+        Date now = new Date();
+        setFrom(DateRules.getDate(now, -1, DateUnits.MONTHS));
+        setTo(DateRules.getDate(now, 2, DateUnits.YEARS));
     }
 
 }
