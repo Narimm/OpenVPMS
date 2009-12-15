@@ -28,12 +28,11 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.util.DateHelper;
@@ -72,13 +71,9 @@ class TaskQueryHelper {
      * @return a new constraint
      */
     public static IConstraint createDateRangeConstraint(Date from, Date to) {
-        AndConstraint and = new AndConstraint();
-        and.add(new NodeConstraint("startTime", RelationalOp.LTE, to));
-        OrConstraint or = new OrConstraint();
-        or.add(new NodeConstraint("endTime", RelationalOp.GTE, from));
-        or.add(new NodeConstraint("endTime", RelationalOp.IsNULL));
-        and.add(or);
-        return and;
+        return Constraints.and(Constraints.lte("startTime", to),
+                               Constraints.or(Constraints.gte("endTime", from),
+                                              Constraints.isNull("endTime")));
     }
 
     /**
