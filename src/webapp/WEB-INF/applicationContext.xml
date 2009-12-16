@@ -117,8 +117,6 @@
                 <value>
                     org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml</value>
                 <value>
-                    /org/openvpms/archetype/rules/product/Product.hbm.xml</value>
-                <value>
                     /org/openvpms/archetype/rules/workflow/Workflow.hbm.xml</value>
                 <value>
                     /org/openvpms/archetype/rules/patient/reminder/Reminder.hbm.xml</value>
