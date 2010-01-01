@@ -122,6 +122,25 @@ public class OrderRules {
         }
         FinancialAct delivery = (FinancialAct) objects.get(0);
         delivery.setQuantity(remaining);
+        return delivery;
+    }
+
+    /**
+     * Creates a new return item from an order item.
+     * <p/>
+     * The quantity on the return item will default to the order's: <em>receivedQuantity</em>
+     *
+     * @param orderItem the order item
+     * @return a new return item
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public FinancialAct createReturnItem(FinancialAct orderItem) {
+        List<IMObject> objects = copy(orderItem, ORDER_ITEM, new ReturnItemHandler(), orderItem.getActivityStartTime(),
+                                      false);
+        ActBean order = new ActBean(orderItem, service);
+        BigDecimal received = order.getBigDecimal("receivedQuantity");
+        FinancialAct item = (FinancialAct) objects.get(0);
+        item.setQuantity(received);
         return (FinancialAct) objects.get(0);
     }
 
@@ -225,6 +244,22 @@ public class OrderRules {
                 = {{ORDER_ITEM, DELIVERY_ITEM}};
 
         public DeliveryItemHandler() {
+            super(TYPE_MAP);
+            setCopy(Act.class, Participation.class);
+            setExclude(ActRelationship.class);
+        }
+    }
+
+    /**
+     * Helper to create an <em>act.supplierReturnItem</em> from an
+     * <em>act.supplierOrderItem</em>
+     */
+    private static class ReturnItemHandler extends ActCopyHandler {
+
+        private static final String[][] TYPE_MAP
+                = {{ORDER_ITEM, RETURN_ITEM}};
+
+        public ReturnItemHandler() {
             super(TYPE_MAP);
             setCopy(Act.class, Participation.class);
             setExclude(ActRelationship.class);
