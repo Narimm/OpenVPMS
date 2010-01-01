@@ -23,7 +23,7 @@ import org.openvpms.web.component.im.query.BrowserDialog;
 
 
 /**
- * Add description here.
+ * Order selection dialog.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -49,9 +49,18 @@ public class OrderSelectionBrowserDialog extends BrowserDialog<FinancialAct> {
     @Override
     protected void onOK() {
         OrderTableBrowser browser = (OrderTableBrowser) getBrowser();
-        if (browser.getSupplier() != null
-                && browser.getStockLocation() != null) {
+        if (browser.getSupplier() != null && browser.getStockLocation() != null) {
             super.onOK();
         }
+    }
+
+    /**
+     * Determines if an object has been selected.
+     *
+     * @return <tt>true</tt> if an object has been selected, otherwise <tt>false</tt>
+     */
+    @Override
+    public boolean isSelected() {
+      return true;
     }
 }
