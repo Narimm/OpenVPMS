@@ -568,7 +568,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         checkBalance(BigDecimal.ZERO);
 
-        rules.reverse(payment, new Date());
+        rules.reverse(payment, new Date(), "Test reversal");
         checkBalance(amount);
     }
 
@@ -582,7 +582,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         checkBalance(amount);
 
-        rules.reverse(invoice.get(0), new Date());
+        rules.reverse(invoice.get(0), new Date(), "Test reversal");
         checkBalance(BigDecimal.ZERO);
     }
 
@@ -612,7 +612,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkBalance(forty);
 
         // reverse the payment.
-        FinancialAct reversal = rules.reverse(payment, new Date());
+        FinancialAct reversal = rules.reverse(payment, new Date(), "Test reversal");
         assertEquals(BigDecimal.ZERO, reversal.getAllocatedAmount());
 
         // invoice and payment retain their allocations
@@ -668,7 +668,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         List<FinancialAct> invoice1 = createChargesInvoice(sixty, chargeTime1);
         save(invoice1);
-        List<FinancialAct> invoice2 = createChargesInvoice(forty,chargeTime2);
+        List<FinancialAct> invoice2 = createChargesInvoice(forty, chargeTime2);
         save(invoice2);
 
         java.sql.Date payTime1 = java.sql.Date.valueOf("2007-4-1");
@@ -800,7 +800,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param act  the act
      * @param acts the acts contributing to the allocated amount
      */
-    private void checkAllocation(FinancialAct act, FinancialAct ... acts) {
+    private void checkAllocation(FinancialAct act, FinancialAct... acts) {
         IMObjectBean bean = new IMObjectBean(act);
         BigDecimal total = BigDecimal.ZERO;
         List<ActRelationship> allocations = bean.getValues(
@@ -885,7 +885,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkBalance(balance);
 
         Date now = new Date();
-        FinancialAct reversal = rules.reverse(act, now);
+        FinancialAct reversal = rules.reverse(act, now, "Test reversal");
         assertTrue(TypeHelper.isA(reversal, shortName));
         ActBean bean = new ActBean(reversal);
         if (itemShortName != null) {

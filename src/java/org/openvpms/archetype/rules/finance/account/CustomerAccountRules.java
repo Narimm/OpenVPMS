@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.query.AndConstraint;
@@ -82,6 +83,7 @@ public class CustomerAccountRules {
      * Calculates the outstanding balance for a customer.
      *
      * @param customer the customer
+     * @return the balance
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getBalance(Party customer) {
@@ -94,6 +96,7 @@ public class CustomerAccountRules {
      *
      * @param customer the customer
      * @param date     the date
+     * @return the balance
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getBalance(Party customer, Date date) {
@@ -110,6 +113,7 @@ public class CustomerAccountRules {
      * @param to             the to time. If <tt>null</tt>, indicates that the
      *                       time is unbounded
      * @param openingBalance the opening balance
+     * @return the balance
      */
     public BigDecimal getBalance(Party customer, Date from, Date to,
                                  BigDecimal openingBalance) {
@@ -124,6 +128,7 @@ public class CustomerAccountRules {
      * to detect account balance errors.
      *
      * @param customer the customer
+     * @return the definitive balance
      * @throws ArchetypeServiceException    for any archetype service error
      * @throws CustomerAccountRuleException if an opening or closing balance
      *                                      is incorrect
@@ -296,6 +301,7 @@ public class CustomerAccountRules {
      * Calculates the sum of all unbilled charge acts for a customer.
      *
      * @param customer the customer
+     * @return the unbilled amount
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getUnbilledAmount(Party customer) {
@@ -311,10 +317,27 @@ public class CustomerAccountRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct reverse(FinancialAct act, Date startTime) {
-        IMObjectCopier copier
-                = new IMObjectCopier(new CustomerActReversalHandler(act));
+        return reverse(act, startTime, null);
+    }
+
+    /**
+     * Reverses an act.
+     *
+     * @param act       the act to reverse
+     * @param startTime the start time of the reversal
+     * @param notes     notes indicating the reason for the reversal, to set the 'notes' node if the act has one.
+     *                  May be <tt>null</tt>
+     * @return the reversal of <tt>act</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public FinancialAct reverse(FinancialAct act, Date startTime, String notes) {
+        IMObjectCopier copier = new IMObjectCopier(new CustomerActReversalHandler(act));
         List<IMObject> objects = copier.apply(act);
         FinancialAct reversal = (FinancialAct) objects.get(0);
+        ActBean bean = new ActBean(reversal, service);
+        if (bean.hasNode("notes")) {
+            bean.setValue("notes", notes);
+        }
         reversal.setStatus(FinancialActStatus.POSTED);
         reversal.setActivityStartTime(startTime);
         service.save(objects);
