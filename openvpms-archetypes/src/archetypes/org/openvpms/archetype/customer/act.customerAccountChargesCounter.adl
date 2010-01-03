@@ -65,6 +65,7 @@
 				<errorMessage>Invalid Charge Status</errorMessage>
 			</assertion>
 		</node>
+        <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="customer" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.customer" hidden="true"/>

@@ -93,6 +93,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param customer the customer
      * @param patient  the patient. May be <tt>null</tt>
      * @param product  the product
+     * @param status   the act statues
      * @return a list containing the credit act and its item
      */
     public static List<FinancialAct> createChargesCredit(Money amount,
@@ -100,10 +101,13 @@ public class FinancialTestHelper extends TestHelper {
                                                          Party patient,
                                                          Product product,
                                                          String status) {
-        return createCharges("act.customerAccountChargesCredit",
-                             "act.customerAccountCreditItem",
-                             "actRelationship.customerAccountCreditItem",
-                             amount, customer, patient, product, status);
+        List<FinancialAct> result = createCharges("act.customerAccountChargesCredit",
+                                                  "act.customerAccountCreditItem",
+                                                  "actRelationship.customerAccountCreditItem",
+                                                  amount, customer, patient, product, status);
+        ActBean bean = new ActBean(result.get(0));
+        bean.setValue("notes", "Dummy notes");
+        return result;
     }
 
     /**
@@ -140,10 +144,13 @@ public class FinancialTestHelper extends TestHelper {
                                                   Party customer,
                                                   Party till,
                                                   String status) {
-        return createPaymentRefund("act.customerAccountRefund",
-                                   "act.customerAccountRefundCash",
-                                   "actRelationship.customerAccountRefundItem",
-                                   amount, customer, till, status);
+        List<FinancialAct> result = createPaymentRefund("act.customerAccountRefund",
+                                                        "act.customerAccountRefundCash",
+                                                        "actRelationship.customerAccountRefundItem",
+                                                        amount, customer, till, status);
+        ActBean bean = new ActBean(result.get(0));
+        bean.setValue("notes", "Dummy notes");
+        return result;
     }
 
     /**
@@ -277,10 +284,13 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundCash(Money amount, Party customer,
                                                 Party till) {
-        return createPaymentRefund("act.customerAccountRefund",
-                                   "act.customerAccountRefundCash",
-                                   "actRelationship.customerAccountRefundItem",
-                                   amount, customer, till);
+        FinancialAct result = createPaymentRefund("act.customerAccountRefund",
+                                                  "act.customerAccountRefundCash",
+                                                  "actRelationship.customerAccountRefundItem",
+                                                  amount, customer, till);
+        ActBean bean = new ActBean(result);
+        bean.setValue("notes", "Dummy notes");
+        return result;
     }
 
     /**
@@ -294,10 +304,13 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundCheque(Money amount, Party customer,
                                                   Party till) {
-        return createPaymentRefund("act.customerAccountRefund",
-                                   "act.customerAccountRefundCheque",
-                                   "actRelationship.customerAccountRefundItem",
-                                   amount, customer, till);
+        FinancialAct result = createPaymentRefund("act.customerAccountRefund",
+                                                  "act.customerAccountRefundCheque",
+                                                  "actRelationship.customerAccountRefundItem",
+                                                  amount, customer, till);
+        ActBean bean = new ActBean(result);
+        bean.setValue("notes", "Dummy notes");
+        return result;
     }
 
     /**
@@ -311,10 +324,13 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundCredit(Money amount, Party customer,
                                                   Party till) {
-        return createPaymentRefund("act.customerAccountRefund",
-                                   "act.customerAccountRefundCredit",
-                                   "actRelationship.customerAccountRefundItem",
-                                   amount, customer, till);
+        FinancialAct result = createPaymentRefund("act.customerAccountRefund",
+                                                  "act.customerAccountRefundCredit",
+                                                  "actRelationship.customerAccountRefundItem",
+                                                  amount, customer, till);
+        ActBean bean = new ActBean(result);
+        bean.setValue("notes", "Dummy notes");
+        return result;
     }
 
     /**
@@ -329,10 +345,13 @@ public class FinancialTestHelper extends TestHelper {
     public static FinancialAct createRefundDiscount(Money amount,
                                                     Party customer,
                                                     Party till) {
-        return createPaymentRefund("act.customerAccountRefund",
-                                   "act.customerAccountRefundDiscount",
-                                   "actRelationship.customerAccountRefundItem",
-                                   amount, customer, till);
+        FinancialAct result = createPaymentRefund("act.customerAccountRefund",
+                                                  "act.customerAccountRefundDiscount",
+                                                  "actRelationship.customerAccountRefundItem",
+                                                  amount, customer, till);
+        ActBean bean = new ActBean(result);
+        bean.setValue("notes", "Dummy notes");
+        return result;
     }
 
     /**
@@ -346,10 +365,13 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundEFT(Money amount, Party customer,
                                                Party till) {
-        return createPaymentRefund("act.customerAccountRefund",
-                                   "act.customerAccountRefundEFT",
-                                   "actRelationship.customerAccountRefundItem",
-                                   amount, customer, till);
+        FinancialAct result = createPaymentRefund("act.customerAccountRefund",
+                                                  "act.customerAccountRefundEFT",
+                                                  "actRelationship.customerAccountRefundItem",
+                                                  amount, customer, till);
+        ActBean bean = new ActBean(result);
+        bean.setValue("notes", "Dummy notes");
+        return result;
     }
 
     /**
@@ -404,7 +426,7 @@ public class FinancialTestHelper extends TestHelper {
         Lookup lookup = (Lookup) create("lookup.customerAccountType");
         IMObjectBean bean = new IMObjectBean(lookup);
         bean.setValue("code", "XCUSTOMER_ACCOUNT_TYPE"
-                + Math.abs(new Random().nextInt()));
+                              + Math.abs(new Random().nextInt()));
         bean.setValue("paymentTerms", paymentTerms);
         bean.setValue("paymentUom", paymentUom.toString());
         bean.setValue("accountFeeAmount", accountFeeAmount);
@@ -429,12 +451,14 @@ public class FinancialTestHelper extends TestHelper {
     /**
      * Helper to create a charges act.
      *
-     * @param shortName the act short name
-     * @param amount    the act total
-     * @param customer  the customer
-     * @param patient   the patient. May be <tt>null</tt>
-     * @param product   the product. May be <tt>null</tt>
-     * @param status    the act status
+     * @param shortName             the act short name
+     * @param itemShortName         the act item short name
+     * @param relationshipShortName the act relationship short name
+     * @param amount                the act total
+     * @param customer              the customer
+     * @param patient               the patient. May be <tt>null</tt>
+     * @param product               the product. May be <tt>null</tt>
+     * @param status                the act status
      * @return a list containing the charges act and its item
      */
     private static List<FinancialAct> createCharges(
@@ -459,10 +483,12 @@ public class FinancialTestHelper extends TestHelper {
     /**
      * Helper to create a POSTED payment or refund act.
      *
-     * @param shortName the act short name
-     * @param amount    the act total
-     * @param customer  the customer
-     * @param till      the till
+     * @param shortName             the act short name
+     * @param itemShortName         the act item short name
+     * @param relationshipShortName the act relationshipShortName
+     * @param amount                the act total
+     * @param customer              the customer
+     * @param till                  the till
      * @return a new act
      */
     private static FinancialAct createPaymentRefund(
