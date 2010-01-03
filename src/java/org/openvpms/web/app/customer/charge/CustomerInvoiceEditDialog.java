@@ -18,22 +18,21 @@
 package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
  * An edit dialog for {@link CustomerChargeActEditor} editors.
  * <p/>
- * This ensures that clinical events exist for each patient as a workaround for OVPMS-823.
+ * This ensures that clinical events exist for each patient, as a workaround for OVPMS-823.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerInvoiceEditDialog extends ActEditDialog {
+public class CustomerInvoiceEditDialog extends CustomerChargeActEditDialog {
 
     /**
-     * Constructs a <tt>CustomerChargeActEditDialog</tt>.
+     * Constructs a <tt>CustomerInvoiceEditDialog</tt>.
      *
      * @param editor the editor
      */

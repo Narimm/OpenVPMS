@@ -22,10 +22,9 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
-import org.openvpms.web.component.dialog.PrintDialog;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.VetoListener;
-import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
