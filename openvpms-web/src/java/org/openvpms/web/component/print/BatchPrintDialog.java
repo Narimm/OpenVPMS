@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.checkout;
+package org.openvpms.web.component.print;
 
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
@@ -36,10 +36,11 @@ import org.openvpms.web.component.util.CheckBoxFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
- * Batch print dialog.
+ * Dialog that enables a set of objects to be selected for printing.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -53,7 +54,7 @@ public class BatchPrintDialog extends PopupDialog {
 
 
     /**
-     * Construct a new <code>BatchPrintDialog</code>.
+     * Constructs a <tt>BatchPrintDialog</tt>.
      *
      * @param title   the window title
      * @param objects the objects to print
@@ -63,17 +64,31 @@ public class BatchPrintDialog extends PopupDialog {
     }
 
     /**
-     * Construct a new <code>BatchPrintDialog</code>.
+     * Constructs a <tt>BatchPrintDialog</tt>.
      *
      * @param title   the window title
      * @param buttons the buttons to display
      * @param objects the objects to print
      */
-    public BatchPrintDialog(String title, String[] buttons,
-                            List<IMObject> objects) {
+    public BatchPrintDialog(String title, String[] buttons, List<IMObject> objects) {
         super(title, buttons);
+        setModal(true);
         table = new IMObjectTable<IMObject>(new PrintTableModel());
         table.setObjects(objects);
+        getLayout().add(table);
+    }
+
+    /**
+     * Constructs a <tt>BatchPrintDialog</tt>.
+     *
+     * @param title   the window title
+     * @param buttons the buttons to display
+     * @param objects the objects to print. The boolean value indicates if the object should be selected by default
+     */
+    public BatchPrintDialog(String title, String[] buttons, Map<IMObject, Boolean> objects) {
+        super(title, buttons);
+        table = new IMObjectTable<IMObject>(new PrintTableModel(new ArrayList<Boolean>(objects.values())));
+        table.setObjects(new ArrayList<IMObject>(objects.keySet()));
         getLayout().add(table);
     }
 
@@ -87,14 +102,12 @@ public class BatchPrintDialog extends PopupDialog {
         return model.getSelected();
     }
 
-    private static class PrintTableModel
-            extends BaseIMObjectTableModel<IMObject> {
+    private static class PrintTableModel extends BaseIMObjectTableModel<IMObject> {
 
         /**
          * The print check boxes.
          */
         private List<CheckBox> print = new ArrayList<CheckBox>();
-
 
         /**
          * The print column.
@@ -102,11 +115,27 @@ public class BatchPrintDialog extends PopupDialog {
         private final int PRINT_INDEX = NEXT_INDEX;
 
         /**
-         * Constructs a new <code>PrintTableModel</code>.
+         * Determines the initial seletions.
+         */
+        private List<Boolean> selections;
+
+
+        /**
+         * Constructs a <tt>PrintTableModel</tt>.
          */
         public PrintTableModel() {
+            this(null);
+        }
+
+        /**
+         * Constructs a <tt>PrintTableModel</tt>.
+         *
+         * @param selections the intial selections. May be <tt>null</tt>
+         */
+        public PrintTableModel(List<Boolean> selections) {
             super(null);
-            setTableColumnModel(createTableColumnModel(false, true));
+            setTableColumnModel(createTableColumnModel(true));
+            this.selections = selections;
         }
 
         /**
@@ -136,7 +165,8 @@ public class BatchPrintDialog extends PopupDialog {
             print = new ArrayList<CheckBox>();
             int size = objects.size();
             for (int i = 0; i < size; ++i) {
-                print.add(CheckBoxFactory.create(true));
+                boolean selected = (selections != null && i < selections.size()) ? selections.get(i) : true;
+                print.add(CheckBoxFactory.create(selected));
             }
         }
 
@@ -149,8 +179,7 @@ public class BatchPrintDialog extends PopupDialog {
          * @return the value at the given coordinate.
          */
         @Override
-        protected Object getValue(IMObject object, TableColumn column,
-                                  int row) {
+        protected Object getValue(IMObject object, TableColumn column, int row) {
             Object result;
             if (column.getModelIndex() == PRINT_INDEX) {
                 result = print.get(row);
@@ -179,7 +208,7 @@ public class BatchPrintDialog extends PopupDialog {
          */
         protected TableColumnModel createTableColumnModel(boolean showId, boolean showArchetype) {
             TableColumnModel model = new DefaultTableColumnModel();
-            TableColumn column = createTableColumn(PRINT_INDEX, "workflow.checkout.printtablemodel.print");
+            TableColumn column = createTableColumn(PRINT_INDEX, "batchprintdialog.print");
             model.addColumn(column);
             return super.createTableColumnModel(showId, showArchetype, model);
         }

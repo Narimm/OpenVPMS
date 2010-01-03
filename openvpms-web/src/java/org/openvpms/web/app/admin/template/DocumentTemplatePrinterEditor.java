@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
-import org.openvpms.web.component.im.util.PrintHelper;
+import org.openvpms.web.component.print.PrintHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.SelectFieldFactory;
