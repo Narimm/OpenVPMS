@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -94,6 +96,11 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * Additional constraints to associate with the query. May be <tt>null</tt>.
      */
     private IConstraint constraints;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(AbstractQuery.class);
 
 
     /**
@@ -217,12 +224,19 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * @return <tt>true</tt> if the object is selected by the query
      */
     public boolean selects(T object) {
+        long start = System.currentTimeMillis();
         Iterator<T> iterator = iterator();
         while (iterator.hasNext()) {
             T next = iterator.next();
             if (next.equals(object)) {
                 return true;
             }
+        }
+        long end = System.currentTimeMillis();
+        if ((end - start) > 1000) {
+            // If it takes more than a second then optimization is required.
+            // Could argue that a second is too long.
+            log.warn("Slow query: " + getClass().getName() + " performing linear search");
         }
         return false;
     }
