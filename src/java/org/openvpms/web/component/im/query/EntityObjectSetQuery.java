@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -41,6 +42,20 @@ public class EntityObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      */
     public EntityObjectSetQuery(String[] shortNames) {
         super(shortNames, ObjectSet.class);
+    }
+
+    /**
+     * Determines if the query selects a particular object.
+     *
+     * @param object the object to check
+     * @return <tt>true</tt> if the object is selected by the query
+     */
+    public boolean selects(Entity object) {
+        EntityObjectSetResultSet set = (EntityObjectSetResultSet) createResultSet(null);
+        if (object != null) {
+            set.setReferenceConstraint(object.getObjectReference());
+        }
+        return set.hasNext();
     }
 
     /**

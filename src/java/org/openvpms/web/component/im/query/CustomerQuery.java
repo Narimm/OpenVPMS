@@ -49,6 +49,16 @@ public class CustomerQuery extends QueryAdapter<ObjectSet, Party> {
     }
 
     /**
+     * Determines if the query selects a particular object.
+     *
+     * @param object the object to check
+     * @return <tt>true</tt> if the object is selected by the query
+     */
+    public boolean selects(Party object) {
+        return ((CustomerObjectSetQuery) getQuery()).selects(object);
+    }
+
+    /**
      * Converts a result set.
      *
      * @param set the set to convert
