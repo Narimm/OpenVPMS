@@ -53,7 +53,7 @@ class TextComponentBinder extends Binder {
      * @param property  the property to bind
      */
     public TextComponentBinder(TextComponent component, Property property) {
-        super(property);
+        super(property, false);
         _component = component;
 
         _listener = new DocumentListener() {
@@ -71,6 +71,7 @@ class TextComponentBinder extends Binder {
             }
         };
         _component.addActionListener(actionListener);
+        bind();
     }
 
     /**

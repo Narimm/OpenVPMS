@@ -42,32 +42,60 @@ public abstract class Binder {
      */
     private ModifiableListener listener;
 
+    /**
+     * Determines if <tt>listener</tt> has been registered with the property.
+     */
+    private boolean hasListener = false;
+
+    /**
+     * Determines if the bind() method has been invoked to bind the field to the property.
+     */
+    private boolean bound = false;
+
 
     /**
      * Constructs a <tt>Binder</tt>.
+     * <p/>
+     * This binds to the property.
      *
      * @param property the property to bind
      */
     public Binder(Property property) {
+        this(property, true);
+    }
+
+    /**
+     * Constructs a <tt>Binder</tt>
+     *
+     * @param property the property to bind
+     * @param bind     if <tt>true</tt> bind the property
+     */
+    public Binder(Property property, boolean bind) {
         this.property = property;
         listener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 setField();
             }
         };
-        this.property.addModifiableListener(listener);
+        if (bind) {
+            bind();
+        }
     }
 
     /**
      * Updates the property from the field.
      */
     public void setProperty() {
-        property.removeModifiableListener(listener);
+        boolean listener = hasListener;
+        if (hasListener) {
+            // remove the listener to avoid cyclic notifications
+            removeModifiableListener();
+        }
         try {
             setProperty(property);
         } finally {
-            if (property != null) {  // binder may have been disposed
-                property.addModifiableListener(listener);
+            if (listener) {
+                addModifiableListener();
             }
         }
     }
@@ -76,21 +104,27 @@ public abstract class Binder {
      * Updates the field from the property.
      */
     public void setField() {
-        if (property != null) {
-            setFieldValue(property.getValue());
+        setFieldValue(property.getValue());
+    }
+
+    /**
+     * Registers the binder with the property to receive updates.
+     */
+    public void bind() {
+        if (!bound) {
+            setField(); // update the field from the property
+            addModifiableListener();
+            bound = true;
         }
     }
 
     /**
-     * Disposes this binder.
-     * <p/>
-     * After disposal, the binder is invalid
+     * Deregisters the binder from the property.
      */
-    public void dispose() {
-        if (property != null) {
-            property.removeModifiableListener(listener);
-            property = null;
-            listener = null;
+    public void unbind() {
+        if (bound) {
+            removeModifiableListener();
+            bound = false;
         }
     }
 
@@ -130,5 +164,30 @@ public abstract class Binder {
      */
     protected Property getProperty() {
         return property;
+    }
+
+    /**
+     * Determines if the binder is bound to the property.
+     *
+     * @return <tt>true</tt> if the binder is bound, otherwise <tt>false</tt>
+     */
+    protected boolean isBound() {
+        return bound;
+    }
+
+    /**
+     * Registers the listener with the property, to receive notification when the property changes.
+     */
+    private void addModifiableListener() {
+        property.addModifiableListener(listener);
+        hasListener = true;
+    }
+
+    /**
+     * Deregisters the listener from the property.
+     */
+    private void removeModifiableListener() {
+        property.removeModifiableListener(listener);
+        hasListener = false;
     }
 }

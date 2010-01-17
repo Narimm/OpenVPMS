@@ -162,7 +162,11 @@ public class ErrorReporter {
     private String getText(ErrorReport report) {
         Throwable exception = report.getException();
         if (exception != null) {
-            return ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(exception));
+            Throwable cause = ExceptionUtils.getRootCause(exception);
+            if (cause == null) {
+                cause = exception;
+            }
+            return ExceptionUtils.getStackTrace(cause);
         }
         return null;
     }

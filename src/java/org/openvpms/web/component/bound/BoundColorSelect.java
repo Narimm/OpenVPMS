@@ -26,8 +26,9 @@ import org.openvpms.web.component.util.ColourHelper;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+
 /**
- * Add description here.
+ * Binds a property to a <tt>ColorSelect</tt>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -57,7 +58,6 @@ public class BoundColorSelect extends ColorSelect {
             }
 
         };
-        binder.setField();
         addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 binder.setProperty();
@@ -66,12 +66,21 @@ public class BoundColorSelect extends ColorSelect {
     }
 
     /**
+     * Life-cycle method invoked when the <code>Component</code> is added to a registered hierarchy.
+     */
+    @Override
+    public void init() {
+        super.init();
+        binder.bind();
+    }
+
+    /**
      * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
         super.dispose();
-        binder.dispose();
+        binder.unbind();
     }
 
     private Color convert(Object value) {

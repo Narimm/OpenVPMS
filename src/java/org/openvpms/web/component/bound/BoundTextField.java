@@ -54,10 +54,18 @@ public class BoundTextField extends TextField {
         }
 
         binder = new TextComponentBinder(this, property);
-        binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
+    }
+
+    /**
+     * Life-cycle method invoked when the <tt>Component</tt> is added to a registered hierarchy.
+     */
+    @Override
+    public void init() {
+        super.init();
+        binder.bind();
     }
 
     /**
@@ -66,7 +74,7 @@ public class BoundTextField extends TextField {
     @Override
     public void dispose() {
         super.dispose();
-        binder.dispose();
+        binder.unbind();
     }
 
 }
