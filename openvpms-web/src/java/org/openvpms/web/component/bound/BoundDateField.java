@@ -52,7 +52,6 @@ public class BoundDateField extends DateFieldImpl {
      */
     public BoundDateField(Property property) {
         binder = createBinder(property);
-        binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
@@ -72,12 +71,21 @@ public class BoundDateField extends DateFieldImpl {
     }
 
     /**
+     * Life-cycle method invoked when the <tt>Component</tt> is added to a registered hierarchy.
+     */
+    @Override
+    public void init() {
+        super.init();
+        binder.bind();
+    }
+
+    /**
      * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
         super.dispose();
-        binder.dispose();
+        binder.unbind();
     }
 
     /**

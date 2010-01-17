@@ -25,7 +25,7 @@ import org.openvpms.web.component.property.Property;
 
 
 /**
- * Binds a {@link Property} to a <code>SelectField</code>.
+ * Binds a {@link Property} to a <tt>SelectField</tt>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -33,18 +33,41 @@ import org.openvpms.web.component.property.Property;
 public class BoundSelectField extends SelectField {
 
     /**
-     * Construct a new <tt>BoundSelectField</tt>.
+     * The binder.
+     */
+    public Binder binder;
+
+
+    /**
+     * Constructs a <tt>BoundSelectField</tt>.
      *
      * @param property the property to bind
      * @param model    the list model
      */
     public BoundSelectField(final Property property, final ListModel model) {
         super(model);
-        Binder binder = new SelectFieldBinder(this, property);
-        binder.setField();
+        binder = new SelectFieldBinder(this, property);
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
+    }
+
+    /**
+     * Life-cycle method invoked when the <code>Component</code> is added to a registered hierarchy.
+     */
+    @Override
+    public void init() {
+        super.init();
+        binder.bind();
+    }
+
+    /**
+     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        binder.unbind();
     }
 
 }

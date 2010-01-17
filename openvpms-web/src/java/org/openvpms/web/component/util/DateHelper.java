@@ -24,6 +24,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.web.resource.util.Messages;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -100,7 +101,7 @@ public class DateHelper {
         Calendar d = Calendar.getInstance();
         d.setTime(date);
         if (now.get(Calendar.DAY_OF_YEAR) == d.get(Calendar.DAY_OF_YEAR)
-                && now.get(Calendar.YEAR) == d.get(Calendar.YEAR)) {
+            && now.get(Calendar.YEAR) == d.get(Calendar.YEAR)) {
             return now.getTime();
         }
         return date;
@@ -272,10 +273,111 @@ public class DateHelper {
     public static String formatTime(long time) {
         long hours = time / DateUtils.MILLIS_PER_HOUR;
         long mins = (time % DateUtils.MILLIS_PER_HOUR)
-                / DateUtils.MILLIS_PER_MINUTE;
+                    / DateUtils.MILLIS_PER_MINUTE;
         return Messages.get("time.format.abs", hours, mins);
     }
 
+    /**
+     * Parses a time from a string.
+     *
+     * @param time the time string
+     * @return a Date, with just the time portion set
+     * @throws ParseException           if the time can't be parsed
+     * @throws NumberFormatException    if a hour or minute specification is not numeric
+     * @throws IllegalArgumentException if the hour or minute component is invalid
+     */
+    public static Date parseTime(String time) throws ParseException {
+        Date result;
+        DateFormat format = getTimeFormat(true);
+        try {
+            result = format.parse(time);
+        } catch (ParseException exception) {
+            if (time.length() <= 2) {
+                result = parseHours(time);
+            } else if (time.length() <= 4) {
+                result = parseHoursMins(time);
+            } else {
+                throw exception;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Adds a date and time.
+     *
+     * @param date the date part
+     * @param time the time to add
+     * @return the date+time
+     */
+    public static Date addDateTime(Date date, Date time) {
+        GregorianCalendar dateCal = new GregorianCalendar();
+        dateCal.setTime(date);
+        GregorianCalendar timeCal = new GregorianCalendar();
+        timeCal.setTime(time);
+
+        dateCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
+        dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
+        return dateCal.getTime();
+    }
+
+    /**
+     * Parse a time from a string, expected to be in the range 0..23.
+     *
+     * @param value the string to parse
+     * @return the parsed time
+     * @throws NumberFormatException    if the string is not a valid no
+     * @throws IllegalArgumentException if the hours aren't in the range 0..23
+     */
+    private static Date parseHours(String value) {
+        int hours = getHours(value);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hours);
+        return calendar.getTime();
+    }
+
+    /**
+     * Parses hours from a string, expected to be in the range 0..23.
+     *
+     * @param value the string to parse
+     * @return the hours from the string
+     * @throws NumberFormatException    if the string is not a valid no
+     * @throws IllegalArgumentException if the hours aren't in the range 0..23
+     */
+    private static int getHours(String value) {
+        int hours = Integer.parseInt(value);
+        if (hours < 0 || hours > 23) {
+            throw new IllegalArgumentException(value);
+        }
+        return hours;
+    }
+
+    /**
+     * Parse a time from a string, expected to be of the form [H]HMM.
+     *
+     * @param value the string to parse
+     * @return the parsed time
+     * @throws NumberFormatException    if the hours or minutes can't be parsed
+     * @throws IllegalArgumentException if the hours or minutes exceed the range
+     */
+    private static Date parseHoursMins(String value) {
+        String hourPart;
+        if (value.length() == 3) {
+            hourPart = value.substring(0, 1);
+        } else {
+            hourPart = value.substring(0, 2);
+        }
+        int hours = getHours(hourPart);
+        String minPart = value.substring(hourPart.length());
+        int mins = Integer.parseInt(minPart);
+        if (mins < 0 || mins > 59) {
+            throw new IllegalArgumentException("Minutes exceed range 0..59: " + minPart);
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hours);
+        calendar.set(Calendar.MINUTE, mins);
+        return calendar.getTime();
+    }
 
     static {
         String dateEdit = Messages.get("date.format.edit", true);

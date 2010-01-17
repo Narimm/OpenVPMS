@@ -20,8 +20,10 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
+import nextapp.echo2.app.event.ChangeListener;
+import nextapp.echo2.app.event.ChangeEvent;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.property.Property;
 
 
@@ -39,9 +41,14 @@ public class BoundCheckBox extends CheckBox {
     private final Binder binder;
 
     /**
+     * State change listener.
+     */
+    private ChangeListener listener;
+
+    /**
      * Checkbox listener.
      */
-    private final ActionListener listener;
+    private final ActionListener actionListener;
 
 
     /**
@@ -50,12 +57,17 @@ public class BoundCheckBox extends CheckBox {
      * @param property the property to bind
      */
     public BoundCheckBox(Property property) {
-        listener = new ActionListener() {
-            public void onAction(ActionEvent e) {
+        listener = new ChangeListener() {
+            public void stateChanged(ChangeEvent event) {
                 binder.setProperty();
             }
         };
-        addActionListener(listener);
+        actionListener = new ActionListener() {
+            public void onAction(ActionEvent event) {
+            }
+        };
+        addChangeListener(listener);
+        addActionListener(actionListener);
 
         binder = new Binder(property) {
             protected Object getFieldValue() {
@@ -64,16 +76,26 @@ public class BoundCheckBox extends CheckBox {
 
             protected void setFieldValue(Object value) {
                 if (value != null) {
-                    removeActionListener(listener);
+                    removeActionListener(actionListener);
+                    removeChangeListener(listener);
                     setSelected((Boolean) value);
-                    addActionListener(listener);
+                    addChangeListener(listener);
+                    addActionListener(actionListener);
                 }
             }
         };
-        binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
+    }
+
+    /**
+     * Life-cycle method invoked when the <code>Component</code> is added to a registered hierarchy.
+     */
+    @Override
+    public void init() {
+        super.init();
+        binder.bind();
     }
 
     /**
@@ -82,7 +104,7 @@ public class BoundCheckBox extends CheckBox {
     @Override
     public void dispose() {
         super.dispose();
-        binder.dispose();
+        binder.unbind();
     }
-    
+
 }

@@ -48,13 +48,13 @@ class DateBinder extends Binder {
 
 
     /**
-     * Constructs a new <code>DateBinder</code>.
+     * Constructs a <tt>DateBinder</tt>.
      *
      * @param field    the field to bind
      * @param property the property to bind to
      */
     public DateBinder(DateField field, Property property) {
-        super(property);
+        super(property, false);
         this.field = field;
         listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
@@ -64,6 +64,7 @@ class DateBinder extends Binder {
                 }
             }
         };
+        bind();
     }
 
     /**

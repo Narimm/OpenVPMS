@@ -24,11 +24,7 @@ import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 
 /**
@@ -81,16 +77,20 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
                     if (!property.isRequired()) {
                         result = null;
                     } else {
-                        String msg = Messages.get("property.error.required",
-                                                  property.getDisplayName());
+                        String msg = Messages.get("property.error.required", property.getDisplayName());
                         throw new PropertyException(property, msg);
                     }
                 } else {
-                    result = parse(value);
+                    Date time = DateHelper.parseTime((String) object);
+                    if (date != null) {
+                        result = DateHelper.addDateTime(date, time);
+                    } else {
+                        result = time;
+                    }
                 }
             } else if (object instanceof Date) {
                 if (date != null) {
-                    result = addDate((Date) object);
+                    result = DateHelper.addDateTime(date, (Date) object);
                 } else {
                     result = object;
                 }
@@ -106,115 +106,6 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
         }
 
         return result;
-    }
-
-
-    /**
-     * Parses a time from a string.
-     *
-     * @param value the string value
-     * @return the parsed time
-     * @throws ValidationException if the string can't be parsed
-     */
-    private Date parse(String value) throws ValidationException {
-        Date result;
-        DateFormat format = DateHelper.getTimeFormat(true);
-        try {
-            result = format.parse(value);
-        } catch (ParseException exception) {
-            if (value.length() <= 2) {
-                result = parseHours(value);
-            } else if (value.length() <= 4) {
-                result = parseHoursMins(value);
-            } else {
-                throw getException(exception);
-            }
-        }
-        if (date != null) {
-            result = addDate(result);
-        }
-        return result;
-    }
-
-    /**
-     * Parse a time from a string, expected to be in the range 0..23.
-     *
-     * @param value the string to parse
-     * @return the parsed time
-     * @throws ValidationException if the string can't be parsed
-     */
-    private Date parseHours(String value) throws ValidationException {
-        int hours = getHours(value);
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, hours);
-        return calendar.getTime();
-    }
-
-    /**
-     * Parses hours from a string, expected to be in the range 0..23.
-     *
-     * @param value the string to parse
-     * @throws ValidationException if the string can't be parsed
-     */
-    private int getHours(String value) {
-        int hours;
-        try {
-            hours = Integer.parseInt(value);
-        } catch (NumberFormatException exception) {
-            throw getException(exception);
-        }
-        if (hours < 0 || hours > 23) {
-            throw getException(null);
-        }
-        return hours;
-    }
-
-    /**
-     * Parse a time from a string, expected to be of the form [H]HMM.
-     *
-     * @param value the string to parse
-     * @return the parsed time
-     * @throws ValidationException if the string can't be parsed
-     */
-    private Date parseHoursMins(String value) throws ValidationException {
-        String hourPart;
-        if (value.length() == 3) {
-            hourPart = value.substring(0, 1);
-        } else {
-            hourPart = value.substring(0, 2);
-        }
-        int hours = getHours(hourPart);
-        int mins;
-        try {
-            String minPart = value.substring(hourPart.length());
-            mins = Integer.parseInt(minPart);
-        } catch (NumberFormatException exception) {
-            throw getException(exception);
-        }
-        if (mins < 0 || mins > 59) {
-            throw getException(null);
-        }
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, hours);
-        calendar.set(Calendar.MINUTE, mins);
-        return calendar.getTime();
-    }
-
-    /**
-     * Adds the date to a time.
-     *
-     * @param time the time to add
-     * @return the date+time
-     */
-    private Date addDate(Date time) {
-        GregorianCalendar dateCal = new GregorianCalendar();
-        dateCal.setTime(date);
-        GregorianCalendar timeCal = new GregorianCalendar();
-        timeCal.setTime(time);
-
-        dateCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
-        dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
-        return dateCal.getTime();
     }
 
     /**

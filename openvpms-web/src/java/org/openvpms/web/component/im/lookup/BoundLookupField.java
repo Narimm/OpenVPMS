@@ -69,7 +69,6 @@ public class BoundLookupField extends LookupField {
     public BoundLookupField(Property property, LookupQuery source, boolean all) {
         super(source, all, !property.isRequired());
         binder = new SelectFieldBinder(this, property);
-        binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
@@ -95,11 +94,20 @@ public class BoundLookupField extends LookupField {
     }
 
     /**
+     * Life-cycle method invoked when the <code>Component</code> is added to a registered hierarchy.
+     */
+    @Override
+    public void init() {
+        super.init();
+        binder.bind();
+    }
+
+    /**
      * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
         super.dispose();
-        binder.dispose();
+        binder.unbind();
     }
 }
