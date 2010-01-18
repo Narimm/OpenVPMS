@@ -71,11 +71,7 @@ public class SelectFieldBinder extends Binder {
             }
         };
         int index = indexOf(property.getValue());
-        if (index == -1 && component.getModel().size() != 0) {
-            // current value not in the list, so default it to the first list value.
-            component.setSelectedIndex(0);
-            setProperty(getProperty());
-        }
+        component.setSelectedIndex(index);
 
         bind();
     }
