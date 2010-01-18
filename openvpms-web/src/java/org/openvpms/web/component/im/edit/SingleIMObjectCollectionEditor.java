@@ -43,11 +43,11 @@ public abstract class SingleIMObjectCollectionEditor
         extends AbstractIMObjectCollectionEditor {
 
     /**
-     * Creates a new <tt>SingleIMObjectCollectionEditor</tt>.
+     * Constructs a <tt>SingleIMObjectCollectionEditor</tt>.
      *
      * @param editor  the collection property
-     * @param object
-     * @param context
+     * @param object  the parent object
+     * @param context the layout context
      */
     public SingleIMObjectCollectionEditor(CollectionProperty editor,
                                           IMObject object,
@@ -77,15 +77,8 @@ public abstract class SingleIMObjectCollectionEditor
      */
     @Override
     public boolean validate(Validator validator) {
-        boolean valid;
         mapObject();
-        if (isEmpty()) {
-            valid = true;
-        } else {
-            valid = super.validate(validator);
-        }
-
-        return valid;
+        return isEmpty() || super.validate(validator);
     }
 
     /**

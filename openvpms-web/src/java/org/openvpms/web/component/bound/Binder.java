@@ -87,7 +87,7 @@ public abstract class Binder {
      */
     public void setProperty() {
         boolean listener = hasListener;
-        if (hasListener) {
+        if (listener) {
             // remove the listener to avoid cyclic notifications
             removeModifiableListener();
         }

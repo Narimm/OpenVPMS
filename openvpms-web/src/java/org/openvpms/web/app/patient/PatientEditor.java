@@ -55,6 +55,10 @@ public class PatientEditor extends AbstractIMObjectEditor {
      */
     private RelationshipCollectionTargetEditor customFieldEditor;
 
+    /**
+     * The layout strategy.
+     */
+    private PatientLayoutStrategy strategy;
 
     /**
      * Constructs a new <tt>PatientEditor</tt>.
@@ -78,9 +82,9 @@ public class PatientEditor extends AbstractIMObjectEditor {
         });
         CollectionProperty customField
                 = (CollectionProperty) getProperty("customFields");
-        customFieldEditor = new EntityRelationshipCollectionTargetEditor(
-                customField, patient, getLayoutContext());
+        customFieldEditor = new EntityRelationshipCollectionTargetEditor(customField, patient, getLayoutContext());
         getEditors().add(customFieldEditor);
+        createLayoutStrategy();
         updateCustomFields();
     }
 
@@ -91,7 +95,10 @@ public class PatientEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new PatientLayoutStrategy(customFieldEditor);
+        if (strategy == null) {
+            strategy = new PatientLayoutStrategy(customFieldEditor);
+        }
+        return strategy;
     }
 
     /**
@@ -123,11 +130,8 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * If there is no <em>entity.customPatient*</em> object, and the
      * <em>lookup.species</em> customFields node specifies an archetype, one
      * will be added.
-     *
-     * @return <tt>true</tt> if an update was performed
      */
-    private boolean updateCustomFields() {
-        boolean changed = false;
+    private void updateCustomFields() {
         String species = (String) getProperty("species").getValue();
         String shortName = getCustomFieldsArchetype(species);
         String currentShortName = null;
@@ -137,26 +141,22 @@ public class PatientEditor extends AbstractIMObjectEditor {
         }
         if (currentShortName != null && !currentShortName.equals(shortName)) {
             customFieldEditor.remove(fields);
-            changed = true;
+            strategy.removeCustomFields();
         }
         if (shortName != null && !shortName.equals(currentShortName)) {
             IMObject object = IMObjectCreator.create(shortName);
             if (object instanceof Entity) {
                 customFieldEditor.add(object);
-                changed = true;
+                strategy.addCustomFields();
             }
         }
-        return changed;
     }
 
     /**
      * Invoked when the species changes. Updates the customFields node.
      */
     private void speciesChanged() {
-        if (updateCustomFields()) {
-            onLayout();
-            getEditors().add(customFieldEditor);
-        }
+        updateCustomFields();
     }
 
     /**
