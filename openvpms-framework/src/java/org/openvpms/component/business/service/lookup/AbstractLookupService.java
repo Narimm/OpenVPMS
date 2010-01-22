@@ -26,12 +26,15 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -222,9 +225,14 @@ public abstract class AbstractLookupService implements ILookupService {
     @SuppressWarnings("unchecked")
     protected Collection<Lookup> query(String shortName) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List results = service.get(query).getResults();
-        return (List<Lookup>) results;
+        query.setMaxResults(1000);
+        query.add(new NodeSortConstraint("id"));
+        Iterator<Lookup> iter = new IMObjectQueryIterator(service, query);
+        List<Lookup> result = new ArrayList<Lookup>();
+        while (iter.hasNext()) {
+            result.add(iter.next());
+        }
+        return result;
     }
 
     /**

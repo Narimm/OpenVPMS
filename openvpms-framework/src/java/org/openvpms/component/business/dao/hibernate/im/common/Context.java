@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,7 @@ public class Context {
     /**
      * The set of objects currently being assembled.
      */
-    private Set<Object> assembling = new HashSet<Object>();
+    private Map<Object, Object> assembling = new IdentityHashMap<Object, Object>();
 
     /**
      * The references to assemble.
@@ -178,7 +179,7 @@ public class Context {
      * @param state the data object state to register
      */
     public void addAssembling(DOState state) {
-        assembling.add(state);
+        assembling.put(state, state);
     }
 
     /**
@@ -198,7 +199,7 @@ public class Context {
      *         <tt>false</tt>
      */
     public boolean isAssembling(DOState state) {
-        return assembling.contains(state);
+        return assembling.containsKey(state);
     }
 
     /**
@@ -207,7 +208,7 @@ public class Context {
      * @param object the object to register
      */
     public void addAssembling(IMObject object) {
-        assembling.add(object);
+        assembling.put(object, object);
     }
 
     /**
@@ -227,7 +228,7 @@ public class Context {
      *         <tt>false</tt>
      */
     public boolean isAssembling(IMObject object) {
-        return assembling.contains(object);
+        return assembling.containsKey(object);
     }
 
     /**
@@ -594,4 +595,5 @@ public class Context {
         }
 
     }
+
 }
