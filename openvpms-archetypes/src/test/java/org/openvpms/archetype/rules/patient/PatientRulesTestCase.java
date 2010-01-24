@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -50,6 +53,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link PatientRules#getOwner}
      * and {@link PatientRules#getOwnerReference} methods.
      */
+    @Test
     public void testGetOwner() {
         Party patient1 = TestHelper.createPatient();
         assertNull(rules.getOwner(patient1));
@@ -70,6 +74,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PatientRules#getOwner(Act)} method.
      */
+    @Test
     public void testGetOwnerFromAct() {
         Party patient = TestHelper.createPatient();
         Party customer1 = TestHelper.createCustomer();
@@ -103,6 +108,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PatientRules#isOwner} method.
      */
+    @Test
     public void testIsOwner() {
         Party patient1 = TestHelper.createPatient();
         Party customer = TestHelper.createCustomer();
@@ -119,6 +125,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PatientRules#getReferralVet} method.
      */
+    @Test
     public void testGetReferralVet() {
         Party patient = TestHelper.createPatient(false);
         Party vet = TestHelper.createSupplierVet();
@@ -143,6 +150,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PatientRules#getPatientWeight(Party)} method.
      */
+    @Test
     public void testGetPatientWeight() {
         Party patient = TestHelper.createPatient();
         assertNull(rules.getPatientWeight(patient));
@@ -160,6 +168,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link PatientRules#setDeceased(Party)} and
      * {@link PatientRules#isDeceased(Party)} methods.
      */
+    @Test
     public void testDeceased() {
         Party patient = TestHelper.createPatient(false);
         assertFalse(rules.isDeceased(patient));
@@ -171,6 +180,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link PatientRules#setDesexed(Party)} and
      * {@link PatientRules#isDesexed(Party)} methods.
      */
+    @Test
     public void testDesexed() {
         Party patient = TestHelper.createPatient(false);
         assertFalse(rules.isDesexed(patient));
@@ -181,6 +191,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PatientRules#getMicrochip(Party)} method.
      */
+    @Test
     public void testGetMicrochip() {
         Party patient = TestHelper.createPatient(false);
         assertNull(rules.getMicrochip(patient));
@@ -195,12 +206,9 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new PatientRules(getArchetypeService());
     }
 

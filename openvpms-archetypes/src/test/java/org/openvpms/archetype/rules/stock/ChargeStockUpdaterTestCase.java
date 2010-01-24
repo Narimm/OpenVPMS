@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.stock;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
@@ -79,6 +81,7 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
     /**
      * Verifies that stock is updated for an invoice.
      */
+    @Test
     public void testInvoiceStockUpdate() {
         checkStockUpdate(createInvoice());
     }
@@ -86,67 +89,64 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
     /**
      * Verifies that stock is updated when an invoice is removed.
      */
-    public void testInvoiceRemoval() {
+    @Test public void testInvoiceRemoval() {
         checkChargeRemoval(createInvoice());
     }
 
     /**
      * Verifies that stock is updated when an invoice item is removed.
      */
-    public void testInvoiceItemRemoval() {
+    @Test public void testInvoiceItemRemoval() {
         checkItemRemoval(createInvoice());
     }
 
     /**
      * Verifies that stock is updated for a counter charge.
      */
-    public void testCounterChargeStockUpdate() {
+    @Test public void testCounterChargeStockUpdate() {
         checkStockUpdate(createCounterCharge());
     }
 
     /**
      * Verifies that stock is updated when a counter charge item is removed.
      */
-    public void testCounterChargeRemoval() {
+    @Test public void testCounterChargeRemoval() {
         checkChargeRemoval(createCounterCharge());
     }
 
     /**
      * Verifies that stock is updated when a counter charge item is removed.
      */
-    public void testCounterChargeItemRemoval() {
+    @Test public void testCounterChargeItemRemoval() {
         checkItemRemoval(createCounterCharge());
     }
 
     /**
      * Verifies that stock is updated for a credit charge.
      */
-    public void testCreditChargeStockUpdate() {
+    @Test public void testCreditChargeStockUpdate() {
         checkStockUpdate(createCreditCharge());
     }
 
     /**
      * Verifies that stock is updated when a credit charge is removed.
      */
-    public void testCreditChargeRemoval() {
+    @Test public void testCreditChargeRemoval() {
         checkChargeRemoval(createCreditCharge());
     }
 
     /**
      * Verifies that stock is updated when a credit charge item is removed.
      */
-    public void testCreditChargeItemRemoval() {
+    @Test public void testCreditChargeItemRemoval() {
         checkItemRemoval(createCreditCharge());
     }
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         product = TestHelper.createProduct();
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient();

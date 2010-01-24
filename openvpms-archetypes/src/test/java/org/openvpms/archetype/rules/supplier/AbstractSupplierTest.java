@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.supplier;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import org.junit.Before;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -82,12 +85,9 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         product = TestHelper.createProduct();
         stockLocation = createStockLocation();
 
@@ -214,6 +214,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         bean.setValue("amount", deliveryItem.getTotal());
         bean.setValue("tax", deliveryItem.getTaxAmount());
         save(bean.getAct(), deliveryItem);
+
         return (FinancialAct) bean.getAct();
     }
 

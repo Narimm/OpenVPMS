@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
@@ -35,7 +37,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * Tests the {@link StatementProcessor} class.
  *
@@ -48,6 +49,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
      * Verifies that the statement processor cannot be constructed with
      * an invalid date.
      */
+    @Test
     public void testStatementDate() {
         Date now = new Date();
         try {
@@ -74,6 +76,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
      * The statement should be a preview and include COMPLETED charges and
      * POSTED acts.
      */
+    @Test
     public void testProcessPreview() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
@@ -135,6 +138,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
      * Tests the {@link StatementProcessor#process(Party)} method for a
      * statement date where end-of-period has been run.
      */
+    @Test
     public void testProcessEndOfPeriod() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
@@ -206,6 +210,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         checkAct(acts.get(2), "act.customerAccountDebitAdjust", feeAmount);
     }
 
+    @Test
     public void testBackDatedStatements() {
         Party customer = getCustomer();
 
@@ -313,6 +318,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     }
 
     private class Listener implements ProcessorListener<Statement> {
+
         private List<Statement> statements = new ArrayList<Statement>();
 
         private List<Statement> getStatements() {

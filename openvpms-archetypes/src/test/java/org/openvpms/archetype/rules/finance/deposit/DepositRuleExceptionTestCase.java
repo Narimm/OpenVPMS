@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.deposit;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.*;
 
 
@@ -33,6 +34,7 @@ public class DepositRuleExceptionTestCase extends TestCase {
     /**
      * Verifies that the messages are generated correctly.
      */
+    @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
                      4, DepositRuleException.ErrorCode.values().length);

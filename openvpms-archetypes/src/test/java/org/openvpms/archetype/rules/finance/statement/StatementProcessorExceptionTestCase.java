@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.statement;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 
 /**
@@ -32,6 +33,7 @@ public class StatementProcessorExceptionTestCase extends TestCase {
     /**
      * Verifies that the messages are generated correctly.
      */
+    @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
                      4, StatementProcessorException.ErrorCode.values().length);
@@ -60,10 +62,8 @@ public class StatementProcessorExceptionTestCase extends TestCase {
      * @param expected the expected message
      * @param args     exception arguments
      */
-    private void checkException(StatementProcessorException.ErrorCode code,
-                                String expected, Object ... args) {
-        StatementProcessorException exception = new StatementProcessorException(
-                code, args);
+    private void checkException(StatementProcessorException.ErrorCode code, String expected, Object... args) {
+        StatementProcessorException exception = new StatementProcessorException(code, args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());
     }

@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.stock;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -43,6 +46,7 @@ public class StockRulesTestCase extends AbstractStockTest {
     /**
      * Tests the {@link StockRules#getStockLocation(Product, Party)} method.
      */
+    @Test
     public void testGetStockLocation() {
         // set up a location with 2 stock locations
         Party location = TestHelper.createLocation();
@@ -82,6 +86,7 @@ public class StockRulesTestCase extends AbstractStockTest {
      * Tests the {@link StockRules#getStock(Product, Party)} and
      * {@link StockRules#updateStock(Product, Party, BigDecimal)} methods.
      */
+    @Test
     public void testGetAndUpdateStock() {
         BigDecimal quantity = new BigDecimal("10.00");
 
@@ -103,6 +108,7 @@ public class StockRulesTestCase extends AbstractStockTest {
     /**
      * Tests the {@link StockRules#transferStock} method.
      */
+    @Test
     public void testTransferStock() {
         BigDecimal quantity = new BigDecimal("10.00");
         Party from = createStockLocation();
@@ -116,12 +122,9 @@ public class StockRulesTestCase extends AbstractStockTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new StockRules();
     }
 }

@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.supplier;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -53,6 +56,7 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link SupplierRules#getReferralVetPractice} method.
      */
+    @Test
     public void testGetReferralVet() {
         Party vet = TestHelper.createSupplierVet();
 
@@ -82,7 +86,7 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link SupplierRules#isSuppliedBy(Party, Product)} method.
      */
-    public void testIsSuppliedBy() {
+    @Test public void testIsSuppliedBy() {
         Party supplier = TestHelper.createSupplier();
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
@@ -101,7 +105,7 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link SupplierRules#getProductSuppliers(Party)} method.
      */
-    public void testGetProductSuppliersForSupplier() {
+    @Test public void testGetProductSuppliersForSupplier() {
         Party supplier = TestHelper.createSupplier();
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
@@ -129,12 +133,9 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new SupplierRules(getArchetypeService());
         productRules = new ProductRules();
     }

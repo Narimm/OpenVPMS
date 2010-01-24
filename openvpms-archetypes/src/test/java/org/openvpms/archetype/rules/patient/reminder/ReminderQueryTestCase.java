@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -54,6 +56,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * Verifies that a query with no constraints returns all IN_PROGRESS
      * reminders.
      */
+    @Test
     public void testQuery() {
         int initialCount = countReminders(null, null);
         ReminderQuery query = new ReminderQuery();
@@ -69,6 +72,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * Verifies that IN_PROGRESS reminders can be queried for a particular
      * reminder type.
      */
+    @Test
     public void testQueryReminderType() {
         final int count = 10;
         Entity reminderType = ReminderTestHelper.createReminderType();
@@ -89,6 +93,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that IN_PROGRESS reminders can be queried for a date range.
      */
+    @Test
     public void testQueryDateRange() {
         final int count = 10;
 
@@ -122,6 +127,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * Verifies that IN_PROGRESS reminders can be queried for a reminder type
      * and date range.
      */
+    @Test
     public void testQueryReminderTypeDateRange() {
         final int count = 10;
         Entity reminderType = ReminderTestHelper.createReminderType();

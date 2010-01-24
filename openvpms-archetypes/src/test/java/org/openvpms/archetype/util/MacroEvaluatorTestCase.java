@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.util;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -55,6 +57,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     /**
      * Tests {@link MacroEvaluator#evaluate(String, Object)}.
      */
+    @Test
     public void testMacros() {
         Party person = TestHelper.createCustomer();
         Object text1 = macros.evaluate("macro1", person);
@@ -74,6 +77,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     /**
      * Verifies verifies that macros that throw exceptions don't expand.
      */
+    @Test
     public void testExceptionMacro() {
         Party person = TestHelper.createCustomer();
         Object text = macros.evaluate("exceptionMacro", person);
@@ -83,6 +87,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that non-existent macros don't expand.
      */
+    @Test
     public void testNonExistentMacro() {
         Object text = macros.evaluate("non existent", new Object());
         assertEquals("non existent", text);
@@ -91,6 +96,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     /**
      * Tests that nested macros are expanded.
      */
+    @Test
     public void testNestedMacro() {
         Object text = macros.evaluate("nested", new Object());
         assertEquals("nested test: macro 1 text", text);
@@ -99,6 +105,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     /**
      * Tests that numeric prefixes are expanded as the $number variable.
      */
+    @Test
     public void testNumericPrefix() {
         Object dummy = new Object();
         // verify that when no prefix is specified, the number doesn't evaluate
@@ -123,6 +130,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that inactive macros aren't picked up.
      */
+    @Test
     public void testDeactivateMacro() {
         Party person = TestHelper.createCustomer();
         Object text = macros.evaluate("macro1", person);
@@ -138,6 +146,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that deleted macros aren't picked up.
      */
+    @Test
     public void testDeleteMacro() {
         Party person = TestHelper.createCustomer();
         Object text2 = macros.evaluate("macro2", person);
@@ -151,12 +160,9 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         macro1 = createMacro("macro1", "'macro 1 text'");
         macro2 = createMacro("macro2", "concat('one', 'two', 'three')");
         createMacro("displayName", "openvpms:get(., 'displayName')");
