@@ -1,0 +1,81 @@
+<project default="zip"
+         xmlns:ant="jelly:ant"
+         xmlns:maven="jelly:maven"
+         xmlns:j="jelly:core"
+         xmlns:velocity="jelly:velocity"
+         xmlns:artifact="artifact">
+
+    <!-- ================================================================== -->
+    <!-- Deploy zip                                                         -->
+    <!-- ================================================================== -->
+    <goal name="zip:deploy" prereqs="zip"
+          description="Deploy a zip to the remote repository">
+
+        <artifact:deploy artifact="${maven.build.dir}/${maven.final.name}.zip"
+                         type="zip" project="${pom}"/>
+    </goal>
+
+    <!-- ================================================================== -->
+    <!-- Install zip                                                        -->
+    <!-- NOTE: this target is not in keeping with maven's one target per    -->
+    <!-- project approach...                                                -->
+    <!-- ================================================================== -->
+    <goal name="zip:install" prereqs="zip"
+          description="Install the zip in the local repository">
+
+        <artifact:install artifact="${maven.build.dir}/${maven.final.name}.zip"
+                          type="zip" project="${pom}"/>
+    </goal>
+
+    <!-- ================================================================== -->
+    <!-- Build the plugin zip                                               -->
+    <!-- ================================================================== -->
+    <goal name="zip">
+        <attainGoal name="pluginlib"/>
+        <j:set var="zipDir" value="${maven.build.dir}/OpenVPMSLoader"/>
+        <ant:copy file="${maven.build.dir}/plugin.xml"
+                  tofile="${zipDir}/plugin.xml"/>
+        <ant:copy file="${basedir}/src/conf/kettle/plugin.png"
+                  todir="${zipDir}"/>
+        <j:forEach var="lib" items="${pom.artifacts}">
+            <j:set var="dep" value="${lib.dependency}"/>
+            <j:if test="${dep.getProperty('kettle.plugin')=='true'}">
+                <j:if test="${dep.type =='jar'}">
+                    <ant:copy todir="${zipDir}" file="${lib.path}"/>
+                </j:if>
+            </j:if>
+        </j:forEach>
+        <zip zipfile="${maven.build.dir}/${maven.final.name}.zip"
+             basedir="${maven.build.dir}" includes="OpenVPMSLoader/**"/>
+    </goal>
+
+    <goal name="pluginlib">
+        <mkdir dir="${maven.build.dir}"/>
+        <velocity:merge name="${maven.build.dir}/plugin.xml"
+                        basedir="${basedir}/src/conf/kettle"
+                        template="plugin.vm"
+                        inputEncoding="${maven.docs.outputencoding}"
+                        outputEncoding="${maven.docs.outputencoding}"/>
+        <delete file="${basedir}/velocity.log" failonerror="false"/>
+    </goal>
+
+    <!-- ================================================================== -->
+    <!-- Deploy the plugin to the kettle install                            -->
+    <!-- ================================================================== -->
+    <goal name="deploykettle">
+        <attainGoal name="pluginlib"/>
+        <ant:copy file="${maven.build.dir}/plugin.xml"
+                  tofile="${kettle.plugin.dir}/plugin.xml"/>
+        <ant:copy file="${basedir}/src/conf/kettle/plugin.png"
+                  todir="${kettle.plugin.dir}"/>
+        <j:forEach var="lib" items="${pom.artifacts}">
+            <j:set var="dep" value="${lib.dependency}"/>
+            <j:if test="${dep.getProperty('kettle.plugin')=='true'}">
+                <j:if test="${dep.type =='jar'}">
+                    <ant:copy todir="${kettle.plugin.dir}" file="${lib.path}"/>
+                </j:if>
+            </j:if>
+        </j:forEach>
+    </goal>
+
+</project>

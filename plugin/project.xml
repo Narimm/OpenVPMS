@@ -1,0 +1,55 @@
+<project>
+    <extend>${basedir}/../project.xml</extend>
+    <artifactId>openvpms-etl-plugin</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-etl</artifactId>
+            <version>${pom.currentVersion}</version>
+            <url>http://www.openvpms.org</url>
+            <properties>
+                <kettle.plugin>true</kettle.plugin>
+            </properties>
+        </dependency>
+
+        <!-- velocity dependencies for xdoc processing -->
+        <dependency>
+            <groupId>velocity</groupId>
+            <artifactId>velocity</artifactId>
+            <version>1.4-dev</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-jelly</groupId>
+            <artifactId>commons-jelly-tags-velocity</artifactId>
+            <version>20030303.205659</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <nagEmailAddress>buildman@openvpms.org</nagEmailAddress>
+        <sourceDirectory>src/java</sourceDirectory>
+        <unitTestSourceDirectory>src/test/java</unitTestSourceDirectory>
+    </build>
+
+    <reports>
+        <report>maven-jdepend-plugin</report>
+        <report>maven-pmd-plugin</report>
+        <report>maven-checkstyle-plugin</report>
+        <!--report>maven-simian-plugin</report-->
+        <!--report>maven-findbugs-plugin</report-->
+        <report>maven-changes-plugin</report>
+        <report>maven-changelog-plugin</report>
+        <report>maven-file-activity-plugin</report>
+        <report>maven-developer-activity-plugin</report>
+        <!--report>maven-statcvs-plugin</report-->
+        <report>maven-jxr-plugin</report>
+        <report>maven-junit-report-plugin</report>
+        <report>maven-jcoverage-plugin</report>
+        <report>maven-tasklist-plugin</report>
+        <report>maven-javadoc-plugin</report>
+        <report>maven-faq-plugin</report>
+    </reports>
+</project>

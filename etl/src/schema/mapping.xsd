@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="mappings">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="connection" type="xs:string" minOccurs="0"/>
+                <xs:element name="idColumn" type="xs:string" minOccurs="0"/>
+                <xs:element ref="mapping" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="generateLookups" type="xs:boolean" default="true" minOccurs="0"/>
+                <xs:element name="skipProcessed" type="xs:boolean" default="true" minOccurs="0"/>
+                <xs:element name="batchSize" type="xs:integer" default="1000" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="mapping">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="source" type="xs:string" minOccurs="0"/>
+                <xs:element name="target" type="xs:string" minOccurs="0"/>
+                <xs:element name="excludeNull" type="xs:boolean"/>
+                <xs:element name="value" type="xs:string" minOccurs="0"/>
+                <xs:element name="removeDefaultObjects" type="xs:boolean"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

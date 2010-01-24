@@ -1,0 +1,49 @@
+<project xmlns:ant="jelly:ant"
+         xmlns:maven="jelly:maven"
+         xmlns:j="jelly:core">
+
+    <goal name="generate-appcontext">
+        <copy tofile="${maven.build.dir}/applicationContext.xml"
+              file="src/conf/spring/applicationContext.xml">
+                <filterset begintoken="${'${'}" endtoken="}">
+                    <filter token="hibernate.dialect" value="${hibernate.dialect}"/>
+                    <filter token="jdbc.driverClassName" value="${jdbc.driverClassName}"/>
+                    <filter token="jdbc.url" value="${jdbc.url}"/>
+                    <filter token="jdbc.username" value="${jdbc.username}"/>
+                    <filter token="jdbc.password" value="${jdbc.password}"/>
+            </filterset>
+        </copy>
+    </goal>
+
+    <goal name="doc:load">
+        <attainGoal name="java:compile"/>
+        <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-appcontext"/>
+        <ant:java
+                classname="org.openvpms.etl.tools.doc.DocumentLoader"
+                failonerror="true"
+                fork="true">
+            <ant:classpath>
+                <ant:pathelement path="${maven.build.dir}"/>
+                <ant:pathelement path="${maven.build.dest}"/>
+                <ant:path refid="maven.dependency.classpath"/>
+            </ant:classpath>
+            <j:if test="${!empty(byid)}">
+                <ant:arg value="--byid"/>
+            </j:if>
+            <j:if test="${!empty(byname)}">
+                <ant:arg value="--byname"/>
+            </j:if>
+            <j:if test="${!empty(docdir)}">
+                <ant:arg value="-d"/>
+                <ant:arg value="${docdir}"/>
+            </j:if>
+            <j:if test="${!empty(doctype)}">
+                <ant:arg value="-t"/>
+                <ant:arg value="${doctype}"/>
+            </j:if>
+            <ant:arg value="--failOnError=false"/>
+        </ant:java>
+    </goal>
+
+</project>
