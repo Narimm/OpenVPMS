@@ -18,12 +18,17 @@
 
 package org.openvpms.report.openoffice;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -37,15 +42,19 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
+@ContextConfiguration(locations = "applicationContextNoOOPool.xml", inheritLocations = false)
 public abstract class AbstractOpenOfficeLoadTestCase
         extends AbstractOpenOfficeDocumentTest {
 
     /**
      * Load tests the OpenOffice interface.
+     *
+     * @throws Exception for any error
      */
+    @Test
     public void test() throws Exception {
         createCustomer(); // hack to force init of jxpath function cache to
-                          // avoid ConcurrentModificationException
+        // avoid ConcurrentModificationException
 
         Thread[] threads = new Thread[10];
         Reporter[] reporters = new Reporter[threads.length];
@@ -67,36 +76,25 @@ public abstract class AbstractOpenOfficeLoadTestCase
     }
 
     /**
+     * Sets up the test case.
+     */
+    @Before
+    public void onSetUp() {
+        new OpenOfficeHelper(createPool(), null);
+    }
+
+    /**
      * Creates a new connection pool.
      *
      * @return a new connection pool
      */
     protected abstract OOConnectionPool createPool();
 
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContextNoOOPool.xml"};
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        new OpenOfficeHelper(createPool(), null);
-    }
-
 
     private class Reporter implements Runnable {
 
         private final int count;
+
         boolean failed = false;
 
         public Reporter(int count) {
@@ -107,7 +105,7 @@ public abstract class AbstractOpenOfficeLoadTestCase
             try {
                 for (int i = 0; i < count; ++i) {
                     System.out.println(Thread.currentThread().getName()
-                            + " iteration " + (i + 1));
+                                       + " iteration " + (i + 1));
                     test();
                 }
             } catch (Throwable exception) {
@@ -122,6 +120,7 @@ public abstract class AbstractOpenOfficeLoadTestCase
             return failed;
         }
 
+        @Test
         public void test() {
             Document doc = getDocument(
                     "src/test/reports/act.customerEstimation.odt",

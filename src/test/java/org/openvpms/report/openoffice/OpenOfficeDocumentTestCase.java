@@ -18,13 +18,16 @@
 
 package org.openvpms.report.openoffice;
 
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 
 /**
  * Tests the {@link OpenOfficeDocument} class.
@@ -45,6 +48,7 @@ public class OpenOfficeDocumentTestCase extends AbstractOpenOfficeDocumentTest {
      * {@link OpenOfficeDocument#getUserField(String)}
      * and {@link OpenOfficeDocument#setUserField(String, String)} methods.
      */
+    @Test
     public void testUserFields() {
         OpenOfficeDocument doc = getDocument();
         Map<String, String> fields = new LinkedHashMap<String, String>();
@@ -75,6 +79,7 @@ public class OpenOfficeDocumentTestCase extends AbstractOpenOfficeDocumentTest {
      * {@link OpenOfficeDocument#getInputField(String)} and
      * {@link OpenOfficeDocument#setInputField(String, String)} methods.
      */
+    @Test
     public void testInputFields() {
         OpenOfficeDocument doc = getDocument();
         Map<String, ParameterType> input = doc.getInputFields();
@@ -90,23 +95,19 @@ public class OpenOfficeDocumentTestCase extends AbstractOpenOfficeDocumentTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp(){
         connection = getConnection();
     }
 
     /**
      * Tears down the test case.
-     *
-     * @throws Exception for any error
      */
+    @After
     @Override
-    protected void onTearDown() throws Exception {
-        super.onTearDown();
+    public void tearDown() {
+        super.tearDown();
         OpenOfficeHelper.close(connection);
     }
 

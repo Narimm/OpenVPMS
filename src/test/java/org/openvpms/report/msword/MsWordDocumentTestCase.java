@@ -18,12 +18,15 @@
 
 package org.openvpms.report.msword;
 
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.junit.Before;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.openoffice.AbstractOpenOfficeDocumentTest;
-import org.openvpms.report.openoffice.OpenOfficeDocument;
 import org.openvpms.report.openoffice.OOConnection;
+import org.openvpms.report.openoffice.OpenOfficeDocument;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 
 import java.util.LinkedHashMap;
@@ -49,6 +52,7 @@ public class MsWordDocumentTestCase extends AbstractOpenOfficeDocumentTest {
      * {@link MsWordDocument#getUserField(String)}
      * and {@link MsWordDocument#setUserField(String, String)} methods.
      */
+    @Test
     public void testUserFields() {
         OpenOfficeDocument doc = getDocument();
         Map<String, String> fields = new LinkedHashMap<String, String>();
@@ -79,13 +83,14 @@ public class MsWordDocumentTestCase extends AbstractOpenOfficeDocumentTest {
      * {@link MsWordDocument#getInputField(String)} and
      * {@link MsWordDocument#setInputField(String, String)} methods.
      */
+    @Test
     public void testInputFields() {
         OpenOfficeDocument doc = getDocument();
         Map<String, ParameterType> input = doc.getInputFields();
         assertEquals(3, input.size());
-        String input1= checkParameter("Enter Field 1", input);
+        String input1 = checkParameter("Enter Field 1", input);
         String input2 = checkParameter("Enter Field 2", input);
-        String input3 =checkParameter("Enter Field 3", input);
+        String input3 = checkParameter("Enter Field 3", input);
 
         checkUpdateInputField(doc, input1, "input1 new value");
         checkUpdateInputField(doc, input2, "input2 new value");
@@ -94,23 +99,18 @@ public class MsWordDocumentTestCase extends AbstractOpenOfficeDocumentTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         connection = getConnection();
     }
 
     /**
      * Tears down the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onTearDown() throws Exception {
-        super.onTearDown();
+    public void tearDown() {
+        super.tearDown();
         OpenOfficeHelper.close(connection);
     }
 

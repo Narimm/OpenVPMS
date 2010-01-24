@@ -18,7 +18,8 @@
 
 package org.openvpms.report;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 import static org.openvpms.report.ReportException.ErrorCode.*;
 
 
@@ -28,11 +29,12 @@ import static org.openvpms.report.ReportException.ErrorCode.*;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReportExceptionTestCase extends TestCase {
+public class ReportExceptionTestCase {
 
     /**
      * Verifies that the messages are generated correctly.
      */
+    @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
                      10, ReportException.ErrorCode.values().length);

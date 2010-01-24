@@ -19,6 +19,7 @@
 package org.openvpms.report.openoffice;
 
 import junit.framework.Assert;
+import org.junit.Test;
 
 
 /**
@@ -34,6 +35,7 @@ public abstract class AbstractDefaultOOConnectionPoolTestCase
      * Verifies that a connection is destroyed after N uses if
      * {@link DefaultOOConnectionPool#setReuseCount(int)} is non-zero.
      */
+    @Test
     public void testDestroy() {
         OOConnectionFactory factory = createFactory();
         TestConnectionPool pool = new TestConnectionPool(factory);

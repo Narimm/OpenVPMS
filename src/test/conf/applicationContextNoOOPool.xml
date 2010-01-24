@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
-        "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-<beans>
     <!--  Property configuration -->
     <bean id="props"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -182,13 +183,9 @@
     -->
     <bean id="OOSocketBootstrapService"
           class="org.openvpms.report.openoffice.OOSocketBootstrapService">
-        <constructor-arg>
-            <value>8100</value>
-        </constructor-arg>
+        <constructor-arg index="0" value="8100"/>
         <!-- start the service on demand -->
-        <constructor-arg>
-            <value>false</value>
-        </constructor-arg>
+        <constructor-arg index="1" value="false"/>
     </bean>
 
     <!-- OpenOffice bootstrap service. Starts an instance of OpenOffice on
@@ -198,9 +195,7 @@
     -->
     <bean id="OOPipeBootstrapService"
           class="org.openvpms.report.openoffice.OOPipeBootstrapService">
-        <constructor-arg>
-            <value>vpms</value>
-        </constructor-arg>
+        <constructor-arg value="vpms"/>
     </bean>
 
 </beans>
