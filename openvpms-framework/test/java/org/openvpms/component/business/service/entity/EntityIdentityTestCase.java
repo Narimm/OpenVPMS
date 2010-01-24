@@ -18,10 +18,12 @@
 
 package org.openvpms.component.business.service.entity;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.springframework.test.context.ContextConfiguration;
 
 
 /**
@@ -30,33 +32,23 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityIdentityTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * Holds a reference to the archetype service.
-     */
-    private ArchetypeService service;
-
-    /**
-     * Default constructor.
-     */
-    public EntityIdentityTestCase() {
-    }
+@ContextConfiguration("entity-service-appcontext.xml")
+public class EntityIdentityTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Test the creation of EntityIdentities on an entity object.
      */
-    public void testEntityIdentityCreation() throws Exception {
+    @Test
+    public void testEntityIdentityCreation() {
         Party person = createPerson("MR", "EntityIdentity", "Test");
         EntityIdentity eidentity = createEntityIdentity("jimbo");
 
         person.addIdentity(eidentity);
-        service.save(person);
+        save(person);
 
         // retrieve the person and check that there is a single
         // entity identity
-        person = (Party) service.get(person.getObjectReference());
+        person = get(person);
         assertNotNull(person);
         assertEquals(1, person.getIdentities().size());
         assertTrue((person.getIdentities().iterator().next()).getId() != -1);
@@ -65,6 +57,7 @@ public class EntityIdentityTestCase
     /**
      * Tests the removal of an entity identity associated with a party.
      */
+    @Test
     public void testEntityIdentityDeletion() {
         Party person = createPerson("MR", "EntityIdentity", "Test");
         EntityIdentity ident1 = createEntityIdentity("jimbo");
@@ -72,21 +65,21 @@ public class EntityIdentityTestCase
         person.addIdentity(ident1);
         person.addIdentity(ident2);
 
-        service.save(person);
+        save(person);
 
         // retrieve the entity, check it and then remove an entity identity
-        person = (Party) service.get(person.getObjectReference());
+        person = (Party) get(person.getObjectReference());
         assertNotNull(person);
         assertEquals(2, person.getIdentities().size());
 
         ident1 = person.getIdentities().iterator().next();
         person.removeIdentity(ident1);
         assertEquals(1, person.getIdentities().size());
-        service.save(person);
+        save(person);
 
-        assertNull(service.get(ident1.getObjectReference()));
+        assertNull(get(ident1.getObjectReference()));
 
-        person = (Party) service.get(person.getObjectReference());
+        person = (Party) get(person.getObjectReference());
         assertNotNull(person);
         assertEquals(1, person.getIdentities().size());
     }
@@ -95,23 +88,24 @@ public class EntityIdentityTestCase
      * Test the update of an entity identity object, which is attached to a
      * person object.
      */
-    public void testEntityIdentityUpdate() throws Exception {
+    @Test
+    public void testEntityIdentityUpdate() {
         Party person = createPerson("MR", "EntityIdentity", "Test");
         EntityIdentity ident1 = createEntityIdentity("jimbo");
         person.addIdentity(ident1);
-        service.save(person);
+        save(person);
 
         // retrieve the entity, check it and then update an entity identity
-        person = (Party) service.get(person.getObjectReference());
+        person = (Party) get(person.getObjectReference());
         assertNotNull(person);
         assertEquals(1, person.getIdentities().size());
         ident1 = person.getIdentities().iterator().next();
         assertTrue(ident1.getIdentity().equals("jimbo"));
         ident1.setIdentity("jimmya");
-        service.save(person);
+        save(person);
 
         // make sure the update happened
-        person = (Party) service.get(person.getObjectReference());
+        person = (Party) get(person.getObjectReference());
         assertNotNull(person);
         assertEquals(1, person.getIdentities().size());
         ident1 = person.getIdentities().iterator().next();
@@ -120,7 +114,10 @@ public class EntityIdentityTestCase
 
     /**
      * Test that we can clone an EntityIdentity object.
+     *
+     * @throws Exception for any error
      */
+    @Test
     public void testEntityIdentityClone() throws Exception {
         EntityIdentity eidentity = createEntityIdentity("jimbo");
         EntityIdentity copy = (EntityIdentity) eidentity.clone();
@@ -131,35 +128,13 @@ public class EntityIdentityTestCase
     /**
      * Tests the fix for OBF-173.
      */
-    public void testOBF173() throws Exception {
+    @Test
+    public void testOBF173() {
         Party person = createPerson("MR", "EntityIdentity", "Test");
         EntityIdentity identity = createEntityIdentity("foo");
         person.addIdentity(identity);
-        service.save(person);
-        service.save(identity);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{"org/openvpms/component/business/service/entity/entity-service-appcontext.xml"};
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
-        assertNotNull(service);
+        save(person);
+        save(identity);
     }
 
     /**
@@ -172,7 +147,7 @@ public class EntityIdentityTestCase
      */
     private Party createPerson(String title, String firstName,
                                String lastName) {
-        Party person = (Party) service.create("party.person");
+        Party person = (Party) create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
@@ -187,9 +162,7 @@ public class EntityIdentityTestCase
      * @return EntityIdentity
      */
     private EntityIdentity createEntityIdentity(String identity) {
-        EntityIdentity eidentity = (EntityIdentity) service
-                .create("entityIdentity.personAlias");
-        assertNotNull(eidentity);
+        EntityIdentity eidentity = (EntityIdentity) create("entityIdentity.personAlias");
         eidentity.setIdentity(identity);
         return eidentity;
     }

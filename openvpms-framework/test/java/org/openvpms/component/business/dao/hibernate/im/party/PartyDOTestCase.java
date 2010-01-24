@@ -20,6 +20,8 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl;
@@ -31,7 +33,6 @@ import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.util.Random;
-
 
 /**
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -80,6 +81,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
      * Verifies that properties in the associated 'details' table is removed
      * when the PartyDO is deleted.
      */
+    @Test
     public void testPartySaveDelete() {
         Session session = getSession();
 
@@ -117,6 +119,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
      * and that the identity is removed along with its 'details' properties
      * when the PartyDO is deleted.
      */
+    @Test
     public void testPartySaveDeleteWithEntityIdentityDO() {
         Session session = getSession();
 
@@ -162,6 +165,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the addition and removal of the entity identies from a party.
      */
+    @Test
     public void testAddRemoveEntityIdentities() {
         Session session = getSession();
 
@@ -203,6 +207,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the addition of a single entity relationship.
      */
+    @Test
     public void testEntityRelationshipAddition() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -231,6 +236,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the removal of parties with entity relationships.
      */
+    @Test
     public void testEntityRelationshipRemoval() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -283,6 +289,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the creation and deletion of entity relationships.
      */
+    @Test
     public void testAddRemoveEntityRelationships() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -317,6 +324,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the addition of a single classification
      */
+    @Test
     public void testAdditionClassification() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -345,6 +353,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the addition and remove of classifications
      */
+    @Test
     public void testAdditionRemovalClassification() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -383,11 +392,9 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         parties = count(PartyDOImpl.class);
         relationships = count(EntityRelationshipDOImpl.class);

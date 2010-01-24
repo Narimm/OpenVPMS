@@ -19,11 +19,6 @@
 
 package org.openvpms.component.business.service.security;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.ConfigAttribute;
-import org.acegisecurity.ConfigAttributeDefinition;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.vote.AccessDecisionVoter;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -34,10 +29,13 @@ import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedA
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.util.StringUtilities;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
+import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -86,11 +84,24 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
         return clazz == MethodInvocation.class;
     }
 
-    /* (non-Javadoc)
-     * @see org.acegisecurity.vote.AccessDecisionVoter#vote(org.acegisecurity.Authentication, java.lang.Object, org.acegisecurity.ConfigAttributeDefinition)
+    /**
+     * Indicates whether or not access is granted.
+     * <p>The decision must be affirmative (<code>ACCESS_GRANTED</code>), negative (<code>ACCESS_DENIED</code>)
+     * or the <code>AccessDecisionVoter</code> can abstain (<code>ACCESS_ABSTAIN</code>) from voting.
+     * </p>
+     * <p>Unless an <code>AccessDecisionVoter</code> is specifically intended to vote on an access control
+     * decision due to a passed method invocation or configuration attribute parameter, it must return
+     * <code>ACCESS_ABSTAIN</code>. This prevents the coordinating <code>AccessDecisionManager</code> from counting
+     * votes from those <code>AccessDecisionVoter</code>s without a legitimate interest in the access control
+     * decision.
+     * </p>
+     *
+     * @param authentication the caller invoking the method
+     * @param object         the secured object
+     * @param attributes     the configuration attributes associated with the method being invoked
+     * @return either {@link #ACCESS_GRANTED}, {@link #ACCESS_ABSTAIN} or {@link #ACCESS_DENIED}
      */
-    public int vote(Authentication authentication, Object object,
-                    ConfigAttributeDefinition config) {
+    public int vote(Authentication authentication, Object object, Collection<ConfigAttribute> attributes) {
         int result = ACCESS_ABSTAIN;
 
         // make sure that we are dealing with an {@link IMObject}
@@ -98,11 +109,8 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
             ReflectiveMethodInvocation method
                     = (ReflectiveMethodInvocation) object;
             String[] shortNames = getArchetypeShortNames(method);
-            Iterator iter = config.getConfigAttributes();
-
-            while (iter.hasNext()) {
-                ConfigAttribute attribute = (ConfigAttribute) iter.next();
-                if (this.supports(attribute)) {
+            for (ConfigAttribute attribute : attributes) {
+                if (supports(attribute)) {
                     result = isAccessGranted(shortNames, authentication, attribute);
                 }
             }

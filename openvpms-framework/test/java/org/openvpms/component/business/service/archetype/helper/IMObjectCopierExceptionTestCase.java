@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 
 /**
@@ -32,6 +33,7 @@ public class IMObjectCopierExceptionTestCase extends TestCase {
     /**
      * Verifies that the messages are generated correctly.
      */
+    @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
                      1, IMObjectCopierException.ErrorCode.values().length);

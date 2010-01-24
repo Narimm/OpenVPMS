@@ -21,6 +21,8 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
@@ -49,6 +51,7 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation of act relationships.
      */
+    @Test
     public void testCreate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -74,6 +77,7 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the deletion of an act relationship.
      */
+    @Test
     public void testDelete() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -121,6 +125,7 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the modification of an act relationship.
      */
+    @Test
     public void testUpdate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -151,6 +156,7 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
      * Test that we can set the actrelationships without first saving the
      * acts.
      */
+    @Test
     public void testActRelationshipsToActsBeforeSave() {
         Session session = getSession();
 
@@ -171,6 +177,7 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the OVPMS-219 bug.
      */
+    @Test
     public void testOVPMS219() {
         Session session = getSession();
         Transaction tx;
@@ -208,6 +215,7 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test deletion of an act when act relationships are associated with it.
      */
+    @Test
     public void testDeleteActRelationshipAndAct() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -253,18 +261,16 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         acts = count(ActDOImpl.class);
         relationships = count(ActRelationshipDOImpl.class);
     }
 
     private void checkSource(ActDO source,
-                             ActRelationshipDO ... relationships) {
+                             ActRelationshipDO... relationships) {
         source = reload(source);
         assertNotNull(source);
         Set<ActRelationshipDO> sources = source.getSourceActRelationships();
@@ -277,7 +283,7 @@ public class ActRelationshipDOTestCase extends HibernateInfoModelTestCase {
     }
 
     private void checkTarget(ActDO target,
-                             ActRelationshipDO ... relationships) {
+                             ActRelationshipDO... relationships) {
         target = reload(target);
         assertNotNull(target);
         Set<ActRelationshipDO> sources = target.getSourceActRelationships();

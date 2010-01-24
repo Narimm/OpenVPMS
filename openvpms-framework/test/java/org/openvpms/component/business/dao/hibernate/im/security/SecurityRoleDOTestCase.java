@@ -20,9 +20,11 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
 
 /**
  * Tests the {@link SecurityRoleDOImpl} class.
@@ -46,6 +48,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Tests the creation of a role.
      */
+    @Test
     public void testCreate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -62,6 +65,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the deletion of a role.
      */
+    @Test
     public void testDelete() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -88,6 +92,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the modification of a role.
      */
+    @Test
     public void testUpdate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -120,6 +125,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation and addition of an archetype authority.
      */
+    @Test
     public void testAddAuthority() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -151,6 +157,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the removal of archetype authorities.
      */
+    @Test
     public void testDeleteAuthority() {
         final int count = 10;
         Session session = getSession();
@@ -201,6 +208,7 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the modification of archetype authorities.
      */
+    @Test
     public void testUpdateAuthority() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -241,20 +249,19 @@ public class SecurityRoleDOTestCase extends HibernateInfoModelTestCase {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         roles = count(SecurityRoleDOImpl.class);
         authorities = count(ArchetypeAuthorityDOImpl.class);
     }
 
     /**
-     * Create a role with the given name
+     * Creates a role with the given name.
      *
      * @param name the name of the role
+     * @return a new role
      */
     private SecurityRoleDO createSecurityRole(String name) {
         SecurityRoleDO role = new SecurityRoleDOImpl(

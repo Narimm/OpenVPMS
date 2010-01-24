@@ -18,12 +18,15 @@
 
 package org.openvpms.component.business.service.archetype;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.LookupUtil;
@@ -41,7 +44,7 @@ import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,82 +58,73 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServiceQueryTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
-
+@ContextConfiguration("archetype-service-appcontext.xml")
+public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Test the query by name in the lookup entity. This will support
      * OVPMS-35.
      */
+    @Test
     public void testOVPMS35() {
-        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
-                                                  true).add(
+        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false, true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Belarus"));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
-        int acount = service.get(query).getResults().size();
-        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
-                                                "Belarus", "Belarus");
-        service.save(lookup);
-        int acount1 = service.get(query).getResults().size();
+        int acount = get(query).size();
+        Lookup lookup = LookupUtil.createLookup(getArchetypeService(), "lookup.country", "Belarus", "Belarus");
+        save(lookup);
+        int acount1 = get(query).size();
         assertEquals(acount + 1, acount1);
     }
 
     /**
      * Test query by name with wildcard.
      */
+    @Test
     public void testGetByCodeWithWildcard() {
-        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
-                                                  true).add(
+        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false, true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
-        int acount = service.get(query).getResults().size();
-        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
-                                                "Belarus", "Belarus");
-        service.save(lookup);
-        int acount1 = service.get(query).getResults().size();
+        int acount = get(query).size();
+        Lookup lookup = LookupUtil.createLookup(getArchetypeService(), "lookup.country", "Belarus", "Belarus");
+        save(lookup);
+        int acount1 = get(query).size();
         assertEquals(acount + 1, acount1);
     }
 
     /**
      * Test query by name with wild in short name.
      */
+    @Test
     public void testGetCodeWithWildCardShortName() {
-        ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false,
-                                                  true).add(
-                new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
+        ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false, true)
+                .add(new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
-        int acount = service.get(query).getResults().size();
-        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
-                                                "Belarus", "Belarus");
-        service.save(lookup);
-        int acount1 = service.get(query).getResults().size();
+        int acount = get(query).size();
+        Lookup lookup = LookupUtil.createLookup(getArchetypeService(), "lookup.country", "Belarus", "Belarus");
+        save(lookup);
+        int acount1 = get(query).size();
         assertEquals(acount + 1, acount1);
     }
 
     /**
      * Test query by name with wild in short name and an order clause.
      */
+    @Test
     public void testGetCodeWithWildCardShortNameAndOrdered() {
         ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false, true)
                 .add(new NodeConstraint("name", RelationalOp.EQ, "Bel*"))
                 .add(new NodeSortConstraint("name", true));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
-        int acount = service.get(query).getResults().size();
-        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
+        int acount = get(query).size();
+        Lookup lookup = LookupUtil.createLookup(getArchetypeService(), "lookup.country",
                                                 "Belarus", "Belarus");
-        service.save(lookup);
-        int acount1 = service.get(query).getResults().size();
+        save(lookup);
+        int acount1 = get(query).size();
         assertEquals(acount + 1, acount1);
     }
 
@@ -142,27 +136,28 @@ public class ArchetypeServiceQueryTestCase
      * <p/>
      * This tests the fix for OBF-20 (was OVPMS-245)
      */
+    @Test
     public void testGetProductBySpecies() {
-        Lookup canine = LookupUtil.createLookup(service, "lookup.species", "CANINE");
-        Lookup feline = LookupUtil.createLookup(service, "lookup.species", "FELINE");
-        service.save(canine);
-        service.save(feline);
+        Lookup canine = LookupUtil.createLookup(getArchetypeService(), "lookup.species", "CANINE");
+        Lookup feline = LookupUtil.createLookup(getArchetypeService(), "lookup.species", "FELINE");
+        save(canine);
+        save(feline);
 
         Product canineProduct = createProduct(); // a product for canines only
         canineProduct.addClassification(canine);
-        service.save(canineProduct);
+        save(canineProduct);
 
         Product felineProduct = createProduct(); // a product for felines only
         felineProduct.addClassification(feline);
-        service.save(felineProduct);
+        save(felineProduct);
 
         Product bothProduct = createProduct();  // a product for both canines and felines
         bothProduct.addClassification(canine);
         bothProduct.addClassification(feline);
-        service.save(bothProduct);
+        save(bothProduct);
 
         Product genericProduct = createProduct(); // a product foro all pets
-        service.save(genericProduct);
+        save(genericProduct);
 
         ArchetypeQuery query = new ArchetypeQuery("product.product", false, false)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
@@ -173,7 +168,7 @@ public class ArchetypeServiceQueryTestCase
                         .add(new NodeConstraint("classifications.code", RelationalOp.EQ, canine.getCode()))
                         .add(new NodeConstraint("classifications.code", RelationalOp.IS_NULL)));
 
-        List<IMObject> objects = service.get(query).getResults();
+        List<IMObject> objects = get(query);
         assertTrue(objects.contains(canineProduct));
         assertFalse(objects.contains(felineProduct));
         assertTrue(objects.contains(bothProduct));
@@ -183,18 +178,19 @@ public class ArchetypeServiceQueryTestCase
     /**
      * Test party queries where the parties may have a particular identity (i.e identities node) or ID.
      */
+    @Test
     public void testQueryEntityByClassificationAndId() {
         Party person1 = createPerson();
         person1.addIdentity(createIdentity("IDENT1"));
-        service.save(person1);
+        save(person1);
 
         Party person2 = createPerson();
         person1.addIdentity(createIdentity("IDENT2"));
-        service.save(person2);
+        save(person2);
 
         Party person3 = createPerson();
         person3.addIdentity(createIdentity("IDENT12"));
-        service.save(person3);
+        save(person3);
 
         ArchetypeQuery query = new ArchetypeQuery("party.person", false, false)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
@@ -202,14 +198,14 @@ public class ArchetypeServiceQueryTestCase
                         .add(Constraints.eq("identity", "IDENT1*")))
                 .add(Constraints.or(Constraints.eq("id", person1.getId()),
                                     Constraints.notNull("identities.identity")));
-        List<IMObject> objects = service.get(query).getResults();
+        List<IMObject> objects = get(query);
         assertTrue(objects.contains(person1));
         assertFalse(objects.contains(person2));
         assertTrue(objects.contains(person3));
     }
 
     private EntityIdentity createIdentity(String identity) {
-        EntityIdentity result = (EntityIdentity) service.create("entityIdentity.personAlias");
+        EntityIdentity result = (EntityIdentity) create("entityIdentity.personAlias");
         result.setIdentity(identity);
         return result;
     }
@@ -218,26 +214,27 @@ public class ArchetypeServiceQueryTestCase
      * Tests the NodeSet get method. This verifies that subcollections are
      * loaded correctly, avoiding LazyInitializationExceptionnException.
      */
+    @Test
     public void testGetNodeSet() {
         // set up a party with a single contact and contact purpose
-        Contact contact = (Contact) service.create("contact.phoneNumber");
+        Contact contact = (Contact) create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "0123456789");
-        Lookup purpose = LookupUtil.createLookup(service,
+        Lookup purpose = LookupUtil.createLookup(getArchetypeService(),
                                                  "lookup.contactPurpose",
                                                  "Home", "Home");
-        service.save(purpose);
+        save(purpose);
 
         contact.addClassification(purpose);
 
         Party person = createPerson();
         person.addContact(contact);
-        service.save(person);
+        save(person);
 
         // query the firstName, lastName and contacts nodes of the person
         ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
         List<String> names = Arrays.asList("firstName", "lastName", "contacts");
-        IPage<NodeSet> page = service.getNodes(query, names);
+        IPage<NodeSet> page = getArchetypeService().getNodes(query, names);
         assertNotNull(page);
 
         // verify that the page only has a single element, and that the node
@@ -274,27 +271,28 @@ public class ArchetypeServiceQueryTestCase
      * Tests the partial get method. This verifies that specified subcollections
      * are loaded correctly, avoiding LazyInitializationException.
      */
+    @Test
     public void testGetPartialObject() {
         // set up a party with a single contact and contact purpose
-        Contact contact = (Contact) service.create("contact.phoneNumber");
+        Contact contact = (Contact) create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "0123456789");
-        Lookup purpose = LookupUtil.createLookup(service,
+        Lookup purpose = LookupUtil.createLookup(getArchetypeService(),
                                                  "lookup.contactPurpose",
                                                  "HOME");
-        service.save(purpose);
+        save(purpose);
 
         contact.addClassification(purpose);
 
         Party person = createPerson();
         person.addContact(contact);
-        service.save(person);
+        save(person);
 
         // query the firstName, lastName and contacts nodes of the person
         ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
         List<String> names = Arrays.asList("firstName", "lastName", "title",
                                            "contacts");
-        IPage<IMObject> page = service.get(query, names);
+        IPage<IMObject> page = getArchetypeService().get(query, names);
         assertNotNull(page);
 
         // verify that the page only has a single element, and that the
@@ -329,30 +327,30 @@ public class ArchetypeServiceQueryTestCase
      * Verifies that additional constraints can be use with
      * {@link ObjectRefConstraint}.
      */
+    @Test
     public void testOBF155() {
         Party person = createPerson();
-        service.save(person);
+        save(person);
 
         ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
 
-        // verify that the page only has a single element
-        IPage<IMObject> page = service.get(query);
-        assertEquals(1, page.getResults().size());
+        // verify that the results only have a single element
+        assertEquals(1, get(query).size());
 
-        // constrain the query, and verify the page is empty
+        // constrain the query, and verify the results are empty
         query.add(new NodeConstraint("name", "Mr Foo"));
-        page = service.get(query);
-        assertEquals(0, page.getResults().size());
+        assertEquals(0, get(query).size());
     }
 
     /**
      * Verfies that relationships between entities can be queried.
      */
+    @Test
     public void testOBF178() {
         Party person = createPerson();
         EntityBean bean = new EntityBean(person);
 
-        Party pet = (Party) service.create("party.animalpet");
+        Party pet = (Party) create("party.animalpet");
         IMObjectBean petBean = new IMObjectBean(pet);
         String petName = "Mutt-" + System.currentTimeMillis();
         petBean.setValue("name", petName);
@@ -360,15 +358,11 @@ public class ArchetypeServiceQueryTestCase
         petBean.setValue("breed", "Australian Terrier");
         bean.addRelationship("entityRelationship.animalOwner", pet);
 
-        service.save(Arrays.asList(person, pet));
+        save(Arrays.asList(person, pet));
 
-        ShortNameConstraint partyPerson
-                = new ShortNameConstraint("person", "party.person");
-        ShortNameConstraint animalPet
-                = new ShortNameConstraint("pet", "party.animalpet");
-        ShortNameConstraint relationship
-                = new ShortNameConstraint("rel",
-                                          "entityRelationship.animalOwner*");
+        ShortNameConstraint partyPerson = new ShortNameConstraint("person", "party.person");
+        ShortNameConstraint animalPet = new ShortNameConstraint("pet", "party.animalpet");
+        ShortNameConstraint relationship = new ShortNameConstraint("rel", "entityRelationship.animalOwner*");
 
         ArchetypeQuery sourceQuery = new ArchetypeQuery(partyPerson);
         sourceQuery.add(new CollectionNodeConstraint("patients", relationship));
@@ -377,44 +371,18 @@ public class ArchetypeServiceQueryTestCase
         sourceQuery.add(new IdConstraint("rel.target", "pet"));
         sourceQuery.add(new NodeConstraint("pet.name", petName));
 
-        // verify that the page only has a single element
-        IPage<IMObject> page = service.get(sourceQuery);
-        assertEquals(1, page.getResults().size());
+        // verify that the results only have a single element
+        assertEquals(1, get(sourceQuery).size());
 
         ArchetypeQuery targetQuery = new ArchetypeQuery(animalPet);
-        targetQuery.add(
-                new CollectionNodeConstraint("customers", relationship));
+        targetQuery.add(new CollectionNodeConstraint("customers", relationship));
         targetQuery.add(partyPerson);
         targetQuery.add(new IdConstraint("rel.source", "person"));
         targetQuery.add(new IdConstraint("rel.target", "pet"));
         targetQuery.add(new NodeConstraint("pet.name", petName));
 
-        // verify that the page only has a single element
-        page = service.get(targetQuery);
-        assertEquals(1, page.getResults().size());
-    }
-
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-    */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
+        // verify that the results only have a single element
+        assertEquals(1, get(targetQuery).size());
     }
 
     /**
@@ -423,7 +391,7 @@ public class ArchetypeServiceQueryTestCase
      * @return a new party
      */
     private Party createPerson() {
-        Party person = (Party) service.create("party.person");
+        Party person = (Party) create("party.person");
         IMObjectBean bean = new IMObjectBean(person);
         bean.setValue("firstName", "Tim");
         bean.setValue("lastName", "Anderson");
@@ -437,7 +405,7 @@ public class ArchetypeServiceQueryTestCase
      * @return a new product
      */
     private Product createProduct() {
-        Product product = (Product) service.create("product.product");
+        Product product = (Product) create("product.product");
         product.setName("XProduct-" + System.currentTimeMillis());
         return product;
     }

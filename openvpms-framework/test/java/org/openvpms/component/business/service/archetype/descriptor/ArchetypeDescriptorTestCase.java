@@ -19,7 +19,9 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
@@ -27,19 +29,18 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 
 import java.io.InputStream;
 
-
 /**
  * Test the all the archetype related descriptors.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeDescriptorTestCase extends TestCase {
+public class ArchetypeDescriptorTestCase {
 
     /**
      * Verifies that archetypes can be read from a file.
      */
+    @Test
     public void testReadArchetypes() {
         // file with a single archetype
         ArchetypeDescriptors single = getArchetypeDescriptors("single-archetype.xml");
@@ -53,6 +54,7 @@ public class ArchetypeDescriptorTestCase extends TestCase {
     /**
      * Verifies that assertion type descriptors can be read from a file.
      */
+    @Test
     public void testAssertionTypeDescriptors() {
         AssertionTypeDescriptors descriptors = getAssertionTypeDescriptors("assertion-test-types.xml");
         assertEquals(8, descriptors.getAssertionTypeDescriptors().size());
@@ -63,6 +65,7 @@ public class ArchetypeDescriptorTestCase extends TestCase {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testGetNodeDescriptors() throws Exception {
         ArchetypeDescriptors descriptors = getArchetypeDescriptors("archetypes.xml");
         ArchetypeDescriptor descriptor = descriptors.getArchetypeDescriptors().get("party.person");

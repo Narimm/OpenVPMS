@@ -18,11 +18,15 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
+
 
 /**
  * Tests the {@link EntityRelationshipAssertions} class.
@@ -30,34 +34,28 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityRelationshipAssertionTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class EntityRelationshipAssertionTestCase extends AbstractArchetypeServiceTest {
 
     /**
-     * The archetype service.
+     * Tests the {@link EntityRelationshipAssertions} methods when invoked via archetype service validation.
      */
-    private IArchetypeService service;
-
-
-    /**
-     * Tests the {@link EntityRelationshipAssertions} methods when invoked via
-     * archetype service validation.
-     */
+    @Test
     public void testValidation() {
-        Party patient = (Party) service.create("party.patientpet");
-        Party owner1 = (Party) service.create("party.customerperson");
-        Party owner2 = (Party) service.create("party.customerperson");
+        Party patient = (Party) create("party.patientpet");
+        Party owner1 = (Party) create("party.customerperson");
+        Party owner2 = (Party) create("party.customerperson");
 
         EntityBean bean = new EntityBean(patient);
         bean.setValue("name", "Foo");
         bean.setValue("species", "CANINE");
 
-        service.validateObject(patient); // check validity
+        validateObject(patient); // check validity
 
         EntityBean owner1Bean = new EntityBean(owner1);
         owner1Bean.addRelationship("entityRelationship.patientOwner", patient);
 
-        service.validateObject(patient);  // should still be valid
+        validateObject(patient);  // should still be valid
 
         // add another active owner relationship. Should still be valid
         EntityBean owner2Bean = new EntityBean(owner2);
@@ -67,32 +65,11 @@ public class EntityRelationshipAssertionTestCase
         owner1Bean.addRelationship("entityRelationship.patientOwner", patient);
 
         try {
-            service.validateObject(patient);
+            validateObject(patient);
             fail("Expected validation to fail");
         } catch (ValidationException expected) {
             assertEquals(1, expected.getErrors().size());
         }
     }
 
-    /**
-     * Sets up the test.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-    }
-
-    /**
-     * Returns the spring application context paths.
-     *
-     * @return the spring application context paths
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
 }

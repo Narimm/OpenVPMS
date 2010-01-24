@@ -18,10 +18,15 @@
 
 package org.openvpms.component.business.service.lookup;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Collection;
 
@@ -32,12 +37,13 @@ import java.util.Collection;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-11-27 05:03:46Z $
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
+@ContextConfiguration("lookup-service-appcontext.xml")
+public abstract class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
 
     /**
      * The DAO.
      */
+    @Autowired
     private IMObjectDAO dao;
 
     /**
@@ -54,6 +60,7 @@ public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link ILookupService#getLookup} method.
      */
+    @Test
     public void testGetLookup() {
         Lookup lookup = createLookup("lookup.breed", "CANINE");
         String code = lookup.getCode();
@@ -71,6 +78,7 @@ public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link ILookupService#getLookups} method.
      */
+    @Test
     public void testGetLookups() {
         Collection<Lookup> lookups1 = lookupService.getLookups("lookup.country");
 
@@ -85,6 +93,7 @@ public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link ILookupService#getDefaultLookup} method.
      */
+    @Test
     public void testGetDefaultLookups() {
         removeLookups("lookup.country");
 
@@ -102,6 +111,7 @@ public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
      * Tests the {@link ILookupService#getSourceLookups(Lookup)} and
      * {@link ILookupService#getTargetLookups(Lookup)} method.
      */
+    @Test
     public void testGetSourceAndTargetLookups() {
         removeLookups("lookup.country");
         removeLookups("lookup.state");
@@ -126,6 +136,7 @@ public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
     /**
      * Tests that lookup updates and removals are reflected by the service.
      */
+    @Test
     public void testUpdateRemove() {
         removeLookups("lookup.country");
         removeLookups("lookup.state");
@@ -158,6 +169,14 @@ public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
     }
 
     /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Before
+    public abstract void setUp() throws Exception;
+
+    /**
      * Helper to create and save a lookup.
      *
      * @param code the lookup code
@@ -166,17 +185,6 @@ public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
      */
     protected Lookup createLookup(String code, String name) {
         return LookupUtil.createLookup(getArchetypeService(), code, name);
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        dao = (IMObjectDAO) applicationContext.getBean("imObjectDao");
     }
 
     /**
@@ -205,19 +213,6 @@ public class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
     protected IMObjectDAO getDAO() {
         return dao;
     }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/lookup/lookup-service-appcontext.xml"
-        };
-    }
-
 
     /**
      * Helper to remove all lookups for the specified archetype short name.

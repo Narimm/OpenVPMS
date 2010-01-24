@@ -18,7 +18,9 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -35,7 +37,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ValidationErrorTestCase extends TestCase {
+public class ValidationErrorTestCase {
 
     /**
      * The archetype service.
@@ -47,6 +49,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test that a validation exception is actually generated for an invalid
      * object.
      */
+    @Test
     public void testSimpleValidationException() {
         Party person = new Party();
         person.setArchetypeId(service.getArchetypeDescriptor("party.person")
@@ -65,6 +68,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test that no validation exception is thrown for this extended validation
      * example.
      */
+    @Test
     public void testExtendedValidationException() {
         Party person = createPerson("MR", "Jim", "Alateras");
         EntityIdentity eid = (EntityIdentity) service
@@ -78,6 +82,7 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test an object going from 5 to zero validation errors.
      */
+    @Test
     public void testDecreaseToZeroErrors() {
         Party person = (Party) service.create("party.person");
         try {
@@ -85,8 +90,7 @@ public class ValidationErrorTestCase extends TestCase {
             fail("This object should not have passed validation");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(
-                    ((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(((ValidationException) exception).getErrors().size() == 1);
         }
 
         person.getDetails().put("lastName", "Alateras");
@@ -97,6 +101,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test that the correct error is generated when a incorrect value is passed
      * in for title.
      */
+    @Test
     public void testIncorrectLookupValue() {
         Party person = createPerson("Mister", "Jim", "Alateras");
         try {
@@ -104,8 +109,7 @@ public class ValidationErrorTestCase extends TestCase {
             fail("This object should not have passed validation");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(
-                    ((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(((ValidationException) exception).getErrors().size() == 1);
         }
     }
 
@@ -113,6 +117,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test the min cardinality attached to the archetypeRange assertion being
      * satisfied.
      */
+    @Test
     public void testValidMinCardinalityOnArchetypeRange() {
         Party person = createPerson("MR", "Jim", "Alateras");
 
@@ -124,6 +129,7 @@ public class ValidationErrorTestCase extends TestCase {
      * Test the max cardinality attached to the archetypeRange
      * assertion being satisfied.
      */
+    @Test
     public void testValidMaxCardinalityOnArchetypeRange() {
         Party person = (Party) service.create("party.personjima");
 
@@ -175,6 +181,7 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test a simple regex validation.
      */
+    @Test
     public void testRegExValidation() {
         assertNotNull(service.getArchetypeDescriptor("contact.phoneNumber"));
         Contact contact = (Contact) service.create("contact.phoneNumber");
@@ -195,6 +202,7 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test that min and max cardinalities also work for collection classes.
      */
+    @Test
     public void testMinMaxCardinalityOnCollections() {
         assertTrue(service.getArchetypeDescriptor("party.animalpet") != null);
         Party pet = (Party) service.create("party.animalpet");
@@ -242,6 +250,7 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test where only the max cardinality is specified on a collection.
      */
+    @Test
     public void testMaxCardinalityOnCollections() {
         assertNotNull(service.getArchetypeDescriptor("party.animalpet1"));
         Party pet = (Party) service.create("party.animalpet1");
@@ -273,14 +282,14 @@ public class ValidationErrorTestCase extends TestCase {
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(
-                    ((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(((ValidationException) exception).getErrors().size() == 1);
         }
     }
 
     /**
      * Test where min cardinality and unbounded is specifed on collection.
      */
+    @Test
     public void testMinUnboundedCardinalityOnCollections() {
         assertTrue(service.getArchetypeDescriptor("party.animalpet2") != null);
         Party pet = (Party) service.create("party.animalpet2");
@@ -292,8 +301,7 @@ public class ValidationErrorTestCase extends TestCase {
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(
-                    ((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(((ValidationException) exception).getErrors().size() == 1);
         }
 
         // this should not validate
@@ -306,8 +314,7 @@ public class ValidationErrorTestCase extends TestCase {
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(
-                    ((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(((ValidationException) exception).getErrors().size() == 1);
         }
 
         // this should not validate
@@ -318,8 +325,7 @@ public class ValidationErrorTestCase extends TestCase {
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(
-                    ((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(((ValidationException) exception).getErrors().size() == 1);
         }
 
         // but this should
@@ -346,6 +352,7 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Test where only unbounded cardinality is specified on collections.
      */
+    @Test
     public void testUnboundedCardinalityOnCollections() {
         assertNotNull(service.getArchetypeDescriptor("party.animalpet3"));
         Party pet = (Party) service.create("party.animalpet3");
@@ -390,6 +397,7 @@ public class ValidationErrorTestCase extends TestCase {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testInvalidChars() throws Exception {
         assertNotNull(service.getArchetypeDescriptor("party.animalpet"));
         Party pet = (Party) service.create("party.animalpet");
@@ -417,8 +425,8 @@ public class ValidationErrorTestCase extends TestCase {
     /**
      * Sets up the test case.
      */
-    @Override
-    protected void setUp() {
+    @Before
+    public void setUp() {
         String archFile = "org/openvpms/component/business/service/archetype/ValidationErrorArchetypes.xml";
         String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
 
@@ -444,12 +452,12 @@ public class ValidationErrorTestCase extends TestCase {
             service.validateObject(pet);
             if (!valid) {
                 fail("Expected validation error to be thrown for char "
-                        + "0x" + Integer.toHexString(ch));
+                     + "0x" + Integer.toHexString(ch));
             }
         } catch (ValidationException exception) {
             if (valid) {
                 fail("Expected no validation error to be thrown for char "
-                        + "0x" + Integer.toHexString(ch));
+                     + "0x" + Integer.toHexString(ch));
             }
         }
     }

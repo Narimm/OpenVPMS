@@ -18,9 +18,11 @@
 
 package org.openvpms.component.business.domain.im.datatypes.basic;
 
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.springframework.test.context.ContextConfiguration;
 
 
 /**
@@ -30,55 +32,23 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-05-02 04:28:50Z $
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class PersistentTypedValueMapTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
-
+@ContextConfiguration("/org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml")
+public class PersistentTypedValueMapTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests the workaround for OBF-161.
      */
+    @Test
     public void testOBF161() {
-        Party person = (Party) service.create("party.person");
-        assertNotNull(person);
+        Party person = (Party) create("party.person");
         person.getDetails().put("lastName", "foo");
         person.getDetails().put("firstName", null);
-        service.save(person);
+        save(person);
 
-        person = (Party) service.get(person.getObjectReference());
+        person = get(person);
         assertNotNull(person);
         person.getDetails().put("firstName", "bar");
-        service.save(person);
-    }
-
-    /**
-     * (non-Javadoc)
-     *
-     * @see AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /**
-     * (non-Javadoc)
-     *
-     * @see AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
+        save(person);
     }
 
 

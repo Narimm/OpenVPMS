@@ -18,11 +18,13 @@
 
 package org.openvpms.component.system.common.query;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import org.junit.Before;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -34,8 +36,8 @@ import java.util.Iterator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AbstractQueryTest
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("/org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml")
+public class AbstractQueryTest extends AbstractArchetypeServiceTest {
 
     /**
      * The no. of acts.
@@ -49,35 +51,16 @@ public class AbstractQueryTest
 
 
     /**
-     * (non-Javadoc)
+     * Sets up the test case.
      *
-     * @see AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     * @throws Exception for any error
      */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /**
-     * Subclasses can override this method in place of the
-     * <code>setUp()</code> method, which is final in this class.
-     * This implementation does nothing.
-     *
-     * @throws Exception simply let any exception propagate
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        IArchetypeService service 
-                = ArchetypeServiceHelper.getArchetypeService();
+    @Before
+    public void setUp() throws Exception {
         if (name == null) {
             name = "QueryTest" + System.currentTimeMillis();
             for (int i = 0; i < actCount; ++i) {
-                Act act = (Act) service.create("act.simple");
-                assertNotNull(act);
+                Act act = (Act) create("act.simple");
                 ActBean bean = new ActBean(act);
                 bean.setValue("startTime", new Date());
                 bean.setValue("name", name);
@@ -92,8 +75,7 @@ public class AbstractQueryTest
      * @return a new query
      */
     protected ArchetypeQuery createQuery() {
-        ShortNameConstraint constraint = new ShortNameConstraint("act",
-                                                                 "act.simple");
+        ShortNameConstraint constraint = new ShortNameConstraint("act", "act.simple");
         ArchetypeQuery query = new ArchetypeQuery(constraint);
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
         query.add(new NodeConstraint("name", name));
@@ -119,6 +101,7 @@ public class AbstractQueryTest
     }
 
     interface Check<T> {
+
         void check(T object);
     }
 }

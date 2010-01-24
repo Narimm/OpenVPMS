@@ -18,9 +18,13 @@
 
 package org.openvpms.component.business.service.archetype;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -38,13 +42,8 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ArchetypeServiceListenerTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
+@ContextConfiguration("archetype-service-appcontext.xml")
+public class ArchetypeServiceListenerTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * The transaction template.
@@ -55,7 +54,9 @@ public class ArchetypeServiceListenerTestCase
     /**
      * Verifies that callbacks are invoked on save.
      */
+    @Test
     public void testSave() {
+        IArchetypeService service = getArchetypeService();
         Party person1 = createPerson();
         Party person2 = createPerson();
         Listener listener = new Listener();
@@ -73,13 +74,15 @@ public class ArchetypeServiceListenerTestCase
     /**
      * Verifies that callbacks are invoked on transaction commit.
      */
+    @Test
     public void testTransactionSave() {
+        final IArchetypeService service = getArchetypeService();
         final Party person1 = createPerson();
         final Party person2 = createPerson();
         final Listener listener = new Listener();
         service.addListener("party.customerperson", listener);
 
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
                 listener.setInTransaction(true);
                 service.save(person1);
@@ -105,7 +108,9 @@ public class ArchetypeServiceListenerTestCase
     /**
      * Verifies that callbacks are invoked on collection save.
      */
+    @Test
     public void testCollectionSave() {
+        IArchetypeService service = getArchetypeService();
         Party person1 = createPerson();
         Party person2 = createPerson();
         Listener listener = new Listener();
@@ -122,7 +127,9 @@ public class ArchetypeServiceListenerTestCase
     /**
      * Verifies that callbacks are invoked on remove.
      */
+    @Test
     public void testRemove() {
+        IArchetypeService service = getArchetypeService();
         Party person1 = createPerson();
         Party person2 = createPerson();
         service.save(person1);
@@ -143,7 +150,9 @@ public class ArchetypeServiceListenerTestCase
     /**
      * Verifies that callbacks are invoked on transaction commit.
      */
+    @Test
     public void testTransactionRemove() {
+        final IArchetypeService service = getArchetypeService();
         final Party person1 = createPerson();
         final Party person2 = createPerson();
         service.save(person1);
@@ -151,7 +160,7 @@ public class ArchetypeServiceListenerTestCase
 
         final Listener listener = new Listener();
         service.addListener("party.customerperson", listener);
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
                 listener.setInTransaction(true);
                 service.remove(person1);
@@ -177,14 +186,16 @@ public class ArchetypeServiceListenerTestCase
     /**
      * Verifies that callbacks are invoked on transaction rollback.
      */
+    @Test
     public void testTransactionRollback() {
+        final IArchetypeService service = getArchetypeService();
         final Party person1 = createPerson();
         final Party person2 = createPerson();
         final Listener listener = new Listener();
         service.addListener("party.customerperson", listener);
 
         try {
-            template.execute(new TransactionCallback() {
+            template.execute(new TransactionCallback<Object>() {
                 public Object doInTransaction(TransactionStatus status) {
                     listener.setInTransaction(true);
                     service.save(person1);
@@ -221,47 +232,34 @@ public class ArchetypeServiceListenerTestCase
      * @return a new person
      */
     private Party createPerson() {
-        Party person = (Party) service.create("party.customerperson");
+        Party person = (Party) create("party.customerperson");
         person.getDetails().put("lastName", "Foo");
         person.getDetails().put("firstName", "Bar");
         person.getDetails().put("title", "MR");
         return person;
     }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-    */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+    /**
+     * Sets up the test case.
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-        PlatformTransactionManager txnManager
-                = (PlatformTransactionManager) applicationContext.getBean(
-                "txnManager");
+    @Before
+    public void setUp() {
+        PlatformTransactionManager txnManager = (PlatformTransactionManager) applicationContext.getBean("txnManager");
         template = new TransactionTemplate(txnManager);
     }
 
     private class Listener extends AbstractArchetypeServiceListener {
 
         private Set<IMObject> saving = new HashSet<IMObject>();
+
         private Set<IMObject> saved = new HashSet<IMObject>();
+
         private Set<IMObject> removing = new HashSet<IMObject>();
+
         private Set<IMObject> removed = new HashSet<IMObject>();
+
         private Set<IMObject> rollback = new HashSet<IMObject>();
+
         private boolean inTransaction;
 
 

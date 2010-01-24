@@ -21,7 +21,8 @@ package org.openvpms.component.business.domain.im.datatypes.basic;
 import com.thoughtworks.xstream.converters.basic.DateConverter;
 import com.thoughtworks.xstream.converters.extended.SqlTimestampConverter;
 import com.thoughtworks.xstream.io.StreamException;
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 import java.math.BigDecimal;
@@ -33,21 +34,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * Tests the {@link TypedValue} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class TypedValueTestCase extends TestCase {
+public class TypedValueTestCase {
 
     /**
      * Tests conversion of simple objects.
      *
      * @throws Exception for any error
      */
+    @Test
     public void testObjectConversion() throws Exception {
         Date date = new Date();
         Timestamp timestamp = new Timestamp(date.getTime());
@@ -77,6 +77,7 @@ public class TypedValueTestCase extends TestCase {
     /**
      * Tests the behaviour of the {@link TypedValue#setObject} method.
      */
+    @Test
     public void testSetObject() {
         TypedValue value = new TypedValue(15);
         assertEquals("int", value.getType());
@@ -91,6 +92,7 @@ public class TypedValueTestCase extends TestCase {
     /**
      * Tests the behaviour of the {@link TypedValue#setValue} method.
      */
+    @Test
     public void testSetValue() {
         TypedValue value = new TypedValue("int", "15");
         assertEquals(15, value.getObject());
@@ -112,6 +114,7 @@ public class TypedValueTestCase extends TestCase {
     /**
      * Tests handling of nulls.
      */
+    @Test
     public void testNull() {
         TypedValue value1 = new TypedValue(null);
         assertNull(value1.getType());
@@ -148,6 +151,7 @@ public class TypedValueTestCase extends TestCase {
      * Tests that a complex object can be held and converted by serialization
      * to string.
      */
+    @Test
     public void testSerialization() {
         List<String> list1 = new ArrayList<String>();
         list1.add("a");
@@ -167,13 +171,14 @@ public class TypedValueTestCase extends TestCase {
     /**
      * Test behaviour of invalid types.
      */
+    @Test
     public void testInvalidType() {
         TypedValue value = new TypedValue("AnInvalidType", "serializedvalue");
         try {
             value.getObject();
             fail("Expected conversion to fail with a StreamException");
         } catch (StreamException exception) {
-            // the expected behaviour            
+            // the expected behaviour
         }
     }
 

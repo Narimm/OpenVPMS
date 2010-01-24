@@ -18,12 +18,16 @@
 
 package org.openvpms.component.business.service.security;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,12 +39,12 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public abstract class SecurityServiceTests extends AbstractDependencyInjectionSpringContextTests {
+public abstract class SecurityServiceTests extends AbstractJUnit4SpringContextTests {
 
     /**
      * The archetype service.
      */
+    @Autowired
     protected IArchetypeService archetype;
 
     /**
@@ -51,6 +55,7 @@ public abstract class SecurityServiceTests extends AbstractDependencyInjectionSp
     /**
      * Verifies that authentication is checked when creating objects.
      */
+    @Test
     public void testCreate() {
         final String shortName = "party.person";
         Runnable createByShortName = new Runnable() {
@@ -77,6 +82,7 @@ public abstract class SecurityServiceTests extends AbstractDependencyInjectionSp
     /**
      * Verifies that authentication is checked when saving objects.
      */
+    @Test
     public void testSave() {
         final Party person = createPerson("MR", "Jim", "Alateras");
         Runnable save = new Runnable() {
@@ -124,6 +130,7 @@ public abstract class SecurityServiceTests extends AbstractDependencyInjectionSp
      * Verifies that authorities are checked when collections of objects are
      * saved via {@link IArchetypeService#save(Collection<IMObject>)}.
      */
+    @Test
     public void testSaveCollection() {
         Party party1 = createPerson("MR", "Jim", "Alateras");
         Party party2 = createPet("Fido");
@@ -146,6 +153,7 @@ public abstract class SecurityServiceTests extends AbstractDependencyInjectionSp
     /**
      * Verifies that authentication is checked when removing objects.
      */
+    @Test
     public void testRemove() {
         final Party person = createPerson("MR", "Jim", "Alateras");
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:*");
@@ -169,8 +177,7 @@ public abstract class SecurityServiceTests extends AbstractDependencyInjectionSp
      * @param password    the password
      * @param authorities the authorities of the person
      */
-    protected abstract void createSecurityContext(String user, String password,
-                                                  String... authorities);
+    protected abstract void createSecurityContext(String user, String password, String... authorities);
 
     /**
      * Creates a person.

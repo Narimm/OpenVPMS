@@ -19,15 +19,16 @@
 package org.openvpms.component.business.service.entity;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationError;
-import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Date;
 
@@ -38,199 +39,171 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class EntityRelationshipTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("entity-service-appcontext.xml")
+public class EntityRelationshipTestCase extends AbstractArchetypeServiceTest {
 
     /**
-     * Holds a reference to the archetype service.
+     * Test the creation of a simple entity relationship between a person and an animal.
      */
-    private ArchetypeService service;
-
-
-    /**
-     * Test the creation of a simple entity relationship between a person
-     * and a animal
-     */
-    public void testSimpleEntityRelationship()
-            throws Exception {
-        try {
-            Party person = createPerson("MR", "Jim", "Alateras");
-            Party pet = createAnimal("buddy");
-            service.save(person);
-            service.save(pet);
-
-            // we can ony create entity relationship with persistent objects
-            EntityRelationship rel = createEntityRelationship(person, pet);
-            service.validateObject(rel);
-            person.addEntityRelationship(rel);
-            service.save(person);
-
-            // now retrieve them and ensure that the correct entity relationship
-            // exists
-            pet = (Party) service.get(pet.getObjectReference());
-            assertTrue(pet.getEntityRelationships().size() == 1);
-            service.validateObject(
-                    person.getEntityRelationships().iterator().next());
-        } catch (ValidationException exception) {
-            for (ValidationError error : exception.getErrors()) {
-                logger.error(
-                        "Node:" + error.getNode() + " Error:" + error.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Test the creation of entities and entity relationships
-     */
-    public void testEntityAndEntityRelationship()
-            throws Exception {
-        try {
-            Party person = createPerson("MR", "Jim", "Alateras");
-            service.save(person);
-            Party pet = createAnimal("buddy");
-            service.save(pet);
-            EntityRelationship rel = createEntityRelationship(person, pet);
-            person.addEntityRelationship(rel);
-            service.save(person);
-
-            // retrieve the person again
-            person = (Party) service.get(person.getObjectReference());
-            assertTrue(person != null);
-            assertTrue(person.getEntityRelationships().size() == 1);
-
-            // retrieve the pet again
-            pet = (Party) service.get(pet.getObjectReference());
-            assertTrue(pet != null);
-            assertTrue(pet.getEntityRelationships().size() == 1);
-
-        } catch (ValidationException exception) {
-            for (ValidationError error : exception.getErrors()) {
-                logger.error(
-                        "Node:" + error.getNode() + " Error:" + error.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Test the we can create an entity relationship and then deleting it
-     */
-    public void testEntityRelationshipDeletion()
-            throws Exception {
+    @Test
+    public void testSimpleEntityRelationship() {
         Party person = createPerson("MR", "Jim", "Alateras");
         Party pet = createAnimal("buddy");
-        service.save(person);
-        service.save(pet);
+        save(person);
+        save(pet);
+
+        // we can ony create entity relationship with persistent objects
+        EntityRelationship rel = createEntityRelationship(person, pet);
+        validateObject(rel);
+        person.addEntityRelationship(rel);
+        save(person);
+
+        // now retrieve them and ensure that the correct entity relationship
+        // exists
+        pet = (Party) get(pet.getObjectReference());
+        assertEquals(1, pet.getEntityRelationships().size());
+        validateObject(person.getEntityRelationships().iterator().next());
+    }
+
+    /**
+     * Test the creation of entities and entity relationships.
+     */
+    @Test
+    public void testEntityAndEntityRelationship() {
+        Party person = createPerson("MR", "Jim", "Alateras");
+        save(person);
+        Party pet = createAnimal("buddy");
+        save(pet);
+        EntityRelationship rel = createEntityRelationship(person, pet);
+        person.addEntityRelationship(rel);
+        save(person);
+
+        // retrieve the person again
+        person = (Party) get(person.getObjectReference());
+        assertNotNull(person);
+        assertEquals(1, person.getEntityRelationships().size());
+
+        // retrieve the pet again
+        pet = (Party) get(pet.getObjectReference());
+        assertNotNull(pet);
+        assertEquals(1, pet.getEntityRelationships().size());
+    }
+
+    /**
+     * Test the we can create an entity relationship and then deleting it.
+     */
+    @Test
+    public void testEntityRelationshipDeletion() {
+        Party person = createPerson("MR", "Jim", "Alateras");
+        Party pet = createAnimal("buddy");
+        save(person);
+        save(pet);
 
         // we can ony create entity relationship with persistent objects
         EntityRelationship rel = createEntityRelationship(person, pet);
         person.addEntityRelationship(rel);
-        service.save(person);
+        save(person);
 
         // now retrieve them and ensure that the correct entity relationship
         // exists
-        person = (Party) service.get(person.getObjectReference());
-        assertTrue(person.getEntityRelationships().size() == 1);
-        pet = (Party) service.get(pet.getObjectReference());
-        assertTrue(pet.getEntityRelationships().size() == 1);
+        person = (Party) get(person.getObjectReference());
+        assertEquals(1, person.getEntityRelationships().size());
+        pet = (Party) get(pet.getObjectReference());
+        assertEquals(1, pet.getEntityRelationships().size());
 
         // retrieve the entity relationship
         rel = person.getEntityRelationships().iterator().next();
         person.removeEntityRelationship(rel);
-        service.save(person);
+        save(person);
 
         // now retrieve both the animal and the person and check the entity
         // relatioships
-        person = (Party) service.get(person.getObjectReference());
-        assertTrue(person.getEntityRelationships().size() == 0);
-        pet = (Party) service.get(pet.getObjectReference());
-        assertTrue(pet.getEntityRelationships().size() == 0);
+        person = (Party) get(person.getObjectReference());
+        assertEquals(0, person.getEntityRelationships().size());
+        pet = (Party) get(pet.getObjectReference());
+        assertEquals(0, pet.getEntityRelationships().size());
     }
 
     /**
      * Test that we can add relationships to the target entity and that it
      * will appear on the source entity.
      */
-    public void testAddAndRemoveEntityRelationshipToTargetEntity()
-            throws Exception {
+    @Test
+    public void testAddAndRemoveEntityRelationshipToTargetEntity() {
         Party person = createPerson("MR", "Jim", "Alateras");
         Party pet = createAnimal("buddy");
-        service.save(person);
-        service.save(pet);
+        save(person);
+        save(pet);
 
         // we can ony create entity relationship with persistent objects
         EntityRelationship rel = createEntityRelationship(person, pet);
         pet.addEntityRelationship(rel);
-        service.save(pet);
+        save(pet);
 
-        // now retrieve them and ensure that the correct entity relationship
-        // exists
-        person = (Party) service.get(person.getObjectReference());
-        assertTrue(person.getEntityRelationships().size() == 1);
-        pet = (Party) service.get(pet.getObjectReference());
-        assertTrue(pet.getEntityRelationships().size() == 1);
+        // now retrieve them and ensure that the correct entity relationship exists
+        person = (Party) get(person.getObjectReference());
+        assertEquals(1, person.getEntityRelationships().size());
+        pet = (Party) get(pet.getObjectReference());
+        assertEquals(1, pet.getEntityRelationships().size());
 
-        // now remove the relationship and make sure it all works
-        // correctly
-        pet.removeEntityRelationship(
-                pet.getEntityRelationships().iterator().next());
-        service.save(pet);
+        // now remove the relationship and make sure it all works correctly
+        pet.removeEntityRelationship(pet.getEntityRelationships().iterator().next());
+        save(pet);
 
         // check the relationsahips again
-        person = (Party) service.get(person.getObjectReference());
-        assertTrue(person.getEntityRelationships().size() == 0);
-        pet = (Party) service.get(pet.getObjectReference());
-        assertTrue(pet.getEntityRelationships().size() == 0);
+        person = (Party) get(person.getObjectReference());
+        assertEquals(0, person.getEntityRelationships().size());
+        pet = (Party) get(pet.getObjectReference());
+        assertEquals(0, pet.getEntityRelationships().size());
 
     }
 
     /**
-     * Test the manipulation of multiple entity relationships
+     * Test the manipulation of multiple entity relationships.
      */
-    public void testManipulationMultipleEntityRelationships()
-            throws Exception {
+    @Test
+    public void testManipulationMultipleEntityRelationships() {
         Party person = createPerson("MR", "Jim", "Alateras");
         Party pet1 = createAnimal("buddy");
         Party pet2 = createAnimal("boxer");
         Party pet3 = createAnimal("dude");
-        service.save(person);
-        service.save(pet1);
-        service.save(pet2);
-        service.save(pet3);
+        save(person);
+        save(pet1);
+        save(pet2);
+        save(pet3);
 
         // create a number of entity relationships
         person.addEntityRelationship(createEntityRelationship(person, pet1));
         person.addEntityRelationship(createEntityRelationship(person, pet2));
         person.addEntityRelationship(createEntityRelationship(person, pet3));
-        service.save(person);
+        save(person);
 
-        // now retrieve them and ensure that the correct entity relationship
-        // exists
-        person = (Party) service.get(person.getObjectReference());
-        assertTrue(person.getEntityRelationships().size() == 3);
-        pet1 = (Party) service.get(pet1.getObjectReference());
-        assertTrue(pet1.getEntityRelationships().size() == 1);
+        // now retrieve them and ensure that the correct entity relationship exists
+        person = (Party) get(person.getObjectReference());
+        assertEquals(3, person.getEntityRelationships().size());
+        pet1 = (Party) get(pet1.getObjectReference());
+        assertEquals(1, pet1.getEntityRelationships().size());
 
-        // remove one of the relationships from the target side and check
-        // them again
-        pet1.removeEntityRelationship(
-                pet1.getEntityRelationships().iterator().next());
-        service.save(pet1);
-        person = (Party) service.get(person.getObjectReference());
-        assertTrue(person.getEntityRelationships().size() == 2);
-        pet1 = (Party) service.get(pet1.getObjectReference());
-        assertTrue(pet1.getEntityRelationships().size() == 0);
-        pet2 = (Party) service.get(pet2.getObjectReference());
-        assertTrue(pet2.getEntityRelationships().size() == 1);
-        pet3 = (Party) service.get(pet3.getObjectReference());
-        assertTrue(pet3.getEntityRelationships().size() == 1);
+        // remove one of the relationships from the target side and check them again
+        pet1.removeEntityRelationship(pet1.getEntityRelationships().iterator().next());
+        save(pet1);
+        person = (Party) get(person.getObjectReference());
+        assertEquals(2, person.getEntityRelationships().size());
+        pet1 = (Party) get(pet1.getObjectReference());
+        assertEquals(0, pet1.getEntityRelationships().size());
+        pet2 = (Party) get(pet2.getObjectReference());
+        assertEquals(1, pet2.getEntityRelationships().size());
+        pet3 = (Party) get(pet3.getObjectReference());
+        assertEquals(1, pet3.getEntityRelationships().size());
     }
 
     /**
-     * Test the we can clone and entity relationship object
+     * Test the we can clone and entity relationship object.
+     *
+     * @throws Exception for any error
      */
-    public void testEntityRelationshipClone()
-            throws Exception {
+    @Test
+    public void testEntityRelationshipClone() throws Exception {
         Party person = createPerson("MR", "Jim", "Alateras");
         Party pet = createAnimal("buddy");
         EntityRelationship rel = createEntityRelationship(person, pet);
@@ -240,93 +213,55 @@ public class EntityRelationshipTestCase
     }
 
     /**
-     * Test bug 133
+     * Test bug 133.
      */
-    public void testOVPMS133()
-            throws Exception {
+    @Test
+    public void testOVPMS133() {
         Party person = createPerson("MR", "Jim", "Alateras");
         Party pet = createAnimal("buddy");
-        service.save(person);
-        service.save(pet);
+        save(person);
+        save(pet);
 
         // we can ony create entity relationship with persistent objects
         EntityRelationship rel = createEntityRelationship(person, pet);
         person.addEntityRelationship(rel);
-        service.save(person);
+        save(person);
 
         // now retrieve them and ensure that the correct entity relationship
         // exists
-        person = (Party) service.get(person.getObjectReference());
-        assertTrue(person.getEntityRelationships().size() == 1);
+        person = (Party) get(person.getObjectReference());
+        assertEquals(1, person.getEntityRelationships().size());
         rel = person.getEntityRelationships().iterator().next();
-        assertTrue(rel != null);
-        Party samePerson = (Party) service.get(rel.getSource());
-        assertTrue(person.getId() == samePerson.getId());
-        assertTrue(person.getVersion() == samePerson.getVersion());
+        assertNotNull(rel);
+        Party samePerson = (Party) get(rel.getSource());
+        assertEquals(person.getId(), samePerson.getId());
+        assertEquals(person.getVersion(), samePerson.getVersion());
     }
 
     /**
-     * Test bug 176
+     * Test bug 176.
      */
-    public void testOVPMS176()
-            throws Exception {
+    @Test
+    public void testOVPMS176() {
         String[] shortNames = {"entityRelationship.animal*"};
-        int aCount = ArchetypeQueryHelper.get(service, shortNames, false, 0,
+        int aCount = ArchetypeQueryHelper.get(getArchetypeService(), shortNames, false, 0,
                                               ArchetypeQuery.ALL_RESULTS).getResults().size();
 
         // create a new entity relationsip and save it
         Party person = createPerson("MR", "Jim", "Alateras");
         Party pet = createAnimal("buddy");
-        service.save(person);
-        service.save(pet);
-        EntityRelationship rel = createEntityRelationship(person, pet,
-                                                          "entityRelationship.animalOwner");
+        save(person);
+        save(pet);
+        EntityRelationship rel = createEntityRelationship(person, pet, "entityRelationship.animalOwner");
         person.addEntityRelationship(rel);
-        rel = createEntityRelationship(person, pet,
-                                       "entityRelationship.animalCarer");
+        rel = createEntityRelationship(person, pet, "entityRelationship.animalCarer");
         person.addEntityRelationship(rel);
 
-        try {
-            service.save(person);
-        } catch (ValidationException exception) {
-            for (ValidationError error : exception.getErrors()) {
-                logger.error("[Validation Error] Node:"
-                        + error.getNode() + " Message:" + error.getMessage());
-            }
-
-            throw exception;
-        }
-
+        save(person);
         // now check that the get actually works
-        int aCount1 = ArchetypeQueryHelper.get(
-                service, shortNames, false, 0,
-                ArchetypeQuery.ALL_RESULTS).getResults().size();
+        int aCount1 = ArchetypeQueryHelper.get(getArchetypeService(), shortNames, false, 0,
+                                               ArchetypeQuery.ALL_RESULTS).getResults().size();
         assertEquals(aCount + 2, aCount1);
-    }
-
-    /**
-     * /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{"org/openvpms/component/business/service/entity/entity-service-appcontext.xml"};
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (ArchetypeService) applicationContext
-                .getBean("archetypeService");
-        assertNotNull(service);
     }
 
     /**
@@ -339,7 +274,7 @@ public class EntityRelationshipTestCase
      */
     private Party createPerson(String title, String firstName,
                                String lastName) {
-        Party person = (Party) service.create("party.person");
+        Party person = (Party) create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
@@ -350,12 +285,11 @@ public class EntityRelationshipTestCase
     /*
     * Create an animal entity.
     *
-    * @param name
-    *            the name of the pet
-    * @return Animal
+    * @param name the name of the pet
+    * @return a new entity
     */
     private Party createAnimal(String name) {
-        Party pet = (Party) service.create("party.animalpet");
+        Party pet = (Party) create("party.animalpet");
         pet.setName(name);
         pet.getDetails().put("breed", "dog");
         pet.getDetails().put("colour", "brown");
@@ -379,8 +313,7 @@ public class EntityRelationshipTestCase
     private EntityRelationship createEntityRelationship(Entity source,
                                                         Entity target,
                                                         String shortName) {
-        EntityRelationship rel = (EntityRelationship) service.create(shortName);
-
+        EntityRelationship rel = (EntityRelationship) create(shortName);
         rel.setActiveStartTime(new Date());
         rel.setSource(source.getObjectReference());
         rel.setTarget(target.getObjectReference());
@@ -398,8 +331,7 @@ public class EntityRelationshipTestCase
      */
     private EntityRelationship createEntityRelationship(Entity source,
                                                         Entity target) {
-        return createEntityRelationship(source, target,
-                                        "entityRelationship.animalCarer");
+        return createEntityRelationship(source, target, "entityRelationship.animalCarer");
     }
 
 }

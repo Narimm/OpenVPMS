@@ -18,7 +18,10 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -28,14 +31,13 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 
-
 /**
  * Test the management of assertions through the archetype service.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeServiceAssertionDescriptorTestCase extends TestCase {
+public class ArchetypeServiceAssertionDescriptorTestCase {
 
     /**
      * Reference to the archetype service
@@ -48,6 +50,7 @@ public class ArchetypeServiceAssertionDescriptorTestCase extends TestCase {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testCreateDefaultObject() throws Exception {
         for (ArchetypeDescriptor descriptor : service
                 .getArchetypeDescriptors()) {
@@ -61,21 +64,21 @@ public class ArchetypeServiceAssertionDescriptorTestCase extends TestCase {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testCreateArchetypeRange() throws Exception {
         AssertionDescriptor adesc = (AssertionDescriptor) service.create(
                 "assertion.archetypeRange");
-        assertTrue(adesc != null);
+        assertNotNull(adesc);
         PropertyMap pdesc = (PropertyMap) service.create(
                 "assertion.archetypeRangeProperties");
         assertTrue(pdesc.getProperties().size() == 3);
         assertTrue(pdesc.getProperties().get("shortName") != null);
 
-        ArchetypeDescriptor desc = service.getArchetypeDescriptor(
-                adesc.getArchetypeId());
-        assertTrue(desc != null);
+        ArchetypeDescriptor desc = service.getArchetypeDescriptor(adesc.getArchetypeId());
+        assertNotNull(desc);
 
         NodeDescriptor ndesc = desc.getNodeDescriptor("archetypes");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
 
         ndesc.addChildToCollection(adesc, pdesc);
         assertTrue(adesc.getProperty("archetypes") != null);
@@ -98,10 +101,8 @@ public class ArchetypeServiceAssertionDescriptorTestCase extends TestCase {
     /**
      * Sets up the test case.
      */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() {
         String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
         String archFile = "org/openvpms/archetype/system/assertion/assertion.archetypeRange.adl";
 

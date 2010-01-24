@@ -20,11 +20,13 @@ package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathInvalidAccessException;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
@@ -33,7 +35,7 @@ import static org.openvpms.component.business.service.archetype.helper.PropertyR
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Collection;
 
@@ -44,19 +46,13 @@ import java.util.Collection;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServiceFunctionsTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
-
+@ContextConfiguration("archetype-service-appcontext.xml")
+public class ArchetypeServiceFunctionsTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests single-level node resolution given a root IMObject.
      */
+    @Test
     public void testIMObjectSingleLevelResolution() {
         Party party = createCustomer();
         JXPathContext context = JXPathHelper.newContext(party);
@@ -69,6 +65,7 @@ public class ArchetypeServiceFunctionsTestCase
     /**
      * Tests single-level node resolution given a root PropertySet.
      */
+    @Test
     public void testPropertySetSingleLevelResolution() {
         Party party = createCustomer();
         ObjectSet set = new ObjectSet();
@@ -83,6 +80,7 @@ public class ArchetypeServiceFunctionsTestCase
     /**
      * Tests multiple-level node resolution given a root IMObject.
      */
+    @Test
     public void testIMObjectMultiLevelResolution() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -96,6 +94,7 @@ public class ArchetypeServiceFunctionsTestCase
     /**
      * Tests multiple-level node resolution given a root PropertySet.
      */
+    @Test
     public void testPropertySetMultiLevelResolution() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -111,29 +110,29 @@ public class ArchetypeServiceFunctionsTestCase
     /**
      * Tests behaviour where an intermediate node doesn't exist.
      */
+    @Test
     public void testIMObjectMissingReference() {
         ActBean act = createAct("act.customerEstimation");
         JXPathContext context = JXPathHelper.newContext(act.getAct());
-        assertNull(
-                context.getValue("openvpms:get(., 'customer.entity.firstName')"));
+        assertNull(context.getValue("openvpms:get(., 'customer.entity.firstName')"));
     }
 
     /**
      * Tests behaviour where an intermediate node doesn't exist.
      */
+    @Test
     public void testPropertySetMissingReference() {
         ActBean act = createAct("act.customerEstimation");
         ObjectSet set = new ObjectSet();
         set.set("act", act.getAct());
         JXPathContext context = JXPathHelper.newContext(set);
-        assertNull(
-                context.getValue(
-                        "openvpms:get(.,'act.customer.entity.firstName')"));
+        assertNull(context.getValue("openvpms:get(.,'act.customer.entity.firstName')"));
     }
 
     /**
      * Tests behaviour where an invalid node name is supplied.
      */
+    @Test
     public void testInvalidNode() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -173,6 +172,7 @@ public class ArchetypeServiceFunctionsTestCase
     /**
      * Tests behaviour where an invalid property name is supplied.
      */
+    @Test
     public void testInvalidProperty() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -222,11 +222,12 @@ public class ArchetypeServiceFunctionsTestCase
     /**
      * Tests the openvpms:set() function.
      */
+    @Test
     public void testSet() {
         Party party = createCustomer();
         JXPathContext context = JXPathHelper.newContext(party);
         context.getValue("openvpms:set(., 'lastName', 'testSet')");
-        party = (Party) service.get(party.getObjectReference());
+        party = (Party) get(party.getObjectReference());
         assertNotNull(party);
         IMObjectBean bean = new IMObjectBean(party);
         assertEquals("testSet", bean.getString("lastName"));
@@ -235,6 +236,7 @@ public class ArchetypeServiceFunctionsTestCase
     /**
      * Tests the openvpms:lookup() function.
      */
+    @Test
     public void testLookup() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -263,6 +265,7 @@ public class ArchetypeServiceFunctionsTestCase
     /**
      * Tests the openvpms:defaultLookup function.
      */
+    @Test
     public void testDefaultLookup() {
         // ensure existing lookups are non-default and create some new ones,
         // making the last one created the default.
@@ -272,20 +275,20 @@ public class ArchetypeServiceFunctionsTestCase
         for (Lookup lookup : lookups) {
             if (lookup.isDefaultLookup()) {
                 lookup.setDefaultLookup(false);
-                service.save(lookup);
+                save(lookup);
             }
         }
         Lookup lookup = null;
         for (int i = 0; i < 10; ++i) {
-            lookup = (Lookup) service.create("lookup.staff");
+            lookup = (Lookup) create("lookup.staff");
             lookup.setCode("CODE" + Math.random());
             lookup.setName(lookup.getCode());
             lookup.setDescription(lookup.getCode());
-            service.save(lookup);
+            save(lookup);
         }
         assertNotNull(lookup);
         lookup.setDefaultLookup(true);
-        service.save(lookup);
+        save(lookup);
 
         Party party = createCustomer();
         JXPathContext context = JXPathHelper.newContext(party);
@@ -294,31 +297,6 @@ public class ArchetypeServiceFunctionsTestCase
         assertNotNull(value);
         assertTrue(value instanceof Lookup);
         assertEquals(lookup, value);
-    }
-
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-        assertNotNull(service);
     }
 
     /**
@@ -360,28 +338,6 @@ public class ArchetypeServiceFunctionsTestCase
         assertTrue(target instanceof PropertyResolverException);
         PropertyResolverException cause = (PropertyResolverException) target;
         assertEquals(code, cause.getErrorCode());
-    }
-
-    /**
-     * Helper to create a new object.
-     *
-     * @param shortName the archetype short name
-     * @return the new object
-     */
-    private IMObject create(String shortName) {
-        IMObject object = service.create(shortName);
-        assertNotNull(object);
-        return object;
-    }
-
-    /**
-     * Helper to create a new object wrapped in a bean.
-     *
-     * @param shortName the archetype short name
-     * @return the new object
-     */
-    private IMObjectBean createBean(String shortName) {
-        return new IMObjectBean(create(shortName));
     }
 
     /**

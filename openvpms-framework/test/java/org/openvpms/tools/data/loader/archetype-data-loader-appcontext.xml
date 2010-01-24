@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
-        "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-<beans>
     <!--  Property configuration -->
     <bean id="props"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -19,14 +20,6 @@
         <property name="url" value="${hibernate.connection.url}"/>
         <property name="username" value="${hibernate.connection.username}"/>
         <property name="password" value="${hibernate.connection.password}"/>
-    </bean>
-
-    <!-- Configure CacheManager from specified config location -->
-    <bean id="cacheManager"
-          class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
-        <property name="configLocation">
-            <value>classpath:org/openvpms/tools/data/loader/ehcache.xml</value>
-        </property>
     </bean>
 
     <!--  Hibernate session factory -->
