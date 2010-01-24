@@ -18,6 +18,9 @@
 
 package org.openvpms.web.component.im.query;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -42,6 +45,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * Verifies that {@link DefaultQuery} is returned when no other class is
      * specified.
      */
+    @Test
     public void testDefaultQuery() {
         checkCreate("lookup.*", DefaultQuery.class, Lookup.class);
     }
@@ -50,6 +54,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link CustomerQuery} is returned for
      * <em>party.customer*</em> short names.
      */
+    @Test
     public void testCustomerQuery() {
         checkCreate("party.customer*", CustomerQuery.class, Party.class);
     }
@@ -58,6 +63,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link PatientQuery} is returned for
      * <em>party.patient*</em> short names.
      */
+    @Test
     public void testPatientQuery() {
         checkCreate("party.patient*", PatientQuery.class, Party.class);
     }
@@ -67,6 +73,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * <em>party.organisation*</em> short names, except
      * <em>party.organisationOTC</em> which returns {@link CustomerQuery}.
      */
+    @Test
     public void testOrganisationQuery() {
         checkCreate("party.organisationOTC", CustomerQuery.class, Party.class);
         String[] shortNames
@@ -84,6 +91,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link DocumentTemplateQuery} is returned for
      * <em>entity.documentTemplate*</em> short names.
      */
+    @Test
     public void testDocumentTemplate() {
         checkCreate("entity.documentTemplate*", DocumentTemplateQuery.class,
                     Entity.class);
@@ -93,6 +101,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link EntityQuery} is returned for
      * <em>party.supplier*</em> short names.
      */
+    @Test
     public void testSupplierEntityQuery() {
         checkCreate("party.supplier*", EntityQuery.class, Party.class);
     }
@@ -101,6 +110,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link ProductQuery} is returned for
      * <em>product.**</em> short names.
      */
+    @Test
     public void testProductQuery() {
         checkCreate("product.*", ProductQuery.class, Product.class);
     }
@@ -109,8 +119,9 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * Verifies that the query implementation returned by {@link
      * QueryFactory#create} matches that expected.
      *
-     * @param shortName the archetype short name. May contain wildcards
-     * @param type      the expected query class
+     * @param shortName  the archetype short name. May contain wildcards
+     * @param type       the expected query class
+     * @param resultType the expected result type class
      */
     private void checkCreate(String shortName, Class type, Class resultType) {
         String[] shortNames = {shortName};

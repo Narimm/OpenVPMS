@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
-        "http://www.springframework.org/dtd/spring-beans.dtd">
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
     <!-- ================================================================== -->
     <!--                         GENERAL DEFINITIONS                        -->
@@ -277,8 +277,8 @@
 
     <bean id="taskService"
           class="org.openvpms.archetype.rules.workflow.TaskService">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg>
+        <constructor-arg ref="archetypeService" index="0"/>
+        <constructor-arg index="1">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="appointmentCache"/>
@@ -382,7 +382,7 @@
           class='org.openvpms.component.business.service.security.OpenVPMSMethodSecurityInterceptor'>
         <property name='authenticationManager' ref='authenticationManager'/>
         <property name='accessDecisionManager' ref='accessDecisionManager'/>
-        <property name='objectDefinitionSource'>
+        <property name='securityMetadataSource'>
             <value>
                 org.openvpms.component.business.service.archetype.IArchetypeService.create=archetypeService.create
                 org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
@@ -391,9 +391,8 @@
         </property>
     </bean>
 
-    <!--  Define thew access decision manager for authorization -->
-    <bean id='accessDecisionManager'
-          class='org.acegisecurity.vote.AffirmativeBased'>
+    <!--  Define the access decision manager for authorization -->
+    <bean id='accessDecisionManager' class='org.springframework.security.access.vote.AffirmativeBased'>
         <property name='decisionVoters'>
             <list>
                 <ref bean='archetypeAwareVoter'/>
@@ -402,8 +401,7 @@
     </bean>
 
     <!--  Use the standard role vote -->
-    <bean id='archetypeAwareVoter'
-          class='org.openvpms.component.business.service.security.ArchetypeAwareVoter'/>
+    <bean id='archetypeAwareVoter' class='org.openvpms.component.business.service.security.ArchetypeAwareVoter'/>
 
     <!-- ================================================================== -->
     <!--                        REPORTING                                   -->
@@ -458,10 +456,7 @@
     <!-- ================================================================== -->
     <!--                        EMAIL                                       -->
     <!-- ================================================================== -->
-    <bean id="mailSender"
-          class="org.openvpms.web.component.service.MailService"
-          singleton="false">
-    </bean>
+    <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="prototype"/>
 
     <!-- ================================================================== -->
     <!--                        MISC                                        -->
@@ -482,11 +477,11 @@
           class="org.openvpms.component.business.service.archetype.assertion.ProperCaseNameConverter">
         <constructor-arg>
             <bean class="org.openvpms.component.business.service.archetype.assertion.LocaleProperCaseRules">
-                <constructor-arg value="org.openvpms.web.resource.localisation.propercase"/>    
+                <constructor-arg value="org.openvpms.web.resource.localisation.propercase"/>
             </bean>
         </constructor-arg>
     </bean>
-    
+
     <bean id="properCaseConverterHelper"
           class="org.openvpms.component.business.service.archetype.assertion.ProperCaseConverterHelper">
         <constructor-arg ref="properCaseConverter"/>
@@ -495,11 +490,9 @@
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
     <!-- ================================================================== -->
-    <bean id="loginApp" class="org.openvpms.web.app.login.LoginApp"
-          singleton="false"/>
+    <bean id="loginApp" class="org.openvpms.web.app.login.LoginApp" scope="prototype"/>
 
-    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp"
-          singleton="false"/>
+    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype"/>
 
     <!-- Defines the key stroke combination for accelerator keys.
          If mask not specified, defaults to 'Alt'.

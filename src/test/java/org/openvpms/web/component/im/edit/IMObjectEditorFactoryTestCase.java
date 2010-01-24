@@ -18,12 +18,16 @@
 
 package org.openvpms.web.component.im.edit;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.admin.lookup.LookupEditor;
-import org.openvpms.web.app.admin.lookup.SuburbLookupEditor;
 import org.openvpms.web.app.admin.lookup.SpeciesLookupEditor;
+import org.openvpms.web.app.admin.lookup.SuburbLookupEditor;
 import org.openvpms.web.app.admin.template.DocumentTemplatePrinterEditor;
 import org.openvpms.web.app.customer.CustomerEditor;
 import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
@@ -61,7 +65,6 @@ import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 
 
 /**
@@ -82,6 +85,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link DefaultIMObjectEditor} is returned when no other
      * class is configured.
      */
+    @Test
     public void testCreateDefaultEditor() {
         checkCreate(ContactArchetypes.PHONE, DefaultIMObjectEditor.class);
     }
@@ -94,6 +98,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <em>entityRelationship.documentTemplatePrinter</em>
      * which should return an {@link DocumentTemplatePrinterEditor}.
      */
+    @Test
     public void testCreateRelationshipEditor() {
         String[] shortNames
                 = DescriptorHelper.getShortNames("entityRelationship.*");
@@ -113,6 +118,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link DefaultParticipationEditor} is returned for
      * participation.author</em>
      */
+    @Test
     public void testCreateDefaultParticipationEditor() {
         String[] shortNames = {"participation.author"};
         for (String shortName : shortNames) {
@@ -125,6 +131,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link PatientParticipationEditor} is returned for
      * <em>participation.patient</em>
      */
+    @Test
     public void testCreatePatientParticipationEditor() {
         checkCreate("participation.patient", "act.customerEstimationItem",
                     PatientParticipationEditor.class);
@@ -134,6 +141,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link ProductParticipationEditor} is returned for
      * <em>participation.product</em>
      */
+    @Test
     public void testCreateProductParticipationEditor() {
         checkCreate("participation.product", "act.customerEstimationItem",
                     ProductParticipationEditor.class);
@@ -143,6 +151,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link EstimationEditor} is returned for
      * <em>act.customerEstimationEditor</em>.
      */
+    @Test
     public void testCreateEstimationEditor() {
         checkCreate("act.customerEstimation", EstimationEditor.class);
     }
@@ -151,6 +160,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verfies that a {@link EstimationItemEditor} is returned for
      * <em>act.customerEstimationItem</em>
      */
+    @Test
     public void testCreateEstimationItemEditor() {
         checkCreate("act.customerEstimationItem", "act.customerEstimation",
                     EstimationItemEditor.class);
@@ -162,6 +172,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * act.customerAccountChargesCounter, act.supplierAccountChargesInvoice, and
      * act.supplierAccountChargesCredit</em>
      */
+    @Test
     public void testCreateChargeEditor() {
         checkCreate("act.customerAccountChargesInvoice",
                     CustomerChargeActEditor.class);
@@ -176,6 +187,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <em>act.customerAccountInvoiceItem, act.customerAccountCreditItem and
      * act.customerAccountCounterItem</em>
      */
+    @Test
     public void testCreateCustomerIvoiceItemEditor() {
         checkCreate("act.customerAccountInvoiceItem",
                     "act.customerAccountChargesInvoice",
@@ -194,6 +206,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * act.customerAccountChargesCounter, act.supplierAccountChargesInvoice, and
      * act.supplierAccountChargesCredit</em>
      */
+    @Test
     public void testCreateSupplierInvoiceEditor() {
         checkCreate("act.supplierAccountChargesInvoice",
                     SupplierChargeActEditor.class);
@@ -205,6 +218,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verfies that a {@link CustomerPaymentEditor} is created for
      * <em>act.customerAccountPayment and act.customerAccountRefund.
      */
+    @Test
     public void testCreatePaymentEditor() {
         checkCreate("act.customerAccountPayment", CustomerPaymentEditor.class);
         checkCreate("act.customerAccountRefund", CustomerPaymentEditor.class);
@@ -217,6 +231,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <em>act.supplierAccountPayment.*</em> and
      * <em>act.supplierAccountRefund.*</em>.
      */
+    @Test
     public void testCreatePaymentItemEditor() {
         checkCreate("act.customerAccountPaymentCash",
                     PaymentItemEditor.class);
@@ -254,6 +269,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verfies that a {@link SupplierPaymentEditor} is created for
      * act.supplierAccountPayment and act.supplierAccountRefund</em>
      */
+    @Test
     public void testCreateSupplierPaymentEditor() {
         checkCreate("act.supplierAccountPayment", SupplierPaymentEditor.class);
         checkCreate("act.supplierAccountRefund", SupplierPaymentEditor.class);
@@ -263,6 +279,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link ProductEditor} is created for each
      * <em>product.*</em> archetype.
      */
+    @Test
     public void testCreateProductEditor() {
         for (String shortName : DescriptorHelper.getShortNames("product.*")) {
             checkCreate(shortName, ProductEditor.class);
@@ -273,6 +290,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link OrderEditor} is created for
      * <em>act.supplierOrder</em>
      */
+    @Test
     public void testCreateOrderEditor() {
         checkCreate("act.supplierOrder", OrderEditor.class);
     }
@@ -281,6 +299,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link OrderItemEditor} is created for
      * <em>act.supplierOrderItem</em>
      */
+    @Test
     public void testCreateOrderItemEditor() {
         checkCreate("act.supplierOrderItem", OrderItemEditor.class);
     }
@@ -289,6 +308,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link DeliveryEditor} is created for
      * <em>act.supplierDelivery</em> and <em>act.supplierReturn</em>.
      */
+    @Test
     public void testCreateDeliveryEditor() {
         checkCreate("act.supplierDelivery", DeliveryEditor.class);
         checkCreate("act.supplierReturn", DeliveryEditor.class);
@@ -298,6 +318,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link DeliveryItemEditor} is created for
      * <em>act.supplierDeliveryItem</em> and <em>act.supplierReturnItem</em>.
      */
+    @Test
     public void testCreateDeliveryItemEditor() {
         checkCreate("act.supplierDeliveryItem", DeliveryItemEditor.class);
         checkCreate("act.supplierReturnItem", DeliveryItemEditor.class);
@@ -307,6 +328,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link SupplierChargeActItemEditor} is created for
      * <em>act.supplierAccountInvoiceItem and act.supplierAccountCreditItem</em>
      */
+    @Test
     public void testCreateSupplierInvoiceItemEditor() {
         checkCreate("act.supplierAccountInvoiceItem",
                     SupplierChargeActItemEditor.class);
@@ -318,6 +340,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link StockAdjustEditor} is created for
      * <em>act.stockAdjust</em>.
      */
+    @Test
     public void testCreateStockAdjustEditor() {
         checkCreate("act.stockAdjust", StockAdjustEditor.class);
     }
@@ -326,6 +349,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link StockAdjustItemEditor} is created for
      * <em>act.stockAdjustItem</em>.
      */
+    @Test
     public void testCreateStockAdjustItemEditor() {
         checkCreate("act.stockAdjustItem", StockAdjustItemEditor.class);
     }
@@ -334,6 +358,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link StockTransferEditor} is created for
      * <em>act.stockTransfer</em>.
      */
+    @Test
     public void testCreateStockTransferEditor() {
         checkCreate("act.stockTransfer", StockTransferEditor.class);
     }
@@ -342,6 +367,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link StockTransferItemEditor} is created for
      * <em>act.stockTransferItem</em>.
      */
+    @Test
     public void testCreateStockTransferItemEditor() {
         checkCreate("act.stockTransferItem", StockTransferItemEditor.class);
     }
@@ -352,6 +378,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <em>act.customerAccountDebitAdjust</em> and
      * <em>act.customerAccountCreditAdjust</em>
      */
+    @Test
     public void testCreateAdjustmentActEditor() {
         checkCreate("act.customerAccountBadDebt", AdjustmentActEditor.class);
         checkCreate("act.customerAccountCreditAdjust",
@@ -364,6 +391,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link UserMessageActEditor} is created for
      * <em>act.userMessage</em>
      */
+    @Test
     public void testCreateUserMessageActEditor() {
         checkCreate("act.userMessage", UserMessageActEditor.class);
     }
@@ -372,6 +400,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link DocumentTemplateEditor} is created for
      * <em>entity.documentTemplate</em>
      */
+    @Test
     public void testCreateDocumentTemplateEditor() {
         checkCreate("entity.documentTemplate", DocumentTemplateEditor.class);
     }
@@ -380,6 +409,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link CustomerEditor} is created for
      * <em>party.customer*</em>
      */
+    @Test
     public void testCreateCustomerEditor() {
         String[] shortNames
                 = DescriptorHelper.getShortNames("party.customer*");
@@ -392,6 +422,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link PatientEditor} is created for
      * <em>party.patientpet</em>
      */
+    @Test
     public void testCreatePatientEditor() {
         checkCreate("party.patientpet", PatientEditor.class);
     }
@@ -399,6 +430,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     /**
      * Verifies that a {@link LookupEditor} is created for <em>lookup.*</em>
      */
+    @Test
     public void testCreateLookupEditor() {
         checkCreate("lookup.alertType", LookupEditor.class);
     }
@@ -406,6 +438,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     /**
      * Verifies that a {@link SuburbLookupEditor} is created for <em>lookup.suburb</em>
      */
+    @Test
     public void testCreateSpeciesLookupEditor() {
         checkCreate("lookup.species", SpeciesLookupEditor.class);
     }
@@ -413,6 +446,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     /**
      * Verifies that a {@link SuburbLookupEditor} is created for <em>lookup.suburb</em>
      */
+    @Test
     public void testCreateSuburbLookupEditor() {
         checkCreate("lookup.suburb", SuburbLookupEditor.class);
     }
@@ -421,6 +455,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link PatientClinicalEventActEditor} is created
      * for <em>act.patientClinicalEvent</em>.
      */
+    @Test
     public void testCreatePatientClinicalEventActEditor() {
         checkCreate("act.patientClinicalEvent",
                     PatientClinicalEventActEditor.class);
@@ -430,6 +465,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link PatientClinicalProblemActEditor} is created
      * for <em>act.patientClinicalProblem</em>.
      */
+    @Test
     public void testCreatePatientClinicalProblemActEditor() {
         checkCreate("act.patientClinicalProblem",
                     PatientClinicalProblemActEditor.class);
@@ -439,6 +475,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link ProductPriceEditor} is created for
      * <em>productPrice.fixedPrice</em> and <em>productPrice.unitPrice</em>.
      */
+    @Test
     public void testCreateProductPriceEditor() {
         checkCreate("productPrice.fixedPrice", ProductPriceEditor.class);
         checkCreate("productPrice.unitPrice", ProductPriceEditor.class);
@@ -448,18 +485,17 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link LocationEditor} is created for
      * <em>productPrice.fixedPrice</em> and <em>productPrice.unitPrice</em>.
      */
+    @Test
     public void testLocationEditor() {
         checkCreate("contact.location", LocationEditor.class);
     }
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    public void setUp() {
+        super.setUp();
         service = ServiceHelper.getArchetypeService();
     }
 
@@ -496,7 +532,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                       object);
         IMObject parent = service.create(parentShortName);
         assertNotNull("Failed to create object with shortname="
-                + parentShortName, parent);
+                      + parentShortName, parent);
         IMObjectEditor editor = IMObjectEditorFactory.create(object, parent,
                                                              context);
         assertNotNull("Failed to create editor", editor);

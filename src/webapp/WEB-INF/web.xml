@@ -27,20 +27,16 @@
         <param-value>/WEB-INF/classes/log4j.properties</param-value>
     </context-param>
 
-    <!--  Setup the Acegi Filter Chain Proxy -->
+    <!-- Setup the Spring Security Filter Chain-->
     <filter>
-        <filter-name>Acegi Filter Chain Proxy</filter-name>
-        <filter-class>org.acegisecurity.util.FilterToBeanProxy</filter-class>
-        <init-param>
-            <param-name>targetClass</param-name>
-            <param-value>org.acegisecurity.util.FilterChainProxy</param-value>
-        </init-param>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>Acegi Filter Chain Proxy</filter-name>
+        <filter-name>springSecurityFilterChain</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-
+    
     <!--
      - Loads the root application context of this web app at startup,
      - by default from "/WEB-INF/applicationContext.xml".
@@ -48,26 +44,22 @@
      - to access it anywhere in the web application, outside of the framework.
      -->
     <listener>
-        <listener-class>
-            org.springframework.web.context.ContextLoaderListener</listener-class>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
     <!--	Setup a listener to connect spring with log4j -->
     <listener>
-        <listener-class>
-            org.springframework.web.util.Log4jConfigListener</listener-class>
+        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
     </listener>
 
-    <!--  Setup ACEGI to subscribe to http session events in the web context -->
+    <!--  Setup spring security to subscribe to http session events in the web context -->
     <listener>
-        <listener-class>
-            org.acegisecurity.ui.session.HttpSessionEventPublisher</listener-class>
+        <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
     </listener>
 
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>
-            org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
+        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
         <init-param>
             <param-name>app-name</param-name>
             <param-value>loginApp</param-value>
@@ -76,8 +68,7 @@
 
     <servlet>
         <servlet-name>AppServlet</servlet-name>
-        <servlet-class>
-            org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
+        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
         <init-param>
             <param-name>app-name</param-name>
             <param-value>openVPMSApp</param-value>

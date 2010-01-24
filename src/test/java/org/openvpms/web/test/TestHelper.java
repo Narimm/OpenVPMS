@@ -24,7 +24,7 @@
  */
 package org.openvpms.web.test;
 
-import junit.framework.Assert;
+import static org.junit.Assert.assertNotNull;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -43,7 +43,7 @@ import java.util.Arrays;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TestHelper extends Assert {
+public class TestHelper {
 
     /**
      * Creates a new object.

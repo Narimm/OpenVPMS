@@ -18,12 +18,10 @@
 
 package org.openvpms.web.servlet;
 
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -47,7 +45,7 @@ import java.io.IOException;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class EchoAuthenticationEntryPoint
-        extends AuthenticationProcessingFilterEntryPoint {
+        extends LoginUrlAuthenticationEntryPoint {
 
     /**
      * Commences an authentication scheme.
@@ -59,12 +57,11 @@ public class EchoAuthenticationEntryPoint
      * @param response      so that the user agent can begin authentication
      * @param authException that caused the invocation
      */
-    public void commence(ServletRequest request, ServletResponse response,
-                         AuthenticationException authException) throws
-                                                                IOException,
-                                                                ServletException {
-        if (ServletHelper.isEchoRequest((HttpServletRequest) request)) {
-            ServletHelper.forceExpiry(((HttpServletResponse) response));
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+                         AuthenticationException authException) throws IOException, ServletException {
+        if (ServletHelper.isEchoRequest(request)) {
+            ServletHelper.forceExpiry(response);
         } else {
             super.commence(request, response, authException);
         }

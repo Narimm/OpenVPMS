@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.property;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -39,12 +41,12 @@ import org.openvpms.web.test.TestHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-09-04 05:00:00Z $
  */
-public class StringPropertyTransformerTestCase
-        extends AbstractAppTest {
+public class StringPropertyTransformerTestCase extends AbstractAppTest {
 
     /**
      * Tests {@link StringPropertyTransformer#apply}.
      */
+    @Test
     public void testApply() {
         Party person = TestHelper.createCustomer();
         NodeDescriptor descriptor = getDescriptor(person, "name");
@@ -63,6 +65,7 @@ public class StringPropertyTransformerTestCase
      * Verifies that an exception is thrown if a string contains control
      * characters.
      */
+    @Test
     public void testExceptionForControlChars() {
         String bad = "abcd\u000012345";
         Party person = TestHelper.createCustomer();
@@ -81,6 +84,7 @@ public class StringPropertyTransformerTestCase
     /**
      * Tests macro expansion by {@link StringPropertyTransformer#apply}.
      */
+    @Test
     public void testMacroExpansion() {
         Party person = TestHelper.createCustomer();
         NodeDescriptor descriptor = getDescriptor(person, "lastName");
@@ -127,12 +131,10 @@ public class StringPropertyTransformerTestCase
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    public void setUp() {
+        super.setUp();
         createMacro("macro1", "'macro 1 text'");
         createMacro("macro2", "concat('one', 'two', 'three')");
         createMacro("displayName", "openvpms:get(., 'displayName')");

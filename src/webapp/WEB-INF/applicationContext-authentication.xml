@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
-        "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://www.springframework.org/schema/security
+                           http://www.springframework.org/schema/security/spring-security-3.0.xsd">
 
-<beans>
     <!-- ================================================================== -->
     <!--                       USER SERVICE DEFINITIONS                   = -->
     <!-- ================================================================== -->
@@ -10,9 +14,7 @@
     <!--  The User DAO bean -->
     <bean id="userDao"
           class="org.openvpms.component.business.dao.hibernate.im.security.UserDAOHibernate">
-        <property name="sessionFactory">
-            <ref bean="sessionFactory"/>
-        </property>
+        <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
     <!-- The User Details service -->
@@ -27,154 +29,41 @@
     <!--                            FILTER CHAIN                            -->
     <!-- ================================================================== -->
 
-    <bean id="filterChainProxy"
-          class="org.acegisecurity.util.FilterChainProxy">
-        <property name="filterInvocationDefinitionSource">
-            <value>
-                CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
-                PATTERN_TYPE_APACHE_ANT
-                /**=httpSessionContextIntegrationFilter,authenticationProcessingFilter,anonymousProcessingFilter,securityEnforcementFilter,skipLoginFilter
-            </value>
-        </property>
+    <security:http entry-point-ref="authenticationEntryPoint">
+        <security:intercept-url pattern="/login*" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+        <security:intercept-url pattern="/login/**" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+        <security:intercept-url pattern="/**" access="IS_AUTHENTICATED_FULLY"/>
+        <!--security:session-management invalid-session-url="/login"/-->
+        <!--security:custom-filter before="FORM_LOGIN_FILTER" ref="skipLoginFilter"-->
+        <security:custom-filter position="FORM_LOGIN_FILTER" ref="authenticationFilter"/>
+    </security:http>
+
+    <bean id="authenticationEntryPoint" class="org.openvpms.web.servlet.EchoAuthenticationEntryPoint">
+        <property name="loginFormUrl" value="/login"/>
     </bean>
 
-    <!-- The first item in the chain -->
-    <bean id="httpSessionContextIntegrationFilter"
-          class="org.acegisecurity.context.HttpSessionContextIntegrationFilter">
-        <property name="context">
-            <value>org.acegisecurity.context.SecurityContextImpl</value>
-        </property>
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider user-service-ref="userService"/>
+    </security:authentication-manager>
+
+    <bean id="authenticationFilter"
+          class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
+        <property name="postOnly" value="false"/>
+        <property name="authenticationManager" ref="authenticationManager"/>
+        <property name="authenticationSuccessHandler" ref="authenticationSuccessHandler"/>
+        <property name="filterProcessesUrl" value="/j_spring_security_check"/>
     </bean>
 
-    <!-- the second item in the chain-->
-    <bean id="authenticationProcessingFilter"
-          class="org.acegisecurity.ui.webapp.AuthenticationProcessingFilter">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="authenticationFailureUrl">
-            <value>/login</value>
-        </property>
-        <property name="defaultTargetUrl">
-            <value>/app</value>
-        </property>
-        <property name="alwaysUseDefaultTargetUrl">
-            <value>true</value>
-        </property>
-        <property name="filterProcessesUrl">
-            <value>/j_acegi_security_check</value>
-        </property>
-    </bean>
-
-    <!-- the third item in the chain -->
-    <bean id="anonymousProcessingFilter"
-          class="org.acegisecurity.providers.anonymous.AnonymousProcessingFilter">
-        <property name="key">
-            <value>foobar</value>
-        </property>
-        <property name="userAttribute">
-            <value>anonymousUser,ROLE_ANONYMOUS</value>
-        </property>
-    </bean>
-
-    <!-- the fourth item in the chain -->
-    <bean id="securityEnforcementFilter"
-          class="org.acegisecurity.intercept.web.SecurityEnforcementFilter">
-        <property name="filterSecurityInterceptor">
-            <ref local="filterInvocationInterceptor"/>
-        </property>
-        <property name="authenticationEntryPoint">
-            <ref local="authenticationProcessingFilterEntryPoint"/>
-        </property>
-    </bean>
-
-    <bean id="filterInvocationInterceptor"
-          class="org.acegisecurity.intercept.web.FilterSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref local="httpRequestAccessDecisionManager"/>
-        </property>
-        <property name="objectDefinitionSource">
-            <value>
-                CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
-                PATTERN_TYPE_APACHE_ANT
-                /login*=IS_AUTHENTICATED_ANONYMOUSLY
-                /login/**=IS_AUTHENTICATED_ANONYMOUSLY
-                /**=IS_AUTHENTICATED_FULLY
-            </value>
-        </property>
-    </bean>
-
-    <bean id="httpRequestAccessDecisionManager"
-          class="org.acegisecurity.vote.AffirmativeBased">
-        <property name="allowIfAllAbstainDecisions">
-            <value>false</value>
-        </property>
-        <property name="decisionVoters">
-            <list>
-                <ref bean="authenticatedVoter"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="authenticatedVoter"
-          class="org.acegisecurity.vote.AuthenticatedVoter">
-        <property name="authenticationTrustResolver">
-            <ref local="authenticationTrustResolver"/>
-        </property>
-    </bean>
-
-    <bean id="authenticationTrustResolver"
-          class="org.acegisecurity.AuthenticationTrustResolverImpl"/>
-
-    <bean id="authenticationProcessingFilterEntryPoint"
-          class="org.openvpms.web.servlet.EchoAuthenticationEntryPoint">
-        <property name="loginFormUrl">
-            <value>/login</value>
-        </property>
-        <property name="forceHttps">
-            <value>false</value>
-        </property>
-    </bean>
-
-    <bean id="skipLoginFilter" class="org.openvpms.web.servlet.SkipLoginFilter">
+    <bean id="authenticationSuccessHandler"
+          class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
+        <property name="alwaysUseDefaultTargetUrl" value="true"/>
+        <property name="defaultTargetUrl" value="/app"/>
 
     </bean>
+    <bean id="skipLoginFilter" class="org.openvpms.web.servlet.SkipLoginFilter"/>
 
-    <!-- ================================================================== -->
-    <!--                            AUTHENTICATION                          -->
-    <!-- ================================================================== -->
-
-    <bean id="authenticationManager"
-          class="org.acegisecurity.providers.ProviderManager">
-        <property name="providers">
-            <list>
-                <ref bean="daoAuthenticationProvider"/>
-                <ref local="anonymousAuthenticationProvider"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="daoAuthenticationProvider"
-          class='org.acegisecurity.providers.dao.DaoAuthenticationProvider'>
-        <property name="userDetailsService">
-            <ref bean="userService"/>
-        </property>
-    </bean>
-
-    <bean id="anonymousAuthenticationProvider"
-          class="org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider">
-        <property name="key">
-            <value>foobar</value>
-        </property>
-    </bean>
-
-    <!-- This bean automatically receives AuthenticationEvent messages from
-   daoAuthenticationProvider -->
-    <bean id="loggerListener"
-          class="org.acegisecurity.event.authentication.LoggerListener"/>
+    <!-- This bean automatically receives AuthenticationEvent messages from Spring Security  -->
+    <bean id="loggerListener" class="org.springframework.security.authentication.event.LoggerListener"/>
 
 </beans>
 

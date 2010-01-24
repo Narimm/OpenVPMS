@@ -18,10 +18,10 @@
 
 package org.openvpms.web.servlet;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -66,10 +66,8 @@ public class SkipLoginFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response,
                          FilterChain chain) throws IOException,
                                                    ServletException {
-        if (request instanceof HttpServletRequest
-                && response instanceof HttpServletResponse) {
-            doFilter((HttpServletRequest) request,
-                     (HttpServletResponse) response, chain);
+        if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
+            doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
         } else {
             chain.doFilter(request, response);
         }
@@ -99,8 +97,7 @@ public class SkipLoginFilter implements Filter {
                           HttpServletResponse response,
                           FilterChain chain) throws IOException,
                                                     ServletException {
-        if (request.getServletPath().startsWith("/login")
-                && isAuthenticated()) {
+        if (request.getServletPath().startsWith("/login") && isAuthenticated()) {
             if (ServletHelper.isEchoRequest(request)) {
                 ServletHelper.forceExpiry(response);
             } else {
@@ -120,9 +117,8 @@ public class SkipLoginFilter implements Filter {
     private boolean isAuthenticated() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
-        return authentication != null
-                && !(authentication instanceof AnonymousAuthenticationToken)
-                && authentication.isAuthenticated();
+        return authentication != null && !(authentication instanceof AnonymousAuthenticationToken)
+               && authentication.isAuthenticated();
     }
 }
 
