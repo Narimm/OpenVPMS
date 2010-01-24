@@ -365,7 +365,7 @@ public class MedicalRecordRules {
         or.add(new NodeConstraint(START_TIME, RelationalOp.BTW, lowerBound, upperBound));
         query.add(or);
         OrConstraint or2 = new OrConstraint();
-        or2.add(new NodeConstraint(END_TIME, RelationalOp.IsNULL));
+        or2.add(new NodeConstraint(END_TIME, RelationalOp.IS_NULL));
         or2.add(new NodeConstraint(END_TIME, RelationalOp.GTE, getEndTime(date)));
         or2.add(new NodeConstraint(END_TIME, RelationalOp.BTW, lowerBound, upperBound));
         query.add(or2);

@@ -18,6 +18,10 @@
 
 package org.openvpms.archetype.rules.party;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -31,7 +35,6 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Collection;
 import java.util.Set;
-
 
 /**
  * Tests the {@link PartyRules} class.
@@ -50,6 +53,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getFullName(Party)} method.
      */
+    @Test
     public void testGetFullName() {
         Party customer = (Party) create("party.customerperson");
         IMObjectBean bean = new IMObjectBean(customer);
@@ -69,6 +73,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getDefaultContacts()} method.
      */
+    @Test
     public void testDefaultContacts() {
         Set<Contact> contacts = rules.getDefaultContacts();
         assertNotNull(contacts);
@@ -82,6 +87,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getPreferredContacts(Party)} method.
      */
+    @Test
     public void testGetPreferredContacts() {
         Party party = (Party) create("party.customerperson");
         assertEquals(2, party.getContacts().size());
@@ -125,6 +131,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getContactPurposes(Contact)} method.
      */
+    @Test
     public void testGetContactPurposes() {
         Contact contact = (Contact) create(ContactArchetypes.LOCATION);
         contact.addClassification(getContactPurpose("HOME"));
@@ -143,6 +150,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getBillingAddress(Party)} method.
      */
+    @Test
     public void testGetBillingAddress() {
         Party party = TestHelper.createCustomer("Foo", "Bar", false);
         IMObjectBean customer = new IMObjectBean(party);
@@ -175,6 +183,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getCorrespondenceAddress(Party)} method.
      */
+    @Test
     public void testGetCorrespondenceAddress() {
         Party party = TestHelper.createCustomer("Foo", "Bar", false);
         IMObjectBean customer = new IMObjectBean(party);
@@ -207,6 +216,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getHomeTelephone(Party)} method.
      */
+    @Test
     public void testGetHomeTelephone() {
         Party party = TestHelper.createCustomer(false);
         Contact phone1 = getContact(party, ContactArchetypes.PHONE);
@@ -228,6 +238,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getWorkTelephone(Party)} method.
      */
+    @Test
     public void testGetWorkTelephone() {
         Party party = TestHelper.createCustomer(false);
         Contact phone1 = getContact(party, ContactArchetypes.PHONE);
@@ -249,6 +260,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getHomeTelephone(Act)} method.
      */
+    @Test
     public void testActGetHomeTelephone() {
         Act act = (Act) create("act.customerEstimation");
         assertEquals("", rules.getHomeTelephone(act));
@@ -267,6 +279,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getWorkTelephone(Act)} method.
      */
+    @Test
     public void testActGetWorkTelephone() {
         Act act = (Act) create("act.customerEstimation");
         assertEquals("", rules.getWorkTelephone(act));
@@ -285,6 +298,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyRules#getIdentities(Party)} method.
      */
+    @Test
     public void testGetIdentities() {
         Party pet = TestHelper.createPatient(false);
         EntityIdentity tag = (EntityIdentity) create("entityIdentity.petTag");
@@ -309,12 +323,9 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new PartyRules();
 
         Lookup state = TestHelper.getLookup("lookup.state", "VIC", "Victoria", true);

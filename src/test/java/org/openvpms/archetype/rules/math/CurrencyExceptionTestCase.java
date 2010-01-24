@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.math;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 
 /**
@@ -32,6 +33,7 @@ public class CurrencyExceptionTestCase extends TestCase {
     /**
      * Verifies that the messages are generated correctly.
      */
+    @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
                      3, CurrencyException.ErrorCode.values().length);

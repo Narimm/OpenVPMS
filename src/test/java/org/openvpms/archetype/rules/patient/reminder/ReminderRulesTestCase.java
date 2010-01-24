@@ -18,6 +18,10 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -56,6 +60,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * method, when invoked via the
      * <em>archetypeService.save.act.patientReminder.before</em> rule.
      */
+    @Test
     public void testMarkMatchingRemindersCompleted() {
         Lookup group1 = ReminderTestHelper.createReminderGroup();
         Lookup group2 = ReminderTestHelper.createReminderGroup();
@@ -111,7 +116,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link ReminderRules#calculateReminderDueDate(Date, Entity)}
      * method.
      */
-    public void testCalculateReminderDueDate() {
+    @Test public void testCalculateReminderDueDate() {
         checkCalculateReminderDueDate(1, DateUnits.DAYS, "2007-01-01",
                                       "2007-01-02");
         checkCalculateReminderDueDate(2, DateUnits.WEEKS, "2007-01-01",
@@ -125,7 +130,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ReminderRules#calculateProductReminderDueDate} method.
      */
-    public void testCalculateProductReminderDueDate() {
+    @Test public void testCalculateProductReminderDueDate() {
         checkCalculateProductReminderDueDate(1, DateUnits.DAYS, "2007-01-01", "2007-01-02");
         checkCalculateProductReminderDueDate(2, DateUnits.WEEKS, "2007-01-01", "2007-01-15");
         checkCalculateProductReminderDueDate(2, DateUnits.MONTHS, "2007-01-01", "2007-03-01");
@@ -136,7 +141,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link ReminderRules#countReminders(Party)} method.
      * Requires <em>Reminder.hbm.xml</em>.
      */
-    public void testCountReminders() {
+    @Test public void testCountReminders() {
         Party patient = TestHelper.createPatient();
         assertEquals(0, rules.countReminders(patient));
         int count = 5;
@@ -161,7 +166,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link ReminderRules#countAlerts} method.
      * Requires <em>Reminder.hbm.xml</em>.
      */
-    public void testCountAlerts() {
+    @Test public void testCountAlerts() {
         Party patient = TestHelper.createPatient();
         Date date = new Date();
         assertEquals(0, rules.countAlerts(patient, date));
@@ -186,7 +191,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ReminderRules#isDue(Act, Date, Date)} method.
      */
-    public void testIsDue() {
+    @Test public void testIsDue() {
         Lookup group = ReminderTestHelper.createReminderGroup();
         Party patient = TestHelper.createPatient();
         Entity reminderType = ReminderTestHelper.createReminderType(
@@ -222,7 +227,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ReminderRules#shouldCancel(Act, Date)} method.
      */
-    public void testShouldCancel() {
+    @Test public void testShouldCancel() {
         Lookup group = ReminderTestHelper.createReminderGroup();
         Party patient = TestHelper.createPatient();
         Entity reminderType = ReminderTestHelper.createReminderType(
@@ -258,7 +263,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ReminderRules#getContact(Set<Contact>)} method.
      */
-    public void testGetContact() {
+    @Test public void testGetContact() {
         // create a patient, and owner. Remove default contacts from owner
         Party owner = TestHelper.createCustomer();
         Contact[] contacts = owner.getContacts().toArray(new Contact[owner.getContacts().size()]);
@@ -300,12 +305,9 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new ReminderRules();
     }
 

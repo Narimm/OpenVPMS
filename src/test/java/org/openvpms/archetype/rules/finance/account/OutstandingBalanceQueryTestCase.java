@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -29,18 +32,19 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+
 /**
  * Tests the {@link OutstandingBalanceQuery} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OutstandingBalanceQueryTestCase
-        extends AbstractCustomerAccountTest {
+public class OutstandingBalanceQueryTestCase extends AbstractCustomerAccountTest {
 
     /**
      * Tests the {@link OutstandingBalanceQuery#query} method.
      */
+    @Test
     public void testQuery() {
         Party customer = getCustomer();
         List<Party> before = getCustomersWithOutstandingBalances();
@@ -73,6 +77,7 @@ public class OutstandingBalanceQueryTestCase
      * in conjunction with
      * {@link OutstandingBalanceQuery#setAccountType(Lookup)}
      */
+    @Test
     public void testQueryWithAccountType() {
         Lookup accountType1 = createAccountType(30, DateUnits.DAYS);
         Lookup accountType2 = createAccountType(60, DateUnits.DAYS);

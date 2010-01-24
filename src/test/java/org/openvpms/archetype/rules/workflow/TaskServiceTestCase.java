@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -55,6 +57,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests addition of a task.
      */
+    @Test
     public void testAddEvent() {
         Date date1 = java.sql.Date.valueOf("2008-1-1");
         Date date2 = java.sql.Date.valueOf("2008-1-2");
@@ -91,6 +94,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests removal of an event.
      */
+    @Test
     public void testRemoveEvent() {
         Date date1 = java.sql.Date.valueOf("2008-1-1");
         Date date2 = java.sql.Date.valueOf("2008-1-2");
@@ -120,6 +124,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests moving of an event from one date to another.
      */
+    @Test
     public void testChangeEventDate() {
         Date date1 = java.sql.Date.valueOf("2008-1-1");
         Date date2 = java.sql.Date.valueOf("2008-3-1");
@@ -143,6 +148,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests moving of an event from one worklist to another.
      */
+    @Test
     public void testChangeEventWorkList() {
         Date date = java.sql.Date.valueOf("2008-1-1");
 
@@ -165,6 +171,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link TaskService#getEvents(Entity, Date)} method.
      */
+    @Test
     public void testGetEvents() {
         final int count = 10;
         Party schedule = ScheduleTestHelper.createWorkList();
@@ -227,12 +234,9 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         service = (ScheduleService) applicationContext.getBean("taskService");
         workList = ScheduleTestHelper.createWorkList();
     }

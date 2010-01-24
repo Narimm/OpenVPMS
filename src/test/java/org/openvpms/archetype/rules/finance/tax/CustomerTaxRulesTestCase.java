@@ -18,8 +18,12 @@
 
 package org.openvpms.archetype.rules.finance.tax;
 
-import org.openvpms.archetype.test.ArchetypeServiceTest;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -35,7 +39,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Random;
-
 
 /**
  * Tests the {@link CustomerTaxRules} class.
@@ -60,6 +63,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link CustomerTaxRules#calculateTax(FinancialAct, Party)}
      * method when the customer and product don't have any associated taxes.
      */
+    @Test
     public void testCalculateTaxForNoTaxes() {
         Party customer = createCustomer();
         Product product = createProduct();
@@ -70,6 +74,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link CustomerTaxRules#calculateTax(FinancialAct, Party)}
      * method where the product has an associated tax.
      */
+    @Test
     public void testCalculateTaxForProductTax() {
         Party customer = createCustomer();
         Product product = createProduct();
@@ -83,6 +88,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link CustomerTaxRules#calculateTax(FinancialAct, Party)}
      * method where the product type has an associated tax.
      */
+    @Test
     public void testCalculateTaxForProductTypeTax() {
         Party customer = createCustomer();
         Product product = createProductWithProductTypeTax();
@@ -95,6 +101,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
      * method where the product has a 10% tax, but the customer has a tax
      * exemption.
      */
+    @Test
     public void testCalculateTaxForCustomerTaxExemption() {
         Party customer = createCustomerWithTaxExemption();
         Product product = createProductWithTax();
@@ -104,15 +111,11 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         taxType = createTaxType();
         Party practice = (Party) create("party.organisationPractice");
-
         rules = new CustomerTaxRules(practice);
     }
 
@@ -244,7 +247,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
         Lookup tax = (Lookup) create("lookup.taxType");
         IMObjectBean bean = new IMObjectBean(tax);
         bean.setValue("code", "XTAXRULESTESTCASE_CLASSIFICATION_"
-                + Math.abs(new Random().nextInt()));
+                              + Math.abs(new Random().nextInt()));
         bean.setValue("rate", new BigDecimal(10));
         save(tax);
         return tax;

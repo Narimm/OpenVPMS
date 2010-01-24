@@ -18,11 +18,16 @@
 
 package org.openvpms.archetype.tools.account;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.AbstractCustomerAccountTest;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 
@@ -33,6 +38,7 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
+@ContextConfiguration(locations = "/application-context.xml", inheritLocations = false)
 public class AccountBalanceToolTestCase extends AbstractCustomerAccountTest {
 
     /**
@@ -40,15 +46,16 @@ public class AccountBalanceToolTestCase extends AbstractCustomerAccountTest {
      */
     private AccountBalanceTool tool;
 
-      /**
+    /**
      * The account rules.
      */
     private CustomerAccountRules rules;
 
-    
+
     /**
      * Tests generation given a customer id.
      */
+    @Test
     public void testGenerateForCustomerId() {
         Party customer = getCustomer();
         long id = customer.getId();
@@ -71,6 +78,7 @@ public class AccountBalanceToolTestCase extends AbstractCustomerAccountTest {
     /**
      * Tests generation given a customer name.
      */
+    @Test
     public void testGenerateForCustomerName() {
         Party customer = getCustomer();
         String name = customer.getName();
@@ -92,22 +100,11 @@ public class AccountBalanceToolTestCase extends AbstractCustomerAccountTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void onSetUp() {
         rules = new CustomerAccountRules();
-        tool= new AccountBalanceTool(getArchetypeService());
+        tool = new AccountBalanceTool(getArchetypeService());
     }
 
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"application-context.xml"};
-    }
 }

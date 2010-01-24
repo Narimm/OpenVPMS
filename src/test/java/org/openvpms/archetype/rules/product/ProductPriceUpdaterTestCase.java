@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.product;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -47,6 +50,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * Tests the {@link ProductPriceUpdater} when invoked via
      * the <em>archetypeService.save.product.medication.before</em> rule.
      */
+    @Test
     public void testUpdateFromMedication() {
         Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
                                                    null);
@@ -57,6 +61,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * Tests the {@link ProductPriceUpdater} when invoked via
      * the <em>archetypeService.save.product.merchandise.before</em> rule.
      */
+    @Test
     public void testUpdateFromMerchandise() {
         Product product = TestHelper.createProduct(
                 ProductArchetypes.MERCHANDISE, null);
@@ -67,6 +72,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * Tests the {@link ProductPriceUpdater} when invoked via
      * the <em>archetypeService.save.party.supplierperson.before</em> rule.
      */
+    @Test
     public void testUpdateFromSupplierPerson() {
         Party party = (Party) create(SupplierArchetypes.SUPPLIER_PERSON);
         IMObjectBean bean = new IMObjectBean(party);
@@ -82,6 +88,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * the <em>archetypeService.save.party.supplierorganisation.before</em>
      * rule.
      */
+    @Test
     public void testUpdateFromSupplierOrganisation() {
         Party party = (Party) create(SupplierArchetypes.SUPPLIER_ORGANISATION);
         IMObjectBean bean = new IMObjectBean(party);
@@ -95,6 +102,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * i.e the unit price doesn't get overwritten when the product is saved
      * despite having an auto-update product-supplier relationship.
      */
+    @Test
     public void testCustomUnitPrice() {
         Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
                                                    null);
@@ -123,7 +131,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         // now save with a custom unit price, and verify it doesn't get
         // overwritten when the product saves.
         Set<ProductPrice> prices = product.getProductPrices();
-        ProductPrice unit = prices.toArray(new ProductPrice[0])[0];
+        ProductPrice unit = prices.toArray(new ProductPrice[prices.size()])[0];
         unit.setPrice(new BigDecimal("1.35"));
         save(product);
         checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.35"));
@@ -133,6 +141,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * Tests update when a newly created product is saved with a relationship
      * to an existing supplier.
      */
+    @Test
     public void testSaveNewProduct() {
         checkSaveProductAndSupplier(true, false, true);
         checkSaveProductAndSupplier(true, false, false);
@@ -143,6 +152,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * Tests update when an existing product is saved with a relationship
      * to a new supplier.
      */
+    @Test
     public void testSaveNewSupplier() {
         checkSaveProductAndSupplier(false, true, true);
         checkSaveProductAndSupplier(false, true, false);
@@ -152,6 +162,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * Tests update when a newly created product is saved with a relationship
      * to a new supplier.
      */
+    @Test
     public void testSaveNewProductAndSupplier() {
         checkSaveProductAndSupplier(true, true, true);
         checkSaveProductAndSupplier(true, true, false);
@@ -159,12 +170,9 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         initPractice();
 
         TestHelper.getLookup("lookup.uom", PACKAGE_UNITS);
@@ -330,7 +338,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         product = get(product); // reload product
         Set<ProductPrice> prices = product.getProductPrices();
         assertEquals(1, prices.size());
-        ProductPrice p = prices.toArray(new ProductPrice[0])[0];
+        ProductPrice p = prices.toArray(new ProductPrice[prices.size()])[0];
         IMObjectBean bean = new IMObjectBean(p);
         assertEquals(cost, bean.getBigDecimal("cost"));
         assertEquals(price, bean.getBigDecimal("price"));
@@ -339,24 +347,24 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     /**
      * Returns product supplier for the specified product and package size.
      *
+     * @param product     the product
+     * @param supplier    the supplier
      * @param packageSize the package size
+     * @return the corresponding product supplier, or <tt>null</tt> if none is found
      */
-    private ProductSupplier getProductSupplier(Product product,
-                                               Party supplier,
-                                               int packageSize) {
+    private ProductSupplier getProductSupplier(Product product, Party supplier, int packageSize) {
         ProductRules rules = new ProductRules();
-        return rules.getProductSupplier(product, supplier, packageSize,
-                                        PACKAGE_UNITS);
+        return rules.getProductSupplier(product, supplier, packageSize, PACKAGE_UNITS);
     }
 
     /**
      * Helper to create a new product supplier relationship.
      *
-     * @param product the product
+     * @param product  the product
+     * @param supplier the supplier
      * @return the new relationship
      */
-    private ProductSupplier createProductSupplier(Product product,
-                                                  Party supplier) {
+    private ProductSupplier createProductSupplier(Product product, Party supplier) {
         ProductRules rules = new ProductRules();
         supplier = get(supplier);         // make sure using the latest
         product = get(product);           // instance of each

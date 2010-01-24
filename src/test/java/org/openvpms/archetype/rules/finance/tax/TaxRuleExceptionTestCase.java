@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.tax;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 
 /**
@@ -32,6 +33,7 @@ public class TaxRuleExceptionTestCase extends TestCase {
     /**
      * Verifies that the messages are generated correctly.
      */
+    @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
                      1, TaxRuleException.ErrorCode.values().length);
@@ -50,7 +52,7 @@ public class TaxRuleExceptionTestCase extends TestCase {
      * @param args     exception arguments
      */
     private void checkException(TaxRuleException.ErrorCode code,
-                                String expected, Object ... args) {
+                                String expected, Object... args) {
         TaxRuleException exception = new TaxRuleException(code, args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());

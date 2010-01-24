@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.practice;
 
+import static org.junit.Assert.assertNull;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.finance.deposit.DepositTestHelper;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
@@ -46,6 +49,7 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link LocationRules#getDefaultDepositAccount} method.
      */
+    @Test
     public void testGetDefaultDepositAccount() {
         Party location = TestHelper.createLocation();
         assertNull(rules.getDefaultDepositAccount(location));
@@ -68,6 +72,7 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link LocationRules#getDefaultTill} method.
      */
+    @Test
     public void testGetDefaultTill() {
         Party location = TestHelper.createLocation();
         assertNull(rules.getDefaultTill(location));
@@ -90,6 +95,7 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link LocationRules#getDefaultScheduleView} method.
      */
+    @Test
     public void testGetDefaultScheduleView() {
         Party location = TestHelper.createLocation();
         assertNull(rules.getDefaultScheduleView(location));
@@ -115,6 +121,7 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link LocationRules#getDefaultWorkListView(Party)} method.
      */
+    @Test
     public void testGetDefaultWorkListView() {
         Party location = TestHelper.createLocation();
         assertNull(rules.getDefaultWorkListView(location));
@@ -139,12 +146,9 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new LocationRules();
     }
 

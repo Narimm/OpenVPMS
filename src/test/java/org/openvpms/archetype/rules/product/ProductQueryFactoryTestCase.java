@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.product;
 
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -50,6 +51,7 @@ public class ProductQueryFactoryTestCase extends ArchetypeServiceTest {
      * Tests the {@link IArchetypeQuery} instances returned by
      * {@link ProductQueryFactory}.
      */
+    @Test
     public void testCreate() {
         // test query on all canine products
         IArchetypeQuery canine = ProductQueryFactory.create(

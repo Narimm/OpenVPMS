@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.product;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -44,6 +47,7 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
      * Tests the {@link DemographicUpdater#evaluate(IMObject, Lookup)} method
      * without a node name.
      */
+    @Test
     public void testEvaluate() {
         Lookup desex = createDemographicUpdate(null, "party:setPatientDesexed(.)");
         Party patient = TestHelper.createPatient();
@@ -57,6 +61,7 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
      * Tests the {@link DemographicUpdater#evaluate(IMObject, Lookup)} method
      * with a node name.
      */
+    @Test
     public void testEvaluateWithNode() {
         Party patient = TestHelper.createPatient();
         Act invoiceItem = (Act) create("act.customerAccountInvoiceItem");
@@ -74,6 +79,7 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
      * Tests the
      * {@link DemographicUpdater#evaluate(IMObject, Collection<Lookup>)} method.
      */
+    @Test
     public void testEvaluateCollection() {
         // Verify that a patient is flagged as desexed and deceased.
         Lookup desex = createDemographicUpdate(null, "party:setPatientDesexed(.)");

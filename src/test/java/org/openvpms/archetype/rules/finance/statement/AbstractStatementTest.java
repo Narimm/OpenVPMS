@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.AbstractCustomerAccountTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -30,7 +32,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 
 /**
  * Base class for statement test cases.
@@ -137,6 +138,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
      * @param act       the act to verify
      * @param shortName the expected archetype short name
      * @param amount    the expected amount
+     * @param status    the expected act status
      */
     protected void checkAct(Act act, String shortName, BigDecimal amount,
                             String status) {
