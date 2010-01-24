@@ -18,6 +18,9 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 
 import java.io.File;
@@ -40,6 +43,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
     /**
      * Verifies that an exception is thrown if no arguments are specified.
      */
+    @Test
     public void testNoArgs() {
         String[] noArgs = {};
         checkConstructException(noArgs, DocumentLoaderException.ErrorCode.InvalidArguments);
@@ -50,6 +54,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testByName() throws Exception {
         File source = new File(parent, "sdocs1" + System.currentTimeMillis());
         File target = new File(parent, "tdocs1" + System.currentTimeMillis());
@@ -92,6 +97,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testByIdRecurse() throws Exception {
         File root = new File(parent, "root" + System.currentTimeMillis());
         File sub1 = new File(root, "sub1");
@@ -124,6 +130,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
     /**
      * Tests the behaviour of using --byid with various combinations of invalid directory arguments.
      */
+    @Test
     public void testByIdInvalidDirs() {
         String[] args1 = {"--byid", "-s", "target/invalidsource"};
         checkConstructException(args1, DocumentLoaderException.ErrorCode.InvalidArguments);  // invalid directory
@@ -146,6 +153,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testByIdCustomRegexp() throws Exception {
         File source = new File(parent, "sdocs2" + System.currentTimeMillis());
         File target = new File(parent, "tdocs2" + System.currentTimeMillis());
@@ -175,12 +183,9 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         parent = new File("target");
         if (!parent.exists()) {
             assertTrue(parent.mkdir());

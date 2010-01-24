@@ -146,7 +146,7 @@ class NameLoader extends AbstractLoader {
             log.info("Querying archetypes: " + buff);
         }
         List<IMObjectReference> refs = new ArrayList<IMObjectReference>();
-        query.add(new NodeConstraint("document", RelationalOp.IsNULL));
+        query.add(new NodeConstraint("document", RelationalOp.IS_NULL));
         query.setMaxResults(1000);
         List<String> nodes = Arrays.asList("fileName");
         Iterator<NodeSet> iter = new NodeSetQueryIterator(query, nodes);

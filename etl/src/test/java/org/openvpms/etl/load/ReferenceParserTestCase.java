@@ -18,7 +18,9 @@
 
 package org.openvpms.etl.load;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 
 /**
@@ -27,12 +29,12 @@ import junit.framework.TestCase;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class ReferenceParserTestCase extends TestCase {
+public class ReferenceParserTestCase {
 
     /**
      * Tests the archetype/rowId form.
      */
+    @Test
     public void testArchetypeRowId() {
         checkReference("<party.customerperson>1234.1", "party.customerperson",
                        "1234.1", null, null);
@@ -41,6 +43,7 @@ public class ReferenceParserTestCase extends TestCase {
     /**
      * Tests the archetype/name/value form.
      */
+    @Test
     public void testArchetypeNameValue() {
         checkReference("<lookup.contactPurpose>code=MAILING",
                        "lookup.contactPurpose", null, "code", "MAILING");
