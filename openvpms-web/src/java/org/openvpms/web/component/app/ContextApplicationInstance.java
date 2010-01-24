@@ -19,8 +19,6 @@
 package org.openvpms.web.component.app;
 
 import nextapp.echo2.app.ApplicationInstance;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
@@ -36,6 +34,8 @@ import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.system.SpringApplicationInstance;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 
 
 /**
@@ -107,8 +107,7 @@ public abstract class ContextApplicationInstance
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void initUser() {
-        Authentication auth
-                = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             UserRules rules = new UserRules();
             User user = rules.getUser(auth.getName());

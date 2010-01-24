@@ -42,12 +42,10 @@ public class LookupRelationshipCollectionPropertyEditorTestCase
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    public void setUp() {
+        super.setUp();
         ILookupService service = ServiceHelper.getLookupService();
         Lookup lookup = service.getLookup("lookup.state", "VIC");
         if (lookup != null) {

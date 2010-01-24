@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
-        "http://www.springframework.org/dtd/spring-beans.dtd">
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
     <!--  Property configuration -->
     <bean id="props"
@@ -86,8 +86,6 @@
                     org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml</value>
                 <value>
                     org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml</value>
-                <value>
-                    /org/openvpms/archetype/rules/product/Product.hbm.xml</value>
                 <value>
                     /org/openvpms/archetype/rules/workflow/Workflow.hbm.xml</value>
                 <value>
@@ -188,8 +186,7 @@
     <!-- ================================================================== -->
 
     <!-- The app -->
-    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp"
-          singleton="false"/>
+    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype"/>
 
     <!-- Defines the key stroke combination for accelerator keys.
           If mask not specified, defaults to 'Alt'.

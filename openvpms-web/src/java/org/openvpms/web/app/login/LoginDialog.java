@@ -24,9 +24,9 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
@@ -125,10 +125,8 @@ public class LoginDialog extends PopupDialog {
         String name = username.getText();
         String pass = password.getText();
 
-        Command redirect = new BrowserRedirectCommand(
-                ServletHelper.getRedirectURI(
-                        "j_acegi_security_check?j_username=" + name
-                                + "&j_password=" + pass));
+        String check = "j_spring_security_check?j_username=" + name + "&j_password=" + pass;
+        Command redirect = new BrowserRedirectCommand(ServletHelper.getRedirectURI(check));
         ApplicationInstance.getActive().enqueueCommand(redirect);
     }
 

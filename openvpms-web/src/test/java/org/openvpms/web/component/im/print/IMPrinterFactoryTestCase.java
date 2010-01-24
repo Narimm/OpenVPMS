@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.print;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -54,6 +56,7 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link IMObjectReportPrinter} is returned when no other
      * class is configured.
      */
+    @Test
     public void testCreateDefaultPrinter() {
         checkCreate("party.customerperson", IMObjectReportPrinter.class);
     }
@@ -63,6 +66,7 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link DocumentActPrinter} is returned for
      * <em>act.*DocumentForm</em> and <em>act.*DocumentLetter</em>.
      */
+    @Test
     public void testCreateDocumentActPrinter() {
         checkCreate("act.*DocumentForm", DocumentActPrinter.class);
         checkCreate("act.*DocumentLetter", DocumentActPrinter.class);
@@ -72,6 +76,7 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link DocumentActAttachmentPrinter} is returned for
      * <em>act.*DocumentAttachment</em> and <em>act.*DocumentImage</em>
      */
+    @Test
     public void testCreateDocumentActAttachmentPrinter() {
         checkCreate("act.*DocumentAttachment",
                     DocumentActAttachmentPrinter.class);
@@ -81,16 +86,14 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    public void setUp() {
+        super.setUp();
         service = ServiceHelper.getArchetypeService();
         documentTemplate = (Entity) service.create("entity.documentTemplate");
         documentTemplate.setName("XTestDocumentTemplate"
-                + System.currentTimeMillis());
+                                 + System.currentTimeMillis());
         service.save(documentTemplate);
     }
 

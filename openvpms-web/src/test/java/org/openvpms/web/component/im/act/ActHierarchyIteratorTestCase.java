@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.act;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -42,6 +44,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
     /**
      * Tests the {@link ActHierarchyIterator} class.
      */
+    @Test
     public void test() {
         Party patient = TestHelper.createPatient(true);
 
@@ -73,7 +76,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
      * @param shortNames the child act short names
      */
     private void checkIterator(PatientSummaryQuery query, int expected,
-                               String ... shortNames) {
+                               String... shortNames) {
         Iterable<Act> summary = new ActHierarchyIterator<Act>(query,
                                                               shortNames);
         int acts = 0;

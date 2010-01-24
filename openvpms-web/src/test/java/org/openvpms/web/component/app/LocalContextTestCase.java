@@ -19,6 +19,8 @@
 package org.openvpms.web.component.app;
 
 import org.apache.commons.beanutils.MethodUtils;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -43,6 +45,7 @@ public class LocalContextTestCase extends AbstractAppTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testContext() throws Exception {
         LocalContext context = createContext(true);
         checkContext("security.user", "getClinician", context);
@@ -70,6 +73,7 @@ public class LocalContextTestCase extends AbstractAppTest {
      * Verifies that {@link LocalContext#removeObject} doesn't remove objects
      * from the parent.
      */
+    @Test
     public void testRemoveObject() {
         LocalContext context = createContext(true);
         Context parent = context.getParent();

@@ -19,9 +19,10 @@
 package org.openvpms.web.test;
 
 import nextapp.echo2.app.ApplicationInstance;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
+import org.junit.Before;
 import org.openvpms.web.app.OpenVPMSApp;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 
 /**
@@ -30,27 +31,14 @@ import org.openvpms.web.app.OpenVPMSApp;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractAppTest
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContext.xml"};
-    }
+@ContextConfiguration("/applicationContext.xml")
+public abstract class AbstractAppTest extends AbstractJUnit4SpringContextTests {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
+    @Before
+    public void setUp() {
         OpenVPMSApp app = (OpenVPMSApp) applicationContext.getBean("openVPMSApp");
         app.setApplicationContext(applicationContext);
         ApplicationInstance.setActive(app);

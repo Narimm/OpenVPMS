@@ -24,13 +24,16 @@
  */
 package org.openvpms.web.component.im.edit;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.test.TestHelper;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,6 +52,7 @@ public class DefaultCollectionPropertyEditorTestCase
     /**
      * Tests {@link CollectionPropertyEditor#getArchetypeRange()}.
      */
+    @Test
     public void testGetArchetypeRange() {
         IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);

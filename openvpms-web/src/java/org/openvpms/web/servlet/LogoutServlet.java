@@ -18,7 +18,7 @@
 
 package org.openvpms.web.servlet;
 
-import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -50,9 +50,7 @@ public class LogoutServlet extends HttpServlet {
                            HttpServletResponse response)
             throws ServletException, IOException {
         request.getSession().invalidate();
-        Cookie terminate = new Cookie(
-                TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,
-                null);
+        Cookie terminate = new Cookie(TokenBasedRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY, null);
         terminate.setMaxAge(0);
         response.addCookie(terminate);
         response.sendRedirect(ServletHelper.getRedirectURI(request, "logout"));
