@@ -21,10 +21,11 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import static org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOHelper.createLookup;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
 
 /**
  * Tests the {@link LookupRelationshipDOImpl} class.
@@ -48,6 +49,7 @@ public class LookupRelationshipDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation lookup relationships between a country and states.
      */
+    @Test
     public void testCreate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -82,6 +84,7 @@ public class LookupRelationshipDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the deletion of a lookup and all its relationships.
      */
+    @Test
     public void testDelete() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -111,7 +114,7 @@ public class LookupRelationshipDOTestCase extends HibernateInfoModelTestCase {
 
         // iterate through all the relationships and remove them
         LookupRelationshipDO[] rels = lookup.getSourceLookupRelationships()
-                .toArray(new LookupRelationshipDOImpl[0]);
+                .toArray(new LookupRelationshipDO[lookup.getSourceLookupRelationships().size()]);
         for (LookupRelationshipDO rel : rels) {
             lookup.removeSourceLookupRelationship(rel);
         }
@@ -125,11 +128,9 @@ public class LookupRelationshipDOTestCase extends HibernateInfoModelTestCase {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         lookups = count(LookupDOImpl.class);
         relationships = count(LookupRelationshipDOImpl.class);

@@ -21,6 +21,9 @@ package org.openvpms.component.business.dao.hibernate.im.query;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.AssemblerImpl;
 import org.openvpms.component.business.dao.hibernate.im.act.ActDO;
 import org.openvpms.component.business.dao.hibernate.im.act.DocumentActDO;
@@ -46,7 +49,8 @@ import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 
 /**
@@ -55,8 +59,8 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-07-28 01:41:16Z $
  */
-public class QueryBuilderTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("query-appcontext.xml")
+public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
 
     /**
      * The query builder.
@@ -67,6 +71,7 @@ public class QueryBuilderTestCase
     /**
      * Test the query by id and archetype Id.
      */
+    @Test
     public void testQueryByIdAndArchetypeId() {
         final String expected = "select party0 "
                                 + "from " + PartyDO.class.getName() + " as party0 "
@@ -80,6 +85,7 @@ public class QueryBuilderTestCase
     /**
      * Test the query by id and archetype short name.
      */
+    @Test
     public void testQueryByIdAndArchetypeShortName() {
         final String expected = "select party0 "
                                 + "from " + PartyDO.class.getName() + " as party0 "
@@ -93,6 +99,7 @@ public class QueryBuilderTestCase
     /**
      * Test the query by archetype id and name.
      */
+    @Test
     public void testQueryByArchetypeIdAndName() {
         final String expected = "select party0 "
                                 + "from " + PartyDO.class.getName() + " as party0 "
@@ -106,6 +113,7 @@ public class QueryBuilderTestCase
     /**
      * Test the query on archetype id, name and a sort criteria.
      */
+    @Test
     public void testQueryByArchetypeIdAndNameAndSort() {
         final String expected = "select party0 "
                                 + "from " + PartyDO.class.getName() + " as party0 "
@@ -124,6 +132,7 @@ public class QueryBuilderTestCase
     /**
      * Test the query on archetype short name, name and a sort criteria
      */
+    @Test
     public void testQueryByArchetypeShortNameAndNameAndSort() {
         final String expected = "select party0 "
                                 + "from " + PartyDO.class.getName() + " as party0 "
@@ -146,6 +155,7 @@ public class QueryBuilderTestCase
      * Test the query on a collection constraint without specifying
      * archetype constraint info.
      */
+    @Test
     public void testCollectionNodeConstraintWithNodeNameOnly() {
         final String expected = "select party0 "
                                 + "from " + PartyDO.class.getName() + " as party0 "
@@ -167,6 +177,7 @@ public class QueryBuilderTestCase
     /**
      * Test query with an archetype and node based sort constraint.
      */
+    @Test
     public void testWithMultipleSortConstraints() {
         String expected = "select party0 "
                           + "from " + PartyDO.class.getName() + " as party0 "
@@ -191,6 +202,7 @@ public class QueryBuilderTestCase
     /**
      * Test target lookups.
      */
+    @Test
     public void testTargetLookups() {
         final String expected = "select lookup0 "
                                 + "from " + LookupDO.class.getName() + " as lookup0 "
@@ -211,6 +223,7 @@ public class QueryBuilderTestCase
     /**
      * Test for ovpms-240.
      */
+    @Test
     public void testOVPMS240() {
         final String expected = "select product0 "
                                 + "from " + ProductDO.class.getName() + " "
@@ -233,6 +246,7 @@ public class QueryBuilderTestCase
     /**
      * Test for ovpms-245.
      */
+    @Test
     public void testOVPMS245() {
         final String expected = "select product0 "
                                 + "from " + ProductDO.class.getName() + " as product0 "
@@ -263,6 +277,7 @@ public class QueryBuilderTestCase
     /**
      * Test query across multiple tables, joined by link constraints.
      */
+    @Test
     public void testQueryAcrossMultipleTables() {
         final String expected = "select distinct act "
                                 + "from " + ActDO.class.getName() + " as act "
@@ -317,6 +332,7 @@ public class QueryBuilderTestCase
     /**
      * Tests select constraints.
      */
+    @Test
     public void testMultipleSelect() {
         final String expected = "select estimation.name, estimation.description, estimation.status, "
                                 + "estimationItem from " + ActDO.class.getName() + " as estimation "
@@ -351,6 +367,7 @@ public class QueryBuilderTestCase
     /**
      * Tests queries on object reference nodes.
      */
+    @Test
     public void testObjectRefNodeConstraints() {
         final String expected = "select act0 from "
                                 + ActDO.class.getName() + " as act0 "
@@ -375,6 +392,7 @@ public class QueryBuilderTestCase
     /**
      * Tests queries where an {@link IMObjectReference} node is null.
      */
+    @Test
     public void testNullReference() {
         final String expected = "select documentAct0 from "
                                 + DocumentActDO.class.getName() + " as documentAct0 "
@@ -389,6 +407,7 @@ public class QueryBuilderTestCase
     /**
      * Tests IN queries.
      */
+    @Test
     public void testIn() {
         final String expected = "select documentAct0 from "
                                 + DocumentActDO.class.getName() + " as documentAct0 "
@@ -409,6 +428,7 @@ public class QueryBuilderTestCase
      * Verifies that archetype constraints in left outer joins generate
      * is null clauses.
      */
+    @Test
     public void testLeftJoin() {
         final String expected = "select product0 from "
                                 + ProductDO.class.getName() + " as product0 "
@@ -440,6 +460,7 @@ public class QueryBuilderTestCase
     /**
      * Verifies that nested left outer joins are supported.
      */
+    @Test
     public void testNestedLeftOuterJoin() {
         String expected = "select act0 from "
                           + ActDO.class.getName() + " as act0 "
@@ -463,28 +484,13 @@ public class QueryBuilderTestCase
         checkQuery(query, expected);
     }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-    */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/dao/hibernate/im/query/query-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+    /**
+     * Sets up the test case.
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
+    @Before
+    public void setUp() {
         IArchetypeDescriptorCache cache
-                = (IArchetypeDescriptorCache) applicationContext.getBean(
-                "archetypeDescriptorCache");
+                = (IArchetypeDescriptorCache) applicationContext.getBean("archetypeDescriptorCache");
         builder = new QueryBuilder(cache, new AssemblerImpl(cache));
     }
 

@@ -19,11 +19,12 @@
 
 package org.openvpms.component.business.dao.hibernate.im;
 
-import junit.framework.TestCase;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.junit.After;
+import org.junit.Before;
 import org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl;
@@ -55,7 +56,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class HibernateInfoModelTestCase extends TestCase {
+public abstract class HibernateInfoModelTestCase {
 
     /**
      * The hibernate session factory.
@@ -96,10 +97,9 @@ public abstract class HibernateInfoModelTestCase extends TestCase {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() {
         // create the hibernate session factory
         Configuration config = new Configuration();
         config.addClass(ContactDOImpl.class);
@@ -125,10 +125,9 @@ public abstract class HibernateInfoModelTestCase extends TestCase {
 
     /**
      * Cleans up after a test.
-     *
-     * @throws Exception for any error
      */
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() {
         if (session != null) {
             session.close();
         }
@@ -140,7 +139,6 @@ public abstract class HibernateInfoModelTestCase extends TestCase {
      *
      * @return a new map
      */
-    @SuppressWarnings("HardCodedStringLiteral")
     protected Map<String, Object> createSimpleAttributeMap() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("dummy", "dummy");
@@ -185,10 +183,11 @@ public abstract class HibernateInfoModelTestCase extends TestCase {
      * Counts the total no. of 'details' elements for a type.
      *
      * @param type the type
+     * @return the instance count
      */
     protected int countDetails(Class type) {
         String hql = "select count(elements(p)) from "
-                + type.getName() + " o right outer join o.details as p";
+                     + type.getName() + " o right outer join o.details as p";
         Query query = getSession().createQuery(hql);
         return ((Number) query.list().get(0)).intValue();
     }

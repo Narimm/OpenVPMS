@@ -21,9 +21,10 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
 
 /**
  * Tests the {@link ActDOImpl} class.
@@ -42,6 +43,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation of an act.
      */
+    @Test
     public void testCreate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -60,6 +62,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the modification of an act.
      */
+    @Test
     public void testUpdate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -90,6 +93,7 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Tests the deletion of an act.
      */
+    @Test
     public void testDelete() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -118,11 +122,9 @@ public class ActDOTestCase extends HibernateInfoModelTestCase {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         acts = count(ActDOImpl.class);
     }

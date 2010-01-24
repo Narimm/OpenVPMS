@@ -18,13 +18,15 @@
 
 package org.openvpms.component.business.service.archetype;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.lookup.LookupUtil;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,29 +38,23 @@ import java.util.Collection;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServicePartyTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * Holds a reference to the entity service
-     */
-    private ArchetypeService service;
-
+@ContextConfiguration("archetype-service-appcontext.xml")
+public class ArchetypeServicePartyTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Test the creation of a simple contact with a contact classification.
      */
-    public void testSimplePartyWithContactCreation() throws Exception {
+    @Test
+    public void testSimplePartyWithContactCreation() {
         Lookup classification = createContactPurpose("EMAIL");
-        service.save(classification);
+        save(classification);
         Lookup classification1 = createContactPurpose("HOME");
-        service.save(classification1);
+        save(classification1);
 
         Party person = createPerson("MR", "Jim", "Alateras");
         person.addContact(createContact(classification));
         person.addContact(createContact(classification1));
-        service.save(person);
+        save(person);
 
         Party person2 = (Party) get(person.getObjectReference());
         assertNotNull(person2);
@@ -68,14 +64,15 @@ public class ArchetypeServicePartyTestCase
     /**
      * Tests party removal.
      */
+    @Test
     public void testRemove() {
         Lookup classification = createContactPurpose("HOME");
-        service.save(classification);
+        save(classification);
         Party person = createPerson("MR", "Jim", "Alateras");
         Contact contact = createContact(classification);
-        service.save(contact);
+        save(contact);
         person.addContact(contact);
-        service.save(person);
+        save(person);
         assertNotNull(get(person.getObjectReference()));
         assertNotNull(get(contact.getObjectReference()));
 
@@ -83,15 +80,14 @@ public class ArchetypeServicePartyTestCase
         person.getDetails().put("lastName", null);
 
         try {
-            service.validateObject(person);
+            validateObject(person);
             fail("Expected the party to be invalid");
         } catch (ValidationException ignore) {
             // expected behaviour
         }
 
-        // now remove it, and verify the associated contact has also been
-        // removed
-        service.remove(person);
+        // now remove it, and verify the associated contact has also been removed
+        remove(person);
         assertNull(get(person.getObjectReference()));
         assertNull(get(contact.getObjectReference()));
     }
@@ -100,19 +96,20 @@ public class ArchetypeServicePartyTestCase
      * Verifies that classifications can be added and removed from a party,
      * and that removal doesn't delete the classification itself.
      */
+    @Test
     public void testAddRemoveClassifications() {
         Lookup staff1 = createStaff("STAFF1");
         Lookup staff2 = createStaff("STAFF2");
-        service.save(staff1);
-        service.save(staff2);
+        save(staff1);
+        save(staff2);
 
         Party person = createPerson("MR", "Jim", "Alateras");
         person.addClassification(staff1);
-        service.save(person);
+        save(person);
 
         person.removeClassification(staff1);
         person.addClassification(staff2);
-        service.save(person);
+        save(person);
 
         person = (Party) get(person.getObjectReference());
         assertEquals(1, person.getClassifications().size());
@@ -125,11 +122,12 @@ public class ArchetypeServicePartyTestCase
      * Verifies that multiple parties can be saved via the
      * {@link IArchetypeService#save(Collection<IMObject>)} method.
      */
+    @Test
     public void testSaveCollection() {
         Lookup classification = createContactPurpose("EMAIL");
-        service.save(classification);
+        save(classification);
         Lookup classification1 = createContactPurpose("HOME");
-        service.save(classification1);
+        save(classification1);
 
         Party person1 = createPerson("MR", "Jim", "Alateras");
         person1.addContact(createContact(classification));
@@ -145,7 +143,7 @@ public class ArchetypeServicePartyTestCase
 
         // save the collection
         Collection<Party> col = Arrays.asList(person1, person2);
-        service.save(col);
+        save(col);
 
         // verify the ids have updated
         assertFalse(person1.getId() == -1);
@@ -154,13 +152,13 @@ public class ArchetypeServicePartyTestCase
         assertEquals(0, person2.getVersion());
 
         // verify the versions don't update until a change is made
-        service.save(col);
+        save(col);
         assertEquals(0, person1.getVersion());
         assertEquals(0, person2.getVersion());
 
         // update person1 and recheck versions after save
         person1.getDetails().put("lastName", "Foo");
-        service.save(col);
+        save(col);
         assertEquals(1, person1.getVersion());
         assertEquals(0, person2.getVersion());
     }
@@ -169,47 +167,25 @@ public class ArchetypeServicePartyTestCase
      * Verifies that classifications can be added and removed from a contact,
      * and that removal doesn't delete the classification itself.
      */
+    @Test
     public void testAddRemoveContactClassifications() {
         Lookup email = createContactPurpose("EMAIL");
-        service.save(email);
+        save(email);
         Lookup home = createContactPurpose("HOME");
-        service.save(home);
+        save(home);
 
         Contact contact = createContact(email);
-        service.save(contact);
+        save(contact);
 
         contact.removeClassification(email);
         contact.addClassification(home);
-        service.save(contact);
+        save(contact);
 
         contact = (Contact) get(contact.getObjectReference());
         assertEquals(1, contact.getClassifications().size());
         assertTrue(contact.getClassifications().contains(home));
         assertEquals(email, get(email.getObjectReference()));
         assertEquals(home, get(home.getObjectReference()));
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
     }
 
     /**
@@ -220,9 +196,8 @@ public class ArchetypeServicePartyTestCase
      * @param lastName  the last name
      * @return a new person
      */
-    private Party createPerson(String title, String firstName,
-                               String lastName) {
-        Party person = (Party) service.create("party.person");
+    private Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party) create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
@@ -237,7 +212,7 @@ public class ArchetypeServicePartyTestCase
      * @return a new contact
      */
     private Contact createContact(Lookup classification) {
-        Contact contact = (Contact) service.create("contact.location");
+        Contact contact = (Contact) create("contact.location");
 
         contact.getDetails().put("address", "kalulu rd");
         contact.getDetails().put("suburb", "Belgrave");
@@ -256,7 +231,7 @@ public class ArchetypeServicePartyTestCase
      * @return a new lookup
      */
     private Lookup createStaff(String code) {
-        Lookup lookup = LookupUtil.createLookup(service, "lookup.staff", code);
+        Lookup lookup = LookupUtil.createLookup(getArchetypeService(), "lookup.staff", code);
         lookup.setDescription(code);
         return lookup;
     }
@@ -268,16 +243,6 @@ public class ArchetypeServicePartyTestCase
      * @return a new lookup
      */
     private Lookup createContactPurpose(String code) {
-        return LookupUtil.createLookup(service, "lookup.contactPurpose", code);
-    }
-
-    /**
-     * Helper to get an object from the archetype service given its reference.
-     *
-     * @param ref the object reference
-     * @return the object or <tt>null</tt> if its not found
-     */
-    private IMObject get(IMObjectReference ref) {
-        return service.get(ref);
+        return LookupUtil.createLookup(getArchetypeService(), "lookup.contactPurpose", code);
     }
 }

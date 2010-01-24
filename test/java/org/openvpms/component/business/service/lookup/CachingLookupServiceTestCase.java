@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.lookup;
 
 import net.sf.ehcache.Cache;
+import org.junit.Before;
 
 
 /**
@@ -34,9 +35,8 @@ public class CachingLookupServiceTestCase extends AbstractLookupServiceTest {
      *
      * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() throws Exception {
         Cache cache = (Cache) applicationContext.getBean("lookupCache");
         setLookupService(new CachingLookupService(getArchetypeService(), getDAO(), cache));
     }

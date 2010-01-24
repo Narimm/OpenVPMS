@@ -19,16 +19,16 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.apache.commons.collections.Predicate;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Date;
 import java.util.List;
@@ -40,8 +40,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityBeanTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Owner entity relationship short name.
@@ -58,9 +58,10 @@ public class EntityBeanTestCase
      * Tests the {@link EntityBean#addRelationship} and
      * {@link EntityBean#getRelationship)} methods.
      */
+    @Test
     public void testRelationships() {
         Party pet = (Party) create("party.animalpet");
-        EntityBean bean = createBean("party.person");
+        EntityBean bean = createPerson();
         assertNull(bean.getRelationship(pet));
 
         EntityRelationship r = bean.addRelationship(OWNER, pet);
@@ -75,7 +76,8 @@ public class EntityBeanTestCase
     /**
      * Tests the {@link EntityBean#getRelationships} methods.
      */
-    public void testGetRelationships() throws Exception {
+    @Test
+    public void testGetRelationships() {
         EntityBean petBean = createPet();
         EntityBean personBean = createPerson();
         Entity pet = petBean.getEntity();
@@ -120,6 +122,7 @@ public class EntityBeanTestCase
      * Tests the {@link EntityBean#getSourceEntity(String)}
      * and {@link EntityBean#getTargetEntity(String)} methods.
      */
+    @Test
     public void testGetEntity() {
         EntityBean pet1Bean = createPet();
         EntityBean pet2Bean = createPet();
@@ -153,6 +156,7 @@ public class EntityBeanTestCase
      * Tests the {@link EntityBean#getSourceEntity(String, Date)}
      * and {@link EntityBean#getTargetEntity(String, Date)} methods.
      */
+    @Test
     public void testGetEntityByTime() {
         EntityBean petBean = createPet();
         EntityBean personBean = createPerson();
@@ -208,7 +212,8 @@ public class EntityBeanTestCase
      * {@link EntityBean#getTargetEntityRef(String, boolean)} methods
      * for active/inactive relationships.
      */
-    public void testGetEntityWithActive() throws Exception {
+    @Test
+    public void testGetEntityWithActive() {
         EntityBean pet1Bean = createPet();
         EntityBean pet2Bean = createPet();
         EntityBean personBean = createPerson();
@@ -284,6 +289,7 @@ public class EntityBeanTestCase
      * Tests the {@link EntityBean#getNodeSourceEntity(String)}
      * and {@link EntityBean#getNodeTargetEntity(String)} methods.
      */
+    @Test
     public void testGetNodeEntity() {
         EntityBean pet1Bean = createPet();
         EntityBean pet2Bean = createPet();
@@ -317,6 +323,7 @@ public class EntityBeanTestCase
      * Tests the {@link EntityBean#getNodeSourceEntity(String, Date)}
      * and {@link EntityBean#getNodeTargetEntity(String, Date)} methods.
      */
+    @Test
     public void testGetNodeEntityByTime() {
         EntityBean petBean = createPet();
         EntityBean personBean = createPerson();
@@ -371,6 +378,7 @@ public class EntityBeanTestCase
      * and {@link EntityBean#getNodeTargetEntity(String, Date, boolean)} methods
      * for active/inactive relationships and entities.
      */
+    @Test
     public void testGetNodeEntityWithActive() {
         final String pets = "patients"; // patients node name
         final String owners = "relationships"; // owners node name
@@ -439,6 +447,7 @@ public class EntityBeanTestCase
      * {@link EntityBean#getNodeTargetEntities} and
      * {@link EntityBean#getNodeTargetEntityRefs}  methods.
      */
+    @Test
     public void testGetNodeEntities() {
         EntityBean pet1 = createPet();
         EntityBean pet2 = createPet();
@@ -477,6 +486,7 @@ public class EntityBeanTestCase
      * {@link EntityBean#getNodeTargetEntities(String, Date)} and
      * {@link EntityBean#getNodeTargetEntityRefs(String, Date)} methods.
      */
+    @Test
     public void testGetNodeEntitiesByTime() {
         EntityBean pet1 = createPet();
         EntityBean pet2 = createPet();
@@ -555,6 +565,7 @@ public class EntityBeanTestCase
      * {@link EntityBean#getNodeTargetEntityRefs(String, Date, boolean)} methods
      * for active/inactive relationships and entities.
      */
+    @Test
     public void testGetNodeEntitiesByTimeAndActive() {
         EntityBean pet1Bean = createPet();
         EntityBean pet2Bean = createPet();
@@ -631,6 +642,7 @@ public class EntityBeanTestCase
      * and {@link EntityBean#getNodeRelationship(String, Predicate)}
      * methods.
      */
+    @Test
     public void testGetNodeRelationships() {
         EntityBean pet1Bean = createPet();
         EntityBean pet2Bean = createPet();
@@ -668,6 +680,7 @@ public class EntityBeanTestCase
      * Tests the {@link EntityBean#getNodeSourceEntities(String, Predicate)}
      * and {@link EntityBean#getNodeTargetEntities(String, Predicate)} methods.
      */
+    @Test
     public void testGetNodeEntitiesByPredicate() {
         EntityBean pet1Bean = createPet();
         EntityBean pet2Bean = createPet();
@@ -745,7 +758,7 @@ public class EntityBeanTestCase
      * @return a new pet
      */
     private EntityBean createPet() {
-        EntityBean pet = createBean("party.animalpet");
+        EntityBean pet = new EntityBean((Entity) create("party.animalpet"));
         pet.setValue("name", "XAnimalPet");
         pet.setValue("species", "CANINE");
         pet.save();
@@ -758,48 +771,11 @@ public class EntityBeanTestCase
      * @return a new person
      */
     private EntityBean createPerson() {
-        EntityBean person = createBean("party.person");
+        EntityBean person = new EntityBean((Entity) create("party.person"));
         person.setValue("firstName", "J");
         person.setValue("lastName", "Zoo");
         person.save();
         return person;
-    }
-
-    /**
-     * (non-Javadoc)
-     *
-     * @see AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /**
-     * Helper to create an object.
-     *
-     * @param shortName the archetype short name
-     * @return the new object
-     */
-    private IMObject create(String shortName) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        IMObject object = service.create(shortName);
-        assertNotNull(object);
-        return object;
-    }
-
-    /**
-     * Helper to create an entity and wrap it in an {@link EntityBean}.
-     *
-     * @param shortName the archetype short name
-     * @return the bean wrapping an instance of <code>shortName</code>.
-     */
-    private EntityBean createBean(String shortName) {
-        Entity object = (Entity) create(shortName);
-        return new EntityBean(object);
     }
 
     /**

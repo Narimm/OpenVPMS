@@ -19,11 +19,15 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 
 /**
@@ -32,32 +36,33 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AssertionDescriptorTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("descriptor-test-appcontext.xml")
+public class AssertionDescriptorTestCase extends AbstractJUnit4SpringContextTests {
 
 
     /**
      * Holds a reference to the entity service
      */
+    @Autowired
     private ArchetypeService service;
 
 
     /**
      * Test that the assertion descriptors are returned in the order they were
      * entered.
+     *
+     * @throws Exception for any error
      */
-    public void testAssertionDescriptorOrdering()
-            throws Exception {
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "party.personbernief");
-        assertTrue(adesc != null);
+    @Test
+    public void testAssertionDescriptorOrdering() throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("party.personbernief");
+        assertNotNull(adesc);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         assertTrue(ndesc.getAssertionDescriptors().size() == 5);
         int currIndex = 0;
         String assertName = "dummyAssertion";
-        for (AssertionDescriptor desc : ndesc.getAssertionDescriptorsInIndexOrder())
-        {
+        for (AssertionDescriptor desc : ndesc.getAssertionDescriptorsInIndexOrder()) {
             String name = desc.getName();
             if (name.startsWith(assertName)) {
                 int index = Integer.parseInt(
@@ -66,18 +71,17 @@ public class AssertionDescriptorTestCase
                     currIndex = index;
                 } else {
                     fail("Assertions are not returned in the correct order currIndex: "
-                            + currIndex + " index: " + index);
+                         + currIndex + " index: " + index);
                 }
             }
         }
 
         // clone and test it again
         NodeDescriptor clone = (NodeDescriptor) ndesc.clone();
-        assertTrue(clone != null);
+        assertNotNull(clone);
         assertTrue(clone.getAssertionDescriptors().size() == 5);
         currIndex = 0;
-        for (AssertionDescriptor desc : clone.getAssertionDescriptorsInIndexOrder())
-        {
+        for (AssertionDescriptor desc : clone.getAssertionDescriptorsInIndexOrder()) {
             String name = desc.getName();
             if (name.startsWith(assertName)) {
                 int index = Integer.parseInt(
@@ -86,7 +90,7 @@ public class AssertionDescriptorTestCase
                     currIndex = index;
                 } else {
                     fail("Assertions are not returned in the correct order currIndex: "
-                            + currIndex + " index: " + index);
+                         + currIndex + " index: " + index);
                 }
             }
         }
@@ -96,13 +100,12 @@ public class AssertionDescriptorTestCase
      * Test that the properties within an assertion are returned in the
      * order that they are defined.
      */
-    public void testAssertionPropertyOrder()
-            throws Exception {
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "party.personbernief");
-        assertTrue(adesc != null);
+    @Test
+    public void testAssertionPropertyOrder() {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("party.personbernief");
+        assertNotNull(adesc);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
 
         int index = 0;
         for (String shortName : ndesc.getArchetypeRange()) {
@@ -129,13 +132,12 @@ public class AssertionDescriptorTestCase
     }
 
     /**
-     * Deleting nodes with archetypes assertions cause a validation error
+     * Deleting nodes with archetypes assertions cause a validation error.
      */
-    public void testOBF10()
-            throws Exception {
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "party.person");
-        assertTrue(adesc != null);
+    @Test
+    public void testOBF10() {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("party.person");
+        assertNotNull(adesc);
 
         // find and remove the classifications node
         assertTrue(adesc.getNodeDescriptor("classifications") != null);
@@ -149,29 +151,6 @@ public class AssertionDescriptorTestCase
 
         // now validate the archetype
         service.validateObject(adesc);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/descriptor/descriptor-test-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
     }
 
 }

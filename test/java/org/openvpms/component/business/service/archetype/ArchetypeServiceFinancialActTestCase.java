@@ -18,15 +18,14 @@
 
 package org.openvpms.component.business.service.archetype;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.ObjectRefConstraint;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -38,23 +37,16 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServiceFinancialActTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private ArchetypeService service;
+@ContextConfiguration("archetype-service-appcontext.xml")
+public class ArchetypeServiceFinancialActTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Test the creation of a FinancialAct using the {@link NodeDescriptor}s.
      */
-    public void testFinancialActCreationThruNodeDescriptors()
-            throws Exception {
-        FinancialAct act = (FinancialAct) service.create("financial.act");
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "financial.act");
+    @Test
+    public void testFinancialActCreationThruNodeDescriptors() {
+        FinancialAct act = (FinancialAct) create("financial.act");
+        ArchetypeDescriptor adesc = getArchetypeService().getArchetypeDescriptor("financial.act");
         NodeDescriptor ndesc;
 
         // set the name node
@@ -130,24 +122,23 @@ public class ArchetypeServiceFinancialActTestCase
         assertTrue(ndesc.getValue(act) instanceof Date);
 
         // save the document
-        service.save(act);
+        save(act);
     }
 
     /**
      * Test the creation of a simple financial act
      */
-    public void testSimpleFinancialActCreation()
-            throws Exception {
+    @Test
+    public void testSimpleFinancialActCreation() {
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
                                               new Money(6), new Money(7),
                                               true, false);
-        service.save(act);
+        save(act);
 
         // now retrieve it
-        FinancialAct act1 = (FinancialAct) service.get(
-                act.getObjectReference());
+        FinancialAct act1 = get(act);
         assertTrue(act1 != null);
         assertTrue(act.getName().equals(act1.getName()));
         assertTrue(act.getDescription().equals(act1.getDescription()));
@@ -168,22 +159,20 @@ public class ArchetypeServiceFinancialActTestCase
      * Test the creation of a simple financial act. Then retrieve the object and
      * compare using NodeDescriptors.
      */
-    public void testFinancialActCreationAndRetrieval()
-            throws Exception {
+    @Test
+    public void testFinancialActCreationAndRetrieval() {
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
                                               new Money(6), new Money(7),
                                               true, false);
-        service.save(act);
+        save(act);
 
         // now retrieve it
-        FinancialAct act1 = (FinancialAct) service.get(
-                act.getObjectReference());
+        FinancialAct act1 = get(act);
         assertTrue(act1 != null);
 
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "financial.act");
+        ArchetypeDescriptor adesc = getArchetypeDescriptor("financial.act");
         NodeDescriptor ndesc;
 
         // set the name node
@@ -244,8 +233,8 @@ public class ArchetypeServiceFinancialActTestCase
     /**
      * Test the creation of multiple acts.
      */
-    public void testMultipleFinancialActCreation()
-            throws Exception {
+    @Test
+    public void testMultipleFinancialActCreation() {
         for (int index = 0; index < 10; index++) {
             FinancialAct act = createFinancialAct(new BigDecimal(1),
                                                   new Money(1),
@@ -253,93 +242,75 @@ public class ArchetypeServiceFinancialActTestCase
                                                   new Money(4), new Money(5),
                                                   new Money(6), new Money(7),
                                                   true, false);
-            service.save(act);
+            save(act);
         }
     }
 
     /**
      * Test creation and retrieval of a financial act.
      */
-    public void testFinancialActRetrieval()
-            throws Exception {
+    @Test
+    public void testFinancialActRetrieval() {
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
                                               new Money(6), new Money(7),
                                               true, false);
-        service.save(act);
+        save(act);
 
         // retrieve it
-        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
-                act.getObjectReference()));
-        query.setCountResults(true);
-        IPage<IMObject> page = service.get(query);
-        assertEquals(1, page.getTotalResults());
-
-        FinancialAct newAct = (FinancialAct) page.getResults().iterator().next();
-        assertTrue(
-                newAct.getObjectReference().equals(act.getObjectReference()));
+        FinancialAct newAct = get(act);
+        assertNotNull(newAct);
     }
 
     /**
      * Test the modification of a financial act.
      */
-    public void testFinancialActModification()
-            throws Exception {
+    @Test
+    public void testFinancialActModification() {
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
                                               new Money(6), new Money(7),
                                               true, false);
-        service.save(act);
+        save(act);
 
         // retrieve it
-        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
-                act.getObjectReference()));
-        query.setCountResults(true);
-        IPage<IMObject> page = service.get(query);
-        assertTrue(page.getTotalResults() == 1);
-
-        FinancialAct newAct = (FinancialAct) page.getResults().iterator().next();
+        FinancialAct newAct = get(act);
         newAct.setCredit(false);
         newAct.setQuantity(new BigDecimal(123));
-        service.save(act);
+        save(act);
     }
 
     /**
      * Test the deletion of a financial act.
      */
-    public void testFinancialActDeletion()
-            throws Exception {
+    @Test
+    public void testFinancialActDeletion() {
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
                                               new Money(4), new Money(5),
                                               new Money(6), new Money(7),
                                               true, false);
-        service.save(act);
+        save(act);
 
         // retrieve it
-        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
-                act.getObjectReference()));
-        query.setCountResults(true);
-        IPage<IMObject> page = service.get(query);
-        assertEquals(1, page.getTotalResults());
+        FinancialAct newAct = get(act);
+        assertNotNull(newAct);
 
-        // delete it
-        FinancialAct newAct = (FinancialAct) page.getResults().iterator().next();
-        service.remove(newAct);
+        // remove
+        remove(newAct);
 
         // try and retrieve it again
-        page = service.get(query);
-        assertEquals(0, page.getTotalResults());
+        assertNull(get(act));
     }
 
     /**
      * Test that we can use a date node from an existing node to set the date
      * node of another node.
      */
-    public void testOBF45()
-            throws Exception {
+    @Test
+    public void testOBF45() {
         // create an act
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1),
                                               new Money(2), new Money(3),
@@ -347,19 +318,14 @@ public class ArchetypeServiceFinancialActTestCase
                                               new Money(6), new Money(7),
                                               true, false);
         act.setActivityStartTime(new Date());
-        service.save(act);
+        save(act);
 
         // retrieve the act
-        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
-                act.getObjectReference()));
-        query.setCountResults(true);
-        IPage<IMObject> page = service.get(query);
-        assertEquals(1, page.getTotalResults());
-        act = (FinancialAct) page.getResults().iterator().next();
+        act = get(act);
+        assertNotNull(act);
 
         // use the descriptors to set the value of endTime
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "financial.act");
+        ArchetypeDescriptor adesc = getArchetypeDescriptor("financial.act");
         NodeDescriptor etndesc = adesc.getNodeDescriptor("endTime");
         NodeDescriptor stndesc = adesc.getNodeDescriptor("startTime");
         etndesc.setValue(act, stndesc.getValue(act));
@@ -370,6 +336,7 @@ public class ArchetypeServiceFinancialActTestCase
      * Tests that a null value for the fixedAmount, unitAmount, and taxAmount
      * fields doesn't affect the total field.
      */
+    @Test
     public void testOBF112() {
         Money fixedAmount = null;
         Money unitAmount = null;
@@ -382,9 +349,9 @@ public class ArchetypeServiceFinancialActTestCase
                                               unitAmount, fixedCost, unitCost,
                                               taxAmount, total, allocatedAmount,
                                               true, false);
-        service.save(act);
+        save(act);
         FinancialAct loaded
-                = (FinancialAct) service.get(act.getObjectReference());
+                = (FinancialAct) get(act.getObjectReference());
         assertNotNull(loaded);
         assertTrue(total.compareTo(loaded.getTotal()) == 0);
     }
@@ -412,7 +379,7 @@ public class ArchetypeServiceFinancialActTestCase
                                            Money taxAmount,
                                            Money total, Money allocatedAmount,
                                            boolean credit, boolean printed) {
-        FinancialAct act = (FinancialAct) service.create("financial.act");
+        FinancialAct act = (FinancialAct) create("financial.act");
         act.setName("financialAct1");
         act.setDescription("This is the first financial act");
         act.setQuantity(quantity);
@@ -427,29 +394,6 @@ public class ArchetypeServiceFinancialActTestCase
         act.setPrinted(printed);
 
         return act;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
     }
 
 }

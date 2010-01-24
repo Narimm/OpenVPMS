@@ -18,12 +18,14 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.springframework.test.context.ContextConfiguration;
 
 
 /**
@@ -32,21 +34,15 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TypeHelperTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private ArchetypeService service;
-
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class TypeHelperTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests the {@link TypeHelper#isA(IMObject, String)} method.
      */
+    @Test
     public void testIsASingle() {
-        IMObject object = service.create("party.animalpet");
-        assertNotNull(object);
+        IMObject object = create("party.animalpet");
         assertTrue(TypeHelper.isA(object, "party.animalpet"));
         assertFalse(TypeHelper.isA(object, "party.horsepet"));
 
@@ -57,35 +53,33 @@ public class TypeHelperTestCase
     }
 
     /**
-     * Tests the {@link TypeHelper#isA(IMObject, String...)} method.
+     * Tests the {@link TypeHelper#isA(IMObject, String[])} method.
      */
+    @Test
     public void testIsAMultiple() {
-        IMObject object = service.create("act.customerAccountPayment");
+        IMObject object = create("act.customerAccountPayment");
         assertNotNull(object);
-        String[] matches = {"act.customerAccountPaymentCash",
-                            "act.customerAccountPayment"};
+        String[] matches = {"act.customerAccountPaymentCash", "act.customerAccountPayment"};
         assertTrue(TypeHelper.isA(object, matches));
 
-        String[] nomatches = {"act.customerAccountPaymentCash",
-                              "act.customerAccountPaymentCredit",
+        String[] nomatches = {"act.customerAccountPaymentCash", "act.customerAccountPaymentCredit",
                               "act.customerAccountPaymentEFT"};
         assertFalse(TypeHelper.isA(object, nomatches));
 
         // test wildcards
-        String[] wildmatch = {"act.customerEstimation*",
-                              "act.customerAccount*"};
+        String[] wildmatch = {"act.customerEstimation*", "act.customerAccount*"};
         assertTrue(TypeHelper.isA(object, wildmatch));
 
-        String[] wildnomatch = {"act.customerEstimation*",
-                                "act.customerInvoice*"};
+        String[] wildnomatch = {"act.customerEstimation*", "act.customerInvoice*"};
         assertFalse(TypeHelper.isA(object, wildnomatch));
     }
 
     /**
      * Tests the {@link TypeHelper#isA(IMObjectReference, String)} method.
      */
+    @Test
     public void testIsARef() {
-        IMObject object = service.create("party.customerperson");
+        IMObject object = create("party.customerperson");
         assertNotNull(object);
         IMObjectReference ref = object.getObjectReference();
 
@@ -99,63 +93,57 @@ public class TypeHelperTestCase
     }
 
     /**
-     * Tests the {@link TypeHelper#isA(IMObjectReference, String...)} method.
+     * Tests the {@link TypeHelper#isA(IMObjectReference, String[])} method.
      */
+    @Test
     public void testIsARefMultiple() {
-        IMObject object = service.create("act.customerAccountPayment");
+        IMObject object = create("act.customerAccountPayment");
         IMObjectReference ref = object.getObjectReference();
         assertNotNull(ref);
-        String[] matches = {"act.customerAccountPaymentCash",
-                            "act.customerAccountPayment"};
+        String[] matches = {"act.customerAccountPaymentCash", "act.customerAccountPayment"};
         assertTrue(TypeHelper.isA(ref, matches));
 
-        String[] nomatches = {"act.customerAccountPaymentCash",
-                              "act.customerAccountPaymentCredit",
+        String[] nomatches = {"act.customerAccountPaymentCash", "act.customerAccountPaymentCredit",
                               "act.customerAccountPaymentEFT"};
         assertFalse(TypeHelper.isA(ref, nomatches));
 
         // test wildcards
-        String[] wildmatch = {"act.customerEstimation*",
-                              "act.customerAccount*"};
+        String[] wildmatch = {"act.customerEstimation*", "act.customerAccount*"};
         assertTrue(TypeHelper.isA(ref, wildmatch));
 
-        String[] wildnomatch = {"act.customerEstimation*",
-                                "act.customerInvoice*"};
+        String[] wildnomatch = {"act.customerEstimation*", "act.customerInvoice*"};
         assertFalse(TypeHelper.isA(ref, wildnomatch));
     }
 
     /**
-     * Tests the {@link TypeHelper#isA(ArchetypeId, String...)} method.
+     * Tests the {@link TypeHelper#isA(ArchetypeId, String[])} method.
      */
+    @Test
     public void testIsAIdMultiple() {
-        IMObject object = service.create("act.customerAccountPayment");
+        IMObject object = create("act.customerAccountPayment");
         ArchetypeId id = object.getArchetypeId();
         assertNotNull(id);
-        String[] matches = {"act.customerAccountPaymentCash",
-                            "act.customerAccountPayment"};
+        String[] matches = {"act.customerAccountPaymentCash", "act.customerAccountPayment"};
         assertTrue(TypeHelper.isA(id, matches));
 
-        String[] nomatches = {"act.customerAccountPaymentCash",
-                              "act.customerAccountPaymentCredit",
+        String[] nomatches = {"act.customerAccountPaymentCash", "act.customerAccountPaymentCredit",
                               "act.customerAccountPaymentEFT"};
         assertFalse(TypeHelper.isA(id, nomatches));
 
         // test wildcards
-        String[] wildmatch = {"act.customerEstimation*",
-                              "act.customerAccount*"};
+        String[] wildmatch = {"act.customerEstimation*", "act.customerAccount*"};
         assertTrue(TypeHelper.isA(id, wildmatch));
 
-        String[] wildnomatch = {"act.customerEstimation*",
-                                "act.customerInvoice*"};
+        String[] wildnomatch = {"act.customerEstimation*", "act.customerInvoice*"};
         assertFalse(TypeHelper.isA(id, wildnomatch));
     }
 
     /**
      * Tests the {@link TypeHelper#isA(ArchetypeDescriptor, String)} method.
      */
+    @Test
     public void testIsADescriptor() {
-        ArchetypeDescriptor descriptor
-                = service.getArchetypeDescriptor("party.customerperson");
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor("party.customerperson");
         assertNotNull(descriptor);
 
         assertTrue(TypeHelper.isA(descriptor, "party.customerperson"));
@@ -168,36 +156,33 @@ public class TypeHelperTestCase
     }
 
     /**
-     * Tests the {@link TypeHelper#isA(ArchetypeDescriptor, String...)} method.
+     * Tests the {@link TypeHelper#isA(ArchetypeDescriptor, String[])} method.
      */
+    @Test
     public void testIsADescriptorMultiple() {
-        ArchetypeDescriptor descriptor
-                = service.getArchetypeDescriptor("act.customerAccountPayment");
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor("act.customerAccountPayment");
         assertNotNull(descriptor);
-        String[] matches = {"act.customerAccountPaymentCash",
-                            "act.customerAccountPayment"};
+        String[] matches = {"act.customerAccountPaymentCash", "act.customerAccountPayment"};
         assertTrue(TypeHelper.isA(descriptor, matches));
 
-        String[] nomatches = {"act.customerAccountPaymentCash",
-                              "act.customerAccountPaymentCredit",
+        String[] nomatches = {"act.customerAccountPaymentCash", "act.customerAccountPaymentCredit",
                               "act.customerAccountPaymentEFT"};
         assertFalse(TypeHelper.isA(descriptor, nomatches));
 
         // test wildcards
-        String[] wildmatch = {"act.customerEstimation*",
-                              "act.customerAccount*"};
+        String[] wildmatch = {"act.customerEstimation*", "act.customerAccount*"};
         assertTrue(TypeHelper.isA(descriptor, wildmatch));
 
-        String[] wildnomatch = {"act.customerEstimation*",
-                                "act.customerInvoice*"};
+        String[] wildnomatch = {"act.customerEstimation*", "act.customerInvoice*"};
         assertFalse(TypeHelper.isA(descriptor, wildnomatch));
     }
 
     /**
      * Tests the {@link TypeHelper#matches(ArchetypeId, String)} method.
      */
+    @Test
     public void testMatchesId() {
-        IMObject object = service.create("party.customerperson");
+        IMObject object = create("party.customerperson");
         assertNotNull(object);
         ArchetypeId id = object.getArchetypeId();
 
@@ -213,23 +198,21 @@ public class TypeHelperTestCase
     /**
      * Tests the {@link TypeHelper#matches(String, String)} method.
      */
+    @Test
     public void testMatches() {
-        assertTrue(TypeHelper.matches("party.customerperson",
-                                      "party.customerperson"));
-        assertFalse(TypeHelper.matches("party.customerperson",
-                                       "party.patientpet"));
+        assertTrue(TypeHelper.matches("party.customerperson", "party.customerperson"));
+        assertFalse(TypeHelper.matches("party.customerperson", "party.patientpet"));
 
         // test wildcards
         assertTrue(TypeHelper.matches("party.customerperson", "party.*"));
-        assertTrue(TypeHelper.matches("party.customerperson",
-                                      "party.customer*"));
-        assertFalse(TypeHelper.matches("party.customerperson",
-                                       "party.patient*"));
+        assertTrue(TypeHelper.matches("party.customerperson", "party.customer*"));
+        assertFalse(TypeHelper.matches("party.customerperson", "party.patient*"));
     }
 
     /**
      * Tests the {@link TypeHelper#matches(String[], String)} method.
      */
+    @Test
     public void testShortNamesMatches() {
         String[] parties = {"party.customerperson", "party.patientpet"};
         assertTrue(TypeHelper.matches(parties, "party.*"));
@@ -237,26 +220,4 @@ public class TypeHelperTestCase
         assertFalse(TypeHelper.matches(parties, "*.customerperson"));
     }
 
-    /**
-     * (non-Javadoc)
-     *
-     * @see AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
-    }
 }

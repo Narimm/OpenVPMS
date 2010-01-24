@@ -18,15 +18,17 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.LookupUtil;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 
@@ -37,12 +39,13 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectCopierTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class IMObjectCopierTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests the {@link IMObjectCopier#apply method.
      */
+    @Test
     public void testApply() {
         String description = "MALE BLACK PUG";
         IMObjectCopier copier
@@ -72,6 +75,7 @@ public class IMObjectCopierTestCase
     /**
      * Verifies that child objects are copied.
      */
+    @Test
     public void testCopyChildren() {
         IMObjectCopier copier
                 = new IMObjectCopier(new DefaultIMObjectCopyHandler());
@@ -109,6 +113,7 @@ public class IMObjectCopierTestCase
      * Verifies that collections are handled correctly when two nodes reference the same collection.
      * This verifies the fix for OVPMS-889.
      */
+    @Test
     public void testCopyCollection() {
         IArchetypeService service = (IArchetypeService) applicationContext.getBean("archetypeService");
         Lookup canine = LookupUtil.createLookup(service, "lookup.species", "CANINE");
@@ -162,6 +167,7 @@ public class IMObjectCopierTestCase
      * Tests copying.
      */
     @SuppressWarnings({"deprecation"})
+    @Test
     public void testCopy() {
         IMObjectCopier copier
                 = new IMObjectCopier(new DefaultIMObjectCopyHandler());
@@ -172,41 +178,4 @@ public class IMObjectCopierTestCase
         assertTrue(copy != bean.getObject());
         assertEquals("Fido", copy.getName());
     }
-
-    /**
-     * (non-Javadoc)
-     *
-     * @see AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /**
-     * Helper to create an object.
-     *
-     * @param shortName the archetype short name
-     * @return the new object
-     */
-    private IMObject create(String shortName) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        IMObject object = service.create(shortName);
-        assertNotNull(object);
-        return object;
-    }
-
-    /**
-     * Helper to create an object and wrap it in an {@link IMObjectBean}.
-     *
-     * @param shortName the archetype short name
-     * @return the bean wrapping an instance of <code>shortName</code>.
-     */
-    private IMObjectBean createBean(String shortName) {
-        return new IMObjectBean(create(shortName));
-    }
-
 }

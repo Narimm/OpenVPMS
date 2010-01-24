@@ -18,12 +18,14 @@
 
 package org.openvpms.component.system.service.jxpath;
 
-import junit.framework.TestCase;
 import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -56,8 +58,7 @@ import java.util.Properties;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class JXPathTestCase extends TestCase {
+public class JXPathTestCase {
 
     /**
      * Cache a reference to the Archetype service
@@ -68,6 +69,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test JXPath on node descriptors
      */
+    @Test
     public void testPersonNodeDescriptors() {
 
         // retrieve the node descriptor for animal.pet
@@ -86,6 +88,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test the path to collection bug ovpms-131
      */
+    @Test
     public void testOVPMS131() {
         Party person = createPerson("MR", "jima", "alateras");
         EntityIdentity id1 = new EntityIdentity();
@@ -102,6 +105,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test that the bug to ovpms-135 is resolved
      */
+    @Test
     public void testNonMandatoryNodes() {
         IMObject object = service.create("lookup.staff");
         assertNotNull(object);
@@ -116,6 +120,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test that JXPath can evaulate complex boolean expressions
      */
+    @Test
     public void testBooleanExpressionEvaulation() {
         ArchetypeDescriptor adesc = service
                 .getArchetypeDescriptor("party.person");
@@ -133,6 +138,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test that jxpath derive values atually work
      */
+    @Test
     public void testDerivedValueNodes() {
         // we know that both name and description are derived nodes
         // for person.person
@@ -151,6 +157,7 @@ public class JXPathTestCase extends TestCase {
      * Test that the entityRelationship.animalCarer create default object
      * initializes the date correctly using the jxpath expression
      */
+    @Test
     public void testJXPathDateFunction() {
         // create a default animalCarer object
         Date start = new Date();
@@ -164,6 +171,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test that packaged functions work as expects
      */
+    @Test
     public void testPackagedFunctions() {
         JXPathContext ctx = JXPathHelper.newContext(this);
         assertTrue(ctx.getValue("java.util.Date.new()") instanceof Date);
@@ -173,6 +181,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test the JXPath expressions into collections
      */
+    @Test
     public void testJXPathCollectionExpressions() {
         List<Party> list = new ArrayList<Party>();
         list.add(createPerson("MR", "Jim", "Alateras"));
@@ -189,14 +198,13 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test that path to collection works
      */
+    @Test
     public void testPathToCollection() {
 
         // retrieve the node descriptor for animal.pet
-        ArchetypeDescriptor adesc = (ArchetypeDescriptor) service
-                .create("descriptor.archetype");
-        assertTrue(adesc != null);
-        ArchetypeDescriptor metaDesc = service.getArchetypeDescriptor(
-                adesc.getArchetypeId());
+        ArchetypeDescriptor adesc = (ArchetypeDescriptor) service.create("descriptor.archetype");
+        assertNotNull(adesc);
+        ArchetypeDescriptor metaDesc = service.getArchetypeDescriptor(adesc.getArchetypeId());
         TestPage page = new TestPage(adesc, metaDesc);
         assertTrue(getValue(page,
                             "pathToCollection(model,  node/nodeDescriptors/nodeDescriptors/path)")
@@ -207,6 +215,7 @@ public class JXPathTestCase extends TestCase {
      * Test the JXPath expressions for retrieving an object with an id
      * from a collection
      */
+    @Test
     public void testJXPathSearchCollectionForMatchingUid() {
         List<Party> list = new ArrayList<Party>();
         Party person = createPerson("MR", "Jim", "Alateras");
@@ -249,6 +258,7 @@ public class JXPathTestCase extends TestCase {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testCollectionManipulation() throws Exception {
         ArrayList list = new ArrayList();
         MethodUtils.invokeMethod(list, "add", "object1");
@@ -260,6 +270,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test the set value on a PropertyMap
      */
+    @Test
     public void testSetValueOnPropertyMap() {
         PropertyMap map = new PropertyMap();
         map.setName("archetypes");
@@ -278,6 +289,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test that we can sum correctly over a list of objects
      */
+    @Test
     public void testSumOverBigDecimal() {
         FunctionLibrary lib = new FunctionLibrary();
         lib.addFunctions(new ClassFunctions(TestFunctions.class, "ns"));
@@ -303,6 +315,7 @@ public class JXPathTestCase extends TestCase {
      * Test that we can still sum using a conversion function in the
      * expression
      */
+    @Test
     public void testSumOverDouble() {
         FunctionLibrary lib = new FunctionLibrary();
         lib.addFunctions(new ClassFunctions(TestFunctions.class, "ns"));
@@ -328,6 +341,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test that the extension functions are called through JXPathHelper
      */
+    @Test
     public void testJXPathHelperExtensionFunctions() {
         // prepare the helper
         Properties props = new Properties();
@@ -349,6 +363,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test for bug OVPMS-236
      */
+    @Test
     public void testOVPMS236() {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 "productPrice.margin");
@@ -362,6 +377,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test for bug OVPMS-228
      */
+    @Test
     public void testOVPMS228() {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 "productPrice.margin");
@@ -378,6 +394,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test for bug OVPMD-210
      */
+    @Test
     public void testOVPMS210() {
         BigDecimalValues values = new BigDecimalValues(new BigDecimal(100),
                                                        new BigDecimal(200));
@@ -390,6 +407,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test for bug OBf-54
      */
+    @Test
     public void testOBF54() {
         OpenVPMSTypeConverter converter = new OpenVPMSTypeConverter();
         Object obj;
@@ -407,6 +425,7 @@ public class JXPathTestCase extends TestCase {
     /**
      * Test normal maths operations
      */
+    @Test
     public void testJXPathMaths() {
         JXPathContext ctx = JXPathHelper.newContext(new Object());
         ctx.getValue("2 + 2");
@@ -421,6 +440,7 @@ public class JXPathTestCase extends TestCase {
      * Verifies that {@link ObjectFunctions} can be added to the function
      * library and their instance and static methods invoked.
      */
+    @Test
     public void testObjectFunctions() {
         List<String> list = new ArrayList<String>();
         list.add("a");
@@ -445,9 +465,8 @@ public class JXPathTestCase extends TestCase {
      *
      * @throws Exception for any error
      */
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
         // configure jxpath
         new JXPathHelper();
 

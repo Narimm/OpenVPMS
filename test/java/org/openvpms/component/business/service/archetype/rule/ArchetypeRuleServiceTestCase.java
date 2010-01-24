@@ -18,6 +18,8 @@
 
 package org.openvpms.component.business.service.archetype.rule;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -26,7 +28,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
@@ -44,17 +48,19 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
-public class ArchetypeRuleServiceTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("rule-engine-appcontext.xml")
+public class ArchetypeRuleServiceTestCase extends AbstractJUnit4SpringContextTests {
 
     /**
      * The archetype service.
      */
+    @Autowired
     private IArchetypeRuleService service;
 
     /**
      * The transaction manager.
      */
+    @Autowired
     private PlatformTransactionManager txnManager;
 
 
@@ -66,6 +72,7 @@ public class ArchetypeRuleServiceTestCase
      * Requires the <em>archetypeService.save.party.person.before</em> and
      * <em>archetypeService.save.party.person.after</em> rules.
      */
+    @Test
     public void testSave() {
         Party person = createPerson("MR", "Jim", "Alateras");
         service.save(person);
@@ -80,6 +87,7 @@ public class ArchetypeRuleServiceTestCase
      * Requires the <em>archetypeService.save.party.person.before</em> and
      * <em>archetypeService.save.party.person.after</em> rules.
      */
+    @Test
     public void testSaveCollection() {
         Party person1 = createPerson("MR", "Jim", "Alateras");
         Party person2 = createPerson("MR", "Tim", "Anderson");
@@ -98,6 +106,7 @@ public class ArchetypeRuleServiceTestCase
      * Requires the <em>archetypeService.remove.party.person.before</em> and
      * <em>archetypeService.remove.party.person.after</em> rules.
      */
+    @Test
     public void testRemoveObject() {
         Party person = createPerson("MR", "Tim", "Anderson");
         service.remove(person);
@@ -118,7 +127,8 @@ public class ArchetypeRuleServiceTestCase
     /**
      * Test for OVPMS-127.
      */
-    public void testOVPMS127() throws Exception {
+    @Test
+    public void testOVPMS127() {
         Party personA = createPerson("MR", "Jim", "Alateras");
         service.save(personA);
         Party personB = createPerson("MR", "Oscar", "Alateras");
@@ -161,6 +171,7 @@ public class ArchetypeRuleServiceTestCase
      * <li>both rules set the act reason to the act status when they throw.
      * </ul>
      */
+    @Test
     public void testException() {
         Act act = (Act) service.create("act.simple");
         checkException(act, null);
@@ -172,6 +183,7 @@ public class ArchetypeRuleServiceTestCase
      * Verifies that if a rule throws an exception, all changes are rolled
      * back.
      */
+    @Test
     public void testTransactionRollbackOnException() {
         Party person = createPerson("MR", "T", "Anderson");
         Act act = (Act) service.create("act.simple");
@@ -193,6 +205,7 @@ public class ArchetypeRuleServiceTestCase
             service.save(act);
             fail("Expected save to fail");
         } catch (Exception expected) {
+            // expected
         }
         try {
             txnManager.commit(status);
@@ -214,6 +227,7 @@ public class ArchetypeRuleServiceTestCase
      *
      * @see ActSimpleRules#insertNewActInIsolation
      */
+    @Test
     public void testTransactionIsolation() {
         Act act = (Act) service.create("act.simple");
         try {
@@ -221,6 +235,7 @@ public class ArchetypeRuleServiceTestCase
             service.save(act);
             fail("Expected save to throw exception");
         } catch (Exception expected) {
+            // expected
         }
 
         // ensure the act has not been saved as the exception should have rolled
@@ -233,30 +248,6 @@ public class ArchetypeRuleServiceTestCase
         ActRelationship relationship = relationships.iterator().next();
         Act related = (Act) get(relationship.getSource());
         assertNotNull(related);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{"org/openvpms/component/business/service/archetype/rule/rule-engine-appcontext.xml"};
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        service = (IArchetypeRuleService) applicationContext.getBean(
-                "archetypeService");
-        txnManager = (PlatformTransactionManager) applicationContext.getBean(
-                "txnManager");
     }
 
     /**

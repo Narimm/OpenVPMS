@@ -20,9 +20,10 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
 
 /**
  * Tests the {@link UserDOImpl} class.
@@ -46,6 +47,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Tests the creation of an user.
      */
+    @Test
     public void testCreate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -64,6 +66,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the deletion of an user.
      */
+    @Test
     public void testDelete() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -89,6 +92,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the modification of an user.
      */
+    @Test
     public void testUpdate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -124,6 +128,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
      * Verifies that a lookup with the same archetype and code as an existing
      * lookup cannot be saved.
      */
+    @Test
     public void testDuplicate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -148,6 +153,7 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the addition of a role to an user.
      */
+    @Test
     public void testAddRole() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -169,7 +175,8 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the removal of a role from an user.
      */
-    public void testDeleteRole() throws Exception {
+    @Test
+    public void testDeleteRole() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
         UserDO user = createUser("bernief", "bernief");
@@ -210,11 +217,9 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         users = count(UserDOImpl.class);
         roles = count(SecurityRoleDOImpl.class);

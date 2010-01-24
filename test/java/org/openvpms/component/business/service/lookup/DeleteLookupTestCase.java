@@ -17,6 +17,8 @@
  */
 package org.openvpms.component.business.service.lookup;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -36,6 +38,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.springframework.test.context.ContextConfiguration;
 
 
 /**
@@ -44,6 +47,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
+@ContextConfiguration("lookup-replace-delete-appcontext.xml")
 public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
 
 
@@ -51,7 +55,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by an entity via its code can only be deleted once the entity
      * no longer refers to it.
      */
-    public void testEntityCodeDelete() {
+    @Test public void testEntityCodeDelete() {
         Party party = (Party) create("party.basic");
         checkCodeDelete(party, "description", "lookup.description", false);
         checkCodeDelete(party, "title", "lookup.title", true);
@@ -61,7 +65,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by an entity as a classification can only be deleted once the entity
      * no longer refers to it.
      */
-    public void testEntityClassificationDelete() {
+    @Test public void testEntityClassificationDelete() {
         Party party = (Party) create("party.basic");
         checkClassificationDelete(party, "classifications", "lookup.category");
     }
@@ -70,7 +74,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by an act via its code can only be deleted once the act no longer
      * refers to it.
      */
-    public void testActCodeDelete() {
+    @Test public void testActCodeDelete() {
         Act act = (Act) create("act.basic");
         checkCodeDelete(act, "status", "lookup.status", false);
         checkCodeDelete(act, "category", "lookup.category", true);
@@ -80,7 +84,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by an act relationship via its code can only be deleted once the
      * act relationship no longer refers to it.
      */
-    public void testActRelationshipCodeDelete() {
+    @Test public void testActRelationshipCodeDelete() {
         Act act1 = (Act) create("act.basic");
         Act act2 = (Act) create("act.basic");
         ActBean bean = new ActBean(act1);
@@ -95,7 +99,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by a contact via its code can only be deleted once the contact no
      * longer refers to it.
      */
-    public void testContactCodeDelete() {
+    @Test public void testContactCodeDelete() {
         Contact contact = (Contact) create("contact.location");
         checkCodeDelete(contact, "description", "lookup.description", false);
 
@@ -110,7 +114,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by an contact as a classification can only be deleted once the contact
      * no longer refers to it.
      */
-    public void testContactClassificationDelete() {
+    @Test public void testContactClassificationDelete() {
         Contact contact = (Contact) create("contact.location");
         checkClassificationDelete(contact, "classifications", "lookup.category");
     }
@@ -119,7 +123,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by a document via its code can only be deleted once the document no
      * longer refers to it.
      */
-    public void testDocumentCodeDelete() {
+    @Test public void testDocumentCodeDelete() {
         Document document = (Document) create("document.basic");
         checkCodeDelete(document, "mimeType", "lookup.category", false);
         checkCodeDelete(document, "title", "lookup.title", true);
@@ -129,7 +133,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by an entity identity via its code can only be deleted once the
      * entity identity no longer refers to it.
      */
-    public void testEntityIdentityCodeDelete() {
+    @Test public void testEntityIdentityCodeDelete() {
         EntityIdentity identity = (EntityIdentity) create("entityIdentity.code");
         checkCodeDelete(identity, "description", "lookup.description", false);
         checkCodeDelete(identity, "status", "lookup.status", true);
@@ -139,7 +143,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by an entity relationship via its code can only be deleted once the
      * entity relationship no longer refers to it.
      */
-    public void testEntityRelationshipCodeDelete() {
+    @Test public void testEntityRelationshipCodeDelete() {
         Party party1 = (Party) create("party.basic");
         Party party2 = (Party) create("party.basic");
         EntityBean bean = new EntityBean(party1);
@@ -154,7 +158,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by another lookup via its code can only be deleted once the
      * lookup no longer refers to it.
      */
-    public void testLookupCodeDelete() {
+    @Test public void testLookupCodeDelete() {
         Lookup lookup = createLookup("lookup.staff", "STAFF1");
         checkCodeDelete(lookup, "description", "lookup.description", false);
         checkCodeDelete(lookup, "category", "lookup.category", true);
@@ -164,7 +168,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by a lookup relationship via its code can only be deleted once the
      * lookup relationship no longer refers to it.
      */
-    public void testLookupRelationshipCodeDelete() {
+    @Test public void testLookupRelationshipCodeDelete() {
         Lookup state = createLookup("lookup.state", "VIC");
         Lookup suburb = createLookup("lookup.suburb", "CAPE_WOOLAMAI");
         LookupRelationship relationship = LookupUtil.addRelationship(getArchetypeService(),
@@ -178,7 +182,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by a participation via its code can only be deleted once the
      * participation no longer refers to it.
      */
-    public void testParticipationCodeDelete() {
+    @Test public void testParticipationCodeDelete() {
         Act act = (Act) create("act.basic");
         Party party = (Party) create("party.basic");
         ActBean bean = new ActBean(act);
@@ -192,7 +196,7 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a product price that is referred to by a participation via its code can only be deleted once the
      * product price no longer refers to it.
      */
-    public void testProductPriceCodeDelete() {
+    @Test public void testProductPriceCodeDelete() {
         ProductPrice price = (ProductPrice) create("productPrice.basic");
         checkCodeDelete(price, "description", "lookup.description", false);
         checkCodeDelete(price, "category", "lookup.category", true);
@@ -202,31 +206,9 @@ public class DeleteLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup that is referred to by an product price as a classification can only be deleted once the
      * product price no longer refers to it.
      */
-    public void testProductPriceClassificationDelete() {
+    @Test public void testProductPriceClassificationDelete() {
         ProductPrice price = (ProductPrice) create("productPrice.basic");
         checkClassificationDelete(price, "classifications", "lookup.category");
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-    }
-
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-    */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/lookup/lookup-replace-delete-appcontext.xml"
-        };
     }
 
     /**

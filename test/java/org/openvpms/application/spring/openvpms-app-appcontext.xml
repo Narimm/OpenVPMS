@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
-        "http://www.springframework.org/dtd/spring-beans.dtd">
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/security
+           http://www.springframework.org/schema/security/spring-security-3.0.xsd">
     <!--  Property configuration -->
     <bean id="props"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -225,10 +228,10 @@
 
     <!--  Configure the security advisor -->
     <bean id='securityAdvisor'
-          class='org.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor'>
+          class='org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor'>
         <property name='authenticationManager' ref='authenticationManager'/>
         <property name='accessDecisionManager' ref='accessDecisionManager'/>
-        <property name='objectDefinitionSource'>
+        <property name="securityMetadataSource">
             <value>
                 org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
                 org.openvpms.component.business.service.archetype.IArchetypeService.remove=archetypeService.remove
@@ -238,7 +241,7 @@
 
     <!--  Define the Authentication Manager  -->
     <bean id='authenticationManager'
-          class='org.acegisecurity.providers.ProviderManager'>
+          class='org.springframework.security.authentication.ProviderManager'>
         <property name='providers'>
             <list>
                 <ref bean='daoAuthenticationProvider'/>
@@ -248,7 +251,7 @@
 
     <!--  Define the authentication provider -->
     <bean id='daoAuthenticationProvider'
-          class='org.acegisecurity.providers.dao.DaoAuthenticationProvider'>
+          class='org.springframework.security.authentication.dao.DaoAuthenticationProvider'>
         <property name="userDetailsService">
             <ref bean="userDetailsService"/>
         </property>
@@ -256,7 +259,7 @@
 
     <!--  Define thew access decision manager for authorization -->
     <bean id='accessDecisionManager'
-          class='org.acegisecurity.vote.AffirmativeBased'>
+          class='org.springframework.security.access.vote.AffirmativeBased'>
         <property name='decisionVoters'>
             <list>
                 <ref bean='archetypeAwareVoter'/>

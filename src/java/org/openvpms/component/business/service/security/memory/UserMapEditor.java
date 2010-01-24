@@ -19,29 +19,22 @@
 
 package org.openvpms.component.business.service.security.memory;
 
-//java core
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Properties;
-
-// java beans
-import java.beans.PropertyEditorSupport;
-
-// acegi security
-import org.acegisecurity.GrantedAuthority;
-
-// spring framework
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.User;
-import org.springframework.util.StringUtils;
 import org.springframework.beans.propertyeditors.PropertiesEditor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.util.StringUtils;
+
+import java.beans.PropertyEditorSupport;
+import java.util.ArrayList;
+import java.util.Properties;
 
 /**
- * This is used to support creating {@link User} objects from 
+ * This is used to support creating {@link User} objects from
  * properties.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class UserMapEditor extends PropertyEditorSupport {
 
@@ -65,23 +58,23 @@ public class UserMapEditor extends PropertyEditorSupport {
     }
 
     public static UserMap addUsersFromProperties(UserMap userMap,
-            Properties props) {
-        for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
-            String username = (String) iter.next();
+                                                 Properties props) {
+        for (Object o : props.keySet()) {
+            String username = (String) o;
             String value = props.getProperty(username);
-            
+
             // now retrieve the rest of the user details including the 
             // details and the authorities
             String[] tokens = StringUtils.commaDelimitedListToStringArray(value);
             String password = tokens[0];
-            
+
             // the rest need to be granted authorities
-            ArrayList<GrantedAuthority> authorities = 
-                new ArrayList<GrantedAuthority>();
+            ArrayList<GrantedAuthority> authorities =
+                    new ArrayList<GrantedAuthority>();
             for (int index = 1; index < tokens.length; index++) {
                 authorities.add(new ArchetypeAwareGrantedAuthority(tokens[index]));
             }
-            
+
             userMap.addUser(new User(username, password, true));
         }
 

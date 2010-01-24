@@ -18,10 +18,11 @@
 
 package org.openvpms.component.business.domain.im.common;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Party;
-
 
 /**
  * Tests the {@link IMObject} class.
@@ -29,11 +30,12 @@ import org.openvpms.component.business.domain.im.party.Party;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class IMObjectTestCase extends TestCase {
+public class IMObjectTestCase {
 
     /**
      * Test OVPMS-149 IMObject equality.
      */
+    @Test
     public void testOVPMS149() {
         IMObject obj1 = new Party();
         obj1.setArchetypeId(new ArchetypeId("party.customerperson.1.0"));

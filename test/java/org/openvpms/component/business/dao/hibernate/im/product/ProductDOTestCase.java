@@ -20,6 +20,8 @@ package org.openvpms.component.business.dao.hibernate.im.product;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOHelper;
@@ -57,6 +59,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation of a product.
      */
+    @Test
     public void testCreate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -90,6 +93,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation of a product with some dynamic attributes
      */
+    @Test
     public void testProductCreationWithDynamicAttributes() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -112,6 +116,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Tests the deletion of a product.
      */
+    @Test
     public void testDelete() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -139,6 +144,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test name and description fields are being stored and retrieved.
      */
+    @Test
     public void testOVPMS134() {
         String name = "gum";
         String description = "this is really nice gum";
@@ -163,6 +169,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the lifecycle of product prics.
      */
+    @Test
     public void testProductPricesLifecycle() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -199,6 +206,7 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the lifecycle of product price classifications.
      */
+    @Test
     public void testProductPricesClassificationLifecycle() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -256,11 +264,9 @@ public class ProductDOTestCase extends HibernateInfoModelTestCase {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         products = count(ProductDOImpl.class);
         prices = count(ProductPriceDOImpl.class);

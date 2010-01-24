@@ -17,10 +17,11 @@
  */
 package org.openvpms.component.business.service.archetype.assertion;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Locale;
-
 
 /**
  * Tests the {@link ProperCaseNameConverter} class.
@@ -28,7 +29,7 @@ import java.util.Locale;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProperCaseNameConverterTestCase extends TestCase {
+public class ProperCaseNameConverterTestCase {
 
     /**
      * The proper case converter.
@@ -39,6 +40,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Tests case conversion of simple names.
      */
+    @Test
     public void testCaseConversion() {
         check("Phillip K Dick", "phillip k dick");
         check("J K Rowling", "J K rowLing");
@@ -47,6 +49,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Tests names that contain <em>&amp;</em> are correctly spaced.
      */
+    @Test
     public void testSpace() {
         check("Pippi & Reuben & Judah", "pippi & reuben & judah");
         check("Pippi & Reuben & Judah", "pippi &reuben &judah");
@@ -56,6 +59,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Tests names that contain <em>(</em> have a space before them.
      */
+    @Test
     public void testSpaceBefore() {
         check("Fido (Deceased)", "fido(deceased)");
     }
@@ -63,6 +67,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Tests names that contain <em>. </em> have a space after them.
      */
+    @Test
     public void testSpaceAfter() {
         check("J. K. Rowling", "j.k.rowling");
     }
@@ -70,6 +75,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Tests names that start with <em>Mac</em>, <em>Mc</em>, <em>d'</em> and the various quote characters.
      */
+    @Test
     public void testStartsWith() {
         check("Old MacDonald", "old macdonald");
         check("Joseph R McCarthy", "joseph r mccarthy");
@@ -82,6 +88,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Tests names that contain <em>-</em>, <em>.</em>, <em>'</em> and <em>&amp;</em>.
      */
+    @Test
     public void testContains() {
         check("Mary-Anne Fahey", "mary-anne fahey");
         check("Grace O'Malley", "grace o'malley");
@@ -92,6 +99,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Tests names that end with <em>'s</em>.
      */
+    @Test
     public void testEndsWith() {
         check("'s", "'s");
         check("Test's", "test's");
@@ -103,6 +111,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Tests names that contains words that are exceptions to the other rules.
      */
+    @Test
     public void testExceptions() {
         check("La Trobe", "la trobe");
         check("Macquarie Bank", "macquarie bank");
@@ -115,6 +124,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Verifies that leading and trailing spaces are removed, and that multiple spaces are replaced with a single space.
      */
+    @Test
     public void testCollapseSpaces() {
         check("Old MacDonald", " old   macdonald ");
         check("Old MacDonald", "\nold   macdonald\n");
@@ -123,6 +133,7 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Verifies that proper casing occurs for names containing new lines.
      */
+    @Test
     public void testNewLines() {
         check("Old\nMacDonald", "old\nmacdonald");
     }
@@ -130,8 +141,8 @@ public class ProperCaseNameConverterTestCase extends TestCase {
     /**
      * Sets up the fixture.
      */
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() {
         ProperCaseRules rules = new LocaleProperCaseRules(new Locale("")) {
             int version;
 

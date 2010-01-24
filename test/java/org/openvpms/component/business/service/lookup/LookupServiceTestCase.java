@@ -18,6 +18,8 @@
 
 package org.openvpms.component.business.service.lookup;
 
+import org.junit.Before;
+
 
 /**
  * Tests the {@link LookupService}.
@@ -32,9 +34,8 @@ public class LookupServiceTestCase extends AbstractLookupServiceTest {
      *
      * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() throws Exception {
         setLookupService(new LookupService(getArchetypeService(), getDAO()));
     }
 

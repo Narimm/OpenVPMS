@@ -18,11 +18,11 @@
 
 package org.openvpms.component.business.service.archetype.descriptor.cache;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 
 import java.io.File;
-
 
 /**
  * Test the {@link ArchetypeDescriptorCacheFS}.
@@ -30,11 +30,12 @@ import java.io.File;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeDescriptorCacheFSTestCase extends TestCase {
+public class ArchetypeDescriptorCacheFSTestCase {
 
     /**
      * Test the creation of a new registry with a null filename.
      */
+    @Test
     public void testCreationWithNullFileName() {
         String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
         try {
@@ -49,6 +50,7 @@ public class ArchetypeDescriptorCacheFSTestCase extends TestCase {
     /**
      * Test the creation of a new registry with invalid filename.
      */
+    @Test
     public void testCreationWithInvalidFileName() {
         String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
         try {
@@ -62,6 +64,7 @@ public class ArchetypeDescriptorCacheFSTestCase extends TestCase {
     /**
      * Test reading a valid archetype registry file
      */
+    @Test
     public void testCreationWithValidFileContent() {
         String[] files = {"valid-archetype-file-1.adl",
                           "valid-archetype-file-2.adl",
@@ -77,6 +80,7 @@ public class ArchetypeDescriptorCacheFSTestCase extends TestCase {
     /**
      * Test reading an invalid archetype file.
      */
+    @Test
     public void testCreationWithInvalidFileContent() {
         String[] files = {"invalid-archetype-file-1.xml",
                           "invalid-archetype-file-2.xml",
@@ -97,6 +101,7 @@ public class ArchetypeDescriptorCacheFSTestCase extends TestCase {
     /**
      * Test retrieval from the cache.
      */
+    @Test
     public void testRetrieval() {
         String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
         String validFile = getPath("valid-archetype-file-2.adl");
@@ -117,6 +122,7 @@ public class ArchetypeDescriptorCacheFSTestCase extends TestCase {
     /**
      * Test the creation of a cache using directory and extension arguments.
      */
+    @Test
     public void testLoadingArchetypesFromDir() {
         String dir = getPath(".");
         String assertionFile = getPath("valid-assertion-type-file-1.xml");
@@ -130,6 +136,7 @@ public class ArchetypeDescriptorCacheFSTestCase extends TestCase {
     /**
      * Test the retrieval of archetypes using regular expression.
      */
+    @Test
     public void testRetrievalByShortName() {
         String dir = getPath(".");
         String assertionFile = getPath("valid-assertion-type-file-1.xml");
