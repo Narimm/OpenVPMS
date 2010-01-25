@@ -69,6 +69,16 @@ public class EntityQuery extends QueryAdapter<ObjectSet, Entity> {
     }
 
     /**
+     * Determines if the query selects a particular object.
+     *
+     * @param object the object to check
+     * @return <tt>true</tt> if the object is selected by the query
+     */
+    public boolean selects(Entity object) {
+        return ((EntityObjectSetQuery) getQuery()).selects(object);
+    }
+
+    /**
      * Converts a result set.
      *
      * @param set the set to convert

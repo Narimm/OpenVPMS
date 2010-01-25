@@ -54,11 +54,19 @@ public class BoundTextArea extends TextArea {
         setWidth(new Extent(columns, Extent.EX));
         setHeight(new Extent(rows, Extent.EM));
         binder = new TextComponentBinder(this, property);
-        binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
         property.setTransformer(new StringPropertyTransformer(property, false));
+    }
+    
+    /**
+     * Life-cycle method invoked when the <tt>Component</tt> is added to a registered hierarchy.
+     */
+    @Override
+    public void init() {
+        super.init();
+        binder.bind();
     }
 
     /**
@@ -67,7 +75,7 @@ public class BoundTextArea extends TextArea {
     @Override
     public void dispose() {
         super.dispose();
-        binder.dispose();
+        binder.unbind();
     }
     
 }

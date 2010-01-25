@@ -29,7 +29,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.util.ErrorHelper;
 
@@ -305,7 +305,9 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * @param reference the reference to constrain the query on
      */
     protected void addReferenceConstraint(ArchetypeQuery query, IMObjectReference reference) {
-        query.add(new ObjectRefConstraint(reference));
+        // NOTE: can't use an ObjectRefConstraint as this adds a join.
+        // Also, this won't detect if an object has changed type, but this is not a very likely scenario
+        query.add(new NodeConstraint("id", reference.getId()));
     }
 
     /**

@@ -176,6 +176,15 @@ public class BrowserDialog<T> extends PopupDialog {
     }
 
     /**
+     * Determines if an object has been selected.
+     *
+     * @return <tt>true</tt> if an object has been selected, otherwise <tt>false</tt>
+     */
+    public boolean isSelected() {
+        return getSelected() != null;
+    }
+
+    /**
      * Determines if the 'New' button was selected, indicating that a new object
      * should be created.
      *
@@ -190,7 +199,7 @@ public class BrowserDialog<T> extends PopupDialog {
      */
     @Override
     protected void onOK() {
-        if (selected != null) {
+        if (isSelected()) {
             super.onOK();
         }
     }

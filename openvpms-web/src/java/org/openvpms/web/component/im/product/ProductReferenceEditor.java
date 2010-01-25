@@ -45,6 +45,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.CollectionHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -154,6 +155,20 @@ class ProductReferenceEditor
             }
         }
         return query;
+    }
+
+    /**
+     * Determines if the reference is valid.
+     * <p/>
+     * TODO - this is an expensive operation as products do filtering on species and stock location.
+     * The check is disabled in 1.4 - needs to be enabled in 1.5 where there is better left join support  
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the reference is valid, otherwise <tt>false</tt>
+     */
+    @Override
+    protected boolean isValidReference(Validator validator) {
+        return true;
     }
 
     /**

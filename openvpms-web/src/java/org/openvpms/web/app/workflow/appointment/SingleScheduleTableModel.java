@@ -89,10 +89,33 @@ class SingleScheduleTableModel extends AppointmentTableModel {
 
 
     /**
-     * Creates a new <tt>SingleScheduleTableModel</tt>.
+     * Constructs a <tt>SingleScheduleTableModel</tt>.
+     *
+     * @param grid the appoingment grid
      */
     public SingleScheduleTableModel(AppointmentGrid grid) {
         super(grid);
+    }
+
+    /**
+     * Determines if a cell is cut.
+     * <p/>
+     * This implementation returns true if the row matches the cut row, and the column is any
+     * other than the start time column.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return <tt>true</tt> if the cell is cut
+     */
+    @Override
+    public boolean isCutCell(int column, int row) {
+        if (row != -1 && column != -1 && row == getCutRow()) {
+            Column col = getColumns().get(column);
+            if (col.getModelIndex() != START_TIME_INDEX) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

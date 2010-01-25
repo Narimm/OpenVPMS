@@ -20,7 +20,6 @@ package org.openvpms.web.app.supplier.delivery;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
@@ -34,6 +33,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
@@ -141,7 +141,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     @Override
     protected void onPosted(FinancialAct act) {
         try {
-            if (TypeHelper.isA(act, "act.supplierDelivery")) {
+            if (TypeHelper.isA(act, SupplierArchetypes.DELIVERY)) {
                 onInvoice(act);
             } else {
                 onCredit(act);
@@ -211,14 +211,22 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
         return new ActEditDialog(editor);
     }
 
+    /**
+     * Invoked when a delivery or return is created.
+     * <p/>
+     * Creates delivery/return items for each of the selected order items, and adds them to the supplied act.
+     *
+     * @param act     the delivery/return
+     * @param browser the order browser
+     */
     private void onCreated(FinancialAct act, OrderTableBrowser browser) {
         addParticipations(act, browser.getSupplier(),
                           browser.getStockLocation());
-        DeliveryEditor editor = new DeliveryEditor(act, null,
-                                                   createLayoutContext());
+        boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
+        DeliveryEditor editor = new DeliveryEditor(act, null, createLayoutContext());
         for (FinancialAct orderItem : browser.getSelectedOrderItems()) {
-            FinancialAct deliveryItem = rules.createDeliveryItem(orderItem);
-            editor.addItem(deliveryItem, orderItem);
+            FinancialAct item = (delivery) ? rules.createDeliveryItem(orderItem) : rules.createReturnItem(orderItem);
+            editor.addItem(item, orderItem);
         }
         edit(editor);
     }
@@ -251,7 +259,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
         final Act act = getObject();
         String title;
         String message;
-        if (TypeHelper.isA(act, "act.supplierDelivery")) {
+        if (TypeHelper.isA(act, SupplierArchetypes.DELIVERY)) {
             title = Messages.get("supplier.delivery.reverseDelivery.title");
             message = Messages.get("supplier.delivery.reverseDelivery.message");
         } else {
@@ -285,7 +293,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     private void reverse(Act act) {
         try {
-            if (TypeHelper.isA(act, "act.supplierDelivery")) {
+            if (TypeHelper.isA(act, SupplierArchetypes.DELIVERY)) {
                 rules.reverseDelivery(act);
             } else {
                 rules.reverseReturn(act);

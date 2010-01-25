@@ -56,9 +56,9 @@ class ErrorReport {
     private String message;
 
     /**
-     * The cause of the error.
+     * The exception.
      */
-    private Throwable exception;
+    private ThrowableAdapter exception;
 
     /**
      * Free memory.
@@ -80,6 +80,8 @@ class ErrorReport {
      */
     private Properties properties;
 
+    public StackTraceElement[] stackTrace;
+
 
     /**
      * Constructs an <tt>ErrorReport</tt>.
@@ -91,7 +93,7 @@ class ErrorReport {
         this.message = message;
         version = Version.VERSION;
         revision = Version.REVISION;
-        this.exception = exception;
+        this.exception = (exception != null) ? new ThrowableAdapter(exception) : null;
         freeMemory = Runtime.getRuntime().freeMemory();
         totalMemory = Runtime.getRuntime().totalMemory();
         maxMemory = Runtime.getRuntime().maxMemory();
@@ -156,9 +158,9 @@ class ErrorReport {
     /**
      * Returns the exception.
      *
-     * @return the exception
+     * @return the exception. May be <tt>null</tt>
      */
-    public Throwable getException() {
+    public ThrowableAdapter getException() {
         return exception;
     }
 
@@ -167,7 +169,7 @@ class ErrorReport {
      *
      * @param exception the exception
      */
-    public void setException(Throwable exception) {
+    public void setException(ThrowableAdapter exception) {
         this.exception = exception;
     }
 
@@ -252,12 +254,12 @@ class ErrorReport {
      * Serialize this to a pretty-printed XML String.
      *
      * @return a XML string representing this
-     * @throws com.thoughtworks.xstream.core.BaseException
-     *          if the object cannot be serialized
+     * @throws com.thoughtworks.xstream.core.BaseException if the object cannot be serialized
      */
     public String toXML() {
         XStream stream = new XStream();
         stream.alias("error-report", ErrorReport.class);
+        stream.alias("exception", ThrowableAdapter.class);
         return stream.toXML(this);
     }
 
