@@ -133,8 +133,7 @@
             <plugin>
                 <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-archetype-maven-plugin</artifactId>
-                <!--version>${pom.version}</version-->
-                <version>1.4-SNAPSHOT</version>
+                <version>${pom.version}</version>
                 <configuration>
                     <dir>src/archetypes/org/openvpms/archetype</dir>
                     <propertyfile>target/test-classes/hibernate.properties</propertyfile>
@@ -159,8 +158,7 @@
             <plugin>
                 <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-data-maven-plugin</artifactId>
-                <!--version>${pom.version}</version-->
-                <version>1.4-SNAPSHOT</version>
+                <version>${pom.version}</version>
                 <configuration>
                     <dir>src/data/org/openvpms/data/demo</dir>
                     <propertyfile>target/test-classes/hibernate.properties</propertyfile>
