@@ -61,8 +61,9 @@ import java.util.Map;
  * <ol>
  * <li>it uses SQL to perform updates and queries that cannot be implemented in HQL. If persistent classes are added,
  * they may also need to be referenced by this class.</li>
- * <li>it performs batch updates which do not update persistent version numbers. While it also clears the second lewel
+ * <li>it performs batch updates which do not update persistent version numbers. While it also clears the second level
  * cache, other in-memory objects won't reflect the changes, potentially resulting in data-inconsistency.</li>
+ * <li>no validation is performed on updated objects</li>
  * </ol>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>

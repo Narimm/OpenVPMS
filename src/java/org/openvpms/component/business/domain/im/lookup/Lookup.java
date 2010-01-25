@@ -19,8 +19,8 @@
 
 package org.openvpms.component.business.domain.im.lookup;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.WordUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -247,12 +247,12 @@ public class Lookup extends IMObject {
      */
     public void addLookupRelationship(LookupRelationship rel) {
         if ((rel.getSource().getLinkId().equals(this.getLinkId())) &&
-                (rel.getSource().getArchetypeId().equals(
-                        this.getArchetypeId()))) {
+            (rel.getSource().getArchetypeId().equals(
+                    this.getArchetypeId()))) {
             addSourceLookupRelationship(rel);
         } else if ((rel.getTarget().getLinkId().equals(this.getLinkId())) &&
-                (rel.getTarget().getArchetypeId().equals(
-                        this.getArchetypeId()))) {
+                   (rel.getTarget().getArchetypeId().equals(
+                           this.getArchetypeId()))) {
             addTargetLookupRelationship(rel);
         } else {
             throw new LookupRelationshipException(
@@ -271,12 +271,12 @@ public class Lookup extends IMObject {
      */
     public void removeLookupRelationship(LookupRelationship rel) {
         if ((rel.getSource().getLinkId().equals(this.getLinkId())) &&
-                (rel.getSource().getArchetypeId().equals(
-                        this.getArchetypeId()))) {
+            (rel.getSource().getArchetypeId().equals(
+                    this.getArchetypeId()))) {
             removeSourceLookupRelationship(rel);
         } else if ((rel.getTarget().getLinkId().equals(this.getLinkId())) &&
-                (rel.getTarget().getArchetypeId().equals(
-                        this.getArchetypeId()))) {
+                   (rel.getTarget().getArchetypeId().equals(
+                           this.getArchetypeId()))) {
             removeTargetLookupRelationship(rel);
         } else {
             throw new LookupRelationshipException(
@@ -313,10 +313,7 @@ public class Lookup extends IMObject {
             return false;
         }
         Lookup rhs = (Lookup) obj;
-        return new EqualsBuilder()
-                .append(getArchetypeId(), rhs.getArchetypeId())
-                .append(getCode(), rhs.getCode())
-                .isEquals();
+        return ObjectUtils.equals(code, rhs.code) && ObjectUtils.equals(getArchetypeId(), rhs.getArchetypeId());
     }
 
     /* (non-Javadoc)
@@ -326,7 +323,7 @@ public class Lookup extends IMObject {
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(getArchetypeId())
-                .append(getCode())
+                .append(code)
                 .toHashCode();
     }
 
