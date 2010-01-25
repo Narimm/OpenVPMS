@@ -35,7 +35,6 @@ import static org.openvpms.component.system.common.query.ParticipationConstraint
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.component.system.common.query.ObjectRefConstraint;
 
 import java.util.Date;
 
@@ -132,7 +131,7 @@ public abstract class AbstractActResultSet<T>
                                 SortConstraint[] sort,
                                 QueryExecutor<T> executor) {
         this(archetypes, (participant != null)
-                ? new ParticipantConstraint[]{participant} : null,
+                         ? new ParticipantConstraint[]{participant} : null,
              from, to, statuses, exclude, constraints, pageSize, sort,
              executor);
     }
@@ -290,7 +289,7 @@ public abstract class AbstractActResultSet<T>
                         = QueryHelper.getDescriptor(archetypes,
                                                     node.getNodeName());
                 if (descriptor != null
-                        && QueryHelper.isParticipationNode(descriptor)) {
+                    && QueryHelper.isParticipationNode(descriptor)) {
                     ShortNameConstraint shortNames = (ShortNameConstraint)
                             query.getArchetypeConstraint();
                     QueryHelper.addSortOnParticipation(shortNames, query,
@@ -314,7 +313,10 @@ public abstract class AbstractActResultSet<T>
      */
     @Override
     protected void addReferenceConstraint(ArchetypeQuery query, IMObjectReference reference) {
-        query.add(new ObjectRefConstraint(archetypes.getAlias(), reference));
+        // NOTE: can't use an ObjectRefConstraint as this adds a join.
+        // Also, this won't detect if an object has changed type
+        String node = (archetypes.getAlias() != null) ? archetypes.getAlias() + ".id" : "id";
+        query.add(new NodeConstraint(node, reference.getId()));
     }
 
     /**

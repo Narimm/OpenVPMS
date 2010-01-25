@@ -21,11 +21,12 @@ package org.openvpms.web.component.im.query;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -86,6 +87,20 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     public CustomerObjectSetQuery(String[] shortNames) {
         super(shortNames, ObjectSet.class);
         setDefaultSortConstraint(DEFAULT_SORT);
+    }
+
+    /**
+     * Determines if the query selects a particular object.
+     *
+     * @param object the object to check
+     * @return <tt>true</tt> if the object is selected by the query
+     */
+    public boolean selects(IMObject object) {
+        CustomerResultSet set = (CustomerResultSet) createResultSet(null);
+        if (object != null) {
+            set.setReferenceConstraint(object.getObjectReference());
+        }
+        return set.hasNext();
     }
 
     /**

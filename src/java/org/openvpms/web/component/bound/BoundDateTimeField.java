@@ -30,6 +30,7 @@ import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -117,6 +118,32 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
         Calendar calendar = getDateField().getDateChooser().getSelectedDate();
         if (calendar != null) {
             result = DateHelper.getDayMonthYear(calendar.getTime());
+        }
+        return result;
+    }
+
+    /**
+     * Sets the date and time.
+     *
+     * @param datetime the date and time
+     */
+    public void setDatetime(Date datetime) {
+        setDate(datetime);
+        time.setText(DateHelper.formatTime(datetime, true));
+    }
+
+    /**
+     * Returns the date and time.
+     *
+     * @return the date and time
+     */
+    public Date getDatetime() {
+        Date result = getDate();
+        try {
+            Date timePart = DateHelper.parseTime(time.getText());
+            result = DateHelper.addDateTime(result, timePart);
+        } catch (ParseException ignore) {
+            // no-op
         }
         return result;
     }

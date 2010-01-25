@@ -124,6 +124,20 @@ public class AppointmentActEditor extends AbstractActEditor {
     }
 
     /**
+     * Sets the act start time.
+     *
+     * @param time    the start time
+     * @param disable if <tt>true</tt> disable the {@link #onStartTimeChanged} callback
+     */
+    @Override
+    protected void setStartTime(Date time, boolean disable) {
+        if (startTimeField != null) {
+            startTimeField.setDate(time); // set the date portion.
+        }
+        super.setStartTime(time, disable);
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy

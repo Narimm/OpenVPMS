@@ -69,6 +69,12 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     private FocusGroup focusGroup;
 
     /**
+     * If <tt>true</tt> keep layout state after invoking <tt>apply()</tt>. Use this if the same strategy will be used
+     * to layout a component multiple times.
+     */
+    private boolean keepState;
+
+    /**
      * Sanity checker to detect recursion.
      */
     boolean inApply;
@@ -78,6 +84,17 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * Constructs a <tt>AbstractLayoutStrategy</tt>.
      */
     public AbstractLayoutStrategy() {
+        this(false);
+    }
+
+    /**
+     * Constructs a <tt>AbstractLayoutStrategy</tt>.
+     *
+     * @param keepState if <tt>true</tt> keep layout state. Use this if the same strategy will be used to layout a
+     *                  component multiple times
+     */
+    public AbstractLayoutStrategy(boolean keepState) {
+        this.keepState = keepState;
     }
 
     /**
@@ -106,7 +123,9 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             setFocus();
             state = new ComponentState(column, focusGroup);
             components.clear();
-            focusGroup = null;
+            if (!keepState) {
+                focusGroup = null;
+            }
         } finally {
             inApply = false;
         }
@@ -342,13 +361,23 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         TabPaneModel model;
         boolean shortcuts = false;
         if (context.getLayoutDepth() == 0 && descriptors.size() > 1) {
-            model = new TabPaneModel(container);
+            model = createTabModel(container);
             shortcuts = true;
         } else {
-            model = new TabPaneModel();
+            model = createTabModel(null);
         }
         doTabLayout(object, descriptors, properties, model, context, shortcuts);
         return model;
+    }
+
+    /**
+     * Creates a new tab model.
+     *
+     * @param container the tab container. May be <tt>null</tt>
+     * @return a new tab model
+     */
+    protected TabPaneModel createTabModel(Component container) {
+        return new TabPaneModel(container);
     }
 
     /**
@@ -381,6 +410,27 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             }
             model.addTab(text, inset);
         }
+    }
+
+    /**
+     * Adds a tab to a tab model.
+     *
+     * @param model       the tab  model
+     * @param property    property
+     * @param component   the component to add
+     * @param addShortcut if <tt>true</tt> add a tab shortcut
+     */
+    protected void addTab(TabPaneModel model, Property property, ComponentState component, boolean addShortcut) {
+        setFocusTraversal(component);
+        String text = component.getDisplayName();
+        if (text == null) {
+            text = property.getDisplayName();
+        }
+        if (addShortcut && model.size() < 10) {
+            text = getShortcut(text, model.size() + 1);
+        }
+        Component inset = ColumnFactory.create("Inset", component.getComponent());
+        model.addTab(text, inset);
     }
 
     /**

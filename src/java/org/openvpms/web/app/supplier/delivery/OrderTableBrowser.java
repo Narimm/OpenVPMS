@@ -222,7 +222,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
 
 
         /**
-         * Creates a new <tt>Flattener</tt>.
+         * Creates a new <tt>Filter</tt>.
          */
         public Filter() {
             super(null);

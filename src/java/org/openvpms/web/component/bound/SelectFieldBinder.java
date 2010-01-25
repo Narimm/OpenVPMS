@@ -20,9 +20,11 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
+import nextapp.echo2.app.event.ChangeEvent;
+import nextapp.echo2.app.event.ChangeListener;
 import nextapp.echo2.app.list.ListModel;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.property.Property;
 
 
@@ -42,36 +44,59 @@ public class SelectFieldBinder extends Binder {
     /**
      * The listener.
      */
-    private ActionListener listener;
+    private final ChangeListener listener;
+
+    /**
+     * The action listener.
+     */
+    private final ActionListener actionListener;
 
 
     /**
-     * Creates a new <tt>SelectFieldBinder</tt>.
+     * Constructs a <tt>SelectFieldBinder</tt>.
      *
      * @param component the component to bind
      * @param property  the property to bind
      */
     public SelectFieldBinder(SelectField component, Property property) {
-        super(property);
+        super(property, false);  // need to bind after listener created
         this.component = component;
-        listener = new ActionListener() {
-            public void onAction(ActionEvent e) {
+        listener = new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
                 setProperty();
             }
         };
-        component.addActionListener(listener);
+        actionListener = new ActionListener() {
+            public void onAction(ActionEvent e) {
+            }
+        };
+        int index = indexOf(property.getValue());
+        component.setSelectedIndex(index);
+
+        bind();
     }
 
     /**
-     * Disposes this binder.
+     * Registers the binder with the property to receive updates.
      */
     @Override
-    public void dispose() {
-        super.dispose();
-        if (component != null) {
-            component.removeActionListener(listener);
-            component = null;
-            listener = null;
+    public void bind() {
+        if (!isBound()) {
+            super.bind();
+            component.getSelectionModel().addChangeListener(listener);
+            component.addActionListener(actionListener);
+        }
+    }
+
+    /**
+     * Deregisters the binder from the property.
+     */
+    @Override
+    public void unbind() {
+        if (isBound()) {
+            super.unbind();
+            component.getSelectionModel().removeChangeListener(listener);
+            component.removeActionListener(actionListener);
         }
     }
 
@@ -90,30 +115,30 @@ public class SelectFieldBinder extends Binder {
      * @param value the value to set
      */
     protected void setFieldValue(Object value) {
-        component.removeActionListener(listener);
-        int index = setSelected(value);
-        if (index == -1 && component.getModel().size() != 0) {
-            // current value not in the list, so default it to the first
-            // list value.
-            component.setSelectedIndex(0);
-            setProperty();
+        int index = indexOf(value);
+        if (index != -1 && component.getSelectedIndex() != index) {
+            boolean bound = isBound();
+            if (bound) {
+                component.getSelectionModel().removeChangeListener(listener);
+            }
+            component.setSelectedIndex(index);
+            if (bound) {
+                component.getSelectionModel().addChangeListener(listener);
+            }
         }
-        component.addActionListener(listener);
     }
 
     /**
-     * Sets the selected object based on the supplied value.
+     * Returns the index of a value in the list.
      *
      * @param value the value
-     * @return the selected index, or <tt>-1</tt> if the value wasn't found
-     *         in the list
+     * @return the index, or <tt>-1</tt> if the value wasn't found
      */
-    private int setSelected(Object value) {
+    private int indexOf(Object value) {
         int result = -1;
         ListModel model = component.getModel();
         for (int i = 0; i < model.size(); ++i) {
             if (ObjectUtils.equals(model.get(i), value)) {
-                component.setSelectedIndex(i);
                 result = i;
                 break;
             }

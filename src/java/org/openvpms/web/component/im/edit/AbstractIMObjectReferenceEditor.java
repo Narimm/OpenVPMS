@@ -374,7 +374,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * @param validator the validator
      * @return <tt>true</tt> if the reference is valid, otherwise <tt>false</tt>
      */
-    private boolean isValidReference(Validator validator) {
+    protected boolean isValidReference(Validator validator) {
         IMObjectReference reference = (IMObjectReference) getProperty().getValue();
         boolean result = true;
         if (reference != null && !reference.isNew()) {

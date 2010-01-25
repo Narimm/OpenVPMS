@@ -57,7 +57,6 @@ public class BoundFormattedField extends TextField {
         super(new TextDocument());
         this.format = format;
         binder = new FormattingBinder(this, property);
-        binder.setField();
     }
 
     /**
@@ -74,12 +73,21 @@ public class BoundFormattedField extends TextField {
     }
 
     /**
+     * Life-cycle method invoked when the <tt>Component</tt> is added to a registered hierarchy.
+     */
+    @Override
+    public void init() {
+        super.init();
+        binder.bind();
+    }
+
+    /**
      * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
         super.dispose();
-        binder.dispose();
+        binder.unbind();
     }
 
     /**

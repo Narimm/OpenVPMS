@@ -18,7 +18,6 @@
 package org.openvpms.web.component.error;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.report.DocFormats;
@@ -31,6 +30,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import javax.mail.internet.MimeMessage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -158,11 +159,13 @@ public class ErrorReporter {
      * @param report the report
      * @return the message body, or <tt>null</tt> if the report doesn't contain an exception
      */
-    @SuppressWarnings({"ThrowableResultOfMethodCallIgnored"})
     private String getText(ErrorReport report) {
-        Throwable exception = report.getException();
+        ThrowableAdapter exception = report.getException();
         if (exception != null) {
-            return ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(exception));
+            StringWriter writer = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(writer, true);
+            exception.printStackTrace(printWriter);
+            return writer.getBuffer().toString();
         }
         return null;
     }

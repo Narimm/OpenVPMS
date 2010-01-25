@@ -27,6 +27,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.CharSetUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -102,6 +104,11 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     private static final String ROW_STYLE = "ControlRow";
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(AbstractArchetypeQuery.class);
+
 
     /**
      * Construct a new <tt>AbstractQuery</tt> that queries objects with
@@ -176,18 +183,28 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     @Override
     public boolean selects(T object) {
         ResultSet<T> set = query();
+        boolean result = false;
         if (set instanceof AbstractArchetypeServiceResultSet && object instanceof IMObject) {
             IMObjectReference reference = ((IMObject) object).getObjectReference();
             ((AbstractArchetypeServiceResultSet<T>) set).setReferenceConstraint(reference);
-            return set.hasNext();
-        }
-        Iterator<T> iter = new ResultSetIterator<T>(set);
-        while (iter.hasNext()) {
-            if (iter.next().equals(object)) {
-                return true;
+            result = set.hasNext();
+        } else {
+            // fall back to linear search, If it takes more than a second then optimization is required.
+            // Could argue that a second is too long.
+            long start = System.currentTimeMillis();
+            Iterator<T> iter = new ResultSetIterator<T>(set);
+            while (iter.hasNext()) {
+                if (iter.next().equals(object)) {
+                    result = true;
+                    break;
+                }
+            }
+            long end = System.currentTimeMillis();
+            if ((end - start) > 1000) {
+                log.warn("Slow query: " + getClass().getName() + " performing linear search");
             }
         }
-        return false;
+        return result;
     }
 
     /**
