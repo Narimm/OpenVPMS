@@ -193,7 +193,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
                 1, DateUnits.MONTHS, group);
         Date start = java.sql.Date.valueOf("2007-01-01");
         Date due = rules.calculateReminderDueDate(start, reminderType);
-        Act reminder = ReminderTestHelper.createReminder(patient, reminderType,
+        Act reminder = ReminderTestHelper.createReminderWithDueDate(patient, reminderType,
                                                          due);
 
         checkDue(reminder, null, null, true);
@@ -344,7 +344,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @return a new reminder
      */
     private Act createReminder(Party patient, Entity reminderType) {
-        return ReminderTestHelper.createReminder(patient, reminderType, new Date());
+        return ReminderTestHelper.createReminderWithDueDate(patient, reminderType, new Date());
     }
 
     /**
