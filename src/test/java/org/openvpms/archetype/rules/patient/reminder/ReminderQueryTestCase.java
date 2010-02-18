@@ -55,6 +55,9 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * reminders.
      */
     public void testQuery() {
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        ReminderTestHelper.createReminders(10, reminderType); // create some reminders
+
         int initialCount = countReminders(null, null);
         ReminderQuery query = new ReminderQuery();
         List<Act> reminders = getReminders(query);
@@ -72,13 +75,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     public void testQueryReminderType() {
         final int count = 10;
         Entity reminderType = ReminderTestHelper.createReminderType();
-        Date dueDate = new Date();
-
-        for (int i = 0; i < count; ++i) {
-            Party customer = TestHelper.createCustomer();
-            Party patient = TestHelper.createPatient(customer);
-            ReminderTestHelper.createReminder(patient, reminderType, dueDate);
-        }
+        ReminderTestHelper.createReminders(count, reminderType);
 
         ReminderQuery query = new ReminderQuery();
         query.setReminderType(reminderType);
@@ -104,7 +101,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
 
         // add some data
         for (int i = 0; i < count; ++i) {
-            ReminderTestHelper.createReminder(patient, reminderType, dueFrom);
+            ReminderTestHelper.createReminderWithDueDate(patient, reminderType, dueFrom);
         }
 
         // now determine the no. of acts with a due date in the date range
@@ -135,7 +132,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             Date dueDate = calendar.getTime();
             Party customer = TestHelper.createCustomer();
             Party patient = TestHelper.createPatient(customer);
-            ReminderTestHelper.createReminder(patient, reminderType, dueDate);
+            ReminderTestHelper.createReminderWithDueDate(patient, reminderType, dueDate);
         }
         // query a subset of the dates just added
         calendar.set(Calendar.DAY_OF_MONTH, 5);
