@@ -1,30 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"  ?>
-<!-- Created with iReport - A designer for JasperReports -->
-<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
-<jasperReport
-		 name="bankDeposit"
-		 columnCount="1"
-		 printOrder="Vertical"
-		 orientation="Portrait"
-		 pageWidth="595"
-		 pageHeight="842"
-		 columnWidth="535"
-		 columnSpacing="0"
-		 leftMargin="30"
-		 rightMargin="30"
-		 topMargin="20"
-		 bottomMargin="20"
-		 whenNoDataType="NoPages"
-		 isTitleNewPage="false"
-		 isSummaryNewPage="false">
-	<property name="ireport.scriptlethandling" value="0" />
-	<property name="ireport.encoding" value="UTF-8" />
-	<import value="java.util.*" />
-	<import value="net.sf.jasperreports.engine.*" />
-	<import value="net.sf.jasperreports.engine.data.*" />
-
-	<parameter name="dataSource" isForPrompting="false" class="org.openvpms.report.jasper.ObjectSetDataSource"/>
-
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bankDeposit" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="dataSource" class="org.openvpms.report.jasper.ObjectSetDataSource" isForPrompting="false"/>
 	<field name="bankDeposit.depositAccount.entity.name" class="java.lang.String"/>
 	<field name="bankDeposit.depositAccount.entity.description" class="java.lang.String"/>
 	<field name="bankDeposit.status" class="java.lang.String"/>
@@ -46,497 +27,430 @@
 	<field name="item.bsb" class="java.lang.String"/>
 	<field name="item.bank" class="java.lang.String"/>
 	<field name="item.creditCard" class="java.lang.String"/>
-
-	<variable name="SHORTNAME" class="java.lang.String" resetType="None" calculation="Nothing">
+	<variable name="SHORTNAME" class="java.lang.String" resetType="None">
 		<variableExpression><![CDATA[$F{item.shortName}.replaceFirst(".*Payment|.*Refund", "")]]></variableExpression>
 	</variable>
-	<variable name="IS_CHEQUE" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+	<variable name="IS_CHEQUE" class="java.lang.Boolean" resetType="None">
 		<variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Cheque"))]]></variableExpression>
 	</variable>
-	<variable name="IS_CASH" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+	<variable name="IS_CASH" class="java.lang.Boolean" resetType="None">
 		<variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Cash"))]]></variableExpression>
 	</variable>
-	<variable name="IS_NOT_CASH" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+	<variable name="IS_NOT_CASH" class="java.lang.Boolean" resetType="None">
 		<variableExpression><![CDATA[new Boolean(!$V{IS_CASH}.booleanValue())]]></variableExpression>
 	</variable>
-	<variable name="IS_NOT_CHEQUE" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+	<variable name="IS_NOT_CHEQUE" class="java.lang.Boolean" resetType="None">
 		<variableExpression><![CDATA[new Boolean(!$V{IS_CHEQUE}.booleanValue())]]></variableExpression>
 	</variable>
-	<variable name="IS_CREDIT" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+	<variable name="IS_CREDIT" class="java.lang.Boolean" resetType="None">
 		<variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Credit"))]]></variableExpression>
 	</variable>
-	<variable name="TOTAL_CHEQUE" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+	<variable name="TOTAL_CHEQUE" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[($V{IS_CHEQUE}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
 	</variable>
-	<variable name="TOTAL_CREDIT" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+	<variable name="TOTAL_CREDIT" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[($V{IS_CREDIT}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
 	</variable>
-	<variable name="IS_EFT" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+	<variable name="IS_EFT" class="java.lang.Boolean" resetType="None">
 		<variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("EFT"))]]></variableExpression>
 	</variable>
-	<variable name="TOTAL_EFT" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+	<variable name="TOTAL_EFT" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[($V{IS_EFT}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
 	</variable>
-	<variable name="COUNT_CHEQUE" class="java.lang.Integer" resetType="Report" calculation="Count">
+	<variable name="COUNT_CHEQUE" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[($V{IS_CHEQUE}.booleanValue())? "" : null]]></variableExpression>
 	</variable>
-	<variable name="COUNT_CREDIT" class="java.lang.Integer" resetType="Report" calculation="Count">
+	<variable name="COUNT_CREDIT" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[($V{IS_CREDIT}.booleanValue())? "" : null]]></variableExpression>
 	</variable>
-	<variable name="COUNT_EFT" class="java.lang.Integer" resetType="Report" calculation="Count">
+	<variable name="COUNT_EFT" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[($V{IS_EFT}.booleanValue())? "" : null]]></variableExpression>
 	</variable>
-	<variable name="TOTAL_CASH" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+	<variable name="TOTAL_CASH" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[($V{IS_CASH}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
 	</variable>
-
-		<group  name="depositType" isStartNewPage="true" isReprintHeaderOnEachPage="true" >
-			<groupExpression><![CDATA[$V{SHORTNAME}]]></groupExpression>
-			<groupHeader>
-			<band height="42"  isSplitAllowed="true" >
+	<group name="depositType" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$V{SHORTNAME}]]></groupExpression>
+		<groupHeader>
+			<band height="42" splitType="Stretch">
 				<printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
-				<line direction="TopDown">
-					<reportElement
-						x="9"
-						y="36"
-						width="495"
-						height="0"
-						key="line-1"/>
-					<graphicElement stretchType="NoStretch"/>
+				<line>
+					<reportElement key="line-1" x="9" y="36" width="495" height="1"/>
 				</line>
 				<staticText>
-					<reportElement
-						x="9"
-						y="18"
-						width="117"
-						height="13"
-						key="staticText-21"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<text><![CDATA[Name]]></text>
+					<reportElement key="staticText-21" x="9" y="18" width="117" height="13"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Name]]></text>
 				</staticText>
 				<staticText>
-					<reportElement
-						x="180"
-						y="18"
-						width="117"
-						height="13"
-						key="staticText-22"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<text><![CDATA[Details]]></text>
+					<reportElement key="staticText-22" x="180" y="18" width="117" height="13"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Details]]></text>
 				</staticText>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="191"
-						y="-2"
-						width="153"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="191" y="-2" width="153" height="18"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
 					<textElement textAlignment="Center">
-						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$V{SHORTNAME} + " Listing"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$V{SHORTNAME} + " Listing"]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement
-						x="407"
-						y="18"
-						width="100"
-						height="13"
-						key="staticText-23"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<text><![CDATA[Amount]]></text>
+					<reportElement key="staticText-23" x="407" y="18" width="100" height="13"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Amount]]></text>
 				</staticText>
 			</band>
-			</groupHeader>
-			<groupFooter>
-			<band height="17"  isSplitAllowed="true" >
+		</groupHeader>
+		<groupFooter>
+			<band height="17" splitType="Stretch">
 				<printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
-				<line direction="TopDown">
-					<reportElement
-						x="14"
-						y="6"
-						width="495"
-						height="0"
-						key="line-3"/>
-					<graphicElement stretchType="NoStretch"/>
+				<line>
+					<reportElement key="line-3" x="14" y="6" width="495" height="1"/>
 				</line>
 			</band>
-			</groupFooter>
-		</group>
-		<background>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</background>
-		<title>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</title>
-		<pageHeader>
-			<band height="75"  isSplitAllowed="true" >
-				<staticText>
-					<reportElement
-						x="149"
-						y="3"
-						width="236"
-						height="29"
-						key="staticText-9"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Center">
-						<font pdfFontName="Helvetica-Bold" size="18" isBold="true"/>
-					</textElement>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="75" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-9" x="149" y="3" width="236" height="29"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
 				<text><![CDATA[Bank Deposit]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="13"
-						y="35"
-						width="62"
-						height="16"
-						key="staticText-15"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-15" x="13" y="35" width="62" height="16"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
 				<text><![CDATA[Bank:]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="74"
-						y="34"
-						width="240"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{bankDeposit.depositAccount.entity.accountName}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="74"
-						y="53"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{bankDeposit.depositAccount.entity.accountNumber}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="398"
-						y="52"
-						width="71"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="454"
-						y="52"
-						width="36"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="398"
-						y="32"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.util.Date"><![CDATA[$F{bankDeposit.startTime}]]></textFieldExpression>
-				</textField>
-			</band>
-		</pageHeader>
-		<columnHeader>
-			<band height="1"  isSplitAllowed="true" >
-			</band>
-		</columnHeader>
-		<detail>
-			<band height="19"  isSplitAllowed="true" >
-				<printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="9"
-						y="1"
-						width="159"
-						height="18"
-						key="textField">
-							<printWhenExpression><![CDATA[$V{IS_CHEQUE}]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[($F{item.drawer} == null) ? $F{act.customer.entity.name}: $F{item.drawer}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="180"
-						y="1"
-						width="204"
-						height="18"
-						key="textField">
-							<printWhenExpression><![CDATA[$V{IS_CHEQUE}]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[(($F{item.bank}== null)? " ":$F{item.bank}) + " " + (($F{item.bsb}== null)? " ":$F{item.bsb})]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="9"
-						y="1"
-						width="159"
-						height="18"
-						key="textField">
-							<printWhenExpression><![CDATA[$V{IS_NOT_CHEQUE}]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{act.customer.entity.name}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="182"
-						y="1"
-						width="202"
-						height="18"
-						key="textField">
-							<printWhenExpression><![CDATA[$V{IS_CREDIT}]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{item.creditCard}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="407"
-						y="1"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{amount}]]></textFieldExpression>
-				</textField>
-			</band>
-		</detail>
-		<columnFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</columnFooter>
-		<pageFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</pageFooter>
-		<lastPageFooter>
-			<band height="10"  isSplitAllowed="true" >
-				<line direction="TopDown">
-					<reportElement
-						x="15"
-						y="5"
-						width="495"
-						height="0"
-						key="line-4"/>
-					<graphicElement stretchType="NoStretch"/>
-				</line>
-			</band>
-		</lastPageFooter>
-		<summary>
-			<band height="237"  isSplitAllowed="true" >
-				<staticText>
-					<reportElement
-						x="148"
-						y="2"
-						width="236"
-						height="29"
-						key="staticText-20"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Center">
-						<font pdfFontName="Helvetica-Bold" size="18" isBold="true"/>
-					</textElement>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="74" y="34" width="240" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{bankDeposit.depositAccount.entity.accountName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="74" y="53" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{bankDeposit.depositAccount.entity.accountNumber}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="398" y="52" width="71" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField" x="454" y="52" width="36" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField" x="398" y="32" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{bankDeposit.startTime}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="1" splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="19" splitType="Stretch">
+			<printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField" x="9" y="1" width="159" height="18">
+					<printWhenExpression><![CDATA[$V{IS_CHEQUE}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{item.drawer} == null) ? $F{act.customer.entity.name}: $F{item.drawer}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField" x="180" y="1" width="204" height="18">
+					<printWhenExpression><![CDATA[$V{IS_CHEQUE}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[(($F{item.bank}== null)? " ":$F{item.bank}) + " " + (($F{item.bsb}== null)? " ":$F{item.bsb})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="9" y="1" width="159" height="18">
+					<printWhenExpression><![CDATA[$V{IS_NOT_CHEQUE}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{act.customer.entity.name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField" x="182" y="1" width="202" height="18">
+					<printWhenExpression><![CDATA[$V{IS_CREDIT}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{item.creditCard}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField" x="407" y="1" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{amount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="10" splitType="Stretch">
+			<line>
+				<reportElement key="line-4" x="15" y="5" width="495" height="1"/>
+			</line>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="237" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-20" x="148" y="2" width="236" height="29"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
 				<text><![CDATA[Deposit Summary]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="318"
-						y="65"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{COUNT_CHEQUE}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="318"
-						y="89"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{COUNT_CREDIT}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="318"
-						y="113"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{COUNT_EFT}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="190"
-						y="65"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TOTAL_CHEQUE}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="190"
-						y="89"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TOTAL_CREDIT}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="190"
-						y="113"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TOTAL_EFT}]]></textFieldExpression>
-				</textField>
-				<staticText>
-					<reportElement
-						x="32"
-						y="65"
-						width="117"
-						height="18"
-						key="staticText-24"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
-					</textElement>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="318" y="65" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{COUNT_CHEQUE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="318" y="89" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{COUNT_CREDIT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="318" y="113" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{COUNT_EFT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField" x="190" y="65" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_CHEQUE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField" x="190" y="89" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_CREDIT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField" x="190" y="113" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_EFT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-24" x="32" y="65" width="117" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
 				<text><![CDATA[Cheques :]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="32"
-						y="91"
-						width="117"
-						height="16"
-						key="staticText-25"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
-					</textElement>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-25" x="32" y="91" width="117" height="16"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
 				<text><![CDATA[Credit Cards :]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="32"
-						y="113"
-						width="117"
-						height="18"
-						key="staticText-26"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
-					</textElement>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-26" x="32" y="113" width="117" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
 				<text><![CDATA[EFT :]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="32"
-						y="140"
-						width="117"
-						height="18"
-						key="staticText-27"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
-					</textElement>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-27" x="32" y="140" width="117" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
 				<text><![CDATA[Cash:]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="191"
-						y="140"
-						width="100"
-						height="18"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TOTAL_CASH}]]></textFieldExpression>
-				</textField>
-			</band>
-		</summary>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="191" y="140" width="100" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_CASH}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
 </jasperReport>
