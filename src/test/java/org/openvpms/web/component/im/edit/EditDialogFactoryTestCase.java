@@ -23,9 +23,11 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.customer.charge.CustomerInvoiceEditDialog;
+import org.openvpms.web.app.patient.mr.PatientClinicalEventEditDialog;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -55,7 +57,7 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link CustomerInvoiceEditDialog} is returned when no other class is configured.
+     * Verifies that a {@link CustomerInvoiceEditDialog} is returned for an <em>act.customerAccountChargesInvoice</em>.
      */
     @Test
     public void testCreateInvoiceEditDialog() {
@@ -74,6 +76,13 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
         checkCreate(CustomerAccountArchetypes.REFUND, ActEditDialog.class);
         checkCreate(CustomerAccountArchetypes.INITIAL_BALANCE, ActEditDialog.class);
         checkCreate(CustomerAccountArchetypes.BAD_DEBT, ActEditDialog.class);
+    }
+
+    /**
+     * Verifies that a {@link PatientClinicalEventEditDialog} is returned for an <em>act.patientClinicalEvent</em>.
+     */
+    public void testCreatePatientClinicalEventEditDialog() {
+        checkCreate(MedicalRecordRules.CLINICAL_EVENT, PatientClinicalEventEditDialog.class);
     }
 
     /**
