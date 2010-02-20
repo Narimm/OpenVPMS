@@ -148,7 +148,7 @@
                 <version>1.0-beta-1</version>
                 <configuration>
                     <server>openvpms-tomcat</server>
-                    <port>8080</port>
+                    <!--port>${maven.tomcat.port}</port-->
                     <path>/${project.build.finalName}</path>
                     <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
                 </configuration>
@@ -403,6 +403,12 @@
             <artifactId>p6spy</artifactId>
             <version>1.3</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <!-- earlier versions of xerces don't work with jasperreports 3.6.0 -->
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>${xerces.version}</version>
         </dependency>
         <dependency>
             <groupId>xml-apis</groupId>
