@@ -148,7 +148,7 @@
                 <version>1.0-beta-1</version>
                 <configuration>
                     <server>openvpms-tomcat</server>
-                    <port>8081</port>
+                    <!--port>${maven.tomcat.port}</port-->
                     <path>/${project.build.finalName}</path>
                     <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
                 </configuration>
