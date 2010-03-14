@@ -144,6 +144,15 @@
                         <artifactId>${jdbc.artifactId}</artifactId>
                         <version>${jdbc.version}</version>
                     </dependency>
+                    <dependency>
+                        <!-- this dependency is required to get hibernate to 
+                             work with cobertura during site generation
+                             see http://jira.codehaus.org/browse/MCOBERTURA-26 
+                         -->
+                        <groupId>net.sourceforge.cobertura</groupId>
+                        <artifactId>cobertura</artifactId>
+                        <version>1.9.2</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -190,7 +199,7 @@
                 </configuration>
             </plugin>
             <plugin>
-              <artifactId>maven-source-plugin</artifactId>
+                <artifactId>maven-source-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
