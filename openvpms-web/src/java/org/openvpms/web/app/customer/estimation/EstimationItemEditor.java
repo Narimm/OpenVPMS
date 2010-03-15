@@ -32,6 +32,7 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -64,6 +65,10 @@ public class EstimationItemEditor extends PriceActItemEditor {
         if (!TypeHelper.isA(act, "act.customerEstimationItem")) {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
+        }
+        if (act.isNew()) {
+            // default the act start time to today
+            act.setActivityStartTime(new Date());
         }
 
         // add a listener to update the discount when the fixed, high unit price
