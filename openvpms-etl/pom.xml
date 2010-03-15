@@ -31,6 +31,14 @@
         <url>http://svn.openvpms.org</url>
     </scm>
 
+    <distributionManagement>
+        <site>
+            <id>openvpms-site</id>
+            <name>OpenVPMS Maven Site</name>
+            <url>scp://dev.openvpms.org:2233/home/admin/public_html/dev.openvpms.org/public/${pom.artifactId}</url>
+        </site>
+    </distributionManagement>
+
     <modules>
       <module>etl</module>
       <module>plugin</module>
