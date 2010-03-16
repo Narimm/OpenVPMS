@@ -27,6 +27,14 @@
         <url>http://svn.openvpms.org</url>
     </scm>
 
+    <distributionManagement>
+        <site>
+            <id>openvpms-site</id>
+            <name>OpenVPMS Maven Site</name>
+            <url>scp://dev.openvpms.org:2233/home/admin/public_html/dev.openvpms.org/public/${pom.artifactId}</url>
+        </site>
+    </distributionManagement>
+
     <build>
         <sourceDirectory>src/java</sourceDirectory>
         <testSourceDirectory>test/java</testSourceDirectory>
@@ -144,6 +152,15 @@
                         <groupId>${jdbc.groupId}</groupId>
                         <artifactId>${jdbc.artifactId}</artifactId>
                         <version>${jdbc.version}</version>
+                    </dependency>
+                    <dependency>
+                        <!-- this dependency is required to get hibernate to 
+                             work with cobertura during site generation
+                             see http://jira.codehaus.org/browse/MCOBERTURA-26 
+                         -->
+                        <groupId>net.sourceforge.cobertura</groupId>
+                        <artifactId>cobertura</artifactId>
+                        <version>1.9.2</version>
                     </dependency>
                 </dependencies>
             </plugin>
