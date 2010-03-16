@@ -166,7 +166,6 @@ public class DueReminderQuery {
         return new Iterable<Act>() {
             public Iterator<Act> iterator() {
                 ReminderQuery query = new ReminderQuery(service);
-                query.setFrom(from);
                 query.setTo(to);
                 query.setReminderType(reminderType);
                 return new DueIterator(query.query().iterator());
