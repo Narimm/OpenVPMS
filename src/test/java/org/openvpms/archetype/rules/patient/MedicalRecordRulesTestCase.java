@@ -243,6 +243,29 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Tests the {@link MedicalRecordRules#addToEvent} method where
+     * there is a COMPLETED event that has a startTime > 7 days prior to
+     * the specified startTime. A new COMPLETED event should be created.
+     */
+    public void testAddToEventForExistingOldCompletedEvent() {
+        Date date = getDate("2007-04-05");
+        Act medication = createMedication(patient);
+        save(medication);
+
+        Date old = DateRules.getDate(date, -8, DateUnits.DAYS);
+        Act oldEvent = createEvent(old);
+        oldEvent.setStatus(ActStatus.COMPLETED);
+        save(oldEvent);
+
+        rules.addToEvent(medication, date);
+        Act event = rules.getEvent(patient);
+        checkContains(event, medication);
+        assertFalse(oldEvent.equals(event));
+        assertEquals(date, event.getActivityStartTime());
+        assertTrue(ActStatus.COMPLETED.equals(event.getStatus()));
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#addToEvent} method where
      * there is a COMPLETTED event that has a startTime and endTime that
      * overlaps the specified start time. The medication should be added to it.
      */

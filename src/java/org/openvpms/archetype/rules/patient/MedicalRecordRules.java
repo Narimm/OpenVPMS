@@ -178,7 +178,7 @@ public class MedicalRecordRules {
     /**
      * The <em>act.patientClinicalEvent</em> is selected as follows:
      * <ol>
-     * <li>find the most recent event for the patient
+     * <li>find the event intersecting the start time for the patient
      * <li>if it is an <em>IN_PROGRESS</em> and
      * <pre>event.startTime &gt;= (startTime - 1 week)</pre>
      * use it
@@ -201,7 +201,7 @@ public class MedicalRecordRules {
     /**
      * The <em>act.patientClinicalEvent</em> is selected as follows:
      * <ol>
-     * <li>find the most recent event for the patient
+     * <li>find the event intersecting the start time for the patient
      * <li>if it is an <em>IN_PROGRESS</em> and
      * <pre>event.startTime &gt;= (startTime - 1 week)</pre>
      * use it
@@ -217,7 +217,7 @@ public class MedicalRecordRules {
      * @return an event. May be newly created
      */
     public Act getEventForAddition(IMObjectReference patient, Date startTime, IMObjectReference clinician) {
-        Act event = getEvent(patient);
+        Act event = getEvent(patient, startTime); // get the closest event to the startTime
         if (event != null) {
             // get date component of start time so not comparing time components
             Date startDate = DateRules.getDate(startTime);

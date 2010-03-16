@@ -30,7 +30,7 @@
         <node name="name" type="java.lang.String" path="/name"
               minCardinality="1"/>
         <node name="expression" type="java.lang.String" path="/details/expression"
-              maxLength = "2000" minCardinality="1"/>
+              maxLength = "4999" minCardinality="1"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/code,' - ',/name)"/>
