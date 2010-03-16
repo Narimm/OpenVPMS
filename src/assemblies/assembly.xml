@@ -22,6 +22,7 @@
                 <include>org.openvpms:openvpms-archetypes</include>
                 <include>org.openvpms:openvpms-framework</include>
                 <include>org.openvpms:openvpms-reports</include>
+                <include>org.openvpms:openvpms-etl-load</include>                
                 <include>commons-dbcp:commons-dbcp</include>
                 <include>dom4j:dom4j</include> <!-- TODO - not sure why this needs to be explicit, but is being excluded somewhere -->
             </includes>
@@ -68,7 +69,7 @@
     <fileSets>
         <!-- hibernate properties -->
         <fileSet>
-            <directory>src/conf/hibernate</directory>
+            <directory>${basedir}/src/conf/hibernate</directory>
             <includes>
                 <include>hibernate.properties</include>
             </includes>
@@ -78,7 +79,7 @@
 
         <!-- spring -->
         <fileSet>
-            <directory>src/conf/spring</directory>
+            <directory>${basedir}/src/conf/spring</directory>
             <includes>
                 <include>applicationContext.xml</include>
             </includes>
@@ -87,7 +88,7 @@
 
         <!-- log4j -->
         <fileSet>
-            <directory>src/conf/log4j</directory>
+            <directory>${basedir}/src/conf/log4j</directory>
             <includes>
                 <include>log4j.properties</include>
             </includes>
@@ -96,7 +97,7 @@
 
         <!-- shell scripts -->
         <fileSet>
-            <directory>src/bin</directory>
+            <directory>${basedir}/src/bin</directory>
             <includes>
                 <include>*.sh</include>
             </includes>
@@ -107,7 +108,7 @@
 
         <!-- batch scripts -->
         <fileSet>
-            <directory>src/bin</directory>
+            <directory>${basedir}/src/bin</directory>
             <includes>
                 <include>*.bat</include>
             </includes>
@@ -117,35 +118,35 @@
 
         <!-- database scripts -->
         <fileSet>
-            <directory>src/db</directory>
+            <directory>${basedir}/src/db</directory>
             <outputDirectory>db</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/db</directory>
+            <directory>${basedir}/target/db</directory>
             <outputDirectory>db</outputDirectory>
         </fileSet>
 
         <!-- update scripts -->
         <fileSet>
-            <directory>src/update</directory>
+            <directory>${basedir}/src/update</directory>
             <outputDirectory>update</outputDirectory>
         </fileSet>
 
         <!--  report templates -->
         <fileSet>
-            <directory>src/reports</directory>
+            <directory>${basedir}/src/reports</directory>
             <outputDirectory>reports</outputDirectory>
         </fileSet>
 
         <!--  import data -->
         <fileSet>
-            <directory>src/import/data</directory>
+            <directory>${basedir}/src/import/data</directory>
             <outputDirectory>import/data</outputDirectory>
         </fileSet>
 
         <!-- archetypes -->
         <fileSet>
-            <directory>target/archetypes</directory>
+            <directory>${basedir}/target/archetypes</directory>
             <outputDirectory>update/archetypes</outputDirectory>
             <includes>
                 <include>**/*.adl</include>
@@ -155,7 +156,7 @@
 
         <!-- readme -->
         <fileSet>
-            <directory>src/doc</directory>
+            <directory>${basedir}/src/doc</directory>
             <includes>
                 <include>readme.txt</include>
             </includes>
@@ -173,7 +174,7 @@
 
         <!-- images -->
         <fileSet>
-            <directory>src/images</directory>
+            <directory>${basedir}/src/images</directory>
             <outputDirectory>images</outputDirectory>
         </fileSet>
     </fileSets>
