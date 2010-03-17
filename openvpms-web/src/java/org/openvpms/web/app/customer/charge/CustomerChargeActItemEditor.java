@@ -389,7 +389,10 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private void updatePatientActsStartTime() {
         Act parent = (Act) getObject();
-        for (PatientActEditor editor : getPatientActEditors()) {
+        for (PatientActEditor editor : getMedicationActEditors()) {
+            editor.setStartTime(parent.getActivityStartTime());
+        }
+        for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
             editor.setStartTime(parent.getActivityStartTime());
         }
         ActRelationshipCollectionEditor dispensingCollection = getDispensingCollection();
@@ -572,8 +575,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates any child patient acts with the patient.
      */
     private void updatePatientActsPatient() {
-        for (PatientActEditor editor : getPatientActEditors()) {
-            editor.setPatient(getPatientRef());
+        IMObjectReference patient = getPatientRef();
+        for (PatientActEditor editor : getMedicationActEditors()) {
+            editor.setPatient(patient);
+        }
+        for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
+            editor.setPatient(patient);
         }
     }
 
@@ -581,8 +588,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates any child patient acts with the clinician.
      */
     private void updatePatientActsClinician() {
-        for (PatientActEditor editor : getPatientActEditors()) {
-            editor.setClinician(getClinicianRef());
+        IMObjectReference clinician = getClinicianRef();
+        for (PatientActEditor editor : getMedicationActEditors()) {
+            editor.setClinician(clinician);
+        }
+        for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
+            editor.setClinician(clinician);
         }
     }
 
@@ -591,10 +602,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      *
      * @return the editors
      */
-    @SuppressWarnings("unchecked")
     private Set<PatientMedicationActEditor> getMedicationActEditors() {
-        Set editors = getPatientActEditors(getDispensingCollection());
-        return (Set<PatientMedicationActEditor>) editors;
+        return getActEditors(getDispensingCollection());
     }
 
     /**
@@ -602,32 +611,22 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      *
      * @return the editors
      */
-    private Set<PatientActEditor> getInvestigationActEditors() {
-        return getPatientActEditors(getInvestigationCollection());
+    private Set<PatientInvestigationActEditor> getInvestigationActEditors() {
+        return getActEditors(getInvestigationCollection());
     }
 
     /**
-     * Returns editors for each of the <em>act.patientMedication</em> and <em>act.patientInvestigation</em> acts.
-     *
-     * @return the editors
-     */
-    private Set<PatientActEditor> getPatientActEditors() {
-        Set<PatientActEditor> result = getPatientActEditors(getDispensingCollection());
-        result.addAll(getInvestigationActEditors());
-        return result;
-    }
-
-    /**
-     * Returns the patient act editors for a the specified collection editor.
+     * Returns the act editors for the specified collection editor.
      *
      * @param editors the collection editor. May be <tt>null</tt>
      * @return a set of editors
      */
-    private Set<PatientActEditor> getPatientActEditors(ActRelationshipCollectionEditor editors) {
-        Set<PatientActEditor> result = new HashSet<PatientActEditor>();
+    @SuppressWarnings("unchecked")
+    private <T extends IMObjectEditor> Set<T> getActEditors(ActRelationshipCollectionEditor editors) {
+        Set<T> result = new HashSet<T>();
         if (editors != null) {
             for (Act act : editors.getCurrentActs()) {
-                PatientActEditor editor = (PatientActEditor) editors.getEditor(act);
+                T editor = (T) editors.getEditor(act);
                 result.add(editor);
             }
         }

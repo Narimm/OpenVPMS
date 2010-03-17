@@ -97,6 +97,24 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     }
 
     /**
+     * Sets the patient.
+     *
+     * @param patient the patient reference. May be <tt>null</tt>
+     */
+    public void setPatient(IMObjectReference patient) {
+        setParticipant("patient", patient);
+    }
+
+    /**
+     * Sets the clinician.
+     *
+     * @param clinician the clinician reference. May be <tt>null</tt>.
+     */
+    public void setClinician(IMObjectReference clinician) {
+        setParticipant("clinician", clinician);
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
