@@ -31,7 +31,7 @@
         <library name="spring-dao-${spring.version}.jar"/>
         <library name="spring-orm-${spring.version}.jar"/>
         <library name="xstream-${xstream.version}.jar"/>
-        <library name="xpp3-${xpp3.version}.jar"/>
+        <library name="xpp3_min-${xpp3.version}.jar"/>
         <library name="xercesImpl-${xerces.version}.jar"/>
     </libraries>
 
