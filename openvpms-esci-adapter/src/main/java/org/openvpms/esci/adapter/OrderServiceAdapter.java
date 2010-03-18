@@ -21,12 +21,18 @@ import org.openvpms.component.business.domain.im.act.Act;
 
 
 /**
- * Adapts <em>act.supplierorder</em> acts to UBL so they can be submitted to a supplier.
+ * Adapts <em>act.supplierorder</em> acts to UBL order documents, so they can be submitted to a supplier.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface OrderServiceAdapter {
 
+    /**
+     * Submits an order to a supplier.
+     *
+     * @param order the <em>act.supplierOrder</em> to submit
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException for any error
+     */
     void submitOrder(Act order);
 }

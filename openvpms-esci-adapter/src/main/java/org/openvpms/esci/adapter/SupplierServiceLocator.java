@@ -18,57 +18,100 @@
 package org.openvpms.esci.adapter;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.esci.service.client.ServiceLocator;
 
 import java.net.MalformedURLException;
+import java.net.URL;
+
 
 /**
- * Add description here.
+ * Returns proxies for supplier web services.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SOAPServiceLocator<T> {
+public class SupplierServiceLocator<T> {
 
-    @SuppressWarnings("unchecked")
-    private final IArchetypeService service;
-
+    /**
+     * The interface of the web service.
+     */
     private final Class<T> serviceInterface;
 
-    public SOAPServiceLocator(Class<T> serviceInterface, IArchetypeService service) {
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * Supplier rules.
+     */
+    private SupplierRules rules;
+
+
+    /**
+     * Constructs a <tt>SOAPServiceLocator</tt>.
+     *
+     * @param serviceInterface the interface of the web service that the locator should create a proxy for
+     * @param service          the archetype service
+     */
+    public SupplierServiceLocator(Class<T> serviceInterface, IArchetypeService service) {
         this.serviceInterface = serviceInterface;
         this.service = service;
+        rules = new SupplierRules(service);
     }
 
+    /**
+     * Returns a proxy for the web service provided by a supplier.
+     * <p/>
+     * This uses the <em>entity.ESCIConfigurationSOAP</em> associated with the supplier to lookup the web service.
+     *
+     * @param supplier the supplier
+     * @return a proxy for the service provided by the supplier
+     */
     public T getService(Party supplier) {
-        Entity config = getESCIConfiguration(supplier);
+        Entity config = rules.getESCIConfiguration(supplier);
         if (config == null) {
             throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.ESCINotConfigured, supplier.getId(),
                                            supplier.getName());
         }
-        if (!TypeHelper.isA(config, "esci.ESCIConfigurationSOAP")) {
-            throw new IllegalStateException("UBLOrderService cannot support configurations of type: "
+        if (!TypeHelper.isA(config, "entity.ESCIConfigurationSOAP")) {
+            throw new IllegalStateException("SupplierServiceLocator cannot support configurations of type: "
                                             + config.getArchetypeId().getShortName());
         }
 
         IMObjectBean bean = new IMObjectBean(config, service);
         String username = bean.getString("username");
         String password = bean.getString("password");
-        String url = bean.getString("esciURL");
-        String wsdl = url + "/OrderService?wsdl";
-        ServiceLocator<T> locator;
+
+        String serviceURL = bean.getString("serviceURL");
+        if (StringUtils.isEmpty(serviceURL)) {
+            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidServiceURL,
+                                           supplier.getId(), supplier.getName(), serviceURL);
+        }
+        ServiceLocator<T> locator = ServiceLocator.create(serviceInterface);
+
+        StringBuilder wsdl = new StringBuilder(serviceURL);
+        if (!serviceURL.endsWith("/")) {
+            wsdl.append('/');
+        }
+        wsdl.append(locator.getServiceName());
+        wsdl.append("?wsdl");
+
         try {
-            locator = ServiceLocator.create(serviceInterface, wsdl);
+            URL url = new URL(wsdl.toString());
+            locator.setWsdlDocumentUrl(url);
         } catch (MalformedURLException exception) {
             throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidServiceURL, exception,
                                            supplier.getId(), supplier.getName(), wsdl);
         }
+
+
         if (!StringUtils.isEmpty(username)) {
             locator.setUsername(username);
         }
@@ -76,15 +119,6 @@ public class SOAPServiceLocator<T> {
             locator.setPassword(password);
         }
         return locator.getService();
-    }
-
-    private Entity getESCIConfiguration(Party supplier) {
-        Entity result = null;
-        EntityBean bean = new EntityBean(supplier, service);
-        if (bean.hasNode("esci")) {
-            result = bean.getNodeTargetEntity("esci");
-        }
-        return result;
     }
 
 }

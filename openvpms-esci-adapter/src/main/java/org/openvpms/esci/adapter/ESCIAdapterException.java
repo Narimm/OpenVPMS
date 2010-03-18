@@ -22,7 +22,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * Add description here.
+ * e-Supply Chain Interface Adapter exception.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -44,8 +44,7 @@ public class ESCIAdapterException extends OpenVPMSException {
     private final ErrorCode errorCode;
 
     /**
-     * The appropriate resource file is loaded cached into memory when this
-     * class is loaded.
+     * The error messages.
      */
     private static Messages MESSAGES = Messages.getMessages("org.openvpms.esci.adapter."
                                                             + OpenVPMSException.ERRMESSAGES_FILE);
@@ -61,6 +60,13 @@ public class ESCIAdapterException extends OpenVPMSException {
         this.errorCode = errorCode;
     }
 
+    /**
+     * Constructs an <tt>ESCIAdapterException</tt>.
+     *
+     * @param errorCode the error code
+     * @param cause     the root cause
+     * @param args      arguments to format the message with
+     */
     public ESCIAdapterException(ErrorCode errorCode, Throwable cause, Object... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args), cause);
         this.errorCode = errorCode;

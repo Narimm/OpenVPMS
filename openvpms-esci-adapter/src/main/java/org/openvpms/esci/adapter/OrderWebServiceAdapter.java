@@ -22,32 +22,53 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.esci.service.OrderService;
 
-import javax.annotation.Resource;
 
 /**
- * Add description here.
+ * Implementation of {@link OrderServiceAdapter} that adapts <em>act.supplierOrder</em> and submits them to
+ * the corresponding supplier's {@link OrderService}, using JAX-WS.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SOAPOrderServiceAdapter implements OrderServiceAdapter {
+public class OrderWebServiceAdapter implements OrderServiceAdapter {
 
+    /**
+     * The order mapper.
+     */
     private final OrderMapper mapper;
 
-    @Resource
+    /**
+     * The archetype service.
+     */
     private final IArchetypeService service;
 
-    @Resource
-    private final SOAPServiceLocator<OrderService> locator;
+    /**
+     * The supplier web service locator.
+     */
+    private final SupplierServiceLocator<OrderService> locator;
 
-    public SOAPOrderServiceAdapter(IArchetypeService service) {
+    /**
+     * Constructs a <tt>SOAPOrderServiceAdapter</tt>.
+     *
+     * @param service       the archetype service
+     * @param lookupService the lookup service
+     */
+    public OrderWebServiceAdapter(IArchetypeService service, ILookupService lookupService) {
         this.service = service;
-        mapper = new OrderMapper(service);
-        locator = new SOAPServiceLocator<OrderService>(OrderService.class, service);
+        mapper = new OrderMapper(service, lookupService);
+        locator = new SupplierServiceLocator<OrderService>(OrderService.class, service);
     }
 
+    /**
+     * Submits an order to a supplier.
+     *
+     * @param order the <em>act.supplierOrder</em> to submit
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
+     *          for any error
+     */
     public void submitOrder(Act order) {
         ActBean bean = new ActBean(order, service);
         Party supplier = (Party) bean.getNodeParticipant("supplier");
