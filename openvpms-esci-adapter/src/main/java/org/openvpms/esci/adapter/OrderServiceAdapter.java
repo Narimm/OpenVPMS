@@ -17,7 +17,7 @@
  */
 package org.openvpms.esci.adapter;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 
 
 /**
@@ -32,7 +32,8 @@ public interface OrderServiceAdapter {
      * Submits an order to a supplier.
      *
      * @param order the <em>act.supplierOrder</em> to submit
-     * @throws org.openvpms.component.system.common.exception.OpenVPMSException for any error
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
+     *          for any error
      */
-    void submitOrder(Act order);
+    void submitOrder(FinancialAct order);
 }

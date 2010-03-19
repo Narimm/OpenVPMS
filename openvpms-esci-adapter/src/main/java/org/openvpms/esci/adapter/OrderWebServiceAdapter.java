@@ -18,7 +18,7 @@
 package org.openvpms.esci.adapter;
 
 import org.oasis.ubl.OrderType;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -69,7 +69,7 @@ public class OrderWebServiceAdapter implements OrderServiceAdapter {
      * @throws org.openvpms.component.system.common.exception.OpenVPMSException
      *          for any error
      */
-    public void submitOrder(Act order) {
+    public void submitOrder(FinancialAct order) {
         ActBean bean = new ActBean(order, service);
         Party supplier = (Party) bean.getNodeParticipant("supplier");
         OrderService orderService = locator.getService(supplier);
