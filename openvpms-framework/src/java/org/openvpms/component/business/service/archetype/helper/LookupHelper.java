@@ -76,7 +76,7 @@ public class LookupHelper {
      *
      * @param service    a reference to the archetype service
      * @param descriptor the node descriptor
-     * @param nodes
+     * @param nodes      the nodes to populate
      * @return a list of lookups
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
@@ -167,6 +167,30 @@ public class LookupHelper {
     }
 
     /**
+     * Returns the name of a lookup referred to by an object's node.
+     *
+     * @param service       the archetype service
+     * @param lookupService the lookup service
+     * @param object        the object
+     * @param node          the node
+     * @return the lookup name, or <code>null</code> if none is found
+     * @throws PropertyResolverException if the node doesn't exist
+     * @throws ArchetypeServiceException if the request cannot complete
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static String getName(IArchetypeService service, ILookupService lookupService, IMObject object,
+                                 String node) {
+        NodeResolver resolver = new NodeResolver(object, service);
+        NodeResolver.State state = resolver.resolve(node);
+        NodeDescriptor descriptor = state.getLeafNode();
+        if (descriptor == null) {
+            throw new PropertyResolverException(
+                    PropertyResolverException.ErrorCode.InvalidProperty, node);
+        }
+        return getName(service, lookupService, descriptor, state.getParent());
+    }
+
+    /**
      * Helper method that returns the name of a lookup referred to by a node.
      *
      * @param service    the archetype service
@@ -178,6 +202,22 @@ public class LookupHelper {
      */
     public static String getName(IArchetypeService service,
                                  NodeDescriptor descriptor, IMObject object) {
+        return getName(service, LookupServiceHelper.getLookupService(), descriptor, object);
+    }
+
+    /**
+     * Helper method that returns the name of a lookup referred to by a node.
+     *
+     * @param service       the archetype service
+     * @param lookupService the lookup service
+     * @param descriptor    the node descriptor
+     * @param object        the object
+     * @return the lookup name, or <code>null</code> if none is found
+     * @throws ArchetypeServiceException if the request cannot complete
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static String getName(IArchetypeService service, ILookupService lookupService,
+                                 NodeDescriptor descriptor, IMObject object) {
         String result = null;
         if (!descriptor.isLookup()) {
             throw new LookupHelperException(
@@ -186,9 +226,7 @@ public class LookupHelper {
         }
         Object value = descriptor.getValue(object);
         if (value != null) {
-            LookupAssertion assertion = LookupAssertionFactory.create(
-                    descriptor, service,
-                    LookupServiceHelper.getLookupService());
+            LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, lookupService);
             result = assertion.getName(object, (String) value);
         }
         return result;

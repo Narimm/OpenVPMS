@@ -112,7 +112,7 @@ public class IMObjectBean {
      * @param shortNames the archetype short names. May contain wildcards
      * @return <tt>true</tt> if the object is one of <tt>shortNames</tt>
      */
-    public boolean isA(String ... shortNames) {
+    public boolean isA(String... shortNames) {
         return TypeHelper.isA(object, shortNames);
     }
 
@@ -165,7 +165,7 @@ public class IMObjectBean {
      * @param name the node name
      * @return the archetype range associated with a node, or an empty array if there is none
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException     if the node does't exist
      */
     public String[] getArchetypeRange(String name) {
         NodeDescriptor node = getNode(name);
@@ -517,6 +517,41 @@ public class IMObjectBean {
                                             shortName);
         }
         return node;
+    }
+
+    /**
+     * Returns a relationship short name for a specific node that the target may be added to.
+     *
+     * @param name       the node name
+     * @param target     the target of the relationship
+     * @param targetName the relationship node name that will reference the target
+     * @return the relationship short name
+     * @throws IMObjectBeanException if <tt>name</tt> is an invalid node, there is no relationship that supports
+     *                               <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     */
+    protected String getRelationshipShortName(String name, IMObject target, String targetName) {
+        String[] range = getArchetypeRange(name);
+        IArchetypeService service = getArchetypeService();
+        IMObjectReference targetRef = target.getObjectReference();
+        String result = null;
+        for (String shortName : range) {
+            ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(shortName);
+            if (descriptor != null) {
+                NodeDescriptor node = descriptor.getNodeDescriptor(targetName);
+                if (node != null && TypeHelper.isA(targetRef, node.getArchetypeRange())) {
+                    if (result != null) {
+                        throw new IMObjectBeanException(IMObjectBeanException.ErrorCode.MultipleRelationshipsForTarget,
+                                                        targetRef.getArchetypeId().getShortName(), name);
+                    }
+                    result = shortName;
+                }
+            }
+        }
+        if (result == null) {
+            throw new IMObjectBeanException(IMObjectBeanException.ErrorCode.CannotAddTargetToNode,
+                                            targetRef.getArchetypeId().getShortName(), name);
+        }
+        return result;
     }
 
     /**

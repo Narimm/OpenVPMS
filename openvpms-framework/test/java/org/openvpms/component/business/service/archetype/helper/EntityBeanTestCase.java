@@ -74,6 +74,57 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link EntityBean#addNodeRelationship} method.
+     */
+    @Test
+    public void testAddNodeRelationship() {
+        Party customer = (Party) create("party.customerperson");
+        EntityBean bean = new EntityBean(customer);
+        Party[] expected = new Party[3];
+        for (int i = 0; i < 3; ++i) {
+            Party pet = (Party) create("party.patientpet");
+            pet.setName("pet" + i);
+            pet.getDetails().put("species", "ASPECIES");
+            expected[i] = pet;
+            save(pet);
+
+            EntityRelationship r = bean.addNodeRelationship("patients", pet);
+            assertNotNull(r);
+            assertEquals(bean.getReference(), r.getSource());
+            assertEquals(pet.getObjectReference(), r.getTarget());
+        }
+        List<Entity> pets = bean.getNodeTargetEntities("patients");
+        assertEquals(expected.length, pets.size());
+        for (Entity exp : expected) {
+            assertTrue(pets.contains(exp));
+        }
+
+        try {
+            Party target = (Party) create("party.customerperson");
+            bean.addNodeRelationship("patients", target);
+            fail("Expected addNodeRelationship() to fail");
+        } catch (IMObjectBeanException exception) {
+            assertEquals(IMObjectBeanException.ErrorCode.CannotAddTargetToNode, exception.getErrorCode());
+        }
+    }
+
+    /**
+     * Tests the {@link EntityBean#addNodeRelationship} method where multiple relationships support the target
+     * entity. This should raise an exception.
+     */
+    @Test
+    public void testAddNodeRelationshipForMultipleMatchingRelationships() {
+        EntityBean bean = createPerson();
+        Entity pet = createPet().getEntity();
+        try {
+            bean.addNodeRelationship("patients", pet);
+            fail("Expected addNodeRelationship() to fail");
+        } catch (IMObjectBeanException exception) {
+            assertEquals(IMObjectBeanException.ErrorCode.MultipleRelationshipsForTarget, exception.getErrorCode());
+        }
+    }
+
+    /**
      * Tests the {@link EntityBean#getRelationships} methods.
      */
     @Test

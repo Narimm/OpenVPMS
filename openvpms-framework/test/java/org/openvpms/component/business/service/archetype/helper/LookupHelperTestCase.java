@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.test.context.ContextConfiguration;
@@ -46,7 +47,7 @@ public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
      * Tests the {@link LookupHelper#getName} method.
      */
     @Test
-    public void testGetName() {
+    public void testGetNameByDescriptor() {
         Lookup lookup = createLookup("lookup.species", "CANINE", "Canine");
 
         IMObject pet = create("party.animalpet");
@@ -56,6 +57,21 @@ public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
         NodeDescriptor species = bean.getDescriptor("species");
         assertNotNull(species);
         assertEquals(lookup.getName(), LookupHelper.getName(getArchetypeService(), species, pet));
+    }
+
+    /**
+     * Tests the {@link LookupHelper#getName} method.
+     */
+    @Test
+    public void testGetNameByNodeName() {
+        Lookup lookup = createLookup("lookup.species", "CANINE", "Canine");
+
+        IMObject pet = create("party.animalpet");
+        IMObjectBean bean = new IMObjectBean(pet);
+        bean.setValue("species", lookup.getCode());
+
+        ILookupService lookupService = (ILookupService) applicationContext.getBean("lookupService");
+        assertEquals(lookup.getName(), LookupHelper.getName(getArchetypeService(), lookupService, pet, "species"));
     }
 
     /**
