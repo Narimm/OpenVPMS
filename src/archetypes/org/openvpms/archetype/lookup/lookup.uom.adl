@@ -33,6 +33,14 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name,' ',lookup:isDefault(/defaultLookup))"/>
+        <node name="unitCode" type="java.lang.String" path="/details/unitCode"
+              minCardinality="0" maxLength="3" description="UN/CEFACT Unit Code">
+            <assertion name="uppercase"/>
+            <assertion name="regularExpression">
+                <property name="expression" value="[A-Z0-9]*"/>
+            </assertion>
+        </node>
+
         <!-- node name="target" path="/targetLookupRelationships"
               type="java.util.HashSet" baseName="targetLookupRelationship" minCardinality="0" maxCardinality="*">
               <assertion name="archetypeRange" filter="lookupRelationship.uomGroup" >
