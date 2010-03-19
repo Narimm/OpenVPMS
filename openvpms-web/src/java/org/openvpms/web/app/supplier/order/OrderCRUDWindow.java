@@ -23,22 +23,26 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
+import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.esci.adapter.OrderServiceAdapter;
 import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -174,13 +178,43 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * Invoked when posting of an act is complete, either by saving the act
      * with <em>POSTED</em> status, or invoking {@link #onPost()}.
      * <p/>
-     * This implementation does nothing.
+     * This implementation sends the order to the supplier if they are ESCI-enabled, and prints the act.
      *
      * @param act the act
      */
     @Override
     protected void onPosted(FinancialAct act) {
-        print(act);
+        if (postOrder(act)) {
+            print(act);
+        }
+    }
+
+    /**
+     * Posts an order to the associated supplier, if it has ESCI configured.
+     *
+     * @param act the order
+     * @return <tt>true</tt> if the order was posted
+     */
+    private boolean postOrder(FinancialAct act) {
+        boolean result = false;
+        SupplierRules rules = new SupplierRules();
+        if (rules.getESCIConfiguration(act) != null) {
+            // ESCI is configured for the supplier, so submit the order
+            try {
+                OrderServiceAdapter service = ServiceHelper.getOrderService();
+                service.submitOrder(act);
+                result = true;
+            } catch (Throwable exception) {
+                // failed to submit the order, so revert to IN_PROGRESS
+                act.setStatus(ActStatus.IN_PROGRESS);
+                SaveHelper.save(act);
+
+                ErrorHelper.show(exception);
+            }
+        } else {
+            result = true;
+        }
+        return result;
     }
 
 }
