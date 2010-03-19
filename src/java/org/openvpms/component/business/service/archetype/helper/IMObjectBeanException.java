@@ -42,7 +42,8 @@ public class IMObjectBeanException extends OpenVPMSException {
         NodeDescriptorNotFound,
         ArchetypeNotFound,
         InvalidClassCast,
-        CannotAddTargetToNode
+        CannotAddTargetToNode,
+        MultipleRelationshipsForTarget
     }
 
     /**

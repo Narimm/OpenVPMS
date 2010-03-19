@@ -175,20 +175,8 @@ public class ArchetypeServiceFunctions {
      * @see NodeResolver
      */
     public static String lookup(IMObject object, String node) {
-        String result;
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        NodeResolver resolver = new NodeResolver(object, service);
-        NodeResolver.State state = resolver.resolve(node);
-        NodeDescriptor descriptor = state.getLeafNode();
-        if (descriptor != null && descriptor.isLookup()) {
-            result = LookupHelper.getName(service, descriptor,
-                                          state.getParent());
-        } else {
-            throw new PropertyResolverException(
-                    PropertyResolverException.ErrorCode.InvalidProperty, node);
-        }
-        return result;
+        return LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(),
+                                    LookupServiceHelper.getLookupService(), object, node);
     }
 
     /**

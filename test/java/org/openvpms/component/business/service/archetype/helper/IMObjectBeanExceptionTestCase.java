@@ -36,7 +36,7 @@ public class IMObjectBeanExceptionTestCase extends TestCase {
     @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     4, IMObjectBeanException.ErrorCode.values().length);
+                     5, IMObjectBeanException.ErrorCode.values().length);
         checkException(IMObjectBeanException.ErrorCode.NodeDescriptorNotFound,
                        "No node found named foo in archetype bar", "foo", "bar");
         checkException(IMObjectBeanException.ErrorCode.ArchetypeNotFound,
@@ -45,6 +45,9 @@ public class IMObjectBeanExceptionTestCase extends TestCase {
                        "foo", "bar");
         checkException(IMObjectBeanException.ErrorCode.CannotAddTargetToNode,
                        "Cannot add target with archetype foo to node named bar", "foo", "bar");
+        checkException(IMObjectBeanException.ErrorCode.MultipleRelationshipsForTarget,
+                       "Cannot add target with archetype foo to node named bar. "
+                       + "Multiple relationships match the target", "foo", "bar");
     }
 
     /**
@@ -57,7 +60,7 @@ public class IMObjectBeanExceptionTestCase extends TestCase {
      */
     @SuppressWarnings({"ThrowableInstanceNeverThrown"})
     private void checkException(IMObjectBeanException.ErrorCode code,
-                                String expected, Object ... args) {
+                                String expected, Object... args) {
         IMObjectBeanException exception = new IMObjectBeanException(code, args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());
