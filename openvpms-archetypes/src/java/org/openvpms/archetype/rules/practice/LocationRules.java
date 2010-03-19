@@ -60,6 +60,17 @@ public class LocationRules {
     }
 
     /**
+     * Returns the practice assocaited with a location.
+     *
+     * @param location the location
+     * @return the practice associated with the location, or <tt>null</tt> if none is found
+     */
+    public Party getPractice(Party location) {
+        EntityBean bean = new EntityBean(location, service);
+        return (Party) bean.getNodeSourceEntity("practice");
+    }
+
+    /**
      * Returns the default deposit account associated with a location.
      *
      * @param location the location
@@ -130,6 +141,7 @@ public class LocationRules {
     /**
      * Returns the default stock location reference associated with a location.
      *
+     * @param location the location
      * @return the default stock location reference, or <tt>null</tt> if none
      *         is found
      */

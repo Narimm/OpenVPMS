@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.finance.deposit.DepositTestHelper;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
+import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_LOCATION_RELATIONSHIP;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -45,6 +46,23 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
      */
     private LocationRules rules;
 
+
+    /**
+     * Tests the {@link LocationRules#getPractice} method.
+     */
+    @Test
+    public void testGetPractice() {
+        Party location = TestHelper.createLocation();
+        assertNull(rules.getPractice(location));
+
+
+        Party practice = TestHelper.getPractice();
+        EntityBean bean = new EntityBean(practice);
+        bean.addRelationship(PRACTICE_LOCATION_RELATIONSHIP, location);
+        save(practice, location);
+
+        assertEquals(practice, rules.getPractice(location));
+    }
 
     /**
      * Tests the {@link LocationRules#getDefaultDepositAccount} method.
