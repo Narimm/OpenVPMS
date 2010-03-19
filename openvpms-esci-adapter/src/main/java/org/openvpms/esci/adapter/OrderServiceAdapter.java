@@ -21,7 +21,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 
 
 /**
- * Adapts <em>act.supplierorder</em> acts to UBL order documents, so they can be submitted to a supplier.
+ * Adapts <em>act.supplierorder</em> acts to UBL order documents, so they can be submitted to a supplier
+ * via its {@link org.openvpms.esci.service.OrderService}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

@@ -238,17 +238,26 @@ public class OrderMapper {
         ItemType result = new ItemType();
         ItemIdentificationType buyersId = getItemIdentification(product.getId());
         ProductSupplier ps = getProductSupplier(product, supplier);
-        if (ps != null) {
-            String reorderCode = ps.getReorderCode();
-            String reorderDescription = ps.getReorderDescription();
-            if (!StringUtils.isEmpty(reorderCode)) {
-                ItemIdentificationType sellersId = getItemIdentification(reorderCode);
-                result.setSellersItemIdentification(sellersId);
-            }
-            if (!StringUtils.isEmpty(reorderDescription)) {
-                DescriptionType description = initText(new DescriptionType(), reorderDescription);
-                result.getDescription().add(description);
-            }
+        if (ps == null) {
+            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.NoProductSupplier, supplier.getName(), 
+                                           product.getName());
+        }
+        String reorderCode = ps.getReorderCode();
+        String barCode = ps.getBarCode();
+        String reorderDescription = ps.getReorderDescription();
+        if (!StringUtils.isEmpty(reorderCode)) {
+            ItemIdentificationType sellersId = getItemIdentification(reorderCode);
+            result.setSellersItemIdentification(sellersId);
+        } else if (!StringUtils.isEmpty("barCode")) {
+            ItemIdentificationType sellersId = getItemIdentification(barCode);
+            result.setSellersItemIdentification(sellersId);
+        } else {
+            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.NoSupplierOrderCode, supplier.getName(),
+                                           product.getName());
+        }
+        if (!StringUtils.isEmpty(reorderDescription)) {
+            DescriptionType description = initText(new DescriptionType(), reorderDescription);
+            result.getDescription().add(description);
         }
         NameType name = initName(new NameType(), product.getName());
         result.setBuyersItemIdentification(buyersId);
