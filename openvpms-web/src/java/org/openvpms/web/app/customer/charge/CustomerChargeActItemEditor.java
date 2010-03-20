@@ -301,6 +301,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
         NodeFilter expectedFilter = getFilterForProduct(productRef);
         if (currentFilter != expectedFilter) {
+
+            // need to change the layout. Remove any dispensing act first as the editors won't be available afterwards
+            if (!TypeHelper.isA(product, MEDICATION)) {
+                removeDispensingAct();
+            }
+
             changeLayout(expectedFilter);
         }
 
@@ -402,6 +408,18 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         ActRelationshipCollectionEditor investigationCollection = getInvestigationCollection();
         if (investigationCollection != null) {
             investigationCollection.refresh();
+        }
+    }
+
+    /**
+     * Removes the dispensing act.
+     */
+    private void removeDispensingAct() {
+        ActRelationshipCollectionEditor editors = getDispensingCollection();
+        if (editors != null) {
+            for (Act act : editors.getCurrentActs()) {
+                editors.remove(act);
+            }
         }
     }
 
