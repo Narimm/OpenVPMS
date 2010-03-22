@@ -259,6 +259,31 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
 
         // verify that the price has not updated
         checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+
+        // post another delivery
+        BigDecimal unitPrice3 = new BigDecimal("8.00");
+        BigDecimal listPrice3 = new BigDecimal("16.00");
+        Act delivery3 = createDelivery(quantity, packageSize, unitPrice3, listPrice3);
+
+        delivery3.setStatus(ActStatus.POSTED);
+        save(delivery3);
+        checkPrice(product, new BigDecimal("0.80"), new BigDecimal("1.60"));
+
+        // now mark the supplier inactive. Subsequent deliveries shouldn't update prices
+        Party supplier = get(getSupplier());
+        supplier.setActive(false);
+        save(supplier);
+
+        // post another delivery
+        BigDecimal unitPrice4 = new BigDecimal("10.00");
+        BigDecimal listPrice4 = new BigDecimal("20.00");
+        Act delivery4 = createDelivery(quantity, packageSize, unitPrice4, listPrice4);
+
+        delivery4.setStatus(ActStatus.POSTED);
+        save(delivery4);
+
+        // verify that the price has not updated
+        checkPrice(product, new BigDecimal("0.80"), new BigDecimal("1.60"));
     }
 
     private void checkPrice(Product product, BigDecimal cost,
@@ -266,7 +291,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         product = get(getProduct()); // reload product
         Set<ProductPrice> prices = product.getProductPrices();
         assertEquals(1, prices.size());
-        ProductPrice p = prices.toArray(new ProductPrice[0])[0];
+        ProductPrice p = prices.toArray(new ProductPrice[prices.size()])[0];
         IMObjectBean bean = new IMObjectBean(p);
         assertEquals(cost, bean.getBigDecimal("cost"));
         assertEquals(price, bean.getBigDecimal("price"));

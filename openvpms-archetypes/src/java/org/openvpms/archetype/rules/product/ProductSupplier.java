@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.product;
 
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -81,6 +82,15 @@ public class ProductSupplier {
      */
     public Party getSupplier() {
         return (Party) bean.getObject("target");
+    }
+
+    /**
+     * Returns a reference to the suplier.
+     *
+     * @return the supplier reference, or <tt>null</tt> if none is found
+     */
+    public IMObjectReference getSupplierRef() {
+        return getRelationship().getTarget();
     }
 
     /**

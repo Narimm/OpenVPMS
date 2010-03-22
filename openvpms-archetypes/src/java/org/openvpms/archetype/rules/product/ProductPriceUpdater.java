@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import static org.openvpms.archetype.rules.product.ProductPriceUpdaterException.ErrorCode.NoPractice;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -35,11 +36,17 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,6 +91,7 @@ public class ProductPriceUpdater {
      *
      * @param currencies the currency cache
      * @param service    the archetype service
+     * @param lookups    the lookup service
      */
     public ProductPriceUpdater(Currencies currencies,
                                IArchetypeService service,
@@ -188,11 +196,8 @@ public class ProductPriceUpdater {
     public List<ProductPrice> update(Product product,
                                      ProductSupplier productSupplier,
                                      boolean save) {
-        if (!product.getObjectReference().equals(
-                productSupplier.getRelationship().getSource())) {
-            throw new IllegalArgumentException(
-                    "Argument 'product' is not that referred to by "
-                            + "'productSupplier'");
+        if (!product.getObjectReference().equals(productSupplier.getRelationship().getSource())) {
+            throw new IllegalArgumentException("Argument 'product' is not that referred to by 'productSupplier'");
         }
         List<ProductPrice> result;
         if (canUpdate(productSupplier)) {
@@ -258,10 +263,8 @@ public class ProductPriceUpdater {
                 : newMap.entrySet()) {
             ProductSupplier supplier = entry.getValue();
             ProductSupplier old = oldMap.get(entry.getKey());
-            if (old == null
-                    || supplier.getListPrice().compareTo(
-                    old.getListPrice()) != 0
-                    || supplier.getPackageSize() != old.getPackageSize()) {
+            if (old == null || supplier.getListPrice().compareTo(old.getListPrice()) != 0
+                || supplier.getPackageSize() != old.getPackageSize()) {
                 return false;
             }
         }
@@ -281,6 +284,14 @@ public class ProductPriceUpdater {
 
     /**
      * Determines if prices can be updated.
+     * <p/>
+     * Prices can be updated if:
+     * <ul>
+     * <li>autoPriceUpdate is <tt>true</tt>; and</li>
+     * <li>listPrice &lt;&gt; 0; and</li>
+     * <li>pageSize &lt;&gt; 0; and</li>
+     * <li>the supplier is active</li>
+     * </ul>
      *
      * @param productSupplier the product-supplier relationship
      * @return <tt>true</tt> if prices can be updated
@@ -289,8 +300,9 @@ public class ProductPriceUpdater {
         BigDecimal listPrice = productSupplier.getListPrice();
         int packageSize = productSupplier.getPackageSize();
         return productSupplier.isAutoPriceUpdate()
-                && !MathRules.equals(listPrice, BigDecimal.ZERO)
-                && packageSize != 0;
+               && !MathRules.equals(listPrice, BigDecimal.ZERO)
+               && packageSize != 0
+               && isActive(productSupplier.getSupplierRef());
     }
 
     /**
@@ -389,6 +401,38 @@ public class ProductPriceUpdater {
         return currency;
     }
 
+    /**
+     * Helper to determine if an object is active.
+     * <p/>
+     * This assumes that references to new objects that cannot be retrieved (i.e aren't yet in the transaction
+     * context) are always active.
+     * <p/>
+     * It queries the database for persistent references to avoid pulling in large objects.
+     *
+     * @param reference the object's reference
+     * @return <tt>true</tt> if the object is active
+     */
+    private boolean isActive(IMObjectReference reference) {
+        boolean result = false;
+        if (reference != null) {
+            if (reference.isNew()) {
+                IMObject object = service.get(reference);
+                result = (object == null) || object.isActive();
+            } else {
+                ObjectRefConstraint constraint = new ObjectRefConstraint("o", reference);
+                ArchetypeQuery query = new ArchetypeQuery(constraint);
+                query.add(new NodeSelectConstraint("o.active"));
+                query.setMaxResults(1);
+                Iterator<ObjectSet> iter = new ObjectSetQueryIterator(service, query);
+                if (iter.hasNext()) {
+                    ObjectSet set = iter.next();
+                    result = set.getBoolean("o.active");
+                }
+            }
+        }
+
+        return result;
+    }
 
     private Set<EntityRelationship> getProductSuppliers(Product product) {
         EntityBean bean = new EntityBean(product, service);
