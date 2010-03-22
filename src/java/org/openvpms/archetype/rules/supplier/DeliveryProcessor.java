@@ -448,7 +448,8 @@ public class DeliveryProcessor {
         } else {
             save = false;
         }
-        if (ps.isAutoPriceUpdate()) {
+        if (ps.isAutoPriceUpdate() && supplier.isActive()) {
+            // only update prices if the supplier is active
             updateUnitPrices(product, ps);
         }
 

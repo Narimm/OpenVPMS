@@ -123,7 +123,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         // now save with a custom unit price, and verify it doesn't get
         // overwritten when the product saves.
         Set<ProductPrice> prices = product.getProductPrices();
-        ProductPrice unit = prices.toArray(new ProductPrice[0])[0];
+        ProductPrice unit = prices.toArray(new ProductPrice[prices.size()])[0];
         unit.setPrice(new BigDecimal("1.35"));
         save(product);
         checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.35"));
@@ -236,7 +236,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
     /**
      * Verifies that product prices update when the associated product is
-     * saved.
+     * saved and the supplier is active.
      *
      * @param product the product
      */
@@ -271,11 +271,29 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // verify that the price has updated
         checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.34"));
+
+        // now deactivate the supplier to prevent price updates
+        supplier = get(supplier);
+        supplier.setActive(false);
+        save(supplier);
+
+        // now change the net and list price
+        ps.setNettPrice(new BigDecimal("15.00"));
+        ps.setListPrice(new BigDecimal("30.00"));
+
+        // now trigger the rule
+        save(product);
+
+        // verify that the price haven't updated
+        checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.34"));
     }
 
     /**
-     * Verifies that product prices update when the associated supplier is
-     * saved.
+     * Verifies that:
+     * <ul>
+     * <li>product prices update when the associated supplier is saved.
+     * <li>product prices aren't updated when the supplier is inactive.
+     * </ul>
      *
      * @param supplier the supplier
      */
@@ -315,6 +333,17 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // verify that the price has updated
         checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+
+        // now update the net, list price but disable the supplier. Prices shouldn't update
+        ps.setNettPrice(new BigDecimal("20.00"));
+        ps.setListPrice(new BigDecimal("40.00"));
+
+        supplier = get(supplier);
+        supplier.setActive(false);
+        save(supplier);
+
+        // verify that the price hasn't updated
+        checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
     }
 
     /**
@@ -330,7 +359,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         product = get(product); // reload product
         Set<ProductPrice> prices = product.getProductPrices();
         assertEquals(1, prices.size());
-        ProductPrice p = prices.toArray(new ProductPrice[0])[0];
+        ProductPrice p = prices.toArray(new ProductPrice[prices.size()])[0];
         IMObjectBean bean = new IMObjectBean(p);
         assertEquals(cost, bean.getBigDecimal("cost"));
         assertEquals(price, bean.getBigDecimal("price"));
