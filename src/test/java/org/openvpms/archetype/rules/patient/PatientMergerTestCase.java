@@ -31,8 +31,8 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -195,6 +195,38 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
                          expected.getErrorCode());
         }
     }
+
+    /**
+     * Tests that entity relationships where the source of the relationship is hull are handled correctly.
+     */
+    public void testMergeEntityRelationshipsWithNullSource() {
+        Party from = TestHelper.createPatient();
+        Party to = TestHelper.createPatient();
+
+        EntityRelationship null1 = (EntityRelationship) create("entityRelationship.patientOwner");
+        null1.setTarget(from.getObjectReference());
+        from.getTargetEntityRelationships().add(null1);
+        save(from);
+
+        EntityRelationship null2 = (EntityRelationship) create("entityRelationship.patientOwner");
+        null2.setTarget(to.getObjectReference());
+        to.getTargetEntityRelationships().add(null2);
+        save(to);
+
+        Party merged = checkMerge(from, to);
+
+        // verify there is only a single relationship
+        assertEquals(1, merged.getEntityRelationships().size());
+        EntityRelationship[] relationships = merged.getEntityRelationships().toArray(new EntityRelationship[1]);
+        EntityRelationship r = relationships[0];
+
+        // verify that the source of the relationship is null
+        assertNull(r.getSource());
+
+        // verify that the target points to the merged party
+        assertEquals(merged.getObjectReference(), r.getTarget());
+    }
+
 
     /**
      * Sets up the test case.
