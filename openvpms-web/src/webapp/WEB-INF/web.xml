@@ -18,6 +18,7 @@
         <param-value>
             /WEB-INF/applicationContext.xml
             /WEB-INF/applicationContext-authentication.xml
+            /WEB-INF/openvpms-esci.xml
         </param-value>
     </context-param>
 
@@ -36,7 +37,7 @@
         <filter-name>springSecurityFilterChain</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    
+
     <!--
      - Loads the root application context of this web app at startup,
      - by default from "/WEB-INF/applicationContext.xml".
@@ -85,6 +86,12 @@
         <servlet-class>org.openvpms.web.servlet.LogoutServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>jaxws-spring-servlet</servlet-name>
+        <servlet-class>com.sun.xml.ws.transport.http.servlet.WSSpringServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/login</url-pattern>
@@ -113,6 +120,11 @@
     <servlet-mapping>
         <servlet-name>LogoutServlet</servlet-name>
         <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>jaxws-spring-servlet</servlet-name>
+        <url-pattern>/esci/OrderResponseService</url-pattern>
     </servlet-mapping>
 
     <session-config>
