@@ -24,7 +24,25 @@
         </wss:service>
     </wss:binding>
 
+    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory">
+        <!-- remove serviceAuthenticators if JAX-WS authentication is handled by the container -->
+        <property name="serviceAuthenticators">
+            <bean class="org.openvpms.esci.service.client.DefaultServiceAuthenticators" init-method="getInstance"/>
+        </property>
+    </bean>
+
+    <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.SupplierServiceLocator">
+        <constructor-arg index="0" ref="serviceLocatorFactory"/>
+        <constructor-arg index="1" ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="orderService" class="org.openvpms.esci.adapter.OrderWebServiceAdapter">
+        <constructor-arg ref="supplierServiceLocator" index="0"/>
+        <constructor-arg ref="archetypeRuleService" index="1"/>
+        <constructor-arg ref="lookupService" index="2"/>
+    </bean>
+
     <bean id="orderResponseService" class="org.openvpms.esci.adapter.OrderResponseWebService">
-        <property name="archetypeService" ref="archetypeRuleService"/> 
+        <property name="archetypeService" ref="archetypeRuleService"/>
     </bean>
 </beans>
