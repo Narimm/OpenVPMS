@@ -294,14 +294,6 @@
     </bean>
 
     <!-- ================================================================== -->
-    <!--                 ESCI                                               -->
-    <!-- ================================================================== -->
-    <bean id="orderService" class="org.openvpms.esci.adapter.OrderWebServiceAdapter">
-        <constructor-arg ref="archetypeService" index="0"/>
-        <constructor-arg ref="lookupService" index="1"/>
-    </bean>
-
-    <!-- ================================================================== -->
     <!--                 RULES ENGINE (DROOLS)                              -->
     <!-- ================================================================== -->
 
