@@ -41,25 +41,28 @@ public class OrderWebServiceAdapter implements OrderServiceAdapter {
     private final OrderMapper mapper;
 
     /**
+     * The supplier web service locator.
+     */
+    private final SupplierServiceLocator locator;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
 
-    /**
-     * The supplier web service locator.
-     */
-    private final SupplierServiceLocator<OrderService> locator;
 
     /**
-     * Constructs a <tt>SOAPOrderServiceAdapter</tt>.
+     * Constructs a <tt>OrderWebServiceAdapter</tt>.
      *
+     * @param locator       the supplier service locator
      * @param service       the archetype service
      * @param lookupService the lookup service
      */
-    public OrderWebServiceAdapter(IArchetypeService service, ILookupService lookupService) {
+    public OrderWebServiceAdapter(SupplierServiceLocator locator, IArchetypeService service,
+                                  ILookupService lookupService) {
+        this.locator = locator;
         this.service = service;
         mapper = new OrderMapper(service, lookupService);
-        locator = new SupplierServiceLocator<OrderService>(OrderService.class, service);
     }
 
     /**
@@ -72,7 +75,7 @@ public class OrderWebServiceAdapter implements OrderServiceAdapter {
     public void submitOrder(FinancialAct order) {
         ActBean bean = new ActBean(order, service);
         Party supplier = (Party) bean.getNodeParticipant("supplier");
-        OrderService orderService = locator.getService(supplier);
+        OrderService orderService = locator.getOrderService(supplier);
         OrderType orderType = mapper.map(order);
         orderService.submitOrder(orderType);
     }

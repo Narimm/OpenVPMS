@@ -35,6 +35,7 @@ public class ESCIAdapterException extends OpenVPMSException {
     public enum ErrorCode {
 
         ESCINotConfigured,
+        InvalidSupplierServiceURL,
         InvalidServiceURL,
         NoProductSupplier,
         NoSupplierOrderCode

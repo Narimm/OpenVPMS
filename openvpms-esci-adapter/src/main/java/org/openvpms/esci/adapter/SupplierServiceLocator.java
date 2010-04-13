@@ -24,10 +24,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.client.ServiceLocator;
+import org.openvpms.esci.service.client.ServiceLocatorFactory;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 
 /**
@@ -36,17 +37,17 @@ import java.net.URL;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SupplierServiceLocator<T> {
-
-    /**
-     * The interface of the web service.
-     */
-    private final Class<T> serviceInterface;
+public class SupplierServiceLocator {
 
     /**
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * The service locator factory.
+     */
+    private final ServiceLocatorFactory factory;
 
     /**
      * Supplier rules.
@@ -55,26 +56,27 @@ public class SupplierServiceLocator<T> {
 
 
     /**
-     * Constructs a <tt>SOAPServiceLocator</tt>.
+     * Constructs a <tt>SupplierServiceLocator</tt>.
      *
-     * @param serviceInterface the interface of the web service that the locator should create a proxy for
-     * @param service          the archetype service
+     * @param factory the service locator factory
+     * @param service the archetype service
      */
-    public SupplierServiceLocator(Class<T> serviceInterface, IArchetypeService service) {
-        this.serviceInterface = serviceInterface;
+    public SupplierServiceLocator(ServiceLocatorFactory factory, IArchetypeService service) {
+        this.factory = factory;
         this.service = service;
         rules = new SupplierRules(service);
     }
 
     /**
-     * Returns a proxy for the web service provided by a supplier.
+     * Returns a proxy for a supplier's {@link OrderService}.
      * <p/>
      * This uses the <em>entity.ESCIConfigurationSOAP</em> associated with the supplier to lookup the web service.
      *
      * @param supplier the supplier
      * @return a proxy for the service provided by the supplier
+     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid
      */
-    public T getService(Party supplier) {
+    public OrderService getOrderService(Party supplier) {
         Entity config = rules.getESCIConfiguration(supplier);
         if (config == null) {
             throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.ESCINotConfigured, supplier.getId(),
@@ -91,34 +93,45 @@ public class SupplierServiceLocator<T> {
 
         String serviceURL = bean.getString("serviceURL");
         if (StringUtils.isEmpty(serviceURL)) {
-            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidServiceURL,
+            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidSupplierServiceURL,
                                            supplier.getId(), supplier.getName(), serviceURL);
         }
-        ServiceLocator<T> locator = ServiceLocator.create(serviceInterface);
+        try {
+            ServiceLocator<OrderService> locator
+                    = factory.getServiceLocator(OrderService.class, serviceURL, username, password);
+            return locator.getService();
+        } catch (MalformedURLException exception) {
+            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidSupplierServiceURL, exception,
+                                           supplier.getId(), supplier.getName(), serviceURL);
+        }
+    }
 
+    /**
+     * Returns a proxy for a supplier's {@link OrderService}.
+     *
+     * @param serviceURL the WSDL document URL of the service
+     * @param username   the username to connect to the service with
+     * @param password   the password to connect  to the service with
+     * @return a proxy for the service provided by the supplier
+     * @throws ESCIAdapterException if <tt>serviceURL</tt> is invalid
+     */
+    public OrderService getOrderService(String serviceURL, String username, String password) {
+/*
         StringBuilder wsdl = new StringBuilder(serviceURL);
         if (!serviceURL.endsWith("/")) {
             wsdl.append('/');
         }
         wsdl.append(locator.getServiceName());
         wsdl.append("?wsdl");
+*/
 
         try {
-            URL url = new URL(wsdl.toString());
-            locator.setWsdlDocumentUrl(url);
+            ServiceLocator<OrderService> locator
+                    = factory.getServiceLocator(OrderService.class, serviceURL, username, password);
+            return locator.getService();
         } catch (MalformedURLException exception) {
-            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidServiceURL, exception,
-                                           supplier.getId(), supplier.getName(), wsdl);
+            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidServiceURL, exception, serviceURL);
         }
-
-
-        if (!StringUtils.isEmpty(username)) {
-            locator.setUsername(username);
-        }
-        if (!StringUtils.isEmpty(password)) {
-            locator.setPassword(password);
-        }
-        return locator.getService();
     }
-
 }
+

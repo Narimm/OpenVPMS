@@ -102,7 +102,7 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         UBLDocumentContext context = new UBLDocumentContext();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         context.createWriter().write(order, stream);
-        order = context.createReader().read(new ByteArrayInputStream(stream.toByteArray()), OrderType.class);
+        order = (OrderType) context.createReader().read(new ByteArrayInputStream(stream.toByteArray()));
 
         UBLDocumentWriter writer = context.createWriter();
         writer.setFormat(true);
