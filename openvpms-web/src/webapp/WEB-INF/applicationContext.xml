@@ -76,6 +76,8 @@
                 <prop key="hibernate.c3p0.max_statements">
                     ${hibernate.c3p0.max_statements}
                 </prop>
+                <prop key="net.sf.ehcache.configurationResourceName">/ehcache.xml</prop>
+                <prop key="hibernate.generate_statistics">true</prop>
             </props>
         </property>
         <property name="schemaUpdate" value="false"/>
@@ -151,6 +153,53 @@
     <bean id="auditDao"
           class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
         <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!--                           CACHE MANAGER                            -->
+    <!-- ================================================================== -->
+
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <!-- NOTE: the configLocation must be the same as that specified by the sessionFactory
+             property: net.sf.ehcache.configurationResourceName, when SingletonEhCacheProvider is being used -->
+        <property name="configLocation" value="classpath:ehcache.xml"/>
+        <property name="shared" value="true"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!--                           JMX                                      -->
+    <!-- ================================================================== -->
+
+    <bean id="hibernateStatisticsMBean" class="org.hibernate.jmx.StatisticsService">
+        <property name="statisticsEnabled" value="true"/>
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <bean id="ehCacheMBeanRegistration" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="net.sf.ehcache.management.ManagementService.registerMBeans"/>
+        <property name="arguments">
+            <list>
+                <ref bean="cacheManager"/>
+                <ref bean="mbeanServer"/>
+                <value>true</value>
+                <value>true</value>
+                <value>true</value>
+                <value>true</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="locateExistingServerIfPossible" value="true"/>
+    </bean>
+
+    <bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter">
+        <property name="beans">
+            <map>
+                <entry key="Hibernate:name=statistics" value-ref="hibernateStatisticsMBean"/>
+            </map>
+        </property>
+        <property name="server" ref="mbeanServer"/>
     </bean>
 
     <!-- ================================================================== -->
