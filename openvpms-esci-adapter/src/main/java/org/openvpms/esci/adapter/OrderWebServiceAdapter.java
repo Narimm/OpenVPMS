@@ -20,10 +20,11 @@ package org.openvpms.esci.adapter;
 import org.oasis.ubl.OrderType;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.service.OrderService;
+
+import javax.annotation.Resource;
 
 
 /**
@@ -38,31 +39,53 @@ public class OrderWebServiceAdapter implements OrderServiceAdapter {
     /**
      * The order mapper.
      */
-    private final OrderMapper mapper;
+    private OrderMapper mapper;
 
     /**
      * The supplier web service locator.
      */
-    private final SupplierServiceLocator locator;
+    private SupplierServiceLocator locator;
 
     /**
-     * The archetype service.
+     * The bean factory.
      */
-    private final IArchetypeService service;
+    private IMObjectBeanFactory factory;
 
 
     /**
-     * Constructs a <tt>OrderWebServiceAdapter</tt>.
+     * Constructs an <tt>OrderWebServiceAdapter</tt>.
+     */
+    public OrderWebServiceAdapter() {
+    }
+
+    /**
+     * Sets the order mapper.
      *
-     * @param locator       the supplier service locator
-     * @param service       the archetype service
-     * @param lookupService the lookup service
+     * @param mapper the order mapper
      */
-    public OrderWebServiceAdapter(SupplierServiceLocator locator, IArchetypeService service,
-                                  ILookupService lookupService) {
+    @Resource
+    public void setOrderMapper(OrderMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    /**
+     * Sets the supplier service locator.
+     *
+     * @param locator the supplier service locator
+     */
+    @Resource
+    public void setSupplierServiceLocator(SupplierServiceLocator locator) {
         this.locator = locator;
-        this.service = service;
-        mapper = new OrderMapper(service, lookupService);
+    }
+
+    /**
+     * Sets the bean factory.
+     *
+     * @param factory the bean factory
+     */
+    @Resource
+    public void setFactory(IMObjectBeanFactory factory) {
+        this.factory = factory;
     }
 
     /**
@@ -73,8 +96,11 @@ public class OrderWebServiceAdapter implements OrderServiceAdapter {
      *          for any error
      */
     public void submitOrder(FinancialAct order) {
-        ActBean bean = new ActBean(order, service);
+        ActBean bean = factory.createActBean(order);
         Party supplier = (Party) bean.getNodeParticipant("supplier");
+        if (supplier == null) {
+            throw new IllegalStateException("Argument 'order' has no supplier participant");
+        }
         OrderService orderService = locator.getOrderService(supplier);
         OrderType orderType = mapper.map(order);
         orderService.submitOrder(orderType);

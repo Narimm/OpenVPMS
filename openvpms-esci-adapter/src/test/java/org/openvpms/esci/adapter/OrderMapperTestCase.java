@@ -35,6 +35,8 @@ import org.oasis.ubl.common.basic.PayableAmountType;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
+import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.AbstractSupplierTest;
@@ -45,6 +47,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.ubl.io.UBLDocumentContext;
 import org.openvpms.ubl.io.UBLDocumentWriter;
 
@@ -56,7 +60,7 @@ import java.util.Date;
 
 
 /**
- * Tests the {@link OrderMapper} class.
+ * Tests the {@link OrderMapperImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -95,7 +99,7 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         act.setStatus(ActStatus.POSTED);
         save(act);
 
-        OrderMapper mapper = new OrderMapper();
+        OrderMapper mapper = createMapper();
         OrderType order = mapper.map(act);
 
         // serialize the order and re-read it, to ensure it passes validation
@@ -165,6 +169,22 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         productSupplier.setReorderDescription("A reorder description");
 
         save(supplier, product);
+    }
+
+    /**
+     * Creates a new order mapper.
+     *
+     * @return a new mapper
+     */
+    private OrderMapperImpl createMapper() {
+        OrderMapperImpl mapper = new OrderMapperImpl();
+        mapper.setPracticeRules(new PracticeRules());
+        mapper.setLocationRules(new LocationRules());
+        mapper.setPartyRules(new PartyRules());
+        mapper.setProductRules(new ProductRules());
+        mapper.setLookupService(LookupServiceHelper.getLookupService());
+        mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
+        return mapper;
     }
 
     /**
@@ -238,8 +258,8 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
     /**
      * Checks an item.
      *
-     * @param item     the item to check
-     * @param product  the expected product
+     * @param item    the item to check
+     * @param product the expected product
      */
     private void checkItem(ItemType item, Product product) {
         assertEquals(product.getName(), item.getName().getValue());
