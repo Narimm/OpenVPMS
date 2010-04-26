@@ -78,6 +78,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
                 onEndTimeChanged();
             }
         };
+
+        initParticipant("author", context.getContext().getUser());
     }
 
     /**

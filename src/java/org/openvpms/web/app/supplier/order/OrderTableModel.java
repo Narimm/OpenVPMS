@@ -33,10 +33,8 @@ public class OrderTableModel extends AbstractActTableModel {
     /**
      * The nodes to display.
      */
-    private static final String[] NODES
-            = new String[]{"startTime", "supplier", "stockLocation", "status",
-                           "deliveryStatus", "amount", "title"};
-
+    private static final String[] NODES = {"startTime", "supplier", "stockLocation", "status", "deliveryStatus",
+                                           "amount", "title"};
 
     /**
      * Creates a new <tt>OrderTableModel</tt>.
@@ -50,8 +48,6 @@ public class OrderTableModel extends AbstractActTableModel {
 
     /**
      * Returns a list of descriptor names to include in the table.
-     * This implementation returns <code>null</code> to indicate that the
-     * intersection should be calculated from all descriptors.
      *
      * @return the list of descriptor names to include in the table
      */

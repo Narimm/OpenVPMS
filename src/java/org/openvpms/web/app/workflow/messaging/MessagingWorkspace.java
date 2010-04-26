@@ -40,7 +40,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
     public MessagingWorkspace() {
         super("workflow", "messaging", false);
         setArchetypes(User.class, "security.user");
-        setChildArchetypes(Act.class, "act.userMessage");
+        setChildArchetypes(Act.class, "act.userMessage", "act.systemMessage");
     }
 
     /**

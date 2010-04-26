@@ -96,7 +96,7 @@ public class ESCIConfigurationSOAPEditor extends AbstractIMObjectEditor {
             SupplierServiceLocator locator = ServiceHelper.getSupplierServiceLocator();
             locator.getOrderService(url, user, password);
         } catch (Throwable exception) {
-            ErrorHelper.show(exception, false);
+            ErrorHelper.show(exception);
         }
     }
 }
