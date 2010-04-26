@@ -35,7 +35,7 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Query for <em>act.userMessage</em> acts.
+ * Query for <em>act.userMessage</em> and <em>act.systemMessage</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -56,9 +56,11 @@ public class MessageQuery extends DateRangeActQuery<Act> {
 
     /**
      * Constructs a new <tt>MessageQuery</tt>.
+     *
+     * @param user the user to query messages for. May be <tt>null</tt>
      */
     public MessageQuery(Entity user) {
-        super(user, "to", "participation.user", new String[]{"act.userMessage"},
+        super(user, "to", "participation.user", new String[]{"act.userMessage", "act.systemMessage"},
               STATUSES, Act.class);
         setStatus("PENDING");
 
@@ -118,4 +120,5 @@ public class MessageQuery extends DateRangeActQuery<Act> {
         container.add(clinician.getComponent());
         getFocusGroup().add(clinician.getFocusGroup());
     }
+
 }

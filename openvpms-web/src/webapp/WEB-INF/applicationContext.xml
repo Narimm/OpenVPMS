@@ -7,6 +7,8 @@
                            http://www.springframework.org/schema/context
                            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
+    <context:annotation-config/> <!-- enable autowiring -->
+
     <!-- ================================================================== -->
     <!--                         GENERAL DEFINITIONS                        -->
     <!-- ================================================================== -->
@@ -229,7 +231,8 @@
 
     <!-- The Archetype service -->
     <bean id="archetypeService"
-          class="org.openvpms.component.business.service.archetype.ArchetypeService">
+          class="org.openvpms.component.business.service.archetype.ArchetypeService" autowire-candidate="false">
+        <!-- don't make this a candidate for autowiring as it doesn't support rules -->
         <constructor-arg ref="archetypeDescriptorCache"/>
         <property name="dao" ref="imObjectDao"/>
         <property name="ruleEngine" ref="ruleEngine"/>
@@ -241,7 +244,6 @@
         <constructor-arg ref="auditDao"/>
     </bean>
 
-
     <!-- ================================================================== -->
     <!--                         ARCHETYPE SUPPORT                          -->
     <!-- ================================================================== -->
@@ -250,6 +252,11 @@
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
+
+    <bean name="imObjectBeanFactory" class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">
+        <constructor-arg index="0" ref="archetypeRuleService"/>
+    </bean>
+
 
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
@@ -277,7 +284,7 @@
 
     <bean id="lookupService"
           class="org.openvpms.component.business.service.lookup.CachingLookupService">
-        <constructor-arg index="0" ref="archetypeService"/>
+        <constructor-arg index="0" ref="archetypeRuleService"/>
         <constructor-arg index="1">
             <ref local="imObjectDao"/>
         </constructor-arg>

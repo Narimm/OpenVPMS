@@ -102,10 +102,34 @@ public class DescriptorTableColumn extends TableColumn {
     /**
      * Returns the value of the cell.
      *
-     * @param object the context
-     * @return the value of the cell
+     * @param object the object
+     * @return the value of the cell, or <tt>null</tt> if the object doesn't have node
      */
-    public Component getValue(IMObject object, LayoutContext context) {
+    public Object getValue(IMObject object) {
+        NodeDescriptor node = getDescriptor(object);
+        return (node != null) ? node.getValue(object) : null;
+    }
+
+    /**
+     * Returns the values of the cell.
+     *
+     * @param object the object
+     * @return the values of the cell, or <tt>null</tt> if the object doesn't have node or the node isn't a collection
+     *         node
+     */
+    public List<IMObject> getValues(IMObject object) {
+        NodeDescriptor node = getDescriptor(object);
+        return (node != null) ? node.getChildren(object) : null;
+    }
+
+    /**
+     * Returns the value of the cell, as a component.
+     *
+     * @param object  the object
+     * @param context the context
+     * @return the value of the cell, or <tt>null</tt> if the object doesn't have node
+     */
+    public Component getComponent(IMObject object, LayoutContext context) {
         Component result;
         NodeDescriptor node = getDescriptor(object);
         if (node != null) {
@@ -137,8 +161,7 @@ public class DescriptorTableColumn extends TableColumn {
         boolean sortable = true;
         for (NodeDescriptor descriptor : descriptors.values()) {
             // can only sort on top-level or participation nodes
-            if (descriptor.isCollection()
-                    && !QueryHelper.isParticipationNode(descriptor)) {
+            if (descriptor.isCollection() && !QueryHelper.isParticipationNode(descriptor)) {
                 sortable = false;
                 break;
             } else if (descriptor.getPath().lastIndexOf("/") > 0) {
