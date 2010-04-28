@@ -19,12 +19,17 @@
 package org.openvpms.component.business.service.lookup;
 
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -165,6 +170,79 @@ public abstract class AbstractLookupService implements ILookupService {
                 = getRelationships(relationshipShortName,
                                    lookup.getSourceLookupRelationships());
         return getTargetLookups(relationships);
+    }
+
+    /**
+     * Returns a list of lookups for an archetype's node.
+     *
+     * @param shortName the archetype short name
+     * @param node      the node name
+     * @return a list of lookups
+     */
+    public Collection<Lookup> getLookups(String shortName, String node) {
+        ArchetypeDescriptor archetype = service.getArchetypeDescriptor(shortName);
+        if (archetype == null) {
+            throw new IllegalArgumentException("Invalid archetype shortname: " + shortName);
+        }
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+        if (descriptor == null) {
+            throw new IllegalArgumentException("Invalid node name: " + node);
+        }
+        LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, this);
+        return assertion.getLookups();
+    }
+
+    /**
+     * Return a list of lookups for a given object and node value.
+     * <p/>
+     * This will limit lookups returned if the node refers to the source or target of a lookup relationship.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return a list of lookups
+     */
+    public Collection<Lookup> getLookups(IMObject object, String node) {
+        IMObjectBean bean = new IMObjectBean(object, service);
+        NodeDescriptor descriptor = bean.getDescriptor(node);
+        if (descriptor == null) {
+            throw new IllegalArgumentException("Invalid node name: " + node);
+        }
+        LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, this);
+        return assertion.getLookups(object);
+    }
+
+    /**
+     * Returns a lookup based on the value of a node.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the lookup, or <tt>null</tt> if none is found
+     */
+    public Lookup getLookup(IMObject object, String node) {
+        IMObjectBean bean = new IMObjectBean(object, service);
+        NodeDescriptor descriptor = bean.getDescriptor(node);
+        if (descriptor == null) {
+            throw new IllegalArgumentException("Invalid node name: " + node);
+        }
+        Lookup result = null;
+        Object value = descriptor.getValue(object);
+        if (value != null) {
+            LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, this);
+            result = assertion.getLookup(object, (String) value);
+        }
+        return result;
+    }
+
+    /**
+     * Returns a lookup's name based on the value of a node.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the lookup's name, or <tt>null</tt> if none is found
+     */
+    public String getName(IMObject object, String node) {
+        Lookup lookup = getLookup(object, node);
+        return (lookup != null) ? lookup.getName() : null;
     }
 
     /**
