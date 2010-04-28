@@ -456,6 +456,20 @@ public class ActBean extends IMObjectBean {
      *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
      */
     public Participation addNodeParticipation(String name, Entity target) {
+        return addNodeParticipation(name, target.getObjectReference());
+    }
+
+    /**
+     * Adds a new participation relationship between the act (the source), and the supplied target reference.
+     *
+     * @param name   the participation relationship node name, used to determine which relationship to create
+     * @param target the target entity reference
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, there is no relationship that supports
+     *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     */
+    public Participation addNodeParticipation(String name, IMObjectReference target) {
         String shortName = getRelationshipShortName(name, target, "entity");
         return addParticipation(shortName, target);
     }
