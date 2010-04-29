@@ -36,8 +36,11 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
+import org.openvpms.archetype.rules.workflow.MessageArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.admin.AdminSubsystem;
 import org.openvpms.web.app.customer.CustomerSubsystem;
 import org.openvpms.web.app.history.CustomerPatient;
@@ -47,6 +50,8 @@ import org.openvpms.web.app.product.ProductSubsystem;
 import org.openvpms.web.app.reporting.ReportingSubsystem;
 import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
+import org.openvpms.web.app.workflow.messaging.MessageMonitor;
+import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -129,6 +134,26 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     private TaskQueueHandle taskQueue;
 
     /**
+     * The message monitor
+     */
+    private final MessageMonitor monitor;
+
+    /**
+     * The message listener.
+     */
+    private final MessageMonitor.MessageListener listener;
+
+    /**
+     * The user the listener was registered for.
+     */
+    private User user;
+
+    /**
+     * Mail button.
+     */
+    private Button messages;
+
+    /**
      * The style name.
      */
     private static final String STYLE = "MainPane";
@@ -169,13 +194,34 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     private ImageReference NEW_WINDOW
             = new ResourceImageReference(NEW_WINDOW_PATH);
 
+    /**
+     * Reference to the mail icon.
+     */
+    private static final ImageReference MAIL
+            = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail.png");
 
     /**
-     * Construct a new <tt>MainPane</tt>.
+     * Reference to the new mail icon.
      */
-    public MainPane() {
+    private static final ImageReference UNREAD_MAIL
+            = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail-unread.png");
+
+
+    /**
+     * Constructs a <tt>MainPane</tt>.
+     *
+     * @param monitor the message monitor
+     */
+    public MainPane(MessageMonitor monitor) {
         super(ORIENTATION_HORIZONTAL);
         setStyleName(Styles.getStyle(SplitPane.class, STYLE));
+        this.monitor = monitor;
+        listener = new MessageMonitor.MessageListener() {
+            public void onMessage(Act message) {
+                updateMessageStatus(true);
+            }
+        };
+        user = GlobalContext.getInstance().getUser();
 
         summaryRefresher = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
@@ -205,7 +251,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         context.addListener(this);
 
         // if the current user is an admin, show the administration subsystem
-        if (UserHelper.isAdmin(context.getUser())) {
+        if (UserHelper.isAdmin(user)) {
             addSubsystem(new AdminSubsystem());
         }
 
@@ -230,6 +276,32 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         add(right);
 
         button.doAction();
+    }
+
+    /**
+     * Life-cycle method invoked when the <code>Component</code> is added
+     * to a registered hierarchy.
+     * <p/>
+     * This implementation registers a listener for message notification.
+     */
+    @Override
+    public void init() {
+        super.init();
+        if (user != null) {
+            monitor.addListener(user, listener);
+        }
+    }
+
+    /**
+     * Life-cycle method invoked when the <code>Component</code> is removed
+     * from a registered hierarchy.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (user != null) {
+            monitor.removeListener(user, listener);
+        }
     }
 
     /**
@@ -360,12 +432,47 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     }
 
     /**
-     * Creates a row containing right justified new window and logout buttons.
+     * Updates the message status button.
+     */
+    private void updateMessageStatus() {
+        boolean update = false;
+        if (user != null) {
+            update = monitor.hasNewMessages(user);
+        }
+        updateMessageStatus(update);
+    }
+
+    /**
+     * Updates the message status button.
+     *
+     * @param newMessages if <tt>true</tt> indicates there is new messages
+     */
+    private void updateMessageStatus(boolean newMessages) {
+        if (newMessages) {
+            messages.setIcon(UNREAD_MAIL);
+            messages.setToolTipText(Messages.get("messages.unread.tooltip"));
+        } else {
+            messages.setIcon(MAIL);
+            messages.setToolTipText(Messages.get("messages.read.tooltip"));
+        }
+    }
+
+    /**
+     * Creates a row containing right justified messages, new window and logout buttons.
      *
      * @return the row
      */
     private Row getManagementRow() {
         ButtonRow row = new ButtonRow(null, BUTTON_STYLE);
+        messages = ButtonFactory.create(null, BUTTON_STYLE);
+        messages.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent event) {
+                ContextApplicationInstance.getInstance().switchTo(MessageArchetypes.USER);
+            }
+        });
+        updateMessageStatus();
+        row.addButton(messages);
+
         Button newWindow = ButtonFactory.create(null, BUTTON_STYLE);
         newWindow.setIcon(NEW_WINDOW);
         newWindow.setToolTipText(Messages.get("newwindow.tooltip"));
@@ -456,7 +563,8 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      */
     private void showHistory() {
         final CustomerPatientHistoryBrowser browser = new CustomerPatientHistoryBrowser();
-        BrowserDialog<CustomerPatient> dialog = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser);
+        BrowserDialog<CustomerPatient> dialog
+                = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 CustomerPatient selected = browser.getSelected();

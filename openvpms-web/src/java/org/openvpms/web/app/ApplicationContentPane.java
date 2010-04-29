@@ -59,8 +59,8 @@ public class ApplicationContentPane extends ContentPane {
     protected void doLayout() {
         SplitPane layout = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, LAYOUT_STYLE);
         MessageMonitor messageMonitor = (MessageMonitor) ServiceHelper.getContext().getBean("messageMonitor");
-        layout.add(new TitlePane(messageMonitor));
-        layout.add(new MainPane());
+        layout.add(new TitlePane());
+        layout.add(new MainPane(messageMonitor));
         add(layout);
     }
 
