@@ -48,7 +48,8 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * the <em>archetypeService.save.act.supplierDelivery</em> and
      * the <em>archetypeService.save.act.supplierReturn</em> rules.
      */
-    @Test public void testPostDelivery() {
+    @Test
+    public void testPostDelivery() {
         BigDecimal quantity = new BigDecimal(5);
         Act delivery = createDelivery(quantity, 1);
 
@@ -133,7 +134,8 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * Verifies that the order quantity is updated correctly when a
      * delivery/return is posted with a different package size.
      */
-    @Test public void testQuantityConversion() {
+    @Test
+    public void testQuantityConversion() {
         BigDecimal quantity = BigDecimal.ONE;
         int packageSize = 20;
         BigDecimal unitPrice = BigDecimal.ONE;
@@ -172,7 +174,8 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * Verifies that the <em>entityRelationship.productSupplier</em> is
      * updated when a delivery is <em>POSTED</em>.
      */
-    @Test public void testProductSupplierUpdate() {
+    @Test
+    public void testProductSupplierUpdate() {
         BigDecimal quantity = BigDecimal.ONE;
         int packageSize = 20;
         BigDecimal unitPrice1 = new BigDecimal("10.00");
@@ -202,7 +205,8 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * are updated.
      * <p/>
      */
-    @Test public void testUnitPriceUpdate() {
+    @Test
+    public void testUnitPriceUpdate() {
         Product product = getProduct();
         BigDecimal initialCost = BigDecimal.ZERO;
         BigDecimal initialPrice = BigDecimal.ONE;
@@ -262,6 +266,31 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
 
         // verify that the price has not updated
         checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+
+        // post another delivery
+        BigDecimal unitPrice3 = new BigDecimal("8.00");
+        BigDecimal listPrice3 = new BigDecimal("16.00");
+        Act delivery3 = createDelivery(quantity, packageSize, unitPrice3, listPrice3);
+
+        delivery3.setStatus(ActStatus.POSTED);
+        save(delivery3);
+        checkPrice(product, new BigDecimal("0.80"), new BigDecimal("1.60"));
+
+        // now mark the supplier inactive. Subsequent deliveries shouldn't update prices
+        Party supplier = get(getSupplier());
+        supplier.setActive(false);
+        save(supplier);
+
+        // post another delivery
+        BigDecimal unitPrice4 = new BigDecimal("10.00");
+        BigDecimal listPrice4 = new BigDecimal("20.00");
+        Act delivery4 = createDelivery(quantity, packageSize, unitPrice4, listPrice4);
+
+        delivery4.setStatus(ActStatus.POSTED);
+        save(delivery4);
+
+        // verify that the price has not updated
+        checkPrice(product, new BigDecimal("0.80"), new BigDecimal("1.60"));
     }
 
     private void checkPrice(Product product, BigDecimal cost,
