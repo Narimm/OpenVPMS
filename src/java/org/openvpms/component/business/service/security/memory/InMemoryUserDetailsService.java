@@ -19,19 +19,15 @@
 
 package org.openvpms.component.business.service.security.memory;
 
-// java-core
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import java.util.Properties;
 
-// acegi security
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UserDetailsService;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-
-// spring-dao
-import org.springframework.dao.DataAccessException;
-
 /**
- * This is an in-memory user details manager, which ius primarily useful for 
+ * This is an in-memory user details manager, which is primarily useful for
  * testing the authorization.
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>

@@ -18,13 +18,14 @@
 
 package org.openvpms.component.business.service.security;
 
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ContextConfiguration;
 
 
 /**
@@ -33,41 +34,46 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
+@ContextConfiguration("hibernate-security-service-appcontext.xml")
 public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
 
     /**
      * A reference to the dao, which is used to during setup
      */
+    @Autowired
     private IMObjectDAO dao;
 
-
     /**
-     * Default constructor
-     */
-    public HibernateSecurityServiceTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     * Create a secure context for authorization testing.
+     *
+     * @param name        the user name
+     * @param password    the password
+     * @param authorities the authorities of the person
      */
     @Override
-    protected String[] getConfigLocations() {
-        return new String[]{"org/openvpms/component/business/service/security/hibernate-security-service-appcontext.xml"};
-    }
+    protected void createSecurityContext(String name, String password, String... authorities) {
+        User user = createUser(name, password);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        this.archetype = (IArchetypeService) applicationContext
-                .getBean("archetypeService");
-        this.dao = (IMObjectDAO) applicationContext.getBean("imObjectDao");
+        SecurityRole role = createSecurityRole("role1");
+        for (String authority : authorities) {
+            // bit of a hack. The authority should be created via the archetype
+            // service, but there is no facility to populate it from an
+            // authority string.
+            ArchetypeAwareGrantedAuthority auth
+                    = new ArchetypeAwareGrantedAuthority(authority);
+            auth.setArchetypeIdAsString("security.archetypeAuthority.1.0");
+            dao.save(auth);
+            role.addAuthority(auth);
+        }
+
+        user.addRole(role);
+        dao.save(role);
+        dao.save(user);
+
+        UsernamePasswordAuthenticationToken token
+                = new UsernamePasswordAuthenticationToken(
+                user.getName(), user.getPassword(), user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(token);
     }
 
     /**
@@ -99,39 +105,6 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
         role.setName(name);
 
         return role;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openvpms.component.business.service.security.MemorySecurityServiceTestCase#createSecurityContext(java.lang.String,
-     *      java.lang.String, java.lang.String)
-     */
-    @Override
-    protected void createSecurityContext(String name, String password,
-                                         String ... authorities) {
-        User user = createUser(name, password);
-
-        SecurityRole role = createSecurityRole("role1");
-        for (String authority : authorities) {
-            // bit of a hack. The authority should be created via the archetype
-            // service, but there is no facility to populate it from an
-            // authority string.
-            ArchetypeAwareGrantedAuthority auth
-                    = new ArchetypeAwareGrantedAuthority(authority);
-            auth.setArchetypeIdAsString("security.archetypeAuthority.1.0");
-            dao.save(auth);
-            role.addAuthority(auth);
-        }
-
-        user.addRole(role);
-        dao.save(role);
-        dao.save(user);
-
-        UsernamePasswordAuthenticationToken token
-                = new UsernamePasswordAuthenticationToken(
-                user.getName(), user.getPassword(), user.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(token);
     }
 
 }

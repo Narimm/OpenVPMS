@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.service.lookup;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.util.Collection;
@@ -100,6 +101,44 @@ public interface ILookupService {
                                         String relationshipShortName);
 
     /**
+     * Returns a list of lookups for an archetype's node.
+     *
+     * @param shortName the archetype short name
+     * @param node      the node name
+     * @return a list of lookups
+     */
+    Collection<Lookup> getLookups(String shortName, String node);
+
+    /**
+     * Return a list of lookups for a given object and node value.
+     * <p/>
+     * This will limit lookups returned if the node refers to the source or target of a lookup relationship.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return a list of lookups
+     */
+    Collection<Lookup> getLookups(IMObject object, String node);
+
+    /**
+     * Returns a lookup based on the value of a node.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the lookup, or <tt>null</tt> if none is found
+     */
+    Lookup getLookup(IMObject object, String node);
+
+    /**
+      * Returns a lookup's name based on the value of a node.
+      *
+      * @param object the object
+      * @param node   the node name
+      * @return the lookup's name, or <tt>null</tt> if none is found
+      */
+     String getName(IMObject object, String node);
+
+    /**
      * Replaces one lookup with another.
      * <p/>
      * Each lookup must be of the same archetype.
@@ -108,4 +147,5 @@ public interface ILookupService {
      * @param target the lookup to replace <tt>source</tt> with
      */
     void replace(Lookup source, Lookup target);
+
 }

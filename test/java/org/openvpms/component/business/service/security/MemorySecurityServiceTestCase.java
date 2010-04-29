@@ -18,11 +18,14 @@
 
 package org.openvpms.component.business.service.security;
 
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ContextConfiguration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -31,47 +34,23 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
-public class MemorySecurityServiceTestCase
-        extends SecurityServiceTests {
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{"org/openvpms/component/business/service/security/memory-security-service-appcontext.xml"};
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        this.archetype = (IArchetypeService) applicationContext
-                .getBean("archetypeService");
-    }
+@ContextConfiguration("memory-security-service-appcontext.xml")
+public class MemorySecurityServiceTestCase extends SecurityServiceTests {
 
     /**
-     * Create a secure context so that we can do some authorization testing
+     * Create a secure context so that we can do some authorization testing.
      *
      * @param user        the user name
      * @param password    the password
      * @param authorities the authorities of the person
      */
     protected void createSecurityContext(String user, String password,
-                                         String ... authorities) {
-        GrantedAuthority[] granted = new GrantedAuthority[authorities.length];
-        for (int i = 0; i < granted.length; ++i) {
-            granted[i] = new ArchetypeAwareGrantedAuthority(authorities[i]);
+                                         String... authorities) {
+        List<GrantedAuthority> granted = new ArrayList<GrantedAuthority>();
+        for (String authority : authorities) {
+            granted.add(new ArchetypeAwareGrantedAuthority(authority));
         }
-        UsernamePasswordAuthenticationToken token
-                = new UsernamePasswordAuthenticationToken(user, password,
-                                                          granted);
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user, password, granted);
         SecurityContextHolder.getContext().setAuthentication(token);
     }
 }

@@ -18,15 +18,16 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 
@@ -37,18 +38,19 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActBeanTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class ActBeanTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests the {@link ActBean#addRelationship},
      * {@link ActBean#getRelationship)} {@link ActBean#getRelationships}
      * and {@link ActBean#hasRelationship} methods.
      */
+    @Test
     public void testRelationships() {
         final String relName = "actRelationship.customerEstimationItem";
         Act target = (Act) create("act.customerEstimationItem");
-        ActBean bean = createBean("act.customerEstimation");
+        ActBean bean = createActBean("act.customerEstimation");
         Act source = bean.getAct();
         assertNull(bean.getRelationship(target));
         assertEquals(0, bean.getRelationships(relName).size());
@@ -73,15 +75,14 @@ public class ActBeanTestCase
     /**
      * Tests the {@link ActBean#getActs} method.
      */
+    @Test
     public void testGetActs() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         final String relName = "actRelationship.customerEstimationItem";
-        ActBean bean = createBean("act.customerEstimation");
+        ActBean bean = createActBean("act.customerEstimation");
         Act[] expected = new Act[3];
         for (int i = 0; i < 3; ++i) {
             Act target = (Act) create("act.customerEstimationItem");
-            service.save(target);
+            save(target);
             bean.addRelationship(relName, target);
             expected[i] = target;
         }
@@ -95,15 +96,14 @@ public class ActBeanTestCase
     /**
      * Tests the {@link ActBean#getActs(String)} method.
      */
+    @Test
     public void testGetActsByShortName() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         final String relName = "actRelationship.customerEstimationItem";
-        ActBean bean = createBean("act.customerEstimation");
+        ActBean bean = createActBean("act.customerEstimation");
         Act[] expected = new Act[3];
         for (int i = 0; i < 3; ++i) {
             Act target = (Act) create("act.customerEstimationItem");
-            service.save(target);
+            save(target);
             bean.addRelationship(relName, target);
             expected[i] = target;
         }
@@ -128,15 +128,14 @@ public class ActBeanTestCase
     /**
      * Tests the {@link ActBean#getNodeActs} method.
      */
+    @Test
     public void testGetNodeActs() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         final String relName = "actRelationship.customerEstimationItem";
-        ActBean bean = createBean("act.customerEstimation");
+        ActBean bean = createActBean("act.customerEstimation");
         Act[] expected = new Act[3];
         for (int i = 0; i < 3; ++i) {
             Act target = (Act) create("act.customerEstimationItem");
-            service.save(target);
+            save(target);
             bean.addRelationship(relName, target);
             expected[i] = target;
         }
@@ -150,14 +149,14 @@ public class ActBeanTestCase
     /**
      * Tests the {@link ActBean#addNodeRelationship} method.
      */
+    @Test
     public void testAddNodeRelationship() {
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-        ActBean bean = createBean("act.customerEstimation");
+        ActBean bean = createActBean("act.customerEstimation");
         Act[] expected = new Act[3];
         for (int i = 0; i < 3; ++i) {
             Act target = (Act) create("act.customerEstimationItem");
             expected[i] = target;
-            service.save(target);
+            save(target);
 
             ActRelationship r = bean.addNodeRelationship("items", target);
             assertNotNull(r);
@@ -185,9 +184,10 @@ public class ActBeanTestCase
      * {@link ActBean#removeParticipation} and
      * {@link ActBean#setParticipant} methods.
      */
+    @Test
     public void testParticipations() {
         final String pName = "participation.customer";
-        ActBean bean = createBean("act.customerEstimation");
+        ActBean bean = createActBean("act.customerEstimation");
         Party customer1 = createCustomer();
         ArchetypeServiceHelper.getArchetypeService().save(customer1);
         Party customer2 = createCustomer();
@@ -223,10 +223,11 @@ public class ActBeanTestCase
      * Tests the {@link ActBean#getNodeParticipant(String)} and
      * {@link ActBean#getNodeParticipantRef(String)} method.
      */
+    @Test
     public void testGetNodeParticipant() {
-        ActBean bean = createBean("act.customerEstimation");
+        ActBean bean = createActBean("act.customerEstimation");
         Party customer = createCustomer();
-        ArchetypeServiceHelper.getArchetypeService().save(customer);
+        save(customer);
 
         assertNull(bean.getNodeParticipantRef("customer"));
         assertNull(bean.getNodeParticipant("customer"));
@@ -241,8 +242,9 @@ public class ActBeanTestCase
     /**
      * Tests the {@link ActBean#addNodeParticipation} method.
      */
+    @Test
     public void testAddNodeParticipation() {
-        ActBean bean = createBean("act.customerEstimation");
+        ActBean bean = createActBean("act.customerEstimation");
         Party customer = createCustomer();
         Participation participation = bean.addNodeParticipation("customer", customer);
         assertNotNull(participation);
@@ -290,38 +292,12 @@ public class ActBeanTestCase
     }
 
     /**
-     * (non-Javadoc)
-     *
-     * @see AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /**
-     * Helper to create an object.
-     *
-     * @param shortName the archetype short name
-     * @return the new object
-     */
-    private IMObject create(String shortName) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        IMObject object = service.create(shortName);
-        assertNotNull(object);
-        return object;
-    }
-
-    /**
      * Helper to create an act and wrap it in an {@link ActBean}.
      *
      * @param shortName the archetype short name
-     * @return the bean wrapping an instance of <code>shortName</code>.
+     * @return the bean wrapping an instance of <tt>shortName</tt>.
      */
-    private ActBean createBean(String shortName) {
+    private ActBean createActBean(String shortName) {
         Act object = (Act) create(shortName);
         return new ActBean(object);
     }

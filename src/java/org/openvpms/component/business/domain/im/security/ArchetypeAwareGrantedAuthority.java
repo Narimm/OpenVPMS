@@ -19,31 +19,28 @@
 
 package org.openvpms.component.business.domain.im.security;
 
-// java core
-import java.util.StringTokenizer;
-
-// acegi-security
-import org.acegisecurity.GrantedAuthority;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.StringTokenizer;
 
 /**
  * Represents permission for a service, method and associated archetype short
- * name. 
- * <p>
- * The precise format of an authority is 
- * 
+ * name.
+ * <p/>
+ * The precise format of an authority is
+ * <p/>
  * archetype:archetypService.save:person.party
  * archetype:archetypeService.*:*.*
  * archetype:archetypeService.create:party.*
  * archetype:archetypeService.create:act.invoice
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class ArchetypeAwareGrantedAuthority extends IMObject 
-    implements GrantedAuthority {
+public class ArchetypeAwareGrantedAuthority extends IMObject
+        implements GrantedAuthority {
+
     /**
      * Defualt SUID
      */
@@ -53,33 +50,33 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
      * The prefix is used to identify the grant type
      */
     private String prefix = "archetype";
-    
+
     /**
      * This is the string version of the authority
      */
     private String authority;
-    
+
     /**
      * The service name, which is an alias to the actual service interface
      */
     private String serviceName;
-    
+
     /**
      * The method, which can be a regular expression
      */
     private String method;
-    
+
     /**
      * The archetype short name, which can also be a regular expression
      */
     private String archetypeShortName;
-    
+
     /**
      * The role that this authhority belongs too
      */
     private SecurityRole role;
-    
-    
+
+
     /**
      * Default constructor
      */
@@ -88,46 +85,46 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
     }
 
     /**
-     * Construct an instance given the string representation of the 
+     * Construct an instance given the string representation of the
      * authority
-     * 
-     * @param str
-     *            a stringified version of the authority
+     *
+     * @param str a stringified version of the authority
      */
     public ArchetypeAwareGrantedAuthority(String str) {
         StringTokenizer tokens = new StringTokenizer(str, ":");
         if (tokens.countTokens() != 3) {
             throw new GrantedAuthorityException(
                     GrantedAuthorityException.ErrorCode.InvalidGrantAuthorityFormat,
-                    new Object[] {str});
+                    new Object[]{str});
         }
-        
+
         // the first token must be the prefix
         if (!tokens.nextToken().equals(prefix)) {
             throw new GrantedAuthorityException(
                     GrantedAuthorityException.ErrorCode.InvalidPrefix);
         }
-        
+
         // the second token is the service and the method. The service 
         // cannot have any wildcards but the method can.
         StringTokenizer temp = new StringTokenizer(tokens.nextToken(), ".");
-        if (temp.countTokens() !=2) {
+        if (temp.countTokens() != 2) {
             throw new GrantedAuthorityException(
                     GrantedAuthorityException.ErrorCode.InvalidServiceMethodFormat,
-                    new Object[] {temp});
+                    new Object[]{temp});
         }
-        
+
         serviceName = temp.nextToken();
         method = temp.nextToken();
         archetypeShortName = tokens.nextToken();
-        
+
         // store the original str
         this.authority = str;
     }
-    
+
     /**
-    /* (non-Javadoc)
-     * @see org.acegisecurity.GrantedAuthority#getAuthority()
+     * Returns the string representation of the authority.
+     *
+     * @return a representation of the granted authority
      */
     public String getAuthority() {
         if (authority == null) {
@@ -138,15 +135,17 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
             buf.append(method);
             buf.append(":");
             buf.append(archetypeShortName);
-        
+
             authority = buf.toString();
         }
-        
+
         return authority;
     }
 
     /**
-     * @return Returns the archetypeShortName.
+     * Returns the archetype short name.
+     *
+     * @return the archetype short name
      */
     public String getArchetypeShortName() {
         return archetypeShortName;
@@ -213,14 +212,14 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        ArchetypeAwareGrantedAuthority copy = (ArchetypeAwareGrantedAuthority)super.clone();
+        ArchetypeAwareGrantedAuthority copy = (ArchetypeAwareGrantedAuthority) super.clone();
         copy.archetypeShortName = this.archetypeShortName;
         copy.authority = this.authority;
         copy.method = this.method;
         copy.prefix = this.prefix;
         copy.role = this.role;
-        copy.serviceName  = this.serviceName;
-        
+        copy.serviceName = this.serviceName;
+
         return copy;
     }
 }

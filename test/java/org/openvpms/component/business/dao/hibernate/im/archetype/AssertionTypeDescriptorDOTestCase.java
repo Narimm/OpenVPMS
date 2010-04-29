@@ -20,6 +20,9 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 
@@ -42,7 +45,8 @@ public class AssertionTypeDescriptorDOTestCase
     /**
      * Test the creation of an assertion type descriptor.
      */
-    public void testCreate() throws Exception {
+    @Test
+    public void testCreate() {
 
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -80,6 +84,7 @@ public class AssertionTypeDescriptorDOTestCase
     /**
      * Test the deletion of an assertion type descriptor.
      */
+    @Test
     public void testDelete() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -106,6 +111,7 @@ public class AssertionTypeDescriptorDOTestCase
     /**
      * Test the update of an assertion type descriptor.
      */
+    @Test
     public void testUpdate() {
 
         Session session = getSession();
@@ -139,22 +145,20 @@ public class AssertionTypeDescriptorDOTestCase
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         types = count(AssertionTypeDescriptorDOImpl.class);
     }
 
     /**
-     * Create an {@link AssertionTypeDescriptor} with the specified parameters
+     * Create an {@link AssertionTypeDescriptor} with the specified parameters.
      *
+     * @param name the name
      * @return AssertionTypeDescriptor
      */
-    private AssertionTypeDescriptorDO createAssertionTypeDescriptor(
-            String name) {
+    private AssertionTypeDescriptorDO createAssertionTypeDescriptor(String name) {
         AssertionTypeDescriptorDO desc = new AssertionTypeDescriptorDOImpl();
         desc.setName(name);
         desc.setPropertyArchetype("openvpms-dum-dum");
@@ -162,7 +166,7 @@ public class AssertionTypeDescriptorDOTestCase
     }
 
     /**
-     * Add an action to the specified {@link AssertionTypeDescriptor}
+     * Add an action to the specified {@link AssertionTypeDescriptor}.
      *
      * @param descriptor the source descriptor
      * @param name       the action name

@@ -19,9 +19,9 @@
 
 package org.openvpms.component.business.service.security;
 
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor;
 
 
 /**

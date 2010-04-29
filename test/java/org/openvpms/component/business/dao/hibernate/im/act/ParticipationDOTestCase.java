@@ -21,9 +21,12 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
@@ -44,7 +47,8 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation of a simple participation from the act end
      */
-    public void testCreateParticipationFromActEnd() throws Exception {
+    @Test
+    public void testCreateParticipationFromActEnd() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
         EntityDO entity = createEntity("jima-entity");
@@ -70,8 +74,8 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
      * Create an entity, act and particpation and ensure that the participation
      * can be removed from the act end.
      */
-    public void testDeleteParticipantFromActEnd()
-            throws Exception {
+    @Test
+    public void testDeleteParticipantFromActEnd() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
         EntityDO entity = createEntity("jima-entity");
@@ -105,6 +109,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation of a multiple participation to a single entity
      */
+    @Test
     public void testMultipleParticipationCreation() {
         Session session = getSession();
 
@@ -131,6 +136,7 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation and deletion of participations to a single entity
      */
+    @Test
     public void testParticiaptionCreationAndDeletion() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -151,6 +157,15 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
 
         // check the no. of rows
         assertEquals(participations + pcount, count(ParticipationDOImpl.class));
+    }
+
+    /**
+     * Sets up the test case.
+     */
+    @Override
+    public void setUp() {
+        super.setUp();
+        participations = count(ParticipationDOImpl.class);
     }
 
     /**
@@ -196,16 +211,6 @@ public class ParticipationDOTestCase extends HibernateInfoModelTestCase {
         act.setName(name);
 
         return act;
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-        participations = count(ParticipationDOImpl.class);
     }
 
 }

@@ -18,12 +18,14 @@
 
 package org.openvpms.component.business.service.entity;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Random;
 
@@ -34,111 +36,102 @@ import java.util.Random;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class PersonContactTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * Holds a reference to the archetype service.
-     */
-    private ArchetypeService service;
-
+@ContextConfiguration("entity-service-appcontext.xml")
+public class PersonContactTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Test the creation of a person with contacts and addresses as
      * specified in the archetype
      */
-    public void testValidPersonContactCreation()
-            throws Exception {
+    @Test
+    public void testValidPersonContactCreation() {
         Party person = createPerson("party.person", "MR", "John", "Dillon");
         Contact contact = createLocationContact();
         person.addContact(contact);
-        service.save(person);
+        save(person);
 
-        person = (Party) service.get(person.getObjectReference());
-        assertTrue(person != null);
-        assertTrue(person.getContacts().size() == 1);
+        person = get(person);
+        assertNotNull(person);
+        assertEquals(1, person.getContacts().size());
     }
 
     /**
      * Test that the many-to-many relationship between contact and
      * address works.
      */
-    public void testContactRelationship()
-            throws Exception {
-        Party person1 = createPerson("party.person", "MR", "John",
-                                     "Dimantaris");
+    @Test
+    public void testContactRelationship() {
+        Party person1 = createPerson("party.person", "MR", "John", "Dimantaris");
         Party person2 = createPerson("party.person", "MS", "Jenny", "Love");
 
         Contact contact1 = createLocationContact();
         Contact contact2 = createLocationContact();
         person1.addContact(contact1);
-        service.save(person1);
+        save(person1);
 
         person2.addContact(contact2);
-        service.save(person2);
+        save(person2);
 
         // save the entities
 
         // now attempt to retrieve the entities
-        person1 = (Party) service.get(person1.getObjectReference());
-        assertTrue(person1 != null);
+        person1 = get(person1);
+        assertNotNull(person1);
         assertTrue(person1.getContacts().size() == 1);
 
-        person2 = (Party) service.get(person2.getObjectReference());
-        assertTrue(person2 != null);
+        person2 = get(person2);
+        assertNotNull(person2);
         assertTrue(person2.getContacts().size() == 1);
 
         // now delete the address from person1 and update it.
         person1.getContacts().clear();
         assertTrue(person1.getContacts().size() == 0);
-        service.save(person1);
+        save(person1);
 
         // retrieve the entities again and check that the addresses are
         // still valid
-        person1 = (Party) service.get(person1.getObjectReference());
-        assertTrue(person1 != null);
+        person1 = get(person1);
+        assertNotNull(person1);
         assertTrue(person1.getContacts().size() == 0);
 
-        person2 = (Party) service.get(person2.getObjectReference());
-        assertTrue(person2 != null);
+        person2 = get(person2);
+        assertNotNull(person2);
         assertTrue(person2.getContacts().size() == 1);
     }
 
     /**
      * Test the addition and removal of contacts
      */
-    public void testContactLifecycle()
-            throws Exception {
+    @Test
+    public void testContactLifecycle() {
         Party person = createPerson("party.person", "MR", "Jim", "Alateras");
         person.addContact(createLocationContact());
         person.addContact(createLocationContact());
         person.addContact(createLocationContact());
 
-        service.save(person);
+        save(person);
 
         // retrieve and remove the first contact and update
-        person = (Party) service.get(person.getObjectReference());
+        person = get(person);
         assertTrue(person.getContacts().size() == 3);
         Contact contact = person.getContacts().iterator().next();
         person.getContacts().remove(contact);
         assertTrue(person.getContacts().size() == 2);
-        service.save(person);
+        save(person);
 
         // retrieve and ensure thagt there are only 2 contacts
-        person = (Party) service.get(person.getObjectReference());
+        person = get(person);
         assertTrue(person.getContacts().size() == 2);
     }
 
     /**
      * Test for OBF-49
      */
-    public void testOBF049()
-            throws Exception {
-        Party person = createPerson("party.personobf49", "MR", "Jim",
-                                    "Alateras");
+    @Test
+    public void testOBF049() {
+        Party person = createPerson("party.personobf49", "MR", "Jim", "Alateras");
         try {
-            service.validateObject(person);
+            validateObject(person);
             fail("This should not have validated");
         } catch (ValidationException exception) {
             // ingore
@@ -147,28 +140,16 @@ public class PersonContactTestCase
         // add classification
         person.addClassification(createLookup("lookup.staff"));
         person.addClassification(createLookup("lookup.patient"));
-        service.validateObject(person);
+        validateObject(person);
 
         // add another classification
         try {
             person.addClassification(createLookup("lookup.patient"));
-            service.validateObject(person);
+            validateObject(person);
             fail("This should not have validated");
         } catch (ValidationException exception) {
             // ingore
         }
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-      */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/entity/entity-service-appcontext.xml"
-        };
     }
 
     /**
@@ -177,7 +158,7 @@ public class PersonContactTestCase
      * @return a new contact
      */
     private Contact createLocationContact() {
-        Contact contact = (Contact) service.create("contact.location");
+        Contact contact = (Contact) create("contact.location");
 
         contact.getDetails().put("address", "5 Kalulu Rd");
         contact.getDetails().put("suburb", "Belgrave");
@@ -198,23 +179,12 @@ public class PersonContactTestCase
      */
     private Party createPerson(String shortName, String title, String firstName,
                                String lastName) {
-        Party person = (Party) service.create(shortName);
+        Party person = (Party) create(shortName);
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
 
         return person;
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
     }
 
     /**
@@ -224,7 +194,7 @@ public class PersonContactTestCase
      * @return a new lookup
      */
     private Lookup createLookup(String shortName) {
-        Lookup result = (Lookup) service.create(shortName);
+        Lookup result = (Lookup) create(shortName);
         String code = shortName + new Random().nextInt();
         result.setCode(code);
         return result;

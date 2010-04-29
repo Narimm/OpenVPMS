@@ -19,6 +19,9 @@
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.lang.StringUtils;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -30,6 +33,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToDeleteObject;
 import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -38,7 +42,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -51,21 +55,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * Test that ability to create and query on acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServiceActTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
+@ContextConfiguration("archetype-service-appcontext.xml")
+public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * The transaction template.
@@ -76,84 +73,82 @@ public class ArchetypeServiceActTestCase
     /**
      * Test the creation of a simple act.
      */
-    public void testSimpleActCreation() throws Exception {
+    @Test
+    public void testSimpleActCreation() {
         Party person = createPerson("MR", "Jim", "Alateras");
-        service.save(person);
+        save(person);
         Act act = createSimpleAct("study", "inprogress");
-        Participation participation = createSimpleParticipation(
-                "studyParticipation",
-                person, act);
+        Participation participation = createSimpleParticipation("studyParticipation", person, act);
         act.addParticipation(participation);
-        service.save(act);
+        save(act);
 
-        Act act1 = (Act) service.get(act.getObjectReference());
+        Act act1 = (Act) get(act.getObjectReference());
         assertEquals(act1, act);
     }
 
     /**
-     * Test the search by acts function
+     * Test the search by acts function.
      */
-    @SuppressWarnings("unchecked")
-    public void testGetActs() throws Exception {
+    @Test
+    public void testGetActs() {
         // create an act which participates in 5 acts
         Party person = createPerson("MR", "Jim", "Alateras");
-        service.save(person);
+        save(person);
         for (int index = 0; index < 5; index++) {
             Act act = createSimpleAct("study" + index, "inprogress");
-            Participation participation = createSimpleParticipation(
-                    "studyParticipation",
-                    person, act);
+            Participation participation = createSimpleParticipation("studyParticipation", person, act);
             act.addParticipation(participation);
-            service.save(act);
+            save(act);
         }
 
         // now use the getActs request
-        IPage<Act> acts = ArchetypeQueryHelper.getActs(
-                service, person.getObjectReference(),
+        IPage acts = ArchetypeQueryHelper.getActs(
+                getArchetypeService(), person.getObjectReference(),
                 "participation.simple", "act", "simple",
                 null, null, null, null,
                 null, false, 0, ArchetypeQuery.ALL_RESULTS);
         assertEquals(5, acts.getTotalResults());
 
         // now look at the paging aspects
-        acts = ArchetypeQueryHelper.getActs(service,
+        acts = ArchetypeQueryHelper.getActs(getArchetypeService(),
                                             person.getObjectReference(),
                                             "participation.simple", "act",
                                             "simple", null, null, null, null,
                                             null, false, 0, 1);
         assertEquals(5, acts.getTotalResults());
         assertEquals(1, acts.getResults().size());
-        assertFalse(StringUtils.isEmpty(acts.getResults().get(0).getName()));
+        assertFalse(StringUtils.isEmpty(((Act) acts.getResults().get(0)).getName()));
     }
 
     /**
      * Retrieve acts using a start and end date.
      */
-    public void testGetActsBetweenTimes() throws Exception {
+    @Test
+    public void testGetActsBetweenTimes() {
         Date startTime = new Date();
         Date endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
         ArchetypeQuery query = new ArchetypeQuery("act.simple", false, true)
                 .add(new NodeConstraint("startTime", RelationalOp.BTW,
                                         startTime, endTime))
                 .add(new NodeConstraint("name", "between"));
-        int acount = service.get(query).getResults().size();
-        service.save(createSimpleAct("between", "start"));
-        int acount1 = service.get(query).getResults().size();
+        int acount = get(query).size();
+        save(createSimpleAct("between", "start"));
+        int acount1 = get(query).size();
         assertEquals(acount + 1, acount1);
 
         for (int index = 0; index < 5; index++) {
-            service.save(createSimpleAct("between", "start"));
+            save(createSimpleAct("between", "start"));
         }
-        acount1 = service.get(query).getResults().size();
+        acount1 = get(query).size();
         assertEquals(acount + 6, acount1);
     }
 
     /**
      * Tests OVPMS-211.
      */
-    public void testOVPMS211() throws Exception {
-        Act estimationItem1
-                = (Act) service.create("act.customerEstimationItem");
+    @Test
+    public void testOVPMS211() {
+        Act estimationItem1 = (Act) create("act.customerEstimationItem");
         ActBean estimationItem1Bean = new ActBean(estimationItem1);
         estimationItem1Bean.setValue("fixedPrice", "1.0");
         estimationItem1Bean.setValue("lowQty", "2.0");
@@ -162,14 +157,12 @@ public class ArchetypeServiceActTestCase
         estimationItem1Bean.setValue("highUnitPrice", "5.0");
         estimationItem1Bean.save();
 
-        Act estimation = (Act) service.create("act.customerEstimation");
+        Act estimation = (Act) create("act.customerEstimation");
         ActBean estimationBean = new ActBean(estimation);
         estimationBean.setValue("status", "IN_PROGRESS");
-        estimationBean.addRelationship("actRelationship.customerEstimationItem",
-                                       estimationItem1);
+        estimationBean.addRelationship("actRelationship.customerEstimationItem", estimationItem1);
 
-        Act estimationItem2
-                = (Act) service.create("act.customerEstimationItem");
+        Act estimationItem2 = (Act) create("act.customerEstimationItem");
         ActBean estimationItem2Bean = new ActBean(estimationItem2);
         estimationItem2Bean.setValue("fixedPrice", "2.0");
         estimationItem2Bean.setValue("lowQty", "3.0");
@@ -178,8 +171,7 @@ public class ArchetypeServiceActTestCase
         estimationItem2Bean.setValue("highUnitPrice", "6.0");
         estimationItem2Bean.save();
 
-        estimationBean.addRelationship("actRelationship.customerEstimationItem",
-                                       estimationItem2);
+        estimationBean.addRelationship("actRelationship.customerEstimationItem", estimationItem2);
         estimationBean.save();
 
         // reload the estimation
@@ -196,11 +188,11 @@ public class ArchetypeServiceActTestCase
     /**
      * Tests OVPMS-228.
      */
-    public void testOVPMS228() throws Exception {
-        Act act = (Act) service.create("act.customerAccountPayment");
+    @Test
+    public void testOVPMS228() {
+        Act act = (Act) create("act.customerAccountPayment");
         assertNotNull(act);
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                act.getArchetypeId());
+        ArchetypeDescriptor adesc = getArchetypeService().getArchetypeDescriptor(act.getArchetypeId());
         assertNotNull(adesc);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("amount");
         assertNotNull(ndesc);
@@ -211,10 +203,9 @@ public class ArchetypeServiceActTestCase
 
     /**
      * Saves a collection of acts.
-     *
-     * @throws Exception for any error
      */
-    public void testSaveCollection() throws Exception {
+    @Test
+    public void testSaveCollection() {
         Act act1 = createSimpleAct("act1", "IN_PROGRESS");
         Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
@@ -233,13 +224,12 @@ public class ArchetypeServiceActTestCase
         // of act1
         act1 = reload(act1);
         act1.setStatus("COMPLETED");
-        service.save(act1);
+        save(act1);
         try {
             checkSaveCollection(acts, 2);
             fail("Expected save to fail");
         } catch (ArchetypeServiceException expected) {
-            assertEquals(FailedToSaveCollectionOfObjects,
-                         expected.getErrorCode());
+            assertEquals(FailedToSaveCollectionOfObjects, expected.getErrorCode());
         }
     }
 
@@ -250,12 +240,13 @@ public class ArchetypeServiceActTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testOBF163() throws Exception {
-        Act estimation = (Act) service.create("act.customerEstimation");
+        Act estimation = (Act) create("act.customerEstimation");
         estimation.setStatus("POSTED");
-        ActRelationship relationship = (ActRelationship) service.create(
+        ActRelationship relationship = (ActRelationship) create(
                 "actRelationship.customerEstimationItem");
-        Act item = (Act) service.create("act.customerEstimationItem");
+        Act item = (Act) create("act.customerEstimationItem");
         relationship.setSource(estimation.getObjectReference());
         relationship.setTarget(item.getObjectReference());
         estimation.addActRelationship(relationship);
@@ -283,7 +274,7 @@ public class ArchetypeServiceActTestCase
         estimation.removeActRelationship(relationship);
         item.removeActRelationship(relationship);
 
-        ActRelationship relationship2 = (ActRelationship) service.create(
+        ActRelationship relationship2 = (ActRelationship) create(
                 "actRelationship.customerEstimationItem");
         relationship2.setSource(estimation.getObjectReference());
         relationship2.setTarget(item.getObjectReference());
@@ -300,31 +291,33 @@ public class ArchetypeServiceActTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testOBF170() {
         Party person = createPerson("MR", "Jim", "Alateras");
-        service.save(person);
+        save(person);
 
         Act act1 = createSimpleAct("act1", "IN_PROGRESS");
 
         Participation p1 = createSimpleParticipation("act1p1", person, act1);
         act1.addParticipation(p1);
 
-        service.save(act1);
+        save(act1);
         act1.setStatus("POSTED");
         Collection<Act> objects = Arrays.asList(act1);
-        service.save(objects);
+        save(objects);
 
         act1.removeParticipation(p1);
         objects = Arrays.asList(act1);
-        service.save(objects);
+        save(objects);
 
-        service.save(act1);
+        save(act1);
     }
 
     /**
      * Verifies that related acts must be saved together i.e the entire
      * object graph must be saved.
      */
+    @Test
     public void testSaveRelatedActs() {
         // Create 2 acts with the following relationship:
         // act1 -- (parent/child) --> act2
@@ -334,7 +327,7 @@ public class ArchetypeServiceActTestCase
 
         // verify that act1 cannot be saved without act2
         try {
-            service.save(act1);
+            save(act1);
             fail("Expected save to fail");
         } catch (ArchetypeServiceException expected) {
             assertEquals(-1, act1.getId());
@@ -342,20 +335,21 @@ public class ArchetypeServiceActTestCase
 
         // verify that act2 cannot be saved without act1
         try {
-            service.save(act2);
+            save(act2);
             fail("Expected save to fail");
         } catch (ArchetypeServiceException expected) {
             assertEquals(-1, act2.getId());
         }
 
         // verify both acts can be saved together
-        service.save(Arrays.asList(act1, act2));
+        save(Arrays.asList(act1, act2));
     }
 
     /**
      * Verifies that related acts can be saved individually, but in the one
      * transaction.
      */
+    @Test
     public void testSaveRelatedActsInTxn() {
         // Create 2 acts with the following relationship:
         // act1 -- (parent/child) --> act2
@@ -364,14 +358,14 @@ public class ArchetypeServiceActTestCase
         addRelationship(act1, act2, "act1->act2", true);
 
         // now try to save each act within a transaction.
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
-                service.save(act1);
+                save(act1);
                 // act has been saved, but the identifier cannot be assigned
                 // until the related act is also saved
                 assertEquals(-1, act1.getId());
 
-                service.save(act2);
+                save(act2);
 
                 // identifiers should have updated
                 assertFalse(act1.getId() == -1);
@@ -386,6 +380,7 @@ public class ArchetypeServiceActTestCase
      * {@link IArchetypeService#get(IMObjectReference)} in a transaction,
      * even if an identifier hasn't been assigned.
      */
+    @Test
     public void testResolveUncommittedActs() {
         // Create 2 acts with the following relationship:
         // act1 -- (parent/child) --> act2
@@ -393,23 +388,23 @@ public class ArchetypeServiceActTestCase
         final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         addRelationship(act1, act2, "act1->act2", true);
 
-        assertNull(service.get(act1.getObjectReference()));
-        assertNull(service.get(act2.getObjectReference()));
+        assertNull(get(act1.getObjectReference()));
+        assertNull(get(act2.getObjectReference()));
 
         // now try to save each act within a transaction.
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
-                service.save(act1);
+                save(act1);
                 // act has been saved, but the identifier cannot be assigned
                 // until the related act is also saved
                 assertEquals(-1, act1.getId());
 
                 // verify that the act can be retrieved by reference, and is
                 // the same object
-                assertSame(act1, service.get(act1.getObjectReference()));
+                assertSame(act1, get(act1.getObjectReference()));
 
-                assertNull(service.get(act2.getObjectReference()));
-                service.save(act2);
+                assertNull(get(act2.getObjectReference()));
+                save(act2);
 
                 // identifiers should have updated
                 assertFalse(act1.getId() == -1);
@@ -417,14 +412,14 @@ public class ArchetypeServiceActTestCase
 
                 // verify that the acts can be retrieved by reference, and are
                 // the same objects
-                assertSame(act1, service.get(act1.getObjectReference()));
-                assertSame(act2, service.get(act2.getObjectReference()));
+                assertSame(act1, get(act1.getObjectReference()));
+                assertSame(act2, get(act2.getObjectReference()));
                 return null;
             }
         });
 
-        IMObject reload1 = service.get(act1.getObjectReference());
-        IMObject reload2 = service.get(act2.getObjectReference());
+        IMObject reload1 = get(act1.getObjectReference());
+        IMObject reload2 = get(act2.getObjectReference());
         assertNotNull(reload1);
         assertNotNull(reload2);
 
@@ -436,25 +431,23 @@ public class ArchetypeServiceActTestCase
 
     /**
      * Verifies an act can be removed.
-     *
-     * @throws Exception for any error
      */
-    public void testSingleActRemove() throws Exception {
+    @Test
+    public void testSingleActRemove() {
         Act act = createSimpleAct("act", "IN_PROGRESS");
-        service.save(act);
+        save(act);
         assertEquals(act, reload(act));
 
-        service.remove(act);
+        remove(act);
         assertNull(reload(act));
     }
 
     /**
      * Creates a set of acts with non-parent/child relationships, and verifies
      * that deleting one act doesn't cascade to the rest.
-     *
-     * @throws Exception for any error
      */
-    public void testPeerActRemoval() throws Exception {
+    @Test
+    public void testPeerActRemoval() {
         Act act1 = createSimpleAct("act1", "IN_PROGRESS");
         Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
@@ -465,14 +458,14 @@ public class ArchetypeServiceActTestCase
         // create a relationship from act2 -> act3
         addRelationship(act2, act3, "act2->act3");
 
-        service.save(Arrays.asList(act1, act2, act3));
+        save(Arrays.asList(act1, act2, act3));
 
-        service.remove(act1);
+        remove(act1);
         assertNull(reload(act1));
         assertNotNull(reload(act2));
         assertNotNull(reload(act3));
 
-        service.remove(act3);
+        remove(act3);
         assertNull(reload(act3));
         assertNotNull(reload(act2));
     }
@@ -485,21 +478,22 @@ public class ArchetypeServiceActTestCase
      * <li>deleting the parent causes deletion of the children</li>
      * </ul>
      */
+    @Test
     public void testParentChildRemoval() {
-        Act estimation = (Act) service.create("act.customerEstimation");
+        Act estimation = (Act) create("act.customerEstimation");
         estimation.setStatus("IN_PROGRESS");
-        Act item1 = (Act) service.create("act.customerEstimationItem");
-        Act item2 = (Act) service.create("act.customerEstimationItem");
-        Act item3 = (Act) service.create("act.customerEstimationItem");
+        Act item1 = (Act) create("act.customerEstimationItem");
+        Act item2 = (Act) create("act.customerEstimationItem");
+        Act item3 = (Act) create("act.customerEstimationItem");
         ActBean bean = new ActBean(estimation);
         bean.addRelationship("actRelationship.customerEstimationItem", item1);
         bean.addRelationship("actRelationship.customerEstimationItem", item2);
         bean.addRelationship("actRelationship.customerEstimationItem", item3);
-        service.save(Arrays.asList(estimation, item1, item2, item3));
+        save(Arrays.asList(estimation, item1, item2, item3));
 
         // remove an item, and verify it has been removed and that the other
         // acts aren't removed
-        service.remove(item1);
+        remove(item1);
         assertNull(reload(item1));
         assertNotNull(reload(estimation));
         assertNotNull(reload(item2));
@@ -508,7 +502,7 @@ public class ArchetypeServiceActTestCase
         // now remove the estimation and verify the remaining items are removed
         estimation = reload(estimation);
         assertNotNull(estimation);
-        service.remove(estimation);
+        remove(estimation);
         assertNull(reload(estimation));
         assertNull(reload(item2));
         assertNull(reload(item3));
@@ -520,6 +514,7 @@ public class ArchetypeServiceActTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testCyclicParentChildRemoval() throws Exception {
         // create 3 acts, with the following relationships:
         // act1 -> act2 -> act3 -> act1
@@ -532,7 +527,7 @@ public class ArchetypeServiceActTestCase
         addRelationship(act3, act1, "act3->act1", true);
 
         // remove act2. The removal should cascade to include act3 and act1
-        service.remove(act2);
+        remove(act2);
         assertNull(reload(act1));
         assertNull(reload(act2));
         assertNull(reload(act3));
@@ -545,6 +540,7 @@ public class ArchetypeServiceActTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testPeerParentChildRemoval() throws Exception {
         // create 3 acts with the following relationships:
         // act1 -- (parent/child) --> act2
@@ -557,11 +553,11 @@ public class ArchetypeServiceActTestCase
         addRelationship(act1, act2, "act1->act2", true);
         addRelationship(act1, act3, "act1->act3", false);
 
-        service.save(Arrays.asList(act1, act2, act3));
+        save(Arrays.asList(act1, act2, act3));
 
         // remove act1, and verify that it and act2 are removed, and act3
         // remains.
-        service.remove(act1);
+        remove(act1);
 
         assertNull(reload(act1));
         assertNull(reload(act2));
@@ -574,22 +570,23 @@ public class ArchetypeServiceActTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testStaleParentChildRemoval() throws Exception {
         Act act1 = createSimpleAct("act1", "IN_PROGRESS");
         Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
 
         addRelationship(act1, act2, "act1->act2", true);
-        service.save(Arrays.asList(act1, act2, act3));
+        save(Arrays.asList(act1, act2, act3));
 
         Act stale = reload(act1);
 
         addRelationship(act1, act3, "act1->act3", true);
-        service.save(act1);
-        service.save(act3);
+        save(act1);
+        save(act3);
 
         try {
-            service.remove(stale);
+            remove(stale);
             fail("Expected removal to fail");
         } catch (ArchetypeServiceException expected) {
             assertEquals(FailedToDeleteObject, expected.getErrorCode());
@@ -608,6 +605,7 @@ public class ArchetypeServiceActTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testPeerActRemovalInTxn() throws Exception {
         final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
         final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
@@ -625,11 +623,11 @@ public class ArchetypeServiceActTestCase
         final ActRelationship relAct1Act3 = addRelationship(act1, act3,
                                                             "act1->act3");
 
-        service.save(Arrays.asList(act1, act2, act3));
+        save(Arrays.asList(act1, act2, act3));
 
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
-                service.remove(act1);
+                remove(act1);
                 assertNull(reload(act1));
 
                 // reload act2 and verify that it no longer has a relationship
@@ -640,7 +638,7 @@ public class ArchetypeServiceActTestCase
                 assertFalse(relationships.contains(relAct1Act2));
                 assertTrue(relationships.contains(relAct2Act3));
                 act2reloaded.setStatus("POSTED");
-                service.save(act2reloaded);
+                save(act2reloaded);
 
                 // reload act3 and verify that it no longer has a relationship
                 // to act1, and can be saved again
@@ -648,7 +646,7 @@ public class ArchetypeServiceActTestCase
                 relationships = act3reloaded.getActRelationships();
                 assertFalse(relationships.contains(relAct1Act3));
                 act3reloaded.setStatus("POSTED");
-                service.save(act3reloaded);
+                save(act3reloaded);
                 return null;
             }
         });
@@ -656,10 +654,10 @@ public class ArchetypeServiceActTestCase
         assertNotNull(reload(act2));
         assertNotNull(reload(act3));
 
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
                 Act act3reloaded = reload(act3);
-                service.remove(act3reloaded);
+                remove(act3reloaded);
                 assertNull(reload(act3reloaded));
 
                 // reload act2 and verify that it no longer has a relationship
@@ -680,6 +678,7 @@ public class ArchetypeServiceActTestCase
      * Creates two acts, act1 and act2 with a relationship between them.
      * In a transaction, deletes act2 and associates act1 with act3.
      */
+    @Test
     public void testActReplacementInTxn() {
         final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
         final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
@@ -689,10 +688,10 @@ public class ArchetypeServiceActTestCase
         final ActRelationship relAct1Act2 = addRelationship(act1, act2,
                                                             "act1->act2");
 
-        service.save(Arrays.asList(act1, act2));
-        template.execute(new TransactionCallback() {
+        save(Arrays.asList(act1, act2));
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
-                service.remove(act2);
+                remove(act2);
                 Act reloaded = reload(act1);
 
                 // relationship should be removed
@@ -701,8 +700,8 @@ public class ArchetypeServiceActTestCase
 
                 // add a new relationship
                 addRelationship(reloaded, act3, "act1->act3");
-                service.save(reloaded);
-                service.save(act3);
+                save(reloaded);
+                save(act3);
                 return null;
             }
         });
@@ -718,6 +717,7 @@ public class ArchetypeServiceActTestCase
      * those target acts in parent/child relationships, and not those in peer
      * relationships.
      */
+    @Test
     public void testPeerParentChildRemovalInTxn() {
         // Create 4 acts with the following relationships:
         // act1 -- (parent/child) --> act2 -- (peer) --> act 4
@@ -733,14 +733,14 @@ public class ArchetypeServiceActTestCase
                 = addRelationship(act2, act4, "act2->act4", false);
         final ActRelationship relAct3Act4
                 = addRelationship(act3, act4, "act3->act4", false);
-        service.save(Arrays.asList(act1, act2, act3, act4));
+        save(Arrays.asList(act1, act2, act3, act4));
 
         assertTrue(act4.getActRelationships().contains(relAct2Act4));
         assertTrue(act4.getActRelationships().contains(relAct3Act4));
 
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
-                service.remove(act1);
+                remove(act1);
 
                 // reload act4 and verify it no longer has any relationships
                 Act reloaded = reload(act4);
@@ -748,7 +748,7 @@ public class ArchetypeServiceActTestCase
 
                 // verify it can be re-saved
                 reloaded.setName("A test");
-                service.save(reloaded);
+                save(reloaded);
                 return null;
             }
         });
@@ -765,6 +765,7 @@ public class ArchetypeServiceActTestCase
      * Verifies that new objects can be subsequently saved if a rollback
      * occurs, for OBF-186.
      */
+    @Test
     public void testResetNewIdsOnRollback() {
         // Create 2 acts with the following relationships:
         // act1 -- (parent/child) --> act2
@@ -787,12 +788,12 @@ public class ArchetypeServiceActTestCase
         // the objects should be assigned identifiers. After rollback, they
         // should be reset to -1.
         try {
-            template.execute(new TransactionCallback() {
+            template.execute(new TransactionCallback<Object>() {
                 public Object doInTransaction(TransactionStatus status) {
-                    service.save(act1);
-                    service.save(act2);
+                    save(act1);
+                    save(act2);
                     act1.setName("f0o");
-                    service.save(act1);
+                    save(act1);
 
                     // objects should have ids assigned now
                     assertFalse(-1 == act1.getId());
@@ -826,10 +827,10 @@ public class ArchetypeServiceActTestCase
         // now verify the objects can be saved. Save twice to inc version.
         for (int i = 0; i < 2; ++i) {
             try {
-                template.execute(new TransactionCallback() {
+                template.execute(new TransactionCallback<Object>() {
                     public Object doInTransaction(TransactionStatus status) {
-                        service.save(act1);
-                        service.save(act2);
+                        save(act1);
+                        save(act2);
                         return null;
                     }
                 });
@@ -850,10 +851,10 @@ public class ArchetypeServiceActTestCase
         // now verfiy that a subsequent rollback of persistent objects
         // doesn't reset the ids
         try {
-            template.execute(new TransactionCallback() {
+            template.execute(new TransactionCallback<Object>() {
                 public Object doInTransaction(TransactionStatus status) {
-                    service.save(act1);
-                    service.save(act2);
+                    save(act1);
+                    save(act2);
                     throw new RuntimeException("Trigger rollback");
                 }
             });
@@ -874,6 +875,7 @@ public class ArchetypeServiceActTestCase
     /**
      * Tests the fix for OBF-190.
      */
+    @Test
     public void testOBF190() {
         // Create 2 acts with the following relationship:
         // act1 -- (parent/child) --> act2
@@ -882,11 +884,11 @@ public class ArchetypeServiceActTestCase
 
         String name = "act1->act2";
         final ActRelationship rel = addRelationship(act1, act2, name, true);
-        service.save(Arrays.asList(act1, act2));
+        save(Arrays.asList(act1, act2));
 
         final String newName = "act1->act2 changed";
 
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
                 // reload act2 and verify it contains the relationship
                 Act reloaded = reload(act2);
@@ -894,7 +896,7 @@ public class ArchetypeServiceActTestCase
 
                 // update the relationship and save act1
                 rel.setName(newName);
-                service.save(act1);
+                save(act1);
                 return null;
             }
         });
@@ -905,8 +907,7 @@ public class ArchetypeServiceActTestCase
         Set<ActRelationship> relationships
                 = reloaded.getSourceActRelationships();
         assertEquals(1, relationships.size());
-        ActRelationship reloadedRel
-                = relationships.toArray(new ActRelationship[0])[0];
+        ActRelationship reloadedRel = relationships.toArray(new ActRelationship[relationships.size()])[0];
 
         // verify the relationship was updated
         assertEquals(reloadedRel, rel);
@@ -914,34 +915,16 @@ public class ArchetypeServiceActTestCase
         assertEquals(newName, reloadedRel.getName());
 
         // verify the acts can be saved again
-        service.save(act1);
-        service.save(act2);
+        save(act1);
+        save(act2);
     }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-    */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+    /**
+     * Sets up the test case.
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-        PlatformTransactionManager txnManager
-                = (PlatformTransactionManager) applicationContext.getBean(
-                "txnManager");
+    @Before
+    public void setUp() {
+        PlatformTransactionManager txnManager = (PlatformTransactionManager) applicationContext.getBean("txnManager");
         template = new TransactionTemplate(txnManager);
     }
 
@@ -954,7 +937,7 @@ public class ArchetypeServiceActTestCase
      */
     private void checkSaveCollection(List<? extends IMObject> objects,
                                      long version) {
-        service.save(objects);
+        save(objects);
         for (IMObject object : objects) {
             assertEquals(version, object.getVersion());
             IMObject reloaded = reload(object);
@@ -972,7 +955,7 @@ public class ArchetypeServiceActTestCase
      */
     @SuppressWarnings("unchecked")
     private <T extends IMObject> T reload(T object) {
-        return (T) service.get(object.getObjectReference());
+        return (T) get(object.getObjectReference());
     }
 
     /**
@@ -983,7 +966,7 @@ public class ArchetypeServiceActTestCase
      * @return Act
      */
     private Act createSimpleAct(String name, String status) {
-        Act act = (Act) service.create("act.simple");
+        Act act = (Act) create("act.simple");
 
         act.setName(name);
         act.setStatus(status);
@@ -995,16 +978,15 @@ public class ArchetypeServiceActTestCase
     }
 
     /**
-     * Create a simple participation
+     * Create a simple participation.
      *
      * @param name   the name of the participation
      * @param entity the entity in the participation
      * @param act    the act in the participation
+     * @return a new participation
      */
-    private Participation createSimpleParticipation(String name, Entity entity,
-                                                    Act act) {
-        Participation participation = (Participation) service.create(
-                "participation.simple");
+    private Participation createSimpleParticipation(String name, Entity entity, Act act) {
+        Participation participation = (Participation) create("participation.simple");
         participation.setName(name);
         participation.setEntity(entity.getObjectReference());
         participation.setAct(act.getObjectReference());
@@ -1013,16 +995,16 @@ public class ArchetypeServiceActTestCase
     }
 
     /**
-     * Create a person with the specified title, firstName and LastName
+     * Create a person with the specified title, firstName and lastName.
      *
-     * @param title
-     * @param firstName
-     * @param lastName
-     * @return Person
+     * @param title     the person's title
+     * @param firstName the person's first name
+     * @param lastName  the person's last name
+     * @return a new party
      */
     private Party createPerson(String title, String firstName,
                                String lastName) {
-        Party person = (Party) service.create("party.person");
+        Party person = (Party) create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);

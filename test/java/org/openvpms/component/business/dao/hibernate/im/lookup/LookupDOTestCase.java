@@ -21,10 +21,11 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import static org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOHelper.createLookup;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
 
 /**
  * Tests the {@link LookupDOImpl} class.
@@ -43,6 +44,7 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation of lookups.
      */
+    @Test
     public void testCreate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -74,6 +76,7 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation, find and update of a lookup.
      */
+    @Test
     public void testUpdate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -99,6 +102,7 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the creation and deletion of a simple lookup.
      */
+    @Test
     public void testDelete() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -125,6 +129,7 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
     /**
      * Verifies that two lookups with the same code and short name are equal.
      */
+    @Test
     public void testEquals() {
         ArchetypeId species = new ArchetypeId("lookup.species");
         ArchetypeId animal = new ArchetypeId("lookup.animal");
@@ -143,6 +148,7 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
      * Verifies that a lookup with the same archetype and code as an existing
      * lookup cannot be saved.
      */
+    @Test
     public void testDuplicate() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -153,7 +159,7 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
 
         // create a duplicate
         LookupDO lookup2 = new LookupDOImpl(lookup1.getArchetypeId(),
-                                                                                                    lookup1.getCode());
+                                            lookup1.getCode());
         try {
             tx = session.beginTransaction();
             session.save(lookup2);
@@ -166,11 +172,9 @@ public class LookupDOTestCase extends HibernateInfoModelTestCase {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         lookups = count(LookupDOImpl.class);
     }

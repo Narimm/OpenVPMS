@@ -19,12 +19,12 @@
 
 package org.openvpms.component.system.service.uuid;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.safehaus.uuid.UUIDGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
-
 
 /**
  * Exercise the {@link JUGGenerator}.
@@ -32,11 +32,12 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class JUGGeneratorTestCase extends TestCase {
+public class JUGGeneratorTestCase {
 
     /**
      * Test the creation of multiple UUIDs.
      */
+    @Test
     public void testMultipleUUIDCreation() {
         JUGGenerator generator = new JUGGenerator(
                 UUIDGenerator.getInstance().getDummyAddress().toString());
@@ -51,6 +52,7 @@ public class JUGGeneratorTestCase extends TestCase {
     /**
      * Test the creation of UUIDs with a prefix.
      */
+    @Test
     public void testPrefixGeneration() {
         JUGGenerator generator = new JUGGenerator(
                 UUIDGenerator.getInstance().getDummyAddress().toString());

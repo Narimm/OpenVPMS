@@ -20,8 +20,6 @@ package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -194,28 +192,12 @@ public class ActBean extends IMObjectBean {
      * @param target the target act
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, or a relationship cannot be added
+     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, there is no relationship that supports
+     *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
      */
     public ActRelationship addNodeRelationship(String name, Act target) {
-        String[] range = getArchetypeRange(name);
-        IArchetypeService service = getArchetypeService();
-        IMObjectReference targetRef = target.getObjectReference();
-        ActRelationship result = null;
-        for (String shortName : range) {
-            ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(shortName);
-            if (descriptor != null) {
-                NodeDescriptor node = descriptor.getNodeDescriptor("target");
-                if (node != null && TypeHelper.isA(targetRef, node.getArchetypeRange())) {
-                    result = addRelationship(shortName, target);
-                    break;
-                }
-            }
-        }
-        if (result == null) {
-            throw new IMObjectBeanException(IMObjectBeanException.ErrorCode.CannotAddTargetToNode,
-                                            targetRef.getArchetypeId().getShortName(), name);
-        }
-        return result;
+        String shortName = getRelationshipShortName(name, target, "target");
+        return addRelationship(shortName, target);
     }
 
     /**
@@ -470,28 +452,26 @@ public class ActBean extends IMObjectBean {
      * @param target the target entity
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, or a relationship cannot be added
+     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, there is no relationship that supports
+     *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
      */
     public Participation addNodeParticipation(String name, Entity target) {
-        String[] range = getArchetypeRange(name);
-        IArchetypeService service = getArchetypeService();
-        IMObjectReference targetRef = target.getObjectReference();
-        Participation result = null;
-        for (String shortName : range) {
-            ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(shortName);
-            if (descriptor != null) {
-                NodeDescriptor node = descriptor.getNodeDescriptor("entity");
-                if (node != null && TypeHelper.isA(targetRef, node.getArchetypeRange())) {
-                    result = addParticipation(shortName, target);
-                    break;
-                }
-            }
-        }
-        if (result == null) {
-            throw new IMObjectBeanException(IMObjectBeanException.ErrorCode.CannotAddTargetToNode,
-                                            targetRef.getArchetypeId().getShortName(), name);
-        }
-        return result;
+        return addNodeParticipation(name, target.getObjectReference());
+    }
+
+    /**
+     * Adds a new participation relationship between the act (the source), and the supplied target reference.
+     *
+     * @param name   the participation relationship node name, used to determine which relationship to create
+     * @param target the target entity reference
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, there is no relationship that supports
+     *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     */
+    public Participation addNodeParticipation(String name, IMObjectReference target) {
+        String shortName = getRelationshipShortName(name, target, "entity");
+        return addParticipation(shortName, target);
     }
 
     /**

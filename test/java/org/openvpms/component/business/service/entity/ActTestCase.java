@@ -18,18 +18,19 @@
 
 package org.openvpms.component.business.service.entity;
 
-//spring-context
 import org.apache.commons.lang.StringUtils;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 
@@ -39,168 +40,138 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActTestCase extends
-        AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("entity-service-appcontext.xml")
+public class ActTestCase extends AbstractArchetypeServiceTest {
 
     /**
-     * Holds a reference to the archetype service
+     * Test the creation of an act.
      */
-    private IArchetypeService archetypeService;
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ActTestCase.class);
-    }
-
-    /**
-     * Default constructor
-     */
-    public ActTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[] {
-                "org/openvpms/component/business/service/entity/entity-service-appcontext.xml"
-                };
-    }
-
-    /**
-     * Test the creation of an act
-     */
-    public void testSimpleActCreation()
-    throws Exception {
+    @Test
+    public void testSimpleActCreation() {
         Party person = createPerson("MR", "Jim", "Alateras");
-        archetypeService.save(person);
+        save(person);
 
         Act act = createAct("wake up");
-        archetypeService.save(act);
+        save(act);
         Participation participation = createParticipation("part1", act, person);
         act.addParticipation(participation);
-        archetypeService.save(act);
+        save(act);
     }
 
     /**
      * Create 3 participations for the same entity and then use the entity
      * service get to retrieve them all
      */
-    @SuppressWarnings("unchecked")
-    public void testGetParticipantsQuery()
-            throws Exception {
+    @Test
+    public void testGetParticipantsQuery() {
         Party person = createPerson("MR", "Jim", "Alateras");
-        archetypeService.save(person);
+        save(person);
 
         Act act1 = createAct("wake up");
-        archetypeService.save(act1);
+        save(act1);
         Act act2 = createAct("lunch");
-        archetypeService.save(act2);
+        save(act2);
         Act act3 = createAct("dinner");
-        archetypeService.save(act3);
+        save(act3);
 
         Participation participation1 = createParticipation("part1", act1, person);
         Participation participation2 = createParticipation("part2", act2, person);
         Participation participation3 = createParticipation("part3", act3, person);
         act1.addParticipation(participation1);
-        archetypeService.save(act1);
+        save(act1);
         act2.addParticipation(participation2);
-        archetypeService.save(act2);
+        save(act2);
         act3.addParticipation(participation3);
-        archetypeService.save(act3);
+        save(act3);
 
-        List<Participation> participations = ArchetypeQueryHelper.getParticipations(
-                archetypeService, person.getObjectReference(), "participation.simple",
+        List participations = ArchetypeQueryHelper.getParticipations(
+                getArchetypeService(), person.getObjectReference(), "participation.simple",
                 null, null,
                 null, null, true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
-        assertTrue(participations.size() == 3);
+        assertEquals(3, participations.size());
     }
 
     /**
      * Create 2 participations for the same entity and then use the archetype
      * service to retrieve the acts for the specified entity
      */
-    @SuppressWarnings("unchecked")
-    public void testGetActsByEntityIdQuery()
-    throws Exception {
+    @Test
+    public void testGetActsByEntityIdQuery() {
         Party person = createPerson("MR", "Jim", "Alateras");
-        archetypeService.save(person);
+        save(person);
 
         Act act1 = createAct("wake up");
-        archetypeService.save(act1);
+        save(act1);
         Act act2 = createAct("lunch");
-        archetypeService.save(act2);
+        save(act2);
 
         Participation participation1 = createParticipation("part1", act1, person);
         Participation participation2 = createParticipation("part2", act2, person);
         act1.addParticipation(participation1);
-        archetypeService.save(act1);
+        save(act1);
         act2.addParticipation(participation2);
-        archetypeService.save(act2);
+        save(act2);
 
-        List<Act> acts = ArchetypeQueryHelper.getActs(archetypeService,
-                person.getObjectReference(), "participation.simple",
-                "act", "simple", null, null, null, null, null, true, 0,
-                ArchetypeQuery.ALL_RESULTS).getResults();
-        assertTrue(acts.size() == 2);
+        List acts = ArchetypeQueryHelper.getActs(getArchetypeService(),
+                                                 person.getObjectReference(), "participation.simple",
+                                                 "act", "simple", null, null, null, null, null, true, 0,
+                                                 ArchetypeQuery.ALL_RESULTS).getResults();
+        assertEquals(2, acts.size());
     }
 
 
     /**
-     * Test bug OVPMS-219
+     * Test bug OVPMS-219.
      */
-    public void testOVPMS219()
-    throws Exception {
+    @Test
+    public void testOVPMS219() {
         Act act1 = createAct("act1");
-        archetypeService.save(act1);
+        save(act1);
         Act act2 = createAct("act2");
-        archetypeService.save(act2);
+        save(act2);
         act1.addSourceActRelationship(createActRelationship(act1, act2));
-        archetypeService.save(act1);
-        act1 = (Act)archetypeService.get(act1.getObjectReference());
+        save(act1);
+        act1 = (Act) get(act1.getObjectReference());
         for (ActRelationship theRel : act1.getSourceActRelationships()) {
-            act2 = (Act)archetypeService.get(theRel.getTarget());
+            act2 = (Act) get(theRel.getTarget());
         }
-        archetypeService.save(act2);
-       archetypeService.save(act1);
+        save(act2);
+        save(act1);
     }
 
     /**
-     * Exercise the getActs query
+     * Exercise the getActs query.
      */
-    @SuppressWarnings("unchecked")
-    public void testGetActsQuery()
-    throws Exception {
+    @Test
+    public void testGetActsQuery() {
         // get the initial act count
-        int actCount = ArchetypeQueryHelper.getActs(archetypeService,
-                "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_RESULTS).getResults().size();
+        int actCount = ArchetypeQueryHelper.getActs(getArchetypeService(),
+                                                    "act", null, null, null, null, null, null, false, 1,
+                                                    ArchetypeQuery.ALL_RESULTS).getResults().size();
 
         // create an act and check the count again
         Act act1 = createAct("wake up");
-        archetypeService.save(act1);
-        int actCount1 = ArchetypeQueryHelper.getActs(archetypeService,
-                "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_RESULTS).getResults().size();
-        assertTrue(actCount1 == (actCount + 1));
+        save(act1);
+        int actCount1 = ArchetypeQueryHelper.getActs(getArchetypeService(),
+                                                     "act", null, null, null, null, null, null, false, 1,
+                                                     ArchetypeQuery.ALL_RESULTS).getResults().size();
+        assertEquals(actCount + 1, actCount1);
 
         // create multiple acts and check the count again
         act1 = createAct("i want to wake up");
-        archetypeService.save(act1);
+        save(act1);
         act1 = createAct("wake up now");
-        archetypeService.save(act1);
-        actCount1 = ArchetypeQueryHelper.getActs(archetypeService,
-                "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_RESULTS).getResults().size();
-        assertTrue(actCount1 == (actCount + 3));
+        save(act1);
+        actCount1 = ArchetypeQueryHelper.getActs(getArchetypeService(),
+                                                 "act", null, null, null, null, null, null, false, 1,
+                                                 ArchetypeQuery.ALL_RESULTS).getResults().size();
+        assertEquals(actCount + 3, actCount1);
 
         // check that it retrieves null result set correctly
         try {
-            ArchetypeQueryHelper.getActs(archetypeService, "jimmya-act", null,
-                null, null, null, null, null, false, 1, ArchetypeQuery.ALL_RESULTS)
-                .getResults().size();
+            ArchetypeQueryHelper.getActs(getArchetypeService(), "jimmya-act", null,
+                                         null, null, null, null, null, false, 1, ArchetypeQuery.ALL_RESULTS)
+                    .getResults().size();
             fail("This request should not have completed");
         } catch (ArchetypeServiceException exception) {
             if (exception.getErrorCode() != ArchetypeServiceException.ErrorCode.FailedToExecuteQuery) {
@@ -210,62 +181,57 @@ public class ActTestCase extends
     }
 
     /**
-     * Test for bug 229
+     * Test for bug 229.
      */
-    @SuppressWarnings("unchecked")
-    public void testOVPMS229()
-    throws Exception {
+    @Test
+    public void testOVPMS229() {
         // get the initial act count
-        int actCount = ArchetypeQueryHelper.getActs(archetypeService,
-                "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_RESULTS).getResults().size();
+        int actCount = ArchetypeQueryHelper.getActs(getArchetypeService(),
+                                                    "act", null, null, null, null, null, null, false, 1,
+                                                    ArchetypeQuery.ALL_RESULTS).getResults().size();
 
         // create an act and check the count again
         Act act1 = createAct("wake up jim");
-        archetypeService.save(act1);
-        int actCount1 = ArchetypeQueryHelper.getActs(archetypeService,
-                "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_RESULTS).getResults().size();
-        assertTrue(actCount1 == (actCount + 1));
+        save(act1);
+        int actCount1 = ArchetypeQueryHelper.getActs(getArchetypeService(),
+                                                     "act", null, null, null, null, null, null, false, 1,
+                                                     ArchetypeQuery.ALL_RESULTS).getResults().size();
+        assertEquals(actCount + 1, actCount1);
     }
 
     /**
      * Test that we can use the archetype service function resolve in an
      * xpath expression
      */
-    public void testResolveInDerivedValue()
-    throws Exception {
+    @Test
+    public void testResolveInDerivedValue() {
         Act act1 = createAct("my act");
-        archetypeService.save(act1);
+        save(act1);
         Act act2 = createAct("your act");
-        archetypeService.save(act2);
+        save(act2);
         ActRelationship rel = createActRelationship(act1, act2);
-        archetypeService.deriveValues(rel);
+        getArchetypeService().deriveValues(rel);
         assertFalse(StringUtils.isEmpty(rel.getName()));
         assertFalse(StringUtils.isEmpty(rel.getDescription()));
         act1.addActRelationship(rel);
-        archetypeService.save(act1);
+        save(act1);
 
-        Act tmp = (Act)archetypeService.get(act1.getObjectReference());
-        assertTrue(tmp != null);
+        Act tmp = (Act) get(act1.getObjectReference());
+        assertNotNull(tmp);
         assertFalse(StringUtils.isEmpty(rel.getName()));
         assertFalse(StringUtils.isEmpty(rel.getDescription()));
     }
 
-
     /**
-     * Create a person
+     * Create a person.
      *
-     * @param title
-     *            the person's title
-     * @param firstName
-     *            the person's first name
-     * @param lastName
-     *            the person's last name
+     * @param title     the person's title
+     * @param firstName the person's first name
+     * @param lastName  the person's last name
      * @return Person
      */
     private Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party)archetypeService.create("party.person");
+        Party person = (Party) create("party.person");
 
         person.getDetails().put("title", title);
         person.getDetails().put("firstName", firstName);
@@ -277,16 +243,13 @@ public class ActTestCase extends
     /**
      * Create a participation
      *
-     * @param name
-     *            the name of the participation
-     * @param act
-     *            the act that the entity is participating in.
-     * @param entity
-     *            the entity in the participation
+     * @param name   the name of the participation
+     * @param act    the act that the entity is participating in.
+     * @param entity the entity in the participation
      * @return Participation
      */
     private Participation createParticipation(String name, Act act, Entity entity) {
-        Participation participation = (Participation)archetypeService.create("participation.simple");
+        Participation participation = (Participation) create("participation.simple");
         participation.setName(name);
         participation.setEntity(entity.getObjectReference());
         participation.setAct(act.getObjectReference());
@@ -297,12 +260,11 @@ public class ActTestCase extends
     /**
      * Create a simple act
      *
-     * @param name
-     *          the name of the act
+     * @param name the name of the act
      * @return Act
      */
     private Act createAct(String name) {
-        Act act = (Act)archetypeService.create("act.simple");
+        Act act = (Act) create("act.simple");
         act.setName(name);
         act.setDescription(name);
 
@@ -312,29 +274,17 @@ public class ActTestCase extends
     /**
      * Create a simple act relationship
      *
-     * @param source
-     *          the source act
-     * @param target
-     *          the target act
+     * @param source the source act
+     * @param target the target act
      * @return ActRelationship
      */
     private ActRelationship createActRelationship(Act source, Act target) {
-        ActRelationship rel = (ActRelationship)archetypeService.create("actRelationship.simple");
+        ActRelationship rel = (ActRelationship) create("actRelationship.simple");
         rel.setName(source.getName() + "-" + target.getName());
         rel.setSource(source.getObjectReference());
         rel.setTarget(target.getObjectReference());
 
         return rel;
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.archetypeService = (IArchetypeService)applicationContext.getBean("archetypeService");
     }
 
 }

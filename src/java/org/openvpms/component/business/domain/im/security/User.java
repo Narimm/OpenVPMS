@@ -19,19 +19,20 @@
 
 package org.openvpms.component.business.domain.im.security;
 
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.userdetails.UserDetails;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This class represents the user details and the list of associated 
+ * This class represents the user details and the list of associated
  * authorities.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class User extends Entity implements UserDetails {
 
@@ -49,25 +50,26 @@ public class User extends Entity implements UserDetails {
      * The user's password.
      */
     private String password;
-    
+
     /**
      * The list of {@link SecurityRole}s that the user is a member off
      */
     private Set<SecurityRole> roles = new HashSet<SecurityRole>();
-    
-    
+
+
     /**
      * Default constructor
      */
     public User() {
         // no op
     }
-    
+
     /**
      * Create a user with the specified parameters.
-     * 
+     *
      * @param username the user's login name
      * @param password the user's password
+     * @param active   determines if the user is active
      */
     public User(String username, String password, boolean active) {
         this.userName = username;
@@ -76,60 +78,76 @@ public class User extends Entity implements UserDetails {
         setActive(active);
     }
 
-    /* (non-Javadoc)
-     * @see org.acegisecurity.userdetails.UserDetails#isAccountNonExpired()
+    /**
+     * Indicates whether the user's account has expired. An expired account cannot be authenticated.
+     *
+     * @return <code>true</code> if the user's account is valid (ie non-expired), <code>false</code> if no longer valid
      */
     public boolean isAccountNonExpired() {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.acegisecurity.userdetails.UserDetails#isAccountNonLocked()
+    /**
+     * Indicates whether the user is locked or unlocked. A locked user cannot be authenticated.
+     *
+     * @return <code>true</code> if the user is not locked, <code>false</code> otherwise
      */
     public boolean isAccountNonLocked() {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.acegisecurity.userdetails.UserDetails#getAuthorities()
+    /**
+     * Returns the authorities granted to the user.
+     *
+     * @return the authorities, sorted by natural key (never <code>null</code>)
      */
-    public GrantedAuthority[] getAuthorities() {
-        // TODO For performance we may need to cache the authorities for
-        // each user.
-        HashSet<GrantedAuthority> authorities = new  HashSet<GrantedAuthority>();
+    public Collection<GrantedAuthority> getAuthorities() {
+        // TODO For performance we may need to cache the authorities for each user. 
+        HashSet<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
         for (SecurityRole role : roles) {
             authorities.addAll(role.getAuthorities());
         }
-        
-        return authorities.toArray(new GrantedAuthority[authorities.size()]);
+
+        return authorities;
     }
 
-    /* (non-Javadoc)
-     * @see org.acegisecurity.userdetails.UserDetails#isCredentialsNonExpired()
+
+    /**
+     * Indicates whether the user's credentials (password) has expired. Expired credentials prevent
+     * authentication.
+     *
+     * @return <code>true</code> if the user's credentials are valid (ie non-expired), <code>false</code> if no longer
+     *         valid (ie expired)
      */
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.acegisecurity.userdetails.UserDetails#isEnabled()
+    /**
+     * Indicates whether the user is enabled or disabled. A disabled user cannot be authenticated.
+     *
+     * @return <code>true</code> if the user is enabled, <code>false</code> otherwise
      */
     public boolean isEnabled() {
         return isActive();
     }
 
-    /* (non-Javadoc)
-     * @see org.acegisecurity.userdetails.UserDetails#getPassword()
+    /**
+     * Returns the password used to authenticate the user. Cannot return <code>null</code>.
+     *
+     * @return the password (never <code>null</code>)
      */
     public String getPassword() {
         return password;
     }
 
-    /* (non-Javadoc)
-     * @see org.acegisecurity.userdetails.UserDetails#getUsername()
+    /**
+     * Returns the username used to authenticate the user. Cannot return <code>null</code>.
+     *
+     * @return the username (never <code>null</code>)
      */
     public String getUsername() {
-        return this.userName;
+        return userName;
     }
 
     /**
@@ -142,34 +160,37 @@ public class User extends Entity implements UserDetails {
     }
 
     /**
-     * @param password The password to set.
+     * Sets the user's password.
+     *
+     * @param password the password
      */
     public void setPassword(String password) {
         this.password = password;
     }
 
     /**
-     * @return Returns the roles.
+     * Returns the roles.
+     *
+     * @return the roles
      */
     public Set<SecurityRole> getRoles() {
         return roles;
     }
 
     /**
-     * Make this user a member of the specified {@link SecurityRole}
-     * 
-     * @param role
-     *            the role it should become a member off
+     * Make this user a member of the specified {@link SecurityRole}.
+     *
+     * @param role the role it should become a member off
      */
     public void addRole(SecurityRole role) {
         role.addUser(this);
         roles.add(role);
     }
-    
+
     /**
-     * Delete user's membership from the specified {@link SecurityRole}
-     * 
-     * @param role
+     * Delete user's membership from the specified {@link SecurityRole}.
+     *
+     * @param role the role to remove
      */
     public void removeRole(SecurityRole role) {
         role.removeUser(this);
@@ -181,15 +202,17 @@ public class User extends Entity implements UserDetails {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        User copy = (User)super.clone();
+        User copy = (User) super.clone();
         copy.password = this.password;
         copy.roles = new HashSet<SecurityRole>(this.roles);
-        
+
         return copy;
     }
 
     /**
-     * @param roles The roles to set.
+     * Sets the roles.
+     *
+     * @param roles the roles to set.
      */
     protected void setRoles(Set<SecurityRole> roles) {
         this.roles = roles;

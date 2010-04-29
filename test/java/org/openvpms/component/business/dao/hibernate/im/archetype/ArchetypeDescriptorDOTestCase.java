@@ -20,6 +20,8 @@ package org.openvpms.component.business.dao.hibernate.im.archetype;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
@@ -27,7 +29,6 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.party.Contact;
 
 import java.util.Map;
-
 
 /**
  * Tests the {@link ArchetypeDescriptorDOImpl} class.
@@ -57,6 +58,7 @@ public class ArchetypeDescriptorDOTestCase
     /**
      * Tests the creation of an archetype descriptor.
      */
+    @Test
     public void testCreate() {
         ArchetypeDescriptorDO desc = createArchetypeDescriptor("animal.mypet");
         int size = desc.getNodeDescriptors().size();
@@ -81,6 +83,7 @@ public class ArchetypeDescriptorDOTestCase
     /**
      * Test the deletion of an archetype descriptor.
      */
+    @Test
     public void testDelete() {
         ArchetypeDescriptorDO desc = createArchetypeDescriptor("animal.mypet");
         int size = desc.getNodeDescriptors().size();
@@ -108,6 +111,7 @@ public class ArchetypeDescriptorDOTestCase
     /**
      * Test nested node descriptors.
      */
+    @Test
     public void testNestedNodeDescriptors() {
         ArchetypeDescriptorDO desc = createArchetypeDescriptor(
                 "contact.location");
@@ -161,6 +165,7 @@ public class ArchetypeDescriptorDOTestCase
     /**
      * Tests adding assertion descriptors.
      */
+    @Test
     public void testAddAssertionDescriptors() {
         ArchetypeDescriptorDO desc = createArchetypeDescriptor("animal.breed");
         int size = desc.getNodeDescriptors().size();
@@ -193,6 +198,7 @@ public class ArchetypeDescriptorDOTestCase
     /**
      * Tests removal of node descriptors from an archetype descriptor.
      */
+    @Test
     public void testDeleteNodeDescriptor() {
         Session session = getSession();
 
@@ -229,6 +235,7 @@ public class ArchetypeDescriptorDOTestCase
     /**
      * Test archetype with the updsting of assertion descriptors.
      */
+    @Test
     public void testUpdateAssertionDescriptors() {
         ArchetypeDescriptorDO desc = createArchetypeDescriptor("animal.pet");
         int size = desc.getNodeDescriptors().size();
@@ -294,6 +301,7 @@ public class ArchetypeDescriptorDOTestCase
      * Verifies that an {@link AssertionDescriptorDOImpl}'s ProperyMap is correctly
      * loaded when its other attributes are null.
      */
+    @Test
     public void testOBF112() {
         AssertionDescriptorDO assertion = new AssertionDescriptorDOImpl();
         assertion.setName("assertionOBF112");
@@ -318,11 +326,9 @@ public class ArchetypeDescriptorDOTestCase
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
         archetypes = count(ArchetypeDescriptorDOImpl.class);
         nodes = count(NodeDescriptorDOImpl.class);
@@ -372,8 +378,9 @@ public class ArchetypeDescriptorDOTestCase
     }
 
     /**
-     * Create an {@link AssertionDescriptor} with the specified parameters
+     * Create an {@link AssertionDescriptor} with the specified parameters.
      *
+     * @param type the assertion descriptor type
      * @return AssertionDescriptor
      */
     private AssertionDescriptorDO createAssertionDescriptor(String type) {
@@ -385,12 +392,14 @@ public class ArchetypeDescriptorDOTestCase
     }
 
     /**
-     * Create a {@link AssertionProperty} with the specified parameters
+     * Create a {@link AssertionProperty} with the specified parameters.
      *
+     * @param name  the property name
+     * @param type  the property type
+     * @param value the property value
      * @return AssertionProperty
      */
-    private AssertionProperty createAssertionProperty(String name, Class type,
-                                                      String value) {
+    private AssertionProperty createAssertionProperty(String name, Class type, String value) {
         AssertionProperty prop = new AssertionProperty();
         prop.setName(name);
         prop.setType(type.getName());

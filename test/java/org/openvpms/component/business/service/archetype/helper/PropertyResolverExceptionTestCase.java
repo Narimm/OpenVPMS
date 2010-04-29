@@ -18,8 +18,8 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import junit.framework.TestCase;
-
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * {@link PropertyResolverException} test case.
@@ -27,11 +27,12 @@ import junit.framework.TestCase;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PropertyResolverExceptionTestCase extends TestCase {
+public class PropertyResolverExceptionTestCase {
 
     /**
      * Verifies that the messages are generated correctly.
      */
+    @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
                      2, PropertyResolverException.ErrorCode.values().length);
@@ -50,9 +51,8 @@ public class PropertyResolverExceptionTestCase extends TestCase {
      * @param args     exception arguments
      */
     private void checkException(PropertyResolverException.ErrorCode code,
-                                String expected, Object ... args) {
-        PropertyResolverException exception
-                = new PropertyResolverException(code, args);
+                                String expected, Object... args) {
+        PropertyResolverException exception = new PropertyResolverException(code, args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());
     }
