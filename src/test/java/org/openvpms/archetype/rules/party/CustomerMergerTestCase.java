@@ -35,6 +35,7 @@ import static org.openvpms.archetype.test.TestHelper.getDatetime;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -160,6 +161,38 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
 
         assertTrue(patientRules.isOwner(merged, patient1));
         assertTrue(patientRules.isOwner(merged, patient2));
+    }
+
+    /**
+     * Tests that entity relationships where the target of the relationship is hull are handled correctly.
+     */
+    @Test
+    public void testMergeEntityRelationshipsWithNullTarget() {
+        Party from = TestHelper.createCustomer();
+        Party to = TestHelper.createCustomer();
+
+        EntityRelationship null1 = (EntityRelationship) create("entityRelationship.patientOwner");
+        null1.setSource(from.getObjectReference());
+        from.addEntityRelationship(null1);
+        save(from);
+
+        EntityRelationship null2 = (EntityRelationship) create("entityRelationship.patientOwner");
+        null2.setSource(to.getObjectReference());
+        to.addEntityRelationship(null2);
+        save(to);
+
+        Party merged = checkMerge(from, to);
+
+        // verify there is only a single relationship
+        assertEquals(1, merged.getEntityRelationships().size());
+        EntityRelationship[] relationships = merged.getEntityRelationships().toArray(new EntityRelationship[1]);
+        EntityRelationship r = relationships[0];
+
+        // verify that the source points to the merged party
+        assertEquals(merged.getObjectReference(), r.getSource());
+
+        // verify that the target of the relationship is null
+        assertNull(r.getTarget());
     }
 
     /**

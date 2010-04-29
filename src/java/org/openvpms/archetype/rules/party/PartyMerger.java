@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.party;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -193,7 +194,7 @@ public abstract class PartyMerger {
 
         List<IMObject> objects = relationshipCopier.apply(relationship);
         EntityRelationship copy = (EntityRelationship) objects.get(0);
-        if (copy.getSource().equals(fromRef)) {
+        if (ObjectUtils.equals(copy.getSource(), fromRef)) {
             copy.setSource(toRef);
         } else {
             copy.setTarget(toRef);
@@ -288,8 +289,8 @@ public abstract class PartyMerger {
         boolean result = false;
         ArchetypeId id = relationship.getArchetypeId();
         for (EntityRelationship r : party.getEntityRelationships()) {
-            if (r.getSource().equals(relationship.getSource())
-                && r.getTarget().equals(relationship.getTarget())
+            if (ObjectUtils.equals(r.getSource(), relationship.getSource())
+                && ObjectUtils.equals(r.getTarget(), relationship.getTarget())
                 && r.getArchetypeId().equals(id)
                 && r.getActiveEndTime() == null
                 && relationship.getActiveEndTime() == null) {

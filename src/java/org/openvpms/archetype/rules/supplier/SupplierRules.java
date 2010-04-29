@@ -92,7 +92,7 @@ public class SupplierRules {
      *
      * @param supplier the supplier
      * @param product  the product
-     * @return <tt>true</tt> if the supplier supplies the product
+     * @return <tt>true</tt> if <tt>supplier</tt> supplies <tt>product</tt>; otherwise <tt>false</tt>
      */
     public boolean isSuppliedBy(Party supplier, Product product) {
         EntityBean bean = new EntityBean(supplier, service);
