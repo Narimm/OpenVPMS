@@ -18,6 +18,8 @@
 
 package org.openvpms.etl.tools.doc;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -43,6 +45,7 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
     /**
      * Tests the {@link NameLoader}.
      */
+    @Test
     public void testNameLoader() {
         final int count = 10;
         final String shortName = "act.patientDocumentAttachment";
@@ -53,7 +56,7 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
         // find all documents matching the short name with null doc references
         // and non-null filenames
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
-        query.add(new NodeConstraint("document", RelationalOp.IsNULL));
+        query.add(new NodeConstraint("document", RelationalOp.IS_NULL));
         List<DocumentAct> expected = new ArrayList<DocumentAct>();
         Iterator<DocumentAct> iter = new IMObjectQueryIterator<DocumentAct>(query);
         while (iter.hasNext()) {

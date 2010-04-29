@@ -268,7 +268,7 @@ class IdLoader extends AbstractLoader {
      */
     protected void addDocument(final DocumentAct act, final Document document, final boolean version) {
         TransactionTemplate template = new TransactionTemplate(transactionManager);
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
                 IArchetypeService service = getService();
                 removeDuplicate(act, document);
@@ -348,7 +348,7 @@ class IdLoader extends AbstractLoader {
      * @throws MalformedURLException for any URL error
      */
     private String getMimeType(File file) throws IOException {
-        URLConnection uc = file.toURL().openConnection();
+        URLConnection uc = file.toURI().toURL().openConnection();
         String mimeType = uc.getContentType();
         uc.getInputStream().close();
         return mimeType;

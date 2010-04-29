@@ -19,6 +19,8 @@
 package org.openvpms.etl.load;
 
 import junit.framework.AssertionFailedError;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -26,7 +28,9 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,19 +45,20 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class LookupHandlerTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("/applicationContext.xml")
+public class LookupHandlerTestCase extends AbstractJUnit4SpringContextTests {
 
     /**
      * The archetype service.
      */
+    @Autowired
     private IArchetypeService service;
 
 
     /**
      * Verifies that lookup codes are generated correctly.
      */
+    @Test
     public void testCodeGeneration() {
         Mappings mappings = new Mappings();
         Mapping breedMap = createMapping("BREED", "<party.patientpet>breed");
@@ -71,6 +76,7 @@ public class LookupHandlerTestCase
     /**
      * Verifies that lookup and lookup relationships are generated.
      */
+    @Test
     public void testLookupGeneration() {
         Mappings mappings = new Mappings();
         Mapping breedMap = createMapping("BREED", "<party.patientpet>breed");
@@ -113,28 +119,6 @@ public class LookupHandlerTestCase
                      relationship.getSource());
         assertEquals(breedLookup.getObjectReference(),
                      relationship.getTarget());
-    }
-
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContext.xml"};
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
     }
 
     /**

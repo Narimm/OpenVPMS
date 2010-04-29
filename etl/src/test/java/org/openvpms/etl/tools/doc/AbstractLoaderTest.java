@@ -18,13 +18,16 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
+import static org.junit.Assert.*;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.File;
@@ -36,47 +39,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * Base class for {@link Loader} test cases.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AbstractLoaderTest extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("/applicationContext.xml")
+public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
 
     /**
      * The archetype service.
      */
+    @Autowired
     protected IArchetypeService service;
 
     /**
      * The transaction manager.
      */
+    @Autowired
     protected PlatformTransactionManager transactionManager;
 
-
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContext.xml"};
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (IArchetypeService) applicationContext.getBean("archetypeService");
-        transactionManager = (PlatformTransactionManager) applicationContext.getBean("txnManager");
-    }
 
     /**
      * Returns the file in a directory.

@@ -19,6 +19,8 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -44,6 +46,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testLoad() throws Exception {
         File source = new File("target/sdocs" + System.currentTimeMillis());
         File target = new File("target/tdocs" + System.currentTimeMillis());
@@ -85,6 +88,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testMissingAct() throws Exception {
         File source = new File("target/sdocs" + System.currentTimeMillis());
         File target = new File("target/tdocs" + System.currentTimeMillis());
@@ -119,6 +123,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testSkipProcessed() throws Exception {
         File source = new File("target/sdocs" + System.currentTimeMillis());
         File target = new File("target/tdocs" + System.currentTimeMillis());
@@ -149,6 +154,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testTimestampOrdering() throws Exception {
         final int count = 3;
         File source = new File("target/sdocs" + System.currentTimeMillis());
@@ -219,6 +225,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testDuplicates() throws Exception {
         File source = new File("target/sdocs" + System.currentTimeMillis());
         File target = new File("target/tdocs" + System.currentTimeMillis());
@@ -267,7 +274,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         // from the source to the target directory (file exists).
         // TODO - how should this be handled. Overwrite or rename?
         assertTrue(duplicateFirst.delete());
-        
+
         // create a third file that duplicates the content of the first. This should be loaded
         File third = createFile(act, source, null, "-X", "A");
         assertTrue(third.setLastModified(second.lastModified() + 1000));
