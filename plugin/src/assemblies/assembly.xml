@@ -54,7 +54,7 @@
 
     <fileSets>
         <fileSet>
-            <directory>src/conf/kettle</directory>
+            <directory>${basedir}/src/conf/kettle</directory>
             <filtered>true</filtered>
             <includes>
                 <include>plugin.xml</include>
@@ -62,7 +62,7 @@
             <outputDirectory>/</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>src/conf/kettle</directory>
+            <directory>${basedir}/src/conf/kettle</directory>
             <includes>
                 <include>plugin.png</include>
             </includes>
