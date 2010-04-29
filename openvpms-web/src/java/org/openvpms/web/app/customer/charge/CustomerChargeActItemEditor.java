@@ -51,13 +51,16 @@ import org.openvpms.web.component.im.edit.act.PatientActEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.edit.investigation.PatientInvestigationActEditor;
 import org.openvpms.web.component.im.edit.medication.PatientMedicationActEditor;
+import org.openvpms.web.component.im.edit.medication.PatientMedicationActLayoutStrategy;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
+import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
@@ -118,7 +121,13 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private Label sellingUnits;
 
-
+    /**
+     * Layout strategy factory that returns customized instances of
+     * {@link PatientMedicationActLayoutStrategy}.
+     */
+    private static final IMObjectLayoutStrategyFactory FACTORY
+            = new MedicationLayoutStrategyFactory();
+    
     /**
      * Node filter, used to disable properties when a product template is
      * selected.
@@ -327,7 +336,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (currentFilter != expectedFilter) {
 
             // need to change the layout. Remove any dispensing act first as the editors won't be available afterwards
-            if (product == null) {
+            if (!TypeHelper.isA(product, MEDICATION)) {
                 removeDispensingAct();
             }
 
@@ -421,7 +430,10 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private void updatePatientActsStartTime() {
         Act parent = (Act) getObject();
-        for (PatientActEditor editor : getPatientActEditors()) {
+        for (PatientActEditor editor : getMedicationActEditors()) {
+            editor.setStartTime(parent.getActivityStartTime());
+        }
+        for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
             editor.setStartTime(parent.getActivityStartTime());
         }
         ActRelationshipCollectionEditor dispensingCollection = getDispensingCollection();
@@ -431,6 +443,18 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         ActRelationshipCollectionEditor investigationCollection = getInvestigationCollection();
         if (investigationCollection != null) {
             investigationCollection.refresh();
+        }
+    }
+
+    /**
+     * Removes the dispensing act.
+     */
+    private void removeDispensingAct() {
+        ActRelationshipCollectionEditor editors = getDispensingCollection();
+        if (editors != null) {
+            for (Act act : editors.getCurrentActs()) {
+                editors.remove(act);
+            }
         }
     }
 
@@ -454,24 +478,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 Act act = (Act) editors.create();
                 if (act != null) {
                     boolean dispensingLabel = hasDispensingLabel(product);
-                    IMObjectEditor editor = createMedicationEditor(act);
+                    IMObjectEditor editor = createMedicationEditor(act, dispensingLabel);
                     if (dispensingLabel) {
                         // queue editing of the act
                         queuePatientActEditor(editor);
                     }
                 }
-            }
-        }
-    }
-
-    /**
-     * Removes the dispensing act.
-     */
-    private void removeDispensingAct() {
-        ActRelationshipCollectionEditor editors = getDispensingCollection();
-        if (editors != null) {
-            for (Act act : editors.getCurrentActs()) {
-                editors.remove(act);
             }
         }
     }
@@ -551,17 +563,18 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Creates a new editor for a medication act.
      *
-     * @param act the medication act
+     * @param act             the medication act
+     * @param dispensingLabel <tt>true</tt> if a dispensing label is required
      * @return a new editor for the act
      */
-    private IMObjectEditor createMedicationEditor(Act act) {
+    private IMObjectEditor createMedicationEditor(Act act, boolean dispensingLabel) {
         ActRelationshipCollectionEditor editors = getDispensingCollection();
 
         LayoutContext context = new DefaultLayoutContext(true);
-        IMObjectEditor editor = editors.createEditor(act, context);
-        if (editor instanceof PatientMedicationActEditor) {
-            ((PatientMedicationActEditor) editor).setProductReadOnly(true);
+        if (dispensingLabel) {
+            context.setLayoutStrategyFactory(FACTORY);
         }
+        IMObjectEditor editor = editors.createEditor(act, context);
         editors.addEdited(editor);
         return editor;
     }
@@ -628,8 +641,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates any child patient acts with the patient.
      */
     private void updatePatientActsPatient() {
-        for (PatientActEditor editor : getPatientActEditors()) {
-            editor.setPatient(getPatientRef());
+        IMObjectReference patient = getPatientRef();
+        for (PatientActEditor editor : getMedicationActEditors()) {
+            editor.setPatient(patient);
+        }
+        for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
+            editor.setPatient(patient);
         }
     }
 
@@ -637,8 +654,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates any child patient acts with the clinician.
      */
     private void updatePatientActsClinician() {
-        for (PatientActEditor editor : getPatientActEditors()) {
-            editor.setClinician(getClinicianRef());
+        IMObjectReference clinician = getClinicianRef();
+        for (PatientActEditor editor : getMedicationActEditors()) {
+            editor.setClinician(clinician);
+        }
+        for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
+            editor.setClinician(clinician);
         }
     }
 
@@ -647,10 +668,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      *
      * @return the editors
      */
-    @SuppressWarnings("unchecked")
     private Set<PatientMedicationActEditor> getMedicationActEditors() {
-        Set editors = getPatientActEditors(getDispensingCollection());
-        return (Set<PatientMedicationActEditor>) editors;
+        return getActEditors(getDispensingCollection());
     }
 
     /**
@@ -658,32 +677,22 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      *
      * @return the editors
      */
-    private Set<PatientActEditor> getInvestigationActEditors() {
-        return getPatientActEditors(getInvestigationCollection());
+    private Set<PatientInvestigationActEditor> getInvestigationActEditors() {
+        return getActEditors(getInvestigationCollection());
     }
 
     /**
-     * Returns editors for each of the <em>act.patientMedication</em> and <em>act.patientInvestigation</em> acts.
-     *
-     * @return the editors
-     */
-    private Set<PatientActEditor> getPatientActEditors() {
-        Set<PatientActEditor> result = getPatientActEditors(getDispensingCollection());
-        result.addAll(getInvestigationActEditors());
-        return result;
-    }
-
-    /**
-     * Returns the patient act editors for a the specified collection editor.
+     * Returns the act editors for the specified collection editor.
      *
      * @param editors the collection editor. May be <tt>null</tt>
      * @return a set of editors
      */
-    private Set<PatientActEditor> getPatientActEditors(ActRelationshipCollectionEditor editors) {
-        Set<PatientActEditor> result = new HashSet<PatientActEditor>();
+    @SuppressWarnings("unchecked")
+    private <T extends IMObjectEditor> Set<T> getActEditors(ActRelationshipCollectionEditor editors) {
+        Set<T> result = new HashSet<T>();
         if (editors != null) {
             for (Act act : editors.getCurrentActs()) {
-                PatientActEditor editor = (PatientActEditor) editors.getEditor(act);
+                T editor = (T) editors.getEditor(act);
                 result.add(editor);
             }
         }
@@ -781,5 +790,28 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         return result;
     }
 
+    /**
+     * Factory that invokes <code>setProductReadOnly(true)</code> on
+     * {@link PatientMedicationActLayoutStrategy} instances.
+     */
+    private static class MedicationLayoutStrategyFactory
+            extends EditLayoutStrategyFactory {
 
+        /**
+         * Creates a new layout strategy for an object.
+         *
+         * @param object the object to create the layout strategy for
+         * @param parent the parent object. May be <code>null</code>
+         */
+        @Override
+        public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {
+            IMObjectLayoutStrategy result = super.create(object, parent);
+            if (result instanceof PatientMedicationActLayoutStrategy) {
+                PatientMedicationActLayoutStrategy strategy
+                        = ((PatientMedicationActLayoutStrategy) result);
+                strategy.setProductReadOnly(true);
+            }
+            return result;
+        }
+    }
 }

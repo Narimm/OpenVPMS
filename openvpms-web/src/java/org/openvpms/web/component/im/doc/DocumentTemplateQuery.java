@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
@@ -54,6 +55,13 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
 
 
     /**
+     * The default sort constraint.
+     */
+    private static final SortConstraint[] DEFAULT_SORT
+            = new SortConstraint[]{new NodeSortConstraint("name", true)};
+
+
+    /**
      * Construct a new <code>DocumentTemplateQuery</code>.
      *
      * @throws ArchetypeQueryException if the short name don't match any
@@ -61,6 +69,7 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
      */
     public DocumentTemplateQuery() {
         super(new String[]{"entity.documentTemplate"}, Entity.class);
+        setDefaultSortConstraint(DEFAULT_SORT);
         QueryFactory.initialise(this);
     }
 
@@ -95,28 +104,25 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
         if (archetypeShortName == null) {
             result = super.query(sort);
         } else {
-            ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate",
-                                                      false, true);
+            ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate", false, true);
             String name = getValue();
             if (!StringUtils.isEmpty(name)) {
                 query.add(new NodeConstraint("name", name));
             }
             query.setFirstResult(0);
             query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> rows = service.get(query).getResults();
             List<Entity> objects = new ArrayList<Entity>();
             for (IMObject object : rows) {
                 EntityBean bean = new EntityBean((Entity) object);
                 String archetype = bean.getString("archetype");
-                if (!StringUtils.isEmpty(archetype) &&
-                        TypeHelper.matches(archetypeShortName, archetype)) {
+                if (!StringUtils.isEmpty(archetype) && TypeHelper.matches(archetypeShortName, archetype)) {
                     objects.add((Entity) object);
                 }
             }
-            result = new IMObjectListResultSet<Entity>(objects,
-                                                       getMaxResults());
+            result = new IMObjectListResultSet<Entity>(objects, getMaxResults());
+            result.sort(sort);
         }
         return result;
     }
