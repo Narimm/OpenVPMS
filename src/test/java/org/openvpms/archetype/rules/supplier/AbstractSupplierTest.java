@@ -18,12 +18,16 @@
 
 package org.openvpms.archetype.rules.supplier;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import org.junit.Before;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -47,6 +51,11 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
     protected static final String PACKAGE_UNITS = "BOX";
 
     /**
+     * UN/CEFACT unit code corresponding to the package units.
+     */
+    protected static final String PACKAGE_UNIT_CODE = "BX";
+
+    /**
      * The supplier.
      */
     private Party supplier;
@@ -61,6 +70,43 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      */
     private Product product;
 
+    /**
+     * The practice.
+     */
+    private Party practice;
+
+    /**
+     * The practice location.
+     */
+    private Party practiceLocation;
+
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        product = TestHelper.createProduct();
+        stockLocation = createStockLocation();
+
+        // create a practice for currency and tax calculation purposes
+        practiceLocation = TestHelper.createLocation();
+        EntityBean locBean = new EntityBean(practiceLocation);
+        locBean.addRelationship("entityRelationship.locationStockLocation", stockLocation);
+        practice = TestHelper.getPractice();
+        EntityBean pracBean = new EntityBean(practice);
+        pracBean.addRelationship("entityRelationship.practiceLocation", practiceLocation);
+        locBean.save();
+        pracBean.save();
+
+        supplier = TestHelper.createSupplier();
+
+        // set up a unit of measure
+        Lookup uom = TestHelper.getLookup("lookup.uom", PACKAGE_UNITS);
+        IMObjectBean bean = new IMObjectBean(uom);
+        bean.setValue("unitCode", PACKAGE_UNIT_CODE);
+        bean.save();
+    }
 
     /**
      * Returns the supplier.
@@ -81,30 +127,21 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Sets up the test case.
+     * Returns the practice.
      *
-     * @throws Exception for any error
+     * @return the practice
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        product = TestHelper.createProduct();
-        stockLocation = createStockLocation();
+    protected Party getPractice() {
+        return practice;
+    }
 
-        // create a practice for currency and tax calculation purposes
-        Party location = TestHelper.createLocation();
-        EntityBean locBean = new EntityBean(location);
-        locBean.addRelationship("entityRelationship.locationStockLocation",
-                                stockLocation);
-        Party practice = TestHelper.getPractice();
-        EntityBean pracBean = new EntityBean(practice);
-        pracBean.addRelationship("entityRelationship.practiceLocation",
-                                 location);
-        locBean.save();
-        pracBean.save();
-
-        supplier = TestHelper.createSupplier();
-        TestHelper.getLookup("lookup.uom", PACKAGE_UNITS);
+    /**
+     * Returns the practice location.
+     *
+     * @return the practice location
+     */
+    protected Party getPracticeLocation() {
+        return practiceLocation;
     }
 
     /**
@@ -115,8 +152,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      */
     protected FinancialAct createOrder(FinancialAct orderItem) {
         ActBean bean = createAct(SupplierArchetypes.ORDER);
-        bean.addRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP,
-                             orderItem);
+        bean.addRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, orderItem);
         bean.setValue("amount", orderItem.getTotal());
         save(bean.getAct(), orderItem);
         return (FinancialAct) bean.getAct();
@@ -130,11 +166,8 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param unitPrice   the unit price
      * @return a new order item
      */
-    protected FinancialAct createOrderItem(BigDecimal quantity,
-                                           int packageSize,
-                                           BigDecimal unitPrice) {
-        return createItem(SupplierArchetypes.ORDER_ITEM, quantity, packageSize,
-                          unitPrice, BigDecimal.ZERO);
+    protected FinancialAct createOrderItem(BigDecimal quantity, int packageSize, BigDecimal unitPrice) {
+        return createItem(SupplierArchetypes.ORDER_ITEM, quantity, packageSize, unitPrice, BigDecimal.ZERO);
     }
 
     /**
@@ -145,8 +178,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param unitPrice   the unit price
      * @return a new delivery
      */
-    protected FinancialAct createDelivery(BigDecimal quantity, int packageSize,
-                                          BigDecimal unitPrice) {
+    protected FinancialAct createDelivery(BigDecimal quantity, int packageSize, BigDecimal unitPrice) {
         return createActs(SupplierArchetypes.DELIVERY,
                           SupplierArchetypes.DELIVERY_ITEM,
                           SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP,
@@ -162,8 +194,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param listPrice   the list price
      * @return a new delivery
      */
-    protected FinancialAct createDelivery(BigDecimal quantity, int packageSize,
-                                          BigDecimal unitPrice,
+    protected FinancialAct createDelivery(BigDecimal quantity, int packageSize, BigDecimal unitPrice,
                                           BigDecimal listPrice) {
         return createActs(SupplierArchetypes.DELIVERY,
                           SupplierArchetypes.DELIVERY_ITEM,
@@ -191,29 +222,25 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param orderItem   the order item
      * @return a new delivery
      */
-    protected FinancialAct createDelivery(BigDecimal quantity, int packageSize,
-                                          BigDecimal unitPrice,
+    protected FinancialAct createDelivery(BigDecimal quantity, int packageSize, BigDecimal unitPrice,
                                           FinancialAct orderItem) {
-        FinancialAct item = createDeliveryItem(quantity, packageSize, unitPrice,
-                                               orderItem);
-        return createDelivery(item, orderItem);
+        FinancialAct item = createDeliveryItem(quantity, packageSize, unitPrice, orderItem);
+        return createDelivery(item);
     }
 
     /**
      * Creates and saves a delivery, associated with an order item.
      *
      * @param deliveryItem the delivery item
-     * @param orderItem    the order item
      * @return a new delivery
      */
-    protected FinancialAct createDelivery(FinancialAct deliveryItem,
-                                          FinancialAct orderItem) {
+    protected FinancialAct createDelivery(FinancialAct deliveryItem) {
         ActBean bean = createAct(SupplierArchetypes.DELIVERY);
-        bean.addRelationship(SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP,
-                             deliveryItem);
+        bean.addRelationship(SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP, deliveryItem);
         bean.setValue("amount", deliveryItem.getTotal());
         bean.setValue("tax", deliveryItem.getTaxAmount());
         save(bean.getAct(), deliveryItem);
+
         return (FinancialAct) bean.getAct();
     }
 
@@ -226,9 +253,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param orderItem   the order item
      * @return a new delivery item
      */
-    private FinancialAct createDeliveryItem(BigDecimal quantity,
-                                            int packageSize,
-                                            BigDecimal unitPrice,
+    private FinancialAct createDeliveryItem(BigDecimal quantity, int packageSize, BigDecimal unitPrice,
                                             FinancialAct orderItem) {
         return createItem(SupplierArchetypes.DELIVERY_ITEM,
                           SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP,
@@ -243,8 +268,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param unitPrice   the unit price
      * @return a new return
      */
-    protected Act createReturn(BigDecimal quantity, int packageSize,
-                               BigDecimal unitPrice) {
+    protected Act createReturn(BigDecimal quantity, int packageSize, BigDecimal unitPrice) {
         return createReturn(quantity, packageSize, unitPrice, BigDecimal.ZERO);
     }
 
@@ -257,8 +281,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param listPrice   the list price
      * @return a new return
      */
-    protected Act createReturn(BigDecimal quantity, int packageSize,
-                               BigDecimal unitPrice, BigDecimal listPrice) {
+    protected Act createReturn(BigDecimal quantity, int packageSize, BigDecimal unitPrice, BigDecimal listPrice) {
         return createActs(SupplierArchetypes.RETURN,
                           SupplierArchetypes.RETURN_ITEM,
                           SupplierArchetypes.RETURN_ITEM_RELATIONSHIP,
@@ -274,13 +297,10 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param orderItem   the order item
      * @return a new return
      */
-    protected Act createReturn(BigDecimal quantity, int packageSize,
-                               BigDecimal unitPrice, FinancialAct orderItem) {
+    protected Act createReturn(BigDecimal quantity, int packageSize, BigDecimal unitPrice, FinancialAct orderItem) {
         ActBean bean = createAct(SupplierArchetypes.RETURN);
-        Act item = createReturnItem(quantity, packageSize, unitPrice,
-                                    orderItem);
-        bean.addRelationship(SupplierArchetypes.RETURN_ITEM_RELATIONSHIP,
-                             item);
+        Act item = createReturnItem(quantity, packageSize, unitPrice, orderItem);
+        bean.addRelationship(SupplierArchetypes.RETURN_ITEM_RELATIONSHIP, item);
         bean.save();
         return bean.getAct();
     }
@@ -294,8 +314,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param orderItem   the order item
      * @return a new return item
      */
-    private FinancialAct createReturnItem(BigDecimal quantity,
-                                          int packageSize, BigDecimal unitPrice,
+    private FinancialAct createReturnItem(BigDecimal quantity, int packageSize, BigDecimal unitPrice,
                                           FinancialAct orderItem) {
         return createItem(SupplierArchetypes.RETURN_ITEM,
                           SupplierArchetypes.RETURN_ORDER_ITEM_RELATIONSHIP,
@@ -337,10 +356,8 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
     protected ActBean createAct(String shortName) {
         Act act = (Act) create(shortName);
         ActBean bean = new ActBean(act);
-        bean.addParticipation(SupplierArchetypes.SUPPLIER_PARTICIPATION,
-                              supplier);
-        bean.addParticipation(StockArchetypes.STOCK_LOCATION_PARTICIPATION,
-                              stockLocation);
+        bean.addParticipation(SupplierArchetypes.SUPPLIER_PARTICIPATION, supplier);
+        bean.addParticipation(StockArchetypes.STOCK_LOCATION_PARTICIPATION, stockLocation);
         return bean;
     }
 
@@ -355,13 +372,9 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param orderItem             the order item
      * @return a new act
      */
-    protected FinancialAct createItem(String shortName,
-                                      String relationshipShortName,
-                                      BigDecimal quantity, int packageSize,
-                                      BigDecimal unitPrice,
-                                      FinancialAct orderItem) {
-        FinancialAct act = createItem(shortName, quantity, packageSize,
-                                      unitPrice, BigDecimal.ZERO);
+    protected FinancialAct createItem(String shortName, String relationshipShortName, BigDecimal quantity,
+                                      int packageSize, BigDecimal unitPrice, FinancialAct orderItem) {
+        FinancialAct act = createItem(shortName, quantity, packageSize, unitPrice, BigDecimal.ZERO);
         ActBean bean = new ActBean(act);
         bean.addRelationship(relationshipShortName, orderItem);
         save(act, orderItem);

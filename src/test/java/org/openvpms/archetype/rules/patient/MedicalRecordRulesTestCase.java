@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -34,7 +37,6 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 
 /**
  * Tests the {@link MedicalRecordRules} class.
@@ -66,6 +68,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * Verifies that deletion of an <em>act.patientClinicalEvent</em>
      * deletes all of the children.
      */
+    @Test
     public void testDeleteClinicalEvent() {
         Act event = createEvent();
         Act problem = createProblem();
@@ -91,6 +94,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * Verifies that deletion of an <em>act.patientClinicalProblem</em>
      * doesn't affect its children.
      */
+    @Test
     public void testDeleteClinicalProblem() {
         Act event = createEvent();
         Act problem = createProblem();
@@ -122,6 +126,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link MedicalRecordRules#getEvent(IMObjectReference)}
      * method.
      */
+    @Test
     public void testGetEvent() {
         Act event1 = createEvent(getDate("2007-01-01"));
         event1.setStatus(ActStatus.IN_PROGRESS);
@@ -142,6 +147,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link MedicalRecordRules#getEvent} method.
      */
+    @Test
     public void testGetEventByDate() {
         Date jan1 = getDate("2007-01-01");
         Date jan2 = getDate("2007-01-02");
@@ -178,6 +184,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * exists for the patient. A new one will be created with COMPLETED status,
      * and the specified startTime.
      */
+    @Test
     public void testAddToEventForNonExistentEvent() {
         Date date = getDate("2007-04-05");
         Act medication = createMedication(patient);
@@ -195,6 +202,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * an existing IN_PROGRESS event that has a startTime < 7 days prior to
      * that specified. The medication should be added to it.
      */
+    @Test
     public void testAddToEventForExistingInProgressEvent() {
         Date date = getDate("2007-04-05");
         Act medication = createMedication(patient);
@@ -215,6 +223,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * there is an IN_PROGRESS event that has a startTime > 7 days prior to
      * the specified startTime. A new COMPLETED event should be created.
      */
+    @Test
     public void testAddToEventForExistingOldInProgressEvent() {
         Date date = getDate("2007-04-05");
         Act medication = createMedication(patient);
@@ -260,6 +269,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * there is a COMPLETTED event that has a startTime and endTime that
      * overlaps the specified start time. The medication should be added to it.
      */
+    @Test
     public void testAddToEventForExistingCompletedEvent() {
         Date date = getDate("2007-04-05");
         Act medication = createMedication(patient);
@@ -282,6 +292,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * DOESN'T overlap the specified start time. The medication should be added
      * to a new COMPLETED event whose startTime equals that specified.
      */
+    @Test
     public void testAddToEventForExistingNonOverlappingCompletedEvent() {
         Date date = getDate("2007-04-05");
         Act medication = createMedication(patient);
@@ -303,6 +314,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link MedicalRecordRules#addToEvents} method.
      */
+    @Test
     public void testAddToEvents() {
         Date date = getDate("2007-04-05");
         Party patient2 = TestHelper.createPatient();
@@ -333,6 +345,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link MedicalRecordRules#addToHistoricalEvents} method.
      */
+    @Test
     public void testAddToHistoricalEvents() {
         Date eventDate1 = getDate("2007-04-05");
         Date eventDate2 = getDate("2007-07-01");
@@ -378,12 +391,9 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         clinician = TestHelper.createClinician();
         patient = TestHelper.createPatient();
         rules = new MedicalRecordRules();
@@ -501,7 +511,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * @param event the event
      * @param acts  the expected acts
      */
-    private void checkContains(Act event, Act ... acts) {
+    private void checkContains(Act event, Act... acts) {
         ActBean bean = new ActBean(event);
         List<Act> items = bean.getNodeActs("items");
         assertEquals(acts.length, items.size());

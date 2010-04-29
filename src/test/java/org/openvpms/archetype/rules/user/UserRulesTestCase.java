@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.user;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -41,6 +43,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link UserRules#getUser(String)} method.
      */
+    @Test
     public void testGetUser() {
         UserRules rules = new UserRules();
         String username = "zuser" + System.currentTimeMillis();
@@ -52,6 +55,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link UserRules#isClinician(User)} method.
      */
+    @Test
     public void testIsClinician() {
         UserRules rules = new UserRules();
         User user = TestHelper.createUser();
@@ -65,6 +69,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link UserRules#getLocations(User)} method.
      */
+    @Test
     public void testGetLocations() {
         User user = TestHelper.createUser();
         Party location1 = TestHelper.createLocation();
@@ -83,6 +88,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link UserRules#getDefaultLocation(User)} method.
      */
+    @Test
     public void testGetDefaultLocation() {
         User user = TestHelper.createUser();
 
@@ -104,7 +110,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
         // location can be one of location1, or location2, as default not
         // specified
         assertTrue(defaultLocation.equals(location1)
-                || defaultLocation.equals(location2));
+                   || defaultLocation.equals(location2));
 
         // mark rel2 as the default
         EntityRelationshipHelper.setDefault(user, "locations", rel2,

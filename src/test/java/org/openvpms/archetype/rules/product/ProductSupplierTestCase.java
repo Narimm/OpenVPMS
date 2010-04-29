@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.product;
 
+import static org.junit.Assert.assertFalse;
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -37,6 +39,7 @@ public class ProductSupplierTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ProductSupplier} accessors.
      */
+    @Test
     public void test() {
         ProductRules rules = new ProductRules();
         Party supplier = TestHelper.createSupplier();

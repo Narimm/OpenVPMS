@@ -18,6 +18,10 @@
 
 package org.openvpms.archetype.rules.finance.estimation;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.EstimationActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
@@ -55,6 +59,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link EstimationRules#copy(Act)} method.
      */
+    @Test
     public void testCopy() {
         Party customer = TestHelper.createCustomer();
         Product product = TestHelper.createProduct();
@@ -105,6 +110,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link EstimationRules#invoice(Act, User)} method.
      */
+    @Test
     public void testInvoice() {
         Party customer = TestHelper.createCustomer();
         Product product = TestHelper.createProduct();
@@ -168,12 +174,9 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new EstimationRules();
     }
 

@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +49,7 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
      * Tests the query, where no properties are constrained. This should return exactly the same acts as
      * {@link ReminderQuery}.
      */
+    @Test
     public void testUnconstrainedQuery() {
         Entity reminderType = createReminderType();
         createReminders(10, reminderType); // create some reminders
@@ -62,6 +64,7 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
     /**
      * Checks querying by reminder type and due date.
      */
+    @Test
     public void testQueryByReminderTypeAndDate() {
         // create a reminder type with 3 months interval
         Entity reminderType = createReminderType(3, DateUnits.MONTHS);
@@ -109,6 +112,7 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
     /**
      * Tests querying where are reminder's reminderCount is incremented and therefore due date changes.
      */
+    @Test
     public void testQueryWithReminderCount() {
         ReminderRules rules = new ReminderRules();
 

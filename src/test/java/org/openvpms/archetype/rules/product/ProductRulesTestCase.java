@@ -18,9 +18,12 @@
 
 package org.openvpms.archetype.rules.product;
 
-import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.archetype.rules.stock.StockRules;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
+import org.openvpms.archetype.rules.stock.StockRules;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -49,6 +52,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
     /**
      * Tests the {@link ProductRules#copy(Product)} method.
      */
+    @Test
     public void testCopy() {
         StockRules stockRules = new StockRules();
         BigDecimal price = new BigDecimal("2.00");
@@ -61,7 +65,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
         Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
         stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
         stockRules.updateStock(product, stockLocation, BigDecimal.ONE);
-        
+
         String name = "Copy";
         Product copy = rules.copy(product, name);
 
@@ -87,12 +91,13 @@ public class ProductRulesTestCase extends AbstractProductTest {
                                                           ps.getPackageUnits());
         assertNotNull(psCopy);
         assertTrue(psCopy.getRelationship().getId()
-                != ps.getRelationship().getId());
+                   != ps.getRelationship().getId());
     }
 
     /**
      * Tests the {@link ProductRules#getProductSuppliers} method.
      */
+    @Test
     public void testGetProductSuppliersForSupplierAndProduct() {
         Party supplier = TestHelper.createSupplier();
         Product product1 = TestHelper.createProduct();
@@ -126,6 +131,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
      * Tests the {@link ProductRules#getProductSupplier(Product, Party, int,
      * String)} method.
      */
+    @Test
     public void testGetProductSupplier() {
         Party supplier = TestHelper.createSupplier();
         Product product1 = TestHelper.createProduct();
@@ -171,6 +177,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
     /**
      * Tests the {@link ProductRules#getProductSuppliers(Product)} method.
      */
+    @Test
     public void testGetProductSuppliersForProduct() {
         Party supplier1 = TestHelper.createSupplier();
         Party supplier2 = TestHelper.createSupplier();
@@ -197,12 +204,9 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new ProductRules();
     }
 

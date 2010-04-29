@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.product;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
@@ -71,7 +74,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ProductPriceRules#getProductPrice} method.
      */
-    public void testGetProductPrice() {
+    @Test public void testGetProductPrice() {
         ProductPrice fixed1 = createFixedPrice("2008-01-01", "2008-01-31", false);
         ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
         ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
@@ -126,6 +129,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal,
      * String, Date)}  method.
      */
+    @Test
     public void testGetProductPriceForPrice() {
         BigDecimal one = BigDecimal.ONE;
         BigDecimal two = new BigDecimal("2.0");
@@ -198,7 +202,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ProductPriceRules#getProductPrices} method.
      */
-    public void testGetProductPrices() {
+    @Test public void testGetProductPrices() {
         ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-01-01", "2008-01-31");
         ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-01-01",
                                           "2008-12-31");
@@ -250,7 +254,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ProductPriceRules#getPrice} method.
      */
-    public void testGetPrice() {
+    @Test public void testGetPrice() {
         BigDecimal cost = BigDecimal.ONE;
         BigDecimal markup = BigDecimal.valueOf(100); // 100% markup
         BigDecimal price = rules.getPrice(product, cost, markup, practice,
@@ -261,7 +265,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ProductPriceRules#getMarkup} method.
      */
-    public void testGetMarkup() {
+    @Test public void testGetMarkup() {
         BigDecimal cost = BigDecimal.ONE;
         BigDecimal price = new BigDecimal("2.20");
         BigDecimal markup = rules.getMarkup(product, cost, price, practice);
@@ -272,12 +276,9 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * Sets up the test case.
      * <p/>
      * This sets up the practice to have a 10% tax on all products.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         product = TestHelper.createProduct();
         practice = createPractice();
         rules = new ProductPriceRules();

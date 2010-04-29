@@ -18,6 +18,10 @@
 
 package org.openvpms.archetype.rules.finance.tax;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -29,7 +33,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Random;
-
 
 /**
  * Tests the {@link CustomerTaxRules} class.
@@ -53,6 +56,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link TaxRules#getTaxRate(Product)} method.
      */
+    @Test
     public void testGetTaxRate() {
         Product productNoTax = createProduct();
         BigDecimal noTax = rules.getTaxRate(productNoTax);
@@ -71,6 +75,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link TaxRules#calculateTax(BigDecimal, Product, boolean)}
      * method.
      */
+    @Test
     public void testCalculateTax() {
         Product productNoTax = createProduct();
 
@@ -95,12 +100,9 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         taxType = createTaxType();
         Party practice = (Party) create("party.organisationPractice");
         rules = new TaxRules(practice);
@@ -158,7 +160,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         Lookup tax = (Lookup) create("lookup.taxType");
         IMObjectBean bean = new IMObjectBean(tax);
         bean.setValue("code", "XTAXRULESTESTCASE_CLASSIFICATION_"
-                + Math.abs(new Random().nextInt()));
+                              + Math.abs(new Random().nextInt()));
         bean.setValue("rate", new BigDecimal(10));
         save(tax);
         return tax;

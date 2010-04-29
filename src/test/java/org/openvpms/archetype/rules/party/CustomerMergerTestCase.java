@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.party;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
@@ -83,6 +86,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * Merges two customers and verifies the merged customer contains the
      * contacts of both.
      */
+    @Test
     public void testMergeContacts() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createCustomer();
@@ -101,6 +105,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * Tests a merge where the merge-from customer has an account type,
      * and the merge-to customer doesn't.
      */
+    @Test
     public void testMergeAccountType() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createCustomer();
@@ -117,6 +122,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * Tests a merge where both customers have different account types.
      * The merge-to customer's account type should take precedence.
      */
+    @Test
     public void testMergeAccountTypes() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createCustomer();
@@ -142,6 +148,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Tests that entity relationships are copied.
      */
+    @Test
     public void testMergeEntityRelationships() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createCustomer();
@@ -160,6 +167,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Tests that entity relationships where the target of the relationship is hull are handled correctly.
      */
+    @Test
     public void testMergeEntityRelationshipsWithNullTarget() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createCustomer();
@@ -191,6 +199,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Tests that entity identities are copied.
      */
+    @Test
     public void testMergeEntityIdentities() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createCustomer();
@@ -217,6 +226,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Verifies that participations are moved to the merged customer.
      */
+    @Test
     public void testMergeParticipations() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createCustomer();
@@ -248,6 +258,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Verifies that only <em>party.customerperson</em> instances can be merged.
      */
+    @Test
     public void testMergeInvalidParty() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createSupplier();
@@ -263,6 +274,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Verifies that a customer cannot be merged with itself.
      */
+    @Test
     public void testMergeToSameCustomer() {
         Party from = TestHelper.createCustomer();
         try {
@@ -279,6 +291,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * after the merge, and that any opening and closing balance acts on or
      * after the first transaction of the from customer are removed.
      */
+    @Test
     public void testMergeAccounts() {
         final Money eighty = new Money(80);
         final Money forty = new Money(40);
@@ -337,12 +350,9 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         PlatformTransactionManager mgr = (PlatformTransactionManager)
                 applicationContext.getBean("txnManager");
         template = new TransactionTemplate(mgr);
@@ -373,7 +383,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * @return the merged customer
      */
     private Party checkMerge(final Party from, final Party to) {
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 customerRules.mergeCustomers(from, to);
                 return null;

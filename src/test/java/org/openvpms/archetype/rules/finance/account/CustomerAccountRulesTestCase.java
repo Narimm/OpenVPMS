@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -36,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 
 /**
  * Tests the {@link CustomerAccountRules} class when triggered by the
@@ -77,6 +79,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * is saved, an <em>participation.customerAccountBalance</em> is
      * associated with it.
      */
+    @Test
     public void testAddChargesInvoiceToBalance() {
         checkAddToBalance(createChargesInvoice(new Money(100)));
     }
@@ -86,6 +89,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * is saved, an <em>participation.customerAccountBalance</em> is
      * associated with it.
      */
+    @Test
     public void testAddChargesCounterToBalance() {
         checkAddToBalance(createChargesCounter(new Money(100)));
     }
@@ -95,6 +99,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * is saved, an <em>participation.customerAccountBalance</em> is
      * associated with it.
      */
+    @Test
     public void testAddChargesCreditToBalance() {
         checkAddToBalance(createChargesCredit(new Money(100)));
     }
@@ -104,6 +109,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * is saved, an <em>participation.customerAccountBalance</em> is
      * associated with it.
      */
+    @Test
     public void testAddPaymentToBalance() {
         checkAddToBalance(createPayment(new Money(100)));
     }
@@ -113,6 +119,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * is saved, an <em>participation.customerAccountBalance</em> is
      * associated with it.
      */
+    @Test
     public void testAddRefundToBalance() {
         checkAddToBalance(createRefund(new Money(100)));
     }
@@ -122,6 +129,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * is saved, an <em>participation.customerAccountBalance</em> is
      * associated with it.
      */
+    @Test
     public void testAddCreditAdjustToBalance() {
         checkAddToBalance(createCreditAdjust(new Money(100)));
     }
@@ -131,6 +139,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * is saved, an <em>participation.customerAccountBalance</em> is
      * associated with it.
      */
+    @Test
     public void testAddDebitAdjustToBalance() {
         checkAddToBalance(createDebitAdjust(new Money(100)));
     }
@@ -140,6 +149,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * is saved, an <em>participation.customerAccountBalance</em> is
      * associated with it.
      */
+    @Test
     public void testAddInitialBalanceToBalance() {
         checkAddToBalance(createInitialBalance(new Money(100)));
     }
@@ -149,6 +159,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * is saved, an <em>participation.customerAccountBalance</em> is
      * associated with it.
      */
+    @Test
     public void testAddBadDebtToBalance() {
         checkAddToBalance(createBadDebt(new Money(100)));
     }
@@ -157,6 +168,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Verifies that an <em>act.customerAccountChargesInvoice</em> is
      * offset by an <em>act.customerAccountPayment</em> for the same amount.
      */
+    @Test
     public void testGetBalanceForChargesInvoiceAndPayment() {
         Money amount = new Money(100);
         List<FinancialAct> invoice = createChargesInvoice(amount);
@@ -168,6 +180,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Verifies that an <em>act.customerAccountChargesCounter</em> is
      * offset by an <em>act.customerAccountPayment</em> for the same amount.
      */
+    @Test
     public void testGetBalanceForChargesCounterAndPayment() {
         Money amount = new Money(100);
         List<FinancialAct> counter = createChargesCounter(amount);
@@ -180,6 +193,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * offset by an <em>act.customerAccountChargesCredit</em> for the same
      * amount.
      */
+    @Test
     public void testGetBalanceForChargesInvoiceAndCredit() {
         Money amount = new Money(100);
         List<FinancialAct> invoice = createChargesInvoice(amount);
@@ -191,6 +205,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Verifies that an <em>act.customerAccountRefund</em> is offset by an
      * <em>act.customerAccountPayment</em> for the same amount.
      */
+    @Test
     public void testGetBalanceForRefundAndPayment() {
         Money amount = new Money(100);
         List<FinancialAct> refund = Arrays.asList(createRefund(amount));
@@ -202,6 +217,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Verifies that an <em>act.customerAccountDebitAdjust</em> is offset by an
      * <em>act.customerAccountCreditAdjust</em> for the same amount.
      */
+    @Test
     public void testGetBalanceForDebitAndCreditAdjust() {
         Money amount = new Money(100);
         List<FinancialAct> debit = Arrays.asList(createDebitAdjust(amount));
@@ -213,6 +229,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Verifies that an <em>act.customerAccountInitialBalance</em> is offset by
      * an <em>act.customerAccountBadDebt</em> for the same amount.
      */
+    @Test
     public void testGetBalanceForInitialBalanceAndBadDebt() {
         Money amount = new Money(100);
         List<FinancialAct> debit = Arrays.asList(createInitialBalance(amount));
@@ -223,6 +240,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     /**
      * Tests the {@link CustomerAccountRules#getBalance} method.
      */
+    @Test
     public void testGetBalance() {
         Party customer = getCustomer();
         Money hundred = new Money(100);
@@ -289,6 +307,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Tests the {@link CustomerAccountRules#getBalance(Party, BigDecimal,
      * boolean)} method.
      */
+    @Test
     public void testGetRunningBalance() {
         Party customer = getCustomer();
         Money hundred = new Money(100);
@@ -330,6 +349,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     /**
      * Tests the {@link CustomerAccountRules#getOverdueBalance} method.
      */
+    @Test
     public void testGetCurrentOverdueBalance() {
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
@@ -372,6 +392,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Tests the {@link CustomerAccountRules#getOverdueBalance(Party, Date,
      * Date)} method.
      */
+    @Test
     public void testGetOverdueBalance() {
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
@@ -419,6 +440,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     /**
      * Tests the {@link CustomerAccountRules#getCreditBalance(Party)} method.
      */
+    @Test
     public void testGetCreditAmount() {
         final Money amount = new Money(100);
         List<FinancialAct> credits = createChargesCredit(amount);
@@ -445,6 +467,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     /**
      * Tests the {@link CustomerAccountRules#getUnbilledAmount(Party)}  method.
      */
+    @Test
     public void testGetUnbilledAmount() {
         final Money amount = new Money(100);
         List<FinancialAct> invoices = createChargesInvoice(amount);
@@ -489,6 +512,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     /**
      * Tests the reversal of customer account acts.
      */
+    @Test
     public void testReverse() {
         checkReverse(createChargesInvoice(new Money(100)),
                      "act.customerAccountChargesCredit",
@@ -558,6 +582,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     /**
      * Tests reversal of an allocated act.
      */
+    @Test
     public void testReverseAllocated() {
         Money amount = new Money(100);
         List<FinancialAct> invoice = createChargesInvoice(amount);
@@ -568,13 +593,14 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         checkBalance(BigDecimal.ZERO);
 
-        rules.reverse(payment, new Date());
+        rules.reverse(payment, new Date(), "Test reversal");
         checkBalance(amount);
     }
 
     /**
      * Tests reversal of an unallocated act.
      */
+    @Test
     public void testReverseUnallocated() {
         Money amount = new Money(100);
         List<FinancialAct> invoice = createChargesInvoice(amount);
@@ -582,13 +608,14 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         checkBalance(amount);
 
-        rules.reverse(invoice.get(0), new Date());
+        rules.reverse(invoice.get(0), new Date(), "Test reversal");
         checkBalance(BigDecimal.ZERO);
     }
 
     /**
      * Tests reversal of a partially allocated act.
      */
+    @Test
     public void testReversePartiallyAllocated() {
         Money amount = new Money(100);
         Money sixty = new Money(60);
@@ -612,7 +639,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkBalance(forty);
 
         // reverse the payment.
-        FinancialAct reversal = rules.reverse(payment, new Date());
+        FinancialAct reversal = rules.reverse(payment, new Date(), "Test reversal");
         assertEquals(BigDecimal.ZERO, reversal.getAllocatedAmount());
 
         // invoice and payment retain their allocations
@@ -629,6 +656,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Verifies that <em>participation.customerAccountBalance</em>
      * participations are not present when an act has a zero total.
      */
+    @Test
     public void testZeroAct() {
         // save an IN_PROGRESS invoice with a zero total, and verify it
         // has no balance participation
@@ -659,6 +687,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Verifies that older unallocated balances are allocated prior to more
      * recent ones for OVPMS-795.
      */
+    @Test
     public void testAllocationOrder() {
         Money sixty = new Money(60);
         Money forty = new Money(40);
@@ -668,7 +697,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         List<FinancialAct> invoice1 = createChargesInvoice(sixty, chargeTime1);
         save(invoice1);
-        List<FinancialAct> invoice2 = createChargesInvoice(forty,chargeTime2);
+        List<FinancialAct> invoice2 = createChargesInvoice(forty, chargeTime2);
         save(invoice2);
 
         java.sql.Date payTime1 = java.sql.Date.valueOf("2007-4-1");
@@ -701,12 +730,9 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void onSetUp() {
         rules = new CustomerAccountRules();
     }
 
@@ -800,7 +826,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param act  the act
      * @param acts the acts contributing to the allocated amount
      */
-    private void checkAllocation(FinancialAct act, FinancialAct ... acts) {
+    private void checkAllocation(FinancialAct act, FinancialAct... acts) {
         IMObjectBean bean = new IMObjectBean(act);
         BigDecimal total = BigDecimal.ZERO;
         List<ActRelationship> allocations = bean.getValues(
@@ -885,7 +911,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkBalance(balance);
 
         Date now = new Date();
-        FinancialAct reversal = rules.reverse(act, now);
+        FinancialAct reversal = rules.reverse(act, now, "Test reversal");
         assertTrue(TypeHelper.isA(reversal, shortName));
         ActBean bean = new ActBean(reversal);
         if (itemShortName != null) {

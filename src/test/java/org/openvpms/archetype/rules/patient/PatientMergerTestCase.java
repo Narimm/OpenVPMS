@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.party.AbstractPartyMergerTest;
@@ -67,6 +70,7 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
      * Tests that the most recent owner relationship is the active one after
      * the merge.
      */
+    @Test
     public void testMergeOwnerRelationships() {
         Party owner1 = TestHelper.createCustomer();
         Party owner2 = TestHelper.createCustomer();
@@ -97,6 +101,7 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Tests that entity identities are copied.
      */
+    @Test
     public void testMergeEntityIdentities() {
         Party from = TestHelper.createPatient();
         Party to = TestHelper.createPatient();
@@ -122,6 +127,7 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Verifies that participations are moved to the merged patient.
      */
+    @Test
     public void testMergeParticipations() {
         Party customer = TestHelper.createCustomer();
         Party from = TestHelper.createPatient();
@@ -153,6 +159,7 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Verifies that discounts are moved to the merged patient.
      */
+    @Test
     public void testMergeDiscounts() {
         Party from = TestHelper.createPatient();
         Party to = TestHelper.createPatient();
@@ -170,6 +177,7 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Verifies that only <em>party.patientpet</em> instances can be merged.
      */
+    @Test
     public void testMergeInvalidParty() {
         Party from = TestHelper.createPatient();
         Party to = TestHelper.createCustomer();
@@ -185,6 +193,7 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Verifies that a patient cannot be merged with itself.
      */
+    @Test
     public void testMergeToSamePatient() {
         Party from = TestHelper.createPatient();
         try {
@@ -199,6 +208,7 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Tests that entity relationships where the source of the relationship is hull are handled correctly.
      */
+    @Test
     public void testMergeEntityRelationshipsWithNullSource() {
         Party from = TestHelper.createPatient();
         Party to = TestHelper.createPatient();
@@ -230,16 +240,12 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new PatientRules();
 
-        PlatformTransactionManager mgr = (PlatformTransactionManager)
-                applicationContext.getBean("txnManager");
+        PlatformTransactionManager mgr = (PlatformTransactionManager) applicationContext.getBean("txnManager");
         template = new TransactionTemplate(mgr);
     }
 
@@ -252,7 +258,7 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
      * @return the merged patient
      */
     private Party checkMerge(final Party from, final Party to) {
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 rules.mergePatients(from, to);
                 return null;

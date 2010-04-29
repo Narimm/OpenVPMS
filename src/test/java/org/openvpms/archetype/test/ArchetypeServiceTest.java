@@ -18,12 +18,18 @@
 
 package org.openvpms.archetype.test;
 
+import org.junit.Assert;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -36,12 +42,14 @@ import java.util.Collection;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-24 00:49:15Z $
  */
-public abstract class ArchetypeServiceTest
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("/applicationContext.xml")
+public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTests {
 
     /**
      * The archetype service.
      */
+    @Autowired
+    @Qualifier("archetypeService")
     private IArchetypeService service;
 
 
@@ -84,7 +92,7 @@ public abstract class ArchetypeServiceTest
      * @throws ArchetypeServiceException if the service cannot save the objects
      * @throws ValidationException       if the object cannot be validated
      */
-    protected <T extends IMObject> void save(T ... objects) {
+    protected <T extends IMObject> void save(T... objects) {
         save(Arrays.asList(objects));
     }
 
@@ -131,38 +139,25 @@ public abstract class ArchetypeServiceTest
     }
 
     /**
+     * Verifies that two objects are equal.
+     *
+     * @param expected the expected value
+     * @param actual   the actual value
+     */
+    protected void assertEquals(Object expected, Object actual) {
+        Assert.assertEquals(expected, actual);
+    }
+
+    /**
      * Verifies two <tt>BigDecimals</tt> are equal.
      *
-     * @param a the first value
-     * @param b the second value
+     * @param expected the expected value
+     * @param actual   the actual value
      */
-    protected void assertEquals(BigDecimal a, BigDecimal b) {
-        if (a.compareTo(b) != 0) {
-            fail("Expected " + a + ", but got " + b);
+    protected void assertEquals(BigDecimal expected, BigDecimal actual) {
+        if (expected.compareTo(actual) != 0) {
+            fail("Expected " + expected + ", but got " + actual);
         }
-    }
-
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContext.xml"};
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-        assertNotNull(service);
     }
 
 }

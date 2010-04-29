@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.supplier;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
@@ -46,6 +48,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * the <em>archetypeService.save.act.supplierDelivery</em> and
      * the <em>archetypeService.save.act.supplierReturn</em> rules.
      */
+    @Test
     public void testPostDelivery() {
         BigDecimal quantity = new BigDecimal(5);
         Act delivery = createDelivery(quantity, 1);
@@ -73,6 +76,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * Tests that the {@link DeliveryProcessor} updates orders associated with
      * the delivery/return.
      */
+    @Test
     public void testPostDeliveryUpdatesOrder() {
         BigDecimal quantity = new BigDecimal(5);
         BigDecimal delivery1Quantity = new BigDecimal(3);
@@ -130,6 +134,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * Verifies that the order quantity is updated correctly when a
      * delivery/return is posted with a different package size.
      */
+    @Test
     public void testQuantityConversion() {
         BigDecimal quantity = BigDecimal.ONE;
         int packageSize = 20;
@@ -169,6 +174,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * Verifies that the <em>entityRelationship.productSupplier</em> is
      * updated when a delivery is <em>POSTED</em>.
      */
+    @Test
     public void testProductSupplierUpdate() {
         BigDecimal quantity = BigDecimal.ONE;
         int packageSize = 20;
@@ -199,6 +205,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * are updated.
      * <p/>
      */
+    @Test
     public void testUnitPriceUpdate() {
         Product product = getProduct();
         BigDecimal initialCost = BigDecimal.ZERO;
@@ -339,13 +346,13 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * Returns product supplier for the specified package size.
      *
      * @param packageSize the package size
+     * @return the product supplier, or <tt>null</tt> if none is found
      */
     private ProductSupplier getProductSupplier(int packageSize) {
         ProductRules rules = new ProductRules();
         Party supplier = get(getSupplier()); // make sure using the latest
         Product product = get(getProduct()); // instance of each
-        return rules.getProductSupplier(product, supplier, packageSize,
-                                        PACKAGE_UNITS);
+        return rules.getProductSupplier(product, supplier, packageSize, PACKAGE_UNITS);
     }
 
     /**

@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.party;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 
 /**
@@ -32,6 +33,7 @@ public class MergeExceptionTestCase extends TestCase {
     /**
      * Verifies that the messages are generated correctly.
      */
+    @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
                      2, MergeException.ErrorCode.values().length);
@@ -51,7 +53,7 @@ public class MergeExceptionTestCase extends TestCase {
      * @param args     exception arguments
      */
     private void checkException(MergeException.ErrorCode code,
-                                String expected, Object ... args) {
+                                String expected, Object... args) {
         MergeException exception = new MergeException(code, args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());

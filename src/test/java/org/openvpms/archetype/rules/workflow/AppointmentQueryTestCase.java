@@ -19,6 +19,8 @@
 package org.openvpms.archetype.rules.workflow;
 
 import org.apache.commons.lang.time.DateUtils;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -45,6 +47,7 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link AppointmentQuery#query()} method.
      */
+    @Test
     public void testQuery() {
         final int count = 10;
         Party schedule = ScheduleTestHelper.createSchedule();

@@ -18,8 +18,11 @@
 
 package org.openvpms.archetype.rules.finance.discount;
 
-import org.openvpms.archetype.test.ArchetypeServiceTest;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -73,6 +76,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * method when the intersection of customer, patient, and product discounts
      * result in no discount.
      */
+    @Test
     public void testCalculateDiscountForNoDiscounts() {
         Party custNoDisc = createCustomer();
         Party custWithDisc = createCustomerWithDiscount(discount10);
@@ -99,6 +103,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link DiscountRules#calculateDiscount} method where the
      * product has a 10% discount.
      */
+    @Test
     public void testCalculateDiscountForProductDiscount() {
         BigDecimal cents10 = new BigDecimal("0.10");
         BigDecimal cents5 = new BigDecimal("0.05");
@@ -154,6 +159,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link DiscountRules#calculateDiscount}
      * method where the product type has an associated 10% discount.
      */
+    @Test
     public void testCalculateDiscountForProductTypeDiscount() {
         BigDecimal cents10 = new BigDecimal("0.10");
         BigDecimal cents5 = new BigDecimal("0.05");
@@ -212,6 +218,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * method where the product has a 10% discount, and the product
      * type has a 5% discount.
      */
+    @Test
     public void testCalculateDiscountForProductProductTypeDiscount() {
         BigDecimal cents10 = new BigDecimal("0.10");
         BigDecimal cents15 = new BigDecimal("0.15");
@@ -238,6 +245,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * method where the discount has a 10% discount that applies only to the
      * unit * price.
      */
+    @Test
     public void testCalculateDiscountForProductWithNoFixedDiscount() {
         Entity discount = createDiscount(BigDecimal.TEN, false);
         BigDecimal cents5 = new BigDecimal("0.05");
@@ -263,6 +271,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * method where the product has a 10% discount, and the product
      * type has a 5% discount, and there is a maximum discount of 10%.
      */
+    @Test
     public void testCalculateDiscountForMaxDiscount() {
         BigDecimal cents10 = new BigDecimal("0.10");
         BigDecimal percent10 = new BigDecimal("10.00");
@@ -287,6 +296,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link DiscountRules#getDiscounts} method.
      */
+    @Test
     public void testGetDiscounts() {
         Party custNoDisc = createCustomer();
         Party custWithDisc = createCustomerWithDiscount(discount5,
@@ -308,15 +318,12 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         discount10 = createDiscount(BigDecimal.TEN, true);
         discount5 = createDiscount(new BigDecimal("5"), true);
-        discountGroup = createDiscountGroup(discount10,  discount5);
+        discountGroup = createDiscountGroup(discount10, discount5);
         rules = new DiscountRules();
     }
 
@@ -379,7 +386,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * @param expected the expected discounts
      */
     private void checkDiscounts(Date date, Party customer, Party patient,
-                                Product product, Entity ... expected) {
+                                Product product, Entity... expected) {
         List<Entity> discounts = rules.getDiscounts(date, customer, patient,
                                                     product);
         assertEquals(expected.length, discounts.size());
@@ -411,7 +418,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * @param discounts the discount types
      * @return a new customer
      */
-    private Party createCustomerWithDiscount(Entity ... discounts) {
+    private Party createCustomerWithDiscount(Entity... discounts) {
         Party customer = createCustomer();
         for (Entity discount : discounts) {
             addDiscount(customer, discount, null);
@@ -428,7 +435,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         Party patient = (Party) create("party.patientpet");
         IMObjectBean bean = new IMObjectBean(patient);
         bean.setValue("name", "XDiscountRulesTestCasse-pet"
-                + patient.hashCode());
+                              + patient.hashCode());
         bean.setValue("species", "CANINE");
         bean.save();
         return patient;
@@ -467,7 +474,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * @param discounts the discounts
      * @return a new product
      */
-    private Product createProductWithDiscounts(Entity ... discounts) {
+    private Product createProductWithDiscounts(Entity... discounts) {
         return createProductWithDiscounts(null, discounts);
     }
 
@@ -479,7 +486,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * @return a new product
      */
     private Product createProductWithDiscounts(Date endTime,
-                                               Entity ... discounts) {
+                                               Entity... discounts) {
         Product product = createProduct();
         for (Entity discount : discounts) {
             addDiscount(product, discount, endTime);
@@ -511,9 +518,9 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
     /**
      * Adds a discount to an entity.
      *
-     * @param entity the entity
+     * @param entity   the entity
      * @param discount the discount to add
-     * @param endTime the end time of the discount. May be <tt>null</tt>
+     * @param endTime  the end time of the discount. May be <tt>null</tt>
      */
     private void addDiscount(Entity entity, Entity discount, Date endTime) {
         EntityBean bean = new EntityBean(entity);
@@ -547,7 +554,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         Entity discount = (Entity) create("entity.discountType");
         IMObjectBean bean = new IMObjectBean(discount);
         bean.setValue("name", "XDISCOUNT_RULES_TESTCASE_"
-                + Math.abs(new Random().nextInt()));
+                              + Math.abs(new Random().nextInt()));
         bean.setValue("rate", rate);
         bean.setValue("discountFixed", fixedDiscount);
         save(discount);
@@ -560,11 +567,11 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * @param discounts the discounts to add to the group
      * @return a new discount group
      */
-    private Entity createDiscountGroup(Entity ... discounts) {
+    private Entity createDiscountGroup(Entity... discounts) {
         Entity result = (Entity) create("entity.discountGroupType");
         EntityBean bean = new EntityBean(result);
         bean.setValue("name", "XDISCOUNT_RULES_TESTCASE_"
-                + Math.abs(new Random().nextInt()));
+                              + Math.abs(new Random().nextInt()));
         for (Entity discount : discounts) {
             bean.addRelationship("entityRelationship.discountType", discount);
         }
