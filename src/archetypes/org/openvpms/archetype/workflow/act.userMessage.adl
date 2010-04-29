@@ -42,6 +42,7 @@
 			<assertion name="lookup.local">
 				<propertyList name="entries">
 					<property name="PENDING" value="Pending" />
+                    <property name="READ" value="Read" />
 					<property name="COMPLETED" value="Completed" />
 				</propertyList>
 				<errorMessage>Invalid Message Status</errorMessage>
