@@ -18,6 +18,7 @@
 
 package org.openvpms.report;
 
+import static org.junit.Assert.assertNotNull;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -32,7 +33,8 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,17 +46,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class ArchetypeServiceTest
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContext.xml"};
-    }
+@ContextConfiguration("/applicationContext.xml")
+public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTests {
 
     /**
      * Helper to create a new object.

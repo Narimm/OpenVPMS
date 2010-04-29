@@ -18,7 +18,8 @@
 
 package org.openvpms.report.openoffice;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.*;
 
 
@@ -28,11 +29,12 @@ import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.*;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OpenOfficeExceptionTestCase extends TestCase {
+public class OpenOfficeExceptionTestCase {
 
     /**
      * Verifies that the messages are generated correctly.
      */
+    @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
                      12, OpenOfficeException.ErrorCode.values().length);
@@ -60,12 +62,12 @@ public class OpenOfficeExceptionTestCase extends TestCase {
      * Creates an {@link OpenOfficeException} with the supplied code and
      * arguments and verifies that the generated message matches that expected.
      *
-     * @param code the error code
+     * @param code     the error code
      * @param expected the expected message
-     * @param args exception arguments
+     * @param args     exception arguments
      */
     private void checkException(OpenOfficeException.ErrorCode code,
-                                String expected, Object ... args) {
+                                String expected, Object... args) {
         OpenOfficeException exception = new OpenOfficeException(code, args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());

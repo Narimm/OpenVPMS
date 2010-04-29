@@ -18,12 +18,12 @@
 
 package org.openvpms.report.openoffice;
 
+import static org.junit.Assert.*;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.ParameterType;
 
 import java.util.HashMap;
 import java.util.Map;
-
 
 /**
  * Base class for {@link OpenOfficeDocument} tests.
@@ -31,8 +31,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractOpenOfficeDocumentTest
-        extends AbstractOpenOfficeTest {
+public abstract class AbstractOpenOfficeDocumentTest extends AbstractOpenOfficeTest {
 
     /**
      * Returns the user fields in a document.

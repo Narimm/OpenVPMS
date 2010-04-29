@@ -18,6 +18,9 @@
 
 package org.openvpms.report.msword;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -48,7 +51,10 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
     /**
      * Tests reporting.
+     *
+     * @throws IOException for any I/O error
      */
+    @Test
     public void testReport() throws IOException {
         Document doc = getDocument(
                 "src/test/reports/act.customerEstimation.doc",
@@ -75,6 +81,7 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
      * Verfies that input fields are returned as parameters, and that
      * by specifying it as a parameter updates the corresponding input field.
      */
+    @Test
     public void testParameters() {
         Document doc = getDocument(
                 "src/test/reports/act.customerEstimation.doc",

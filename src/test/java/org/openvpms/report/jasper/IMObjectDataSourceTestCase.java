@@ -20,12 +20,15 @@ package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRField;
 import net.sf.jasperreports.engine.design.JRDesignField;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.report.ArchetypeServiceTest;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,6 +46,7 @@ public class IMObjectDataSourceTestCase extends ArchetypeServiceTest {
     /**
      * The document handlers.
      */
+    @Autowired
     private DocumentHandlers handlers;
 
 
@@ -51,6 +55,7 @@ public class IMObjectDataSourceTestCase extends ArchetypeServiceTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testDataSource() throws Exception {
         IMObject object = createCustomer("Foo", "Bar");
         IMObjectDataSource ds = createDataSource(object);
@@ -68,6 +73,7 @@ public class IMObjectDataSourceTestCase extends ArchetypeServiceTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testDocument() throws Exception {
         // create a new act and associate an image with it
         ActBean act = createAct("act.patientDocumentImage");
@@ -90,18 +96,6 @@ public class IMObjectDataSourceTestCase extends ArchetypeServiceTest {
         assertEquals(-1, stream.read());
         expectedStream.close();
         stream.close();
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        handlers = (DocumentHandlers) applicationContext.getBean(
-                "documentHandlers");
     }
 
     /**

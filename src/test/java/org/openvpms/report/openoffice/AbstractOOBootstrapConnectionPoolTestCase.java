@@ -18,7 +18,8 @@
 
 package org.openvpms.report.openoffice;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
 
 /**
@@ -34,6 +35,7 @@ public abstract class AbstractOOBootstrapConnectionPoolTestCase
      * Verifies that the OpenOffice service is restarted after N uses if
      * {@link OOBootstrapConnectionPool#setReuseCount(int)} is non-zero.
      */
+    @Test
     public void testRestart() {
         TestConnectionPool pool = new TestConnectionPool(getService());
         int uses = 2;
@@ -43,7 +45,7 @@ public abstract class AbstractOOBootstrapConnectionPoolTestCase
             checkConnection(connection);
             connection.close();
         }
-        Assert.assertEquals(pool.getCapacity(), pool.getRestarted());
+        assertEquals(pool.getCapacity(), pool.getRestarted());
 
         OOConnection connection = pool.getConnection();
         checkConnection(connection);

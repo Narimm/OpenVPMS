@@ -18,11 +18,12 @@
 
 package org.openvpms.report.openoffice;
 
+import org.junit.After;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.ArchetypeServiceTest;
-import org.openvpms.report.DocFormats;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 
@@ -38,8 +39,18 @@ public abstract class AbstractOpenOfficeTest extends ArchetypeServiceTest {
     /**
      * The document handlers.
      */
+    @Autowired
     private DocumentHandlers handlers;
 
+
+    /**
+     * Tears down the test case.
+     */
+    @After
+    public void tearDown() {
+        OOBootstrapService service = (OOBootstrapService) applicationContext.getBean("OOSocketBootstrapService");
+        service.stop();
+    }
 
     /**
      * Returns the connection to OpenOffice.
@@ -72,30 +83,4 @@ public abstract class AbstractOpenOfficeTest extends ArchetypeServiceTest {
         return handlers;
     }
 
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        handlers = (DocumentHandlers) applicationContext.getBean(
-                "documentHandlers");
-        assertNotNull(handlers);
-    }
-
-    /**
-     * Tears down the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onTearDown() throws Exception {
-        super.onTearDown();
-        OOBootstrapService service
-                = (OOBootstrapService) applicationContext.getBean(
-                "OOSocketBootstrapService");
-        service.stop();
-    }
 }

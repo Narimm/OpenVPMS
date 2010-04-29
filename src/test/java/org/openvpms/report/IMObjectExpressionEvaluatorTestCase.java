@@ -18,6 +18,8 @@
 
 package org.openvpms.report;
 
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -38,6 +40,7 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectExpressionEvaluator#getValue(String)} method.
      */
+    @Test
     public void testGetValue() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
@@ -61,7 +64,7 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         assertEquals(new BigDecimal(2), eval.getValue("[1 + 1]"));
 
         String expression = "[party:getBillingAddress("
-                + "openvpms:get(., 'customer.entity'))]";
+                            + "openvpms:get(., 'customer.entity'))]";
         assertEquals("1234 Foo St\nMelbourne VIC 3001",
                      eval.getValue(expression));
 
@@ -74,6 +77,7 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
      * Tests the {@link IMObjectExpressionEvaluator#getFormattedValue(String)}
      * method.
      */
+    @Test
     public void testGetFormattedValue() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
@@ -98,7 +102,7 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         assertEquals("2.00", eval.getFormattedValue("[1 + 1]"));
 
         String expression = "[party:getBillingAddress("
-                + "openvpms:get(., 'customer.entity'))]";
+                            + "openvpms:get(., 'customer.entity'))]";
         assertEquals("1234 Foo St\nMelbourne VIC 3001",
                      eval.getFormattedValue(expression));
 
