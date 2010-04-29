@@ -18,6 +18,9 @@
 
 package org.openvpms.report;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -25,8 +28,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
 
-import java.util.Date;
 import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -40,6 +43,7 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ObjectSetExpressionEvaluator#getValue(String)} method.
      */
+    @Test
     public void testGetValue() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
@@ -75,6 +79,7 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
      * Tests the {@link ObjectSetExpressionEvaluator#getFormattedValue(String)}
      * method.
      */
+    @Test
     public void testGetFormattedValue() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();

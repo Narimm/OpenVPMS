@@ -19,11 +19,14 @@
 package org.openvpms.report.openoffice;
 
 import com.sun.star.frame.XComponentLoader;
-import junit.framework.TestCase;
+import org.junit.After;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * Test case for {@link OOConnectionPool}.
@@ -31,7 +34,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractOOConnectionPoolTestCase extends TestCase {
+public abstract class AbstractOOConnectionPoolTestCase {
 
     /**
      * The bootstrap service.
@@ -42,6 +45,7 @@ public abstract class AbstractOOConnectionPoolTestCase extends TestCase {
     /**
      * Tests allocation and release of connections.
      */
+    @Test
     public void testConnectionPool() {
         OOConnectionPool pool = createPool();
         List<OOConnection> connections = new ArrayList<OOConnection>();
@@ -74,11 +78,9 @@ public abstract class AbstractOOConnectionPoolTestCase extends TestCase {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() {
         service = createService();
         if (!service.isActive()) {
             service.start();
@@ -87,11 +89,9 @@ public abstract class AbstractOOConnectionPoolTestCase extends TestCase {
 
     /**
      * Cleans up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() {
         service.stop();
     }
 
