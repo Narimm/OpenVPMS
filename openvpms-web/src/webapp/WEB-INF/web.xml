@@ -18,6 +18,7 @@
         <param-value>
             /WEB-INF/applicationContext.xml
             /WEB-INF/applicationContext-authentication.xml
+            /WEB-INF/openvpms-esci.xml
         </param-value>
     </context-param>
 
@@ -27,17 +28,13 @@
         <param-value>/WEB-INF/classes/log4j.properties</param-value>
     </context-param>
 
-    <!--  Setup the Acegi Filter Chain Proxy -->
+    <!-- Setup the Spring Security Filter Chain-->
     <filter>
-        <filter-name>Acegi Filter Chain Proxy</filter-name>
-        <filter-class>org.acegisecurity.util.FilterToBeanProxy</filter-class>
-        <init-param>
-            <param-name>targetClass</param-name>
-            <param-value>org.acegisecurity.util.FilterChainProxy</param-value>
-        </init-param>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>Acegi Filter Chain Proxy</filter-name>
+        <filter-name>springSecurityFilterChain</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
@@ -48,26 +45,22 @@
      - to access it anywhere in the web application, outside of the framework.
      -->
     <listener>
-        <listener-class>
-            org.springframework.web.context.ContextLoaderListener</listener-class>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
     <!--	Setup a listener to connect spring with log4j -->
     <listener>
-        <listener-class>
-            org.springframework.web.util.Log4jConfigListener</listener-class>
+        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
     </listener>
 
-    <!--  Setup ACEGI to subscribe to http session events in the web context -->
+    <!--  Setup spring security to subscribe to http session events in the web context -->
     <listener>
-        <listener-class>
-            org.acegisecurity.ui.session.HttpSessionEventPublisher</listener-class>
+        <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
     </listener>
 
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>
-            org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
+        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
         <init-param>
             <param-name>app-name</param-name>
             <param-value>loginApp</param-value>
@@ -76,8 +69,7 @@
 
     <servlet>
         <servlet-name>AppServlet</servlet-name>
-        <servlet-class>
-            org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
+        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
         <init-param>
             <param-name>app-name</param-name>
             <param-value>openVPMSApp</param-value>
@@ -92,6 +84,12 @@
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
         <servlet-class>org.openvpms.web.servlet.LogoutServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>jaxws-spring-servlet</servlet-name>
+        <servlet-class>com.sun.xml.ws.transport.http.servlet.WSSpringServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
@@ -122,6 +120,11 @@
     <servlet-mapping>
         <servlet-name>LogoutServlet</servlet-name>
         <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>jaxws-spring-servlet</servlet-name>
+        <url-pattern>/esci/OrderResponseService</url-pattern>
     </servlet-mapping>
 
     <session-config>

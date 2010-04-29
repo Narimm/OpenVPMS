@@ -106,7 +106,7 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<Entity> {
      */
     private List<Entity> filterForWorkList() {
         List<Entity> types = getTaskTypes(workList);
-        String name = getName();
+        String name = getValue();
         types = IMObjectHelper.findByName(name, types);
         List<Entity> result = new ArrayList<Entity>();
         for (IMObject type : types) {

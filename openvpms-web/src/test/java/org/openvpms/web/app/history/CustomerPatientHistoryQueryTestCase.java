@@ -18,6 +18,9 @@
 package org.openvpms.web.app.history;
 
 import org.apache.commons.collections.ComparatorUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
@@ -46,6 +49,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testQuery() throws Exception {
         int count = 10;
         SelectionHistory patients = new SelectionHistory();
@@ -95,6 +99,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
     /**
      * Tests sorting on customer and patient name.
      */
+    @Test
     public void testSort() {
         SelectionHistory patients = new SelectionHistory();
         SelectionHistory customers = new SelectionHistory();
@@ -132,6 +137,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testFilter() throws Exception {
         SelectionHistory patients = new SelectionHistory();
         SelectionHistory customers = new SelectionHistory();
@@ -152,7 +158,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
 
         // filter results containing "XA" and verify customer2 and patient1 are returned
-        query.setName("XA");
+        query.setValue("XA");
         List<CustomerPatient> list = query.query().getPage(0).getResults();
         assertEquals(2, list.size());
         assertNull(list.get(0).getCustomer());

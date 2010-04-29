@@ -66,7 +66,7 @@ public abstract class AbstractIMObjectQuery<T extends IMObject>
      */
     protected ResultSet<T> createResultSet(
             SortConstraint[] sort) {
-        return new DefaultResultSet<T>(getArchetypeConstraint(), getName(),
+        return new DefaultResultSet<T>(getArchetypeConstraint(), getValue(),
                                        getConstraints(), sort, getMaxResults(),
                                        isDistinct());
     }

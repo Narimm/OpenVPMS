@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:ws="http://jax-ws.dev.java.net/spring/core"
+       xmlns:wss="http://jax-ws.dev.java.net/spring/servlet"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+          http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+          http://jax-ws.dev.java.net/spring/core http://jax-ws.dev.java.net/spring/core.xsd
+          http://jax-ws.dev.java.net/spring/servlet http://jax-ws.dev.java.net/spring/servlet.xsd
+          http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+
+    <bean id="loggingHandler" class="org.openvpms.esci.util.LoggingSOAPHandler"/>
+
+    <wss:binding url="/esci/OrderResponseService">
+        <wss:service>
+            <ws:service bean="#orderResponseService">
+                <ws:handlers>
+                    <ref bean="loggingHandler"/>
+                </ws:handlers>
+            </ws:service>
+        </wss:service>
+    </wss:binding>
+
+    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory">
+        <!-- remove serviceAuthenticators if JAX-WS authentication is handled by the container -->
+        <property name="serviceAuthenticators">
+            <bean class="org.openvpms.esci.service.client.DefaultServiceAuthenticators" init-method="getInstance"/>
+        </property>
+    </bean>
+
+    <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.SupplierServiceLocatorImpl"/>
+
+    <bean id="orderService" class="org.openvpms.esci.adapter.OrderWebServiceAdapter"/>
+
+    <bean id="orderResponseService" class="org.openvpms.esci.service.OrderResponseWebService">
+        <property name="orderResponseService" ref="orderResponseServiceAdapter"/>
+    </bean>
+
+    <bean id="orderResponseServiceAdapter" class="org.openvpms.esci.adapter.OrderResponseServiceAdapter">
+        <property name="orderResponseListener">
+            <bean class="org.openvpms.esci.adapter.SystemMessageOrderResponseListener"/>
+        </property>
+    </bean>
+
+    <bean id="orderMapper" class="org.openvpms.esci.adapter.OrderMapperImpl"/>
+    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules"/>
+    <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules"/>
+    <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules"/>
+    <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules"/>
+    <bean id="supplierRules" class="org.openvpms.archetype.rules.supplier.SupplierRules"/>
+
+</beans>

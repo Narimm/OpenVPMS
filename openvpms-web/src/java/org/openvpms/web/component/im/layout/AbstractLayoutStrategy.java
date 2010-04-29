@@ -81,7 +81,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
 
     /**
-     * Constructs a new <tt>AbstractLayoutStrategy</tt>.
+     * Constructs a <tt>AbstractLayoutStrategy</tt>.
      */
     public AbstractLayoutStrategy() {
         this(false);
@@ -366,11 +366,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         } else {
             model = createTabModel(null);
         }
-        for (NodeDescriptor nodeDesc : descriptors) {
-            Property property = properties.get(nodeDesc);
-            ComponentState child = createComponent(property, object, context);
-            addTab(model, property, child, shortcuts);
-        }
+        doTabLayout(object, descriptors, properties, model, context, shortcuts);
         return model;
     }
 
@@ -382,6 +378,38 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected TabPaneModel createTabModel(Component container) {
         return new TabPaneModel(container);
+    }
+
+    /**
+     * Lays out child components in a tab model.
+     *
+     * @param object      the parent object
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param model       the tab model
+     * @param context     the layout context
+     * @param shortcuts   if <tt>true</tt> include short cuts
+     */
+    protected void doTabLayout(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
+                               TabPaneModel model, LayoutContext context, boolean shortcuts) {
+        int shortcut = 1;
+        for (NodeDescriptor nodeDesc : descriptors) {
+            Property property = properties.get(nodeDesc);
+            ComponentState child = createComponent(property, object, context);
+            Component inset = ColumnFactory.create("Inset",
+                                                   child.getComponent());
+            setFocusTraversal(child);
+            String text = child.getDisplayName();
+            if (text == null) {
+                text = nodeDesc.getDisplayName();
+            }
+
+            if (shortcuts && shortcut <= 10) {
+                text = getShortcut(text, shortcut);
+                ++shortcut;
+            }
+            model.addTab(text, inset);
+        }
     }
 
     /**
@@ -578,7 +606,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param shortcut the shortcut no.
      * @return the shortcut text
      */
-    private String getShortcut(String name, int shortcut) {
+    protected String getShortcut(String name, int shortcut) {
         if (shortcut == 10) {
             shortcut = 0;
         }

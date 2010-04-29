@@ -155,7 +155,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @return the value for the column
      */
     protected Object getValue(T object, DescriptorTableColumn column, int row) {
-        return column.getValue(object, context);
+        return column.getComponent(object, context);
     }
 
     /**

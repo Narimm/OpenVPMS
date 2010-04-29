@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.property;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -41,6 +43,7 @@ public class NumericPropertyTransformerTestCase
     /**
      * Tests {@link NumericPropertyTransformer#apply} for an integer node.
      */
+    @Test
     public void testIntegerApply() {
         final Integer one = 1;
         IArchetypeService service
@@ -85,6 +88,7 @@ public class NumericPropertyTransformerTestCase
     /**
      * Tests {@link NumericPropertyTransformer#apply} for a BigDecimal node.
      */
+    @Test
     public void testDecimalApply() {
         final BigDecimal one = new BigDecimal("1.0");
         final BigDecimal half = new BigDecimal("0.5");
@@ -125,17 +129,6 @@ public class NumericPropertyTransformerTestCase
 
         BigDecimal dec5 = (BigDecimal) handler.apply(new Double(0.5));
         assertTrue(half.compareTo(dec5) == 0);
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
     }
 
     /**

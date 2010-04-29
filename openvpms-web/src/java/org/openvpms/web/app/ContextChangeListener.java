@@ -18,9 +18,9 @@
 
 package org.openvpms.web.app;
 
-import java.util.EventListener;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
+
+import java.util.EventListener;
 
 
 /**
@@ -37,4 +37,11 @@ public interface ContextChangeListener extends EventListener {
      * @param context the context to change to
      */
     void changeContext(IMObject context);
+
+    /**
+     * Change the context.
+     *
+     * @param shortName the archetype short name of the context to change to
+     */
+    void changeContext(String shortName);
 }

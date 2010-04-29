@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.util;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.query.AutoQuery;
@@ -50,13 +52,13 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      */
     private static final String PROPERTIES
             = "org/openvpms/web/component/im/util/"
-            + "ArchetypeHandlersTestCase.properties";
+              + "ArchetypeHandlersTestCase.properties";
 
     /**
      * Test xml.
      */
     private static final String XML = "org/openvpms/web/component/im/util/"
-            + "ArchetypeHandlersTestCase.xml";
+                                      + "ArchetypeHandlersTestCase.xml";
 
     /**
      * Verifies that {@link AutoQuery} can be created for a <em>lookup.*</em>
@@ -64,6 +66,7 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testCreateAutoQuery() throws Exception {
         checkCreateAutoQuery(propertiesHandlers);
         checkCreateAutoQuery(xmlHandlers);
@@ -75,6 +78,7 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      *
      * @throws Exception for any error
      */
+    @Test
     public void testCreatePatientQuery() throws Exception {
         checkCreatePatientQuery(propertiesHandlers);
         checkCreatePatientQuery(xmlHandlers);
@@ -84,6 +88,7 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      * Verifies that no handler is returned if there is no match for the
      * specified archetypes.
      */
+    @Test
     public void testNoMatch() {
         checkNoMatch(propertiesHandlers);
         checkNoMatch(xmlHandlers);
@@ -93,6 +98,7 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      * Verifies that no handler is returned if a handler doesn't support
      * the entire range of archetypes.
      */
+    @Test
     public void testNoCompleteMatch() {
         checkNoCompleteMatch(propertiesHandlers);
         checkNoCompleteMatch(xmlHandlers);
@@ -102,6 +108,7 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      * Verifies that the correct handler is returned if multiple handlers
      * are registered with the same implementation type.
      */
+    @Test
     public void testSameHandlerImplementationType() {
         checkSameHandlerImplementationType(propertiesHandlers);
         checkSameHandlerImplementationType(xmlHandlers);
@@ -109,23 +116,19 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        propertiesHandlers = new ArchetypeHandlers<Query>(PROPERTIES,
-                                                          Query.class);
+    public void setUp() {
+        super.setUp();
+        propertiesHandlers = new ArchetypeHandlers<Query>(PROPERTIES, Query.class);
         xmlHandlers = new ArchetypeHandlers<Query>(XML, Query.class);
     }
 
     /**
-     * Verifies that {@link AutoQuery} can be created for a <em>lookup.*</em>
-     * short name.
+     * Verifies that {@link AutoQuery} can be created for a <em>lookup.*</em> short name.
      *
-     * @param handlers
-     * @throws Exception
+     * @param handlers the handlers
+     * @throws Exception for any errror
      */
     private void checkCreateAutoQuery(ArchetypeHandlers handlers)
             throws Exception {

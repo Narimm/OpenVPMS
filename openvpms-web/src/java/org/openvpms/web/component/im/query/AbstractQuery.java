@@ -70,7 +70,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * The minimum length of the name field, before queries can be performed.
      */
-    private int nameMinLength;
+    private int valueMinLength;
 
     /**
      * Determines if duplicate rows should be filtered.
@@ -275,12 +275,12 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
-     * Sets the name to query on.
+     * Sets the value to query on.
      *
-     * @param name the name. May contain wildcards, or be <tt>null</tt>
+     * @param value the value. May contain wildcards, or be <tt>null</tt>
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setValue(String value) {
+        this.name = value;
     }
 
     /**
@@ -288,27 +288,26 @@ public abstract class AbstractQuery<T> implements Query<T> {
      *
      * @return the name. May contain wildcards, or be <tt>null</tt>
      */
-    public String getName() {
+    public String getValue() {
         return name;
     }
 
-
     /**
-     * Sets the minimum length of a name before queries can be performed.
+     * Sets the minimum length of a value before queries can be performed.
      *
-     * @param length the minimum name length
+     * @param length the minimum length
      */
-    public void setNameMinLength(int length) {
-        nameMinLength = length;
+    public void setValueMinLength(int length) {
+        valueMinLength = length;
     }
 
     /**
-     * Returns the minimum length of a name before queries can be performed
+     * Returns the minimum length of a value before queries can be performed.
      *
      * @return the minimum length
      */
-    public int getNameMinLength() {
-        return nameMinLength;
+    public int getValueMinLength() {
+        return valueMinLength;
     }
 
     /**

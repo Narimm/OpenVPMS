@@ -68,7 +68,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     public void reset() {
         currentPage = null;
         cursor = 0;
-        currentPage = getPage(cursor);
+        // currentPage = getPage(cursor);
     }
 
     /**

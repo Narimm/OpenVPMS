@@ -23,7 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.event.ActionListener;
 
 import org.openvpms.report.ParameterType;
-import org.openvpms.web.component.dialog.PrintDialog;
+import org.openvpms.web.component.print.PrintDialog;
 import org.openvpms.web.component.im.doc.ReportParameters;
 import org.openvpms.web.component.util.GroupBoxFactory;
 

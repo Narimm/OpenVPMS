@@ -24,6 +24,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import org.junit.Test;
+
 
 /**
  * Tests the {@link RelativeDateParser} class.
@@ -36,6 +38,7 @@ public class RelativeDateParserTestCase extends TestCase {
     /**
      * Tests the {@link RelativeDateParser#parse(String, Date)} method.
      */
+    @Test
     public void testParse() {
         checkEquals("1d", 1, 0, 0, 0);
         checkEquals("1w", 0, 1, 0, 0);
@@ -66,7 +69,7 @@ public class RelativeDateParserTestCase extends TestCase {
      * Tests the {@link RelativeDateParser#parse(String, Date)} method when
      * supplied with invalid strings.
      */
-    public void testInvalidParse() {
+    @Test public void testInvalidParse() {
         RelativeDateParser parser = new RelativeDateParser();
         assertNull(parser.parse(null));
         assertNull(parser.parse(""));

@@ -85,7 +85,7 @@ public class TaskTypeParticipationEditor
             IMObjectReference taskTypeRef = getEntityRef();
             if (taskTypeRef == null || !hasTaskType(workList, taskTypeRef)) {
                 Entity taskType = getDefaultTaskType(workList);
-                setEntity((Entity) taskType);
+                setEntity(taskType);
             }
         }
     }
@@ -105,7 +105,7 @@ public class TaskTypeParticipationEditor
             @Override
             protected Query<Entity> createQuery(String name) {
                 Query<Entity> query = new TaskTypeQuery(workList);
-                query.setName(name);
+                query.setValue(name);
                 return query;
 
             }

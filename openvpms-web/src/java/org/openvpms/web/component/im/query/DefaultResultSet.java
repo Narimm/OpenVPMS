@@ -30,7 +30,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultResultSet<T extends IMObject> extends NameResultSet<T> {
+public class DefaultResultSet<T extends IMObject> extends AbstractIMObjectResultSet<T> {
 
 
     /**

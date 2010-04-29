@@ -24,14 +24,12 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.JoinConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,10 +41,11 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-08-22 05:39:25Z $
  */
-public abstract class AbstractEntityResultSet<T> extends NameResultSet<T> {
+public abstract class AbstractEntityResultSet<T> extends AbstractIMObjectResultSet<T> {
 
     /**
-     * Identity short names.
+     * Identity short names. Non-null if an instance name has been set, and identities are being searched,
+     * and the entities have an "identities" node
      */
     private String[] identityShortNames;
 
@@ -55,44 +54,46 @@ public abstract class AbstractEntityResultSet<T> extends NameResultSet<T> {
      * Creates a new <tt>AbstractEntityResultSet</tt>.
      *
      * @param archetypes       the archetypes to query
-     * @param instanceName     the instance name. May be <tt>null</tt>
+     * @param value            the value to query on. May be <tt>null</tt>
      * @param searchIdentities if <tt>true</tt> search on identity name
-     * @param constraints      additional query constraints. May be
-     *                         <tt>null</tt>
+     * @param constraints      additional query constraints. May be <tt>null</tt>
      * @param sort             the sort criteria. May be <tt>null</tt>
      * @param rows             the maximum no. of rows per page
      * @param distinct         if <tt>true</tt> filter duplicate rows
+     * @param executor         the query executor
      */
-    public AbstractEntityResultSet(ShortNameConstraint archetypes,
-                                   String instanceName,
-                                   boolean searchIdentities,
-                                   IConstraint constraints,
-                                   SortConstraint[] sort,
-                                   int rows, boolean distinct,
+    public AbstractEntityResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
+                                   IConstraint constraints, SortConstraint[] sort, int rows, boolean distinct,
                                    QueryExecutor<T> executor) {
-        super(archetypes, instanceName, constraints, sort, rows, distinct,
-              executor);
-        if (!StringUtils.isEmpty(instanceName) && searchIdentities) {
+        super(archetypes, value, constraints, sort, rows, distinct, executor);
+        if (searchIdentities) {
+            // determine if "identities" nodes exist for each archetype.
             Set<String> shortNames = new HashSet<String>();
             List<ArchetypeDescriptor> matches = getArchetypes(archetypes);
             boolean identities = true;
             for (ArchetypeDescriptor archetype : matches) {
-                NodeDescriptor ident
-                        = archetype.getNodeDescriptor("identities");
+                NodeDescriptor ident = archetype.getNodeDescriptor("identities");
                 if (ident == null) {
                     identities = false;
                     break;
                 } else {
-                    for (String name : DescriptorHelper.getShortNames(ident)) {
-                        shortNames.add(name);
-                    }
+                    shortNames.addAll(Arrays.asList(DescriptorHelper.getShortNames(ident)));
                 }
             }
             if (identities) {
-                identityShortNames = shortNames.toArray(new String[0]);
+                identityShortNames = shortNames.toArray(new String[shortNames.size()]);
                 setDistinct(true);
             }
         }
+    }
+
+    /**
+     * Determines if the <em>identities</em> node is being searched.
+     *
+     * @return <tt>true</tt> if identities are being searched
+     */
+    public boolean isSearchingIdentities() {
+        return identityShortNames != null;
     }
 
     /**
@@ -102,40 +103,25 @@ public abstract class AbstractEntityResultSet<T> extends NameResultSet<T> {
      */
     @Override
     protected ArchetypeQuery createQuery() {
-        ArchetypeQuery query = new ArchetypeQuery(getArchetypes());
-        String name = getInstanceName();
-        if (!StringUtils.isEmpty(name)) {
-            NodeConstraint nameConstraint = new NodeConstraint("name", name);
-            if (identityShortNames != null) {
-                // querying on identity
-                CollectionNodeConstraint idConstraint
-                        = new CollectionNodeConstraint("identities",
-                                                       identityShortNames,
-                                                       false, true);
-                idConstraint.setJoinType(JoinConstraint.JoinType.LeftOuterJoin);
-                idConstraint.add(nameConstraint);
-                query.add(idConstraint);
-            } else {
-                query.add(nameConstraint);
+        ArchetypeQuery query;
+        if (identityShortNames == null) {
+            query = super.createQuery();
+        } else {
+            query = new ArchetypeQuery(getArchetypes());
+            String value = getValue();
+            if (!StringUtils.isEmpty(getValue())) {
+                query.add(Constraints.leftJoin("identities",
+                                               Constraints.shortName("identity", identityShortNames, true)));
+                IConstraint identName = Constraints.eq("identity.name", value);
+                Long id = getId(value);
+                if (id != null) {
+                    query.add(Constraints.or(Constraints.eq("id", id), identName));
+                } else {
+                    query.add(identName);
+                }
             }
         }
         return query;
-    }
-
-    /**
-     * Adds sort constraints.
-     * This implementation adds all those returned by
-     * {@link #getSortConstraints()}, and finally adds a sort on <em>id</em>
-     * to guarantee that subsequent queries will return results in the same
-     * order.
-     *
-     * @param query the query to add the constraints to
-     */
-    @Override
-    protected void addSortConstraints(ArchetypeQuery query) {
-        super.addSortConstraints(query);
-        String alias = getArchetypes().getAlias();
-        query.add(new NodeSortConstraint(alias, "id"));
     }
 
 }

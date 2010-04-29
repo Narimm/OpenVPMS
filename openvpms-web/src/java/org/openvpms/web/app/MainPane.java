@@ -243,7 +243,24 @@ public class MainPane extends SplitPane implements ContextChangeListener,
             Workspace workspace = subsystem.getWorkspaceForArchetype(shortName);
             if (workspace != null) {
                 workspace.getComponent();
-                workspace.setIMObject(context);
+                workspace.update(context);
+                subsystem.setWorkspace(workspace);
+                select(subsystem);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Change the context.
+     *
+     * @param shortName the archetype short name of the context to change to
+     */
+    public void changeContext(String shortName) {
+        for (Subsystem subsystem : subsystems) {
+            Workspace workspace = subsystem.getWorkspaceForArchetype(shortName);
+            if (workspace != null) {
+                workspace.getComponent();
                 subsystem.setWorkspace(workspace);
                 select(subsystem);
                 break;
@@ -259,11 +276,11 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      * @param value the context value. May be <tt>null</tt>
      */
     public void changed(String key, IMObject value) {
-        if ((value != null && currentWorkspace.canHandle(value.getArchetypeId().getShortName()))
-            || currentWorkspace.canHandle(key)) {
+        if ((value != null && currentWorkspace.canUpdate(value.getArchetypeId().getShortName()))
+            || currentWorkspace.canUpdate(key)) {
             // the key may be a short name. Use in the instance that the value
             // is null
-            currentWorkspace.setIMObject(value);
+            currentWorkspace.update(value);
         }
     }
 

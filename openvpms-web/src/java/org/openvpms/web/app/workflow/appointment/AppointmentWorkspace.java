@@ -19,8 +19,14 @@
 package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
@@ -55,6 +61,44 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
     public void setObject(Entity object) {
         GlobalContext.getInstance().setScheduleView(object);
         super.setObject(object);
+    }
+
+    /**
+     * Determines if the workspace can be updated with instances of the specified archetype.
+     *
+     * @param shortName the archetype's short name
+     * @return <tt>true</tt> if the workspace can be updated by the archetype; otherwise <tt>false</tt>
+     * @see #update
+     */
+    @Override
+    public boolean canUpdate(String shortName) {
+        return super.canUpdate(shortName) || ScheduleArchetypes.APPOINTMENT.equals(shortName);
+    }
+
+    /**
+     * Updates the workspace with the specified object.
+     *
+     * @param object the object to update the workspace with
+     */
+    @Override
+    public void update(IMObject object) {
+        if (TypeHelper.isA(object, "entity.organisationScheduleView")) {
+            setObject((Entity) object);
+        } else if (TypeHelper.isA(object, ScheduleArchetypes.APPOINTMENT)) {
+            Act act = (Act) object;
+            ActBean bean = new ActBean(act);
+            Entity schedule = bean.getNodeParticipant("schedule");
+            if (schedule != null) {
+                EntityBean entity = new EntityBean(schedule);
+                Entity view = entity.getNodeSourceEntity("views");
+                if (view != null) {
+                    setScheduleView(view, act.getActivityStartTime());
+                    ScheduleBrowser scheduleBrowser = getBrowser();
+                    scheduleBrowser.setSelected(scheduleBrowser.getEvent(act));
+                    getCRUDWindow().setObject(act);
+                }
+            }
+        }
     }
 
     /**

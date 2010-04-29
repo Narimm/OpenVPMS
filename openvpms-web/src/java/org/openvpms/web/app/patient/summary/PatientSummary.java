@@ -22,20 +22,19 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
@@ -95,9 +94,8 @@ public class PatientSummary {
             String name = patient.getName();
             if (rules.isDesexed(patient)) {
                 name += " (" + getPatientSex(patient) + " " + Messages.get("patient.desexed") + ")";
-            }
-            else {
-                name += " (" + getPatientSex(patient) + " " + Messages.get("patient.entire") + ")";            	
+            } else {
+                name += " (" + getPatientSex(patient) + " " + Messages.get("patient.entire") + ")";
             }
             IMObjectReferenceViewer patientName
                     = new IMObjectReferenceViewer(patient.getObjectReference(),
@@ -126,10 +124,10 @@ public class PatientSummary {
             } else {
                 alertCount = ButtonFactory.create(
                         null, "alert", new ActionListener() {
-                    public void onAction(ActionEvent event) {
-                        onShowAlerts(patient);
-                    }
-                });
+                            public void onAction(ActionEvent event) {
+                                onShowAlerts(patient);
+                            }
+                        });
                 alertCount = RowFactory.create(alertCount);
             }
 
@@ -141,10 +139,10 @@ public class PatientSummary {
             } else {
                 reminderCount = ButtonFactory.create(
                         null, "reminder", new ActionListener() {
-                    public void onAction(ActionEvent event) {
-                        onShowReminders(patient);
-                    }
-                });
+                            public void onAction(ActionEvent event) {
+                                onShowReminders(patient);
+                            }
+                        });
                 reminderCount = RowFactory.create(reminderCount);
             }
             Label ageTitle = LabelFactory.create("patient.age");
@@ -203,10 +201,9 @@ public class PatientSummary {
                 new ParticipantConstraint("patient", "participation.patient",
                                           patient)
         };
-        OrConstraint time = new OrConstraint();
-        time.add(new NodeConstraint("endTime", RelationalOp.GT, new Date()));
-        time.add(new NodeConstraint("endTime", RelationalOp.IsNULL));
-        SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
+        OrConstraint time = Constraints.or(Constraints.gt("endTime", new Date()),
+                                           Constraints.isNull("endTime"));
+        SortConstraint[] sort = {Constraints.sort("endTime")};
 
         return new ActResultSet<Act>(archetypes, participants, time, statuses,
                                      false, null, 5, sort);

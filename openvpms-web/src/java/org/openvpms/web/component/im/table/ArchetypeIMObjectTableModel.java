@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * {@link IMObjectTableModel}, displaying the <code>IMObject</code>'s
+ * {@link IMObjectTableModel}, displaying the <tt>IMObject</tt>'s
  * archetype, name and description.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -32,9 +32,10 @@ public class ArchetypeIMObjectTableModel<T extends IMObject>
         extends BaseIMObjectTableModel<T> {
 
     /**
-     * Construct a new <code>ArchetypeIMObjectTableModel</code>.
+     * Construct a new <tt>ArchetypeIMObjectTableModel</tt>.
      */
     public ArchetypeIMObjectTableModel() {
+        super(null);
         setTableColumnModel(createTableColumnModel(true));
     }
 }

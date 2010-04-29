@@ -16,16 +16,16 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.dialog;
+package org.openvpms.web.component.print;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.list.DefaultListModel;
-import org.openvpms.web.component.im.util.PrintHelper;
+import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;

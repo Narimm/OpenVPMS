@@ -20,9 +20,8 @@ package org.openvpms.web.component.im.query;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IdConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -30,9 +29,10 @@ import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
- * {@link ResultSet} implementation that queries customers. The search can be
+ * An {@link ResultSet} implementation that queries customers. The search can be
  * further constrained to match on:
  * <ul>
+ * <li>customer identity; and/or
  * <li>partial patient name; and/or
  * <li>partial contact description
  * </ul>
@@ -45,6 +45,8 @@ import org.openvpms.component.system.common.query.SortConstraint;
  * <pre>Party patient = (Party) set.get("patient");</pre>
  * <li>the contact, if searching on contacts:
  * <pre>Contact contact = (Contact) set.get("contact");</pre>
+ * <li>the identity, if searching on identities:
+ * <pre>EntityIdentity identity = (EntityIdentity) set.get("identity");</pre>
  * </ul>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -67,7 +69,7 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
      * Creates a new <tt>CustomerResultSet</tt>.
      *
      * @param archetypes       the archetypes to query
-     * @param instanceName     the instance name. May be <tt>null</tt>
+     * @param value            the value to query on. May be <tt>null</tt>
      * @param searchIdentities if <tt>true</tt> search on identity name
      * @param patientName      if non-null, query on patient name
      * @param contact          if non-null,  query on contact description
@@ -75,14 +77,9 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
      * @param rows             the maximum no. of rows per page
      * @param distinct         if <tt>true</tt> filter duplicate rows
      */
-    public CustomerResultSet(ShortNameConstraint archetypes,
-                             String instanceName,
-                             boolean searchIdentities,
-                             String patientName, String contact,
-                             SortConstraint[] sort,
-                             int rows, boolean distinct) {
-        super(archetypes, instanceName, searchIdentities, null, sort,
-              rows, distinct, new ObjectSetQueryExecutor());
+    public CustomerResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
+                             String patientName, String contact, SortConstraint[] sort, int rows, boolean distinct) {
+        super(archetypes, value, searchIdentities, null, sort, rows, distinct, new ObjectSetQueryExecutor());
         archetypes.setAlias("customer");
         this.patientName = patientName;
         this.contact = contact;
@@ -116,24 +113,27 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
         ArchetypeQuery query = super.createQuery();
         query.add(new ObjectSelectConstraint("customer"));
         if (isSearchingOnPatient()) {
-            ShortNameConstraint relationship
-                    = new ShortNameConstraint("rel",
-                                              "entityRelationship.patient*");
-            ShortNameConstraint patient
-                    = new ShortNameConstraint("patient", "party.patientpet");
-            query.add(new CollectionNodeConstraint("patients", relationship));
+            ShortNameConstraint relationship = new ShortNameConstraint("rel", "entityRelationship.patient*");
+            ShortNameConstraint patient = new ShortNameConstraint("patient", "party.patientpet");
+            query.add(Constraints.join("patients", relationship));
             query.add(patient);
             query.add(new IdConstraint("rel.source", "customer"));
             query.add(new IdConstraint("rel.target", "patient"));
-            query.add(new NodeConstraint("patient.name", patientName));
+            Long id = getId(patientName);
+            if (id != null) {
+                query.add(Constraints.eq("patient.id", id));
+            } else {
+                query.add(Constraints.eq("patient.name", patientName));
+            }
             query.add(new ObjectSelectConstraint("patient"));
         }
         if (isSearchingOnContact()) {
-            ShortNameConstraint shortName
-                    = new ShortNameConstraint("contact", "contact.*");
-            query.add(new CollectionNodeConstraint("contacts", shortName)
-                    .add(new NodeConstraint("description", contact)));
+            ShortNameConstraint shortName = new ShortNameConstraint("contact", "contact.*");
+            query.add(Constraints.join("contacts", shortName).add(Constraints.eq("description", contact)));
             query.add(new ObjectSelectConstraint("contact"));
+        }
+        if (isSearchingIdentities()) {
+            query.add(new ObjectSelectConstraint("identity"));
         }
         return query;
     }

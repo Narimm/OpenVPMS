@@ -19,8 +19,6 @@
 package org.openvpms.web.component.app;
 
 import nextapp.echo2.app.ApplicationInstance;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
@@ -36,10 +34,12 @@ import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.system.SpringApplicationInstance;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 
 
 /**
- * An <code>ApplicationInstance</code> associated with a {@link GlobalContext}.
+ * An <tt>ApplicationInstance</tt> associated with a {@link GlobalContext}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -54,7 +54,7 @@ public abstract class ContextApplicationInstance
 
 
     /**
-     * Constructs a new <code>ContextApplicationInstance</code>.
+     * Constructs a <tt>ContextApplicationInstance</tt>.
      */
     public ContextApplicationInstance() {
         initUser();
@@ -72,7 +72,7 @@ public abstract class ContextApplicationInstance
     /**
      * Returns the instance associated with the current thread.
      *
-     * @return the current instance, or <code>null</code>
+     * @return the current instance, or <tt>null</tt>
      */
     public static ContextApplicationInstance getInstance() {
         return (ContextApplicationInstance) ApplicationInstance.getActive();
@@ -95,6 +95,13 @@ public abstract class ContextApplicationInstance
     public abstract void switchTo(IMObject object);
 
     /**
+     * Switches the current workspace to one that supports a particular archetype.
+     *
+     * @param shortName the archetype short name
+     */
+    public abstract void switchTo(String shortName);
+
+    /**
      * Clears the current context.
      */
     protected void clearContext() {
@@ -107,8 +114,7 @@ public abstract class ContextApplicationInstance
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void initUser() {
-        Authentication auth
-                = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             UserRules rules = new UserRules();
             User user = rules.getUser(auth.getName());

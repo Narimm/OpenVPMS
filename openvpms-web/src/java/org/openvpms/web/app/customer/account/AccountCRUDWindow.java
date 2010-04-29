@@ -271,7 +271,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     private void reverse(FinancialAct act) {
         try {
             CustomerAccountRules rules = new CustomerAccountRules();
-            rules.reverse(act, new Date());
+            rules.reverse(act, new Date(), Messages.get("customer.account.reverse.notes"));
         } catch (OpenVPMSException exception) {
             String title = Messages.get(
                     "customer.account.reverse.failed",

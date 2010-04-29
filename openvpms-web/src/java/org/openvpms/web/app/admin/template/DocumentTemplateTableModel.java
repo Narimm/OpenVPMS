@@ -16,24 +16,25 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting;
+package org.openvpms.web.app.admin.template;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 
+
 /**
- * Report Table Model.
+ * Table model for <em>entity.documentTemplate</em> objects.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 
-public class ReportTableModel extends DescriptorTableModel<Entity> {
+public class DocumentTemplateTableModel extends DescriptorTableModel<Entity> {
 
     /**
-     * Creates a new <code>ReportTableModel</code>.
+     * Creates a <tt>DocumentTemplateTableModel</tt>.
      */
-    public ReportTableModel() {
+    public DocumentTemplateTableModel() {
         super(new String[]{"entity.documentTemplate"});
     }
 
@@ -44,6 +45,6 @@ public class ReportTableModel extends DescriptorTableModel<Entity> {
      */
     @Override
     protected String[] getNodeNames() {
-        return new String[]{"name", "description", "reportType", "userLevel"};
+        return new String[]{"id", "name", "description", "reportType", "userLevel"};
     }
 }

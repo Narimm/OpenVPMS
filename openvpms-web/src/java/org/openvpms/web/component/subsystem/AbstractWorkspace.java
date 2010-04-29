@@ -139,13 +139,12 @@ public abstract class AbstractWorkspace<T extends IMObject>
     }
 
     /**
-     * Determines if the workspace supports an archetype.
+     * Determines if the workspace can be updated with instances of the specified archetype.
      *
      * @param shortName the archetype's short name
-     * @return <code>true</code> if the workspace can handle the archetype;
-     *         otherwise <code>false</code>
+     * @return <tt>false</tt>
      */
-    public boolean canHandle(String shortName) {
+    public boolean canUpdate(String shortName) {
         return false;
     }
 
@@ -155,8 +154,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * This is analagous to {@link #setObject} but performs a safe cast
      * to the required type.
      * <p/>
-     * If the current object is the same instance as that supplied, no changes
-     * will be made.
+     * If the current object is the same instance as that supplied, no changes will be made.
      *
      * @param object the current object. May be <tt>null</tt>
      */
@@ -167,10 +165,19 @@ public abstract class AbstractWorkspace<T extends IMObject>
         } else if (object == null || type.isAssignableFrom(object.getClass())) {
             setObject(type.cast(object));
         } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + type.getName());
+            throw new IllegalArgumentException("Argument 'object' must be an instance of " + type.getName());
         }
+    }
+
+    /**
+     * Updates the workspace with the specified object.
+     * <p/>
+     * This implementation delegates to {@link #setIMObject}.
+     *
+     * @param object the object to update the workspace with
+     */
+    public void update(IMObject object) {
+       setIMObject(object);
     }
 
     /**
@@ -283,8 +290,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
     protected T getLatest(T context) {
         context = IMObjectHelper.reload(context);
         if (!IMObjectHelper.isSame(getObject(), context)) {
-            if (context != null && !canHandle(
-                    context.getArchetypeId().getShortName())) {
+            if (context != null && !canUpdate(context.getArchetypeId().getShortName())) {
                 return null;
             }
             return context;

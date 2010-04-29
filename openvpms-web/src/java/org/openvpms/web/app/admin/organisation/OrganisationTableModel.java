@@ -34,7 +34,8 @@ public class OrganisationTableModel extends BaseIMObjectTableModel<Party> {
      * Creates a new <tt>OrganisationModel</tt>.
      */
     public OrganisationTableModel() {
-        setTableColumnModel(createTableColumnModel(true));
+        super(null);
+        setTableColumnModel(createTableColumnModel(true, true));
     }
 
 }

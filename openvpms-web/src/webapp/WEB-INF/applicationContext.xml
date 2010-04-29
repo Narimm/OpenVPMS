@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
-        "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-<beans>
+    <context:annotation-config/>
+    <!-- enable autowiring -->
 
     <!-- ================================================================== -->
     <!--                         GENERAL DEFINITIONS                        -->
@@ -62,68 +68,94 @@
                     ${hibernate.c3p0.max_statements}
                 </prop>
                 <prop key="hibernate.cache.provider_class">
-                    ${hibernate.cache.provider_class}</prop>
+                    ${hibernate.cache.provider_class}
+                </prop>
                 <prop key="hibernate.cache.use_second_level_cache">
-                    ${hibernate.cache.use_second_level_cache}</prop>
+                    ${hibernate.cache.use_second_level_cache}
+                </prop>
                 <prop key="hibernate.cache.use_query_cache">
-                    ${hibernate.cache.use_query_cache}</prop>
+                    ${hibernate.cache.use_query_cache}
+                </prop>
                 <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
                 <prop key="hibernate.jdbc.batch_size">
-                    ${hibernate.jdbc.batch_size}</prop>
+                    ${hibernate.jdbc.batch_size}
+                </prop>
                 <prop key="hibernate.c3p0.max_statements">
                     ${hibernate.c3p0.max_statements}
                 </prop>
+                <prop key="net.sf.ehcache.configurationResourceName">/ehcache.xml</prop>
+                <prop key="hibernate.generate_statistics">true</prop>
             </props>
         </property>
         <property name="schemaUpdate" value="false"/>
         <property name="mappingResources">
             <list>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/document/DocumentDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/document/DocumentDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml
+                </value>
                 <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml</value>
+                    org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml
+                </value>
                 <value>
-                    /org/openvpms/archetype/rules/product/Product.hbm.xml</value>
+                    /org/openvpms/archetype/rules/workflow/Workflow.hbm.xml
+                </value>
                 <value>
-                    /org/openvpms/archetype/rules/workflow/Workflow.hbm.xml</value>
+                    /org/openvpms/archetype/rules/patient/reminder/Reminder.hbm.xml
+                </value>
                 <value>
-                    /org/openvpms/archetype/rules/patient/reminder/Reminder.hbm.xml</value>
-                <value>
-                    /org/openvpms/archetype/rules/finance/account/Balance.hbm.xml</value>
+                    /org/openvpms/archetype/rules/finance/account/Balance.hbm.xml
+                </value>
             </list>
         </property>
     </bean>
@@ -153,6 +185,53 @@
     </bean>
 
     <!-- ================================================================== -->
+    <!--                           CACHE MANAGER                            -->
+    <!-- ================================================================== -->
+
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <!-- NOTE: the configLocation must be the same as that specified by the sessionFactory
+             property: net.sf.ehcache.configurationResourceName, when SingletonEhCacheProvider is being used -->
+        <property name="configLocation" value="classpath:ehcache.xml"/>
+        <property name="shared" value="true"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!--                           JMX                                      -->
+    <!-- ================================================================== -->
+
+    <bean id="hibernateStatisticsMBean" class="org.hibernate.jmx.StatisticsService">
+        <property name="statisticsEnabled" value="true"/>
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <bean id="ehCacheMBeanRegistration" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="net.sf.ehcache.management.ManagementService.registerMBeans"/>
+        <property name="arguments">
+            <list>
+                <ref bean="cacheManager"/>
+                <ref bean="mbeanServer"/>
+                <value>true</value>
+                <value>true</value>
+                <value>true</value>
+                <value>true</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="locateExistingServerIfPossible" value="true"/>
+    </bean>
+
+    <bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter">
+        <property name="beans">
+            <map>
+                <entry key="Hibernate:name=statistics" value-ref="hibernateStatisticsMBean"/>
+            </map>
+        </property>
+        <property name="server" ref="mbeanServer"/>
+    </bean>
+
+    <!-- ================================================================== -->
     <!--                      BUSINESS SERVICE BEANS                        -->
     <!-- ================================================================== -->
 
@@ -179,7 +258,8 @@
 
     <!-- The Archetype service -->
     <bean id="archetypeService"
-          class="org.openvpms.component.business.service.archetype.ArchetypeService">
+          class="org.openvpms.component.business.service.archetype.ArchetypeService" autowire-candidate="false">
+        <!-- don't make this a candidate for autowiring as it doesn't support rules -->
         <constructor-arg ref="archetypeDescriptorCache"/>
         <property name="dao" ref="imObjectDao"/>
         <property name="ruleEngine" ref="ruleEngine"/>
@@ -191,7 +271,6 @@
         <constructor-arg ref="auditDao"/>
     </bean>
 
-
     <!-- ================================================================== -->
     <!--                         ARCHETYPE SUPPORT                          -->
     <!-- ================================================================== -->
@@ -200,6 +279,12 @@
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
+
+    <bean name="imObjectBeanFactory"
+          class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">
+        <constructor-arg index="0" ref="archetypeRuleService"/>
+    </bean>
+
 
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
@@ -216,7 +301,7 @@
                 <entry key="date"
                        value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
                 <entry key="word"
-                      value="org.apache.commons.lang.WordUtils"/>
+                       value="org.apache.commons.lang.WordUtils"/>
             </map>
         </constructor-arg>
     </bean>
@@ -227,7 +312,7 @@
 
     <bean id="lookupService"
           class="org.openvpms.component.business.service.lookup.CachingLookupService">
-        <constructor-arg index="0" ref="archetypeService"/>
+        <constructor-arg index="0" ref="archetypeRuleService"/>
         <constructor-arg index="1">
             <ref local="imObjectDao"/>
         </constructor-arg>
@@ -279,8 +364,8 @@
 
     <bean id="taskService"
           class="org.openvpms.archetype.rules.workflow.TaskService">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg>
+        <constructor-arg ref="archetypeService" index="0"/>
+        <constructor-arg index="1">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="appointmentCache"/>
@@ -361,53 +446,6 @@
     </bean>
 
     <!-- ================================================================== -->
-    <!--             SECURITY DEFINITIONS (ACEGI SECURITY)                  -->
-    <!-- ================================================================== -->
-
-    <!--  Create a proxy for the Security Service bean -->
-    <bean id="securityserviceProxyCreator"
-          class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-        <property name="beanNames">
-            <list>
-                <value>archetypeService</value>
-            </list>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <value>securityAdvisor</value>
-            </list>
-        </property>
-    </bean>
-
-    <!--  Configure the security advisor -->
-    <bean id='securityAdvisor'
-          class='org.openvpms.component.business.service.security.OpenVPMSMethodSecurityInterceptor'>
-        <property name='authenticationManager' ref='authenticationManager'/>
-        <property name='accessDecisionManager' ref='accessDecisionManager'/>
-        <property name='objectDefinitionSource'>
-            <value>
-                org.openvpms.component.business.service.archetype.IArchetypeService.create=archetypeService.create
-                org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
-                org.openvpms.component.business.service.archetype.IArchetypeService.remove=archetypeService.remove
-            </value>
-        </property>
-    </bean>
-
-    <!--  Define thew access decision manager for authorization -->
-    <bean id='accessDecisionManager'
-          class='org.acegisecurity.vote.AffirmativeBased'>
-        <property name='decisionVoters'>
-            <list>
-                <ref bean='archetypeAwareVoter'/>
-            </list>
-        </property>
-    </bean>
-
-    <!--  Use the standard role vote -->
-    <bean id='archetypeAwareVoter'
-          class='org.openvpms.component.business.service.security.ArchetypeAwareVoter'/>
-
-    <!-- ================================================================== -->
     <!--                        REPORTING                                   -->
     <!-- ================================================================== -->
 
@@ -460,10 +498,7 @@
     <!-- ================================================================== -->
     <!--                        EMAIL                                       -->
     <!-- ================================================================== -->
-    <bean id="mailSender"
-          class="org.openvpms.web.component.service.MailService"
-          singleton="false">
-    </bean>
+    <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="prototype"/>
 
     <!-- ================================================================== -->
     <!--                        MISC                                        -->
@@ -484,11 +519,11 @@
           class="org.openvpms.component.business.service.archetype.assertion.ProperCaseNameConverter">
         <constructor-arg>
             <bean class="org.openvpms.component.business.service.archetype.assertion.LocaleProperCaseRules">
-                <constructor-arg value="org.openvpms.web.resource.localisation.propercase"/>    
+                <constructor-arg value="org.openvpms.web.resource.localisation.propercase"/>
             </bean>
         </constructor-arg>
     </bean>
-    
+
     <bean id="properCaseConverterHelper"
           class="org.openvpms.component.business.service.archetype.assertion.ProperCaseConverterHelper">
         <constructor-arg ref="properCaseConverter"/>
@@ -497,11 +532,13 @@
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
     <!-- ================================================================== -->
-    <bean id="loginApp" class="org.openvpms.web.app.login.LoginApp"
-          singleton="false"/>
+    <bean id="loginApp" class="org.openvpms.web.app.login.LoginApp" scope="prototype"/>
 
-    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp"
-          singleton="false"/>
+    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype"/>
+
+    <bean id="messageMonitor" class="org.openvpms.web.app.workflow.messaging.MessageMonitor">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
 
     <!-- Defines the key stroke combination for accelerator keys.
          If mask not specified, defaults to 'Alt'.
