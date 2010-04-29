@@ -48,6 +48,8 @@
                     <property name="COMPLETED" value="Completed"/>
                     <property name="CANCELLED" value="Cancelled"/>
                     <property name="POSTED" value="Finalised"/>
+                    <property name="ACCEPTED" value="Accepted"/>
+                    <property name="REJECTED" value="Rejected"/>
                 </propertyList>
                 <errorMessage>An error message</errorMessage>
             </assertion>
@@ -63,6 +65,8 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
+        <node name="supplierResponse" path="/details/supplierResponse" type="java.lang.String"
+              minCardinality="0" readOnly="true"/>
         <node name="items" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
             <assertion name="archetypeRange">

@@ -28,7 +28,7 @@
 		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97629865" />
 		<data collection="contacts" archetype="contact.location" address="4/18 Station Street" suburb="Bayswater" state="VIC" postcode="3082" />
 	</data>
-	<data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1" />
+	<data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1" default="true" />
 	<data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL2" />
 	<data id="OD1" archetype="party.organisationDeposit" name="OpenVPMS Account" accountName="OpenVPMS Pty Ltd"
 		bank="BEN" branch="Boronia" accountNumber="123-456-789" />
@@ -37,7 +37,11 @@
 	<data id="OT1" archetype="party.organisationTill" name="Main Reception Till" tillFloat="200.00" />
 	<data id="OT2" archetype="party.organisationTill" name="Main Shop Till" tillFloat="200.00" />
 	<data id="OT3" archetype="party.organisationTill" name="Branch Reception Till" tillFloat="100.00" />
-	<data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT1" />
+	<data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT1" default="true"/>
 	<data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT2" />
 	<data archetype="entityRelationship.locationTill" source="id:OL2" target="id:OT3" />
+	<data id="OSL1" archetype="party.organisationStockLocation" name="Main Clinic Stock"/>
+	<data archetype="entityRelationship.locationStockLocation" source="id:OL1" target="id:OSL1" default="true"/>
+	<data id="OSL2" archetype="party.organisationStockLocation" name="Branch Clinic Stock"/>
+	<data archetype="entityRelationship.locationStockLocation" source="id:OL2" target="id:OSL2" />
 </archetype>
