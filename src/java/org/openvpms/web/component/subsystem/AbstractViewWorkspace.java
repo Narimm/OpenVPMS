@@ -23,13 +23,13 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -140,13 +140,12 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     }
 
     /**
-     * Determines if the workspace supports an archetype.
+     * Determines if the workspace can be updated with instances of the specified archetype.
      *
      * @param shortName the archetype's short name
-     * @return <tt>true</tt> if the workspace can handle the archetype;
-     *         otherwise <tt>false</tt>
+     * @return <tt>true</tt> if <tt>shortName</tt> is one of those in {@link #getArchetypes()}
      */
-    public boolean canHandle(String shortName) {
+    public boolean canUpdate(String shortName) {
         return archetypes.contains(shortName);
     }
 
@@ -178,7 +177,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @param type       the type that the short names represent
      * @param shortNames the archetype short names
      */
-    protected void setArchetypes(Class<T> type, String ... shortNames) {
+    protected void setArchetypes(Class<T> type, String... shortNames) {
         String key = getSubsystemId() + "." + getWorkspaceId() + ".type";
         setArchetypes(Archetypes.create(shortNames, type, Messages.get(key)));
     }
@@ -234,8 +233,8 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     protected SplitPane createRootComponent() {
         int orientation = SplitPane.ORIENTATION_VERTICAL;
         String style = (selector != null)
-                ? "AbstractViewWorkspace.Layout"
-                : "AbstractViewWorkspace.LayoutNoSelector";
+                       ? "AbstractViewWorkspace.Layout"
+                       : "AbstractViewWorkspace.LayoutNoSelector";
         return SplitPaneFactory.create(orientation, style);
     }
 

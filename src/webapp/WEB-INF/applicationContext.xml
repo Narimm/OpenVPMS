@@ -508,6 +508,10 @@
 
     <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype"/>
 
+    <bean id="messageMonitor" class="org.openvpms.web.app.workflow.messaging.MessageMonitor">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <!-- Defines the key stroke combination for accelerator keys.
          If mask not specified, defaults to 'Alt'.
       -->

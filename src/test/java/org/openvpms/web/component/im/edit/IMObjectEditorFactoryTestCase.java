@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -393,7 +394,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreateUserMessageActEditor() {
-        checkCreate("act.userMessage", UserMessageActEditor.class);
+        checkCreate(MessageArchetypes.USER, UserMessageActEditor.class);
     }
 
     /**

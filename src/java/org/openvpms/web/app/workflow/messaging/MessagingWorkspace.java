@@ -18,11 +18,17 @@
 
 package org.openvpms.web.app.workflow.messaging;
 
+import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.workflow.MessageArchetypes;
+import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
 
 
@@ -40,7 +46,35 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
     public MessagingWorkspace() {
         super("workflow", "messaging", false);
         setArchetypes(User.class, "security.user");
-        setChildArchetypes(Act.class, "act.userMessage", "act.systemMessage");
+        setChildArchetypes(Act.class, MessageArchetypes.USER, MessageArchetypes.SYSTEM);
+    }
+
+    /**
+     * Determines if the workspace can be updated with instances of the specified archetype.
+     *
+     * @param shortName the archetype's short name
+     * @return <tt>true</tt> if <tt>shortName</tt> is one of those in {@link #getChildArchetypes()}
+     */
+    @Override
+    public boolean canUpdate(String shortName) {
+        return super.canUpdate(shortName) || getChildArchetypes().contains(shortName);
+    }
+
+    /**
+     * Updates the workspace with the specified object.
+     *
+     * @param object the object to update the workspace with
+     */
+    @Override
+    public void update(IMObject object) {
+        if (getArchetypes().contains(object)) {
+            super.update(object);
+        } else if (getChildArchetypes().contains(object)) {
+            Act act = (Act) object;
+            Browser<Act> browser = getBrowser();
+            browser.setSelected(act);
+            getCRUDWindow().setObject(act);
+        }
     }
 
     /**
@@ -91,4 +125,26 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
         return new MessagingCRUDWindow(getChildArchetypes());
     }
 
+    /**
+     * Invoked when a browser object is selected.
+     * <p/>
+     * This updates the act status to <em>READ</em> if it is <em>PENDING</em>, and the current user is the same as
+     * that that the act is addressed to
+     *
+     * @param object the selected object
+     */
+    @Override
+    protected void onBrowserSelected(Act object) {
+        User user = getObject();
+        if (user != null) {
+            if (MessageStatus.PENDING.equals(object.getStatus())) {
+                ActBean bean = new ActBean(object);
+                if (ObjectUtils.equals(user.getObjectReference(), bean.getNodeParticipantRef("to"))) {
+                    object.setStatus(MessageStatus.READ);
+                    bean.save();
+                }
+            }
+        }
+        super.onBrowserSelected(object);
+    }
 }
