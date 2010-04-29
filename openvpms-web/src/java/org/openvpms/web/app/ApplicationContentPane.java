@@ -21,6 +21,8 @@ package org.openvpms.web.app;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.app.workflow.messaging.MessageMonitor;
 
 
 /**
@@ -38,7 +40,7 @@ public class ApplicationContentPane extends ContentPane {
 
 
     /**
-     * Construct a new <code>ApplicationContentPane</code>
+     * Constructs a <tt>ApplicationContentPane</tt>.
      */
     public ApplicationContentPane() {
     }
@@ -51,10 +53,13 @@ public class ApplicationContentPane extends ContentPane {
         doLayout();
     }
 
+    /**
+     * Lays out the component.
+     */
     protected void doLayout() {
-        SplitPane layout = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL, LAYOUT_STYLE);
-        layout.add(new TitlePane());
+        SplitPane layout = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, LAYOUT_STYLE);
+        MessageMonitor messageMonitor = (MessageMonitor) ServiceHelper.getContext().getBean("messageMonitor");
+        layout.add(new TitlePane(messageMonitor));
         layout.add(new MainPane());
         add(layout);
     }

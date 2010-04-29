@@ -75,7 +75,6 @@ public class Archetypes<T extends IMObject> {
         this(new String[]{shortName}, type, displayName);
     }
 
-
     /**
      * Creates a new <tt>Archetypes</tt>.
      *
@@ -89,8 +88,8 @@ public class Archetypes<T extends IMObject> {
         Class actual = IMObjectHelper.getType(expanded);
         if (!type.isAssignableFrom(actual)) {
             throw new IllegalStateException("Invalid type. Expected "
-                    + type + ", but got " + actual + " for archetypes "
-                    + StringUtils.join(shortNames, ", "));
+                                            + type + ", but got " + actual + " for archetypes "
+                                            + StringUtils.join(shortNames, ", "));
         }
         this.shortNames = shortNames;
         this.type = type;
@@ -132,6 +131,16 @@ public class Archetypes<T extends IMObject> {
     }
 
     /**
+     * Returns <tt>true</tt> if the collection contains the short name of the supplied object.
+     *
+     * @param object the object
+     * @return <tt>true</tt> if this contains a short name matching the supplied object's
+     */
+    public boolean contains(IMObject object) {
+        return contains(object.getArchetypeId().getShortName());
+    }
+
+    /**
      * Returns the display name.
      *
      * @return the display name
@@ -160,8 +169,7 @@ public class Archetypes<T extends IMObject> {
      *
      * @param shortName   the archetype short name. May contain wildcards.
      * @param type        the type that the short name represents
-     * @param displayName the collective noun for the archetype(s). If
-     *                    <tt>null</tt>, one will be derived
+     * @param displayName the collective noun for the archetype(s). If <tt>null</tt>, one will be derived
      * @return a new instance
      */
     public static <T extends IMObject> Archetypes<T> create(
@@ -184,8 +192,9 @@ public class Archetypes<T extends IMObject> {
     /**
      * Helper to create a new instance.
      *
-     * @param shortNames the archetype short names. May contain wildcards.
-     * @param type       the type that the short names represent
+     * @param shortNames  the archetype short names. May contain wildcards.
+     * @param type        the type that the short names represent
+     * @param displayName the collective noun for the archetype(s). If <tt>null</tt>, one will be derived
      * @return a new instance
      */
     public static <T extends IMObject> Archetypes<T> create(

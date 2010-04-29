@@ -54,7 +54,7 @@ public class PatientSubsystem extends AbstractSubsystem {
     public Workspace getWorkspaceForArchetype(String shortName) {
         Workspace fallback = null;
         for (Workspace workspace : getWorkspaces()) {
-            if (workspace.canHandle(shortName)) {
+            if (workspace.canUpdate(shortName)) {
                 if (workspace instanceof PatientRecordWorkspace) {
                     return workspace;
                 } else {

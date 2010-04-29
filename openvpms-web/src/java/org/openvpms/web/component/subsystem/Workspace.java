@@ -66,51 +66,57 @@ public interface Workspace<T extends IMObject> {
     /**
      * Renders the workspace summary.
      *
-     * @return the component representing the workspace summary, or
-     *         <code>null</code> if there is no summary
+     * @return the component representing the workspace summary, or <tt>null</tt> if there is no summary
      */
     Component getSummary();
 
     /**
-     * Determines if the workspace supports an archetype.
-     *
-     * @param shortName the archetype's short name
-     * @return <code>true</code> if the workspace can handle the archetype;
-     *         otherwise <code>false</code>
-     */
-    boolean canHandle(String shortName);
-
-    /**
      * Sets the object to be viewed/edited by the workspace.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     void setObject(T object);
 
     /**
      * Returns the object to to be viewed/edited by the workspace.
      *
-     * @return the the object. May be <oode>null</code>
+     * @return the the object. May be <oode>null</tt>
      */
     T getObject();
 
     /**
      * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
+     * <p/>
+     * This is analagous to {@link #setObject} but performs a safe cast to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     void setIMObject(IMObject object);
 
     /**
-     * Switch to the specified object.
-     * <p/>
-     * The object need not be of the same type supported by {@link #setObject}.
+     * Determines if the workspace can be updated with instances of the specified archetype.
      *
-     * @param object the object to switch to
+     * @param shortName the archetype's short name
+     * @return <tt>true</tt> if the workspace can be updated by the archetype; otherwise <tt>false</tt>
+     * @see #update
      */
-    void switchTo(IMObject object);
+    boolean canUpdate(String shortName);
+
+    /**
+     * Updates the workspace with the specified object.
+     * <p/>
+     * The object must be an instance of an archetype supported by {@link #canUpdate},
+     * but need not be of the same archetype supported by {@link #setObject}.
+     * <p/>
+     * This enables related objects to be used to:
+     * <ul>
+     * <li>update {@link #setObject}.
+     * <li>update some other aspect of the workspace
+     * </ul>
+     *
+     * @param object the object to update the workspace with
+     */
+    void update(IMObject object);
 
     /**
      * Add a property change listener.
@@ -118,8 +124,7 @@ public interface Workspace<T extends IMObject> {
      * @param name     the property name to listen on
      * @param listener the listener
      */
-    void addPropertyChangeListener(String name,
-                                   PropertyChangeListener listener);
+    void addPropertyChangeListener(String name, PropertyChangeListener listener);
 
     /**
      * Remove a property change listener.
@@ -127,7 +132,6 @@ public interface Workspace<T extends IMObject> {
      * @param name     the property name to remove the listener for
      * @param listener the listener to remove
      */
-    void removePropertyChangeListener(String name,
-                                      PropertyChangeListener listener);
+    void removePropertyChangeListener(String name, PropertyChangeListener listener);
 
 }

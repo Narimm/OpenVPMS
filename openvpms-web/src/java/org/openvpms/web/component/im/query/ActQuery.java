@@ -407,6 +407,15 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
     }
 
     /**
+     * Returns the status selector, if it exists.
+     *
+     * @return the status selector, or <tt>null</tt> if one doesn't exist
+     */
+    protected LookupField getStatusSelector() {
+        return statusSelector;
+    }
+    
+    /**
      * Sets the selected status in the status selector, if it exists.
      *
      * @param status the status to select

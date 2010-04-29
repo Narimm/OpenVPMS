@@ -39,7 +39,7 @@ import org.springframework.security.core.Authentication;
 
 
 /**
- * An <code>ApplicationInstance</code> associated with a {@link GlobalContext}.
+ * An <tt>ApplicationInstance</tt> associated with a {@link GlobalContext}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -54,7 +54,7 @@ public abstract class ContextApplicationInstance
 
 
     /**
-     * Constructs a new <code>ContextApplicationInstance</code>.
+     * Constructs a <tt>ContextApplicationInstance</tt>.
      */
     public ContextApplicationInstance() {
         initUser();
@@ -72,7 +72,7 @@ public abstract class ContextApplicationInstance
     /**
      * Returns the instance associated with the current thread.
      *
-     * @return the current instance, or <code>null</code>
+     * @return the current instance, or <tt>null</tt>
      */
     public static ContextApplicationInstance getInstance() {
         return (ContextApplicationInstance) ApplicationInstance.getActive();
@@ -93,6 +93,13 @@ public abstract class ContextApplicationInstance
      * @param object the object to view
      */
     public abstract void switchTo(IMObject object);
+
+    /**
+     * Switches the current workspace to one that supports a particular archetype.
+     *
+     * @param shortName the archetype short name
+     */
+    public abstract void switchTo(String shortName);
 
     /**
      * Clears the current context.

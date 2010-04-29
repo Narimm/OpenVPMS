@@ -64,26 +64,24 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
     }
 
     /**
-     * Determines if the workspace supports an archetype.
+     * Determines if the workspace can be updated with instances of the specified archetype.
      *
      * @param shortName the archetype's short name
-     * @return <tt>true</tt> if the workspace can handle the archetype;
-     *         otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the workspace can be updated by the archetype; otherwise <tt>false</tt>
+     * @see #update
      */
     @Override
-    public boolean canHandle(String shortName) {
-        return super.canHandle(shortName) || ScheduleArchetypes.APPOINTMENT.equals(shortName);
+    public boolean canUpdate(String shortName) {
+        return super.canUpdate(shortName) || ScheduleArchetypes.APPOINTMENT.equals(shortName);
     }
 
     /**
-     * Switch to the specified object.
-     * <p/>
-     * The object need not be of the same type supported by {@link #setObject}.
+     * Updates the workspace with the specified object.
      *
-     * @param object the object to switch to
+     * @param object the object to update the workspace with
      */
     @Override
-    public void switchTo(IMObject object) {
+    public void update(IMObject object) {
         if (TypeHelper.isA(object, "entity.organisationScheduleView")) {
             setObject((Entity) object);
         } else if (TypeHelper.isA(object, ScheduleArchetypes.APPOINTMENT)) {

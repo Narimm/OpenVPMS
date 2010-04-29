@@ -19,6 +19,8 @@
 package org.openvpms.web.app.workflow.messaging;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.workflow.MessageArchetypes;
+import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -48,21 +50,30 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     private final IMObjectSelector<Entity> clinician;
 
     /**
-     * The act statuses.
+     * The act statuses. Exclude the <em>READ</em> status, as it will be handled explicitly whenever <em>PENDING</em>
+     * is selected.
      */
-    private static final ActStatuses STATUSES
-            = new ActStatuses("act.userMessage");
+    private static final ActStatuses STATUSES = new ActStatuses(MessageArchetypes.USER, MessageStatus.READ);
+
+    /**
+     * The archetypes to query.
+     */
+    private static final String[] ARCHETYPES = {MessageArchetypes.USER, MessageArchetypes.SYSTEM};
+
+    /**
+     * The default statuses to query.
+     */
+    private static final String[] DEFAULT_STATUSES = {MessageStatus.PENDING, MessageStatus.READ};
 
 
     /**
-     * Constructs a new <tt>MessageQuery</tt>.
+     * Constructs a <tt>MessageQuery</tt>.
      *
      * @param user the user to query messages for. May be <tt>null</tt>
      */
     public MessageQuery(Entity user) {
-        super(user, "to", "participation.user", new String[]{"act.userMessage", "act.systemMessage"},
-              STATUSES, Act.class);
-        setStatus("PENDING");
+        super(user, "to", "participation.user", ARCHETYPES, STATUSES, Act.class);
+        setStatuses(DEFAULT_STATUSES);
 
         clinician = new IMObjectSelector<Entity>(Messages.get("messaging.user"),
                                                  "security.user");
@@ -121,4 +132,20 @@ public class MessageQuery extends DateRangeActQuery<Act> {
         getFocusGroup().add(clinician.getFocusGroup());
     }
 
+    /**
+     * Invoked when a status is selected.
+     */
+    @Override
+    protected void onStatusChanged() {
+        boolean updated = false;
+        if (getStatusSelector() != null) {
+            if (MessageStatus.PENDING.equals(getStatusSelector().getSelectedCode())) {
+                setStatuses(DEFAULT_STATUSES);
+                updated = true;
+            }
+        }
+        if (!updated) {
+            super.onStatusChanged();
+        }
+    }
 }
