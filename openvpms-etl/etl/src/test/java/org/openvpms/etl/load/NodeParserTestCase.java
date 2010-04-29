@@ -19,6 +19,7 @@
 package org.openvpms.etl.load;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 
 /**
@@ -33,6 +34,7 @@ public class NodeParserTestCase extends TestCase {
     /**
      * Tests a single node.
      */
+    @Test
     public void testSingleNode() {
         Node node = NodeParser.parse("<party.customerperson>firstName");
         checkNode(node, null, "party.customerperson", "firstName", -1);
@@ -43,7 +45,7 @@ public class NodeParserTestCase extends TestCase {
     /**
      * Tests a collection node.
      */
-    public void testCollectionNode() {
+    @Test public void testCollectionNode() {
         Node node = NodeParser.parse(
                 "<party.customerperson>contacts[0]<contact.location>address");
         checkNode(node, null, "party.customerperson", "contacts", 0);
@@ -61,7 +63,7 @@ public class NodeParserTestCase extends TestCase {
     /**
      * Tests a reference node.
      */
-    public void testReferenceNode() {
+    @Test public void testReferenceNode() {
         Node node = NodeParser.parse("$ROWID<party.customerperson>firstName");
         checkNode(node, "ROWID", "party.customerperson", "firstName", -1);
         assertEquals("$ROWID<party.customerperson>firstName",
@@ -72,7 +74,7 @@ public class NodeParserTestCase extends TestCase {
     /**
      * Tests that invalid nodes can't be parsed.
      */
-    public void testInvalid() {
+    @Test public void testInvalid() {
         assertNull(NodeParser.parse(""));
         assertNull(NodeParser.parse("<party.customerperson>"));
         assertNull(NodeParser.parse("<party.customerperson>[0]"));

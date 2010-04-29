@@ -18,6 +18,9 @@
 
 package org.openvpms.etl.load;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.junit.Before;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -34,7 +37,8 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -49,9 +53,8 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class LoaderTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("/applicationContext.xml")
+public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
 
     /**
      * The archetype service.
@@ -69,6 +72,7 @@ public class LoaderTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testObject() throws Exception {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
@@ -103,6 +107,7 @@ public class LoaderTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testCollection() throws Exception {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
@@ -147,6 +152,7 @@ public class LoaderTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testCollectionHeirarchy() throws Exception {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
@@ -186,6 +192,7 @@ public class LoaderTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testValueExpansion() throws Exception {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("INVOICEID");
@@ -221,6 +228,7 @@ public class LoaderTestCase
      *
      * @throws Exception for any error
      */
+    @Test
     public void testExcludeNull() throws Exception {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("CUSTID");
@@ -244,6 +252,7 @@ public class LoaderTestCase
      * Verifies that wildcards can be specified for archetype/legacyId
      * references.
      */
+    @Test
     public void testReferenceWildcards() {
         // create a product
         Product product = (Product) service.create("product.medication");
@@ -294,6 +303,7 @@ public class LoaderTestCase
      * Verifies that lookups and lookup relationships are saved after each
      * row loads.
      */
+    @Test
     public void testLookups() {
         // create a patient mapping containg species and breed mapping
         Mappings mappings = new Mappings();
@@ -324,6 +334,7 @@ public class LoaderTestCase
      * Tests mapping references.
      * This adds two prices to an existing product.
      */
+    @Test
     public void testMappingReference() {
         // create a product
         Product product = (Product) service.create("product.medication");
@@ -386,6 +397,7 @@ public class LoaderTestCase
      * Verifies that a formatted error message is logged and that the registered
      * error handler is invoked if an object fails to be processed.
      */
+    @Test
     public void testErrorLogging() {
         final String expectedError = "Failed to validate Last Name of Customer: value is required";
 
@@ -426,6 +438,7 @@ public class LoaderTestCase
      * Verifies that failure processing one row doesn't prevent processing of
      * other rows.
      */
+    @Test
     public void testPartialFailure() {
         final String expectedError = "Failed to validate Last Name of Customer: value is required";
 
@@ -496,25 +509,11 @@ public class LoaderTestCase
     }
 
     /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContext.xml"};
-    }
-
-    /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
+    @Before
+    public void setUp() {
+        service = (IArchetypeService) applicationContext.getBean("archetypeService");
         dao = new ETLLogDAOTestImpl();
     }
 
