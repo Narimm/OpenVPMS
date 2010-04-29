@@ -45,9 +45,9 @@ import org.openvpms.web.resource.util.Messages;
 public class MessageQuery extends DateRangeActQuery<Act> {
 
     /**
-     * The clinician selector.
+     * The user selector.
      */
-    private final IMObjectSelector<Entity> clinician;
+    private final IMObjectSelector<Entity> user;
 
     /**
      * The act statuses. Exclude the <em>READ</em> status, as it will be handled explicitly whenever <em>PENDING</em>
@@ -75,9 +75,9 @@ public class MessageQuery extends DateRangeActQuery<Act> {
         super(user, "to", "participation.user", ARCHETYPES, STATUSES, Act.class);
         setStatuses(DEFAULT_STATUSES);
 
-        clinician = new IMObjectSelector<Entity>(Messages.get("messaging.user"),
+        this.user = new IMObjectSelector<Entity>(Messages.get("messaging.user"),
                                                  "security.user");
-        clinician.setListener(new IMObjectSelectorListener<Entity>() {
+        this.user.setListener(new IMObjectSelectorListener<Entity>() {
             public void selected(Entity object) {
                 setEntity(object);
                 onQuery();
@@ -87,7 +87,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
                 // no-op
             }
         });
-        clinician.setObject(user);
+        this.user.setObject(user);
     }
 
     /**
@@ -101,7 +101,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     public ResultSet<Act> query(SortConstraint[] sort) {
         ResultSet<Act> result = null;
         ParticipantConstraint[] participants;
-        if (clinician.isValid()) {
+        if (user.isValid()) {
             if (getEntityId() != null) {
                 participants = new ParticipantConstraint[]{
                         getParticipantConstraint()};
@@ -119,6 +119,15 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     }
 
     /**
+     * Returns the user that messages are being queried for.
+     *
+     * @return the user. May be <tt>null</tt>
+     */
+    public Entity getUser() {
+        return user.getObject();
+    }
+
+    /**
      * Lays out the component in a container, and sets focus on the instance
      * name.
      *
@@ -128,8 +137,8 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     protected void doLayout(Component container) {
         super.doLayout(container);
         container.add(LabelFactory.create("messaging.user"));
-        container.add(clinician.getComponent());
-        getFocusGroup().add(clinician.getFocusGroup());
+        container.add(user.getComponent());
+        getFocusGroup().add(user.getFocusGroup());
     }
 
     /**

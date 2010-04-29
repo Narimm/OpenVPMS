@@ -19,29 +19,22 @@
 package org.openvpms.web.app;
 
 import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
-import org.openvpms.archetype.rules.workflow.MessageArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.app.workflow.messaging.MessageMonitor;
-import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
@@ -60,92 +53,22 @@ import java.util.List;
 public class TitlePane extends ContentPane {
 
     /**
-     * The location selector.
-     */
-    private SelectField locationSelector;
-
-    /**
-     * The message monitor
-     */
-    private final MessageMonitor monitor;
-
-    /**
-     * The message listener.
-     */
-    private final MessageMonitor.MessageListener listener;
-
-    /**
-     * The user the listener was registered for.
-     */
-    private User user;
-
-    /**
      * The project logo.
      */
-    private final String LOGO = "/org/openvpms/web/resource/image/openvpms.gif";
+    private final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
 
     /**
      * The style name.
      */
     private static final String STYLE = "TitlePane";
+    private SelectField locationSelector;
+
 
     /**
-     * Mail button.
+     * Construct a new <code>TitlePane</code>.
      */
-    private Button mail;
-
-    /**
-     * Reference to the mail icon.
-     */
-    private static final ImageReference MAIL
-            = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail.png");
-
-    /**
-     * Reference to the new mail icon.
-     */
-    private static final ImageReference UNREAD_MAIL
-            = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail-unread.png");
-
-    /**
-     * Constructs a <tt>TitlePane</tt>.
-     *
-     * @param monitor the message monitor
-     */
-    public TitlePane(MessageMonitor monitor) {
-        this.monitor = monitor;
-        listener = new MessageMonitor.MessageListener() {
-            public void onMessage(Act message) {
-                notifyMessage();
-            }
-        };
-        user = GlobalContext.getInstance().getUser();
+    public TitlePane() {
         doLayout();
-    }
-
-    /**
-     * Life-cycle method invoked when the <code>Component</code> is added
-     * to a registered hierarchy.
-     * <p/>
-     * This implementation registers a listener for message notification.
-     */
-    @Override
-    public void init() {
-        super.init();
-        if (user != null) {
-            monitor.addListener(user, listener);
-        }
-    }
-
-    /**
-     * Life-cycle method invoked when the <code>Component</code> is removed
-     * from a registered hierarchy.
-     */
-    @Override
-    public void dispose() {
-        super.dispose();
-        if (user != null) {
-            monitor.removeListener(user, listener);
-        }
     }
 
     /**
@@ -154,24 +77,15 @@ public class TitlePane extends ContentPane {
     protected void doLayout() {
         setStyleName(STYLE);
 
-        Label logo = LabelFactory.create(new ResourceImageReference(LOGO));
+        Label logo = LabelFactory.create(new ResourceImageReference(PATH));
         RowLayoutData centre = new RowLayoutData();
         centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
         logo.setLayoutData(centre);
 
-        Label userLabel = LabelFactory.create(null, "small");
-        String userName = (user != null) ? user.getUsername() : null;
-        userLabel.setText(Messages.get("label.user", userName));
+        Label user = LabelFactory.create(null, "small");
+        user.setText(Messages.get("label.user", getUserName()));
 
-        mail = ButtonFactory.create();
-        mail.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                ContextApplicationInstance.getInstance().switchTo(MessageArchetypes.USER);
-            }
-        });
-        updateMessageStatus();
-
-        Row locationUserRow = RowFactory.create("CellSpacing", userLabel, mail);
+        Row locationUserRow = RowFactory.create("CellSpacing", user);
 
         List<Party> locations = getLocations();
         if (!locations.isEmpty()) {
@@ -202,22 +116,14 @@ public class TitlePane extends ContentPane {
         add(row);
     }
 
-    private void updateMessageStatus() {
-        boolean update = false;
-        if (user != null) {
-            update = monitor.hasNewMessages(user);
-        }
-        updateMessageStatus(update);
-    }
-
-    private void updateMessageStatus(boolean newMessages) {
-        if (newMessages) {
-            mail.setIcon(UNREAD_MAIL);
-            mail.setToolTipText(Messages.get("messages.unread.tooltip"));
-        } else {
-            mail.setIcon(MAIL);
-            mail.setToolTipText(Messages.get("messages.read.tooltip"));
-        }
+    /**
+     * Returns the user name for the current user.
+     *
+     * @return the user name
+     */
+    protected String getUserName() {
+        User user = GlobalContext.getInstance().getUser();
+        return (user != null) ? user.getName() : null;
     }
 
     /**
@@ -273,6 +179,4 @@ public class TitlePane extends ContentPane {
         return location;
     }
 
-    private void notifyMessage() {
-    }
 }
