@@ -19,48 +19,53 @@
 
 package org.openvpms.component.system.common.query;
 
-// java core
-import java.util.ArrayList;
-import java.util.List;
-
-// commons-lang
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 /**
  * This class manages {@link IConstraint} instances.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public abstract class ConstraintContainer implements IConstraintContainer {
+
     /**
-     * Default SUID
+     * Default SUID.
      */
-    private static final long serialVersionUID = 1L; 
-    
+    private static final long serialVersionUID = 1L;
+
     /**
-     * Maintain an list of {@link IConstraint}
+     * Maintains an list of constraints.
      */
     private List<IConstraint> constraints = new ArrayList<IConstraint>();
 
+
     /**
-     * @return Returns the constraints.
+     * Returns the constraints.
+     *
+     * @return the constraints
      */
     public List<IConstraint> getConstraints() {
         return constraints;
     }
 
     /**
-     * @param constraints The constraints to set.
+     * Sets the constraints.
+     *
+     * @param constraints the constraints
      */
     public void setConstraints(List<IConstraint> constraints) {
         this.constraints = constraints;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.query.IConstraintContainer#add(org.openvpms.component.system.common.query.IConstraint)
-     */
+    * @see org.openvpms.component.system.common.query.IConstraintContainer#add(org.openvpms.component.system.common.query.IConstraint)
+    */
     public IConstraintContainer add(IConstraint constraint) {
         constraints.add(constraint);
         return this;
@@ -83,14 +88,14 @@ public abstract class ConstraintContainer implements IConstraintContainer {
             return true;
         }
 
-        if (!(obj instanceof BaseArchetypeConstraint)) {
+        if (!(obj instanceof ConstraintContainer)) {
             return false;
         }
-        
+
         ConstraintContainer rhs = (ConstraintContainer) obj;
         return new EqualsBuilder()
-            .append(constraints.toArray(), rhs.constraints.toArray())
-            .isEquals();
+                .append(constraints.toArray(), rhs.constraints.toArray())
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -99,9 +104,9 @@ public abstract class ConstraintContainer implements IConstraintContainer {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(super.toString())
-            .append("constraints", constraints.toArray())
-            .toString();
+                .appendSuper(super.toString())
+                .append("constraints", constraints.toArray())
+                .toString();
     }
 
     /* (non-Javadoc)
@@ -109,9 +114,8 @@ public abstract class ConstraintContainer implements IConstraintContainer {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        ConstraintContainer copy = (ConstraintContainer)super.clone();
+        ConstraintContainer copy = (ConstraintContainer) super.clone();
         copy.constraints = new ArrayList<IConstraint>(this.constraints);
-        
         return copy;
     }
 }

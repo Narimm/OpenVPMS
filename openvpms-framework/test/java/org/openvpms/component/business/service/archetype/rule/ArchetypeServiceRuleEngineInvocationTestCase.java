@@ -18,10 +18,13 @@
 
 package org.openvpms.component.business.service.archetype.rule;
 
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,32 +38,26 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServiceRuleEngineInvocationTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * Holds a reference to the archetype service.
-     */
-    private IArchetypeService archetype;
-
+@ContextConfiguration("rule-engine-appcontext.xml")
+public class ArchetypeServiceRuleEngineInvocationTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Test that rule engine is called when this object is being saved.
      */
-    public void testSimpleInvocation() throws Exception {
+    @Test
+    public void testSimpleInvocation() {
+        IArchetypeService service = getArchetypeService();
         Party person = createPerson("Mr", "Jim", "Alateras");
         List<Object> facts = new ArrayList<Object>();
         facts.add(person);
 
-        List<Object> results = archetype.executeRule("person.uppercaseName",
-                                                     null, facts);
+        List<Object> results = service.executeRule("person.uppercaseName", null, facts);
         assertTrue(results.size() == 1);
         assertTrue(results.get(0) instanceof Party);
 
         // now set the name
         person.setName("jim alateras");
-        results = archetype.executeRule("person.uppercaseName", null, facts);
+        results = service.executeRule("person.uppercaseName", null, facts);
         assertTrue(results.size() == 1);
         assertTrue(results.get(0) instanceof Party);
         assertTrue(((Party) results.get(0)).getName().equals(
@@ -68,10 +65,12 @@ public class ArchetypeServiceRuleEngineInvocationTestCase
     }
 
     /**
-     * Test a more complicated invocation with more facts
+     * Test a more complicated invocation with more facts.
      */
-    public void testMultipleFactInvocation()
-            throws Exception {
+    @Test
+    public void testMultipleFactInvocation() {
+        IArchetypeService service = getArchetypeService();
+
         Party person = createPerson("Mr", "Jim", "Alateras");
         person.setName("Jim Alateras");
         StringBuffer result = new StringBuffer();
@@ -79,8 +78,7 @@ public class ArchetypeServiceRuleEngineInvocationTestCase
         facts.add(person);
         facts.add(result);
 
-        List<Object> results = archetype.executeRule("person.copyName", null,
-                                                     facts);
+        List<Object> results = service.executeRule("person.copyName", null, facts);
         assertTrue(results.size() == 2);
         assertTrue(person.getName().equals(result.toString()));
     }
@@ -88,8 +86,8 @@ public class ArchetypeServiceRuleEngineInvocationTestCase
     /**
      * Test invocation with application data
      */
-    public void testInvocationWithApplicationData()
-            throws Exception {
+    @Test
+    public void testInvocationWithApplicationData() {
         Party person = createPerson("Mr", "Jim", "Alateras");
         person.setName("Jim Alateras");
         StringBuffer result = new StringBuffer();
@@ -103,8 +101,7 @@ public class ArchetypeServiceRuleEngineInvocationTestCase
         Map<String, Object> appData = new HashMap<String, Object>();
         appData.put("prefix", "Mr ");
 
-        List<Object> results = archetype.executeRule("person.copyName", appData,
-                                                     facts);
+        List<Object> results = getArchetypeService().executeRule("person.copyName", appData, facts);
         assertTrue(results.size() == 2);
         assertTrue(result.toString().equals("Mr Jim Alateras"));
     }
@@ -118,7 +115,7 @@ public class ArchetypeServiceRuleEngineInvocationTestCase
      * @return Person
      */
     public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party) archetype.create("party.person");
+        Party person = (Party) create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
@@ -127,35 +124,13 @@ public class ArchetypeServiceRuleEngineInvocationTestCase
         return person;
     }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-    */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{"org/openvpms/component/business/service/archetype/rule/rule-engine-appcontext.xml"};
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        this.archetype = (IArchetypeService) applicationContext
-                .getBean("archetypeService");
-    }
-
     /**
      * Creates a phone contact.
      *
      * @return a new phone contact
      */
     private Contact createPhoneContact() {
-        Contact contact = (Contact) archetype.create("contact.phoneNumber");
+        Contact contact = (Contact) create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "1234567");
         contact.getDetails().put("preferred", true);

@@ -83,6 +83,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortName the relationship short name
      * @param target    the target entity
+     * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
      */
     public EntityRelationship addRelationship(String shortName, Entity target) {
@@ -97,6 +98,21 @@ public class EntityBean extends IMObjectBean {
         entity.addEntityRelationship(r);
         target.addEntityRelationship(r);
         return r;
+    }
+
+    /**
+     * Adds a new relationship between the current entity (the source), and the supplied target.
+     *
+     * @param name   the entity relationship node name, used to determine which relationship to create
+     * @param target the target entity
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, there is no relationship that supports
+     *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     */
+    public EntityRelationship addNodeRelationship(String name, Entity target) {
+        String shortName = getRelationshipShortName(name, target, "target");
+        return addRelationship(shortName, target);
     }
 
     /**
@@ -978,6 +994,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param relationships the relationships
      * @param predicate     the predicate
+     * @param accessor      the relationship reference accessor
      * @param active        determines if the entity must be active or not
      * @return the first entity matching the critieria or <tt>null</tt> if none
      *         is found
@@ -1149,7 +1166,7 @@ public class EntityBean extends IMObjectBean {
      * @param shortNames the relationship short names to match
      * @return a new predicate
      */
-    private Predicate getActiveIsA(Date time, String ... shortNames) {
+    private Predicate getActiveIsA(Date time, String... shortNames) {
         return new AndPredicate(new IsActiveRelationship(time),
                                 new IsA(shortNames));
     }
@@ -1163,7 +1180,7 @@ public class EntityBean extends IMObjectBean {
      * @param shortNames the relationship short names to match
      * @return a new predicate
      */
-    private Predicate getActiveIsA(boolean active, String ... shortNames) {
+    private Predicate getActiveIsA(boolean active, String... shortNames) {
         IsA isA = new IsA(shortNames);
         return (active) ? new AndPredicate(ACTIVE_NOW, isA) : isA;
     }
@@ -1175,7 +1192,7 @@ public class EntityBean extends IMObjectBean {
      * @param shortNames the relationship short names to match
      * @return a new predicate
      */
-    private Predicate getActiveIsA(String ... shortNames) {
+    private Predicate getActiveIsA(String... shortNames) {
         return new AndPredicate(ACTIVE_NOW, new IsA(shortNames));
     }
 

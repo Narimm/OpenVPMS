@@ -18,6 +18,9 @@
 
 package org.openvpms.tools.data.loader;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -31,13 +34,12 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -52,16 +54,35 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DataLoaderTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("/org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml")
+public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
 
-    private IArchetypeService service;
+    /**
+     * Customers to load.
+     */
     private static final String CUSTOMERS = "/org/openvpms/tools/data/loader/customers.xml";
+
+    /**
+     * The acts to load.
+     */
     private static final String ACTS = "/org/openvpms/tools/data/loader/acts.xml";
+
+    /**
+     * The products to load.
+     */
     private static final String PRODUCTS = "/org/openvpms/tools/data/loader/products.xml";
 
+    /**
+     * The security to load.
+     */
     private static final String SECURITY = "/org/openvpms/tools/data/loader/security.xml";
 
+    /**
+     * Tests loading of customer data.
+     *
+     * @throws Exception for any error
+     */
+    @Test
     public void testCustomers() throws Exception {
         DataLoader loader = new DataLoader(10);
         load(loader, CUSTOMERS);
@@ -84,6 +105,12 @@ public class DataLoaderTestCase
         assertTrue(customer.getClassifications().contains(lookup));
     }
 
+    /**
+     * Tests loading of act data.
+     *
+     * @throws Exception for any error
+     */
+    @Test
     public void testActs() throws Exception {
         DataLoader loader = new DataLoader(10);
         load(loader, CUSTOMERS);
@@ -91,21 +118,30 @@ public class DataLoaderTestCase
         loader.flush();
         LoadCache cache = loader.getLoadCache();
         Act act = (Act) checkReference(cache, "A1", "act.customerEstimation");
-        Act item = (Act) checkReference(cache, "A2",
-                                        "act.customerEstimationItem");
-        checkActRelationship("actRelationship.customerEstimationItem", act,
-                             item);
+        Act item = (Act) checkReference(cache, "A2", "act.customerEstimationItem");
+        checkActRelationship("actRelationship.customerEstimationItem", act, item);
         Party patient = (Party) checkReference(cache, "P1", "party.patientpet");
-        checkParticipation(cache, "PART1", "participation.patient", item,
-                           patient);
+        checkParticipation(cache, "PART1", "participation.patient", item, patient);
     }
 
+    /**
+     * Tests loading of product data.
+     *
+     * @throws Exception for any error
+     */
+    @Test
     public void testProducts() throws Exception {
         DataLoader loader = new DataLoader(10);
         load(loader, PRODUCTS);
         loader.flush();
     }
 
+    /**
+     * Tests loading of security data.
+     *
+     * @throws Exception for any error
+     */
+    @Test
     public void testSecurity() throws Exception {
         DataLoader loader = new DataLoader(6);
         load(loader, SECURITY);
@@ -148,6 +184,29 @@ public class DataLoaderTestCase
         assertTrue(role.getAuthorities().contains(auth2));
     }
 
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        deleteParties("party.customerperson");
+        deleteParties("party.person");
+        ArchetypeQuery query;
+        query = new ArchetypeQuery("lookup.staff", false, false);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> lookups = get(query);
+        for (IMObject lookup : lookups) {
+            remove(lookup);
+        }
+    }
+
+    /**
+     * Loads a file.
+     *
+     * @param loader the loader
+     * @param file   the file to load
+     * @throws Exception for any error
+     */
     private void load(DataLoader loader, String file) throws Exception {
         InputStream stream = getClass().getResourceAsStream(file);
         assertNotNull(stream);
@@ -156,15 +215,30 @@ public class DataLoaderTestCase
         loader.load(reader, file);
     }
 
-
-    private void checkParticipation(LoadCache cache, String id,
-                                    String shortName, Act act,
-                                    Entity entity) {
+    /**
+     * Verifies a participation loaded.
+     *
+     * @param cache     the load cache
+     * @param id        the participation id
+     * @param shortName the participation short name
+     * @param act       the participation act
+     * @param entity    the participation entity
+     */
+    private void checkParticipation(LoadCache cache, String id, String shortName, Act act, Entity entity) {
         Participation p = (Participation) checkReference(cache, id, shortName);
         assertEquals(act.getObjectReference(), p.getAct());
         assertEquals(entity.getObjectReference(), p.getEntity());
     }
 
+    /**
+     * Verifies a lookup loaded.
+     *
+     * @param cache     the load cache
+     * @param id        the lookup id
+     * @param shortName the lookup archetype short name
+     * @param code      the lookup code
+     * @return the loaded lookup
+     */
     private Lookup checkLookup(LoadCache cache, String id,
                                String shortName, String code) {
         Lookup lookup = (Lookup) checkReference(cache, id, shortName);
@@ -172,11 +246,16 @@ public class DataLoaderTestCase
         return lookup;
     }
 
-    private void checkRelationship(String shortName, Party source,
-                                   Party target) {
+    /**
+     * Verifies an entity relationship loaded.
+     *
+     * @param shortName the relationship short name
+     * @param source    the relationship source
+     * @param target    the  relationship target
+     */
+    private void checkRelationship(String shortName, Party source, Party target) {
         EntityRelationship found = null;
-        Set<EntityRelationship> relationships
-                = source.getEntityRelationships();
+        Set<EntityRelationship> relationships = source.getEntityRelationships();
         for (EntityRelationship relationship : relationships) {
             if (TypeHelper.isA(relationship, shortName)) {
                 found = relationship;
@@ -189,11 +268,16 @@ public class DataLoaderTestCase
         assertTrue(target.getEntityRelationships().contains(found));
     }
 
-    private void checkActRelationship(String shortName, Act source,
-                                      Act target) {
+    /**
+     * Verifies an act relationship loaded.
+     *
+     * @param shortName the relationship short name
+     * @param source    the relationship source
+     * @param target    the relationship target
+     */
+    private void checkActRelationship(String shortName, Act source, Act target) {
         ActRelationship found = null;
-        Set<ActRelationship> relationships
-                = source.getActRelationships();
+        Set<ActRelationship> relationships = source.getActRelationships();
         for (ActRelationship relationship : relationships) {
             if (TypeHelper.isA(relationship, shortName)) {
                 found = relationship;
@@ -205,8 +289,14 @@ public class DataLoaderTestCase
         assertTrue(target.getActRelationships().contains(found));
     }
 
-    private void checkContact(Set<Contact> contacts, String shortName,
-                              String description) {
+    /**
+     * Verifies a contact loaded.
+     *
+     * @param contacts    the contacts
+     * @param shortName   the contact short  name
+     * @param description the contact description
+     */
+    private void checkContact(Set<Contact> contacts, String shortName, String description) {
         Contact found = null;
         for (Contact contact : contacts) {
             if (TypeHelper.isA(contact, shortName)) {
@@ -218,11 +308,20 @@ public class DataLoaderTestCase
         assertEquals(description, found.getDescription());
     }
 
-    private Party checkCustomer(LoadCache cache, String id, String title,
-                                String firstName, String initials,
+    /**
+     * Verifies a customer loaded.
+     *
+     * @param cache     the load cache
+     * @param id        the customer id
+     * @param title     the customer's title
+     * @param firstName the customer's first name
+     * @param initials  the customer's initials
+     * @param lastName  the customer's last name
+     * @return the customer
+     */
+    private Party checkCustomer(LoadCache cache, String id, String title, String firstName, String initials,
                                 String lastName) {
-        Party customer = (Party) checkReference(cache, id,
-                                                "party.customerperson");
+        Party customer = (Party) checkReference(cache, id, "party.customerperson");
         IMObjectBean bean = new IMObjectBean(customer);
         assertEquals(title, bean.getString("title"));
         assertEquals(firstName, bean.getString("firstName"));
@@ -233,6 +332,16 @@ public class DataLoaderTestCase
         return customer;
     }
 
+    /**
+     * Verifies a patient loaded.
+     *
+     * @param cache   the load cache
+     * @param id      the patient id
+     * @param name    the patient's name
+     * @param species the patient's species
+     * @param breed   the patient's breed
+     * @return the patient
+     */
     private Party checkPatient(LoadCache cache, String id, String name,
                                String species, String breed) {
         Party patient = (Party) checkReference(cache, id, "party.patientpet");
@@ -243,41 +352,21 @@ public class DataLoaderTestCase
         return patient;
     }
 
-    private IMObject checkReference(LoadCache cache, String id,
-                                    String shortName) {
+    /**
+     * Verifies an object loaded.
+     *
+     * @param cache     the load cache
+     * @param id        the object id
+     * @param shortName the object's archetype short name
+     * @return the corresponding object
+     */
+    private IMObject checkReference(LoadCache cache, String id, String shortName) {
         IMObjectReference ref = cache.getReference(id);
         assertNotNull(ref);
         assertEquals(shortName, ref.getArchetypeId().getShortName());
-        IMObject object = service.get(ref);
+        IMObject object = get(ref);
         assertNotNull(object);
         return object;
-    }
-
-    @Override
-    protected void onSetUp() throws Exception {
-        service = ArchetypeServiceHelper.getArchetypeService();
-        deleteParties("party.customerperson");
-        deleteParties("party.person");
-        ArchetypeQuery query;
-        query = new ArchetypeQuery("lookup.staff", false, false);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> lookups = service.get(query).getResults();
-        for (IMObject lookup : lookups) {
-            service.remove(lookup);
-        }
-
-    }
-
-    /**
-     * (non-Javadoc)
-     *
-     * @see AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
     }
 
     /**
@@ -287,13 +376,11 @@ public class DataLoaderTestCase
      * @param shortName the party short name
      */
     private void deleteParties(String shortName) {
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false,
-                                                  false);
-        query.add(new CollectionNodeConstraint("classifications",
-                                               "lookup.staff", false, false));
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
+        query.add(new CollectionNodeConstraint("classifications", "lookup.staff", false, false));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        for (IMObject object : service.get(query).getResults()) {
-            service.remove(object);
+        for (IMObject object : get(query)) {
+            remove(object);
         }
     }
 

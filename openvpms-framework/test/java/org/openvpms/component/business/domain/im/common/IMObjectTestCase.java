@@ -18,24 +18,25 @@
 
 package org.openvpms.component.business.domain.im.common;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.test.BaseTestCase;
-
 
 /**
  * Tests the {@link IMObject} class.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class IMObjectTestCase extends BaseTestCase {
+public class IMObjectTestCase {
 
     /**
      * Test OVPMS-149 IMObject equality.
      */
-    public void testOVPMS149() 
-    throws Exception {
+    @Test
+    public void testOVPMS149() {
         IMObject obj1 = new Party();
         obj1.setArchetypeId(new ArchetypeId("party.customerperson.1.0"));
         obj1.setName("jima");
@@ -43,19 +44,11 @@ public class IMObjectTestCase extends BaseTestCase {
         IMObject obj2 = new Party();
         obj2.setArchetypeId(new ArchetypeId("party.customerperson.1.0"));
         obj2.setName("jima");
-        
+
         assertTrue(obj1.equals(obj1));
         assertFalse(obj1.equals(obj2));
         assertTrue(obj1.equals(obj1));
         assertFalse(obj1.equals(null));
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.test.BaseTestCase#setUpTestData()
-     */
-    @Override
-    protected void setUpTestData() throws Exception {
-        // no test data
     }
 
 }

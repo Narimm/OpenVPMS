@@ -18,91 +18,84 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// spring-context
-
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.ObjectRefConstraint;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.springframework.test.context.ContextConfiguration;
+
 
 /**
- * Test that ability to create and query on Documentss.
+ * Test the ability to create and query on Documentss.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeServiceDocumentTestCase extends
-                                              AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private ArchetypeService service;
+@ContextConfiguration("archetype-service-appcontext.xml")
+public class ArchetypeServiceDocumentTestCase extends AbstractArchetypeServiceTest {
 
 
     /**
-     * Test the creation of a Document using the {@link NodeDescriptor}s
+     * Test the creation of a Document using the {@link NodeDescriptor}s.
      */
-    public void testDocumentCreationThruNodeDescriptors()
-            throws Exception {
-        Document document = (Document) service.create("document.common");
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "document.common");
+    @Test
+    public void testDocumentCreationThruNodeDescriptors() {
+        Document document = (Document) create("document.common");
+        ArchetypeDescriptor adesc = getArchetypeDescriptor("document.common");
         NodeDescriptor ndesc;
 
         // set the name
         ndesc = adesc.getNodeDescriptor("name");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(document, "name.doc");
         assertTrue(document.getName().equals("name.doc"));
 
         // set the mime type
         ndesc = adesc.getNodeDescriptor("mimeType");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(document, "test/palin");
         assertTrue(document.getMimeType().equals("test/palin"));
 
         // set the doc size
         ndesc = adesc.getNodeDescriptor("size");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(document, "1000");
         assertTrue(document.getDocSize() == 1000);
 
         // set the checksum
         ndesc = adesc.getNodeDescriptor("checksum");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(document, "1234");
         assertTrue(document.getChecksum() == 1234);
 
         // set the contents
         ndesc = adesc.getNodeDescriptor("contents");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.setValue(document, "Jim Alateras".getBytes());
         assertTrue(document.getContents().length == "Jim Alateras".length());
 
         // save the document
-        service.save(document);
+        save(document);
     }
 
     /**
      * Test the creation of a simple document
      */
+    @Test
     public void testSimpleDocumentCreation() {
         Document document = createDocument("jima.doc", "text/plain", 12, 12343,
                                            "Jim Alateras".getBytes());
-        service.save(document);
+        save(document);
     }
 
     /**
-     * Test the creation of multiple document and the retrievakl of some
-     * documents
+     * Test the creation of multiple document and the retrieval of some documents
      */
+    @Test
     public void testMultipleDocumentCreation() {
         Document doc;
         IMObjectReference ref = null;
@@ -111,107 +104,82 @@ public class ArchetypeServiceDocumentTestCase extends
             doc = createDocument("jima" + index + ".doc",
                                  "text/plain", 12 + index, 12343 + index,
                                  ("Jim Alateras" + index).getBytes());
-            service.save(doc);
+            save(doc);
             ref = doc.getObjectReference();
         }
 
         // retrieve the last document
-        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(ref));
-        query.setCountResults(true);
-        assertTrue(service.get(query).getTotalResults() == 1);
+        assertNotNull(get(ref));
     }
 
     /**
-     * Test the creation of a simple document act
+     * Test the creation of a simple document act.
      */
+    @Test
     public void testDocumentActCreation() {
-        Document document = createDocument("jima.doc", "text/plain", 12, 12343,
-                                           "Jim Alateras".getBytes());
-        service.save(document);
+        Document document = createDocument("jima.doc", "text/plain", 12, 12343, "Jim Alateras".getBytes());
+        save(document);
         DocumentAct docAct = createDocumentAct(document);
-        service.save(docAct);
+        save(docAct);
     }
 
     /**
-     * Test creation and retrieval of a document act
+     * Test creation and retrieval of a document act.
      */
+    @Test
     public void testDocumentActRetrieval() {
-        Document document = createDocument("jima.doc", "text/plain", 234, 12343,
-                                           "Jim Alateras".getBytes());
-        service.save(document);
+        Document document = createDocument("jima.doc", "text/plain", 234, 12343, "Jim Alateras".getBytes());
+        save(document);
         DocumentAct docAct = createDocumentAct(document);
-        service.save(docAct);
+        save(docAct);
 
-        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
-                docAct.getObjectReference()));
-        query.setCountResults(true);
-        IPage<IMObject> page = service.get(query);
-        assertTrue(page.getTotalResults() == 1);
-
-        docAct = (DocumentAct) page.getResults().iterator().next();
-        assertTrue(
-                docAct.getDocument().equals(document.getObjectReference()));
+        // retrieve it again
+        assertNotNull(get(docAct));
     }
 
     /**
-     * Test the modification of a document act
+     * Test the modification of a document act.
      */
+    @Test
     public void testDocumentActModification() {
-        Document document = createDocument("jima.doc", "text/plain", 234, 12343,
-                                           "Jim Alateras".getBytes());
-        service.save(document);
+        Document document = createDocument("jima.doc", "text/plain", 234, 12343, "Jim Alateras".getBytes());
+        save(document);
         DocumentAct docAct = createDocumentAct(document);
-        service.save(docAct);
+        save(docAct);
 
-        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
-                docAct.getObjectReference()));
-        query.setCountResults(true);
-        IPage<IMObject> page = service.get(query);
-        assertEquals(1, page.getTotalResults());
-
-        docAct = (DocumentAct) page.getResults().iterator().next();
+        // reload the act
+        docAct = get(docAct);
         assertEquals(document.getObjectReference(), docAct.getDocument());
 
         // create a new document reference
-        document = createDocument("tima.doc", "text/plain", 234, 12343,
-                                  "Tim Anderson".getBytes());
-        service.save(document);
+        document = createDocument("tima.doc", "text/plain", 234, 12343, "Tim Anderson".getBytes());
+        save(document);
         docAct.setDocument(document.getObjectReference());
-        service.save(docAct);
+        save(docAct);
 
         // retrieve and check again
-        page = service.get(query);
-        assertEquals(1, page.getTotalResults());
-        docAct = (DocumentAct) page.getResults().iterator().next();
+        docAct = get(docAct);
         assertEquals(document.getObjectReference(), docAct.getDocument());
     }
 
     /**
-     * Test the deletion of a document act
+     * Test the deletion of a document act.
      */
+    @Test
     public void testDocumentActDeletion() {
-        Document document = createDocument("jima.doc", "text/plain", 234, 12343,
-                                           "Jim Alateras".getBytes());
-        service.save(document);
+        Document document = createDocument("jima.doc", "text/plain", 234, 12343, "Jim Alateras".getBytes());
+        save(document);
         DocumentAct docAct = createDocumentAct(document);
-        service.save(docAct);
+        save(docAct);
 
         // delete the document act
-        service.remove(docAct);
+        remove(docAct);
 
         // ensure that we can still retrieve the document
-        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
-                document.getObjectReference()));
-        query.setCountResults(true);
-        IPage<IMObject> page = service.get(query);
-        assertEquals(1, page.getTotalResults());
+        assertNotNull(get(document));
 
         // check that we can't retrieve the document act
-        ArchetypeQuery query2 = new ArchetypeQuery(new ObjectRefConstraint(
-                docAct.getObjectReference()));
-        query2.setCountResults(true);
-        page = service.get(query2);
-        assertEquals(0, page.getTotalResults());
+        assertNull(get(docAct));
     }
 
     /**
@@ -224,9 +192,8 @@ public class ArchetypeServiceDocumentTestCase extends
      * @param contents the contents
      * @return Document
      */
-    public Document createDocument(String name, String mime, int size,
-                                   long checksum, byte[] contents) {
-        Document document = (Document) service.create("document.common");
+    public Document createDocument(String name, String mime, int size, long checksum, byte[] contents) {
+        Document document = (Document) create("document.common");
         document.setName(name);
         document.setMimeType(mime);
         document.setDocSize(size);
@@ -243,36 +210,13 @@ public class ArchetypeServiceDocumentTestCase extends
      * @return DocumentAct
      */
     public DocumentAct createDocumentAct(Document document) {
-        DocumentAct act = (DocumentAct) service.create("document.act");
+        DocumentAct act = (DocumentAct) create("document.act");
         act.setName("documentAct1");
         act.setDescription("This is the first document act");
         act.setDocVersion("ver1");
         act.setDocument(document.getObjectReference());
 
         return act;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
     }
 
 }

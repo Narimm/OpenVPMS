@@ -17,13 +17,20 @@
  */
 package org.openvpms.component.business.service;
 
+import static org.junit.Assert.assertNotNull;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -32,14 +39,14 @@ import java.util.Collection;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractArchetypeServiceTest
-        extends AbstractDependencyInjectionSpringContextTests {
+public abstract class AbstractArchetypeServiceTest extends AbstractJUnit4SpringContextTests {
 
     /**
      * The archetype service.
      */
+    @Autowired
+    @Qualifier("archetypeService")
     private IArchetypeService service;
-
 
     /**
      * Returns the archetype service.
@@ -60,6 +67,17 @@ public abstract class AbstractArchetypeServiceTest
         IMObject object = service.create(shortName);
         assertNotNull(object);
         return object;
+    }
+
+    /**
+     * Helper to create an object and wrap it in bean.
+     *
+     * @param shortName the archetype short name
+     * @return the bean wrapping an instance of <tt>shortName</tt>.
+     */
+    protected IMObjectBean createBean(String shortName) {
+        IMObject object = create(shortName);
+        return new IMObjectBean(object);
     }
 
     /**
@@ -111,6 +129,16 @@ public abstract class AbstractArchetypeServiceTest
     }
 
     /**
+     * Helper to get the results from a query.
+     *
+     * @param query the query
+     * @return the query results
+     */
+    protected List<IMObject> get(ArchetypeQuery query) {
+        return service.get(query).getResults();
+    }
+
+    /**
      * Helper to remove an object.
      *
      * @param object the object to remove
@@ -120,14 +148,24 @@ public abstract class AbstractArchetypeServiceTest
     }
 
     /**
-     * Sets up the test case.
+     * Validates an object.
      *
-     * @throws Exception for any error
+     * @param object the object to validate
+     * @throws org.openvpms.component.business.service.archetype.ValidationException
+     *          if there are validation errors
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        service = (IArchetypeService) applicationContext.getBean("archetypeService");
+    protected void validateObject(IMObject object) {
+        service.validateObject(object);
+    }
+
+    /**
+     * Returns the {@link ArchetypeDescriptor} with the specified short name.
+     *
+     * @param shortName the short name
+     * @return the descriptor corresponding to the short name, or <tt>null</tt> if none is found
+     */
+    protected ArchetypeDescriptor getArchetypeDescriptor(String shortName) {
+        return service.getArchetypeDescriptor(shortName);
     }
 
 }

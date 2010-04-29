@@ -21,13 +21,13 @@ package org.openvpms.component.business.dao.hibernate.im.query;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
+import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDO;
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.*;
 import org.openvpms.component.business.dao.hibernate.im.query.QueryContext.LogicalOperator;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.query.AndConstraint;
@@ -40,7 +40,6 @@ import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IdConstraint;
-import static org.openvpms.component.system.common.query.JoinConstraint.JoinType.LeftOuterJoin;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -88,10 +87,10 @@ public class QueryBuilder {
     /**
      * Create an instance of the builder.
      *
-     * @param cache the archetype descriptor cache
+     * @param cache     the archetype descriptor cache
+     * @param assembler the assembler
      */
-    public QueryBuilder(IArchetypeDescriptorCache cache,
-                        CompoundAssembler assembler) {
+    public QueryBuilder(IArchetypeDescriptorCache cache, CompoundAssembler assembler) {
         this.cache = cache;
         this.assembler = assembler;
     }
@@ -105,8 +104,7 @@ public class QueryBuilder {
     public QueryContext build(ArchetypeQuery query) {
         select.clear();
         if (query == null || query.getArchetypeConstraint() == null) {
-            throw new QueryBuilderException(
-                    QueryBuilderException.ErrorCode.NullQuery);
+            throw new QueryBuilderException(QueryBuilderException.ErrorCode.NullQuery);
         }
 
         QueryContext context = new QueryContext(query.isDistinct());
@@ -125,35 +123,27 @@ public class QueryBuilder {
      * @param context    the hql context
      */
     private void process(SelectConstraint constraint, QueryContext context) {
-        if (StringUtils.isEmpty(constraint.getNodeName())
-                && StringUtils.isEmpty(constraint.getAlias())) {
-            throw new QueryBuilderException(
-                    InvalidQualifiedName, constraint.getName());
+        if (StringUtils.isEmpty(constraint.getNodeName()) && StringUtils.isEmpty(constraint.getAlias())) {
+            throw new QueryBuilderException(InvalidQualifiedName, constraint.getName());
         }
 
         TypeSet types = context.getTypeSet(constraint.getAlias());
         if (types == null) {
-            throw new QueryBuilderException(
-                    InvalidQualifiedName, constraint.getName());
+            throw new QueryBuilderException(InvalidQualifiedName, constraint.getName());
         }
         String property = null;
         if (constraint.getNodeName() != null) {
-            NodeDescriptor ndesc = getMatchingNodeDescriptor(
-                    types.getDescriptors(), constraint.getNodeName());
+            NodeDescriptor ndesc = getMatchingNodeDescriptor(types.getDescriptors(), constraint.getNodeName());
             if (ndesc == null) {
-                throw new QueryBuilderException(NoNodeDescriptorForName,
-                                                constraint.getNodeName());
+                throw new QueryBuilderException(NoNodeDescriptorForName, constraint.getNodeName());
             }
             // get the name of the attribute
             property = getProperty(ndesc);
         }
         if (constraint instanceof ObjectRefSelectConstraint) {
-            context.addObjectRefSelectConstraint(types.getAlias(),
-                                                 constraint.getNodeName());
+            context.addObjectRefSelectConstraint(types.getAlias(), constraint.getNodeName());
         } else {
-            context.addSelectConstraint(types.getAlias(),
-                                        constraint.getNodeName(),
-                                        property);
+            context.addSelectConstraint(types.getAlias(), constraint.getNodeName(), property);
         }
 
     }
@@ -164,10 +154,8 @@ public class QueryBuilder {
      * @param constraint the archetype id constraint to process
      * @param context    the hql context
      */
-    private void process(ArchetypeIdConstraint constraint,
-                         QueryContext context) {
+    private void process(ArchetypeIdConstraint constraint, QueryContext context) {
 
-        context.pushLogicalOperator(LogicalOperator.And);
         context.pushTypeSet(getTypeSet(constraint));
 
         // process common portion of constraint
@@ -175,7 +163,6 @@ public class QueryBuilder {
 
         // pop the stack when we have finished processing this constraint
         context.popTypeSet();
-        context.popLogicalOperator();
     }
 
     /**
@@ -184,23 +171,13 @@ public class QueryBuilder {
      * @param constraint the archetype id constrain to process
      * @param context    the hql context
      */
-    private void processArchetypeConstraint(ArchetypeIdConstraint constraint,
-                                            QueryContext context) {
+    private void processArchetypeConstraint(ArchetypeIdConstraint constraint, QueryContext context) {
         ArchetypeId id = constraint.getArchetypeId();
         String alias = constraint.getAlias();
 
-        boolean leftOuterJoin = context.peekJoinType() == LeftOuterJoin;
-        if (leftOuterJoin) {
-            context.pushLogicalOperator(LogicalOperator.Or);
-            context.addWhereConstraint(alias, "archetypeId.shortName",
-                                       RelationalOp.EQ, id.getShortName());
-            context.addWhereConstraint(alias, "archetypeId.shortName",
-                                       RelationalOp.IsNULL, null);
-            context.popLogicalOperator();
-        } else {
-            context.addWhereConstraint(alias, "archetypeId.shortName",
-                                       RelationalOp.EQ, id.getShortName());
-        }
+        context.pushLogicalOperator(LogicalOperator.And);
+
+        context.addConstraint(alias, "archetypeId.shortName", RelationalOp.EQ, id.getShortName());
 
         // process the active flag
         addActiveConstraint(constraint, context);
@@ -209,6 +186,7 @@ public class QueryBuilder {
         for (IConstraint oc : constraint.getConstraints()) {
             processConstraint(oc, context);
         }
+        context.popLogicalOperator();
     }
 
     /**
@@ -217,16 +195,12 @@ public class QueryBuilder {
      * @param constraint the archetype short name constraint
      * @param context    the hql context
      */
-    private void process(ShortNameConstraint constraint,
-                         QueryContext context) {
+    private void process(ShortNameConstraint constraint, QueryContext context) {
         // check that at least one short name is specified
-        if (constraint.getShortNames() == null
-                || constraint.getShortNames().length == 0) {
-            throw new QueryBuilderException(
-                    QueryBuilderException.ErrorCode.NoShortNamesSpeified);
+        if (constraint.getShortNames() == null || constraint.getShortNames().length == 0) {
+            throw new QueryBuilderException(QueryBuilderException.ErrorCode.NoShortNamesSpeified);
         }
 
-        context.pushLogicalOperator(LogicalOperator.And);
         context.pushTypeSet(getTypeSet(constraint));
 
         // process the common portion of the archetype constraint
@@ -234,7 +208,6 @@ public class QueryBuilder {
 
         // pop the stack when we have finished processing this constraint
         context.popTypeSet();
-        context.popLogicalOperator();
     }
 
     /**
@@ -243,33 +216,28 @@ public class QueryBuilder {
      * @param constraint the archetype short name constraint
      * @param context    the hql context
      */
-    private void processArchetypeConstraint(ShortNameConstraint constraint,
-                                            QueryContext context) {
+    private void processArchetypeConstraint(ShortNameConstraint constraint, QueryContext context) {
+        boolean and = false;
+
+        if (constraint.isActiveOnly() || !constraint.getConstraints().isEmpty()) {
+            context.pushLogicalOperator(LogicalOperator.And);
+            and = true;
+        }
 
         String alias = constraint.getAlias();
         String[] shortNames = constraint.getShortNames();
-        boolean leftOuterJoin = context.peekJoinType() == LeftOuterJoin;
-        if (shortNames.length > 1 || leftOuterJoin) {
+
+        boolean or = false;
+        if (shortNames.length > 1) {
             context.pushLogicalOperator(LogicalOperator.Or);
+            or = true;
         }
 
         for (String shortName : shortNames) {
-            // process the entity name
-            if (shortName.endsWith("*") || shortName.startsWith("*")) {
-                context.addWhereConstraint(alias, "archetypeId.shortName",
-                                           RelationalOp.EQ,
-                                           shortName.replace("*", "%"));
-            } else {
-                context.addWhereConstraint(alias, "archetypeId.shortName",
-                                           RelationalOp.EQ, shortName);
-            }
+            String value = shortName.replace('*', '%'); // convert wildcards to SQL
+            context.addConstraint(alias, "archetypeId.shortName", RelationalOp.EQ, value);
         }
-        if (leftOuterJoin) {
-            context.addWhereConstraint(alias, "archetypeId.shortName",
-                                       RelationalOp.IsNULL, null);
-        }
-
-        if (shortNames.length > 1 || leftOuterJoin) {
+        if (or) {
             context.popLogicalOperator();
         }
 
@@ -280,11 +248,12 @@ public class QueryBuilder {
         for (IConstraint oc : constraint.getConstraints()) {
             processConstraint(oc, context);
         }
+        if (and) {
+            context.popLogicalOperator();
+        }
     }
 
-    private void addActiveConstraint(BaseArchetypeConstraint constraint,
-                                     QueryContext context) {
-        boolean leftOuterJoin = context.peekJoinType() == LeftOuterJoin;
+    private void addActiveConstraint(BaseArchetypeConstraint constraint, QueryContext context) {
         if (constraint.isActiveOnly()) {
             String alias = constraint.getAlias();
             TypeSet set = context.getTypeSet(alias);
@@ -295,7 +264,7 @@ public class QueryBuilder {
                     Thread thread = Thread.currentThread();
                     ClassLoader loader = thread.getContextClassLoader();
                     Class type = loader.loadClass(set.getClassName());
-                    if (PeriodRelationship.class.isAssignableFrom(type)) {
+                    if (PeriodRelationshipDO.class.isAssignableFrom(type)) {
                         // no active flag
                         add = false;
                     }
@@ -304,18 +273,7 @@ public class QueryBuilder {
                 }
             }
             if (add) {
-                if (leftOuterJoin) {
-                    context.pushLogicalOperator(LogicalOperator.Or);
-                    context.addWhereConstraint(alias, "active", RelationalOp.EQ,
-                                               true);
-                    context.addWhereConstraint(alias, "active",
-                                               RelationalOp.IsNULL,
-                                               null);
-                    context.popLogicalOperator();
-                } else {
-                    context.addWhereConstraint(alias, "active", RelationalOp.EQ,
-                                               true);
-                }
+                context.addConstraint(alias, "active", RelationalOp.EQ, true);
             }
         }
     }
@@ -328,12 +286,21 @@ public class QueryBuilder {
      */
     private void processArchetypeConstraint(ArchetypeConstraint constraint,
                                             QueryContext context) {
+        boolean and = false;
         // process the active flag
+        if (constraint.isActiveOnly() && !constraint.getConstraints().isEmpty()) {
+            context.pushLogicalOperator(LogicalOperator.And);
+            and = true;
+        }
+
         addActiveConstraint(constraint, context);
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
             processConstraint(oc, context);
+        }
+        if (and) {
+            context.popLogicalOperator();
         }
     }
 
@@ -345,7 +312,6 @@ public class QueryBuilder {
      * @param context    the hql context
      */
     private void process(LongNameConstraint constraint, QueryContext context) {
-        context.pushLogicalOperator(LogicalOperator.And);
         context.pushTypeSet(getTypeSet(constraint));
 
         // process the common portion of the archetype constraint
@@ -353,7 +319,6 @@ public class QueryBuilder {
 
         // pop the stack when we have finished processing this constraint
         context.popTypeSet();
-        context.popLogicalOperator();
     }
 
     /**
@@ -362,13 +327,12 @@ public class QueryBuilder {
      * @param constraint the constraint
      * @param context    the hql context
      */
-    private void processArchetypeConstraint(LongNameConstraint constraint,
-                                            QueryContext context) {
+    private void processArchetypeConstraint(LongNameConstraint constraint, QueryContext context) {
         String alias = constraint.getAlias();
         String entityName = constraint.getEntityName();
         String conceptName = constraint.getConceptName();
 
-        StringBuffer shortName = new StringBuffer();
+        StringBuilder shortName = new StringBuilder();
         if (StringUtils.isEmpty(entityName)) {
             shortName.append("*.");
         } else {
@@ -380,9 +344,7 @@ public class QueryBuilder {
         } else {
             shortName.append(conceptName);
         }
-        context.addWhereConstraint(alias, "archetypeId.shortName",
-                                   RelationalOp.EQ,
-                                   shortName.toString().replace("*", "%"));
+        context.addConstraint(alias, "archetypeId.shortName", RelationalOp.EQ, shortName.toString().replace("*", "%"));
         // process the active flag
         addActiveConstraint(constraint, context);
 
@@ -438,10 +400,8 @@ public class QueryBuilder {
      * @param context    the context
      */
     private void process(NodeConstraint constraint, QueryContext context) {
-        String property = getQualifiedPropertyName(constraint.getNodeName(),
-                                                   constraint.getAlias(),
-                                                   context);
-        context.addWhereConstraint(property, constraint);
+        String property = getQualifiedPropertyName(constraint.getNodeName(), constraint.getAlias(), context);
+        context.addNodeConstraint(property, constraint);
     }
 
     /**
@@ -450,11 +410,8 @@ public class QueryBuilder {
      * @param constraint the archetype node constraint
      * @param context    the context
      */
-    private void process(ArchetypeNodeConstraint constraint,
-                         QueryContext context) {
-        context.addWhereConstraint(null, "archetypeId.shortName",
-                                   constraint.getOperator(),
-                                   constraint.getParameter());
+    private void process(ArchetypeNodeConstraint constraint, QueryContext context) {
+        context.addConstraint(null, "archetypeId.shortName", constraint.getOperator(), constraint.getParameter());
     }
 
     /**
@@ -463,21 +420,16 @@ public class QueryBuilder {
      * @param constraint the object reference node constraint
      * @param context    the query context
      */
-    private void process(ObjectRefNodeConstraint constraint,
-                         QueryContext context) {
+    private void process(ObjectRefNodeConstraint constraint, QueryContext context) {
         // get the name of the attribute
         RelationalOp op = constraint.getOperator();
-        String property = getQualifiedPropertyName(constraint.getNodeName(),
-                                                   constraint.getAlias(),
-                                                   context);
+        String property = getQualifiedPropertyName(constraint.getNodeName(), constraint.getAlias(), context);
         if (constraint.getObjectReference() != null) {
             IMObjectReference ref = constraint.getObjectReference();
-            context.addWhereConstraint(property + ".id", op,
-                                       ref.getId());
+            context.addConstraint(property + ".id", op, ref.getId());
         } else {
             ArchetypeId id = constraint.getArchetypeId();
-            context.addWhereConstraint(property + ".archetypeId.shortName", op,
-                                       id.getShortName());
+            context.addConstraint(property + ".archetypeId.shortName", op, id.getShortName());
         }
     }
 
@@ -488,13 +440,9 @@ public class QueryBuilder {
      * @param context    the query context
      */
     private void process(IdConstraint constraint, QueryContext context) {
-        String source = getAliasOrQualifiedName(constraint.getSourceName(),
-                                                context);
-        String target = getAliasOrQualifiedName(constraint.getTargetName(),
-                                                context);
-        context.addPropertyWhereConstraint(source + ".id",
-                                           constraint.getOperator(),
-                                           target + ".id");
+        String source = getAliasOrQualifiedName(constraint.getSourceName(), context);
+        String target = getAliasOrQualifiedName(constraint.getTargetName(), context);
+        context.addPropertyConstraint(source + ".id", constraint.getOperator(), target + ".id");
     }
 
     /**
@@ -506,8 +454,7 @@ public class QueryBuilder {
     private void process(ObjectRefConstraint constraint,
                          QueryContext context) {
         if (constraint.getArchetypeId() == null) {
-            throw new QueryBuilderException(InvalidObjectReferenceConstraint,
-                                            constraint);
+            throw new QueryBuilderException(InvalidObjectReferenceConstraint, constraint);
         }
 
         ArchetypeId id = constraint.getArchetypeId();
@@ -517,10 +464,8 @@ public class QueryBuilder {
         context.pushTypeSet(types);
 
         String alias = constraint.getAlias();
-        context.addWhereConstraint(alias, "archetypeId.shortName",
-                                   RelationalOp.EQ, id.getShortName());
-        context.addWhereConstraint(alias, "id", RelationalOp.EQ,
-                                   constraint.getId());
+        context.addConstraint(alias, "archetypeId.shortName", RelationalOp.EQ, id.getShortName());
+        context.addConstraint(alias, "id", RelationalOp.EQ, constraint.getId());
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
@@ -538,8 +483,7 @@ public class QueryBuilder {
      * @param constraint the participation constraint
      * @param context    the query context
      */
-    private void process(ParticipationConstraint constraint,
-                         QueryContext context) {
+    private void process(ParticipationConstraint constraint, QueryContext context) {
         String property = null;
         switch (constraint.getField()) {
             case ActShortName:
@@ -553,9 +497,7 @@ public class QueryBuilder {
                 break;
         }
 
-        context.addWhereConstraint(constraint.getAlias(), property,
-                                   constraint.getOperator(),
-                                   constraint.getValue());
+        context.addConstraint(constraint.getAlias(), property, constraint.getOperator(), constraint.getValue());
     }
 
     /**
@@ -564,36 +506,55 @@ public class QueryBuilder {
      * @param constraint the collection constraint
      * @param context    the context
      */
-    private void process(CollectionNodeConstraint constraint,
-                         QueryContext context) {
+    private void process(CollectionNodeConstraint constraint, QueryContext context) {
         TypeSet types = context.peekTypeSet();
-        final String nodeName = getUnqualifiedName(constraint.getNodeName());
-        NodeDescriptor ndesc = getMatchingNodeDescriptor(types.getDescriptors(),
-                                                         nodeName);
+        final String nodeName = constraint.getUnqualifiedName();
+        NodeDescriptor ndesc = getMatchingNodeDescriptor(types.getDescriptors(), nodeName);
 
         if (ndesc == null) {
-            throw new QueryBuilderException(NoNodeDescriptorForName,
-                                            nodeName);
+            throw new QueryBuilderException(NoNodeDescriptorForName, nodeName);
         }
 
         // push the new type
-        BaseArchetypeConstraint archetypeConstraint
-                = constraint.getArchetypeConstraint();
+        BaseArchetypeConstraint archetypeConstraint = constraint.getArchetypeConstraint();
+        boolean activeOnly = false;
         if (archetypeConstraint instanceof ArchetypeConstraint) {
-            types = TypeSet.create((ArchetypeConstraint) archetypeConstraint,
-                                   ndesc, cache, assembler);
+            activeOnly = archetypeConstraint.isActiveOnly();
+            types = TypeSet.create((ArchetypeConstraint) archetypeConstraint, ndesc, cache, assembler);
         } else {
             types = getTypeSet(archetypeConstraint);
         }
-        context.pushTypeSet(types, getProperty(ndesc),
-                            constraint.getJoinType());
+        types.setAlias(constraint.getAlias());
+        context.pushTypeSet(types, getProperty(ndesc), constraint.getJoinType());
 
-        // process common portion of constraint
-        if (archetypeConstraint != null) {
-            processArchetypeConstraint(archetypeConstraint, context);
+        boolean and = false;
+
+        if (!constrainsByShortName(archetypeConstraint)) {
+            if (activeOnly || !archetypeConstraint.getConstraints().isEmpty()) {
+                context.pushLogicalOperator(LogicalOperator.And);
+                and = true;
+            }
+            Set<String> shortNames = types.getShortNames();
+            boolean or = false;
+            if (shortNames.size() > 1) {
+                context.pushLogicalOperator(LogicalOperator.Or);
+                or = true;
+            }
+            for (String shortName : shortNames) {
+                process(new ArchetypeNodeConstraint(RelationalOp.EQ, shortName), context);
+            }
+            if (or) {
+                context.popLogicalOperator();
+            }
         }
 
+        // process common portion of constraint
+        processArchetypeConstraint(archetypeConstraint, context);
+
         // pop the stack when we have finished processing this constraint
+        if (and) {
+            context.popLogicalOperator();
+        }
         context.popTypeSet();
     }
 
@@ -603,10 +564,8 @@ public class QueryBuilder {
      * @param constraint an archetype sort constraint
      * @param context    the context
      */
-    private void process(ArchetypeSortConstraint constraint,
-                         QueryContext context) {
-        context.addSortConstraint(constraint.getAlias(), "" +
-                "archetypeId.shortName", constraint.isAscending());
+    private void process(ArchetypeSortConstraint constraint, QueryContext context) {
+        context.addSortConstraint(constraint.getAlias(), "archetypeId.shortName", constraint.isAscending());
     }
 
     /**
@@ -618,21 +577,17 @@ public class QueryBuilder {
     private void process(NodeSortConstraint constraint, QueryContext context) {
         TypeSet types = context.getTypeSet(constraint.getAlias());
         if (types == null) {
-            throw new QueryBuilderException(
-                    InvalidQualifiedName, constraint.getNodeName());
+            throw new QueryBuilderException(InvalidQualifiedName, constraint.getNodeName());
         }
 
-        NodeDescriptor ndesc = getMatchingNodeDescriptor(
-                types.getDescriptors(), constraint.getNodeName());
+        NodeDescriptor ndesc = getMatchingNodeDescriptor(types.getDescriptors(), constraint.getNodeName());
         if (ndesc == null) {
-            throw new QueryBuilderException(
-                    NoNodeDescriptorForName, constraint.getNodeName());
+            throw new QueryBuilderException(NoNodeDescriptorForName, constraint.getNodeName());
         }
 
         // get the name of the attribute
         String property = getProperty(ndesc);
-        context.addSortConstraint(constraint.getAlias(), property,
-                                  constraint.isAscending());
+        context.addSortConstraint(constraint.getAlias(), property, constraint.isAscending());
     }
 
     /**
@@ -652,9 +607,8 @@ public class QueryBuilder {
 
         // now check for any more / characters
         if (aprop.contains("/")) {
-            throw new QueryBuilderException(
-                    QueryBuilderException.ErrorCode.CanOnlySortOnTopLevelNodes,
-                    ndesc.getName());
+            throw new QueryBuilderException(QueryBuilderException.ErrorCode.CanOnlySortOnTopLevelNodes,
+                                            ndesc.getName());
         }
 
         return aprop;
@@ -670,8 +624,7 @@ public class QueryBuilder {
      * @return a typical node descriptor
      * @throws ArchetypeServiceException
      */
-    private NodeDescriptor getMatchingNodeDescriptor(
-            Set<ArchetypeDescriptor> adescs, String nodeName) {
+    private NodeDescriptor getMatchingNodeDescriptor(Set<ArchetypeDescriptor> adescs, String nodeName) {
         NodeDescriptor matching = null;
 
         if (StringUtils.isEmpty(nodeName)) {
@@ -684,20 +637,17 @@ public class QueryBuilder {
         for (ArchetypeDescriptor adesc : adescs) {
             ndesc = adesc.getNodeDescriptor(nodeName);
             if (ndesc == null) {
-                throw new QueryBuilderException(
-                        NoNodeDescWithName, adesc.getName(), nodeName);
+                throw new QueryBuilderException(NoNodeDescWithName, adesc.getName(), nodeName);
             }
 
             // now check against the matching node descriptor
             if (matching == null) {
                 matching = ndesc;
             } else {
-                if (ndesc.getPath().equals(matching.getPath()) &&
-                        ndesc.getType().equals(matching.getType())) {
+                if (ndesc.getPath().equals(matching.getPath()) && ndesc.getType().equals(matching.getType())) {
                     // this descriptor matches the node descriptor
                 } else {
-                    throw new QueryBuilderException(NodeDescriptorsDoNotMatch,
-                                                    nodeName);
+                    throw new QueryBuilderException(NodeDescriptorsDoNotMatch, nodeName);
                 }
             }
         }
@@ -706,49 +656,42 @@ public class QueryBuilder {
     }
 
     /**
-     * Delegate to the appropraite type
+     * Creates a new {@link TypeSet} for the constraint.
      *
-     * @param constraint
-     * @return TypeSet
+     * @param constraint the constraint
+     * @return a new type set
      */
     private TypeSet getTypeSet(BaseArchetypeConstraint constraint) {
         if (constraint instanceof ArchetypeIdConstraint) {
-            return TypeSet.create((ArchetypeIdConstraint) constraint, cache,
-                                  assembler);
+            return TypeSet.create((ArchetypeIdConstraint) constraint, cache, assembler);
         } else if (constraint instanceof ShortNameConstraint) {
-            return TypeSet.create((ShortNameConstraint) constraint, cache,
-                                  assembler);
+            return TypeSet.create((ShortNameConstraint) constraint, cache, assembler);
         } else if (constraint instanceof LongNameConstraint) {
-            return TypeSet.create((LongNameConstraint) constraint, cache,
-                                  assembler);
+            return TypeSet.create((LongNameConstraint) constraint, cache, assembler);
         }
-
-        return null;
+        throw new QueryBuilderException(
+                QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,
+                constraint.getClass().getName());
     }
 
     /**
      * Delegate to the appropriate type
      *
      * @param constraint the constraint
-     * @param context
+     * @param context    the query context
      */
-    private void processArchetypeConstraint(BaseArchetypeConstraint constraint,
-                                            QueryContext context) {
+    private void processArchetypeConstraint(BaseArchetypeConstraint constraint, QueryContext context) {
         if (constraint instanceof ArchetypeIdConstraint) {
-            processArchetypeConstraint((ArchetypeIdConstraint) constraint,
-                                       context);
+            processArchetypeConstraint((ArchetypeIdConstraint) constraint, context);
         } else if (constraint instanceof ShortNameConstraint) {
-            processArchetypeConstraint(
-                    (ShortNameConstraint) constraint,
-                    context);
+            processArchetypeConstraint((ShortNameConstraint) constraint, context);
         } else if (constraint instanceof LongNameConstraint) {
-            processArchetypeConstraint((LongNameConstraint) constraint,
-                                       context);
+            processArchetypeConstraint((LongNameConstraint) constraint, context);
         } else if (constraint instanceof ArchetypeConstraint) {
-            processArchetypeConstraint((ArchetypeConstraint) constraint,
-                                       context);
+            processArchetypeConstraint((ArchetypeConstraint) constraint, context);
         } else {
-            // raise an exception
+            throw new QueryBuilderException(QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,
+                                            constraint.getClass().getName());
         }
     }
 
@@ -756,7 +699,7 @@ public class QueryBuilder {
      * Process the appropriate constraint
      *
      * @param constraint the constraint to process
-     * @param context    the hql context
+     * @param context    the query context
      */
     private void processConstraint(IConstraint constraint,
                                    QueryContext context) {
@@ -791,9 +734,8 @@ public class QueryBuilder {
         } else if (constraint instanceof ParticipationConstraint) {
             process((ParticipationConstraint) constraint, context);
         } else {
-            throw new QueryBuilderException(
-                    QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,
-                    constraint.getClass().getName());
+            throw new QueryBuilderException(QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,
+                                            constraint.getClass().getName());
         }
     }
 
@@ -801,11 +743,9 @@ public class QueryBuilder {
      * Returns a property name for a node name, qualified by its type alias.
      *
      * @param nodeName the node name
-     * @param alias    the type alias. If <code>null</code> uses the current
-     *                 type
+     * @param alias    the type alias. If <tt>null</tt> uses the current type
      * @param context  the query context
-     * @return the property corresponding to <code>name</code> prefixed with
-     *         the type alias
+     * @return the property corresponding to <tt>name</tt> prefixed with the type alias
      */
     private String getQualifiedPropertyName(String nodeName, String alias,
                                             QueryContext context) {
@@ -818,8 +758,7 @@ public class QueryBuilder {
         if (types == null) {
             throw new QueryBuilderException(NoNodeDescriptorForName, nodeName);
         }
-        NodeDescriptor desc = getMatchingNodeDescriptor(types.getDescriptors(),
-                                                        nodeName);
+        NodeDescriptor desc = getMatchingNodeDescriptor(types.getDescriptors(), nodeName);
         if (desc == null) {
             throw new QueryBuilderException(NoNodeDescriptorForName, nodeName);
         }
@@ -834,25 +773,14 @@ public class QueryBuilder {
     }
 
     /**
-     * Returns a node name minus any type alias.
-     *
-     * @param nodeName the node name
-     * @return the node name minus any type alias
-     */
-    private String getUnqualifiedName(String nodeName) {
-        int index = nodeName.indexOf(".");
-        return (index != -1) ? nodeName.substring(index + 1) : nodeName;
-    }
-
-    /**
      * Returns a type alias or qualified property name, depending on whether the
      * supplied name refers to a type alias or a node name.
      *
      * @param name    the name. May be a type alias or node name
      * @param context the query context
-     * @return the property corresponding to <code>name</code> prefixed with
-     *         the type alias if <code>name</code> refers to a node, or
-     *         the <code>name</code> unchanged if it refers to a type alias
+     * @return the property corresponding to <tt>name</tt> prefixed with
+     *         the type alias if <tt>name</tt> refers to a node, or
+     *         the <tt>name</tt> unchanged if it refers to a type alias
      */
     private String getAliasOrQualifiedName(String name, QueryContext context) {
         String property;
@@ -868,6 +796,26 @@ public class QueryBuilder {
             property = getQualifiedPropertyName(nodeName, alias, context);
         }
         return property;
+    }
+
+    /**
+     * Determines if an archetype constraint contains any constraints by archetype short name.
+     *
+     * @param constraint the constraint
+     * @return <tt>true</tt> if the constraint or a nested constraint constrains by short name
+     */
+    private boolean constrainsByShortName(BaseArchetypeConstraint constraint) {
+        if (constraint instanceof ShortNameConstraint || constraint instanceof ArchetypeIdConstraint) {
+            return true;
+        }
+        for (IConstraint c : constraint.getConstraints()) {
+            if (c instanceof BaseArchetypeConstraint) {
+                return constrainsByShortName((BaseArchetypeConstraint) c);
+            } else if (c instanceof ArchetypeNodeConstraint) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

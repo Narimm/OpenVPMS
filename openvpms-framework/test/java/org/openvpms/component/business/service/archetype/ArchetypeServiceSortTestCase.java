@@ -18,12 +18,16 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToExecuteQuery;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToExecuteQuery;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
+
+import java.util.List;
 
 /**
  * Test that sorting part of the api works on the IArchetypeService
@@ -31,18 +35,13 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeServiceSortTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private ArchetypeService service;
-
+@ContextConfiguration("archetype-service-appcontext.xml")
+public class ArchetypeServiceSortTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Test sort on a non-sortable property.
      */
+    @Test
     public void testSortOnNonExistentProperty() {
         try {
             ArchetypeQuery query = new ArchetypeQuery("act", null, false, false)
@@ -50,7 +49,7 @@ public class ArchetypeServiceSortTestCase
                     .setMaxResults(1)
                     .add(new NodeSortConstraint("baby", true));
 
-            service.get(query);
+            get(query);
             fail("This request should have thrown an exception");
         } catch (ArchetypeServiceException exception) {
             if (exception.getErrorCode() != FailedToExecuteQuery) {
@@ -62,22 +61,23 @@ public class ArchetypeServiceSortTestCase
     /**
      * Test sort on name in ascending order
      */
+    @Test
     public void testSortOnNameInAscendingOrder() {
         ArchetypeQuery query = new ArchetypeQuery("act", null, false, false);
         query.add(new NodeSortConstraint("name"));
-        IPage<IMObject> objects = service.get(query);
+        List<IMObject> objects = get(query);
         IMObject lhs = null;
         IMObject rhs;
-        for (IMObject object : objects.getResults()) {
+        for (IMObject object : objects) {
             if (lhs == null) {
                 lhs = object;
                 continue;
             }
             rhs = object;
             if (lhs.getName() != null && rhs.getName() != null
-                    && lhs.getName().compareTo(rhs.getName()) == 1) {
+                && lhs.getName().compareTo(rhs.getName()) == 1) {
                 fail("The objects are not in ascending order lhs="
-                        + lhs.getName() + " rhs=" + rhs.getName());
+                     + lhs.getName() + " rhs=" + rhs.getName());
             }
             lhs = rhs;
             if (logger.isDebugEnabled()) {
@@ -89,24 +89,25 @@ public class ArchetypeServiceSortTestCase
     /**
      * Test sort on name in ascending order
      */
+    @Test
     public void testSortOnNameInDescendingOrder() {
         ArchetypeQuery query = new ArchetypeQuery("act", null, false, false)
                 .setFirstResult(0)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .add(new NodeSortConstraint("name", false));
-        IPage<IMObject> objects = service.get(query);
+        List<IMObject> objects = get(query);
         IMObject lhs = null;
         IMObject rhs;
-        for (IMObject object : objects.getResults()) {
+        for (IMObject object : objects) {
             if (lhs == null) {
                 lhs = object;
                 continue;
             }
             rhs = object;
             if (lhs.getName() != null && rhs.getName() != null
-                    && lhs.getName().compareTo(rhs.getName()) == -1) {
+                && lhs.getName().compareTo(rhs.getName()) == -1) {
                 fail("The objects are not in descending order lhs="
-                        + lhs.getName() + " rhs=" + rhs.getName());
+                     + lhs.getName() + " rhs=" + rhs.getName());
             }
 
             lhs = rhs;
@@ -115,29 +116,5 @@ public class ArchetypeServiceSortTestCase
             }
         }
     }
-
-    /* (non-Javadoc)
-    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-    */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
 
 }

@@ -18,45 +18,41 @@
 
 package org.openvpms.component.business.service.archetype.descriptor.cache;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.system.common.test.BaseTestCase;
 
-import java.util.Hashtable;
-import java.util.Vector;
-
+import java.io.File;
 
 /**
- * Test the
- * {@link org.openvpms.component.business.service.archetype.IArchetypeService}
+ * Test the {@link ArchetypeDescriptorCacheFS}.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
+public class ArchetypeDescriptorCacheFSTestCase {
 
     /**
-     * Test the creation of a new registry with a null filename
+     * Test the creation of a new registry with a null filename.
      */
-    public void testCreationWithNullFileName() throws Exception {
-        String assertionFile = (String) this.getTestData()
-                .getTestCaseParameter("testCreationWithNullFileName", "normal",
-                        "assertionFile");
+    @Test
+    public void testCreationWithNullFileName() {
+        String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
         try {
             new ArchetypeDescriptorCacheFS(null, null, assertionFile);
         } catch (ArchetypeDescriptorCacheException exception) {
             assertEquals(
-                ArchetypeDescriptorCacheException.ErrorCode.NoDirSpecified,
-                exception.getErrorCode());
+                    ArchetypeDescriptorCacheException.ErrorCode.NoDirSpecified,
+                    exception.getErrorCode());
         }
     }
 
     /**
-     * Test the creation of a new registry with invalid filename
+     * Test the creation of a new registry with invalid filename.
      */
-    public void testCreationWithInvalidFileName() throws Exception {
-        String assertionFile = (String) this.getTestData()
-                .getTestCaseParameter("testCreationWithInvalidFileName",
-                        "normal", "assertionFile");
+    @Test
+    public void testCreationWithInvalidFileName() {
+        String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
         try {
             new ArchetypeDescriptorCacheFS("file-does-not-exist", assertionFile);
         } catch (ArchetypeDescriptorCacheException exception) {
@@ -68,127 +64,107 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
     /**
      * Test reading a valid archetype registry file
      */
-    public void testCreationWithValidFileContent() throws Exception {
-        String assertionFile = (String) this.getTestData()
-                .getTestCaseParameter("testCreationWithValidFileContent",
-                        "valid-files", "assertionFile");
-        Vector testData = (Vector) this.getTestData().getTestCaseParameter(
-                "testCreationWithValidFileContent", "valid-files", "files");
-        for (Object str : testData) {
-            new ArchetypeDescriptorCacheFS((String) str, assertionFile);
+    @Test
+    public void testCreationWithValidFileContent() {
+        String[] files = {"valid-archetype-file-1.adl",
+                          "valid-archetype-file-2.adl",
+                          "valid-archetype-file-3.adl"};
+        String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
+
+        for (String file : files) {
+            String path = getPath(file);
+            new ArchetypeDescriptorCacheFS(path, assertionFile);
         }
     }
 
     /**
-     * Test reading an invalid archetype registry file
+     * Test reading an invalid archetype file.
      */
-    public void testCreationWithInvalidFileContent() throws Exception {
-        String assertionFile = (String) this.getTestData()
-                .getTestCaseParameter("testCreationWithInvalidFileContent",
-                        "invalid-files", "assertionFile");
-        Vector testData = (Vector) this.getTestData().getTestCaseParameter(
-                "testCreationWithInvalidFileContent", "invalid-files", "files");
-        for (Object str : testData) {
+    @Test
+    public void testCreationWithInvalidFileContent() {
+        String[] files = {"invalid-archetype-file-1.xml",
+                          "invalid-archetype-file-2.xml",
+                          "invalid-archetype-file-3.xml"};
+        String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
+
+        for (String file : files) {
+            String path = getPath(file);
             try {
-                new ArchetypeDescriptorCacheFS((String) str, assertionFile);
+                new ArchetypeDescriptorCacheFS(path, assertionFile);
             } catch (ArchetypeDescriptorCacheException exception) {
                 assertEquals(
-                        ArchetypeDescriptorCacheException.ErrorCode.InvalidFile,
-                        exception.getErrorCode());
+                        ArchetypeDescriptorCacheException.ErrorCode.InvalidFile, exception.getErrorCode());
             }
         }
     }
 
     /**
-     * Test valid retrieval from registry
+     * Test retrieval from the cache.
      */
-    public void testValidEntryRetrieval() throws Exception {
-        String assertionFile = (String) this.getTestData()
-                .getTestCaseParameter("testValidEntryRetrieval",
-                        "valid-retrieval", "assertionFile");
-        String validFile = (String) this.getTestData().getTestCaseParameter(
-                "testValidEntryRetrieval", "valid-retrieval", "file");
-        Vector archetypes = (Vector) this.getTestData().getTestCaseParameter(
-                "testValidEntryRetrieval", "valid-retrieval", "archetypes");
+    @Test
+    public void testRetrieval() {
+        String assertionFile = "org/openvpms/archetype/assertionTypes.xml";
+        String validFile = getPath("valid-archetype-file-2.adl");
+        String[] archetypes = {"party.personcustomer", "party.animalpet", "party.supplier", "party.administrator"};
 
-        ArchetypeDescriptorCacheFS cache
-                = new ArchetypeDescriptorCacheFS(validFile, assertionFile);
-        for (Object archetype : archetypes) {
-            String key = (String) archetype;
-            ArchetypeDescriptor descriptor = cache.getArchetypeDescriptor(key);
-            assertNotNull("Looking for " + key, descriptor);
+        // verify the expected descriptors are there
+        ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(validFile, assertionFile);
+        for (String archetype : archetypes) {
+            ArchetypeDescriptor descriptor = cache.getArchetypeDescriptor(archetype);
+            assertNotNull(descriptor);
             assertNotNull(descriptor.getType());
         }
+
+        // verify an invalid descriptor produces no results
+        assertNull(cache.getArchetypeDescriptor("party.personcustomer1"));
     }
 
     /**
-     * Test invalid retrieval from registry
+     * Test the creation of a cache using directory and extension arguments.
      */
-    public void testInvalidEntryRetrieval() throws Exception {
-        String assertionFile = (String) this.getTestData()
-                .getTestCaseParameter("testInvalidEntryRetrieval",
-                        "invalid-retrieval", "assertionFile");
-        String validFile = (String) this.getTestData().getTestCaseParameter(
-                "testInvalidEntryRetrieval", "invalid-retrieval", "file");
-        Vector archetypes = (Vector) this.getTestData().getTestCaseParameter(
-                "testInvalidEntryRetrieval", "invalid-retrieval", "archetypes");
+    @Test
+    public void testLoadingArchetypesFromDir() {
+        String dir = getPath(".");
+        String assertionFile = getPath("valid-assertion-type-file-1.xml");
+        String extension = "adl";
+        int count = 5;
 
-        ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(validFile,
-                assertionFile);
-        for (Object archetype : archetypes) {
-            String key = (String) archetype;
-            assertNull(("Looking for " + key),
-                       cache.getArchetypeDescriptor(key));
-        }
+        ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(dir, new String[]{extension}, assertionFile);
+        assertEquals(count, cache.getArchetypeDescriptors().size());
     }
 
     /**
-     * Test the creation on an archetype service using directory and extension
-     * arguments. This depends on the adl files being copied to the target
-     * directory
+     * Test the retrieval of archetypes using regular expression.
      */
-    public void testLoadingArchetypesFromDir() throws Exception {
-        Hashtable params = getTestData().getGlobalParams();
-        String dir = (String) params.get("dir");
-        String assertionFile = (String) params.get("assertionFile");
-        String extension = (String) params.get("extension");
-        int recordCount1 = (Integer) this.getTestData().getTestCaseParameter(
-                "testLoadingArchetypesFromDir", "normal", "recordCount1");
+    @Test
+    public void testRetrievalByShortName() {
+        String dir = getPath(".");
+        String assertionFile = getPath("valid-assertion-type-file-1.xml");
+        String extension = "adl";
 
-        ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(dir,
-                new String[] {extension}, assertionFile);
-        assertEquals(recordCount1, cache.getArchetypeDescriptors().size());
-    }
+        ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(dir, new String[]{extension}, assertionFile);
 
-    /**
-     * Test the retrieval of archetypes using regular expression. IT uses the
-     * adl files, which reside in src/archetypes/
-     */
-    public void testRetrievalByShortName() throws Exception {
-        Hashtable cparams = getTestData().getGlobalParams();
-        Hashtable params = this.getTestData().getTestCaseParams(
-                "testRetrievalByShortName", "normal");
+        // test retrieval of all records that start with party
+        assertEquals(5, cache.getArchetypeDescriptors("party.*").size());
 
-        ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(
-                (String) cparams.get("dir"),
-                new String[] { (String) cparams.get("extension") },
-                (String) cparams.get("assertionFile"));
-
-        // test retrieval of all records that start with entityRelationship
-        assertEquals(((Integer) params.get("recordCount1")).intValue(),
-                     cache.getArchetypeDescriptors("entityRelationship.*").size());
-
-        // test retrieval for anything with party.animal
-        assertEquals(((Integer) params.get("recordCount2")).intValue(),
-                     cache.getArchetypeDescriptors("*party.animal*").size());
+        // test retrieval for anything with party.person
+        assertEquals(2, cache.getArchetypeDescriptors("*party.person*").size());
 
         // test retrieval for anything that starts with party.person
-        assertEquals(((Integer) params.get("recordCount3")).intValue(),
-                   cache.getArchetypeDescriptors("party.person*").size());
+        assertEquals(2, cache.getArchetypeDescriptors("party.person*").size());
 
         // test retrieval for anything that matches party.person
-        assertEquals(((Integer) params.get("recordCount4")).intValue(),
-                     cache.getArchetypeDescriptors("party.person").size());
+        assertEquals(1, cache.getArchetypeDescriptors("party.person").size());
+    }
+
+    /**
+     * Helper to get the path of a file relative to the current package.
+     *
+     * @param file the file name
+     * @return the path of the file
+     */
+    private String getPath(String file) {
+        return getClass().getPackage().getName().replace('.', File.separatorChar) + File.separatorChar + file;
     }
 
 }

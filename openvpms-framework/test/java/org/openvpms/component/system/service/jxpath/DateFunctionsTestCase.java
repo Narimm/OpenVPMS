@@ -18,7 +18,10 @@
 
 package org.openvpms.component.system.service.jxpath;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.system.common.jxpath.DateFunctions;
 
 import java.util.Calendar;
@@ -34,7 +37,7 @@ import java.util.TimeZone;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DateFunctionsTestCase extends TestCase {
+public class DateFunctionsTestCase {
 
     /**
      * The test date/time.
@@ -50,6 +53,7 @@ public class DateFunctionsTestCase extends TestCase {
     /**
      * Tests the {@link DateFunctions#formatDate methods.
      */
+    @Test
     public void testFormatDate() {
         DateFunctions.setLocale(AU);
         assertEquals("20/09/2006", DateFunctions.formatDate(dateTime));
@@ -71,47 +75,72 @@ public class DateFunctionsTestCase extends TestCase {
 
     /**
      * Tests the {@link DateFunctions#formatTime} methods.
+     * <p/>
+     * TODO - this is a bit tedious, as different JDK versions have different formats for short, medium and long
+     * time formats.
      */
+    @Test
     public void testFormatTime() {
         DateFunctions.setLocale(AU);
-        assertEquals("17:54:22", DateFunctions.formatTime(dateTime));
-        assertEquals("17:54", DateFunctions.formatTime(dateTime, "short"));
-        assertEquals("17:54:22", DateFunctions.formatTime(dateTime, "medium"));
-        assertEquals("17:54:22", DateFunctions.formatTime(dateTime, "long"));
+        String defaultValue = DateFunctions.formatTime(dateTime);
+        assertTrue("17:54:22".equals(defaultValue) || "5:54:22 PM".equals(defaultValue));
+
+        String shortValue = DateFunctions.formatTime(dateTime, "short");
+        assertTrue("17:54".equals(shortValue) || "5:54 PM".equals(shortValue));
+
+        String mediumValue = DateFunctions.formatTime(dateTime, "medium");
+        assertTrue("17:54:22".equals(mediumValue) || "5:54:22 PM".equals(mediumValue));
+
+        String longValue = DateFunctions.formatTime(dateTime, "long");
+        assertTrue("17:54:22".equals(longValue) || "5:54:22 PM".equals(longValue));
 
         // override the local and time zone
         DateFunctions.setLocale(Locale.UK);
         DateFunctions.setTimeZone(TimeZone.getTimeZone("GMT+4"));
 
-        assertEquals("21:54:22", DateFunctions.formatTime(dateTime));
-        assertEquals("21:54", DateFunctions.formatTime(dateTime, "short"));
-        assertEquals("21:54:22", DateFunctions.formatTime(dateTime, "medium"));
-        assertEquals("21:54:22 GMT+04:00",
-                     DateFunctions.formatTime(dateTime, "long"));
+        defaultValue = DateFunctions.formatTime(dateTime);
+        assertTrue("21:54:22".equals(defaultValue) || "9:54:22 PM".equals(defaultValue));
+
+        shortValue = DateFunctions.formatTime(dateTime, "short");
+        assertTrue("21:54".equals(shortValue) || "5:54 PM".equals(shortValue));
+
+        mediumValue = DateFunctions.formatTime(dateTime, "medium");
+        assertTrue("21:54:22".equals(mediumValue) || "9:54:22 PM".equals(mediumValue));
+
+        assertEquals("21:54:22 GMT+04:00", DateFunctions.formatTime(dateTime, "long"));
     }
 
     /**
      * Tests the {@link DateFunctions#formatDateTime} methods.
+     * <p/>
+     * TODO - this is a bit tedious, as different JDK versions have different formats for short, medium and long
+     * time formats.
      */
+    @Test
     public void testFormatDateTime() {
         DateFunctions.setLocale(AU);
-        assertEquals("20/09/2006 17:54:22",
-                     DateFunctions.formatDateTime(dateTime));
+        String defaultValue = DateFunctions.formatDateTime(dateTime);
+        assertTrue("20/09/2006 17:54:22".equals(defaultValue) || "20/09/2006 5:54:22 PM".equals(defaultValue));
 
-        assertEquals("20/09/06 17:54",
-                     DateFunctions.formatDateTime(dateTime, "short"));
-        assertEquals("20/09/2006 17:54:22",
-                     DateFunctions.formatDateTime(dateTime, "medium"));
-        assertEquals("20 September 2006 17:54:22",
-                     DateFunctions.formatDateTime(dateTime, "long"));
+        String shortValue = DateFunctions.formatDateTime(dateTime, "short");
+        assertTrue("20/09/06 17:54".equals(shortValue) || "20/09/06 5:54 PM".equals(shortValue));
 
-        assertEquals("20/09/06 17:54",
-                     DateFunctions.formatDateTime(dateTime, "short", "short"));
-        assertEquals("20/09/2006 17:54:22",
-                     DateFunctions.formatDateTime(dateTime, "medium",
-                                                  "medium"));
-        assertEquals("20 September 2006 17:54:22",
-                     DateFunctions.formatDateTime(dateTime, "long", "long"));
+        String mediumValue = DateFunctions.formatDateTime(dateTime, "medium");
+        assertTrue("20/09/2006 17:54:22".equals(mediumValue) || "20/09/2006 5:54:22 PM".equals(mediumValue));
+
+        String longValue = DateFunctions.formatDateTime(dateTime, "long");
+        assertTrue("20 September 2006 17:54:22".equals(longValue)
+                   || "20 September 2006 5:54:22 PM".equals(longValue));
+
+        shortValue = DateFunctions.formatDateTime(dateTime, "short", "short");
+        assertTrue("20/09/06 17:54".equals(shortValue) || "20/09/06 5:54 PM".equals(shortValue));
+
+        mediumValue = DateFunctions.formatDateTime(dateTime, "medium", "medium");
+        assertTrue("20/09/2006 17:54:22".equals(mediumValue) || "20/09/2006 5:54:22 PM".equals(mediumValue));
+
+        longValue = DateFunctions.formatDateTime(dateTime, "long", "long");
+        assertTrue("20 September 2006 17:54:22".equals(longValue)
+                   || "20 September 2006 5:54:22 PM".equals(longValue));
 
         DateFunctions.setLocale(Locale.UK);
         assertEquals("20-Sep-2006 17:54:22",
@@ -134,8 +163,8 @@ public class DateFunctionsTestCase extends TestCase {
     /**
      * Sets up the test case.
      */
-    @Override
-    protected void setUp() {
+    @Before
+    public void setUp() {
         TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
         Calendar calendar = new GregorianCalendar(2006, 8, 20, 17, 54, 22);
         dateTime = calendar.getTime();

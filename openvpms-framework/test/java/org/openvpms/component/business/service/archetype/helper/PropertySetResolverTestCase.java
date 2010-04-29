@@ -18,13 +18,14 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 
 /**
@@ -33,23 +34,18 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PropertySetResolverTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
-
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class PropertySetResolverTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests single-level property resolution.
      */
+    @Test
     public void testSingleLevelResolution() {
         ObjectSet set = new ObjectSet();
         set.set("firstName", "J");
         set.set("lastName", "Zoo");
-        PropertySetResolver resolver = new PropertySetResolver(set, service);
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
         assertEquals("J", resolver.getObject("firstName"));
         assertEquals("Zoo", resolver.getObject("lastName"));
     }
@@ -57,6 +53,7 @@ public class PropertySetResolverTestCase
     /**
      * Tests multiple-level property resolution.
      */
+    @Test
     public void testMultiLevelResolution() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -64,7 +61,7 @@ public class PropertySetResolverTestCase
         ObjectSet set = new ObjectSet();
         set.set("act", act.getAct());
 
-        PropertySetResolver resolver = new PropertySetResolver(set, service);
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
         assertEquals("J", resolver.getObject("act.customer.entity.firstName"));
         assertEquals("Zoo", resolver.getObject("act.customer.entity.lastName"));
 
@@ -80,11 +77,12 @@ public class PropertySetResolverTestCase
     /**
      * Tests resolution where the property is an object reference.
      */
+    @Test
     public void testResolutionByReference() {
         Party party = createCustomer();
         ObjectSet set = new ObjectSet();
         set.set("ref", party.getObjectReference());
-        PropertySetResolver resolver = new PropertySetResolver(set, service);
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
         assertEquals("J", resolver.getObject("ref.firstName"));
         assertEquals("Zoo", resolver.getObject("ref.lastName"));
         assertEquals("Customer(Person)",
@@ -96,24 +94,26 @@ public class PropertySetResolverTestCase
     /**
      * Tests behaviour where an intermediate node doesn't exist.
      */
+    @Test
     public void testMissingReference() {
         ActBean act = createAct("act.customerEstimation");
         ObjectSet set = new ObjectSet();
         set.set("act", act.getAct());
-        PropertySetResolver resolver = new PropertySetResolver(set, service);
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
         assertNull(resolver.getObject("act.customer.entity.firstName"));
     }
 
     /**
      * Tests behaviour where an invalid property name is supplied.
      */
+    @Test
     public void testInvalidProperty() {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setParticipant("participation.customer", party);
         ObjectSet set = new ObjectSet();
         set.set("act", act.getAct());
-        PropertySetResolver resolver = new PropertySetResolver(set, service);
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
 
         // root node followed by invalid node
         try {
@@ -141,51 +141,6 @@ public class PropertySetResolverTestCase
             assertEquals(PropertyResolverException.ErrorCode.InvalidObject,
                          exception.getErrorCode());
         }
-    }
-
-    /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"};
-    }
-
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-        assertNotNull(service);
-    }
-
-    /**
-     * Helper to create a new object.
-     *
-     * @param shortName the archetype short name
-     * @return the new object
-     */
-    private IMObject create(String shortName) {
-        IMObject object = service.create(shortName);
-        assertNotNull(object);
-        return object;
-    }
-
-    /**
-     * Helper to create a new object wrapped in a bean.
-     *
-     * @param shortName the archetype short name
-     * @return the new object
-     */
-    private IMObjectBean createBean(String shortName) {
-        return new IMObjectBean(create(shortName));
     }
 
     /**

@@ -17,10 +17,13 @@
  */
 package org.openvpms.component.business.service.archetype.assertion;
 
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 
 /**
@@ -29,7 +32,8 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class StringAssertionsTestCase extends AbstractDependencyInjectionSpringContextTests {
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class StringAssertionsTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Bean wrapping an instance of an <em>lookup.case</em>.
@@ -41,6 +45,7 @@ public class StringAssertionsTestCase extends AbstractDependencyInjectionSpringC
      * Verifies that the {@link StringAssertions#propercase)} method is invoked when the <em>propercase</em> assertion
      * is defined for a node.
      */
+    @Test
     public void testProperCase() {
         bean.setValue("name", "king george IV");
         assertEquals("King George Iv", bean.getValue("name"));
@@ -58,6 +63,7 @@ public class StringAssertionsTestCase extends AbstractDependencyInjectionSpringC
      * Verifies that the {@link StringAssertions#uppercase)} method is invoked when the <em>uppercase</em> assertion
      * is defined for a node.
      */
+    @Test
     public void testUppercase() {
         bean.setValue("code", "test code");
         assertEquals("TEST CODE", bean.getValue("code"));
@@ -67,6 +73,7 @@ public class StringAssertionsTestCase extends AbstractDependencyInjectionSpringC
      * Verifies that the {@link StringAssertions#lowercase)} method is invoked when the <em>lowercase</em> assertion
      * is defined for a node.
      */
+    @Test
     public void testLowercase() {
         bean.setValue("description", "TEST DESCRIPTION");
         assertEquals("test description", bean.getValue("description"));
@@ -74,26 +81,11 @@ public class StringAssertionsTestCase extends AbstractDependencyInjectionSpringC
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        IArchetypeService service = (IArchetypeService) applicationContext.getBean("archetypeService");
-        Lookup lookup = (Lookup) service.create("lookup.case");
-        assertNotNull(lookup);
+    @Before
+    public void setUp() {
+        Lookup lookup = (Lookup) create("lookup.case");
         bean = new IMObjectBean(lookup);
-    }
-
-    /**
-     * Returns the spring application context paths.
-     *
-     * @return the spring application context paths
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
     }
 
 }

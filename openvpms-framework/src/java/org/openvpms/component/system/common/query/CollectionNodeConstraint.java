@@ -45,7 +45,7 @@ public class CollectionNodeConstraint extends JoinConstraint {
      * @param activeOnly constraint to active only instances
      */
     public CollectionNodeConstraint(String nodeName, boolean activeOnly) {
-        this(nodeName, new ArchetypeConstraint(activeOnly));
+        this(nodeName, new ArchetypeConstraint(getUnqualifiedName(nodeName), false, activeOnly));
     }
 
     /**
@@ -65,9 +65,8 @@ public class CollectionNodeConstraint extends JoinConstraint {
      * @param archetypeId a valid archetype identity
      * @param activeOnly  constraint to active only objects
      */
-    public CollectionNodeConstraint(String nodeName, ArchetypeId archetypeId,
-                                    boolean activeOnly) {
-        this(nodeName, new ArchetypeIdConstraint(archetypeId, activeOnly));
+    public CollectionNodeConstraint(String nodeName, ArchetypeId archetypeId, boolean activeOnly) {
+        this(nodeName, new ArchetypeIdConstraint(getUnqualifiedName(nodeName), archetypeId, activeOnly));
     }
 
     /**
@@ -83,55 +82,49 @@ public class CollectionNodeConstraint extends JoinConstraint {
      * @param activeOnly  constraint to active only objects
      */
     @Deprecated
-    public CollectionNodeConstraint(String nodeName, String rmName,
-                                    String entityName, String conceptName,
+    public CollectionNodeConstraint(String nodeName, String rmName, String entityName, String conceptName,
                                     boolean primaryOnly, boolean activeOnly) {
-        this(nodeName, new LongNameConstraint(rmName, entityName, conceptName,
-                                              primaryOnly, activeOnly));
+        this(nodeName, new LongNameConstraint(rmName, entityName, conceptName, primaryOnly, activeOnly));
     }
 
     /**
      * Create an instance of this constraint with the specified short name.
      *
-     * @param nodeName    the node name, optionaly prefixed by the type alias
+     * @param nodeName    the node name, optionally prefixed by the type alias
      * @param shortName   the short name
      * @param primaryOnly only deal with primary archetypes
      * @param activeOnly  constraint to active only objects
      */
-    public CollectionNodeConstraint(String nodeName, String shortName,
-                                    boolean primaryOnly, boolean activeOnly) {
-        this(nodeName,
-             new ShortNameConstraint(shortName, primaryOnly, activeOnly));
+    public CollectionNodeConstraint(String nodeName, String shortName, boolean primaryOnly, boolean activeOnly) {
+        this(nodeName, new ShortNameConstraint(getUnqualifiedName(nodeName), shortName, primaryOnly, activeOnly));
     }
 
     /**
-     * Create an instance of this class with the specified archetype
-     * short names.
+     * Create an instance of this class with the specified archetype short names.
      *
-     * @param nodeName    the node name, optionaly prefixed by the type alias
+     * @param nodeName    the node name, optionally prefixed by the type alias
      * @param shortNames  an array of archetype short names
      * @param primaryOnly only deal with primary archetypes
      * @param activeOnly  constraint to active only objects
      */
-    public CollectionNodeConstraint(String nodeName, String[] shortNames,
-                                    boolean primaryOnly, boolean activeOnly) {
-        this(nodeName, new ShortNameConstraint(shortNames, primaryOnly,
-                                               activeOnly));
+    public CollectionNodeConstraint(String nodeName, String[] shortNames, boolean primaryOnly, boolean activeOnly) {
+        this(nodeName, new ShortNameConstraint(getUnqualifiedName(nodeName), shortNames, primaryOnly, activeOnly));
     }
 
     /**
-     * Construct a constraint on a collection node with the specified
-     * constraint.
+     * Construct a constraint on a collection node with the specified constraint.
      *
-     * @param nodeName   the node name, optionaly prefixed by the type alias
+     * @param nodeName   the node name, optionally prefixed by the type alias
      * @param constraint the archetype constraint to use for the collection node
      */
-    public CollectionNodeConstraint(String nodeName,
-                                    BaseArchetypeConstraint constraint) {
+    public CollectionNodeConstraint(String nodeName, BaseArchetypeConstraint constraint) {
         super(constraint);
         if (StringUtils.isEmpty(nodeName)) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);
+        }
+        if (constraint.getAlias() == null) {
+            setAlias(getUnqualifiedName(nodeName));
         }
         this.nodeName = nodeName;
     }
@@ -143,6 +136,15 @@ public class CollectionNodeConstraint extends JoinConstraint {
      */
     public String getNodeName() {
         return nodeName;
+    }
+
+    /**
+     * Returns a node name minus any type alias.
+     *
+     * @return the node name minus any type alias
+     */
+    public String getUnqualifiedName() {
+        return getUnqualifiedName(nodeName);
     }
 
     /**
@@ -167,6 +169,17 @@ public class CollectionNodeConstraint extends JoinConstraint {
     public CollectionNodeConstraint remove(IConstraint constraint) {
         super.remove(constraint);
         return this;
+    }
+
+    /**
+     * Returns a node name minus any type alias.
+     *
+     * @param nodeName the node name
+     * @return the node name minus any type alias
+     */
+    private static String getUnqualifiedName(String nodeName) {
+        int index = nodeName.indexOf(".");
+        return (index != -1) ? nodeName.substring(index + 1) : nodeName;
     }
 
 }

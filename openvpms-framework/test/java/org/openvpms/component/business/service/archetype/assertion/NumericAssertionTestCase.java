@@ -18,11 +18,13 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionContext;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 
 /**
@@ -31,18 +33,13 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NumericAssertionTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
-
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class NumericAssertionTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests the {@link NumericAssertions} methods.
      */
+    @Test
     public void testNumericAssertions() {
         assertTrue(NumericAssertions.negative(create(-1)));
         assertFalse(NumericAssertions.negative(create(0)));
@@ -61,44 +58,22 @@ public class NumericAssertionTestCase
      * Tests the {@link NumericAssertions} methods when invoked via
      * archetype service validation.
      */
+    @Test
     public void testNumericAssertionsValidation() {
-        Act act = (Act) service.create("act.numericAssertions");
-        assertNotNull(act);
-        service.validateObject(act);  // default values are all valid
+        Act act = (Act) create("act.numericAssertions");
+        validateObject(act);  // default values are all valid
 
         act.getDetails().put("positive", 0.0);
         act.getDetails().put("negative", 0.0);
         act.getDetails().put("nonNegative", -1.0);
         try {
-            service.validateObject(act);
+            validateObject(act);
             fail("Expected validation to fail");
         } catch (ValidationException expected) {
             // one error per node
             assertEquals(3, expected.getErrors().size());
         }
 
-    }
-
-    /**
-     * Sets up the test.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-    }
-
-    /**
-     * Returns the spring application context paths.
-     *
-     * @return the spring application context paths
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
     }
 
     /**

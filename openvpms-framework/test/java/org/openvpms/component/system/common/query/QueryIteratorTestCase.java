@@ -18,6 +18,8 @@
 
 package org.openvpms.component.system.common.query;
 
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 
 import java.util.Arrays;
@@ -35,6 +37,7 @@ public class QueryIteratorTestCase extends AbstractQueryTest {
     /**
      * Tests the {@link IMObjectQueryIterator}.
      */
+    @Test
     public void testIMObjectQueryIterator() {
         ArchetypeQuery query = createQuery();
 
@@ -56,6 +59,7 @@ public class QueryIteratorTestCase extends AbstractQueryTest {
     /**
      * Tests the {@link NodeSetQueryIterator}.
      */
+    @Test
     public void testNodeSetQueryIterator() {
         ArchetypeQuery query = createQuery();
         Check<NodeSet> check = new Check<NodeSet>() {
@@ -72,6 +76,7 @@ public class QueryIteratorTestCase extends AbstractQueryTest {
     /**
      * Tests the {@link ObjectSetQueryIterator}.
      */
+    @Test
     public void testObjectSetQueryIterator() {
         ArchetypeQuery query = createQuery();
         query.add(new NodeSelectConstraint("act.startTime"));
@@ -85,6 +90,5 @@ public class QueryIteratorTestCase extends AbstractQueryTest {
         QueryIterator<ObjectSet> iterator = new ObjectSetQueryIterator(query);
         checkIterator(iterator, check);
     }
-
 
 }

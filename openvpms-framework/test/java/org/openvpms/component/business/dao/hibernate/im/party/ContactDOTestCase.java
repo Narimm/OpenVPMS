@@ -21,6 +21,10 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -48,7 +52,8 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the creation of a simple contact.
      */
-    public void testCreateSimpleContact() throws Exception {
+    @Test
+    public void testCreateSimpleContact() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
         LookupDO purpose = createClassification("purpose");
@@ -67,6 +72,7 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the addition of a contact purpose for a contact.
      */
+    @Test
     public void testContactPurposeAdditionForContact() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -118,6 +124,7 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the removal of an address for a contact.
      */
+    @Test
     public void testContactPurposeDeletionForContact() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -160,6 +167,7 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
     /**
      * Test the update of an address for a contact.
      */
+    @Test
     public void testContactPurposeUpdateForContact() {
         Session session = getSession();
         Transaction tx = session.beginTransaction();
@@ -204,6 +212,7 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
     /**
      * Test deletion of Contact and associated classifications and details.
      */
+    @Test
     public void testContactDeletion() {
         int details = countDetails(ContactDOImpl.class);
 
@@ -252,14 +261,11 @@ public class ContactDOTestCase extends AbstractPartyDOTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() {
         super.setUp();
         contacts = count(ContactDOImpl.class);
         lookups = count(LookupDOImpl.class);
     }
-
 }

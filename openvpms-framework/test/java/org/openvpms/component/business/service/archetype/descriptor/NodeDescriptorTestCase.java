@@ -19,10 +19,12 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
-import junit.framework.TestCase;
 import org.apache.commons.lang.StringUtils;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -35,20 +37,18 @@ import org.xml.sax.InputSource;
 import java.io.InputStreamReader;
 import java.util.List;
 
-
 /**
  * Tests the {@link NodeDescriptor} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class NodeDescriptorTestCase extends TestCase {
+public class NodeDescriptorTestCase {
 
     /**
      * The archetype descriptors.
      */
-    private ArchetypeDescriptors _archetypes;
+    private ArchetypeDescriptors archetypes;
 
     /**
      * The mapping path.
@@ -66,6 +66,7 @@ public class NodeDescriptorTestCase extends TestCase {
     /**
      * Tests the {@link NodeDescriptor#getDisplayName()} method.
      */
+    @Test
     public void testDisplayName() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
 
@@ -89,6 +90,7 @@ public class NodeDescriptorTestCase extends TestCase {
     /**
      * Tests the {@link NodeDescriptor#getMaxLength()} method.
      */
+    @Test
     public void testDefaultMaxLength() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
 
@@ -106,6 +108,7 @@ public class NodeDescriptorTestCase extends TestCase {
     /**
      * Tests the {@link NodeDescriptor#isLookup()} method.
      */
+    @Test
     public void testIsLookup() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
 
@@ -123,6 +126,7 @@ public class NodeDescriptorTestCase extends TestCase {
     /**
      * Tests the {@link NodeDescriptor#isHidden()} method.
      */
+    @Test
     public void testIsHidden() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
 
@@ -141,10 +145,11 @@ public class NodeDescriptorTestCase extends TestCase {
     /**
      * Tests the {@link NodeDescriptor#getArchetypeRange()} method.
      */
+    @Test
     public void testArchetypeRange() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
         NodeDescriptor node = archetype.getNodeDescriptor("classifications");
-        assertTrue(node != null);
+        assertNotNull(node);
         String[] range = node.getArchetypeRange();
         assertNotNull(range);
         assertTrue(range.length == 2);
@@ -157,6 +162,7 @@ public class NodeDescriptorTestCase extends TestCase {
      * Tests the {@link NodeDescriptor#getMinCardinality()} and
      * {@link NodeDescriptor#getMaxCardinality()} methods.
      */
+    @Test
     public void testCardinality() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
 
@@ -189,17 +195,18 @@ public class NodeDescriptorTestCase extends TestCase {
     /**
      * Tests the {@link NodeDescriptor#isParentChild()} method.
      */
+    @Test
     public void testParentChildAttribute() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
 
         // parent-child node
         NodeDescriptor contacts = archetype.getNodeDescriptor("contacts");
-        assertTrue(contacts != null);
+        assertNotNull(contacts);
         assertTrue(contacts.isParentChild());
 
         // non parent-child node
         NodeDescriptor identities = archetype.getNodeDescriptor("identities");
-        assertTrue(identities != null);
+        assertNotNull(identities);
         assertFalse(identities.isParentChild());
     }
 
@@ -208,6 +215,7 @@ public class NodeDescriptorTestCase extends TestCase {
      * {@link NodeDescriptor#removeChildFromCollection} method, when
      * a baseName is specified on the descriptor.
      */
+    @Test
     public void testCollectionAddRemove() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
         Party party = new Party();
@@ -240,6 +248,7 @@ public class NodeDescriptorTestCase extends TestCase {
      * {@link NodeDescriptor#removeChildFromCollection} method, when
      * no baseName is specified on the descriptor.
      */
+    @Test
     public void testCollectionAddRemoveNoBaseName() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
         Party party = new Party();
@@ -271,6 +280,7 @@ public class NodeDescriptorTestCase extends TestCase {
      * Tests the {@link NodeDescriptor#removeChildFromCollection} method, when
      * no baseName is specified on the descriptor.
      */
+    @Test
     public void testRemoveChildFromCollectionNoBaseName() {
         ArchetypeDescriptor archetype = getArchetype("party.person");
         Party party = new Party();
@@ -295,10 +305,9 @@ public class NodeDescriptorTestCase extends TestCase {
      *
      * @throws Exception for any error
      */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        _archetypes = getArchetypeDescriptors();
+    @Before
+    public void setUp() throws Exception {
+        archetypes = getArchetypeDescriptors();
     }
 
     /**
@@ -309,7 +318,7 @@ public class NodeDescriptorTestCase extends TestCase {
      */
     private ArchetypeDescriptor getArchetype(String shortName) {
         ArchetypeDescriptor archetype
-                = _archetypes.getArchetypeDescriptors().get(shortName);
+                = archetypes.getArchetypeDescriptors().get(shortName);
         assertNotNull(archetype);
         return archetype;
     }

@@ -19,22 +19,19 @@
 
 package org.openvpms.component.business.service.security;
 
-// java core
-
-import java.util.List;
-
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UserDetailsService;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.openvpms.component.business.dao.im.security.IUserDAO;
 import org.openvpms.component.business.domain.im.security.User;
 import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import java.util.List;
 
 
 /**
- * This is the user details services, used by the acegi security framework.
- * It is used to retrieve the user details including credentials and
- * authorizations.
+ * This is the user details services, used by the spring security framework.
+ * It is used to retrieve the user details including credentials and authorizations.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -42,14 +39,14 @@ import org.springframework.dao.DataAccessException;
 public class UserService implements UserDetailsService {
 
     /**
-     * The DAO used for persisting records
+     * The DAO used for persisting records.
      */
     private IUserDAO dao;
     
     /**
      * Constructs a new <code>UserService</code.
      *
-     * @param service the archetype service to use
+     * @param dao the the user DAO
      */
     public UserService(IUserDAO dao) {
         this.dao = dao;
@@ -68,22 +65,19 @@ public class UserService implements UserDetailsService {
     */
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException, DataAccessException {
-    	List<User> users = null;
+    	List<User> users;
     	try {
             users = dao.getByUserName(username);    		
     	} catch (Exception exception) {
-            throw new UsernameNotFoundException("User: " + username +
-            " is invalid.");    		
+            throw new UsernameNotFoundException("User: " + username + " is invalid.");
     	}
         if (users.isEmpty()) {
-            throw new UsernameNotFoundException("User: " + username +
-                    " is invalid.");
+            throw new UsernameNotFoundException("User: " + username + " is invalid.");
         } else if (users.size() > 1) {
-            throw new UsernameNotFoundException(
-                    "Multiple users with user name: " + username);
+            throw new UsernameNotFoundException("Multiple users with user name: " + username);
         }
 
-        return (UserDetails) users.get(0);
+        return users.get(0);
     }
 
 }

@@ -18,76 +18,28 @@
 
 package org.openvpms.application.spring;
 
-// log4j
-import org.apache.log4j.Logger;
-
-// spring-test
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 /**
  * This test cases is used to bring up a complete system configured in a spring
  * application context.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
-public class SpringApplicationTestCase extends
-        AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(SpringApplicationTestCase.class);
+@ContextConfiguration("openvpms-app-appcontext.xml")
+public class SpringApplicationTestCase extends AbstractJUnit4SpringContextTests {
 
     /**
-     * Holds a reference to the archetype service
+     * This will just bring up the container as configured by the application context.
      */
-    private IArchetypeService service;
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(SpringApplicationTestCase.class);
-    }
-
-    /**
-     * Default constructor
-     */
-    public SpringApplicationTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[] { "org/openvpms/application/spring/openvpms-app-appcontext.xml" };
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (IArchetypeService) applicationContext
-                .getBean("archetypeService");
-        assertTrue(service != null);
-    }
-
-    /**
-     * This will just bring up the container as configured by the application
-     * context.
-     * 
-     */
-    public void testApplication() throws Exception {
-        long start = System.currentTimeMillis();
-        logger.debug("Time to complete " + (System.currentTimeMillis() - start)
-                + "ms");
+    @Test
+    public void testApplication() {
+        IArchetypeService service = (IArchetypeService) applicationContext.getBean("archetypeService");
+        assertNotNull(service);
     }
 }

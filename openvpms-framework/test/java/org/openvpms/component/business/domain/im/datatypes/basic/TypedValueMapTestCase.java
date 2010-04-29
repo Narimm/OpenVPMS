@@ -19,7 +19,8 @@
 package org.openvpms.component.business.domain.im.datatypes.basic;
 
 import com.thoughtworks.xstream.converters.basic.DateConverter;
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -29,20 +30,19 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * Tests the {@link TypedValueMap} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class TypedValueMapTestCase extends TestCase {
+public class TypedValueMapTestCase {
 
     /**
      * Verifies that addition of objects to a {@link TypedValueMap} are
      * reflected in the underlying map.
      */
+    @Test
     public void testMap() {
         Map<String, TypedValue> underlying = new HashMap<String, TypedValue>();
         TypedValueMap map = new TypedValueMap(underlying);
@@ -65,6 +65,7 @@ public class TypedValueMapTestCase extends TestCase {
      * Tests conversion of TypedValue populated with strings to their
      * corresponding Objects via TypedValueMap.
      */
+    @Test
     public void testConversion() {
         DateConverter converter = new DateConverter();
         Date date = new Date();
@@ -88,6 +89,7 @@ public class TypedValueMapTestCase extends TestCase {
     /**
      * Tests the {@link TypedValueMap#remove} method.
      */
+    @Test
     public void testRemove() {
         TypedValueMap map = new TypedValueMap();
         assertTrue(map.isEmpty());
@@ -113,6 +115,7 @@ public class TypedValueMapTestCase extends TestCase {
     /**
      * Tests the {@link TypedValueMap#putAll} method.
      */
+    @Test
     public void testPutAll() {
         Map<String, TypedValue> underlying = new HashMap<String, TypedValue>();
         TypedValueMap map = new TypedValueMap(underlying);
@@ -130,6 +133,7 @@ public class TypedValueMapTestCase extends TestCase {
     /**
      * Tests the {@link TypedValueMap#clear()} method.
      */
+    @Test
     public void testClear() {
         TypedValueMap map = new TypedValueMap();
         map.put("b", false);
@@ -143,6 +147,7 @@ public class TypedValueMapTestCase extends TestCase {
     /**
      * Tests the {@link TypedValueMap#keySet()} method.
      */
+    @Test
     public void testKeySet() {
         TypedValueMap map = new TypedValueMap();
         map.put("a", true);
@@ -160,6 +165,7 @@ public class TypedValueMapTestCase extends TestCase {
     /**
      * Tests the {@link TypedValueMap#entrySet()} method.
      */
+    @Test
     public void testEntrySet() {
         TypedValueMap map = new TypedValueMap();
         map.put("a", true);
@@ -185,6 +191,7 @@ public class TypedValueMapTestCase extends TestCase {
     /**
      * Tests the {@link TypedValueMap#values()} method.
      */
+    @Test
     public void testValues() {
         TypedValueMap map = new TypedValueMap();
         map.put("a", true);
@@ -211,6 +218,7 @@ public class TypedValueMapTestCase extends TestCase {
     /**
      * Tests the {@link TypedValueMap#create} method.
      */
+    @Test
     public void testCreate() {
         Map<String, Object> source = new HashMap<String, Object>();
         source.put("a", true);

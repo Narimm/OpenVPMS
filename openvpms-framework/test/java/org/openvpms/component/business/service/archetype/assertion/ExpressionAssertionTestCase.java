@@ -18,12 +18,14 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 
@@ -34,26 +36,21 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ExpressionAssertionTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
-
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class ExpressionAssertionTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests the {@link ExpressionAssertions} methods when invoked via
      * archetype service validation.
      */
+    @Test
     public void testAssertions() {
-        Act act = (Act) service.create("act.expressionAssertions");
+        Act act = (Act) create("act.expressionAssertions");
         assertNotNull(act);
-        ActBean bean = new ActBean(act, service);
+        ActBean bean = new ActBean(act);
         bean.setValue("amount", BigDecimal.ZERO);
         try {
-            service.validateObject(act);
+            validateObject(act);
             fail("Expected validation to fail");
         } catch (ValidationException expected) {
             assertEquals(3, expected.getErrors().size());
@@ -65,28 +62,7 @@ public class ExpressionAssertionTestCase
                        "Value2 must be < amount");
         }
         bean.setValue("amount", new BigDecimal("100.00"));
-        service.validateObject(act);
-    }
-
-    /**
-     * Sets up the test.
-     *
-     * @throws Exception for any error
-     */
-    protected void onSetUp() throws Exception {
-        service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-    }
-
-    /**
-     * Returns the spring application context paths.
-     *
-     * @return the spring application context paths
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
+        validateObject(act);
     }
 
     private void checkError(ValidationException exception,
