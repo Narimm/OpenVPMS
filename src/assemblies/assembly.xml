@@ -22,7 +22,8 @@
                 <include>org.openvpms:openvpms-archetypes</include>
                 <include>org.openvpms:openvpms-framework</include>
                 <include>org.openvpms:openvpms-reports</include>
-                <include>org.openvpms:openvpms-etl-load</include>
+                <include>org.openvpms:openvpms-etl-load</include>                
+                <include>commons-dbcp:commons-dbcp</include>
                 <include>dom4j:dom4j</include> <!-- TODO - not sure why this needs to be explicit, but is being excluded somewhere -->
             </includes>
         </dependencySet>
