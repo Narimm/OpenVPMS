@@ -143,7 +143,7 @@ public class DiscountRules {
                                         BigDecimal maxUnitPriceDiscount) {
         BigDecimal discount;
         if (fixedPrice.compareTo(BigDecimal.ZERO) == 0
-                && (unitPrice.compareTo(BigDecimal.ZERO) == 0
+            && (unitPrice.compareTo(BigDecimal.ZERO) == 0
                 || quantity.compareTo(BigDecimal.ZERO) == 0)) {
             discount = BigDecimal.ZERO;
         } else {
@@ -254,11 +254,13 @@ public class DiscountRules {
     }
 
     /**
-     * @param fixedPrice
-     * @param unitPrice
-     * @param quantity
-     * @param fixedDiscountRate
-     * @param unitDiscountRate
+     * Calculates the maximum discount.
+     *
+     * @param fixedPrice        the fixed price
+     * @param unitPrice         the unit price
+     * @param quantity          the quantity
+     * @param fixedDiscountRate the fixed price discount rate
+     * @param unitDiscountRate  the unit price discount rate
      * @return the maximum discount
      */
     private BigDecimal calculateMaxDiscount(BigDecimal fixedPrice,
@@ -308,6 +310,7 @@ public class DiscountRules {
      * for a party.
      *
      * @param party          the party. May be <tt>null</tt>
+     * @param date           the date that the discounts apply to
      * @param discountGroups the discount group cache
      * @return a set of <em>entity.discountType</em> references for the party
      */
@@ -400,11 +403,11 @@ public class DiscountRules {
         query.add(new ObjectRefSelectConstraint("rel.target"));
 
         OrConstraint startTime = new OrConstraint();
-        startTime.add(new NodeConstraint("activeStartTime", IsNULL));
+        startTime.add(new NodeConstraint("activeStartTime", IS_NULL));
         startTime.add(new NodeConstraint("activeStartTime", LTE, date));
 
         OrConstraint endTime = new OrConstraint();
-        endTime.add(new NodeConstraint("activeEndTime", IsNULL));
+        endTime.add(new NodeConstraint("activeEndTime", IS_NULL));
         endTime.add(new NodeConstraint("activeEndTime", GTE, date));
 
         rel.add(startTime);
@@ -425,7 +428,9 @@ public class DiscountRules {
     }
 
     private class DiscountGroups {
+
         private final Date date;
+
         private Map<IMObjectReference, List<IMObjectReference>> groups
                 = new HashMap<IMObjectReference, List<IMObjectReference>>();
 

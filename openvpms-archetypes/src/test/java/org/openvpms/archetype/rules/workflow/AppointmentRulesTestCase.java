@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -57,6 +60,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link AppointmentRules#getSlotSize(Party)} method.
      */
+    @Test
     public void testGetSlotSize() {
         Entity appointmentType = createAppointmentType();
         Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
@@ -67,6 +71,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link AppointmentRules#getDefaultAppointmentType(Party)}
      * method.
      */
+    @Test
     public void testGetDefaultAppointmentType() {
         Entity appointmentType1 = createAppointmentType();
         Entity appointmentType2 = createAppointmentType();
@@ -74,14 +79,14 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         assertNull(rules.getDefaultAppointmentType(schedule));
 
         ScheduleTestHelper.addAppointmentType(schedule, appointmentType1, 2,
-                                                 false);
+                                              false);
 
         // no default appointment type, so should pick the first available
         assertEquals(rules.getDefaultAppointmentType(schedule),
                      appointmentType1);
 
         ScheduleTestHelper.addAppointmentType(schedule, appointmentType2, 2,
-                                                 true);
+                                              true);
         assertEquals(rules.getDefaultAppointmentType(schedule),
                      appointmentType2);
     }
@@ -90,6 +95,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * Tests the behaviour of {@link AppointmentRules#calculateEndTime} when
      * the schedule units are in minutes .
      */
+    @Test
     public void testCalculateEndTimeForMinsUnits() {
         Entity appointmentType = createAppointmentType();
         save(appointmentType);
@@ -104,6 +110,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * Tests the behaviour of {@link AppointmentRules#calculateEndTime} when
      * the schedule units are in hours.
      */
+    @Test
     public void testCalculateEndTimeForHoursUnits() {
         Entity appointmentType = createAppointmentType();
         save(appointmentType);
@@ -118,6 +125,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * Tests the behaviour of
      * {@link AppointmentRules#hasOverlappingAppointments}.
      */
+    @Test
     public void testHasOverlappingAppointments() {
         Date start = createTime(9, 0);
         Date end = createTime(9, 15);
@@ -168,6 +176,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * Tests the behaviour of {@link AppointmentRules#hasOverlappingAppointments}
      * for an unpopulated appointment.
      */
+    @Test
     public void testHasOverlappingAppointmentsForEmptyAct() {
         Date start = createTime(9, 0);
         Date end = createTime(9, 15);
@@ -191,6 +200,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * Note that this requires the
      * <em>archetypeService.save.act.customerAppointment.afer</em> rule.
      */
+    @Test
     public void testUpdateTaskStatus() {
         Date start = createTime(9, 0);
         Date end = createTime(9, 15);
@@ -229,6 +239,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * Note that this requires the
      * <em>archetypeService.save.act.customerTask.afer</em> rule.
      */
+    @Test
     public void testUpdateAppointmentStatus() {
         Date start = createTime(9, 0);
         Date end = createTime(9, 15);
@@ -259,16 +270,12 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         removeActs();
         rules = new AppointmentRules();
-        appointmentService = (ScheduleService) applicationContext.getBean(
-                "appointmentService");
+        appointmentService = (ScheduleService) applicationContext.getBean("appointmentService");
     }
 
     /**
@@ -282,7 +289,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     protected Act createAppointment(Date startTime, Date endTime,
                                     Party schedule) {
         return ScheduleTestHelper.createAppointment(startTime, endTime,
-                                                       schedule);
+                                                    schedule);
     }
 
     /**
@@ -349,7 +356,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     protected Party createSchedule(int slotSize, String slotUnits,
                                    int noSlots, Entity appointmentType) {
         return ScheduleTestHelper.createSchedule(slotSize, slotUnits,
-                                                    noSlots, appointmentType);
+                                                 noSlots, appointmentType);
     }
 
     /**

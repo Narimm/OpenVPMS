@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.finance.deposit;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.InvalidDepositArchetype;
 import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.UndepositedDepositExists;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -53,6 +56,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
      * the same account.<br/>
      * Requires the rule <em>archetypeService.save.act.bankDeposit.before</em>.
      */
+    @Test
     public void testSaveUndepositedDeposit() {
         ActBean deposit1 = createDeposit(DepositStatus.UNDEPOSITED);
         deposit1.save();
@@ -80,6 +84,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
      * canbe saved for the same deposit account.<br/>
      * Requires the rule <em>archetypeService.save.act.bankDeposit.before</em>.
      */
+    @Test
     public void testSaveDepositedDeposit() {
         for (int i = 0; i < 3; ++i) {
             ActBean deposit = createDeposit(DepositStatus.DEPOSITED);
@@ -91,6 +96,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
      * Verifies that {@link DepositRules#checkCanSaveBankDeposit} throws
      * DepositRuleException if invoked for an invalid act.
      */
+    @Test
     public void testCheckCanSaveBankDepositWithInvalidAct() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
@@ -106,6 +112,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link DepositRules#deposit} method.
      */
+    @Test
     public void testDeposit() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
@@ -126,12 +133,9 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         account = DepositTestHelper.createDepositAccount();
     }
 

@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -55,6 +57,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests addition of an appointment.
      */
+    @Test
     public void testAddEvent() {
         Date date1 = java.sql.Date.valueOf("2008-1-1");
         Date date2 = java.sql.Date.valueOf("2008-1-2");
@@ -87,6 +90,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests removal of an event.
      */
+    @Test
     public void testRemoveEvent() {
         Date date1 = java.sql.Date.valueOf("2008-1-1");
         Date date2 = java.sql.Date.valueOf("2008-1-2");
@@ -122,6 +126,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link AppointmentService#getEvents(Entity, Date)} ()} method.
      */
+    @Test
     public void testGetEvents() {
         final int count = 10;
         Party schedule = ScheduleTestHelper.createSchedule();
@@ -157,6 +162,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests moving of an event from one date to another.
      */
+    @Test
     public void testChangeEventDate() {
         Date date1 = java.sql.Date.valueOf("2008-1-1");
         Date date2 = java.sql.Date.valueOf("2008-3-1");
@@ -181,6 +187,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     /**
      * Tests moving of an event from one schedule to another.
      */
+    @Test
     public void testChangeEventSchedule() {
         Date date = java.sql.Date.valueOf("2008-1-1");
 
@@ -203,14 +210,10 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        service = (ScheduleService) applicationContext.getBean(
-                "appointmentService");
+    @Before
+    public void setUp() {
+        service = (ScheduleService) applicationContext.getBean("appointmentService");
         schedule = ScheduleTestHelper.createSchedule();
     }
 

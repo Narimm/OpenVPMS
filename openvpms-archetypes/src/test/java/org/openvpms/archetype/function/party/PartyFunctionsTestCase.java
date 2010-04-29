@@ -19,9 +19,10 @@
 package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.JXPathContext;
+import org.junit.Test;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -30,7 +31,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-
 
 /**
  * Tests the {@link PartyFunctions} class.
@@ -44,6 +44,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyFunctions#getHomeTelephone(Party)} method.
      */
+    @Test
     public void testGetHomeTelephone() {
         Party party = createCustomer();
 
@@ -57,6 +58,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyFunctions#getHomeTelephone(Act)} method.
      */
+    @Test
     public void testActGetHomeTelephone() {
         Act act = (Act) create("act.customerEstimation");
         Party party = createCustomer();
@@ -78,6 +80,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyFunctions#getWorkTelephone(Party)} method.
      */
+    @Test
     public void testGetWorkTelephone() {
         Party party = createCustomer();
 
@@ -93,6 +96,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyFunctions#getWorkTelephone(Act)} method.
      */
+    @Test
     public void testActGetWorkTelephone() {
         Act act = (Act) create("act.customerEstimation");
         Party party = createCustomer();
@@ -113,6 +117,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyFunctions#getPatientMicrochip(Party)} method.
      */
+    @Test
     public void testGetPatientMicrochip() {
         Party patient = TestHelper.createPatient(false);
         JXPathContext ctx = JXPathHelper.newContext(patient);
@@ -131,6 +136,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PartyFunctions#getPatientMicrochip(Party)} method.
      */
+    @Test
     public void testActGetPatientMicrochip() {
         Act act = (Act) create("act.customerEstimation");
         Party patient = TestHelper.createPatient(false);

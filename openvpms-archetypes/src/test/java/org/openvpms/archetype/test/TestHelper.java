@@ -134,6 +134,29 @@ public class TestHelper extends Assert {
     }
 
     /**
+     * Creates and saves a new <em>contact.location</em>
+     * <p/>
+     * Any required lookups will be created and saved.
+     *
+     * @param address    the street address
+     * @param suburbCode the <em>lookup.suburb</em> code
+     * @param stateCode  the <em>lookup.state</em> code
+     * @param postCode   the post code
+     * @return a new location contact
+     */
+    public static Contact createLocationContact(String address, String suburbCode, String stateCode, String postCode) {
+        Lookup state = getLookup("lookup.state", stateCode);
+        Lookup suburb = getLookup("lookup.suburb", suburbCode, state, "lookupRelationship.stateSuburb");
+        Contact contact = (Contact) create(ContactArchetypes.LOCATION);
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("address", address);
+        bean.setValue("suburb", suburb.getCode());
+        bean.setValue("state", state.getCode());
+        bean.setValue("postcode", postCode);
+        return contact;
+    }
+
+    /**
      * Creates and saves a new patient, with species='CANINE'.
      *
      * @return a new patient

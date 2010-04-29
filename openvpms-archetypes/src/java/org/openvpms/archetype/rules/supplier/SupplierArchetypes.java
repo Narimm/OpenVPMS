@@ -170,4 +170,14 @@ public class SupplierArchetypes {
      * Supplier document letter version act short name.
      */
     public static final String DOCUMENT_LETTER_VERSION = "act.supplierDocumentLetterVersion";
+
+    /**
+     * ESCI SOAP configuration short name.
+     */
+    public static final String ESCI_SOAP_CONFIGURATION = "entity.ESCIConfigurationSOAP";
+
+    /**
+     * Supplier ECSI configuration relationship short name.
+     */
+    public static final String SUPPLIER_ESCI_CONFIGURATION = "entityRelationship.supplierESCIConfiguration";
 }

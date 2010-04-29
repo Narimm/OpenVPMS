@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
-        "http://www.springframework.org/dtd/spring-beans.dtd">
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
     <!--  Property configuration -->
     <bean id="props"
@@ -27,6 +27,7 @@
     <bean id="cacheManager"
           class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
         <property name="configLocation" value="classpath:ehcache.xml"/>
+        <property name="shared" value="true"/>
     </bean>
 
     <!--  Hibernate session factory -->
@@ -40,24 +41,12 @@
                 <prop key="hibernate.max_fetch_depth">3</prop>
                 <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
                 <prop key="hibernate.cache.use_query_cache">true</prop>
-                <prop key="hibernate.c3p0.min_size">
-                    ${hibernate.c3p0.min_size}</prop>
-                <prop key="hibernate.c3p0.max_size">
-                    ${hibernate.c3p0.max_size}</prop>
-                <prop key="hibernate.c3p0.timeout">
-                    ${hibernate.c3p0.timeout}</prop>
-                <prop key="hibernate.c3p0.max_statements">
-                    ${hibernate.c3p0.max_statements}
-                </prop>
                 <prop key="hibernate.cache.provider_class">
                     ${hibernate.cache.provider_class}</prop>
                 <prop key="hibernate.cache.use_second_level_cache">
                     ${hibernate.cache.use_second_level_cache}</prop>
                 <prop key="hibernate.jdbc.batch_size">
                     ${hibernate.jdbc.batch_size}</prop>
-                <prop key="hibernate.c3p0.max_statements">
-                    ${hibernate.c3p0.max_statements}
-                </prop>
             </props>
         </property>
         <property name="mappingResources">
@@ -100,8 +89,6 @@
                     org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml</value>
                 <value>
                     org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml</value>
-                <value>
-                    /org/openvpms/archetype/rules/product/Product.hbm.xml</value>
                 <value>
                     /org/openvpms/archetype/rules/workflow/Workflow.hbm.xml</value>
                 <value>

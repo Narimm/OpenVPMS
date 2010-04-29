@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.stock;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.stock.StockArchetypes.*;
 import org.openvpms.archetype.test.TestHelper;
@@ -58,6 +60,7 @@ public class StockUpdaterTestCase extends AbstractStockTest {
      * Verifies that stock is updated when an <em>act.stockTransfer</em>
      * is posted.
      */
+    @Test
     public void testTransfer() {
         BigDecimal quantity = new BigDecimal(100);
         Party xferLocation = createStockLocation();
@@ -95,6 +98,7 @@ public class StockUpdaterTestCase extends AbstractStockTest {
      * Verifies that stock is updated when an <em>act.stockAdjust</em>
      * is posted.
      */
+    @Test
     public void testAdjust() {
         BigDecimal quantity = new BigDecimal(100);
         Act act = (Act) create(STOCK_ADJUST);
@@ -125,12 +129,9 @@ public class StockUpdaterTestCase extends AbstractStockTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         product = TestHelper.createProduct();
         stockLocation = createStockLocation();
     }

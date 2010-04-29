@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
@@ -37,7 +39,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * Tests the {@link EndOfPeriodProcessor} class.
  *
@@ -49,6 +50,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     /**
      * Verifies that the processor cannot be constructed with an invalid date.
      */
+    @Test
     public void testStatementDate() {
         Date now = new Date();
         try {
@@ -80,6 +82,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * <li>2/1/2007 invoice 100.00
      * </ul>
      */
+    @Test
     public void testEndOfPeriod() {
         StatementRules rules = new StatementRules(getPractice());
         Party customer = getCustomer();
@@ -142,6 +145,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     /**
      * Verifies that any COMPLETED charge acts are posted on end-of-period.
      */
+    @Test
     public void testPostCompleted() {
         Party customer = getCustomer();
 
@@ -190,6 +194,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * Verifies that any COMPLETED charge acts are not posted when
      * <tt>postCompletedCharges</tt> is false.
      */
+    @Test
     public void testNoPostCompleted() {
         Party customer = getCustomer();
 
@@ -228,6 +233,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     /**
      * Tests end of period with account fees.
      */
+    @Test
     public void testEndOfPeriodWithAccountFees() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
@@ -287,6 +293,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * Verifies that end of period is not performed if there is no account
      * activity.
      */
+    @Test
     public void testEndOfPeriodForNoActivity() {
         Party customer = getCustomer();
         Date statementDate = getDate("2007-05-02");
@@ -314,6 +321,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * <li>2/5/2007 opening balance 0.0
      * </ul>
      */
+    @Test
     public void testEndOfPeriodForZeroBalance() {
         Party customer = getCustomer();
 
@@ -356,6 +364,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * and <em>act.customerAccountClosingBalance</em> when there is a credit
      * balance.
      */
+    @Test
     public void testEndOfPeriodForCreditBalance() {
         Party customer = getCustomer();
 
@@ -414,6 +423,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * Verifies that end of period can be backdated and only includes those
      * acts prior to the statement date.
      */
+    @Test
     public void testBackdatedEOP() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
@@ -498,6 +508,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * <li>31/5/2008 opening balance  0.00
      * </ul>
      */
+    @Test
     public void testLatePaymentForInvoiceInPriorStatementPeriod() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("10.00");
@@ -570,6 +581,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * <li>31/5/08 opening balance 5.00
      * </ul>
      */
+    @Test
     public void testNoFeeForOverdueLessThanFeeBalance() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("10.00");
@@ -644,6 +656,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * <li>31/5/08 opening balance 20.00
      * </ul>
      */
+    @Test
     public void testFeeForOverdueEqualFeeBalance() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("10.00");
@@ -724,6 +737,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * <li>30/6/07 opening balance 170.00
      * </ul>
      */
+    @Test
     public void testDifferentOverdueDateAndFeeDate() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("10.00");

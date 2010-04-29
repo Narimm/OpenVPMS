@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -39,19 +41,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * Tests the {@link CustomerBalanceSummaryQuery} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerBalanceSummaryQueryTestCase
-        extends AbstractCustomerAccountTest {
+public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccountTest {
 
     /**
      * Tests the {@link CustomerBalanceSummaryQuery} class.
      */
+    @Test
     public void testQuery() {
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
@@ -92,20 +93,13 @@ public class CustomerBalanceSummaryQueryTestCase
         }
         assertNotNull(set);
 
-        BigDecimal balance = set.getBigDecimal(
-                CustomerBalanceSummaryQuery.BALANCE);
-        BigDecimal overdue = set.getBigDecimal(
-                CustomerBalanceSummaryQuery.OVERDUE_BALANCE);
-        BigDecimal credit = set.getBigDecimal(
-                CustomerBalanceSummaryQuery.CREDIT_BALANCE);
-        Date paymentDate = set.getDate(
-                CustomerBalanceSummaryQuery.LAST_PAYMENT_DATE);
-        BigDecimal paymentAmount = set.getBigDecimal(
-                CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT);
-        Date invoiceDate = set.getDate(
-                CustomerBalanceSummaryQuery.LAST_INVOICE_DATE);
-        BigDecimal invoiceAmount = set.getBigDecimal(
-                CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);
+        BigDecimal balance = set.getBigDecimal(CustomerBalanceSummaryQuery.BALANCE);
+        BigDecimal overdue = set.getBigDecimal(CustomerBalanceSummaryQuery.OVERDUE_BALANCE);
+        BigDecimal credit = set.getBigDecimal(CustomerBalanceSummaryQuery.CREDIT_BALANCE);
+        Date paymentDate = set.getDate(CustomerBalanceSummaryQuery.LAST_PAYMENT_DATE);
+        BigDecimal paymentAmount = set.getBigDecimal(CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT);
+        Date invoiceDate = set.getDate(CustomerBalanceSummaryQuery.LAST_INVOICE_DATE);
+        BigDecimal invoiceAmount = set.getBigDecimal(CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);
 
         assertEquals(fifty, balance);
         assertEquals(fifty, overdue);
@@ -121,6 +115,7 @@ public class CustomerBalanceSummaryQueryTestCase
     /**
      * Tests the querying by individual account types.
      */
+    @Test
     public void testQueryByAccountType() {
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
@@ -150,6 +145,7 @@ public class CustomerBalanceSummaryQueryTestCase
     /**
      * Tests the balance summary query for customers with overdue balances.
      */
+    @Test
     public void testOverdueQuery() {
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
@@ -231,6 +227,7 @@ public class CustomerBalanceSummaryQueryTestCase
     /**
      * Verifies that balances are returned for customer ranges.
      */
+    @Test
     public void testQueryByCustomerRange() {
         // create some customers with names starting with A, B and Z
         Party customerA = TestHelper.createCustomer(
@@ -311,6 +308,7 @@ public class CustomerBalanceSummaryQueryTestCase
     /**
      * Verifies that credit balances can be excluded.
      */
+    @Test
     public void testExcludeCreditBalance() {
         Party customer1 = getCustomer();
         Party customer2 = TestHelper.createCustomer();
@@ -355,6 +353,7 @@ public class CustomerBalanceSummaryQueryTestCase
      * Verifies that customers with the same name have their balances correctly
      * calculated.
      */
+    @Test
     public void testForSameName() {
         Party customer1 = getCustomer();
         long id = System.currentTimeMillis();
@@ -454,7 +453,7 @@ public class CustomerBalanceSummaryQueryTestCase
      * @param expected  the expected customers
      */
     private void checkCustomers(CustomerBalanceSummaryQuery query,
-                                Set<Party> customers, Party ... expected) {
+                                Set<Party> customers, Party... expected) {
         Set<IMObjectReference> customerSet = new HashSet<IMObjectReference>();
         Set<IMObjectReference> expectedSet = new HashSet<IMObjectReference>();
         Set<IMObjectReference> found = new HashSet<IMObjectReference>();

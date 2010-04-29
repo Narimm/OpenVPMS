@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.4</version>
+        <version>1.5-SNAPSHOT</version>
         <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
@@ -188,6 +191,20 @@
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
+            <plugin>
+                <!-- generates a jar of the test classes. TODO - test these should be split from the unit tests -->
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <executions>
+                <execution>
+                  <phase>package</phase>
+                  <goals>
+                    <goal>test-jar</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+
         </plugins>
     </build>
     <dependencies>
@@ -248,6 +265,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>${commons.dbcp.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>${jdbc.groupId}</groupId>
             <artifactId>${jdbc.artifactId}</artifactId>
             <version>${jdbc.version}</version>
@@ -255,13 +278,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-dao</artifactId>
-            <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-mock</artifactId>
+            <artifactId>spring-test</artifactId>
             <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>

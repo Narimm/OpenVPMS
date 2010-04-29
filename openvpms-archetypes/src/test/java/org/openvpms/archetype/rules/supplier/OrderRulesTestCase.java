@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.supplier;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -47,6 +50,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     /**
      * Tests the {@link OrderRules#getDeliveryStatus(FinancialAct)} method.
      */
+    @Test
     public void testGetDeliveryStatus() {
         BigDecimal two = new BigDecimal("2.0");
         BigDecimal three = new BigDecimal("3.0");
@@ -64,6 +68,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     /**
      * Tests the {@link OrderRules#copyOrder(FinancialAct)} method.
      */
+    @Test
     public void testCopyOrder() {
         BigDecimal quantity = new BigDecimal(50);
         int packageSize = 10;
@@ -92,6 +97,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     /**
      * Tests the {@link OrderRules#createDeliveryItem(FinancialAct)} method.
      */
+    @Test
     public void testCreateDeliveryItem() {
         BigDecimal quantity = new BigDecimal(50);
         BigDecimal received = new BigDecimal(40);
@@ -123,6 +129,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     /**
      * Tests the {@link OrderRules#createReturnItem} method.
      */
+    @Test
     public void testCreateReturnItem() {
         BigDecimal quantity = new BigDecimal(50);
         BigDecimal received = new BigDecimal(40);
@@ -152,6 +159,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     /**
      * Tests the {@link OrderRules#invoiceSupplier(Act)} method.
      */
+    @Test
     public void testInvoiceSupplier() {
         BigDecimal quantity = new BigDecimal(50);
         int packageSize = 10;
@@ -182,6 +190,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     /**
      * Tests the {@link OrderRules#creditSupplier(Act)} method.
      */
+    @Test
     public void testCreditSupplier() {
         BigDecimal quantity = new BigDecimal(50);
         int packageSize = 10;
@@ -209,6 +218,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     /**
      * Tests the {@link OrderRules#reverseDelivery(Act)} method.
      */
+    @Test
     public void testReverseDelivery() {
         BigDecimal quantity = new BigDecimal(50);
         BigDecimal unitPrice = BigDecimal.ONE;
@@ -229,6 +239,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     /**
      * Tests the {@link OrderRules#reverseReturn(Act)} method.
      */
+    @Test
     public void testReverseReturn() {
         BigDecimal quantity = new BigDecimal(50);
         int packageSize = 10;
@@ -248,28 +259,23 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    public void setUp() {
+        super.setUp();
         rules = new OrderRules(getArchetypeService());
     }
 
     /**
-     * Verifies the delivery status matches that expected for the supplied
-     * values.
+     * Verifies the delivery status matches that expected for the supplied values.
      *
-     * @param act       the delivery act
+     * @param act       the act
      * @param quantity  the quantity
      * @param received  the received quantity
      * @param cancelled the cancelled quantity
      * @param expected  the expected delivery status
      */
-    private void checkDeliveryStatus(FinancialAct act,
-                                     BigDecimal quantity, BigDecimal received,
-                                     BigDecimal cancelled,
+    private void checkDeliveryStatus(FinancialAct act, BigDecimal quantity, BigDecimal received, BigDecimal cancelled,
                                      DeliveryStatus expected) {
         ActBean bean = new ActBean(act);
         bean.setValue("quantity", quantity);

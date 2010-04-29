@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -40,6 +43,7 @@ public class PatientRelationshipRulesTestCase extends ArchetypeServiceTest {
      * <tt>archetypeService.save.party.patientpet.before</tt> rule is
      * configured.
      */
+    @Test
     public void testCheckRelationships() {
         Party patient = TestHelper.createPatient();
         PatientRules rules = new PatientRules();

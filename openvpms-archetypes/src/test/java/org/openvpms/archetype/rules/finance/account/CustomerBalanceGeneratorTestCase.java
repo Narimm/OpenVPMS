@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
@@ -28,11 +31,11 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-
 
 /**
  * Tests the {@link CustomerBalanceGenerator} class.
@@ -40,8 +43,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerBalanceGeneratorTestCase
-        extends AbstractCustomerAccountTest {
+@ContextConfiguration(locations="/application-context.xml", inheritLocations = false)
+public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTest {
 
     /**
      * The account rules.
@@ -53,6 +56,7 @@ public class CustomerBalanceGeneratorTestCase
      * Verifies that an <em>act.customerAccountChargesInvoice</em> is
      * offset by an <em>act.customerAccountPayment</em> for the same amount.
      */
+    @Test
     public void testGenerateBalanceForChargesInvoiceAndPayment() {
         Money amount = new Money(100);
         List<FinancialAct> invoice = createChargesInvoice(amount);
@@ -64,6 +68,7 @@ public class CustomerBalanceGeneratorTestCase
      * Verifies that an <em>act.customerAccountChargesCounter</em> is
      * offset by an <em>act.customerAccountPayment</em> for the same amount.
      */
+    @Test
     public void testGetBalanceForChargesCounterAndPayment() {
         Money amount = new Money(100);
         List<FinancialAct> counter = createChargesCounter(amount);
@@ -76,6 +81,7 @@ public class CustomerBalanceGeneratorTestCase
      * offset by an <em>act.customerAccountChargesCredit</em> for the same
      * amount.
      */
+    @Test
     public void testGetBalanceForChargesInvoiceAndCredit() {
         Money amount = new Money(100);
         List<FinancialAct> invoice = createChargesInvoice(amount);
@@ -87,6 +93,7 @@ public class CustomerBalanceGeneratorTestCase
      * Verifies that an <em>act.customerAccountRefund</em> is offset by an
      * <em>act.customerAccountPayment</em> for the same amount.
      */
+    @Test
     public void testGetBalanceForRefundAndPayment() {
         Money amount = new Money(100);
         List<FinancialAct> refund = Arrays.asList(createRefund(amount));
@@ -98,6 +105,7 @@ public class CustomerBalanceGeneratorTestCase
      * Verifies that an <em>act.customerAccountDebitAdjust</em> is offset by an
      * <em>act.customerAccountCreditAdjust</em> for the same amount.
      */
+    @Test
     public void testGetBalanceForDebitAndCreditAdjust() {
         Money amount = new Money(100);
         List<FinancialAct> debit = Arrays.asList(createDebitAdjust(amount));
@@ -109,6 +117,7 @@ public class CustomerBalanceGeneratorTestCase
      * Verifies that an <em>act.customerAccountInitialBalance</em> is offset by
      * an <em>act.customerAccountBadDebt</em> for the same amount.
      */
+    @Test
     public void testGetBalanceForInitialBalanceAndBadDebt() {
         Money amount = new Money(100);
         List<FinancialAct> debit = Arrays.asList(createInitialBalance(amount));
@@ -120,6 +129,7 @@ public class CustomerBalanceGeneratorTestCase
      * Verifies that an <em>participation.customerAccountBalance</tt> is
      * added for acts that don't have <tt>POSTED</tt> status.
      */
+    @Test
     public void testAddParticipationForNonPostedActs() {
         List<FinancialAct> invoice1 = createChargesInvoice(new Money(100));
         checkAddParticipationForNonPostedAct(invoice1,
@@ -136,6 +146,7 @@ public class CustomerBalanceGeneratorTestCase
      * Verifies that opening and closing balances are updated with correct
      * amounts.
      */
+    @Test
     public void testChangeOpeningAndClosingBalances() {
         Party customer = getCustomer();
         List<FinancialAct> invoice = createChargesInvoice(new Money(10));
@@ -186,12 +197,9 @@ public class CustomerBalanceGeneratorTestCase
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new CustomerAccountRules();
     }
 
@@ -362,7 +370,7 @@ public class CustomerBalanceGeneratorTestCase
      * Helper to get the <em>participation.customerAccountBalance</em>
      * associated with an act.
      *
-     * @param act
+     * @param act the act
      * @return the participation, or <tt>null</tt>
      */
     private Participation getAccountBalanceParticipation(FinancialAct act) {

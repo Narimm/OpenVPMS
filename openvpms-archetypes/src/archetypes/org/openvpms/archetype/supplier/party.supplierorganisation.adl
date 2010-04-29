@@ -67,7 +67,7 @@
             </assertion>
 		</node>
 		<node name="type" displayName="Account Type" path="/classifications" parentChild="false"
-			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1" 
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
 			filter="lookup.supplierAccountType">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
@@ -108,5 +108,16 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-	</archetype>
+        <node name="esci" displayName="e-Supply Chain Interface" path="/entityRelationships"
+              type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="1"
+              filter="entityRelationship.supplierESCIConfiguration">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entityRelationship.supplierESCIConfiguration"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>

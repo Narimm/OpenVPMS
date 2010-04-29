@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -41,6 +44,7 @@ public class OverdueBalanceQueryTestCase extends AbstractCustomerAccountTest {
     /**
      * Tests the {@link OverdueBalanceQuery#query} method.
      */
+    @Test
     public void testQuery() {
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();

@@ -18,14 +18,21 @@
 
 package org.openvpms.archetype.rules.supplier;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.Date;
 import java.util.List;
@@ -53,6 +60,7 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link SupplierRules#getReferralVetPractice} method.
      */
+    @Test
     public void testGetReferralVet() {
         Party vet = TestHelper.createSupplierVet();
 
@@ -82,6 +90,7 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link SupplierRules#isSuppliedBy(Party, Product)} method.
      */
+    @Test
     public void testIsSuppliedBy() {
         Party supplier = TestHelper.createSupplier();
         Product product1 = TestHelper.createProduct();
@@ -101,6 +110,7 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link SupplierRules#getProductSuppliers(Party)} method.
      */
+    @Test
     public void testGetProductSuppliersForSupplier() {
         Party supplier = TestHelper.createSupplier();
         Product product1 = TestHelper.createProduct();
@@ -128,13 +138,39 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
+     * Tests the {@link SupplierRules#getESCIConfiguration(Act)} method.
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Test
+    public void testGetESCIConfigurationForAct() {
+        Party supplier = TestHelper.createSupplier();
+        Act order = (Act) create(SupplierArchetypes.ORDER);
+        ActBean bean = new ActBean(order);
+        bean.addNodeParticipation("supplier", supplier);
+
+        assertNull(rules.getESCIConfiguration(order));
+        Entity config = addESCIConfiguration(supplier);
+
+        assertEquals(config, rules.getESCIConfiguration(order));
+    }
+
+    /**
+     * Tests the {@link SupplierRules#getESCIConfiguration(Party)} method.
+     */
+    @Test
+    public void testGetESCIConfigurationForSupplier() {
+        Party supplier = TestHelper.createSupplier();
+        assertNull(rules.getESCIConfiguration(supplier));
+
+        Entity config = addESCIConfiguration(supplier);
+
+        assertEquals(config, rules.getESCIConfiguration(supplier));
+    }
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
         rules = new SupplierRules(getArchetypeService());
         productRules = new ProductRules();
     }
@@ -154,6 +190,22 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
         } catch (InterruptedException ignore) {
             // do nothing
         }
+    }
+
+    /**
+     * Adds an <em>entity.ESCIConfigurationSOAP</em> to a supplier.
+     *
+     * @param supplier the supplier
+     * @return the configuration
+     */
+    private Entity addESCIConfiguration(Party supplier) {
+        Entity config = (Entity) create(SupplierArchetypes.ESCI_SOAP_CONFIGURATION);
+        IMObjectBean bean = new IMObjectBean(config);
+        bean.setValue("serviceURL", "http://localhost:8080/esci");
+        EntityBean supplierBean = new EntityBean(supplier);
+        supplierBean.addNodeRelationship("esci", config);
+        save(config, supplier);
+        return config;
     }
 
 }

@@ -17,6 +17,8 @@
  */
 package org.openvpms.archetype.rules.doc;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -45,6 +47,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link DocumentRules#supportsVersions} method.
      */
+    @Test
     public void testSupportsVersions() {
         DocumentRules rules = new DocumentRules();
 
@@ -58,6 +61,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link DocumentRules#addDocument} method.
      */
+    @Test
     public void testAddDocument() {
         // create an act.patientClinicalEvent and act.patientDocumentImage and add a relationship between them
         Party patient = TestHelper.createPatient();
@@ -116,6 +120,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
      * Verifies that the appropriate version acts are created for <em>act.patientDocumentAttachment</em>,
      * <em>act.patientDocumentImage</em>, <em>act.patientDocumentLetter</em> and <em>act.patientInvestigation</em>
      */
+    @Test
     public void testCreatePatientDocumentVersion() {
         checkCreatePatientVersion("act.patientDocumentAttachment", "act.patientDocumentAttachmentVersion");
         checkCreatePatientVersion("act.patientDocumentImage", "act.patientDocumentImageVersion");
@@ -127,6 +132,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
      * Verifies that the appropriate version acts are created for <em>act.customerDocumentAttachment</em> and
      * <em>act.customerDocumentLetter</em>
      */
+    @Test
     public void testCreateCustomerDocumentVersion() {
         checkCreateCustomerSupplierVersion("act.customerDocumentAttachment", "act.customerDocumentAttachmentVersion");
         checkCreateCustomerSupplierVersion("act.customerDocumentLetter", "act.customerDocumentLetterVersion");
@@ -136,6 +142,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
      * Verifies that the appropriate version acts are created for <em>act.customerDocumentAttachment</em> and
      * <em>act.customerDocumentLetter</em>
      */
+    @Test
     public void testCreateSupplierDocumentVersion() {
         checkCreateCustomerSupplierVersion("act.supplierDocumentAttachment", "act.supplierDocumentAttachmentVersion");
         checkCreateCustomerSupplierVersion("act.supplierDocumentLetter", "act.supplierDocumentLetterVersion");
@@ -144,6 +151,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link DocumentRules#isDuplicate} method.
      */
+    @Test
     public void testIsDuplicate() {
         // create an act.patientDocumentImage and link a patient
         Party patient = TestHelper.createPatient();

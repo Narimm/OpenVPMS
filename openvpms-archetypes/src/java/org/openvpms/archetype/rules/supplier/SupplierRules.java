@@ -21,6 +21,8 @@ package org.openvpms.archetype.rules.supplier;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.archetype.rules.product.ProductSupplier;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -29,6 +31,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
 import java.util.ArrayList;
@@ -114,6 +117,33 @@ public class SupplierRules {
                                             IsActiveRelationship.ACTIVE_NOW);
         for (EntityRelationship relationship : relationships) {
             result.add(new ProductSupplier(relationship, service));
+        }
+        return result;
+    }
+
+    /**
+     * Returns the <em>entity.ESCIConfiguration*</em> of the supplier associated with an order.
+     *
+     * @param order an <em>act.supplierOrder</em>
+     * @return the supplier's <em>entity.ESCIConfiguration*</em> or <tt>null</tt> if none is found
+     */
+    public Entity getESCIConfiguration(Act order) {
+        ActBean bean = new ActBean(order, service);
+        Party supplier = (Party) bean.getNodeParticipant("supplier");
+        return (supplier != null) ? getESCIConfiguration(supplier) : null;
+    }
+
+    /**
+     * Returns the <em>entity.ESCIConfiguration*</em> of a supplier.
+     *
+     * @param supplier a <em>party.supplier*</em>
+     * @return the supplier's <em>entity.ESCIConfiguration*</em> or <tt>null</tt> if none is found
+     */
+    public Entity getESCIConfiguration(Party supplier) {
+        Entity result = null;
+        EntityBean bean = new EntityBean(supplier, service);
+        if (bean.hasNode("esci")) {
+            result = bean.getNodeTargetEntity("esci");
         }
         return result;
     }

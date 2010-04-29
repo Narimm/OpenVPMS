@@ -18,9 +18,12 @@
 
 package org.openvpms.archetype.rules.practice;
 
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_LOCATION_RELATIONSHIP;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -52,6 +55,7 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PracticeRules#getLocations(Party)} method.
      */
+    @Test
     public void testGetLocations() {
         Party practice = createPractice();
         Party location1 = TestHelper.createLocation();
@@ -71,7 +75,7 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PracticeRules#getDefaultLocation(Party)} method.
      */
-    public void testGetDefaultLocation() {
+    @Test public void testGetDefaultLocation() {
         Party practice = createPractice();
 
         assertNull(rules.getDefaultLocation(practice));
@@ -102,7 +106,7 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link PracticeRules#isActivePractice(Party)} method.
      */
-    public void testIsActivePractice() {
+    @Test public void testIsActivePractice() {
         Party practice = TestHelper.getPractice();
 
         assertTrue(rules.isActivePractice(practice));
@@ -129,12 +133,9 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    @Before
+    public void setUp() {
         rules = new PracticeRules();
     }
 

@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.math;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,6 +36,7 @@ public class CurrencyTestCase extends TestCase {
     /**
      * Tests the {@link Currency#round(BigDecimal)} method.
      */
+    @Test
     public void testRound() {
         Currency halfUp = new Currency(java.util.Currency.getInstance("AUD"),
                                        RoundingMode.HALF_UP,
@@ -65,7 +67,7 @@ public class CurrencyTestCase extends TestCase {
     /**
      * Tests the {@link Currency#roundCash(BigDecimal)} method.
      */
-    public void testRoundCash() {
+    @Test public void testRoundCash() {
         Currency halfUp = new Currency(java.util.Currency.getInstance("AUD"),
                                        RoundingMode.HALF_UP,
                                        new BigDecimal("0.05"));
@@ -99,10 +101,9 @@ public class CurrencyTestCase extends TestCase {
 
     /**
      * Verifies that the {@link Currency} constructor only supports
-     * {@link RoundingMode.HALF_UP}, {@link RoundingMode.HALF_DOWN} and
-     * {@link RoundingMode.HALF_EVEN}.
+     * {@link RoundingMode#HALF_UP}, {@link RoundingMode#HALF_DOWN} and {@link RoundingMode#HALF_EVEN}.
      */
-    public void testValidRoundingModes() {
+    @Test public void testValidRoundingModes() {
         for (RoundingMode mode : RoundingMode.values()) {
             boolean valid = mode == RoundingMode.HALF_UP
                     || mode == RoundingMode.HALF_DOWN
