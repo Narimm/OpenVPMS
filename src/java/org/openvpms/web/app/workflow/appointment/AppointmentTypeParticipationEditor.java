@@ -88,7 +88,7 @@ public class AppointmentTypeParticipationEditor
             @Override
             protected Query<Entity> createQuery(String name) {
                 Query<Entity> query = new AppointmentTypeQuery(schedule);
-                query.setName(name);
+                query.setValue(name);
                 return query;
             }
         };

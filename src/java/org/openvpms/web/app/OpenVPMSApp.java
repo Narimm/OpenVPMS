@@ -172,6 +172,17 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     }
 
     /**
+     * Switches the current workspace to one that supports a particular archetype.
+     *
+     * @param shortName the archetype short name
+     */
+    public void switchTo(String shortName) {
+        if (listener != null) {
+            listener.changeContext(shortName);
+        }
+    }
+
+    /**
      * Sets the context change listener.
      *
      * @param listener the context change listener

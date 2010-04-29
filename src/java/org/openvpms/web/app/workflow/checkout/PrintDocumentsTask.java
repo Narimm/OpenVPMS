@@ -19,33 +19,36 @@
 package org.openvpms.web.app.workflow.checkout;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.IMPrinterFactory;
-import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.print.BatchPrintDialog;
+import org.openvpms.web.component.print.BatchPrinter;
+import org.openvpms.web.component.print.PrintHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
-import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.resource.util.Messages;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -75,7 +78,7 @@ class PrintDocumentsTask extends AbstractTask {
 
 
     /**
-     * Constructs a new <tt>PrintDocumentsTask</tt>.
+     * Constructs a <tt>PrintDocumentsTask</tt>.
      *
      * @param startTime the act start time.
      */
@@ -92,17 +95,15 @@ class PrintDocumentsTask extends AbstractTask {
      * @param context the task context
      */
     public void start(final TaskContext context) {
-        List<IMObject> unprinted = new ArrayList<IMObject>();
-        unprinted.addAll(getCustomerActs(context));
-        unprinted.addAll(getPatientActs(context));
+        Map<IMObject, Boolean> unprinted = new LinkedHashMap<IMObject, Boolean>();
+        unprinted.putAll(getCustomerActs(context));
+        unprinted.putAll(getPatientActs(context));
         if (unprinted.isEmpty()) {
             notifyCompleted();
         } else {
             String title = Messages.get("workflow.checkout.print.title");
-            String[] buttons = isRequired()
-                    ? PopupDialog.OK_CANCEL : PopupDialog.OK_SKIP_CANCEL;
-            final BatchPrintDialog dialog = new BatchPrintDialog(title, buttons,
-                                                                 unprinted);
+            String[] buttons = isRequired() ? PopupDialog.OK_CANCEL : PopupDialog.OK_SKIP_CANCEL;
+            final BatchPrintDialog dialog = new BatchPrintDialog(title, buttons, unprinted);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     String action = dialog.getAction();
@@ -126,47 +127,52 @@ class PrintDocumentsTask extends AbstractTask {
      * @param context the task context
      */
     private void print(List<IMObject> objects, TaskContext context) {
-        BatchPrinter printer = new BatchPrinter(objects, context);
+        Printer printer = new Printer(objects, context);
         printer.print();
     }
 
     /**
-     * Returns a list of unprinted customer charges.
+     * Returns a map of unprinted customer charges.
      *
      * @param context the task context
-     * @return a list of unprinted customer charges
+     * @return a map of unprinted customer charges
      */
-    private List<IMObject> getCustomerActs(TaskContext context) {
+    private Map<IMObject, Boolean> getCustomerActs(TaskContext context) {
         Party customer = context.getCustomer();
         String node = "customer";
         String participation = "participation.customer";
-        return getUnprintedActs(CHARGES, customer, node, participation);
+        return getUnprintedActs(CHARGES, customer, node, participation, context);
     }
 
     /**
-     * Returns a list of unprinted patient documents.
+     * Returns a map of unprinted patient documents.
      *
      * @param context the task context
-     * @return a list of unprinted patient documents
+     * @return a map of unprinted patient documents
      */
-    private List<IMObject> getPatientActs(TaskContext context) {
+    private Map<IMObject, Boolean> getPatientActs(TaskContext context) {
         Party patient = context.getPatient();
         String node = "patient";
         String participation = "participation.patient";
-        return getUnprintedActs(DOCUMENTS, patient, node, participation);
+        return getUnprintedActs(DOCUMENTS, patient, node, participation, context);
     }
 
     /**
-     * Returns a list of unprinted acts for a party.
+     * Returns a map of unprinted acts for a party.
+     * <p/>
+     * The corresponding boolean flag if <tt>true</tt> indicates if the act should be selected for printing.
+     * If <tt>false</tt>, it indicates that t5he act should be displayed, but not selected.
      *
      * @param shortNames    the act short names to query. May include wildcards
      * @param party         the party to query
      * @param node          the participation node to query
      * @param participation the participation short name to query
+     * @param context       the context
      * @return the unprinted acts
      */
-    private List<IMObject> getUnprintedActs(String[] shortNames, Party party,
-                                            String node, String participation) {
+    private Map<IMObject, Boolean> getUnprintedActs(String[] shortNames, Party party, String node,
+                                                    String participation, Context context) {
+        Map<IMObject, Boolean> result = new LinkedHashMap<IMObject, Boolean>();
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true);
         query.setFirstResult(0);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
@@ -174,35 +180,49 @@ class PrintDocumentsTask extends AbstractTask {
         CollectionNodeConstraint participations
                 = new CollectionNodeConstraint(node, participation,
                                                false, true);
-        participations.add(new ObjectRefNodeConstraint(
-                "entity", party.getObjectReference()));
+        participations.add(new ObjectRefNodeConstraint("entity", party.getObjectReference()));
 
         query.add(participations);
         query.add(new NodeConstraint("startTime", RelationalOp.GTE, startTime));
         query.add(new NodeConstraint("printed", false));
 
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        return service.get(query).getResults();
-
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        for (IMObject object : service.get(query).getResults()) {
+            boolean select = selectForPrinting((Act) object, context);
+            result.put(object, select);
+        }
+        return result;
     }
 
     /**
-     * Batch printer. Note that printing currently occurs interactively
-     * due to limitations in downloading multiple pdf files to the client
-     * browser.
+     * Determines if an act should be selected for printing.
+     *
+     * @param act     the act
+     * @param context the context
+     * @return <tt>true</tt> if the act should be selected, <tt>false</tt> if it should be displayed but not selected
      */
-    class BatchPrinter implements PrinterListener {
+    private boolean selectForPrinting(Act act, Context context) {
+        ActBean bean = new ActBean(act);
+        boolean result = true;
+        if (bean.hasNode("documentTemplate")) {
+            Entity template = bean.getNodeParticipant("documentTemplate");
+            if (template != null) {
+                EntityRelationship rel = PrintHelper.getDocumentTemplatePrinter(template, context);
+                if (rel != null) {
+                    IMObjectBean relBean = new IMObjectBean(rel);
+                    if (!relBean.getBoolean("printAtCheckout")) {
+                        result = false;
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
-        /**
-         * Iterator over the objects to  print.
-         */
-        private Iterator<IMObject> iterator;
-
-        /**
-         * The object being printed.
-         */
-        private IMObject object;
+    /**
+     * Batch printer.
+     */
+    class Printer extends BatchPrinter {
 
         /**
          * The task context.
@@ -211,59 +231,14 @@ class PrintDocumentsTask extends AbstractTask {
 
 
         /**
-         * Constructs a new <code>BatchPrinter</code>.
+         * Constructs a <tt>Printer</tt>.
          *
          * @param objects the objects to print
          * @param context the task context
          */
-        public BatchPrinter(List<IMObject> objects, TaskContext context) {
-            iterator = objects.iterator();
+        public Printer(List<IMObject> objects, TaskContext context) {
+            super(objects);
             this.context = context;
-        }
-
-        /**
-         * Initiates printing of the objects.
-         */
-        public void print() {
-            if (iterator.hasNext()) {
-                object = iterator.next();
-                try {
-                    IMPrinter<IMObject> printer
-                            = IMPrinterFactory.create(object);
-                    InteractiveIMPrinter<IMObject> iPrinter
-                            = new InteractiveIMPrinter<IMObject>(printer);
-                    iPrinter.setInteractive(false);
-                    iPrinter.setListener(this);
-                    iPrinter.print();
-                } catch (OpenVPMSException exception) {
-                    failed(exception);
-                }
-            } else {
-                notifyCompleted();
-            }
-        }
-
-        /**
-         * Invoked when an object has been successfully printed.
-         *
-         * @param printer the printer that was used. May be <tt>null</tt>
-         */
-        public void printed(String printer) {
-            boolean next = false;
-            try {
-                // update the print flag, if it exists
-                IMObjectBean bean = new IMObjectBean(object);
-                if (bean.hasNode("printed")) {
-                    bean.setValue("printed", true);
-                    bean.save();
-                }
-                next = true;
-            } catch (OpenVPMSException exception) {
-                failed(exception);
-            }
-            if (next) {
-                print(); // print the next available object
-            }
         }
 
         /**
@@ -291,6 +266,14 @@ class PrintDocumentsTask extends AbstractTask {
                     start(context);
                 }
             });
+        }
+
+        /**
+         * Invoked when printing completes.
+         */
+        @Override
+        protected void completed() {
+            notifyCompleted();
         }
     }
 }

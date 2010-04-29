@@ -219,8 +219,7 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
                     }
                 }
             }
-            columnNames[ELAPSED_TIME_INDEX] = Messages.get(
-                    "tasktablemodel.time");
+            columnNames[ELAPSED_TIME_INDEX] = Messages.get("act.table.time");
         }
         return columnNames;
     }

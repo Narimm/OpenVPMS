@@ -19,6 +19,7 @@
 package org.openvpms.web.component.button;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 
 /**
@@ -32,6 +33,7 @@ public class ShortcutHelperTestCase extends TestCase {
     /**
      * Tests the {@link ShortcutHelper#getShortcut(String)} method.
      */
+    @Test
     public void testGetShortcut() {
         assertNull(ShortcutHelper.getShortcut(null));
         assertNull(ShortcutHelper.getShortcut(""));
@@ -45,6 +47,7 @@ public class ShortcutHelperTestCase extends TestCase {
     /**
      * Tests the {@link ShortcutHelper#getText(String)} method.
      */
+    @Test
     public void testGetText() {
         assertEquals("", ShortcutHelper.getText(null));
         assertEquals("", ShortcutHelper.getText(""));
@@ -58,6 +61,7 @@ public class ShortcutHelperTestCase extends TestCase {
     /**
      * Tests the {@link ShortcutHelper#getHTML(String)} method.
      */
+    @Test
     public void testGetHTML() {
         checkHtml(null, "");
         checkHtml("a simple string", "a simple string");
@@ -65,13 +69,13 @@ public class ShortcutHelperTestCase extends TestCase {
         checkHtml(">", "&gt;");
         checkHtml("&&", "&amp;");
         checkHtml("&A", ShortcutHelper.UNDERLINE_OPEN + "A"
-                + ShortcutHelper.UNDERLINE_CLOSE);
+                        + ShortcutHelper.UNDERLINE_CLOSE);
         checkHtml("&A &B",
                   ShortcutHelper.UNDERLINE_OPEN + "A"
-                          + ShortcutHelper.UNDERLINE_CLOSE + " B");
+                  + ShortcutHelper.UNDERLINE_CLOSE + " B");
         checkHtml("&& &B",
                   "&amp; " + ShortcutHelper.UNDERLINE_OPEN + "B" +
-                          "" + ShortcutHelper.UNDERLINE_CLOSE);
+                  "" + ShortcutHelper.UNDERLINE_CLOSE);
     }
 
     /**

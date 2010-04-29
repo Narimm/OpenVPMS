@@ -27,7 +27,7 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.CustomerObjectSetQuery;
-import org.openvpms.web.component.im.table.AbstractIMTableModel;
+import org.openvpms.web.component.im.table.AbstractEntityObjectSetTableModel;
 
 
 /**
@@ -37,7 +37,7 @@ import org.openvpms.web.component.im.table.AbstractIMTableModel;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerTableModel extends AbstractIMTableModel<ObjectSet> {
+public class CustomerTableModel extends AbstractEntityObjectSetTableModel {
 
     /**
      * Determines if the patient should be displayed.
@@ -50,45 +50,42 @@ public class CustomerTableModel extends AbstractIMTableModel<ObjectSet> {
     private boolean showContact;
 
     /**
-     * The customer name index.
+     * Determines if the identity should be displayed.
      */
-    private static final int NAME_INDEX = 0;
-
-    /**
-     * The customer description index.
-     */
-    private static final int DESCRIPTION_INDEX = 1;
+    private boolean showIdentity;
 
     /**
      * The patient index.
      */
-    private static final int PATIENT_INDEX = 2;
+    private static final int PATIENT_INDEX = NEXT_INDEX;
 
     /**
      * The contact index.
      */
-    private static final int CONTACT_INDEX = 3;
+    private static final int CONTACT_INDEX = PATIENT_INDEX + 1;
 
 
     /**
      * Creates a new <tt>CustomerTableModel</tt>.
      */
     public CustomerTableModel() {
-        setTableColumnModel(createTableColumnModel(false, false));
+        super("customer", "identity");
+        setTableColumnModel(createTableColumnModel(false, false, false));
     }
 
     /**
-     * Determines if the patient and/or contact columns should be displayed.
+     * Determines if the patient, contact and/or identity columns should be displayed.
      *
-     * @param patient if <tt>true</tt> display the patient column
-     * @param contact if <tt>true</tt> display the contact column
+     * @param patient  if <tt>true</tt> display the patient column
+     * @param contact  if <tt>true</tt> display the contact column
+     * @param identity if <tt>true</tt> display the identity column
      */
-    public void showColumns(boolean patient, boolean contact) {
-        if (patient != showPatient || contact != showContact) {
+    public void showColumns(boolean patient, boolean contact, boolean identity) {
+        if (patient != showPatient || contact != showContact || identity != showIdentity) {
             showPatient = patient;
             showContact = contact;
-            setTableColumnModel(
-                    createTableColumnModel(showPatient, showContact));
+            showIdentity = identity;
+            setTableColumnModel(createTableColumnModel(showPatient, showContact, showIdentity));
         }
     }
 
@@ -101,21 +98,17 @@ public class CustomerTableModel extends AbstractIMTableModel<ObjectSet> {
      * @return the value at the given coordinate.
      */
     protected Object getValue(ObjectSet set, TableColumn column, int row) {
-        Object result = null;
+        Object result;
         int index = column.getModelIndex();
         switch (index) {
-            case NAME_INDEX:
-                result = getCustomerName(set);
-                break;
-            case DESCRIPTION_INDEX:
-                result = getCustomerDescription(set);
-                break;
             case PATIENT_INDEX:
                 result = getPatientName(set);
                 break;
             case CONTACT_INDEX:
                 result = getContact(set);
                 break;
+            default:
+                result = super.getValue(set, column, row);
         }
         return result;
     }
@@ -124,47 +117,19 @@ public class CustomerTableModel extends AbstractIMTableModel<ObjectSet> {
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-     *                  sort in <tt>descending</tt> order
-     * @return the sort criteria, or <tt>null</tt> if the column isn't
-     *         sortable
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise sort in <tt>descending</tt> order
+     * @return the sort criteria, or <tt>null</tt> if the column isn't sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        SortConstraint result = null;
-        if (column == NAME_INDEX) {
-            result = new NodeSortConstraint("customer", "name", ascending);
-        } else if (column == DESCRIPTION_INDEX) {
-            result = new NodeSortConstraint("customer", "description",
-                                            ascending);
-        } else if (column == PATIENT_INDEX) {
-            result = new NodeSortConstraint("patient", "name", ascending);
+        SortConstraint[] result;
+        if (column == PATIENT_INDEX) {
+            result = new SortConstraint[]{new NodeSortConstraint("patient", "name", ascending)};
         } else if (column == CONTACT_INDEX) {
-            result = new NodeSortConstraint("contact", "description",
-                                            ascending);
+            result = new SortConstraint[]{new NodeSortConstraint("contact", "description", ascending)};
+        } else {
+            result = super.getSortConstraints(column, ascending);
         }
-        return (result != null) ? new SortConstraint[]{result} : null;
-    }
-
-    /**
-     * Returns the customer name.
-     *
-     * @param set the set
-     * @return the customer name, or <tt>null</tt> if none is found
-     */
-    private String getCustomerName(ObjectSet set) {
-        Party customer = (Party) set.get("customer");
-        return (customer != null) ? customer.getName() : null;
-    }
-
-    /**
-     * Returns the customer description.
-     *
-     * @param set the set
-     * @return the customer description, or <tt>null</tt> if none is found
-     */
-    private String getCustomerDescription(ObjectSet set) {
-        Party customer = (Party) set.get("customer");
-        return (customer != null) ? customer.getDescription() : null;
+        return result;
     }
 
     /**
@@ -192,23 +157,21 @@ public class CustomerTableModel extends AbstractIMTableModel<ObjectSet> {
     /**
      * Creates the column model.
      *
-     * @param showPatient if <tt>true</tt> display the patient column
-     * @param showContact if <tt>true</tt> display the contact column
+     * @param showPatient  if <tt>true</tt> display the patient column
+     * @param showContact  if <tt>true</tt> display the contact column
+     * @param showIdentity if <tt>true</tt> display the identity column
      * @return a new column model
      */
-    private static TableColumnModel createTableColumnModel(
-            boolean showPatient, boolean showContact) {
-        DefaultTableColumnModel model = new DefaultTableColumnModel();
-        model.addColumn(createTableColumn(NAME_INDEX, "table.imobject.name"));
-        model.addColumn(createTableColumn(DESCRIPTION_INDEX,
-                                          "table.imobject.description"));
+    protected TableColumnModel createTableColumnModel(boolean showPatient, boolean showContact, boolean showIdentity) {
+        DefaultTableColumnModel model = createTableColumnModel(false);
         if (showPatient) {
-            model.addColumn(
-                    createTableColumn(PATIENT_INDEX, "customerquery.patient"));
+            model.addColumn(createTableColumn(PATIENT_INDEX, "customerquery.patient"));
         }
         if (showContact) {
-            model.addColumn(
-                    createTableColumn(CONTACT_INDEX, "customerquery.contact"));
+            model.addColumn(createTableColumn(CONTACT_INDEX, "customerquery.contact"));
+        }
+        if (showIdentity) {
+            model.addColumn(createTableColumn(IDENTITY_INDEX, IDENTITY));
         }
 
         return model;

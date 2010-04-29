@@ -130,32 +130,32 @@ public interface Query<T> extends Iterable<T> {
     String[] getShortNames();
 
     /**
-     * Sets the name to query on.
+     * Sets the value to query on.
      *
-     * @param name the name. May contain wildcards, or be <tt>null</tt>
+     * @param value the value. May contain wildcards, or be <tt>null</tt>
      */
-    void setName(String name);
+    void setValue(String value);
 
     /**
-     * Returns the name being queried on.
+     * Returns the value being queried on.
      *
-     * @return the name. May contain wildcards, or be <tt>null</tt>
+     * @return the value. May contain wildcards, or be <tt>null</tt>
      */
-    String getName();
+    String getValue();
 
     /**
-     * Sets the minimum length of a name before queries can be performed.
+     * Sets the minimum length of a value before queries can be performed.
      *
      * @param length the minimum length
      */
-    void setNameMinLength(int length);
+    void setValueMinLength(int length);
 
     /**
-     * Returns the minimum length of a name before queries can be performed
+     * Returns the minimum length of a value before queries can be performed.
      *
      * @return the minimum length
      */
-    int getNameMinLength();
+    int getValueMinLength();
 
     /**
      * Determines if the query should be run automatically.

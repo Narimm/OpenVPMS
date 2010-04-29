@@ -23,16 +23,14 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.ListModel;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
-import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
@@ -43,6 +41,7 @@ import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -157,11 +156,10 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
      * @return a new list model
      */
     private ListModel createReminderTypeModel() {
-        IPage<IMObject> page = ArchetypeQueryHelper.get(
-                ArchetypeServiceHelper.getArchetypeService(),
-                new String[]{"entity.reminderType"}, true, 0,
-                ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> rows = page.getResults();
+        ArchetypeQuery query = new ArchetypeQuery("entity.reminderType", true)
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        List<IMObject> rows = service.get(query).getResults();
         return new IMObjectListModel(rows, true, false);
     }
 

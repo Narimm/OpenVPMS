@@ -33,6 +33,7 @@ public class TypeTableModel extends BaseIMObjectTableModel<Entity> {
      * Creates a new <tt>TypeTableModel</tt>.
      */
     public TypeTableModel() {
+        super(null);
         setTableColumnModel(createTableColumnModel(true));
     }
 

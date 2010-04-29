@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.util;
 
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -35,6 +37,7 @@ public class IMObjectHelperTestCase extends AbstractAppTest {
     /**
      * Tests the {@link IMObjectHelper#getType} method.
      */
+    @Test
     public void testGetType() {
         checkGetType(FinancialAct.class, "act.customerAccountChargesInvoice");
         checkGetType(Act.class, "act.customerAccountChargesInvoice",

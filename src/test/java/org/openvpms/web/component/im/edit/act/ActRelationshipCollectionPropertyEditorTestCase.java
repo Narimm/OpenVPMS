@@ -24,6 +24,8 @@
  */
 package org.openvpms.web.component.im.edit.act;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -51,6 +53,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
     /**
      * Tests {@link CollectionPropertyEditor#getArchetypeRange()}.
      */
+    @Test
     public void testGetArchetypeRange() {
         IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
@@ -63,6 +66,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
     /**
      * Tests {@link ActRelationshipCollectionPropertyEditor#getRelationshipShortName()}.
      */
+    @Test
     public void testGetRelationshipShortName() {
         IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
@@ -78,6 +82,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
      * without losing the relationship between them.
      * This verifies the fix for OVPMS-710.
      */
+    @Test
     public void testSaveTwice() {
         final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
@@ -89,7 +94,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         assertSame(element, editor.getObjects().get(0));
 
         // save the parent and child, verifying the versions have incremented
-        execute(new TransactionCallback() {
+        execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue(SaveHelper.save(parent));
                 assertTrue(editor.save());

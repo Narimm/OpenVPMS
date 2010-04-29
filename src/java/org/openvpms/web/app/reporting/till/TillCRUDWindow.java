@@ -30,10 +30,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -60,6 +58,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -272,12 +271,10 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     protected void onTransfer() {
         final FinancialAct act = getObject();
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        String[] shortNames = {"party.organisationTill"};
-        IPage<IMObject> page = ArchetypeQueryHelper.get(
-                service, shortNames, true, 0, ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> accounts = page.getResults();
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        ArchetypeQuery query = new ArchetypeQuery("party.organisationTill", true)
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> accounts = service.get(query).getResults();
         String title = Messages.get("till.transfer.title");
         String message = Messages.get("till.transfer.message");
         ListBox list = new ListBox(accounts.toArray());

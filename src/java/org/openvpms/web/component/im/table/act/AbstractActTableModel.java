@@ -32,14 +32,23 @@ import org.openvpms.web.component.im.table.DescriptorTableModel;
 public abstract class AbstractActTableModel extends DescriptorTableModel<Act> {
 
     /**
-     * Creates a new <code>AbstractActTableModel</code>.
+     * Constructs a <tt>AbstractActTableModel</tt>.
      * The column model must be set using {@link #setTableColumnModel}.
      */
     public AbstractActTableModel() {
     }
 
     /**
-     * Creates a new <code>AbstractActTableModel</code>.
+     * Constructs a <tt>AbstractActTableModel</tt>.
+     *
+     * @param shortName the act archetype short names
+     */
+    public AbstractActTableModel(String shortName) {
+        this(new String[]{shortName});
+    }
+
+    /**
+     * Constructs a <tt>AbstractActTableModel</tt>.
      *
      * @param shortNames the act archetype short names
      */
@@ -48,7 +57,7 @@ public abstract class AbstractActTableModel extends DescriptorTableModel<Act> {
     }
 
     /**
-     * Creates a new <code>AbstractActTableModel</code>.
+     * Constructs a <tt>AbstractActTableModel</tt>.
      *
      * @param shortNames the act archetype short names
      * @param context    the layout context. May be <tt>null</tt>

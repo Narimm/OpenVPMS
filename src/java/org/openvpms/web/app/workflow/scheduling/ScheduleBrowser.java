@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import org.openvpms.web.component.event.ActionListener;
@@ -146,10 +147,29 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Select an object.
      *
-     * @param object the object to select
+     * @param object the object to select. May be <tt>null</tt>
      */
     public void setSelected(PropertySet object) {
+        boolean found = false;
         selected = object;
+        if (selected != null) {
+            int column = model.getColumn(object.getReference(ScheduleEvent.SCHEDULE_REFERENCE));
+            if (column != -1) {
+                Schedule schedule = model.getSchedule(column);
+                int row = model.getRow(schedule, object.getReference(ScheduleEvent.ACT_REFERENCE));
+                if (row != -1) {
+                    model.setSelectedCell(column, row);
+                    selectedTime = object.getDate(ScheduleEvent.ACT_START_TIME);
+                    selectedSchedule = schedule.getSchedule();
+                    found = true;
+                }
+            }
+        }
+        if (!found) {
+            model.setSelectedCell(-1, -1);
+            selectedTime = null;
+            selectedSchedule = null;
+        }
     }
 
     /**
@@ -170,6 +190,15 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         cut = event;
         updateCutSelection();
 
+    }
+
+    /**
+     * Sets the query date.
+     *
+     * @param date the date
+     */
+    public void setDate(Date date) {
+        query.setDate(date);
     }
 
     /**
@@ -266,6 +295,31 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         if (event != null) {
             IMObjectReference actRef = event.getReference(ScheduleEvent.ACT_REFERENCE);
             return (Act) IMObjectHelper.getObject(actRef);
+        }
+        return null;
+    }
+
+    /**
+     * Helper to return the event associated with an act.
+     *
+     * @param act the act. May be <tt>null</tt>
+     * @return the associated event, or <tt>nukl</tt> if <tt>act</tt> is null or has been deleted
+     */
+    public PropertySet getEvent(Act act) {
+        if (act != null) {
+            ActBean bean = new ActBean(act);
+            Entity schedule = bean.getNodeParticipant("schedule");
+            if (schedule != null) {
+                List<PropertySet> events = results.get(schedule);
+                IMObjectReference ref = act.getObjectReference();
+                if (events != null) {
+                    for (PropertySet set : events) {
+                        if (ref.equals(set.getReference(ScheduleEvent.ACT_REFERENCE))) {
+                            return set;
+                        }
+                    }
+                }
+            }
         }
         return null;
     }
@@ -511,7 +565,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             }
         }
         model.setSelectedCell(column, row);
-        setSelected(model.getEvent(column, row));
+        selected = model.getEvent(column, row);
         if (model.getAvailability(column, row) != Availability.UNAVAILABLE) {
             Schedule schedule = model.getSchedule(column);
             if (schedule != null) {

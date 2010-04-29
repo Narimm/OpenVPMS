@@ -24,6 +24,8 @@
  */
 package org.openvpms.web.component.im.edit;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -51,6 +53,7 @@ public abstract class AbstractCollectionPropertyEditorTest
      * Tests the behaviour of performing query operations on an empty
      * collection editor
      */
+    @Test
     public void testEmpty() {
         IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
@@ -70,6 +73,7 @@ public abstract class AbstractCollectionPropertyEditorTest
     /**
      * Tests {@link CollectionPropertyEditor#save}.
      */
+    @Test
     public void testSave() {
         final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
@@ -85,7 +89,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertTrue("Collection should be valid", editor.isValid());
         assertTrue("Collection should be modified", editor.isModified());
 
-        execute(new TransactionCallback() {
+        execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
@@ -116,6 +120,7 @@ public abstract class AbstractCollectionPropertyEditorTest
     /**
      * Tests {@link CollectionPropertyEditor#remove}.
      */
+    @Test
     public void testRemove() {
         final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
@@ -138,7 +143,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertTrue(editor.isValid());
         assertTrue(editor.isModified());
 
-        execute(new TransactionCallback() {
+        execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
@@ -163,7 +168,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertFalse(editor.getObjects().contains(elt2));
         assertTrue(editor.getObjects().contains(elt3));
 
-        execute(new TransactionCallback() {
+        execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
@@ -189,6 +194,7 @@ public abstract class AbstractCollectionPropertyEditorTest
     /**
      * Tests {@link CollectionPropertyEditor#remove}.
      */
+    @Test
     public void testRemoveAndAdd() {
         final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
@@ -205,7 +211,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertTrue(editor.isValid());
         assertTrue(editor.isModified());
 
-        execute(new TransactionCallback() {
+        execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
@@ -225,7 +231,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertFalse(editor.getObjects().contains(elt1));
         assertTrue(editor.getObjects().contains(elt2));
 
-        execute(new TransactionCallback() {
+        execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
@@ -251,6 +257,7 @@ public abstract class AbstractCollectionPropertyEditorTest
      * Tests {@link CollectionPropertyEditor#remove} on a collection that has
      * been saved and reloaded.
      */
+    @Test
     public void testRemoveAfterReload() {
         final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
@@ -270,7 +277,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertTrue(editor.isValid());
         assertTrue(editor.isModified());
 
-        execute(new TransactionCallback() {
+        execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
@@ -298,7 +305,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertFalse(editor2.getObjects().contains(elt1));
         assertTrue(editor2.getObjects().contains(elt2));
 
-        execute(new TransactionCallback() {
+        execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue("Failed to save parent", SaveHelper.save(parent2));
                 assertTrue("Failed to save collection", editor2.save());
@@ -384,7 +391,7 @@ public abstract class AbstractCollectionPropertyEditorTest
      *
      * @param callback the callback
      */
-    protected void execute(TransactionCallback callback) {
+    protected void execute(TransactionCallback<Object> callback) {
         TransactionTemplate template = new TransactionTemplate(
                 ServiceHelper.getTransactionManager());
         template.execute(callback);

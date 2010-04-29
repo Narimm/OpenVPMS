@@ -135,6 +135,23 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     }
 
     /**
+     * Determines if the query selects a particular object.
+     *
+     * @param object the object to check^M
+     * @return <tt>true</tt> if the object is selected by the query^M
+     */
+    public boolean selects(T object) {
+        Iterator<T> iterator = iterator();
+        while (iterator.hasNext()) {
+            T next = iterator.next();
+            if (next.equals(object)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Performs the query using the default sort constraint (if any), and
      * adapts the results to an iterator.
      *
@@ -172,8 +189,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      *
      * @param name the name. May contain wildcards, or be <tt>null</tt>
      */
-    public void setName(String name) {
-        query.setName(name);
+    public void setValue(String name) {
+        query.setValue(name);
     }
 
     /**
@@ -181,8 +198,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      *
      * @return the name. May contain wildcards, or be <tt>null</tt>
      */
-    public String getName() {
-        return query.getName();
+    public String getValue() {
+        return query.getValue();
     }
 
     /**
@@ -190,8 +207,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      *
      * @param length the length
      */
-    public void setNameMinLength(int length) {
-        query.setNameMinLength(length);
+    public void setValueMinLength(int length) {
+        query.setValueMinLength(length);
     }
 
     /**
@@ -199,8 +216,8 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      *
      * @return the minimum length
      */
-    public int getNameMinLength() {
-        return query.getNameMinLength();
+    public int getValueMinLength() {
+        return query.getValueMinLength();
     }
 
     /**

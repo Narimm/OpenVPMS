@@ -53,7 +53,7 @@ public class BasicQuery<T extends IMObject> extends NonRenderingQuery<T> {
      * @throws ArchetypeServiceException if the query fails
      */
     public ResultSet<T> query(SortConstraint[] sort) {
-        return new DefaultResultSet<T>(getArchetypes(), getName(),
+        return new DefaultResultSet<T>(getArchetypes(), getValue(),
                                        getConstraints(), sort, getMaxResults(),
                                        isDistinct());
     }

@@ -47,7 +47,9 @@ public abstract class AbstractSubsystem implements Subsystem {
 
 
     /**
-     * Construct a new <code>AbstractSubsystem</code>.
+     * Constructs an <tt>AbstractSubsystem</tt>.
+     *
+     * @param id the subsystem identity
      */
     public AbstractSubsystem(String id) {
         this.id = id;
@@ -119,7 +121,7 @@ public abstract class AbstractSubsystem implements Subsystem {
      */
     public Workspace getWorkspaceForArchetype(String shortName) {
         for (Workspace workspace : workspaces) {
-            if (workspace.canHandle(shortName)) {
+            if (workspace.canUpdate(shortName)) {
                 return workspace;
             }
         }

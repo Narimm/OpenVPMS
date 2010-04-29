@@ -50,7 +50,7 @@ import java.util.Iterator;
 
 /**
  * Abstract implementation of the {@link Query} interface that queries objects
- * on short name, instance name, and active/inactive status.
+ * on short name, some search criteria, and active/inactive status.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -58,10 +58,10 @@ import java.util.Iterator;
 public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
 
     /**
-     * The instance name field. If the text is <tt>null</tt> or empty, indicates
+     * The search field. If the text is <tt>null</tt> or empty, indicates
      * to query all instances.
      */
-    private TextField instanceName;
+    private TextField searchField;
 
     /**
      * The inactive check box. If selected, deactived instances will be returned
@@ -87,12 +87,12 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     /**
      * Type label id.
      */
-    private static final String TYPE_ID = "type";
+    private static final String TYPE_ID = "query.type";
 
     /**
-     * Name label id.
+     * Search label id.
      */
-    private static final String NAME_ID = "name";
+    private static final String SEARCH_ID = "query.search";
 
     /**
      * Deactivated label id.
@@ -208,21 +208,21 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Sets the name to query on.
+     * Sets the value to query on.
      *
-     * @param name the name. May contain wildcards, or be <tt>null</tt>
+     * @param value the value. May contain wildcards, or be <tt>null</tt>
      */
-    public void setName(String name) {
-        getInstanceName().setText(name);
+    public void setValue(String value) {
+        getSearchField().setText(value);
     }
 
     /**
-     * Returns the name being queried on.
+     * Returns the value being queried on.
      *
-     * @return the name. May contain wildcards, or be <tt>null</tt>
+     * @return the value. May contain wildcards, or be <tt>null</tt>
      */
-    public String getName() {
-        return getWildcardedText(getInstanceName());
+    public String getValue() {
+        return getWildcardedText(getSearchField());
     }
 
     /**
@@ -318,24 +318,21 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     protected void doLayout(Component container) {
         addShortNameSelector(container);
-        addInstanceName(container);
+        addSearchField(container);
         addInactive(container);
-        FocusHelper.setFocus(getInstanceName());
+        FocusHelper.setFocus(getSearchField());
     }
 
     /**
-     * Adds the short name selector to a container, if there is more than one
-     * matching short name
+     * Adds the short name selector to a container, if there is more than one matching short name.
      *
      * @param container the container
      */
     protected void addShortNameSelector(Component container) {
         String[] shortNames = getShortNames();
         if (shortNames.length > 1) {
-            final ShortNameListModel model
-                    = new ShortNameListModel(shortNames, true);
-            final SelectField shortNameSelector = SelectFieldFactory.create(
-                    model);
+            final ShortNameListModel model = new ShortNameListModel(shortNames, true);
+            final SelectField shortNameSelector = SelectFieldFactory.create(model);
             shortNameSelector.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
                     int index = shortNameSelector.getSelectedIndex();
@@ -353,32 +350,32 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Returns the instance name field.
+     * Returns the search field.
      *
-     * @return the instance name field
+     * @return the search field
      */
-    protected TextField getInstanceName() {
-        if (instanceName == null) {
-            instanceName = TextComponentFactory.create();
-            instanceName.addActionListener(new ActionListener() {
+    protected TextField getSearchField() {
+        if (searchField == null) {
+            searchField = TextComponentFactory.create();
+            searchField.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    onInstanceNameChanged();
+                    onSearchFieldChanged();
                 }
             });
         }
-        return instanceName;
+        return searchField;
     }
 
     /**
-     * Adds the instance name field to a container.
+     * Adds the search field to a container.
      *
      * @param container the container
      */
-    protected void addInstanceName(Component container) {
-        Label nameLabel = LabelFactory.create(NAME_ID);
-        container.add(nameLabel);
-        container.add(getInstanceName());
-        focusGroup.add(instanceName);
+    protected void addSearchField(Component container) {
+        Label label = LabelFactory.create(SEARCH_ID);
+        container.add(label);
+        container.add(getSearchField());
+        focusGroup.add(searchField);
     }
 
     /**
@@ -406,27 +403,27 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Invoked when the instance name changes. Invokes {@link #onQuery}.
+     * Invoked when the search field changes. Invokes {@link #onQuery}.
      */
-    protected void onInstanceNameChanged() {
+    protected void onSearchFieldChanged() {
         onQuery();
     }
 
     /**
      * Determines if a query may be performed on name.
      * A query can be performed on name if the length of the name
-     * (minus wildcards) &gt;= {@link #getNameMinLength()}
+     * (minus wildcards) &gt;= {@link #getValueMinLength()}
      *
      * @return <tt>true</tt> if a query may be performed on name;
      *         otherwise <tt>false</tt>
      */
     protected boolean canQueryOnName() {
-        String name = getName();
+        String name = getValue();
         int length = 0;
         if (name != null) {
             length = CharSetUtils.delete(name, "*").length();
         }
-        return (length >= getNameMinLength());
+        return (length >= getValueMinLength());
     }
 
     /**

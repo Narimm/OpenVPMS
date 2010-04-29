@@ -18,16 +18,21 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.archetype.rules.party.ContactArchetypes;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.app.customer.charge.CustomerInvoiceEditDialog;
+import org.openvpms.web.app.patient.mr.PatientClinicalEventEditDialog;
+import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.app.customer.charge.CustomerInvoiceEditDialog;
 
 
 /**
@@ -46,13 +51,15 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
     /**
      * Verifies that a {@link EditDialog} is returned when no other class is configured.
      */
+    @Test
     public void testCreateDefaultDialog() {
         checkCreate(ContactArchetypes.PHONE, EditDialog.class);
     }
 
     /**
-     * Verifies that a {@link CustomerInvoiceEditDialog} is returned when no other class is configured.
+     * Verifies that a {@link CustomerInvoiceEditDialog} is returned for an <em>act.customerAccountChargesInvoice</em>.
      */
+    @Test
     public void testCreateInvoiceEditDialog() {
         checkCreate(CustomerAccountArchetypes.INVOICE, CustomerInvoiceEditDialog.class);
     }
@@ -60,6 +67,7 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
     /**
      * Verifies that a {@link ActEditDialog} is returned for customer account acts.
      */
+    @Test
     public void testCreateActEditDialog() {
         checkCreate(CustomerAccountArchetypes.COUNTER, ActEditDialog.class);
         checkCreate(CustomerAccountArchetypes.CREDIT, ActEditDialog.class);
@@ -71,13 +79,18 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies that a {@link PatientClinicalEventEditDialog} is returned for an <em>act.patientClinicalEvent</em>.
+     */
+    public void testCreatePatientClinicalEventEditDialog() {
+        checkCreate(MedicalRecordRules.CLINICAL_EVENT, PatientClinicalEventEditDialog.class);
+    }
+
+    /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    public void setUp() {
+        super.setUp();
         service = ServiceHelper.getArchetypeService();
     }
 

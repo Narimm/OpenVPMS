@@ -97,21 +97,7 @@ public class PriceActItemEditor extends ActItemEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy() {
-            @Override
-            protected ComponentState createComponent(Property property,
-                                                     IMObject parent,
-                                                     LayoutContext context) {
-                if ("fixedPrice".equals(property.getName())) {
-                    // need to register the editor
-                    getEditors().add(fixedEditor, property);
-                    return new ComponentState(fixedEditor.getComponent(),
-                                              fixedEditor.getProperty(),
-                                              fixedEditor.getFocusGroup());
-                }
-                return super.createComponent(property, parent, context);
-            }
-        };
+        return new PriceItemLayoutStrategy();
     }
 
     /**
@@ -174,7 +160,7 @@ public class PriceActItemEditor extends ActItemEditor {
         Product product = getProduct();
 
         if (customer != null && product != null
-                && !TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+            && !TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
             BigDecimal fixedPrice = getFixedPrice();
             BigDecimal unitPrice = getUnitPrice();
             BigDecimal quantity = getQuantity();
@@ -290,4 +276,28 @@ public class PriceActItemEditor extends ActItemEditor {
         return result;
     }
 
+    /**
+     * Layout strategy that includes the fixed price editor.
+     */
+    protected class PriceItemLayoutStrategy extends LayoutStrategy {
+
+        /**
+         * Creates a component for a property.
+         *
+         * @param property the property
+         * @param parent   the parent object
+         * @param context  the layout context
+         * @return a component to display <tt>property</tt>
+         */
+        @Override
+        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+            if ("fixedPrice".equals(property.getName())) {
+                // need to register the editor
+                getEditors().add(fixedEditor, property);
+                return new ComponentState(fixedEditor.getComponent(), fixedEditor.getProperty(),
+                                          fixedEditor.getFocusGroup());
+            }
+            return super.createComponent(property, parent, context);
+        }
+    }
 }

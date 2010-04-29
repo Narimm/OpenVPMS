@@ -105,7 +105,7 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
             result = super.query(sort);
         } else {
             ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate", false, true);
-            String name = getName();
+            String name = getValue();
             if (!StringUtils.isEmpty(name)) {
                 query.add(new NodeConstraint("name", name));
             }

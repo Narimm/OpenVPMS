@@ -339,7 +339,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     protected Query<T> createQuery(String name) {
         Query<T> query = QueryFactory.create(
                 shortNames, GlobalContext.getInstance());
-        query.setName(name);
+        query.setValue(name);
         return query;
     }
 

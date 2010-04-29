@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.query;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -47,6 +49,7 @@ public class ResultSetIteratorTestCase extends AbstractResultSetTest {
     /**
      * Tests the behaviour of iterating an empty result set.
      */
+    @Test
     public void testEmpty() {
         ActResultSet<Act> set = createResultSet();
         ResultSetIterator<Act> iterator = new ResultSetIterator<Act>(set);
@@ -62,6 +65,7 @@ public class ResultSetIteratorTestCase extends AbstractResultSetTest {
     /**
      * Tests iteration.
      */
+    @Test
     public void testIteration() {
         Party patient = TestHelper.createPatient(true);
         Product product = TestHelper.createProduct(true);
@@ -100,12 +104,10 @@ public class ResultSetIteratorTestCase extends AbstractResultSetTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    public void setUp() {
+        super.setUp();
         customer = TestHelper.createCustomer(true);
     }
 }

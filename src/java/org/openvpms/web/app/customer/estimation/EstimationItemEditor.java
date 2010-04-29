@@ -18,18 +18,26 @@
 
 package org.openvpms.web.app.customer.estimation;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.customer.PriceActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -43,6 +51,16 @@ import java.util.Date;
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class EstimationItemEditor extends PriceActItemEditor {
+
+    /**
+     * Low quantity selling units.
+     */
+    private Label lowQtySellingUnits = LabelFactory.create();
+
+    /**
+     * High quantity selling units.
+     */
+    private Label highQtySellingUnits = LabelFactory.create();
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -116,6 +134,7 @@ public class EstimationItemEditor extends PriceActItemEditor {
             fixedPrice.setValue(BigDecimal.ZERO);
             lowUnitPrice.setValue(BigDecimal.ZERO);
             highUnitPrice.setValue(BigDecimal.ZERO);
+            updateSellingUnits(null);
         } else {
             if (getFilter() != null) {
                 changeLayout(null);
@@ -123,8 +142,12 @@ public class EstimationItemEditor extends PriceActItemEditor {
             Property fixedPrice = getProperty("fixedPrice");
             Property lowUnitPrice = getProperty("lowUnitPrice");
             Property highUnitPrice = getProperty("highUnitPrice");
-            ProductPrice fixed = getDefaultFixedProductPrice(product);
-            ProductPrice unit = getDefaultUnitProductPrice(product);
+            ProductPrice fixed = null;
+            ProductPrice unit = null;
+            if (product != null) {
+                fixed = getDefaultFixedProductPrice(product);
+                unit = getDefaultUnitProductPrice(product);
+            }
 
             if (fixed != null) {
                 fixedPrice.setValue(fixed.getPrice());
@@ -138,6 +161,7 @@ public class EstimationItemEditor extends PriceActItemEditor {
                 lowUnitPrice.setValue(BigDecimal.ZERO);
                 highUnitPrice.setValue(BigDecimal.ZERO);
             }
+            updateSellingUnits(product);
         }
     }
 
@@ -165,6 +189,43 @@ public class EstimationItemEditor extends PriceActItemEditor {
     protected BigDecimal getQuantity() {
         BigDecimal value = (BigDecimal) getProperty("highQty").getValue();
         return (value != null) ? value : BigDecimal.ZERO;
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new PriceItemLayoutStrategy() {
+            @Override
+            protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+                ComponentState state = super.createComponent(property, parent, context);
+                if ("lowQty".equals(property.getName())) {
+                    Component component = RowFactory.create("CellSpacing", state.getComponent(), lowQtySellingUnits);
+                    state = new ComponentState(component, property);
+                } else if ("highQty".equals(property.getName())) {
+                    Component component = RowFactory.create("CellSpacing", state.getComponent(), highQtySellingUnits);
+                    state = new ComponentState(component, property);
+                }
+                return state;
+            }
+        };
+    }
+
+    /**
+     * Updates the selling units label.
+     *
+     * @param product the product. May be <tt>null</tt>
+     */
+    private void updateSellingUnits(Product product) {
+        String units = "";
+        if (product != null) {
+            units = LookupNameHelper.getName(product, "sellingUnits");
+        }
+        lowQtySellingUnits.setText(units);
+        highQtySellingUnits.setText(units);
     }
 
 }

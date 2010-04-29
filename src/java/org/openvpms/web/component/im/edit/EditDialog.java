@@ -18,12 +18,12 @@
 
 package org.openvpms.web.component.im.edit;
 
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.button.ButtonSet;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -190,7 +190,8 @@ public class EditDialog extends PopupDialog {
     /**
      * Saves the current object, if saving is enabled.
      * <p/>
-     * If it is, and the object is valid, invokes {@link #doSave()}.
+     * If it is, and the object is valid, then {@link #doSave()} is called. If {@link #doSave()} fails
+     * (i.e returns <tt>false</tt>), then {@link #saveFailed()} is called.
      *
      * @return <tt>true</tt> if the object was saved
      */
@@ -201,8 +202,7 @@ public class EditDialog extends PopupDialog {
             if (editor.validate(validator)) {
                 result = doSave();
                 if (!result) {
-                    // workaround for OVPMS-855. If save fails, abort the edit
-                    onCancel();
+                    saveFailed();
                 }
             } else {
                 ValidationHelper.showError(validator);
@@ -218,6 +218,16 @@ public class EditDialog extends PopupDialog {
      */
     protected boolean doSave() {
         return SaveHelper.save(editor);
+    }
+
+    /**
+     * Invoked by {@link #save} when saving fails.
+     * <p/>
+     * This implementation delegates to {@link #onCancel()}, discarding any changes and closing the dialog.
+     * TODO - this is a workaround for OVPMS-855
+     */
+    protected void saveFailed() {
+        onCancel();
     }
 
     /**

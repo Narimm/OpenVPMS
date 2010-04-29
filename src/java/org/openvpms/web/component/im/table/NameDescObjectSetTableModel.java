@@ -29,7 +29,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
- * An object set table model that displays the archetype, name and description.
+ * An object set table model that displays the ID, archetype, name and description.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -58,19 +58,24 @@ public class NameDescObjectSetTableModel
     private boolean showArchetype;
 
     /**
+     * The ID column index.
+     */
+    private static final int ID_INDEX = 0;
+
+    /**
      * The archetype column index.
      */
-    private static final int ARCHETYPE_INDEX = 0;
+    private static final int ARCHETYPE_INDEX = 1;
 
     /**
      * The name index.
      */
-    private static final int NAME_INDEX = 1;
+    private static final int NAME_INDEX = 2;
 
     /**
      * The description index.
      */
-    private static final int DESCRIPTION_INDEX = 2;
+    private static final int DESCRIPTION_INDEX = 3;
 
 
     /**
@@ -83,8 +88,7 @@ public class NameDescObjectSetTableModel
     /**
      * Creates a new <tt>NameDescObjectSetTableModel</tt>.
      *
-     * @param alias         the object alias, used to prefix node names. May be
-     *                      <tt>null</tt>
+     * @param alias         the object alias, used to prefix node names. May be <tt>null</tt>
      * @param showArchetype if <tt>true</tt> show the archetype
      */
     public NameDescObjectSetTableModel(String alias, boolean showArchetype) {
@@ -125,6 +129,9 @@ public class NameDescObjectSetTableModel
         Object result = null;
         int index = column.getModelIndex();
         switch (index) {
+            case ID_INDEX:
+                result = set.getReference(reference).getId();
+                break;
             case ARCHETYPE_INDEX:
                 IMObjectReference ref = set.getReference(reference);
                 String shortName = ref.getArchetypeId().getShortName();
@@ -151,7 +158,9 @@ public class NameDescObjectSetTableModel
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         SortConstraint result = null;
-        if (column == NAME_INDEX) {
+        if (column == ID_INDEX) {
+            result = new NodeSortConstraint("id", ascending);
+        } else if (column == NAME_INDEX) {
             result = new NodeSortConstraint("name", ascending);
         } else if (column == DESCRIPTION_INDEX) {
             result = new NodeSortConstraint("description", ascending);
@@ -165,16 +174,14 @@ public class NameDescObjectSetTableModel
      * @param showArchetype if <tt>true</tt> show the archetype
      * @return a new column model
      */
-    private static TableColumnModel createTableColumnModel(
-            boolean showArchetype) {
+    private static TableColumnModel createTableColumnModel(boolean showArchetype) {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
+        model.addColumn(createTableColumn(ID_INDEX, ID));
         if (showArchetype) {
-            model.addColumn(createTableColumn(ARCHETYPE_INDEX,
-                                              "table.imobject.archetype"));
+            model.addColumn(createTableColumn(ARCHETYPE_INDEX, ARCHETYPE));
         }
-        model.addColumn(createTableColumn(NAME_INDEX, "table.imobject.name"));
-        model.addColumn(createTableColumn(DESCRIPTION_INDEX,
-                                          "table.imobject.description"));
+        model.addColumn(createTableColumn(NAME_INDEX, NAME));
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX, DESCRIPTION));
         return model;
     }
 }

@@ -53,7 +53,27 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      */
     private boolean enableSelection = true;
 
+    /**
+     * ID column localisation key.
+     */
+    protected static final String ID = "table.imobject.id";
 
+    /**
+     * Archetype column localisation key.
+     */
+    protected static final String ARCHETYPE = "table.imobject.archetype";
+
+    /**
+     * Name column localisation key.
+     */
+    protected static final String NAME = "table.imobject.name";
+
+    /**
+     * Description column localisation key.
+     */
+    protected static final String DESCRIPTION = "table.imobject.description";
+
+    
     /**
      * Creates a new <tt>AbstractIMTableModel</tt>.
      */
@@ -264,9 +284,9 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      *
      * @param index     the column index
      * @param headerKey the header label resource key
+     * @return a new table column
      */
-    protected static TableColumn createTableColumn(int index,
-                                                   String headerKey) {
+    protected static TableColumn createTableColumn(int index, String headerKey) {
         TableColumn column = new TableColumn(index);
         String label = Messages.get(headerKey);
         column.setHeaderValue(label);

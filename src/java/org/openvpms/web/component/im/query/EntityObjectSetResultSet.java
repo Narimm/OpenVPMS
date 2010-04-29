@@ -46,18 +46,15 @@ public class EntityObjectSetResultSet
      * Creates a new <tt>EntityObjectSetResultSet</tt>.
      *
      * @param archetypes       the archetypes to query
-     * @param instanceName     the instance name. May be <tt>null</tt>
+     * @param value            the value to query on. May be <tt>null</tt>
      * @param searchIdentities if <tt>true</tt> search on identity name
      * @param sort             the sort criteria. May be <tt>null</tt>
      * @param rows             the maximum no. of rows per page
      * @param distinct         if <tt>true</tt> filter duplicate rows
      */
-    public EntityObjectSetResultSet(ShortNameConstraint archetypes,
-                                    String instanceName,
-                                    boolean searchIdentities,
-                                    SortConstraint[] sort,
-                                    int rows, boolean distinct) {
-        super(archetypes, instanceName, searchIdentities, null, sort,
+    public EntityObjectSetResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
+                                    SortConstraint[] sort, int rows, boolean distinct) {
+        super(archetypes, value, searchIdentities, null, sort,
               rows, distinct, new ObjectSetQueryExecutor());
         archetypes.setAlias("entity");
     }

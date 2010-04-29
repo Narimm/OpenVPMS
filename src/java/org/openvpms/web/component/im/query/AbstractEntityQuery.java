@@ -104,20 +104,20 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
             result = createResultSet(sort);
         } else {
             ErrorHelper.show(Messages.get("entityquery.error.nameLength",
-                                          getNameMinLength()));
+                                          getValueMinLength()));
         }
         return result;
     }
 
     /**
-     * Sets the name to query on.
+     * Sets the value to query on.
      *
-     * @param name the name. May contain wildcards, or be <code>null</code>
+     * @param value the value. May contain wildcards, or be <tt>null</tt>
      */
     @Override
-    public void setName(String name) {
-        super.setName(name);
-        checkIdentityName(name);
+    public void setValue(String value) {
+        super.setValue(value);
+        checkIdentityName(value);
     }
 
     /**
@@ -164,33 +164,34 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
      */
     protected void doLayout(Component container) {
         addShortNameSelector(container);
-        addInstanceName(container);
+        addSearchField(container);
         addIdentitySearch(container);
         addInactive(container);
-        FocusHelper.setFocus(getInstanceName());
+        FocusHelper.setFocus(getSearchField());
     }
 
     /**
-     * Invoked when the instance name changes.
-     * This sets the identity search checkbox if the name contains a number.
+     * Invoked when the search field changes.
+     * <p/>
+     * This sets the identity search checkbox if the field contains a number.
      */
     @Override
-    protected void onInstanceNameChanged() {
-        String name = getName();
-        checkIdentityName(name);
-        super.onInstanceNameChanged();
+    protected void onSearchFieldChanged() {
+        String value = getValue();
+        checkIdentityName(value);
+        super.onSearchFieldChanged();
     }
 
     /**
-     * Determines if a name may be an identity (i.e is all numeric).
+     * Determines if a value may be an identity (i.e contains numerics).
      * If so, selects the 'identity search' box.
      *
-     * @param name the name. May be <tt>null</tt>
+     * @param value the name. May be <tt>null</tt>
      */
-    private void checkIdentityName(String name) {
-        if (name != null) {
-            name = name.replaceAll("\\*", "");
-            if (name.matches("\\d+")) {
+    private void checkIdentityName(String value) {
+        if (value != null) {
+            value = value.replaceAll("\\*", "");
+            if (value.matches("\\d+")) {
                 getIdentitySearch().setSelected(true);
             }
         }

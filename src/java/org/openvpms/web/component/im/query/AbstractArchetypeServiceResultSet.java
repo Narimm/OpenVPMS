@@ -19,8 +19,6 @@
 package org.openvpms.web.component.im.query;
 
 import org.apache.commons.collections.map.ReferenceMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -33,6 +31,7 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.List;
 
@@ -93,12 +92,6 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * The no. of pages to prefetch and cache.
      */
     private int prefetchPages = 4;
-
-    /**
-     * The logger.
-     */
-    private static final Log log
-            = LogFactory.getLog(AbstractArchetypeServiceResultSet.class);
 
 
     /**
@@ -417,7 +410,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
                 }
             }
         } catch (OpenVPMSException exception) {
-            log.error(exception, exception);
+            ErrorHelper.show(exception);
         }
         return result;
     }

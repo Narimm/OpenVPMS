@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 
@@ -85,6 +86,22 @@ public class LookupNameHelper {
             NodeDescriptor descriptor) {
         return LookupHelper.getNames(
                 ArchetypeServiceHelper.getArchetypeService(), descriptor);
+    }
+
+    /**
+     * Returns the name of a lookup given the node containing its code.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the corresponding lookup name, or <tt>null</tt> if none is found
+     */
+    public static String getName(IMObject object, String node) {
+        IMObjectBean bean = new IMObjectBean(object);
+        NodeDescriptor descriptor = bean.getDescriptor(node);
+        if (descriptor != null) {
+            return LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(), descriptor, object);
+        }
+        return null;
     }
 
 }

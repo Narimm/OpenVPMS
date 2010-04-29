@@ -25,6 +25,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.test.TestHelper;
+import org.junit.Test; import static org.junit.Assert.*;
 
 import java.util.Date;
 
@@ -38,7 +39,7 @@ import java.util.Date;
 public class ActResultSetTestCase extends AbstractResultSetTest {
 
     /**
-     * The acts created during {@link #onSetUp}.
+     * The acts created during {@link #setUp}.
      */
     private Act[] acts;
 
@@ -51,6 +52,7 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
     /**
      * Tests behaviour of iterating using an empty result set.
      */
+    @Test
     public void testEmpty() {
         Party party = TestHelper.createCustomer(true);
 
@@ -81,7 +83,7 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
     /**
      * Tests iteration.
      */
-    public void testIteration() {
+    @Test public void testIteration() {
         final int rowsPerPage = 5;
         final int total = acts.length;
         int expectedPages = (total / rowsPerPage);
@@ -121,7 +123,7 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
     /**
      * Tests random access.
      */
-    public void testRandomAccess() {
+    @Test public void testRandomAccess() {
         final int rowsPerPage = 2;
         final int total = acts.length;
         int expectedPages = getPages(rowsPerPage, total);
@@ -150,7 +152,7 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
     /**
      * Verifies that non-primary archetypes can be specified.
      */
-    public void testNonPrimary() {
+    @Test public void testNonPrimary() {
         Party patient = TestHelper.createPatient(true);
         String[] shortNames = {"act.customerAccountInvoiceItem",
                                "act.customerAccountCreditItem"};
@@ -171,12 +173,10 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
 
     /**
      * Sets up the test case.
-     *
-     * @throws Exception for any error
      */
     @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
+    public void setUp() {
+        super.setUp();
 
         customer = TestHelper.createCustomer(true);
         Party patient = TestHelper.createPatient(true);

@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.customer.charge;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
@@ -57,13 +59,17 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -111,12 +117,17 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     private StockRules rules;
 
     /**
+     * Selling units label.
+     */
+    private Label sellingUnits;
+
+    /**
      * Layout strategy factory that returns customized instances of
      * {@link PatientMedicationActLayoutStrategy}.
      */
     private static final IMObjectLayoutStrategyFactory FACTORY
             = new MedicationLayoutStrategyFactory();
-
+    
     /**
      * Node filter, used to disable properties when a product template is
      * selected.
@@ -163,6 +174,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateQuantity();
             }
         };
+
+        sellingUnits = LabelFactory.create();
 
         if (act.isNew()) {
             // default the act start time to today
@@ -254,6 +267,26 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new PriceItemLayoutStrategy() {
+            @Override
+            protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+                ComponentState state = super.createComponent(property, parent, context);
+                if ("quantity".equals(property.getName())) {
+                    Component component = RowFactory.create("CellSpacing", state.getComponent(), sellingUnits);
+                    state = new ComponentState(component, property);
+                }
+                return state;
+            }
+        };
+    }
+
+    /**
      * Invoked when layout has completed.
      */
     @Override
@@ -322,6 +355,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             unitPrice.setValue(BigDecimal.ZERO);
             fixedCost.setValue(BigDecimal.ZERO);
             unitCost.setValue(BigDecimal.ZERO);
+            updateSellingUnits(null);
         } else {
             updateMedicationProduct(product);
             updateInvestigations(product);
@@ -353,6 +387,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 unitCost.setValue(BigDecimal.ZERO);
             }
             updateStockLocation(product);
+            updateSellingUnits(product);
         }
     }
 
@@ -435,7 +470,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (!medicationEditors.isEmpty()) {
                 // set the product on the existing acts
                 for (PatientMedicationActEditor editor : medicationEditors) {
-                    editor.setProduct(product.getObjectReference());
+                    editor.setProduct(product);
                 }
                 editors.refresh();
             } else {
@@ -479,6 +514,19 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
             }
         }
+    }
+
+    /**
+     * Updates the selling units label.
+     *
+     * @param product the product. May be <tt>null</tt>
+     */
+    private void updateSellingUnits(Product product) {
+        String units = "";
+        if (product != null) {
+            units = LookupNameHelper.getName(product, "sellingUnits");
+        }
+        sellingUnits.setText(units);
     }
 
     /**

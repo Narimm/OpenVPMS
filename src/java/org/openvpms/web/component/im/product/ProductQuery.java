@@ -116,7 +116,7 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      * @return a new result set
      */
     protected ResultSet<Product> createResultSet(SortConstraint[] sort) {
-        return new EntityResultSet<Product>(getArchetypeConstraint(), getName(),
+        return new EntityResultSet<Product>(getArchetypeConstraint(), getValue(),
                                             isIdentitySearch(),
                                             getConstraints(),
                                             sort, getMaxResults(),
