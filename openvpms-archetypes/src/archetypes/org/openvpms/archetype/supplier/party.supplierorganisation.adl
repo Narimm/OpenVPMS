@@ -108,13 +108,13 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-        <node name="esci" displayName="e-Supply Chain Interface" path="/entityRelationships"
-              type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="1"
-              filter="entityRelationship.supplierESCIConfiguration">
+        <node name="stockLocations" path="/entityRelationships"
+              type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.supplierStockLocation*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="entityRelationship.supplierESCIConfiguration"/>
+                        <property name="shortName" value="entityRelationship.supplierStockLocation*"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

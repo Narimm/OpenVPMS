@@ -22,7 +22,6 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -122,30 +121,32 @@ public class SupplierRules {
     }
 
     /**
-     * Returns the <em>entity.ESCIConfiguration*</em> of the supplier associated with an order.
+     * Returns the <em>entityRelationship.supplierStockLocation*</em> between the supplier and stock location
+     * associated with an order.
      *
      * @param order an <em>act.supplierOrder</em>
-     * @return the supplier's <em>entity.ESCIConfiguration*</em> or <tt>null</tt> if none is found
+     * @return the supplier's <em>entityRelationship.supplierStockLocation*</em> or <tt>null</tt> if none is found
      */
-    public Entity getESCIConfiguration(Act order) {
+    public EntityRelationship getSupplierStockLocation(Act order) {
         ActBean bean = new ActBean(order, service);
         Party supplier = (Party) bean.getNodeParticipant("supplier");
-        return (supplier != null) ? getESCIConfiguration(supplier) : null;
+        Party stockLocation = (Party) bean.getNodeParticipant("stockLocation");
+        return (supplier != null && stockLocation != null) ? getSupplierStockLocation(supplier, stockLocation) : null;
     }
 
     /**
-     * Returns the <em>entity.ESCIConfiguration*</em> of a supplier.
+     * Returns the <em>entityRelationship.supplierStockLocation*</em> between a supplier and stock location.
      *
-     * @param supplier a <em>party.supplier*</em>
-     * @return the supplier's <em>entity.ESCIConfiguration*</em> or <tt>null</tt> if none is found
+     * @param supplier      a <em>party.supplier*</em>
+     * @param stockLocation a <em>party.organisationStockLocation</em>
+     * @return the supplier's <em>entityRelationship.supplierStockLocation*</em> or <tt>null</tt> if none is found
      */
-    public Entity getESCIConfiguration(Party supplier) {
-        Entity result = null;
+    public EntityRelationship getSupplierStockLocation(Party supplier, Party stockLocation) {
         EntityBean bean = new EntityBean(supplier, service);
-        if (bean.hasNode("esci")) {
-            result = bean.getNodeTargetEntity("esci");
-        }
-        return result;
+        Predicate active = AndPredicate.getInstance(IsActiveRelationship.ACTIVE_NOW,
+                                                    RefEquals.getTargetEquals(stockLocation));
+        List<EntityRelationship> relationships = bean.getNodeRelationships("stockLocations", active);
+        return (!relationships.isEmpty()) ? relationships.get(0) : null;
     }
 
 }
