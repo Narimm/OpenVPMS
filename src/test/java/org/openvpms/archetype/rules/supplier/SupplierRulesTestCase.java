@@ -23,10 +23,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -44,7 +43,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SupplierRulesTestCase extends ArchetypeServiceTest {
+public class SupplierRulesTestCase extends AbstractSupplierTest {
 
     /**
      * The rules.
@@ -92,7 +91,7 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testIsSuppliedBy() {
-        Party supplier = TestHelper.createSupplier();
+        Party supplier = getSupplier();
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
 
@@ -112,7 +111,7 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testGetProductSuppliersForSupplier() {
-        Party supplier = TestHelper.createSupplier();
+        Party supplier = getSupplier();
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
 
@@ -138,32 +137,37 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link SupplierRules#getESCIConfiguration(Act)} method.
+     * Tests the {@link SupplierRules#getSupplierStockLocation(Act)} method.
      */
     @Test
-    public void testGetESCIConfigurationForAct() {
-        Party supplier = TestHelper.createSupplier();
+    public void testGetSupplierStockLocationRelationship() {
+        Party supplier = getSupplier();
+        Party stockLocation = getStockLocation();
         Act order = (Act) create(SupplierArchetypes.ORDER);
         ActBean bean = new ActBean(order);
         bean.addNodeParticipation("supplier", supplier);
+        bean.addNodeParticipation("stockLocation", stockLocation);
 
-        assertNull(rules.getESCIConfiguration(order));
-        Entity config = addESCIConfiguration(supplier);
+        assertNull(rules.getSupplierStockLocation(order));
 
-        assertEquals(config, rules.getESCIConfiguration(order));
+        EntityRelationship supplierStockLocation = addSupplierStockLocationESCI(supplier, stockLocation);
+
+        assertEquals(supplierStockLocation, rules.getSupplierStockLocation(order));
     }
 
     /**
-     * Tests the {@link SupplierRules#getESCIConfiguration(Party)} method.
+     * Tests the {@link SupplierRules#getSupplierStockLocation(Party, Party)} method.
      */
     @Test
-    public void testGetESCIConfigurationForSupplier() {
-        Party supplier = TestHelper.createSupplier();
-        assertNull(rules.getESCIConfiguration(supplier));
+    public void testGetSupplierStockLocationRelationshipForSupplier() {
+        Party supplier = getSupplier();
+        Party stockLocation = getStockLocation();
 
-        Entity config = addESCIConfiguration(supplier);
+        assertNull(rules.getSupplierStockLocation(supplier, stockLocation));
 
-        assertEquals(config, rules.getESCIConfiguration(supplier));
+        EntityRelationship supplierStockLocation = addSupplierStockLocationESCI(supplier, stockLocation);
+
+        assertEquals(supplierStockLocation, rules.getSupplierStockLocation(supplier, stockLocation));
     }
 
     /**
@@ -171,6 +175,7 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
+        super.setUp();
         rules = new SupplierRules(getArchetypeService());
         productRules = new ProductRules();
     }
@@ -193,19 +198,21 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Adds an <em>entity.ESCIConfigurationSOAP</em> to a supplier.
+     * Adds an <em>entityRelationship.supplierStockLocationESCI</em> between a supplier and stock location.
      *
-     * @param supplier the supplier
-     * @return the configuration
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @return the new relationship
      */
-    private Entity addESCIConfiguration(Party supplier) {
-        Entity config = (Entity) create(SupplierArchetypes.ESCI_SOAP_CONFIGURATION);
-        IMObjectBean bean = new IMObjectBean(config);
-        bean.setValue("serviceURL", "http://localhost:8080/esci");
+    private EntityRelationship addSupplierStockLocationESCI(Party supplier, Party stockLocation) {
         EntityBean supplierBean = new EntityBean(supplier);
-        supplierBean.addNodeRelationship("esci", config);
-        save(config, supplier);
-        return config;
+        EntityRelationship relationship = supplierBean.addRelationship(SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI,
+                                                                       stockLocation);
+        IMObjectBean bean = new IMObjectBean(relationship);
+        bean.setValue("accountId", "ANACCOUNTID");
+        bean.setValue("orderServiceURL", "http://localhost:8080/esci/OrderService?wsdl");
+        save(supplier, stockLocation);
+        return relationship;
     }
 
 }

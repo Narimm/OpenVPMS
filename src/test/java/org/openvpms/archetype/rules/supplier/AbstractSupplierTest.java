@@ -145,6 +145,15 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
     }
 
     /**
+     * Returns the stock location.
+     *
+     * @return the stock location
+     */
+    protected Party getStockLocation() {
+        return stockLocation;
+    }
+
+    /**
      * Creates an order associated with an order item.
      *
      * @param orderItem the order item

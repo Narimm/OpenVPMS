@@ -16,10 +16,18 @@
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="entityRelationship.supplierESCIConfiguration.1.0"
+    <archetype name="entityRelationship.supplierStockLocationESCI.1.0"
                type="org.openvpms.component.business.domain.im.common.EntityRelationship"
-               latest="true" displayName="Supplier ESCI Configuration Relationship">
+               latest="true" displayName="Supplier Stock Location Relationship for e-Supply Chain Intefacing">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+
+        <node name="accountId" displayName="Account ID" path="/details/accountId"
+              type="java.lang.String" minCardinality="0"/>
+        <node name="orderServiceURL" displayName="Order Service URL" path="/details/orderServiceURL"
+              type="java.lang.String" minCardinality="1"/>
+        <node name="username" path="/details/username" type="java.lang.String" minCardinality="0"/>
+        <node name="password" path="/details/password" type="java.lang.String" minCardinality="0"/>
+
         <node name="source" displayName="Supplier" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
@@ -30,12 +38,12 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="target" displayName="ESCI Configuration" path="/target"
+        <node name="target" displayName="Stock Location" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="entity.ESCIConfiguration*"/>
+                        <property name="shortName" value="party.organisationStockLocation"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
