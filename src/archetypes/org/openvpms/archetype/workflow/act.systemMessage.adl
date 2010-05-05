@@ -25,10 +25,12 @@
               filter="participation.user"/>
         <node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()"/>
-        <node name="reason" path="/reason" type="java.lang.String" minCardinality="1">
-            <assertion name="lookup">
-                <property name="type" value="lookup"/>
-                <property name="source" value="lookup.messageReason"/>
+        <node name="reason" path="/reason" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ORDER_ACCEPTED" value="Order accepted"/>
+                    <property name="ORDER_REJECTED" value="Order rejected" />
+                </propertyList>
             </assertion>
         </node>
         <node name="description" type="java.lang.String" path="/description"/>

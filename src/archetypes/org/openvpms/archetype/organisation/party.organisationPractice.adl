@@ -36,19 +36,19 @@
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.location" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.phoneNumber" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.email" />
-					</propertyMap>
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="contact.location" />
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="contact.phoneNumber" />
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="contact.faxNumber" />
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="contact.email" />
+                    </propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
