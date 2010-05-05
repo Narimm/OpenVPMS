@@ -18,8 +18,9 @@
 package org.openvpms.esci.adapter;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
@@ -88,19 +89,21 @@ public class SupplierServiceLocatorImpl implements SupplierServiceLocator {
     /**
      * Returns a proxy for a supplier's {@link OrderService}.
      * <p/>
-     * This uses the <em>entity.ESCIConfigurationSOAP</em> associated with the supplier to lookup the web service.
+     * This uses the <em>entityRelationship.supplierStockLocationESCI</em> associated with the supplier and stock
+     * location to lookup the web service.
      *
-     * @param supplier the supplier
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
-     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid
+     * @throws ESCIAdapterException if the associated <tt>orderServiceURL</tt> is invalid
      */
-    public OrderService getOrderService(Party supplier) {
-        Entity config = rules.getESCIConfiguration(supplier);
+    public OrderService getOrderService(Party supplier, Party stockLocation) {
+        EntityRelationship config = rules.getSupplierStockLocation(supplier, stockLocation);
         if (config == null) {
             throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.ESCINotConfigured, supplier.getId(),
-                                           supplier.getName());
+                                           supplier.getName(), stockLocation.getName(), stockLocation.getId());
         }
-        if (!TypeHelper.isA(config, "entity.ESCIConfigurationSOAP")) {
+        if (!TypeHelper.isA(config, SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI)) {
             throw new IllegalStateException("SupplierServiceLocator cannot support configurations of type: "
                                             + config.getArchetypeId().getShortName());
         }
@@ -109,7 +112,7 @@ public class SupplierServiceLocatorImpl implements SupplierServiceLocator {
         String username = bean.getString("username");
         String password = bean.getString("password");
 
-        String serviceURL = bean.getString("serviceURL");
+        String serviceURL = bean.getString("orderServiceURL");
         if (StringUtils.isEmpty(serviceURL)) {
             throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidSupplierServiceURL,
                                            supplier.getId(), supplier.getName(), serviceURL);

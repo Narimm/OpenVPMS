@@ -25,6 +25,7 @@ import org.oasis.ubl.common.AmountType;
 import org.oasis.ubl.common.IdentifierType;
 import org.oasis.ubl.common.QuantityType;
 import org.oasis.ubl.common.aggregate.AddressType;
+import org.oasis.ubl.common.aggregate.ContactType;
 import org.oasis.ubl.common.aggregate.CustomerPartyType;
 import org.oasis.ubl.common.aggregate.ItemType;
 import org.oasis.ubl.common.aggregate.LineItemType;
@@ -40,12 +41,18 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.AbstractSupplierTest;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
@@ -73,6 +80,21 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
     private Contact practiceContact;
 
     /**
+     * Phone contact.
+     */
+    private Contact phoneContact;
+
+    /**
+     * Fax contact.
+     */
+    private Contact faxContact;
+
+    /**
+     * Email contact.
+     */
+    private Contact emailContact;
+
+    /**
      * The supplier contact.
      */
     private Contact supplierContact;
@@ -81,6 +103,16 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
      * The product supplier relationship.
      */
     private ProductSupplier productSupplier;
+
+    /**
+     * Order author.
+     */
+    private User author;
+
+    /**
+     * Id for the customer, assigned by the supplier.
+     */
+    private static final String SUPPLIER_ACCOUNT_ID = "ANACCOUNTID";
 
 
     /**
@@ -97,7 +129,9 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         FinancialAct actItem = createOrderItem(quantity, 1, unitPrice);
         FinancialAct act = createOrder(actItem);
         act.setStatus(ActStatus.POSTED);
-        save(act);
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("author", author);
+        bean.save();
 
         OrderMapper mapper = createMapper();
         OrderType order = mapper.map(act);
@@ -120,6 +154,8 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         checkDate(order.getIssueDate().getValue(), act.getActivityStartTime());
 
         checkCustomer(order.getBuyerCustomerParty(), getPractice(), practiceContact);
+        checkContact(order.getBuyerCustomerParty().getParty().getContact(), author.getName(), phoneContact, faxContact,
+                     emailContact);
         checkSupplier(order.getSellerSupplierParty(), getSupplier(), supplierContact);
 
         PayableAmountType amount = order.getAnticipatedMonetaryTotal().getPayableAmount();
@@ -145,16 +181,19 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
     public void setUp() {
         super.setUp();
         Party practice = TestHelper.getPractice();
-        PartyRules rules = new PartyRules();
-        practiceContact = rules.getContact(practice, ContactArchetypes.LOCATION, "BILLING");
-        if (practiceContact == null) {
-            practiceContact = (Contact) create(ContactArchetypes.LOCATION);
-            practice.addContact(practiceContact);
-        } else {
-            practice.removeContact(practiceContact);
-        }
+        practice.getContacts().clear();
         practiceContact = TestHelper.createLocationContact("1 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC", "3925");
         practice.addContact(practiceContact);
+
+        phoneContact = createContact(ContactArchetypes.PHONE, "telephoneNumber", "59527054");
+        practice.addContact(phoneContact);
+
+        faxContact = createContact(ContactArchetypes.FAX, "faxNumber", "59527053");
+        practice.addContact(faxContact);
+
+        emailContact = createContact(ContactArchetypes.EMAIL, "emailAddress", "foo@bar.com");
+        practice.addContact(emailContact);
+
         save(practice);
 
         supplierContact = TestHelper.createLocationContact("2 Peko Rd", "TENNANT_CREEK", "NT", "0862");
@@ -168,7 +207,19 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         productSupplier.setReorderCode("AREORDERCODE");
         productSupplier.setReorderDescription("A reorder description");
 
-        save(supplier, product);
+        // create a user for associating with orders
+        author = TestHelper.createUser();
+
+        // add a supplier/stock location relationship
+        Party stockLocation = getStockLocation();
+        EntityBean supplierBean = new EntityBean(supplier);
+        EntityRelationship relationship = supplierBean.addRelationship(
+                SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI, stockLocation);
+        IMObjectBean bean = new IMObjectBean(relationship);
+        bean.setValue("accountId", SUPPLIER_ACCOUNT_ID);
+        bean.setValue("orderServiceURL", "https://foo.openvpms.org/orderservice");
+
+        save(supplier, product, stockLocation);
     }
 
     /**
@@ -182,6 +233,7 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         mapper.setLocationRules(new LocationRules());
         mapper.setPartyRules(new PartyRules());
         mapper.setProductRules(new ProductRules());
+        mapper.setSupplierRules(new SupplierRules());
         mapper.setLookupService(LookupServiceHelper.getLookupService());
         mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
         return mapper;
@@ -196,7 +248,25 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
      */
     private void checkCustomer(CustomerPartyType customer, Party expected, Contact contact) {
         checkID(customer.getCustomerAssignedAccountID(), expected.getId());
+        assertEquals(SUPPLIER_ACCOUNT_ID, customer.getSupplierAssignedAccountID().getValue());
         checkParty(customer.getParty(), expected.getName(), contact);
+    }
+
+    /**
+     * Verifies a contact matches that expected.
+     *
+     * @param contact      the contact to check
+     * @param name         the expected contact name
+     * @param phoneContact the expected phone contact
+     * @param faxContact   the expected fax contact
+     * @param emailContact the expected email contact
+     */
+    private void checkContact(ContactType contact, String name, Contact phoneContact, Contact faxContact,
+                              Contact emailContact) {
+        assertEquals(name, contact.getName().getValue());
+        assertEquals(phoneContact.getDetails().get("telephoneNumber"), contact.getTelephone().getValue());
+        assertEquals(faxContact.getDetails().get("faxNumber"), contact.getTelefax().getValue());
+        assertEquals(emailContact.getDetails().get("emailAddress"), contact.getElectronicMail().getValue());
     }
 
     /**
@@ -291,5 +361,20 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         assertEquals(cityName, postalAddress.getCityName().getValue());
         assertEquals(postalZone, postalAddress.getPostalZone().getValue());
         assertEquals(countrySubentity, postalAddress.getCountrySubentity().getValue());
+    }
+
+    /**
+     * Helper to create a new contact.
+     *
+     * @param shortName the contact archetype short name
+     * @param name      the node name to populate
+     * @param value     the value to populate the node with
+     * @return a new contact
+     */
+    private Contact createContact(String shortName, String name, String value) {
+        Contact contact = (Contact) create(shortName);
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue(name, value);
+        return contact;
     }
 }

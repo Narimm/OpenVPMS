@@ -25,6 +25,7 @@ import org.oasis.ubl.common.IdentifierType;
 import org.oasis.ubl.common.TextType;
 import org.oasis.ubl.common.aggregate.AddressLineType;
 import org.oasis.ubl.common.aggregate.AddressType;
+import org.oasis.ubl.common.aggregate.ContactType;
 import org.oasis.ubl.common.aggregate.CustomerPartyType;
 import org.oasis.ubl.common.aggregate.ItemIdentificationType;
 import org.oasis.ubl.common.aggregate.ItemType;
@@ -41,6 +42,7 @@ import org.oasis.ubl.common.basic.CopyIndicatorType;
 import org.oasis.ubl.common.basic.CountrySubentityType;
 import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.oasis.ubl.common.basic.DescriptionType;
+import org.oasis.ubl.common.basic.ElectronicMailType;
 import org.oasis.ubl.common.basic.IDType;
 import org.oasis.ubl.common.basic.IssueDateType;
 import org.oasis.ubl.common.basic.LineExtensionAmountType;
@@ -50,6 +52,9 @@ import org.oasis.ubl.common.basic.PayableAmountType;
 import org.oasis.ubl.common.basic.PostalZoneType;
 import org.oasis.ubl.common.basic.PriceAmountType;
 import org.oasis.ubl.common.basic.QuantityType;
+import org.oasis.ubl.common.basic.SupplierAssignedAccountIDType;
+import org.oasis.ubl.common.basic.TelefaxType;
+import org.oasis.ubl.common.basic.TelephoneType;
 import org.oasis.ubl.common.basic.TotalTaxAmountType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
@@ -58,10 +63,12 @@ import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
+import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -116,6 +123,10 @@ public class OrderMapperImpl implements OrderMapper {
      */
     private ProductRules productRules;
 
+    /**
+     * The supplier rules.
+     */
+    private SupplierRules supplierRules;
 
     /**
      * The bean factory.
@@ -164,6 +175,16 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
+     * Registers the supplier rules.
+     *
+     * @param rules the supplier rules
+     */
+    @Resource
+    public void setSupplierRules(SupplierRules rules) {
+        supplierRules = rules;
+    }
+
+    /**
      * Registers the lookup service.
      *
      * @param service the lookup service
@@ -199,10 +220,18 @@ public class OrderMapperImpl implements OrderMapper {
         IssueDateType issueDate = getIssueDate(order.getActivityStartTime());
 
         ActBean bean = factory.createActBean(order);
-        Entity stockLocation = bean.getNodeParticipant("stockLocation");
+        Entity author = bean.getNodeParticipant("author");
+        Party stockLocation = (Party) bean.getNodeParticipant("stockLocation");
         Party location = getLocation(stockLocation);
+
         Party supplier = (Party) bean.getNodeParticipant("supplier");
-        CustomerPartyType customerParty = getCustomer(location);
+        EntityRelationship supplierStockLocation = supplierRules.getSupplierStockLocation(supplier, stockLocation);
+        if (supplierStockLocation == null) {
+            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.ESCINotConfigured, supplier.getId(),
+                                           supplier.getName(), stockLocation.getId(), stockLocation.getName());
+        }
+        String contactName = (author != null) ? author.getName() : null;
+        CustomerPartyType customerParty = getCustomer(contactName, location, supplierStockLocation);
         SupplierPartyType supplierParty = getSupplier(supplier);
         MonetaryTotalType total = getMonetaryTotal(order.getTotal(), currencyCode);
 
@@ -406,11 +435,17 @@ public class OrderMapperImpl implements OrderMapper {
      * The party details will be either those of the <em>party.organisationLocation</em> or the parent
      * </em>party.organisationPractice</em>. If the location has a <em>contact.location</em>, then the location's
      * details will be used, otherwise the practice's details will be used.
+     * <p/>
+     * NOTE: the supplied <em>entityRelationship.supplierStockLocation*</em> relationship must have an
+     * <em>accountId</em> node, used to populate the <tt>SupplierAssignedAccountIDType</tt>
      *
-     * @param location the practice location
+     * @param contactName           a contact name to supply with telephone, email and fax details, May be <tt>null</tt>
+     * @param location              the practice location
+     * @param supplierStockLocation an <em>entityRelationship.supplierStockLocation*</em> relationship
      * @return the corresponding <tt>CustomerPartyType</tt>
      */
-    private CustomerPartyType getCustomer(Party location) {
+    private CustomerPartyType getCustomer(String contactName, Party location,
+                                          EntityRelationship supplierStockLocation) {
         CustomerPartyType result = new CustomerPartyType();
         Party customer;
 
@@ -419,21 +454,31 @@ public class OrderMapperImpl implements OrderMapper {
             throw new IllegalStateException("No practice for location: " + location.getId());
         }
 
-        Contact contact = partyRules.getContact(location, ContactArchetypes.LOCATION, "BILLING");
-        if (contact == null) {
-            contact = partyRules.getContact(practice, ContactArchetypes.LOCATION, "BILLING");
-            if (contact == null) {
+        Contact locationContact = partyRules.getContact(location, ContactArchetypes.LOCATION, "BILLING");
+        if (locationContact == null) {
+            locationContact = partyRules.getContact(practice, ContactArchetypes.LOCATION, "BILLING");
+            if (locationContact == null) {
                 throw new IllegalStateException("No contact.location for location: " + location.getId());
             }
             customer = practice;
         } else {
             customer = location;
         }
+        Contact phoneContact = partyRules.getContact(customer, ContactArchetypes.PHONE, "BILLING");
+        Contact faxContact = partyRules.getContact(customer, ContactArchetypes.FAX, "BILLING");
+        Contact emailContact = partyRules.getContact(customer, ContactArchetypes.EMAIL, "BILLING");
 
-        CustomerAssignedAccountIDType id = initID(new CustomerAssignedAccountIDType(), customer.getId());
-        PartyType party = getParty(customer, contact);
+        CustomerAssignedAccountIDType customerId = initID(new CustomerAssignedAccountIDType(), customer.getId());
 
-        result.setCustomerAssignedAccountID(id);
+        IMObjectBean bean = factory.createBean(supplierStockLocation);
+        String accountId = bean.getString("accountId");
+        SupplierAssignedAccountIDType supplierId = initID(new SupplierAssignedAccountIDType(), accountId);
+
+        PartyType party = getParty(customer, locationContact);
+        party.setContact(getContact(contactName, phoneContact, faxContact, emailContact));
+
+        result.setCustomerAssignedAccountID(customerId);
+        result.setSupplierAssignedAccountID(supplierId);
         result.setParty(party);
         return result;
     }
@@ -458,20 +503,102 @@ public class OrderMapperImpl implements OrderMapper {
     /**
      * Returns a <tt>PartyType</tt> for the supplied party and contact.
      *
-     * @param party   the party
-     * @param contact the location contact. May be <tt>null</tt>
+     * @param party    the party
+     * @param location the location contact. May be <tt>null</tt>
      * @return the corresponding <tt>PartyType</tt>
      */
-    private PartyType getParty(Party party, Contact contact) {
+    private PartyType getParty(Party party, Contact location) {
         PartyType result = new PartyType();
 
         PartyNameType partyName = new PartyNameType();
         partyName.setName(getName(party.getName()));
         result.getPartyName().add(partyName);
-        if (contact != null) {
-            result.setPostalAddress(getAddress(contact));
+        if (location != null) {
+            result.setPostalAddress(getAddress(location));
         }
         return result;
+    }
+
+    /**
+     * Returns a <tt>ContactType</tt> for the supplied contacts.
+     *
+     * @param name  a contact name
+     * @param phone the phone contact. May be <tt>null</tt>
+     * @param fax   the fax contact. May be <tt>null</tt>
+     * @param email the email contact. May be <tt>null</tt>
+     * @return the corresponding <tt>ContactType</tt>
+     */
+    private ContactType getContact(String name, Contact phone, Contact fax, Contact email) {
+        ContactType contact = new ContactType();
+        if (!StringUtils.isEmpty(name)) {
+            contact.setName(initName(new NameType(), name));
+        }
+        contact.setTelephone(getPhone(phone));
+        contact.setTelefax(getFax(fax));
+        contact.setElectronicMail(getEmail(email));
+        return contact;
+    }
+
+    /**
+     * Returns an <tt>TelephoneType</tt> for a <em>contact.phoneNumber</em>.
+     *
+     * @param contact the phone contact. May be <tt>null</tt>
+     * @return a new <tt>TelephoneType</tt> or <tt>null</tt> if <tt>contact</tt> is null or unpopulated
+     */
+    private TelephoneType getPhone(Contact contact) {
+        String phone = formatPhone(contact, "areaCode", "telephoneNumber");
+        return (phone != null) ? initText(new TelephoneType(), phone) : null;
+    }
+
+    /**
+     * Returns an <tt>TelefaxType</tt> for a <em>contact.faxNumber</em>.
+     *
+     * @param contact the fax contact. May be <tt>null</tt>
+     * @return a new <tt>TelefaxType</tt> or <tt>null</tt> if <tt>contact</tt> is null or unpopulated
+     */
+    private TelefaxType getFax(Contact contact) {
+        String fax = formatPhone(contact, "areaCode", "faxNumber");
+        return (fax != null) ? initText(new TelefaxType(), fax) : null;
+    }
+
+    /**
+     * Helper to format a phone/fax number.
+     *
+     * @param contact      the phone/fax contact. May be <tt>null</tt>
+     * @param areaCodeNode the area code node.
+     * @param numberNode   the phone number node
+     * @return a formatted number, or <tt>null</tt> if <tt>number</tt> is null
+     */
+    private String formatPhone(Contact contact, String areaCodeNode, String numberNode) {
+        String result = null;
+        if (contact != null) {
+            IMObjectBean bean = factory.createBean(contact);
+            String number = bean.getString(numberNode);
+            if (!StringUtils.isEmpty(number)) {
+                String areaCode = bean.getString(areaCodeNode);
+                if (!StringUtils.isEmpty(areaCode)) {
+                    result = "(" + areaCode + ") " + number; // todo - localise
+                } else {
+                    result = number;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns an <tt>ElectronicMailType</tt> for a <em>contact.email</em>.
+     *
+     * @param contact the email contact. May be <tt>null</tt>
+     * @return a new <tt>ElectronicMailType</tt> or <tt>null</tt> if <tt>contact</tt> is null or unpopulated
+     */
+    private ElectronicMailType getEmail(Contact contact) {
+        String email = null;
+        if (contact != null) {
+            IMObjectBean bean = factory.createBean(contact);
+            email = StringUtils.trimToNull(bean.getString("emailAddress"));
+        }
+        return (email != null) ? initText(new ElectronicMailType(), email) : null;
     }
 
     /**
@@ -649,7 +776,6 @@ public class OrderMapperImpl implements OrderMapper {
         return result;
     }
 
-
     /**
      * Returns the currency code associated with the practice.
      *
@@ -663,6 +789,5 @@ public class OrderMapperImpl implements OrderMapper {
         IMObjectBean bean = factory.createBean(practice);
         return CurrencyCodeContentType.valueOf(bean.getString("currency"));
     }
-
 
 }

@@ -101,7 +101,11 @@ public class OrderWebServiceAdapter implements OrderServiceAdapter {
         if (supplier == null) {
             throw new IllegalStateException("Argument 'order' has no supplier participant");
         }
-        OrderService orderService = locator.getOrderService(supplier);
+        Party stockLocation = (Party) bean.getNodeParticipant("stockLocation");
+        if (stockLocation == null) {
+            throw new IllegalStateException("Argument 'order' has no stock location participant");
+        }
+        OrderService orderService = locator.getOrderService(supplier, stockLocation);
         OrderType orderType = mapper.map(order);
         orderService.submitOrder(orderType);
     }

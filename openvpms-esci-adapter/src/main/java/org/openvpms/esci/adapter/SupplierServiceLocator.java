@@ -32,13 +32,15 @@ public interface SupplierServiceLocator {
     /**
      * Returns a proxy for a supplier's {@link OrderService}.
      * <p/>
-     * This uses the <em>entity.ESCIConfigurationSOAP</em> associated with the supplier to lookup the web service.
+     * This uses the <em>entityRelationship.supplierStockLocationESCI</em> associated with the supplier and stock
+     * location to lookup the web service.
      *
-     * @param supplier the supplier
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
      * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid
      */
-    OrderService getOrderService(Party supplier);
+    OrderService getOrderService(Party supplier, Party stockLocation);
 
     /**
      * Returns a proxy for a supplier's {@link OrderService}.

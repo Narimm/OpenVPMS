@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.exception.ESCIException;
 import org.openvpms.esci.service.OrderResponseService;
+import org.openvpms.archetype.rules.supplier.OrderStatus;
 
 import javax.annotation.Resource;
 
@@ -103,8 +104,8 @@ public class OrderResponseServiceAdapter implements OrderResponseService {
                                     + " does not refer to a valid order");
         }
         if (response.getAcceptedIndicator().isValue()) {
-            bean.setValue("status", "ACCEPTED");
-            bean.setValue("supplierResponse", "Order Accepted");
+            bean.setValue("status", OrderStatus.ACCEPTED);
+            bean.setValue("supplierResponse", "Order Accepted");   // TODO localise
         } else {
             String message = null;
             RejectionNoteType note = response.getRejectionNote();
@@ -112,9 +113,9 @@ public class OrderResponseServiceAdapter implements OrderResponseService {
                 message = note.getValue();
             }
             if (StringUtils.isEmpty(message)) {
-                message = "Order rejected without any message";
+                message = "Order rejected without any message";   // TODO localise
             }
-            bean.setValue("status", "REJECTED");
+            bean.setValue("status", OrderStatus.REJECTED);
             bean.setValue("supplierResponse", message);
         }
         bean.save();

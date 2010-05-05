@@ -17,6 +17,9 @@
  */
 package org.openvpms.esci.adapter;
 
+import static org.openvpms.archetype.rules.supplier.OrderStatus.ACCEPTED;
+import static org.openvpms.archetype.rules.workflow.SystemMessageReason.ORDER_ACCEPTED;
+import static org.openvpms.archetype.rules.workflow.SystemMessageReason.ORDER_REJECTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -41,6 +44,7 @@ public class SystemMessageOrderResponseListener implements OrderResponseListener
      */
     private IMObjectBeanFactory factory;
 
+
     /**
      * Registers the bean factory.
      *
@@ -63,6 +67,8 @@ public class SystemMessageOrderResponseListener implements OrderResponseListener
             ActBean message = factory.createActBean("act.systemMessage");
             message.addNodeRelationship("item", order);
             message.addNodeParticipation("to", author);
+            String status = ACCEPTED.equals(order.getStatus()) ? ORDER_ACCEPTED : ORDER_REJECTED;
+            message.setValue("reason", status);
             message.save();
         }
     }
