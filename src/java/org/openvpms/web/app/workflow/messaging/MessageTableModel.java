@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
@@ -62,6 +63,17 @@ public class MessageTableModel extends AbstractActTableModel {
     @Override
     protected String[] getNodeNames() {
         return NODES;
+    }
+
+    /**
+     * Determines if the archetype column should be displayed.
+     *
+     * @param archetypes the archetypes
+     * @return <tt>false</tt>
+     */
+    @Override
+    protected boolean showArchetypeColumn(List<ArchetypeDescriptor> archetypes) {
+        return false;
     }
 
     /**

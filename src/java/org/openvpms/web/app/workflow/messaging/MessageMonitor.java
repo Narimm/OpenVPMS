@@ -22,6 +22,8 @@ import nextapp.echo2.app.TaskQueueHandle;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.workflow.MessageArchetypes;
+import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -30,8 +32,6 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.archetype.rules.workflow.MessageArchetypes;
-import org.openvpms.archetype.rules.workflow.MessageStatus;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -86,10 +86,17 @@ public class MessageMonitor {
         service.addListener(MessageArchetypes.SYSTEM, listener);
     }
 
+    /**
+     * Determines if there are any unread (i.e <em<PENDING</em>) messages for a user.
+     *
+     * @param user the user
+     * @return <tt>true</tt> if there are unread messages; otherwise <tt>false</tt>
+     */
     public boolean hasNewMessages(User user) {
         MessageQuery query = new MessageQuery(user);
         query.getComponent();
         query.setStatus(MessageStatus.PENDING);
+        query.setMaxResults(1);
         return query.query().hasNext();
     }
 

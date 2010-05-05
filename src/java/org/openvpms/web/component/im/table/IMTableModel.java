@@ -80,4 +80,11 @@ public interface IMTableModel<T> extends TableModel {
      *               it should be disabled
      */
     void setEnableSelection(boolean enable);
+
+    /**
+     * Notfies the table to refresh.
+     * <p/>
+     * This can be used to refresh the table if properties of objects held by the model have changed.
+     */
+    void refresh();
 }

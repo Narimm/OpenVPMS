@@ -24,11 +24,11 @@
         </wss:service>
     </wss:binding>
 
+    <bean id="serviceAuthenticators" class="org.openvpms.esci.service.client.DefaultServiceAuthenticators"
+            factory-method="getInstance"/>
+
     <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory">
-        <!-- remove serviceAuthenticators if JAX-WS authentication is handled by the container -->
-        <property name="serviceAuthenticators">
-            <bean class="org.openvpms.esci.service.client.DefaultServiceAuthenticators" init-method="getInstance"/>
-        </property>
+        <property name="serviceAuthenticators" ref="serviceAuthenticators"/>
     </bean>
 
     <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.SupplierServiceLocatorImpl"/>

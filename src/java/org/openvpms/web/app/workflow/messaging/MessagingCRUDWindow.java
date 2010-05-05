@@ -24,6 +24,7 @@ import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -56,14 +57,29 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     private Button completed;
 
+    /**
+     * Message archetypes that may be created by this workspace.
+     */
+    private static final Archetypes<Act> MESSAGES
+            = Archetypes.create(MessageArchetypes.USER, Act.class);
 
     /**
-     * Constructs a new <tt>MessagingCRUDWindow</tt>.
+     * Constructs a <tt>MessagingCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
     public MessagingCRUDWindow(Archetypes<Act> archetypes) {
         super(archetypes);
+    }
+
+    /**
+     * Creates and edits a new object.
+     * <p/>
+     * This implementation restricts creation to <em>act.userMessage</em> objects.
+     */
+    @Override
+    public void create() {
+        onCreate(MESSAGES);
     }
 
     /**

@@ -73,9 +73,7 @@ public class MessageBrowser extends IMObjectTableBrowser<Act> {
                 if (ObjectUtils.equals(user.getObjectReference(), bean.getNodeParticipantRef("to"))) {
                     message.setStatus(MessageStatus.READ);
                     bean.save();
-                    // @TODO - ugly way to force a table redraw
-                    getTable().getTable().setHeaderVisible(false);
-                    getTable().getTable().setHeaderVisible(true);
+                    getTable().getTable().getModel().refresh();
                 }
             }
         }

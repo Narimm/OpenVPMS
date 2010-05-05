@@ -19,40 +19,50 @@ package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.stock.StockArchetypes;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.esci.adapter.SupplierServiceLocator;
+import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.List;
 
 
 /**
- * An editor for <em>entity.ESCIConfigurationSOAP</em> that allows service URLs to be tested.
+ * An editor for <em>entityRelationship.supplierStockLocationESCI</em> relationships that allows service URLs to be
+ * tested.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ESCIConfigurationSOAPEditor extends AbstractIMObjectEditor {
+public class SupplierStockLocationRelationshipESCIEditor extends EntityRelationshipEditor {
 
     /**
-     * Constructs an <tt>ESCIConfigurationSOAPEditor</tt>.
+     * Constructs an <tt>SupplierStockLocationRelationshipESCIEditor</tt>.
      *
      * @param object        the object to edit. An <em>entity.ESCIConfigurationSOAP</em>.
      * @param parent        the parent object. May be <tt>null</tt>
      * @param layoutContext the layout context. May be <tt>null</tt>.
      */
-    public ESCIConfigurationSOAPEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
+    public SupplierStockLocationRelationshipESCIEditor(EntityRelationship object, IMObject parent,
+                                                       LayoutContext layoutContext) {
         super(object, parent, layoutContext);
     }
 
@@ -63,17 +73,32 @@ public class ESCIConfigurationSOAPEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new AbstractLayoutStrategy() {
+        boolean hideSource = TypeHelper.isA(getParent(), "party.supplier*");
+        boolean hideTarget = TypeHelper.isA(getParent(), StockArchetypes.STOCK_LOCATION);
+        return new LayoutStrategy(hideSource, hideTarget) {
             @Override
             protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-                if ("serviceURL".equals(property.getName())) {
+                if ("orderServiceURL".equals(property.getName())) {
                     return createServiceURLComponent(property, parent, context);
                 }
                 return super.createComponent(property, parent, context);
             }
+
+            @Override
+            protected Grid createGrid(List<NodeDescriptor> descriptors) {
+                return GridFactory.create(2);
+            }
         };
     }
 
+    /**
+     * Creates a component that displays the order service URL and enables the user to test the URL.
+     *
+     * @param property the orderServiceURL property.
+     * @param parent   the parent object
+     * @param context  the layout context
+     * @return a new component
+     */
     private ComponentState createServiceURLComponent(Property property, IMObject parent, LayoutContext context) {
         ComponentState state = context.getComponentFactory().create(property, parent);
         Component field = state.getComponent();
@@ -88,13 +113,17 @@ public class ESCIConfigurationSOAPEditor extends AbstractIMObjectEditor {
         return new ComponentState(container, property, focus);
     }
 
+    /**
+     * Attempts to locate the supplier's order service, displaying a dialog indicating success or failure.
+     */
     private void onTest() {
         try {
-            String url = (String) getProperty("serviceURL").getValue();
+            String url = (String) getProperty("orderServiceURL").getValue();
             String user = (String) getProperty("username").getValue();
             String password = (String) getProperty("password").getValue();
             SupplierServiceLocator locator = ServiceHelper.getSupplierServiceLocator();
             locator.getOrderService(url, user, password);
+            InformationDialog.show(Messages.get("supplier.esci.connection.OK"));
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
