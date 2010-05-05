@@ -14,14 +14,28 @@
     <!--                         GENERAL DEFINITIONS                        -->
     <!-- ================================================================== -->
 
-    <!--  Property configuration -->
-    <bean id="props"
-          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+
+        <property name="ignoreResourceNotFound" value="true"/>
+
+        <!-- Note: Properties defined in later files will override          -->
+	    <!-- properties defined earlier files, in case of overlapping keys. -->
+	    <!-- Hence, make sure that the most specific files are the last     -->
+	    <!-- ones in the given list of locations.                           -->
         <property name="locations">
             <list>
+                <value>classpath:default-openvpms.properties</value>
                 <value>classpath:hibernate.properties</value>
             </list>
         </property>
+    </bean>
+
+    <bean id="propertyPlaceholderConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="properties" ref="properties"/>
+
+        <!-- allow system properties to override any other property source -->
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
     </bean>
 
     <!-- ================================================================== -->

@@ -34,7 +34,7 @@
             <url>scp://dev.openvpms.org:2233/home/admin/public_html/dev.openvpms.org/public/${pom.artifactId}</url>
         </site>
     </distributionManagement>
-    
+
     <build>
         <finalName>openvpms</finalName>
         <resources>
@@ -167,8 +167,51 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <!-- configure jetty with ssl support -->
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <configuration>
+                    <webAppSourceDirectory>${basedir}/src/webapp</webAppSourceDirectory>
+                    <webAppConfig>
+                        <contextPath>/openvpms</contextPath>
+                        <descriptor>${basedir}/src/webapp/WEB-INF/web.xml</descriptor>
+                    </webAppConfig>
+                    <connectors>
+                        <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+                            <port>${jetty.port}</port>
+                        </connector>
+                        <connector implementation="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+                            <port>${jetty.sslport}</port>
+                            <maxIdleTime>60000</maxIdleTime>
+                            <keystore>${basedir}/../openvpms/src/test/resources/openvpms-certs.keystore</keystore>
+                            <password>password</password>
+                            <keyPassword>password</keyPassword>
+                        </connector>
+                    </connectors>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <!-- for jetty plugin dependencies -->
+            <id>java.net</id>
+            <url>http://download.java.net/maven/2/</url>
+            <snapshots>
+                <enabled>false</enabled>
+                <checksumPolicy>fail</checksumPolicy>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
@@ -461,6 +504,7 @@
         <echo.version>2.1.0.rc5</echo.version>
         <echo-extras.version>0.9.1</echo-extras.version>
         <echo-filetransfer.version>20060626</echo-filetransfer.version>
+        <jetty.sslport>8443</jetty.sslport>
     </properties>
 
 </project>

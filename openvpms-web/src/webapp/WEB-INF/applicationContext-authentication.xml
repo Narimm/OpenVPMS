@@ -31,10 +31,10 @@
 
     <bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
         <security:filter-chain-map path-type="ant">
-            <!--security:filter-chain pattern="/j_spring_security_check" filters="none"/-->
             <security:filter-chain pattern="/esci/**"
-                                   filters="securityContextPersistenceFilterWithASCFalse,
-                                            esciDigestAuthenticationFilter,
+                                   filters="esciChannelProcessingFilter,
+                                            securityContextPersistenceFilterWithASCFalse,
+                                            esciBasicAuthenticationFilter,
                                             esciExceptionTranslationFilter,
                                             esciFilterSecurityInterceptor"/>
             <security:filter-chain pattern="/**"
@@ -131,8 +131,31 @@
     <!--                            ESCI FILTER CHAIN                       -->
     <!-- ================================================================== -->
 
-    <!-- basic authentication filter for ESCI. Only enable if using https -->
-    <!--bean id="esciBasicAuthenticationFilter"
+    <!-- channel processing filter for ESCI that ensures all requests go over https -->
+    <bean id="esciChannelProcessingFilter" class="org.openvpms.web.servlet.ChannelProcessingFilter">
+        <property name="secure" value="${openvpms.webservice.secure}"/>
+    </bean>
+
+    <!--bean id="esciChannelProcessingFilter2"
+          class="org.springframework.security.web.access.channel.ChannelProcessingFilter">
+        <property name="channelDecisionManager">
+            <bean class="org.springframework.security.web.access.channel.ChannelDecisionManagerImpl">
+                <property name="channelProcessors">
+                    <list>
+                        <bean class="org.springframework.security.web.access.channel.SecureChannelProcessor"/>
+                    </list>
+                </property>
+            </bean>
+        </property>
+        <property name="securityMetadataSource">
+            <security:filter-security-metadata-source path-type="ant">
+                <security:intercept-url pattern="/**"/>
+            </security:filter-security-metadata-source>
+        </property>
+    </bean-->
+
+    <!-- BASIC authentication filter for ESCI. Only enable if using https -->
+    <bean id="esciBasicAuthenticationFilter"
           class="org.springframework.security.web.authentication.www.BasicAuthenticationFilter">
         <property name="authenticationManager" ref="authenticationManager"/>
         <property name="authenticationEntryPoint" ref="esciBasicAuthenticationPoint"/>
@@ -141,10 +164,12 @@
     <bean name="esciBasicAuthenticationPoint"
           class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
         <property name="realmName" value="ESCI"/>
-    </bean-->
+    </bean>
 
-    <!-- digest authentication filter for ESCI -->
-    <bean id="esciDigestAuthenticationFilter"
+    <!-- DIGEST authentication filter for ESCI. Use this if using http instead of https                         -->
+    <!-- If using digest authentication, then the 'requires-channel' attribute of esciFilterSecurityInterceptor -->
+    <!-- can be set to 'http'                                                                                   -->
+    <!-- bean id="esciDigestAuthenticationFilter"
           class="org.springframework.security.web.authentication.www.DigestAuthenticationFilter">
         <property name="userDetailsService" ref="userService"/>
         <property name="authenticationEntryPoint" ref="esciDigestAuthenticationEntryPoint"/>
@@ -154,11 +179,11 @@
           class="org.springframework.security.web.authentication.www.DigestAuthenticationEntryPoint">
         <property name="realmName" value="ESCI"/>
         <property name="key" value="acegi"/>
-    </bean>
+    </bean -->
 
     <bean id="esciExceptionTranslationFilter"
           class="org.springframework.security.web.access.ExceptionTranslationFilter">
-        <property name="authenticationEntryPoint" ref="esciDigestAuthenticationEntryPoint"/>
+        <property name="authenticationEntryPoint" ref="esciBasicAuthenticationPoint"/>
     </bean>
 
     <bean id="esciFilterSecurityInterceptor"

@@ -37,6 +37,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
+import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -183,16 +184,10 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     private static final String RIGHTPANE_STYLE = "MainPane.Right";
 
     /**
-     * New window icon resource path.
-     */
-    private static final String NEW_WINDOW_PATH
-            = "/org/openvpms/web/resource/image/newwindow.gif";
-
-    /**
      * Reference to the new window icon.
      */
     private ImageReference NEW_WINDOW
-            = new ResourceImageReference(NEW_WINDOW_PATH);
+            = new ResourceImageReference("/org/openvpms/web/resource/image/newwindow.gif");
 
     /**
      * Reference to the mail icon.
@@ -218,7 +213,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         this.monitor = monitor;
         listener = new MessageMonitor.MessageListener() {
             public void onMessage(Act message) {
-                updateMessageStatus(true);
+                updateMessageStatus(message);
             }
         };
         user = GlobalContext.getInstance().getUser();
@@ -440,6 +435,19 @@ public class MainPane extends SplitPane implements ContextChangeListener,
             update = monitor.hasNewMessages(user);
         }
         updateMessageStatus(update);
+    }
+
+    /**
+     * Updates the message status button when a message is updated.
+     *
+     * @param message the updated messsage
+     */
+    private void updateMessageStatus(Act message) {
+        if (MessageStatus.PENDING.equals(message.getStatus())) {
+            updateMessageStatus(true);
+        } else {
+            updateMessageStatus();
+        }
     }
 
     /**

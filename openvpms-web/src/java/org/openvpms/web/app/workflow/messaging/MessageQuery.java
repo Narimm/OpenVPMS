@@ -53,7 +53,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
      * The act statuses. Exclude the <em>READ</em> status, as it will be handled explicitly whenever <em>PENDING</em>
      * is selected.
      */
-    private static final ActStatuses STATUSES = new ActStatuses(MessageArchetypes.USER, MessageStatus.READ);
+    private static final ActStatuses STATUSES = new ActStatuses(MessageArchetypes.USER);
 
     /**
      * The archetypes to query.

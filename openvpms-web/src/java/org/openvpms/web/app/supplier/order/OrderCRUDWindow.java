@@ -198,7 +198,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     private boolean postOrder(FinancialAct act) {
         boolean result = false;
         SupplierRules rules = new SupplierRules();
-        if (rules.getESCIConfiguration(act) != null) {
+        if (rules.getSupplierStockLocation(act) != null) {
             // ESCI is configured for the supplier, so submit the order
             try {
                 OrderServiceAdapter service = ServiceHelper.getOrderService();
@@ -210,6 +210,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
                 SaveHelper.save(act);
 
                 ErrorHelper.show(exception);
+                onRefresh(act);
             }
         } else {
             result = true;

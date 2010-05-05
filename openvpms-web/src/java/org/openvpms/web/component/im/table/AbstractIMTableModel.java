@@ -73,9 +73,9 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      */
     protected static final String DESCRIPTION = "table.imobject.description";
 
-    
+
     /**
-     * Creates a new <tt>AbstractIMTableModel</tt>.
+     * Constructs an <tt>AbstractIMTableModel</tt>.
      */
     public AbstractIMTableModel() {
     }
@@ -204,6 +204,15 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      */
     public void setEnableSelection(boolean enable) {
         enableSelection = enable;
+    }
+
+    /**
+     * Notfies the table to refresh.
+     * <p/>
+     * This can be used to refresh the table if properties of objects held by the model have changed.
+     */
+    public void refresh() {
+        fireTableDataChanged();
     }
 
     /**

@@ -187,6 +187,15 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
     }
 
     /**
+     * Notfies the table to refresh.
+     * <p/>
+     * This can be used to refresh the table if properties of objects held by the model have changed.
+     */
+    public void refresh() {
+        model.refresh();
+    }
+
+    /**
      * Sets the model to delegate to.
      *
      * @param model the model to delegate to

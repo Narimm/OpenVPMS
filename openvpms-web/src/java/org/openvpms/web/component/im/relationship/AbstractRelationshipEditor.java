@@ -171,16 +171,44 @@ public abstract class AbstractRelationshipEditor
     protected class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * Returns a node filter to filter nodes. This implementation filters
-         * the "source" and "target" nodes.
+         * Determines if the source should be hidden.
+         */
+        private final boolean hideSource;
+
+        /**
+         * Determines if the target should be hidden.
+         */
+        private final boolean hideTarget;
+
+        /**
+         * Constructs a <tt>LayoutStrategy</tt> that displays both the source and target nodes.
+         */
+        public LayoutStrategy() {
+            this(false, false);
+        }
+
+        /**
+         * Constructs a <tt>LayoutStrategy</tt>.
          *
-         * @param object
+         * @param hideSource if <tt>true</tt> hide the source node
+         * @param hideTarget if <tt>true</tt> hide the target node
+         */
+        public LayoutStrategy(boolean hideSource, boolean hideTarget) {
+            this.hideSource = hideSource;
+            this.hideTarget = hideTarget;
+        }
+
+        /**
+         * Returns a node filter to filter nodes.
+         * <p/>
+         * This implementation filters the "source" and "target" nodes.
+         *
+         * @param object  the object to filter nodes for
          * @param context the context
          * @return a node filter to filter nodes
          */
         @Override
-        protected NodeFilter getNodeFilter(IMObject object,
-                                           LayoutContext context) {
+        protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
             NodeFilter filter = new NamedNodeFilter("source", "target");
             return getNodeFilter(context, filter);
         }
@@ -200,17 +228,30 @@ public abstract class AbstractRelationshipEditor
                                       PropertySet properties,
                                       Component container,
                                       LayoutContext context) {
-            Grid grid = GridFactory.create(4);
-            add(grid, new ComponentState(sourceEditor.getComponent(),
-                                         sourceEditor.getProperty(),
-                                         sourceEditor.getFocusGroup()));
-            add(grid, new ComponentState(targetEditor.getComponent(),
-                                         targetEditor.getProperty(),
-                                         targetEditor.getFocusGroup()));
+            Grid grid = createGrid(descriptors);
+            if (!hideSource) {
+                add(grid, new ComponentState(sourceEditor.getComponent(), sourceEditor.getProperty(),
+                                             sourceEditor.getFocusGroup()));
+            }
+            if (!hideTarget) {
+                add(grid, new ComponentState(targetEditor.getComponent(), targetEditor.getProperty(),
+                                             targetEditor.getFocusGroup()));
+            }
             doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
         }
 
+        /**
+         * Creates a grid with the no. of columns determined by the no. of
+         * node descriptors.
+         *
+         * @param descriptors the node descriptors
+         * @return a new grid with <tt>4</tt> columns
+         */
+        @Override
+        protected Grid createGrid(List<NodeDescriptor> descriptors) {
+            return GridFactory.create(4);
+        }
     }
 
     /**
@@ -265,7 +306,7 @@ public abstract class AbstractRelationshipEditor
          */
         public Component getComponent() {
             return (editor != null) ? editor.getComponent() :
-                    viewer.getComponent();
+                   viewer.getComponent();
         }
 
         /**
