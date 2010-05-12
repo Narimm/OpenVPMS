@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.DocFormats;
 import org.openvpms.web.app.OpenVPMSApp;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -161,12 +162,10 @@ public class DownloadServlet extends HttpServlet {
             DocumentHandler handler = handlers.get(
                     doc.getName(), doc.getArchetypeId().getShortName(),
                     doc.getMimeType());
-            if(doc.getMimeType().equals("text/xml")) {           	
-                response.setHeader("Content-Disposition",
-                        "attachment; filename=\"" + doc.getName() + "\"");
-            } else {            	
-                response.setHeader("Content-Disposition",
-                        "inline; filename=\"" + doc.getName() + "\"");
+            if (DocFormats.XML_TYPE.equals(doc.getMimeType())) {
+                response.setHeader("Content-Disposition", "attachment; filename=\"" + doc.getName() + "\"");
+            } else {
+                response.setHeader("Content-Disposition", "inline; filename=\"" + doc.getName() + "\"");
             }
             response.setContentType(doc.getMimeType());
             response.setContentLength(doc.getDocSize());
