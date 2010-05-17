@@ -24,7 +24,6 @@
     <scm>
         <connection>scm:svn:svn://svn.openvpms.org/openvpms/framework/trunk</connection>
         <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/framework/trunk</developerConnection>
-        <url>http://svn.openvpms.org</url>
     </scm>
 
     <distributionManagement>
