@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Defines a constraint between objects on their {@link IMObject#getLinkId()}.
+ * Defines a constraint between objects on their {@link IMObject#getId}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-04-05 06:11:15Z $

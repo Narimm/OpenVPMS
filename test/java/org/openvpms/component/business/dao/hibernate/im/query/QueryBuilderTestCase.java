@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.query;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +45,7 @@ import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
@@ -275,7 +277,7 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
     }
 
     /**
-     * Test query across multiple tables, joined by link constraints.
+     * Test query across multiple tables, joined by id constraints.
      */
     @Test
     public void testQueryAcrossMultipleTables() {
@@ -320,6 +322,48 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         query.add(owner);
         query.add(patient);
         query.add(customer);
+        query.add(new IdConstraint("participation.entity", "patient"));
+        query.add(new IdConstraint("patient", "owner.target"));
+        query.add(new IdConstraint("customer", "owner.source"));
+        query.add(Constraints.sort("customer", "name"));
+        query.add(Constraints.sort("patient", "name"));
+
+        checkQuery(query, expected);
+    }
+
+    /**
+     * Test query across multiple tables, joined by id constraints, without specifying the types
+     * of the relationships.
+     * <p/>
+     * This is a simplified version of {@link #testQueryAcrossMultipleTables()}.
+     */
+    @Test
+    public void testQueryAcrossMultipleTablesWithImplicitJoins() {
+        final String expected
+                = "select distinct act from " + ActDO.class.getName() + " as act "
+                  + "inner join act.participations as participation, "
+                  + PartyDO.class.getName() + " as customer inner join customer.sourceEntityRelationships as owner, "
+                  + PartyDO.class.getName() + " as patient "
+                  + "where (act.archetypeId.shortName = :shortName0 and act.active = :active0 "
+                  + "and act.status = :status0 and participation.archetypeId.shortName = :shortName1 "
+                  + "and (customer.archetypeId.shortName like :shortName2 and customer.active = :active1 "
+                  + "and owner.archetypeId.shortName = :shortName3) "
+                  + "and (patient.archetypeId.shortName = :shortName4 and patient.active = :active2) "
+                  + "and participation.entity.id = patient.id and patient.id = owner.target.id "
+                  + "and customer.id = owner.source.id) "
+                  + "order by customer.name asc, patient.name asc";
+
+        ShortNameConstraint act = Constraints.shortName("act", "act.patientReminder", true);
+        ShortNameConstraint patient = Constraints.shortName("patient", "party.patientpet", true);
+        ShortNameConstraint customer = Constraints.shortName("customer", "party.customer*", true);
+
+        ArchetypeQuery query = new ArchetypeQuery(act);
+        query.setDistinct(true);
+
+        query.add(Constraints.eq("status", "IN_PROGRESS"));
+        query.add(Constraints.join("patient", "participation"));
+        query.add(customer.add(Constraints.join("patients", "owner")));
+        query.add(patient);
         query.add(new IdConstraint("participation.entity", "patient"));
         query.add(new IdConstraint("patient", "owner.target"));
         query.add(new IdConstraint("customer", "owner.source"));
@@ -482,6 +526,60 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         query.add(patient);
         query.add(Constraints.sort(entity.getAlias(), "name"));
         checkQuery(query, expected);
+    }
+
+    /**
+     * Verifies that ObjectRefConstraints can refer an existing aliases.
+     * <p/>
+     * NOTE: when an ObjectRefConstraint is used in this way, a duplicate
+     * <em>&lt;alias&gt;.archetypeId.shortName =: arg</em> expression will be generated.
+     */
+    @Test
+    public void testRefConstraintWithExistingAlias() {
+        String expected = "select customer "
+                          + "from " + PartyDO.class.getName() + " as customer "
+                          + "where (customer.archetypeId.shortName = :shortName0 "
+                          + "and (customer.archetypeId.shortName = :shortName1 and customer.id = :id0))";
+        ShortNameConstraint customer = Constraints.shortName("customer", "party.person");
+        IMObjectReference customerRef = new IMObjectReference(new ArchetypeId("party.person"), 12345);
+        ArchetypeQuery query = new ArchetypeQuery(customer);
+        query.add(new ObjectRefConstraint("customer", customerRef));
+
+        checkQuery(query, expected);
+    }
+
+    /**
+     * Verifies that an exception is thrown if an alias is duplicated.
+     */
+    @Test
+    public void testDuplicateAlias() {
+        ShortNameConstraint constraint1 = Constraints.shortName("duplicate", "party.customerperson", true);
+        ShortNameConstraint constraint2 = Constraints.shortName("duplicate", "party.patientpet", true);
+        ArchetypeQuery query = new ArchetypeQuery(constraint1);
+        query.add(constraint2);
+        try {
+            builder.build(query).getQueryString();
+            Assert.fail("Expected query build to fail");
+        } catch (QueryBuilderException exception) {
+            assertEquals(QueryBuilderException.ErrorCode.DuplicateAlias, exception.getErrorCode());
+        }
+    }
+    
+    /**
+     * Verifies that an exception is thrown if an join is used with the same alias.
+     */
+    @Test
+    public void testCannotJoinDuplicateAlias() {
+        ShortNameConstraint act = Constraints.shortName("act", "act.patientReminder", true);
+        ArchetypeQuery query = new ArchetypeQuery(act);
+        query.add(Constraints.join("patient", "participation"));
+        query.add(Constraints.join("patient", "participation"));
+        try {
+            builder.build(query).getQueryString();
+            Assert.fail("Expected query build to fail");
+        } catch (QueryBuilderException exception) {
+            assertEquals(QueryBuilderException.ErrorCode.CannotJoinDuplicateAlias, exception.getErrorCode());
+        }
     }
 
     /**

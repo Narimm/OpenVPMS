@@ -41,6 +41,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -343,22 +344,38 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
     }
 
     /**
+     * Verifies that ObjectRefConstraints can refer to existing aliases.
+     */
+    public void testRefConstraintWithExistingAlias() {
+        Party person = createPerson();
+        Party pet = createPet();
+        EntityBean bean = new EntityBean(person);
+        bean.addRelationship("entityRelationship.animalOwner", pet);
+
+        save(person, pet);
+        ArchetypeQuery query = new ArchetypeQuery("party.person");
+        query.add(new ObjectSelectConstraint("customer"));
+        ShortNameConstraint relationship = new ShortNameConstraint("rel", "entityRelationship.patient*");
+        ShortNameConstraint patient = new ShortNameConstraint("patient", "party.patientpet");
+        query.add(Constraints.join("patients", relationship));
+        query.add(patient);
+        query.add(new IdConstraint("rel.source", "customer"));
+        query.add(new IdConstraint("rel.target", "patient"));
+        query.add(new ObjectSelectConstraint("patient"));
+
+    }
+
+    /**
      * Verfies that relationships between entities can be queried.
      */
     @Test
     public void testOBF178() {
         Party person = createPerson();
+        Party pet = createPet();
         EntityBean bean = new EntityBean(person);
-
-        Party pet = (Party) create("party.animalpet");
-        IMObjectBean petBean = new IMObjectBean(pet);
-        String petName = "Mutt-" + System.currentTimeMillis();
-        petBean.setValue("name", petName);
-        petBean.setValue("species", "CANINE");
-        petBean.setValue("breed", "Australian Terrier");
         bean.addRelationship("entityRelationship.animalOwner", pet);
 
-        save(Arrays.asList(person, pet));
+        save(person, pet);
 
         ShortNameConstraint partyPerson = new ShortNameConstraint("person", "party.person");
         ShortNameConstraint animalPet = new ShortNameConstraint("pet", "party.animalpet");
@@ -369,7 +386,7 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         sourceQuery.add(animalPet);
         sourceQuery.add(new IdConstraint("rel.source", "person"));
         sourceQuery.add(new IdConstraint("rel.target", "pet"));
-        sourceQuery.add(new NodeConstraint("pet.name", petName));
+        sourceQuery.add(new NodeConstraint("pet.name", pet.getName()));
 
         // verify that the results only have a single element
         assertEquals(1, get(sourceQuery).size());
@@ -379,7 +396,7 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         targetQuery.add(partyPerson);
         targetQuery.add(new IdConstraint("rel.source", "person"));
         targetQuery.add(new IdConstraint("rel.target", "pet"));
-        targetQuery.add(new NodeConstraint("pet.name", petName));
+        targetQuery.add(new NodeConstraint("pet.name", pet.getName()));
 
         // verify that the results only have a single element
         assertEquals(1, get(targetQuery).size());
@@ -397,6 +414,21 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         bean.setValue("lastName", "Anderson");
         bean.setValue("title", "MR");
         return person;
+    }
+
+    /**
+     * Helper to create a party of type <em>party.animalpet</em>.
+     *
+     * @return a new party
+     */
+    private Party createPet() {
+        Party pet = (Party) create("party.animalpet");
+        IMObjectBean petBean = new IMObjectBean(pet);
+        String petName = "Mutt-" + System.currentTimeMillis();
+        petBean.setValue("name", petName);
+        petBean.setValue("species", "CANINE");
+        petBean.setValue("breed", "Australian Terrier");
+        return pet;
     }
 
     /**

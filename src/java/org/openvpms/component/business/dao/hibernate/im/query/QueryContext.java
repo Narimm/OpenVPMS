@@ -228,29 +228,35 @@ public class QueryContext {
 
     /**
      * Push the type set.
+     * <p/>
+     * If the type set is already on the stack, a new join constraint will not be added.
+     * <p/>
+     * The result of the method must be passed to {@link #popTypeSet} to correctly manage the context stack.
      *
      * @param types the type set
-     * @return this context
+     * @return <tt>true</tt> if the type set was pushed; or <tt>false</tt> if it was already present
      */
-    QueryContext pushTypeSet(TypeSet types) {
-        String alias = addTypeSet(types, types.getAlias());
+    boolean pushTypeSet(TypeSet types) {
+        boolean added = addTypeSet(types, types.getAlias());
+        String alias = types.getAlias();
+        if (added) {
+            boolean first = typeStack.isEmpty();
+            FromClause fromClause;
+            if (first) {
+                fromClause = new FromClause(types.getClassName(), alias);
+                defaultSelect = alias;
+            } else {
+                fromClause = new FromClause(JoinType.InnerJoin, types.getClassName(), alias);
+            }
 
-        boolean first = typeStack.isEmpty();
-        FromClause fromClause;
-        if (first) {
-            fromClause = new FromClause(types.getClassName(), alias);
-            defaultSelect = alias;
-        } else {
-            fromClause = new FromClause(JoinType.InnerJoin, types.getClassName(), alias);
+            fromClauses.add(fromClause);
+            fromStack.push(fromClause);
+            joinStack.push(new Counter<JoinType>(JoinType.InnerJoin));
         }
-
-        fromClauses.add(fromClause);
-        fromStack.push(fromClause);
 
         typeStack.push(types);
         varStack.push(alias);
-        joinStack.push(new Counter<JoinType>(JoinType.InnerJoin));
-        return this;
+        return added;
     }
 
     /**
@@ -263,31 +269,36 @@ public class QueryContext {
      */
     QueryContext pushTypeSet(TypeSet types, String property,
                              JoinConstraint.JoinType joinType) {
-        String alias = addTypeSet(types, property);
+        if (!addTypeSet(types, property)) {
+            throw new QueryBuilderException(QueryBuilderException.ErrorCode.CannotJoinDuplicateAlias,
+                                            property, types.getAlias());
+        }
+        String alias = types.getAlias();
         FromClause fromClause = new FromClause(joinType, varStack.peek(), property, alias);
         fromClauses.add(fromClause);
         fromStack.push(fromClause);
         typeStack.push(types);
-        varStack.push(alias);
         joinStack.push(new Counter<JoinType>(joinType));
+        varStack.push(alias);
         return this;
     }
 
-
     /**
-     * Pop the logical operator on the stack
+     * Pop the type set from the stack.
      *
-     * @return TypeSet
+     * @param popJoin if <tt>true</tt> pop the join and from constraints
      */
-    TypeSet popTypeSet() {
+    void popTypeSet(boolean popJoin) {
         varStack.pop();
-        joinStack.pop();
-        fromStack.pop();
-        return typeStack.pop();
+        typeStack.pop();
+        if (popJoin) {
+            joinStack.pop();
+            fromStack.pop();
+        }
     }
 
     /**
-     * Look at the type that is currently on the stack
+     * Look at the type that is currently on the stack.
      *
      * @return TypeSet
      */
@@ -684,13 +695,17 @@ public class QueryContext {
     }
 
     /**
-     * Adds  a type set, creating an alias for it if one is not specified
+     * Adds a type set, creating an alias for it if one is not specified.
+     * <p/>
+     * If the type doesn't have an alias, it will be given one.
+     * <p/>
+     * If the type set already exists with the alias, but with different archetypes, an exception will be thrown.
      *
      * @param types the type set
      * @param alias an alias for the type if it doesn't have one. May be <tt>null</tt>
-     * @return the type set's alias
+     * @return <tt>true</tt> if the type set was pushed; or <tt>false</tt> if it was already present
      */
-    private String addTypeSet(TypeSet types, String alias) {
+    private boolean addTypeSet(TypeSet types, String alias) {
         if (types.getAlias() != null) {
             typeNames.reserve(types.getAlias());
             alias = types.getAlias();
@@ -701,8 +716,16 @@ public class QueryContext {
             alias = typeNames.getName(alias);
             types.setAlias(alias);
         }
+        TypeSet existing = typesets.get(alias);
+        if (existing != null) {
+            if (!existing.contains(types)) {
+                throw new QueryBuilderException(QueryBuilderException.ErrorCode.DuplicateAlias, alias);
+            }
+            return false; // already present
+        }
+
         typesets.put(types.getAlias(), types);
-        return alias;
+        return true;
     }
 
     /**

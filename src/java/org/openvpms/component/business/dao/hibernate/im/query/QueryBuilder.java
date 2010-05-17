@@ -155,14 +155,13 @@ public class QueryBuilder {
      * @param context    the hql context
      */
     private void process(ArchetypeIdConstraint constraint, QueryContext context) {
-
-        context.pushTypeSet(getTypeSet(constraint));
+        boolean popJoin = context.pushTypeSet(getTypeSet(constraint));
 
         // process common portion of constraint
         processArchetypeConstraint(constraint, context);
 
         // pop the stack when we have finished processing this constraint
-        context.popTypeSet();
+        context.popTypeSet(popJoin);
     }
 
     /**
@@ -198,16 +197,16 @@ public class QueryBuilder {
     private void process(ShortNameConstraint constraint, QueryContext context) {
         // check that at least one short name is specified
         if (constraint.getShortNames() == null || constraint.getShortNames().length == 0) {
-            throw new QueryBuilderException(QueryBuilderException.ErrorCode.NoShortNamesSpeified);
+            throw new QueryBuilderException(QueryBuilderException.ErrorCode.NoShortNamesSpecified);
         }
 
-        context.pushTypeSet(getTypeSet(constraint));
+        boolean popJoin = context.pushTypeSet(getTypeSet(constraint));
 
         // process the common portion of the archetype constraint
         processArchetypeConstraint(constraint, context);
 
         // pop the stack when we have finished processing this constraint
-        context.popTypeSet();
+        context.popTypeSet(popJoin);
     }
 
     /**
@@ -312,13 +311,13 @@ public class QueryBuilder {
      * @param context    the hql context
      */
     private void process(LongNameConstraint constraint, QueryContext context) {
-        context.pushTypeSet(getTypeSet(constraint));
+        boolean popJoin = context.pushTypeSet(getTypeSet(constraint));
 
         // process the common portion of the archetype constraint
         processArchetypeConstraint(constraint, context);
 
         // pop the stack when we have finished processing this constraint
-        context.popTypeSet();
+        context.popTypeSet(popJoin);
     }
 
     /**
@@ -458,10 +457,11 @@ public class QueryBuilder {
         }
 
         ArchetypeId id = constraint.getArchetypeId();
-        TypeSet types = TypeSet.create(constraint, cache, assembler);
 
         context.pushLogicalOperator(LogicalOperator.And);
-        context.pushTypeSet(types);
+
+        TypeSet types = TypeSet.create(constraint, cache, assembler);
+        boolean popJoin = context.pushTypeSet(types);
 
         String alias = constraint.getAlias();
         context.addConstraint(alias, "archetypeId.shortName", RelationalOp.EQ, id.getShortName());
@@ -473,7 +473,7 @@ public class QueryBuilder {
         }
 
         // pop the stack when we have finished processing this constraint
-        context.popTypeSet();
+        context.popTypeSet(popJoin);
         context.popLogicalOperator();
     }
 
@@ -525,6 +525,7 @@ public class QueryBuilder {
             types = getTypeSet(archetypeConstraint);
         }
         types.setAlias(constraint.getAlias());
+
         context.pushTypeSet(types, getProperty(ndesc), constraint.getJoinType());
 
         boolean and = false;
@@ -555,7 +556,7 @@ public class QueryBuilder {
         if (and) {
             context.popLogicalOperator();
         }
-        context.popTypeSet();
+        context.popTypeSet(true);
     }
 
     /**
@@ -787,9 +788,12 @@ public class QueryBuilder {
         int index = name.indexOf(".");
         if (index == -1) {
             if (context.getTypeSet(name) == null) {
-                throw new QueryBuilderException(InvalidQualifiedName, name);
+                // assume that the name refers to a node. Use the current alias
+                String alias = context.peekTypeSet().getAlias();
+                property = getQualifiedPropertyName(name, alias, context);
+            } else {
+                property = name;
             }
-            property = name;
         } else {
             String alias = name.substring(0, index);
             String nodeName = name.substring(index + 1);

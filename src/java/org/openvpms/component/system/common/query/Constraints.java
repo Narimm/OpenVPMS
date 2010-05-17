@@ -261,6 +261,19 @@ public class Constraints {
     /**
      * Creates an inner join on a node.
      *
+     * @param name  the node name
+     * @param alias an alias for the join. May be <tt>null</tt>
+     * @return a new inner join constraint
+     */
+    public static JoinConstraint join(String name, String alias) {
+        JoinConstraint result = join(name);
+        result.setAlias(alias);
+        return result;
+    }
+
+    /**
+     * Creates an inner join on a node.
+     *
      * @param name       the node name
      * @param constraint the archetype constraint to use for the collection node
      * @return a new inner join constraint

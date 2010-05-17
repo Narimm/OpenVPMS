@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.query;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.*;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -58,9 +59,9 @@ class TypeSet {
 
 
     /**
-     * Constructs a new <code>TypeSet</code>.
+     * Constructs a <tt>TypeSet</tt>.
      *
-     * @param alias       the type alias. May be <code>null</code>.
+     * @param alias       the type alias. May be <tt>null</tt>.
      * @param descriptors the archetype descriptors in the set
      * @param assembler   the assembler
      * @throws QueryBuilderException if the descriptors refer to more than one
@@ -77,7 +78,7 @@ class TypeSet {
     /**
      * Returns the type alias.
      *
-     * @return the type alias. May be <code>null</code>
+     * @return the type alias. May be <tt>null</tt>
      */
     public String getAlias() {
         return alias;
@@ -86,7 +87,7 @@ class TypeSet {
     /**
      * Sets the type alias
      *
-     * @param alias the type alias. May be <code>null</code>
+     * @param alias the type alias. May be <tt>null</tt>
      */
     public void setAlias(String alias) {
         this.alias = alias;
@@ -111,6 +112,17 @@ class TypeSet {
     }
 
     /**
+     * Determines if this type set contains another.
+     *
+     * @param other the type set to compare
+     * @return <tt>true</tt> if the type sets have the same alias, and all of <tt>other</tt>'s short names are present
+     *         in this
+     */
+    public boolean contains(TypeSet other) {
+        return ObjectUtils.equals(alias, other.alias) && getShortNames().containsAll(other.getShortNames());
+    }
+
+    /**
      * Returns the short names.
      *
      * @return the short names
@@ -128,6 +140,7 @@ class TypeSet {
      *
      * @param constraint the constraint
      * @param cache      the archetype descriptor cache
+     * @param assembler  the assembler
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no archetypes for the id
@@ -153,6 +166,7 @@ class TypeSet {
      * @param constraint the constraint
      * @param descriptor the node descriptor
      * @param cache      the archetype descriptor cache
+     * @param assembler  the assembler
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no matching archetypes for
@@ -187,6 +201,7 @@ class TypeSet {
      *
      * @param constraint the constraint
      * @param cache      the archetype descriptor cache
+     * @param assembler  the assembler
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no matching archetypes for
@@ -212,6 +227,7 @@ class TypeSet {
      *
      * @param constraint the constraint
      * @param cache      the archetype descriptor cache
+     * @param assembler  the assembler
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no matching archetypes for
@@ -240,17 +256,18 @@ class TypeSet {
     /**
      * Returns all archetype descriptors matching the criteria.
      *
-     * @param entityName  the archetype entity name. May be <code>null</code>
-     * @param conceptName the archetype concept name. May be <code>null</code>
+     * @param entityName  the archetype entity name. May be <tt>null</tt>
+     * @param conceptName the archetype concept name. May be <tt>null</tt>
+     * @param primaryOnly if <tt>true</tt> only return primary descriptors
      * @param cache       the archetype descriptor cache
+     * @return the descriptors matching the criteria
      * @throws ArchetypeServiceException for any archetype service error
      */
     private static Set<ArchetypeDescriptor> getDescriptors(
             String entityName, String conceptName, boolean primaryOnly,
             IArchetypeDescriptorCache cache) {
-        List<String> shortNames = cache.getArchetypeShortNames(
-                entityName, conceptName, primaryOnly);
-        return getDescriptors(shortNames.toArray(new String[0]), cache);
+        List<String> shortNames = cache.getArchetypeShortNames(entityName, conceptName, primaryOnly);
+        return getDescriptors(shortNames.toArray(new String[shortNames.size()]), cache);
     }
 
     /**
@@ -272,7 +289,7 @@ class TypeSet {
                                                                 primaryOnly);
             expanded.addAll(matches);
         }
-        return getDescriptors(expanded.toArray(new String[0]), cache);
+        return getDescriptors(expanded.toArray(new String[expanded.size()]), cache);
     }
 
     /**
@@ -280,7 +297,7 @@ class TypeSet {
      *
      * @param shortNames the short names. Must be expanded.
      * @param cache      the archetype descriptor cache
-     * @return a new <code>TypeSet</code>
+     * @return a new <tt>TypeSet</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
     private static Set<ArchetypeDescriptor> getDescriptors(
