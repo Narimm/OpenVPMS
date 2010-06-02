@@ -45,6 +45,8 @@ public final class Messages {
      *
      * @param key       the key of the message to be returned
      * @param arguments an array of arguments to be inserted into the message
+     * @return the appropriate formatted localized text
+     *         (if the key is not defined, the string "!key!" is returned)
      */
     public static String get(String key, Object ... arguments) {
         return get(key, false, arguments);
@@ -54,6 +56,7 @@ public final class Messages {
      * Returns a localised, formatted message.
      *
      * @param key       the key of the message to be returned
+     * @param allowNull determines behaviour if the key doesn't exist
      * @param arguments an array of arguments to be inserted into the message
      * @return the appropriate formatted localized text
      *         (if the key is not defined, the string "!key!" is returned)
@@ -61,7 +64,7 @@ public final class Messages {
     public static String get(String key, boolean allowNull,
                              Object ... arguments) {
         String result = null;
-        Locale locale = ApplicationInstance.getActive().getLocale();
+        Locale locale = getLocale();
         String pattern = get(key, allowNull);
         if (pattern != null) {
             MessageFormat format = new MessageFormat(pattern, locale);

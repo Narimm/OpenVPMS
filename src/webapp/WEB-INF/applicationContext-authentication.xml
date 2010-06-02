@@ -96,16 +96,22 @@
 
     <bean id="echoAuthenticationFilter"
           class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
-        <property name="postOnly" value="false"/>
+        <property name="postOnly" value="true"/>
         <property name="authenticationManager" ref="authenticationManager"/>
         <property name="authenticationSuccessHandler" ref="echoAuthenticationSuccessHandler"/>
         <property name="filterProcessesUrl" value="/j_spring_security_check"/>
+        <property name="authenticationFailureHandler" ref="echoAuthenticationFailureHandler"/>
     </bean>
 
     <bean id="echoAuthenticationSuccessHandler"
           class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
         <property name="alwaysUseDefaultTargetUrl" value="true"/>
         <property name="defaultTargetUrl" value="/app"/>
+    </bean>
+
+    <bean id="echoAuthenticationFailureHandler"
+          class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+        <property name="defaultFailureUrl" value="/login?status=error"/>
     </bean>
 
     <bean id="echoFilterSecurityInterceptor"
@@ -115,8 +121,8 @@
         <property name="securityMetadataSource">
             <security:filter-security-metadata-source path-type="ant">
                 <security:intercept-url pattern="/j_spring_security_check" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
-                <security:intercept-url pattern="/login*" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
-                <security:intercept-url pattern="/login/**" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+                <security:intercept-url pattern="/login" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+                <security:intercept-url pattern="/images/**" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
                 <security:intercept-url pattern="/**" access="IS_AUTHENTICATED_FULLY"/>
             </security:filter-security-metadata-source>
         </property>

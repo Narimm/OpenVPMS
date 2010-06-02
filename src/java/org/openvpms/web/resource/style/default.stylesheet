@@ -812,9 +812,8 @@
                         <property name="background" value="#cfcfdf"/>
                         <property name="backgroundImage">
                             <fill-image>
-                                <image type="nextapp.echo2.app.ResourceImageReference">
-                                    <resource-image-reference
-                                            resource="/org/openvpms/web/resource/image/buttonrowfill.png"/>
+                                <image type="nextapp.echo2.app.HttpImageReference">
+                                    <http-image-reference url="../images/buttonrowfill.png"/>
                                 </image>
                             </fill-image>
                         </property>
@@ -1850,65 +1849,57 @@
                                    border-insets="17px 17px 23px 23px">
                     <border-part position="top-left">
                         <fill-image>
-                            <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference
-                                        resource="/org/openvpms/web/resource/image/border/topleft.png"/>
+                            <image type="nextapp.echo2.app.HttpImageReference">
+                                <http-image-reference url="../images/border/topleft.png"/>
                             </image>
                         </fill-image>
                     </border-part>
                     <border-part position="top">
                         <fill-image>
-                            <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference
-                                        resource="/org/openvpms/web/resource/image/border/top.png"/>
+                            <image type="nextapp.echo2.app.HttpImageReference">
+                                <http-image-reference url="../images/border/top.png"/>
                             </image>
                         </fill-image>
                     </border-part>
                     <border-part position="top-right">
                         <fill-image>
-                            <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference
-                                        resource="/org/openvpms/web/resource/image/border/topright.png"/>
+                            <image type="nextapp.echo2.app.HttpImageReference">
+                                <http-image-reference url="../images/border/topright.png"/>
                             </image>
                         </fill-image>
                     </border-part>
                     <border-part position="left">
                         <fill-image>
-                            <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference
-                                        resource="/org/openvpms/web/resource/image/border/left.png"/>
+                            <image type="nextapp.echo2.app.HttpImageReference">
+                                <http-image-reference url="../images/border/left.png"/>
                             </image>
                         </fill-image>
                     </border-part>
                     <border-part position="right">
                         <fill-image>
-                            <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference
-                                        resource="/org/openvpms/web/resource/image/border/right.png"/>
+                            <image type="nextapp.echo2.app.HttpImageReference">
+                                <http-image-reference url="../images/border/right.png"/>
                             </image>
                         </fill-image>
                     </border-part>
                     <border-part position="bottom-left">
                         <fill-image>
-                            <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference
-                                        resource="/org/openvpms/web/resource/image/border/bottomleft.png"/>
+                            <image type="nextapp.echo2.app.HttpImageReference">
+                                <http-image-reference url="../images/border/bottomleft.png"/>
                             </image>
                         </fill-image>
                     </border-part>
                     <border-part position="bottom">
                         <fill-image>
-                            <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference
-                                        resource="/org/openvpms/web/resource/image/border/bottom.png"/>
+                            <image type="nextapp.echo2.app.HttpImageReference">
+                                <http-image-reference url="../images/border/bottom.png"/>
                             </image>
                         </fill-image>
                     </border-part>
                     <border-part position="bottom-right">
                         <fill-image>
-                            <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference
-                                        resource="/org/openvpms/web/resource/image/border/bottomright.png"/>
+                            <image type="nextapp.echo2.app.HttpImageReference">
+                                <http-image-reference url="../images/border/bottomright.png"/>
                             </image>
                         </fill-image>
                     </border-part>
