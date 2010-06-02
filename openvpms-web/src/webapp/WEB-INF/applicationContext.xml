@@ -546,8 +546,6 @@
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
     <!-- ================================================================== -->
-    <bean id="loginApp" class="org.openvpms.web.app.login.LoginApp" scope="prototype"/>
-
     <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype"/>
 
     <bean id="messageMonitor" class="org.openvpms.web.app.workflow.messaging.MessageMonitor">

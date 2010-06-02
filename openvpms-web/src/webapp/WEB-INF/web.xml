@@ -60,13 +60,9 @@
 
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
-        <init-param>
-            <param-name>app-name</param-name>
-            <param-value>loginApp</param-value>
-        </init-param>
+        <jsp-file>/login.jsp</jsp-file>
     </servlet>
-
+    
     <servlet>
         <servlet-name>AppServlet</servlet-name>
         <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
@@ -95,11 +91,6 @@
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/login</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>LoginServlet</servlet-name>
-        <url-pattern>/login/*</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
