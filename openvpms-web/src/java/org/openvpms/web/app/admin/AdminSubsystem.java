@@ -47,5 +47,6 @@ public class AdminSubsystem extends AbstractSubsystem {
         addWorkspace(new RoleWorkspace());
         addWorkspace(new AuthorityWorkspace());
         addWorkspace(new ArchetypeWorkspace());
+        addWorkspace(new StyleSheetWorkspace());
     }
 }

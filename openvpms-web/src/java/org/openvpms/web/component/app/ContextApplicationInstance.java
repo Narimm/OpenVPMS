@@ -19,6 +19,9 @@
 package org.openvpms.web.component.app;
 
 import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.StyleSheet;
+import nextapp.echo2.webcontainer.ContainerContext;
+import nextapp.echo2.webrender.ClientProperties;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
@@ -33,9 +36,15 @@ import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.web.component.style.UserStyleSheets;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.SpringApplicationInstance;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import javax.annotation.Resource;
+import java.awt.Dimension;
+import java.util.Map;
 
 
 /**
@@ -51,6 +60,16 @@ public abstract class ContextApplicationInstance
      * Application context.
      */
     private GlobalContext context = new GlobalContext();
+
+    /**
+     * The client screen resolution.
+     */
+    private Dimension resolution;
+
+    /**
+     * The style sheets.
+     */
+    private UserStyleSheets styleSheets;
 
 
     /**
@@ -106,6 +125,118 @@ public abstract class ContextApplicationInstance
      */
     protected void clearContext() {
         context = new GlobalContext();
+    }
+
+    /**
+     * Returns the client's screen resolution.
+     *
+     * @return the client's screen resolution, or <em>1024x768</em> if it cannot be determined
+     */
+    public Dimension getResolution() {
+        if (resolution == null) {
+            ContainerContext context = (ContainerContext) getContextProperty(ContainerContext.CONTEXT_PROPERTY_NAME);
+            int width = getProperty(context, "width", ClientProperties.SCREEN_WIDTH, 1024);
+            int height = getProperty(context, "height", ClientProperties.SCREEN_HEIGHT, 768);
+            resolution = new Dimension(width, height);
+        }
+        return resolution;
+    }
+
+    /**
+     * Overrides the client's screen resolution.
+     *
+     * @param resolution the new resolution
+     */
+    public void setResolution(Dimension resolution) {
+        this.resolution = resolution;
+    }
+
+    /**
+     * Sets the style sheets.
+     *
+     * @param styleSheets the style sheets
+     */
+    @Resource
+    public void setStyleSheets(UserStyleSheets styleSheets) {
+        this.styleSheets = styleSheets;
+    }
+
+    /**
+     * Returns the style sheets.
+     *
+     * @return the style sheets
+     */
+    public UserStyleSheets getStyleSheets() {
+        return styleSheets;
+    }
+
+    /**
+     * Sets the style sheet based on the client's screen resolution.
+     */
+    public void setStyleSheet() {
+        Dimension size = getResolution();
+        setStyleSheet(size.width, size.height);
+    }
+
+    /**
+     * Sets the style sheet based on the specified screen resolution
+     *
+     * @param width  the screen width
+     * @param height the screen height
+     */
+    public void setStyleSheet(int width, int height) {
+        try {
+            StyleSheet styleSheet = styleSheets.getStyleSheet(width, height);
+            setStyleSheet(styleSheet);
+            setResolution(new Dimension(width, height));
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception, false);
+        }
+    }
+
+    /**
+     * Configures the style sheet.
+     */
+    protected void configureStyleSheet() {
+        Dimension size = getResolution();
+        StyleSheet styleSheet = styleSheets.getStyleSheet(size.width, size.height);
+        setStyleSheet(styleSheet);
+    }
+
+    /**
+     * Returns an integer property value from one of the query parameters, container context, or a default value.
+     *
+     * @param context         the container context
+     * @param queryStringName the query string name of the property
+     * @param propertyName    the container context name of the property
+     * @param defaultValue    the default, if no other value was found
+     * @return the property value, or the default, if no other value was found
+     */
+    private int getProperty(ContainerContext context, String queryStringName, String propertyName, int defaultValue) {
+        int result = -1;
+        if (context != null) {
+            Map map = context.getInitialRequestParameterMap();
+            if (map != null) {
+                String[] values = (String[]) map.get(queryStringName);
+                if (values != null && values.length == 1) {
+                    try {
+                        result = Integer.valueOf(values[0]);
+                    } catch (NumberFormatException ignore) {
+                        // do nothing
+                    }
+                }
+            }
+            if (result == -1) {
+                ClientProperties properties = context.getClientProperties();
+                if (properties != null) {
+                    result = properties.getInt(propertyName, defaultValue);
+                }
+            }
+        }
+        if (result <= 0) {
+            result = defaultValue;
+        }
+        return result;
     }
 
     /**

@@ -53,9 +53,9 @@ public abstract class AbstractReportingWorkspace<T extends IMObject>
      *
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
+     * @param type        the supported workspace type
      */
-    public AbstractReportingWorkspace(String subsystemId, String workspaceId,
-                                      Class<T> type) {
+    public AbstractReportingWorkspace(String subsystemId, String workspaceId, Class<T> type) {
         super(subsystemId, workspaceId);
         this.type = type;
     }
@@ -90,18 +90,15 @@ public abstract class AbstractReportingWorkspace<T extends IMObject>
      */
     @Override
     protected Component doLayout() {
-        SplitPane root = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL,
-                "AbstractReportingWorkspace.Layout");
+        SplitPane root = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "SplitPaneWithButtonRow");
         Component heading = super.doLayout();
         root.add(heading);
         FocusGroup group = new FocusGroup("AbstractReportingWorkspace");
         buttons = new ButtonRow(group, "ControlRow", "default");
         layoutButtons(buttons.getButtons());
         enableButtons(buttons.getButtons(), false);
-        SplitPane content = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "AbstractReportingWorkspace.Layout", buttons);
+        SplitPane content = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "SplitPaneWithButtonRow",
+                                                    buttons);
         doLayout(content, group);
         root.add(content);
         return root;

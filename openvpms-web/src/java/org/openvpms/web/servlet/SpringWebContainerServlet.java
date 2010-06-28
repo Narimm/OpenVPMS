@@ -44,7 +44,7 @@ import java.util.Locale;
  * <ul>
  * <li>different logins from the same client browser are not supported.
  * This is due to the fact that Acegi doesn't bind authentication to a
- * particular path, but has a global instance per sesion.
+ * particular path, but has a global instance per session.
  * <li>terminating the session logs out all instances
  * </ul>
  * An alternative approach would be to use URL rewriting. This is not supported

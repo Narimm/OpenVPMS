@@ -57,6 +57,11 @@
     <listener>
         <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
     </listener>
+  
+    <!--Support the scoping of beans at the request, session, and global session levels (web-scoped beans) -->
+    <listener>
+    	<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+  	</listener>
 
     <servlet>
         <servlet-name>LoginServlet</servlet-name>

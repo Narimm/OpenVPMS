@@ -27,7 +27,6 @@ import nextapp.echo2.app.Style;
 import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.list.StyledListCell;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.resource.util.Styles;
 
 
 /**
@@ -154,15 +153,11 @@ public abstract class AbstractListCellRenderer<T>
          */
         public BoldListCell(String value) {
             this.value = value;
-            String styleName = Styles.getStyle(Label.class, "bold");
-            if (styleName != null) {
-                Style style = ApplicationInstance.getActive().getStyle(
-                        Label.class,
-                        styleName);
-                background = (Color) style.getProperty(
-                        Component.PROPERTY_BACKGROUND);
-                foreground = (Color) style.getProperty(
-                        Component.PROPERTY_FOREGROUND);
+            String styleName = "bold";
+            Style style = ApplicationInstance.getActive().getStyle(Label.class, styleName);
+            if (style != null) {
+                background = (Color) style.getProperty(Component.PROPERTY_BACKGROUND);
+                foreground = (Color) style.getProperty(Component.PROPERTY_FOREGROUND);
                 font = (Font) style.getProperty(Component.PROPERTY_FONT);
             }
         }

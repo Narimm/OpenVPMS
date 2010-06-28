@@ -21,6 +21,7 @@ package org.openvpms.web.component.util;
 import echopointng.DateField;
 import org.openvpms.web.component.bound.BoundDateField;
 import org.openvpms.web.component.property.Property;
+import nextapp.echo2.app.Extent;
 
 
 /**
@@ -59,6 +60,8 @@ public class DateFieldFactory extends ComponentFactory {
     private static DateField init(DateField date) {
         setDefaultStyle(date.getDateChooser());
         setDefaultStyle(date.getTextField());
+        int length = DateHelper.getLength(date.getDateFormat());
+        date.getTextField().setWidth(new Extent(length, Extent.EX));
         return date;
     }
 

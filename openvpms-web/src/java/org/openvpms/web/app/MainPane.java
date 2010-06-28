@@ -72,7 +72,6 @@ import org.openvpms.web.component.util.ContentPaneFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.resource.util.Styles;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -162,7 +161,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     /**
      * The left menu style.
      */
-    private static final String LEFT_MENU_STYLE = "MainPane.Left.Menu";
+    private static final String LEFT_MENU_STYLE = "WideCellSpacing";
 
     /**
      * The submenu column style.
@@ -209,7 +208,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      */
     public MainPane(MessageMonitor monitor) {
         super(ORIENTATION_HORIZONTAL);
-        setStyleName(Styles.getStyle(SplitPane.class, STYLE));
+        setStyleName(STYLE);
         this.monitor = monitor;
         listener = new MessageMonitor.MessageListener() {
             public void onMessage(Act message) {

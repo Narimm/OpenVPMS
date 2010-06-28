@@ -48,7 +48,6 @@ public class ComponentFactory {
      * @param style     the style name
      */
     public static void setStyle(Component component, String style) {
-        style = Styles.getStyle(component.getClass(), style);
         component.setStyleName(style);
     }
 

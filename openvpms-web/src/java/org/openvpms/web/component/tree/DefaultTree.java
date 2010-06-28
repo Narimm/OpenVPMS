@@ -26,7 +26,6 @@ package org.openvpms.web.component.tree;
 
 import echopointng.Tree;
 import echopointng.tree.TreeNode;
-import org.openvpms.web.resource.util.Styles;
 
 
 /**
@@ -41,15 +40,17 @@ public class DefaultTree extends Tree {
     /**
      * Constructs a <code>DefaultTree</code> with the specified
      * <code>TreeNode</code> as its root.
+     *
+     * @param root the root node
      */
     public DefaultTree(TreeNode root) {
         super(root);
         StyleableTreeIcons icons = new StyleableTreeIcons();
-        icons.setStyleName(Styles.getStyle(icons.getClass(), "default"));
+        icons.setStyleName("default");
         setTreeIcons(icons);
 
         StyleableTreeCellRenderer renderer = new StyleableTreeCellRenderer();
-        renderer.setStyleName(Styles.getStyle(renderer.getClass(), "default"));
+        renderer.setStyleName("default");
         setCellRenderer(renderer);
     }
 
