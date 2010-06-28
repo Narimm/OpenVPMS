@@ -18,22 +18,21 @@
 
 package org.openvpms.web.component.dialog;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.webcontainer.ContainerContext;
-import nextapp.echo2.webrender.ClientProperties;
+import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.KeyStrokeHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.resource.util.Styles;
+
+import java.awt.Dimension;
 
 
 /**
@@ -86,7 +85,6 @@ public abstract class PopupWindow extends WindowPane {
         if (style == null) {
             style = "PopupWindow";
         }
-        style = Styles.getStyle(WindowPane.class, style);
         setStyleName(style);
         focusGroup = new FocusGroup(getClass().getName());
         if (focus != null) {
@@ -125,17 +123,9 @@ public abstract class PopupWindow extends WindowPane {
      * exceeding screen bounds. See OVPMS-883
      */
     private void restrictDimensions() {
-        ApplicationInstance app = ApplicationInstance.getActive();
-        ContainerContext context = (ContainerContext) app.getContextProperty(
-                ContainerContext.CONTEXT_PROPERTY_NAME);
-        if (context != null) {
-            ClientProperties properties = context.getClientProperties();
-            int screenWidth = properties.getInt(ClientProperties.SCREEN_WIDTH, 0);
-            int screenHeight = properties.getInt(ClientProperties.SCREEN_HEIGHT, 0);
-            restrictSize(screenHeight, WindowPane.PROPERTY_HEIGHT, WindowPane.PROPERTY_POSITION_Y, 0.70);
-            restrictSize(screenWidth, WindowPane.PROPERTY_WIDTH, WindowPane.PROPERTY_POSITION_X, 0.90);
-        }
-
+        Dimension size = ContextApplicationInstance.getInstance().getResolution();
+        restrictSize(size.height, WindowPane.PROPERTY_HEIGHT, WindowPane.PROPERTY_POSITION_Y, 0.70);
+        restrictSize(size.width, WindowPane.PROPERTY_WIDTH, WindowPane.PROPERTY_POSITION_X, 0.90);
     }
 
     /**

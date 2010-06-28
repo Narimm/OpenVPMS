@@ -19,6 +19,7 @@
 package org.openvpms.web.app.workflow.messaging;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -32,7 +33,9 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.select.IMObjectSelectorListener;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -128,6 +131,17 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     }
 
     /**
+     * Creates a container component to lay out the query component in.
+     *
+     * @return a new container
+     * @see #doLayout(nextapp.echo2.app.Component)
+     */
+    @Override
+    protected Component createContainer() {
+        return ColumnFactory.create("WideCellSpacing");
+    }
+
+    /**
      * Lays out the component in a container, and sets focus on the instance
      * name.
      *
@@ -135,9 +149,11 @@ public class MessageQuery extends DateRangeActQuery<Act> {
      */
     @Override
     protected void doLayout(Component container) {
-        super.doLayout(container);
-        container.add(LabelFactory.create("messaging.user"));
-        container.add(user.getComponent());
+        Row row1 = RowFactory.create("CellSpacing");
+        super.doLayout(row1);
+        Row row2 = RowFactory.create("CellSpacing", LabelFactory.create("messaging.user"), user.getComponent());
+        container.add(row1);
+        container.add(row2);
         getFocusGroup().add(user.getFocusGroup());
     }
 

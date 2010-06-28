@@ -20,7 +20,6 @@ package org.openvpms.web.app;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Command;
-import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.webcontainer.ContainerContext;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
@@ -33,7 +32,6 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.resource.util.Styles;
 import org.openvpms.web.servlet.ServletHelper;
 
 import javax.servlet.http.HttpServletRequest;
@@ -69,7 +67,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
 
 
     /**
-     * Constructs a new <tt>OpenVPMSApp</tt>.
+     * Constructs an <tt>OpenVPMSApp</tt>.
      */
     public OpenVPMSApp() {
         Context context = getContext();
@@ -84,7 +82,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     public Window init() {
         configureSessionExpirationURL();
-        setStyleSheet(Styles.DEFAULT_STYLE_SHEET);
+        setStyleSheet();
         window = new Window();
         updateTitle();
         window.setContent(new ApplicationContentPane());
@@ -112,30 +110,32 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     }
 
     /**
-     * Sets the content pane.
-     *
-     * @param content the content pane
+     * Creates a new browser window.
      */
-    public void setContent(ContentPane content) {
-        window.setContent(content);
-    }
-
-    /**
-     * Returns the content pane.
-     *
-     * @return the content pane
-     */
-    public ContentPane getContent() {
-        return window.getContent();
+    public void createWindow() {
+        createWindow(-1, -1);
     }
 
     /**
      * Creates a new browser window.
+     *
+     * @param width  the window width. If <tt>-1</tt> the default width will be used
+     * @param height the window height. If <tt>-1</tt> the default height will be used
      */
-    public void createWindow() {
-        Command open = new BrowserOpenWindowCommand(
-                ServletHelper.getRedirectURI("app"), "_blank",
-                "menubar=yes,toolbar=yes,location=yes");
+    public void createWindow(int width, int height) {
+        StringBuilder uri = new StringBuilder(ServletHelper.getRedirectURI("app"));
+        StringBuilder features = new StringBuilder("menubar=yes,toolbar=yes,location=yes");
+        if (width != -1 && height != -1) {
+            uri.append("?width=");
+            uri.append(width);
+            uri.append("&height=");
+            uri.append(height);
+            features.append(",width=");
+            features.append(width);
+            features.append(",height=");
+            features.append(height);
+        }
+        Command open = new BrowserOpenWindowCommand(uri.toString(), "_blank", features.toString());
         enqueueCommand(open);
     }
 
@@ -155,8 +155,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         getDefaultWindow().removeAll();
         clearContext();
         setContextChangeListener(null);
-        Command redirect = new BrowserRedirectCommand(
-                ServletHelper.getRedirectURI("logout"));
+        Command redirect = new BrowserRedirectCommand(ServletHelper.getRedirectURI("logout"));
         enqueueCommand(redirect);
     }
 

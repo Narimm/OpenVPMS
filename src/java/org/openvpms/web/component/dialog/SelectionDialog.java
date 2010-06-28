@@ -22,13 +22,12 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
+import nextapp.echo2.app.list.AbstractListComponent;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
-import nextapp.echo2.app.list.AbstractListComponent;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.resource.util.Styles;
 
 import java.util.List;
 
@@ -102,7 +101,7 @@ public class SelectionDialog extends PopupDialog {
             }
         });
         Label prompt = LabelFactory.create(true, true);
-        prompt.setStyleName(Styles.getStyle(Label.class, "bold"));
+        prompt.setStyleName("bold");
         prompt.setText(message);
         Column column = ColumnFactory.create(prompt, this.list);
         getLayout().add(column);
