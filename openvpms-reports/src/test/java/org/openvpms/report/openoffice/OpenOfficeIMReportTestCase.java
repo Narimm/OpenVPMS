@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.text.DateFormat;
+import java.sql.Date;
 
 
 /**
@@ -62,7 +64,8 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
-        act.setValue("startTime", java.sql.Date.valueOf("2006-08-04"));
+        Date startTime = Date.valueOf("2006-08-04");
+        act.setValue("startTime", startTime);
         act.setValue("lowTotal", new BigDecimal("100"));
         act.setParticipant("participation.customer", party);
 
@@ -70,7 +73,8 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         Document result = report.generate(objects.iterator(),
                                           DocFormats.ODT_TYPE);
         Map<String, String> fields = getUserFields(result);
-        assertEquals("4/08/2006", fields.get("startTime"));  // @todo localise
+        String expectedStartTime = DateFormat.getDateInstance(DateFormat.MEDIUM).format(startTime);
+        assertEquals(expectedStartTime, fields.get("startTime"));
         assertEquals("$100.00", fields.get("lowTotal"));
         assertEquals("J", fields.get("firstName"));
         assertEquals("Zoo", fields.get("lastName"));

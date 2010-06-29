@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.text.DateFormat;
 
 
 /**
@@ -90,10 +91,9 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         act.setValue("lowTotal", lowTotal);
         act.setParticipant("participation.customer", party);
 
-        ExpressionEvaluator eval
-                = new IMObjectExpressionEvaluator(act.getAct(), service);
-        assertEquals("4/08/2006",
-                     eval.getFormattedValue("startTime")); // todo localise
+        ExpressionEvaluator eval = new IMObjectExpressionEvaluator(act.getAct(), service);
+        String expectedDate = DateFormat.getDateInstance(DateFormat.MEDIUM).format(date);
+        assertEquals(expectedDate, eval.getFormattedValue("startTime"));
         assertEquals("$100.00", eval.getFormattedValue("lowTotal"));
         assertEquals("J", eval.getFormattedValue("customer.entity.firstName"));
         assertEquals("Zoo", eval.getFormattedValue("customer.entity.lastName"));
