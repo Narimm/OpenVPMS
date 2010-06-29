@@ -19,7 +19,6 @@
 
 package org.openvpms.component.system.common.jxpath;
 
-// commons-jxpath
 import org.apache.commons.jxpath.ri.Compiler;
 import org.apache.commons.jxpath.ri.QName;
 import org.apache.commons.jxpath.ri.compiler.Expression;
@@ -29,6 +28,9 @@ import org.apache.commons.jxpath.ri.compiler.NodeNameTest;
 import org.apache.commons.jxpath.ri.compiler.NodeTest;
 import org.apache.commons.jxpath.ri.compiler.Step;
 import org.apache.commons.jxpath.ri.compiler.TreeCompiler;
+import org.apache.commons.jxpath.ri.compiler.Constant;
+
+import java.math.BigDecimal;
 
 /**
  * This extension to the JXPath TreeCompiler class provides support for
@@ -47,7 +49,14 @@ public class OpenVPMSTreeCompiler extends TreeCompiler {
      */
     public OpenVPMSTreeCompiler() {
         super();
-        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * Produces an EXPRESSION object that represents a numeric constant.
+     */
+    @Override
+    public Object number(String value) {
+        return new Constant(new BigDecimal(value));
     }
 
     /* (non-Javadoc)

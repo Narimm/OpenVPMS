@@ -77,7 +77,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#hasNode(String)} method.
      */
-    @Test public void testHasNode() {
+    @Test
+    public void testHasNode() {
         IMObjectBean bean = createBean("party.customerperson");
         assertTrue(bean.hasNode("firstName"));
         assertFalse(bean.hasNode("nonode"));
@@ -86,7 +87,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getDescriptor} method.
      */
-    @Test public void testGetDescriptor() {
+    @Test
+    public void testGetDescriptor() {
         IMObjectBean bean = createBean("party.customerperson");
         NodeDescriptor node = bean.getDescriptor("firstName");
         assertNotNull(node);
@@ -98,7 +100,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getDisplayName()} method.
      */
-    @Test public void testGetDisplayName() {
+    @Test
+    public void testGetDisplayName() {
         IMObjectBean pet = createBean("party.animalpet");
         assertEquals("Patient(Pet)", pet.getDisplayName());
 
@@ -110,7 +113,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getDisplayName(String)} method.
      */
-    @Test public void testNodeDisplayName() {
+    @Test
+    public void testNodeDisplayName() {
         IMObjectBean act = createBean("act.customerAccountPayment");
         assertEquals("Date", act.getDisplayName("startTime"));
 
@@ -123,7 +127,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getArchetypeRange(String)} method.
      */
-    @Test public void testGetArchetypeRange() {
+    @Test
+    public void testGetArchetypeRange() {
         IMObjectBean bean = createBean("party.customerperson");
 
         // check a node with an archetype range assertion
@@ -140,7 +145,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
      * Tests the {@link IMObjectBean#getValue(String)} and
      * {@link IMObjectBean#setValue(String, Object)} for a non-existent node.
      */
-    @Test public void testGetSetInvalidNode() {
+    @Test
+    public void testGetSetInvalidNode() {
         IMObjectBean bean = createBean("party.customerperson");
         try {
             bean.getValue("badNode");
@@ -160,7 +166,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getValue(String)} method.
      */
-    @Test public void testGetValue() {
+    @Test
+    public void testGetValue() {
         IMObjectBean bean = createBean("party.customerperson");
         assertEquals(bean.getValue("firstName"), null);
         bean.setValue("firstName", "Joe");
@@ -170,7 +177,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getBoolean(String)} method.
      */
-    @Test public void testGetBoolean() {
+    @Test
+    public void testGetBoolean() {
         IMObjectBean bean = createBean("act.types");
         assertEquals(false, bean.getBoolean("flag"));
         assertEquals(true, bean.getBoolean("flag", true));
@@ -182,7 +190,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getInt} methods.
      */
-    @Test public void testGetInt() {
+    @Test
+    public void testGetInt() {
         IMObjectBean bean = createBean("act.types");
         assertEquals(0, bean.getInt("size"));
         assertEquals(-1, bean.getInt("size", -1));
@@ -195,7 +204,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getLong} methods.
      */
-    @Test public void testGetLong() {
+    @Test
+    public void testGetLong() {
         IMObjectBean bean = createBean("act.types");
         assertEquals(0, bean.getLong("size"));
         assertEquals(-1, bean.getLong("size", -1));
@@ -208,7 +218,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getString} methods.
      */
-    @Test public void testGetString() {
+    @Test
+    public void testGetString() {
         IMObjectBean bean = createBean("act.types");
         assertNull(bean.getValue("name"));
         assertEquals("foo", bean.getString("name", "foo"));
@@ -225,7 +236,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getBigDecimal} methods.
      */
-    @Test public void testGetBigDecimal() {
+    @Test
+    public void testGetBigDecimal() {
         IMObjectBean bean = createBean("act.types");
 
         assertNull(bean.getBigDecimal("amount"));
@@ -237,13 +249,14 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
         assertEquals(expected, bean.getBigDecimal("amount"));
 
         // quantity has a default value
-        assertEquals(BigDecimal.ONE, bean.getBigDecimal("quantity"));
+        assertTrue(BigDecimal.ONE.compareTo(bean.getBigDecimal("quantity")) == 0);
     }
 
     /**
      * Tests the {@link IMObjectBean#getMoney} methods.
      */
-    @Test public void testMoney() {
+    @Test
+    public void testMoney() {
         IMObjectBean bean = createBean("act.types");
 
         assertNull(bean.getMoney("amount"));
@@ -257,7 +270,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getDate} methods.
      */
-    @Test public void testGetDate() {
+    @Test
+    public void testGetDate() {
         IMObjectBean bean = createBean("act.types");
 
         Date now = new Date();
@@ -273,7 +287,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
      * {@link IMObjectBean#addValue(String, IMObject)} and
      * {@link IMObjectBean#removeValue(String, IMObject)} methods.
      */
-    @Test public void testCollection() {
+    @Test
+    public void testCollection() {
         IMObjectBean bean = createBean("party.customerperson");
         List<IMObject> values = bean.getValues("contacts");
         assertNotNull(values);
@@ -303,7 +318,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getValues(String, Class)} method.
      */
-    @Test public void testGetValuesTypeSafeCast() {
+    @Test
+    public void testGetValuesTypeSafeCast() {
         IMObjectBean bean = createBean("party.customerperson");
         List<IMObject> values = bean.getValues("contacts");
         assertNotNull(values);
@@ -327,7 +343,7 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
         } catch (IMObjectBeanException exception) {
             assertEquals(InvalidClassCast, exception.getErrorCode());
             assertEquals("Expected class of type " + Act.class.getName()
-                    + " but got " + Contact.class.getName(),
+                         + " but got " + Contact.class.getName(),
                          exception.getMessage());
         }
     }
@@ -335,7 +351,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getReference(String)} method.
      */
-    @Test public void testGetReferenceNode() {
+    @Test
+    public void testGetReferenceNode() {
         IMObjectBean bean = createBean("actRelationship.simple");
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
@@ -347,7 +364,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#getObject(String)} method.
      */
-    @Test public void testGetObjectNode() {
+    @Test
+    public void testGetObjectNode() {
         IMObjectBean bean = createBean("actRelationship.simple");
         assertNull(bean.getObject("source"));
 
@@ -363,7 +381,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Tests the {@link IMObjectBean#save} method.
      */
-    @Test public void testSave() {
+    @Test
+    public void testSave() {
         String name = "Bar,Foo";
 
         IMObjectBean bean = createBean("party.customerperson");
@@ -395,10 +414,10 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     /**
      * Verifies that two lists of objects match.
      *
-     * @param actual the actual result
+     * @param actual   the actual result
      * @param expected the expected result
      */
-    private <T extends IMObject> void checkEquals(List<T> actual, T ... expected) {
+    private <T extends IMObject> void checkEquals(List<T> actual, T... expected) {
         assertEquals(actual.size(), expected.length);
         for (IMObject e : expected) {
             boolean found = false;
