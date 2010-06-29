@@ -63,7 +63,7 @@ public class Constraints {
     }
 
     /**
-     * Creates an <em>not-equal</em> constraint for the named node.
+     * Creates a <em>not-equal</em> constraint for the named node.
      *
      * @param name  the node name
      * @param value the value
@@ -71,6 +71,17 @@ public class Constraints {
      */
     public static NodeConstraint ne(String name, Object value) {
         return new NodeConstraint(name, RelationalOp.NE, value);
+    }
+
+    /**
+     * Creates a <em>not-equal</em> constraint for the named object reference node.
+     *
+     * @param name  the node name
+     * @param value the value
+     * @return a new <em>not-equal</em> constraint
+     */
+    public static ObjectRefNodeConstraint ne(String name, IMObjectReference value) {
+        return new ObjectRefNodeConstraint(name, RelationalOp.NE, value);
     }
 
     /**

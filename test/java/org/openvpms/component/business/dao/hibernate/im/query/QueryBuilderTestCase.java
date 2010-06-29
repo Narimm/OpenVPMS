@@ -396,9 +396,9 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         ShortNameConstraint items = new ShortNameConstraint(
                 "items", "actRelationship.customerEstimationItem", false, true);
         ArchetypeQuery query = new ArchetypeQuery(estimation);
-        query.add(new NodeSelectConstraint("estimation.name"));
-        query.add(new NodeSelectConstraint("estimation.description"));
-        query.add(new NodeSelectConstraint("estimation.status"));
+        query.add(new NodeSelectConstraint("name"));
+        query.add(new NodeSelectConstraint("description"));
+        query.add(new NodeSelectConstraint("status"));
         query.add(new ObjectSelectConstraint("estimationItem"));
         query.add(new CollectionNodeConstraint("items", items));
         query.add(estimationItem);
