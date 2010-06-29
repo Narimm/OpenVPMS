@@ -19,10 +19,8 @@
 
 package org.openvpms.component.system.common.jxpath;
 
-// java core
 import java.math.BigDecimal;
 
-// commons-jxpath
 import org.apache.commons.jxpath.ri.compiler.CoreOperationNotEqual;
 import org.apache.commons.jxpath.ri.compiler.Expression;
 
@@ -34,10 +32,10 @@ import org.apache.commons.jxpath.ri.compiler.Expression;
 public class BigDecimalOperationNotEqual extends CoreOperationNotEqual {
 
     /** 
-     * Support for base class construction
+     * Constructs a <tt>BigDecimalOperationNotEqual</tt>.
      * 
-     * @param arg1
-     * @param arg2
+     * @param arg1 the left hand side of the expression
+     * @param arg2 the right hand side of the expression
      */
     public BigDecimalOperationNotEqual(Expression arg1, Expression arg2) {
         super(arg1, arg2);
@@ -49,7 +47,7 @@ public class BigDecimalOperationNotEqual extends CoreOperationNotEqual {
     @Override
     protected boolean equal(Object l, Object r) {
         if ((l instanceof BigDecimal) && (r instanceof BigDecimal)) {
-            return l.equals(r);
+            return ((BigDecimal) l).compareTo((BigDecimal) r) == 0;
         } else {
             return super.equal(l, r);
         }

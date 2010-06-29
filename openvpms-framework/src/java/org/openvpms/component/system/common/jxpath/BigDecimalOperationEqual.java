@@ -35,10 +35,10 @@ import org.apache.commons.jxpath.ri.compiler.Expression;
 public class BigDecimalOperationEqual extends CoreOperationEqual {
 
     /**
-     * Support for base class construction
+     * Constructs a <tt>BigDecimalOperationEqual</tt>.
      * 
-     * @param arg1
-     * @param arg2
+     * @param arg1 the left hand side of the expression
+     * @param arg2 the right hand side of the expression
      */
     public BigDecimalOperationEqual(Expression arg1, Expression arg2) {
         super(arg1, arg2);
@@ -50,7 +50,7 @@ public class BigDecimalOperationEqual extends CoreOperationEqual {
     @Override
     protected boolean equal(Object l, Object r) {
         if ((l instanceof BigDecimal) && (r instanceof BigDecimal)) {
-            return l.equals(r);
+            return ((BigDecimal) l).compareTo((BigDecimal) r) == 0;
         } else {
             return super.equal(l, r);
         }

@@ -19,31 +19,29 @@
 
 package org.openvpms.component.system.common.jxpath;
 
-// java core
-import java.math.BigDecimal;
-
-// commons-jxpath
 import org.apache.commons.jxpath.ri.EvalContext;
 import org.apache.commons.jxpath.ri.compiler.CoreOperationDivide;
 import org.apache.commons.jxpath.ri.compiler.Expression;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 /**
- * Supports big decimal divide operation
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * Supports big decimal divide operation.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class BigDecimalOperationDivide extends CoreOperationDivide {
 
     /**
-     * Support for base class construction
-     * 
-     * @param arg1
-     * @param arg2
+     * Constructs a <tt>BigDecimalOperationDivide</tt>.
+     *
+     * @param lhs the left hand expression
+     * @param rhs the right hand expression
      */
-    public BigDecimalOperationDivide(Expression arg1, Expression arg2) {
-        super(arg1, arg2);
-        // TODO Auto-generated constructor stub
+    public BigDecimalOperationDivide(Expression lhs, Expression rhs) {
+        super(lhs, rhs);
     }
 
     /* (non-Javadoc)
@@ -53,7 +51,7 @@ public class BigDecimalOperationDivide extends CoreOperationDivide {
     public Object computeValue(EvalContext context) {
         BigDecimal l = TypeConversionUtil.bigDecimalValue(args[0].computeValue(context));
         BigDecimal r = TypeConversionUtil.bigDecimalValue(args[1].computeValue(context));
-        return l.divide(r);
+        return l.divide(r, MathContext.DECIMAL128);
     }
 
 }
