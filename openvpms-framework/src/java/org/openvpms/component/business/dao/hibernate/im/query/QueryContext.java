@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.LinkedHashMap;
 
 
 /**
@@ -78,7 +79,7 @@ public class QueryContext {
     /**
      * The types, keyed on alias.
      */
-    private Map<String, TypeSet> typesets = new HashMap<String, TypeSet>();
+    private Map<String, TypeSet> typesets = new LinkedHashMap<String, TypeSet>();
 
     /**
      * Name allocator for types.
@@ -304,6 +305,15 @@ public class QueryContext {
      */
     TypeSet peekTypeSet() {
         return typeStack.peek();
+    }
+
+    /**
+     * Returns the primary type set. This is the type of the first from clause.
+     *
+     * @return the primary type, or <tt>null</tt> if none is registered
+     */
+    TypeSet getPrimarySet() {
+        return (!typesets.isEmpty()) ? typesets.values().iterator().next() : null;
     }
 
     /**

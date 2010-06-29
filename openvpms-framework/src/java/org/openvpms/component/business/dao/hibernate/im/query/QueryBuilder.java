@@ -127,7 +127,12 @@ public class QueryBuilder {
             throw new QueryBuilderException(InvalidQualifiedName, constraint.getName());
         }
 
-        TypeSet types = context.getTypeSet(constraint.getAlias());
+        TypeSet types;
+        if (constraint.getAlias() != null) {
+            types = context.getTypeSet(constraint.getAlias());
+        } else {
+            types = context.getPrimarySet();
+        }
         if (types == null) {
             throw new QueryBuilderException(InvalidQualifiedName, constraint.getName());
         }
