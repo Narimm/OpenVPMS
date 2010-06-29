@@ -62,8 +62,11 @@ class StatementActHelper {
 
 
     public class ActState {
+
         private final Date startTime;
+
         private final BigDecimal amount;
+
         private final boolean printed;
 
         public ActState(Date startTime, BigDecimal amount, boolean printed) {
@@ -112,7 +115,7 @@ class StatementActHelper {
                 CustomerAccountArchetypes.DEBITS_CREDITS));
         shortNames.add(CustomerAccountArchetypes.OPENING_BALANCE);
         shortNames.add(CustomerAccountArchetypes.CLOSING_BALANCE);
-        SHORT_NAMES = shortNames.toArray(new String[0]);
+        SHORT_NAMES = shortNames.toArray(new String[shortNames.size()]);
     }
 
 
@@ -145,7 +148,8 @@ class StatementActHelper {
      * Determines if a customer has had end-of-period run on or after a
      * particular date.
      *
-     * @param date the date
+     * @param customer the customer
+     * @param date     the date
      * @return <tt>true</tt> if end-of-period has been run on or after the date
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -172,10 +176,10 @@ class StatementActHelper {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        query.add(new NodeConstraint("a.startTime", RelationalOp.GTE,
+        query.add(new NodeConstraint("act.startTime", RelationalOp.GTE,
                                      calendar.getTime()));
         calendar.add(Calendar.DATE, 1);
-        query.add(new NodeConstraint("a.startTime", RelationalOp.LT,
+        query.add(new NodeConstraint("act.startTime", RelationalOp.LT,
                                      calendar.getTime()));
         query.setMaxResults(1);
         Iterator<FinancialAct> iter = new IMObjectQueryIterator<FinancialAct>(
@@ -341,6 +345,7 @@ class StatementActHelper {
      *
      * @param customer      the customer
      * @param statementDate the statement date
+     * @return the opening balance state
      */
     public ActState getOpeningBalanceState(Party customer, Date statementDate) {
         return getActState(OPENING_BALANCE, customer, statementDate,
@@ -391,7 +396,7 @@ class StatementActHelper {
                                            openingBalanceTimestamp, false,
                                            closingBalanceTimestamp, false,
                                            null);
-        query.add(new NodeSelectConstraint("a.startTime"));
+        query.add(new NodeSelectConstraint("act.startTime"));
         query.setMaxResults(1);
         Iterator<ObjectSet> iter = new ObjectSetQueryIterator(service, query);
         return iter.hasNext();
@@ -416,22 +421,22 @@ class StatementActHelper {
         ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
                 customer, new String[]{shortName});
         if (date != null) {
-            query.add(new NodeConstraint("a.startTime", operator, date));
+            query.add(new NodeConstraint("act.startTime", operator, date));
         }
-        query.add(new NodeSelectConstraint("a.startTime"));
-        query.add(new NodeSelectConstraint("a.amount"));
-        query.add(new NodeSelectConstraint("a.credit"));
-        query.add(new NodeSelectConstraint("a.printed"));
+        query.add(new NodeSelectConstraint("act.startTime"));
+        query.add(new NodeSelectConstraint("act.amount"));
+        query.add(new NodeSelectConstraint("act.credit"));
+        query.add(new NodeSelectConstraint("act.printed"));
         query.add(new NodeSortConstraint("startTime", sortAscending));
         query.setMaxResults(1);
         ObjectSetQueryIterator iter = new ObjectSetQueryIterator(service,
                                                                  query);
         if (iter.hasNext()) {
             ObjectSet set = iter.next();
-            Date startTime = (Date) set.get("a.startTime");
-            BigDecimal amount = (BigDecimal) set.get("a.amount");
-            boolean credit = (Boolean) set.get("a.credit");
-            boolean printed = (Boolean) set.get("a.printed");
+            Date startTime = (Date) set.get("act.startTime");
+            BigDecimal amount = (BigDecimal) set.get("act.amount");
+            boolean credit = (Boolean) set.get("act.credit");
+            boolean printed = (Boolean) set.get("act.printed");
             if (credit) {
                 amount = amount.negate();
             }
@@ -504,6 +509,7 @@ class StatementActHelper {
      * opening balance.
      *
      * @param customer                the customer
+     * @param shortNames              the account act short names
      * @param openingBalanceTimestamp the opening balance timestamp.
      *                                May be <tt>null</tt>
      * @param includeOpeningBalance   if <tt>true</tt> includes the opening
@@ -524,7 +530,7 @@ class StatementActHelper {
                                        boolean includeClosingBalance,
                                        String status) {
         ShortNameConstraint archetypes = new ShortNameConstraint(
-                "a", shortNames, false, false);
+                "act", shortNames, false, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
                 "customer", "participation.customer", false, false);
@@ -532,13 +538,13 @@ class StatementActHelper {
                 "entity", customer.getObjectReference()));
         if (openingBalanceTimestamp != null) {
             RelationalOp op = (includeOpeningBalance) ? RelationalOp.GTE
-                    : RelationalOp.GT;
+                                                      : RelationalOp.GT;
             query.add(new NodeConstraint("startTime", op,
                                          openingBalanceTimestamp));
         }
         if (closingBalanceTimestamp != null) {
             RelationalOp op = (includeClosingBalance) ? RelationalOp.LTE
-                    : RelationalOp.LT;
+                                                      : RelationalOp.LT;
             query.add(new NodeConstraint("startTime", op,
                                          closingBalanceTimestamp));
         }
