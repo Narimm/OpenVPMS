@@ -188,14 +188,14 @@ class CustomerMerger extends PartyMerger {
     private Date getFirstTransactionStartTime(Party party) {
         ArchetypeQuery query = CustomerAccountQueryFactory.createObjectSetQuery(
                 party, CustomerAccountArchetypes.DEBITS_CREDITS, true);
-        query.add(new NodeSelectConstraint("a.startTime"));
+        query.add(new NodeSelectConstraint("act.startTime"));
         query.setMaxResults(1);
         Date startTime = null;
         ObjectSetQueryIterator iter = new ObjectSetQueryIterator(
                 getArchetypeService(), query);
         if (iter.hasNext()) {
             ObjectSet set = iter.next();
-            startTime = (Date) set.get("a.startTime");
+            startTime = (Date) set.get("act.startTime");
         }
         return startTime;
     }

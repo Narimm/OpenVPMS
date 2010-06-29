@@ -29,14 +29,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.NamedQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
-import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -71,14 +69,12 @@ public class BalanceCalculator {
      * Calculates the outstanding balance for a customer.
      *
      * @param customer the customer
+     * @return the outstanding balance
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getBalance(Party customer) {
-        ArchetypeQuery query
-                = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
-                customer, DEBITS_CREDITS);
-        Iterator<ObjectSet> iterator
-                = new ObjectSetQueryIterator(service, query);
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(customer, DEBITS_CREDITS);
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
         return calculateBalance(iterator);
     }
 
@@ -92,12 +88,9 @@ public class BalanceCalculator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getBalance(Party customer, Date date) {
-        ArchetypeQuery query
-                = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
-                customer, DEBITS_CREDITS);
-        Iterator<ObjectSet> iterator
-                = new ObjectSetQueryIterator(service, query);
-        query.add(new NodeConstraint("startTime", RelationalOp.LT, date));
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(customer, DEBITS_CREDITS);
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
+        query.add(Constraints.lt("startTime", date));
         return calculateBalance(iterator);
     }
 
@@ -111,20 +104,18 @@ public class BalanceCalculator {
      * @param to             the to time. If <tt>null</tt>, indicates that the
      *                       time is unbounded
      * @param openingBalance the opening balance
+     * @return the balance
      */
-    public BigDecimal getBalance(Party customer, Date from, Date to,
-                                 BigDecimal openingBalance) {
-        ArchetypeQuery query = CustomerAccountQueryFactory.createObjectSetQuery(
-                customer, DEBITS_CREDITS, true);
-        query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
+    public BigDecimal getBalance(Party customer, Date from, Date to, BigDecimal openingBalance) {
+        ArchetypeQuery query = CustomerAccountQueryFactory.createObjectSetQuery(customer, DEBITS_CREDITS, true);
+        query.add(Constraints.eq("status", FinancialActStatus.POSTED));
         if (from != null) {
-            query.add(new NodeConstraint("startTime", RelationalOp.GTE, from));
+            query.add(Constraints.gte("startTime", from));
         }
         if (to != null) {
-            query.add(new NodeConstraint("startTime", RelationalOp.LTE, to));
+            query.add(Constraints.lte("startTime", to));
         }
-        Iterator<ObjectSet> iterator
-                = new ObjectSetQueryIterator(service, query);
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
         return calculateDefinitiveBalance(iterator, openingBalance);
     }
 
@@ -135,6 +126,7 @@ public class BalanceCalculator {
      * to detect account balance errors.
      *
      * @param customer the customer
+     * @return the outstanding balance
      * @throws ArchetypeServiceException    for any archetype service error
      * @throws CustomerAccountRuleException if an opening or closing balance
      *                                      doesn't match the expected balance
@@ -142,21 +134,21 @@ public class BalanceCalculator {
     public BigDecimal getDefinitiveBalance(Party customer) {
         ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
                 customer, ACCOUNT_ACTS);
-        query.add(new NodeSortConstraint("startTime", true));
-        query.add(new NodeSortConstraint("id", true));
-        query.add(new ObjectRefSelectConstraint("a"));
-        query.add(new NodeSelectConstraint("a.amount"));
-        query.add(new NodeSelectConstraint("a.credit"));
-        query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
+        query.add(Constraints.sort("startTime"));
+        query.add(Constraints.sort("id"));
+        query.add(new ObjectRefSelectConstraint("act"));
+        query.add(new NodeSelectConstraint("amount"));
+        query.add(new NodeSelectConstraint("credit"));
+        query.add(Constraints.eq("status", FinancialActStatus.POSTED));
         Iterator<ObjectSet> iterator
                 = new ObjectSetQueryIterator(service, query);
         BigDecimal total = BigDecimal.ZERO;
         ActCalculator calculator = new ActCalculator(service);
         while (iterator.hasNext()) {
             ObjectSet set = iterator.next();
-            BigDecimal amount = set.getBigDecimal("a.amount", BigDecimal.ZERO);
-            boolean credit = set.getBoolean("a.credit");
-            IMObjectReference act = set.getReference("a.reference");
+            BigDecimal amount = set.getBigDecimal("act.amount", BigDecimal.ZERO);
+            boolean credit = set.getBoolean("act.credit");
+            IMObjectReference act = set.getReference("act.reference");
             if (TypeHelper.isA(act, OPENING_BALANCE, CLOSING_BALANCE)) {
                 if (TypeHelper.isA(act, CLOSING_BALANCE)) {
                     credit = !credit;
@@ -186,12 +178,9 @@ public class BalanceCalculator {
      */
     public BigDecimal getOverdueBalance(Party customer, Date date) {
         // query all overdue debit acts
-        ArchetypeQuery query
-                = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
-                customer, DEBITS);
-        query.add(new NodeConstraint("startTime", RelationalOp.LT, date));
-        Iterator<ObjectSet> iterator
-                = new ObjectSetQueryIterator(service, query);
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(customer, DEBITS);
+        query.add(Constraints.lt("startTime", date));
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
 
         BigDecimal amount = calculateBalance(iterator);
         if (amount.compareTo(BigDecimal.ZERO) < 0) {
@@ -318,6 +307,7 @@ public class BalanceCalculator {
     /**
      * Determines if the act has been fully allocated.
      *
+     * @param act the act
      * @return <tt>true</tt> if the act has been full allocated
      */
     public boolean isAllocated(FinancialAct act) {
@@ -335,10 +325,9 @@ public class BalanceCalculator {
         ActCalculator calculator = new ActCalculator(service);
         while (iterator.hasNext()) {
             ObjectSet set = iterator.next();
-            BigDecimal amount = set.getBigDecimal("a.amount", BigDecimal.ZERO);
-            BigDecimal allocated = set.getBigDecimal("a.allocatedAmount",
-                                                     BigDecimal.ZERO);
-            boolean credit = set.getBoolean("a.credit");
+            BigDecimal amount = set.getBigDecimal("act.amount", BigDecimal.ZERO);
+            BigDecimal allocated = set.getBigDecimal("act.allocatedAmount", BigDecimal.ZERO);
+            boolean credit = set.getBoolean("act.credit");
             BigDecimal unallocated = getAllocatable(amount, allocated);
             total = calculator.addAmount(total, unallocated, credit);
         }
@@ -369,8 +358,8 @@ public class BalanceCalculator {
         ActCalculator calculator = new ActCalculator(service);
         while (iterator.hasNext()) {
             ObjectSet set = iterator.next();
-            BigDecimal amount = set.getBigDecimal("a.amount", BigDecimal.ZERO);
-            boolean credit = set.getBoolean("a.credit");
+            BigDecimal amount = set.getBigDecimal("act.amount", BigDecimal.ZERO);
+            boolean credit = set.getBoolean("act.credit");
             total = calculator.addAmount(total, amount, credit);
         }
         return total;

@@ -19,18 +19,14 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 
@@ -56,9 +52,9 @@ public class CustomerAccountQueryFactory {
             Party customer, String[] shortNames) {
         ArchetypeQuery query = createUnallocatedQuery(customer, shortNames,
                                                       null);
-        query.add(new NodeSelectConstraint("a.amount"));
-        query.add(new NodeSelectConstraint("a.allocatedAmount"));
-        query.add(new NodeSelectConstraint("a.credit"));
+        query.add(new NodeSelectConstraint("amount"));
+        query.add(new NodeSelectConstraint("allocatedAmount"));
+        query.add(new NodeSelectConstraint("credit"));
         return query;
     }
 
@@ -76,7 +72,7 @@ public class CustomerAccountQueryFactory {
         ArchetypeQuery query = createBalanceParticipationQuery(customer,
                                                                shortNames,
                                                                exclude);
-        query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
+        query.add(Constraints.eq("status", FinancialActStatus.POSTED));
         return query;
     }
 
@@ -91,11 +87,10 @@ public class CustomerAccountQueryFactory {
             Party customer, String[] shortNames) {
         ArchetypeQuery query = createBalanceParticipationQuery(
                 customer, shortNames, null);
-        query.add(new NodeConstraint("status", RelationalOp.NE,
-                                     FinancialActStatus.POSTED));
-        query.add(new NodeSelectConstraint("a.amount"));
-        query.add(new NodeSelectConstraint("a.allocatedAmount"));
-        query.add(new NodeSelectConstraint("a.credit"));
+        query.add(Constraints.ne("status", FinancialActStatus.POSTED));
+        query.add(new NodeSelectConstraint("amount"));
+        query.add(new NodeSelectConstraint("allocatedAmount"));
+        query.add(new NodeSelectConstraint("credit"));
         return query;
     }
 
@@ -134,11 +129,11 @@ public class CustomerAccountQueryFactory {
                                                       String[] shortNames,
                                                       boolean sortAscending) {
         ArchetypeQuery query = createQuery(customer, shortNames);
-        query.add(new NodeSortConstraint("startTime", sortAscending));
-        query.add(new NodeSortConstraint("id", true));
-        query.add(new NodeSelectConstraint("a.amount"));
-        query.add(new NodeSelectConstraint("a.allocatedAmount"));
-        query.add(new NodeSelectConstraint("a.credit"));
+        query.add(Constraints.sort("startTime", sortAscending));
+        query.add(Constraints.sort("id", true));
+        query.add(new NodeSelectConstraint("amount"));
+        query.add(new NodeSelectConstraint("allocatedAmount"));
+        query.add(new NodeSelectConstraint("credit"));
         return query;
     }
 
@@ -150,17 +145,10 @@ public class CustomerAccountQueryFactory {
      * @param shortNames the act archetype short names
      * @return the corresponding query
      */
-    public static ArchetypeQuery createQuery(Party customer,
-                                             String[] shortNames) {
-        ShortNameConstraint archetypes
-                = new ShortNameConstraint("a", shortNames, false, false);
+    public static ArchetypeQuery createQuery(Party customer, String[] shortNames) {
+        ShortNameConstraint archetypes = Constraints.shortName("act", shortNames, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
-        ShortNameConstraint participation = new ShortNameConstraint(
-                "p", "participation.customer", false, false);
-        CollectionNodeConstraint constraint = new CollectionNodeConstraint(
-                "customer", participation);
-        constraint.add(new ObjectRefNodeConstraint(
-                "p.entity", customer.getObjectReference()));
+        JoinConstraint join = Constraints.join("customer").add(Constraints.eq("entity", customer.getObjectReference()));
         OrConstraint or = new OrConstraint();
 
         // re-specify the act short names, this time on the participation act
@@ -168,9 +156,9 @@ public class CustomerAccountQueryFactory {
         // is not supported by ArchetypeQuery.
         for (String shortName : shortNames) {
             ArchetypeId id = new ArchetypeId(shortName);
-            or.add(new ObjectRefNodeConstraint("p.act", id));
+            or.add(Constraints.eq("customer.act", id));
         }
-        query.add(constraint);
+        query.add(join);
         query.add(or);
         return query;
     }
@@ -185,22 +173,17 @@ public class CustomerAccountQueryFactory {
      * @param exclude    the act to exclude fromj the result. May be <tt>null</tt>
      * @return the corresponding query
      */
-    private static ArchetypeQuery createBalanceParticipationQuery(
-            Party customer, String[] shortNames, Act exclude) {
-        ShortNameConstraint archetypes
-                = new ShortNameConstraint("a", shortNames, false, false);
+    private static ArchetypeQuery createBalanceParticipationQuery(Party customer, String[] shortNames, Act exclude) {
+        ShortNameConstraint archetypes = Constraints.shortName("act", shortNames, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
-        CollectionNodeConstraint constraint = new CollectionNodeConstraint(
-                "accountBalance", BALANCE_PARTICIPATION, false, false);
-        constraint.add(new ObjectRefNodeConstraint(
-                "entity", customer.getObjectReference()));
+        JoinConstraint join = Constraints.join("accountBalance")
+                .add(Constraints.eq("entity", customer.getObjectReference()));
         if (exclude != null) {
-            constraint.add(new ObjectRefNodeConstraint(
-                    "act", RelationalOp.NE, exclude.getObjectReference()));
+            join.add(Constraints.ne("act", exclude.getObjectReference()));
         }
-        query.add(constraint);
-        query.add(new NodeSortConstraint("startTime", true));
-        query.add(new NodeSortConstraint("id", true));
+        query.add(join);
+        query.add(Constraints.sort("startTime"));
+        query.add(Constraints.sort("id"));
         return query;
     }
 
