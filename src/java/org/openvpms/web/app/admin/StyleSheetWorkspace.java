@@ -163,11 +163,10 @@ public class StyleSheetWorkspace extends AbstractWorkspace {
                         OpenVPMSApp app = OpenVPMSApp.getInstance();
                         if (StyleHelper.ANY_RESOLUTION.equals(size)) {
                             styles.setDefaultProperties(editor.getProperties());
-                            app.setStyleSheet();
                         } else {
                             styles.setProperties(editor.getProperties(), size.width, size.height);
-                            app.setStyleSheet(size.width, size.height);
                         }
+                        app.setStyleSheet(); // refresh the display with the style sheet changes (if any)
                         browser.refresh();
                     }
                 }

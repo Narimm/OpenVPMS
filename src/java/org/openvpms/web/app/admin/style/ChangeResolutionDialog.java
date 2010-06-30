@@ -64,7 +64,9 @@ public class ChangeResolutionDialog extends PopupDialog {
         width = new SimpleProperty("width", size.width, Integer.class);
         height = new SimpleProperty("height", size.height, Integer.class);
         width.setValue(size.width);
+        width.setMaxLength(4);
         height.setValue(size.height);
+        height.setMaxLength(4);
     }
 
     /**
@@ -87,7 +89,7 @@ public class ChangeResolutionDialog extends PopupDialog {
         if (width.isValid() && height.isValid()) {
             int w = (Integer) width.getValue();
             int h = (Integer) height.getValue();
-            ContextApplicationInstance.getInstance().setStyleSheet(w, h);
+            // ContextApplicationInstance.getInstance().setStyleSheet(w, h);
             OpenVPMSApp.getInstance().createWindow(w, h);
         }
         super.onOK();

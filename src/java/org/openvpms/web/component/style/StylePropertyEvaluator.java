@@ -20,6 +20,8 @@ package org.openvpms.web.component.style;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Variables;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +52,17 @@ public class StylePropertyEvaluator {
      */
     private static final String FONT_SIZE = "font.size";
 
-    
+    private static final String PADDING_LARGE = "padding.large";
+
+    private static final String PADDING_MEDIUM = "padding.medium";
+
+    private static final String PADDING_SMALL = "padding.small";
+
+    private static final String PADDING_SMALLER = "padding.smaller";
+
+    private static final String PADDING_TINY = "padding.tiny";
+
+
     /**
      * Constructs a <tt>StylePropertyEvaluator</tt>.
      *
@@ -102,73 +114,93 @@ public class StylePropertyEvaluator {
      * @return properties for the screen resolution
      */
     public Map<String, String> getProperties(int width, int height, Map<String, String> properties) {
-        Map<String, String> result = new HashMap<String, String>();
-        int fontSize = getFontSize(properties);
-
+        Map<String, String> result = new HashMap<String, String>(defaults);
+        if (properties != null) {
+            result.putAll(properties);
+        }
         JXPathContext context = JXPathContext.newContext(new Object());
         Variables variables = context.getVariables();
         variables.declareVariable("width", width);
         variables.declareVariable("height", height);
-        if (fontSize != -1) {
-            variables.declareVariable(FONT_SIZE, fontSize);
-        }
-        if (properties != null) {
-            evaluate(properties, result, context, true);
-        }
-        evaluate(defaults, result, context, false);
+        evaluateAndDeclare(FONT_SIZE, result, context);
+        evaluateAndDeclare(PADDING_LARGE, result, context);
+        evaluateAndDeclare(PADDING_MEDIUM, result, context);
+        evaluateAndDeclare(PADDING_SMALL, result, context);
+        evaluateAndDeclare(PADDING_SMALLER, result, context);
+        evaluateAndDeclare(PADDING_TINY, result, context);
+
+        evaluate(result, context);
         return result;
     }
 
     /**
-     * Evalute properties.
+     * Evaluates properties.
      *
      * @param properties the properties to evaluate
-     * @param result     the map to store the results
      * @param context    the xpath expression context used for evaluation
-     * @param replace    if <tt>true</tt>, replace any existing property in <tt>result</tt> with the same name
      */
-    private void evaluate(Map<String, String> properties, Map<String, String> result, JXPathContext context,
-                          boolean replace) {
+    private void evaluate(Map<String, String> properties, JXPathContext context) {
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             String name = entry.getKey();
-            if (replace || result.get(name) == null) {
-                String value = entry.getValue();
-                if (value != null) {
-                    try {
-                        Object eval = context.getValue(value, Object.class);
-                        if (eval instanceof Number) {
-                            eval = String.valueOf(((Number) eval).longValue());
-                        } else if (eval != null && !(eval instanceof String)) {
-                            eval = eval.toString();
-                        }
-                        result.put(name, (String) eval);
-                    } catch (Throwable exception) {
-                        throw new RuntimeException("Failed to evaluate: " + value, exception);
-                    }
-                }
+            String expression = entry.getValue();
+            if (expression != null) {
+                String value = evaluate(expression, context);
+                properties.put(name, value);
             }
         }
     }
 
     /**
-     * Returns the font size from the properties.
+     * Evaluates an expression.
      *
-     * @param properties the properties
-     * @return the font size, in pixels, or <tt>-1</tt> if it is not specified or is invalid
+     * @param context    the jxpath context
+     * @param expression the xpath expression
+     * @return the value of the expression
      */
-    private int getFontSize(Map<String, String> properties) {
-        int result = -1;
-        String size = (properties != null) ? properties.get(FONT_SIZE) : null;
-        if (size == null) {
-            size = defaults.get(FONT_SIZE);
-        }
-        if (size != null) {
-            try {
-                result = Integer.valueOf(size);
-            } catch (NumberFormatException ignore) {
-                // do nothing
+    private String evaluate(String expression, JXPathContext context) {
+        String result = null;
+        try {
+            Object value = context.getValue(expression, Object.class);
+            if (value instanceof Number) {
+                result = String.valueOf(round((Number) value));
+            } else if (value != null) {
+                result = value.toString();
             }
+        } catch (Throwable exception) {
+            throw new RuntimeException("Failed to evaluate: " + expression, exception);
         }
         return result;
     }
+
+    /**
+     * Evaluates an expression, declaring the value as a variable in the context, and replacing the original expression
+     * with it.
+     *
+     * @param name       the property name
+     * @param properties the properties to get the property expression from, and replace its value with
+     * @param context    the context to evaluate the expression
+     */
+    private void evaluateAndDeclare(String name, Map<String, String> properties, JXPathContext context) {
+        String expression = properties.get(name);
+        if (expression != null) {
+            String value = evaluate(expression, context);
+            properties.put(name, value);
+            context.getVariables().declareVariable(name, value);
+        }
+    }
+
+    /**
+     * Rounds a numeric value to a long.
+     *
+     * @param value the value to round
+     * @return the rounded value
+     */
+    private long round(Number value) {
+        if (value instanceof Integer || value instanceof Long) {
+            return value.longValue();
+        }
+        BigDecimal result = (value instanceof BigDecimal) ? (BigDecimal) value : new BigDecimal(value.doubleValue());
+        return result.setScale(0, RoundingMode.HALF_EVEN).longValue();
+    }
+
 }

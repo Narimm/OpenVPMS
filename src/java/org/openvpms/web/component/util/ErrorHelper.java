@@ -70,10 +70,11 @@ public class ErrorHelper {
      * @param log   if <tt>true</tt> log the error
      */
     public static void show(String error, boolean log) {
-        if (log) {
+        boolean display = canDisplay();
+        if (log || !display) {
             ErrorHelper.log.error(error);
         }
-        if (!inError()) {
+        if (display && !inError()) {
             ErrorDialog.show(error);
         }
     }
@@ -88,7 +89,7 @@ public class ErrorHelper {
      */
     public static void show(String title, String error) {
         log.error(error);
-        if (!inError()) {
+        if (canDisplay() && !inError()) {
             ErrorDialog.show(title, error);
         }
     }
@@ -140,7 +141,7 @@ public class ErrorHelper {
                                     context);
         }
         log.error(logerror, error);
-        if (!inError()) {
+        if (canDisplay() && !inError()) {
             ErrorDialog.show(title, message);
         }
     }
@@ -155,7 +156,7 @@ public class ErrorHelper {
     public static void show(Throwable error) {
         String message = getError(error);
         log.error(message, error);
-        if (!inError()) {
+        if (canDisplay() && !inError()) {
             ErrorReportingDialog.show(message, error);
         }
     }
@@ -169,11 +170,12 @@ public class ErrorHelper {
      * @param log   if <tt>true</tt> log the error
      */
     public static void show(Throwable error, boolean log) {
+        boolean display = canDisplay();
         String message = getError(error);
-        if (log) {
+        if (log || !display) {
             ErrorHelper.log.error(message, error);
         }
-        if (!inError()) {
+        if (display && !inError()) {
             ErrorDialog.show(message);
         }
     }
@@ -187,9 +189,11 @@ public class ErrorHelper {
     public static void show(Throwable error, WindowPaneListener listener) {
         String message = getError(error);
         log.error(message, error);
-        ErrorDialog dialog = new ErrorReportingDialog(message, error);
-        dialog.addWindowPaneListener(listener);
-        dialog.show();
+        if (canDisplay()) {
+            ErrorDialog dialog = new ErrorReportingDialog(message, error);
+            dialog.addWindowPaneListener(listener);
+            dialog.show();
+        }
     }
 
     /**
@@ -281,6 +285,16 @@ public class ErrorHelper {
             return getRootCause(exception.getCause());
         }
         return exception;
+    }
+
+    /**
+     * Determines if the error can be displayed in the browser.
+     *
+     * @return <tt>true</tt> if the error can be displayed in the browser
+     */
+    private static boolean canDisplay() {
+        ApplicationInstance instance = ApplicationInstance.getActive();
+        return instance != null && instance.getDefaultWindow() != null;
     }
 
     /**
