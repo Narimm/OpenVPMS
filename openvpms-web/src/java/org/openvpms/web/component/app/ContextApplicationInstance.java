@@ -190,7 +190,7 @@ public abstract class ContextApplicationInstance
             setStyleSheet(styleSheet);
             setResolution(new Dimension(width, height));
         } catch (Throwable exception) {
-            ErrorHelper.show(exception, false);
+            ErrorHelper.show(exception, true);
         }
     }
 

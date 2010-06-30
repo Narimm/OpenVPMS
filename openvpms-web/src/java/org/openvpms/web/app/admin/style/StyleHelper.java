@@ -80,7 +80,8 @@ public class StyleHelper {
     public static void addProperty(Grid grid, Property property) {
         Label name = LabelFactory.create();
         name.setText(property.getDisplayName());
-        TextField field = TextComponentFactory.create(property, 40);
+        int length = property.getMaxLength() != -1 ? property.getMaxLength() : 40;
+        TextField field = TextComponentFactory.create(property, length);
         grid.add(name);
         grid.add(field);
     }

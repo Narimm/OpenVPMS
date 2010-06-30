@@ -92,7 +92,7 @@ public class StyleEditor extends PopupDialog {
      */
     public StyleEditor(Dimension size, Map<String, String> properties, UserStyleSheets styles,
                        boolean editSize) {
-        super(null, "EditDialog", OK_CANCEL);
+        super(Messages.get("stylesheet.edit.title"), "EditDialog", OK_CANCEL);
         setModal(true);
         this.size = size;
         this.properties = new LinkedHashMap<String, String>(properties);

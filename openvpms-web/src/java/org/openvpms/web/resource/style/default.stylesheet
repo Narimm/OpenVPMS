@@ -63,7 +63,7 @@
     <style name="MainPane.Menu.Button"
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
-            <property name="insets" value="${inset.small} 0px"/>
+            <property name="insets" value="${padding.small} 0px"/>
             <property name="foreground" value="#fdf5e6"/>
             <property name="background" value="#339933"/>
             <!-- oldlace -->
@@ -141,7 +141,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <property name="background" value="#ff3366"/>
                         <!-- red -->
                     </properties>
@@ -156,7 +156,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <property name="background" value="#ccff66"/>
                         <!-- yellow -->
                     </properties>
@@ -171,7 +171,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <property name="background" value="#33ff66"/>
                         <!-- green -->
                     </properties>
@@ -332,7 +332,7 @@
             <property name="border">
                 <border size="2px" style="groove" color="#cfdfff"/>
             </property>
-            <property name="insets" value="${inset.small} 2px"/>
+            <property name="insets" value="${padding.small} ${padding.tiny}"/>
             <property name="rolloverBackground" value="#85c1ff"/>
             <property name="rolloverEnabled" value="false"/>
             <property name="selectionBackground" value="#ffffff"/>
@@ -399,7 +399,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <property name="background" value="#d1d1d1"/>
                     </properties>
                 </layout-data>
@@ -412,7 +412,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <property name="background" value="#ffffff"/>
                     </properties>
                 </layout-data>
@@ -426,7 +426,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#ffffff"/>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <!-- white -->
                     </properties>
                 </layout-data>
@@ -440,7 +440,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#dbf714"/>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <!-- white -->
                     </properties>
                 </layout-data>
@@ -454,7 +454,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#FFCCCC"/>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <!-- pale red -->
                     </properties>
                 </layout-data>
@@ -468,7 +468,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CCFFFF"/>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <!-- pale blue -->
                     </properties>
                 </layout-data>
@@ -482,7 +482,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CC99FF"/>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <!-- pale dull violet -->
                     </properties>
                 </layout-data>
@@ -496,7 +496,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CCFFCC"/>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <!-- pale green -->
                     </properties>
                 </layout-data>
@@ -510,7 +510,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#FFCC99"/>
-                        <property name="insets" value="${inset.small} 2px"/>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <!-- pale green -->
                     </properties>
                 </layout-data>
@@ -539,7 +539,7 @@
         <properties>
             <property name="width" value="${dialog.medium.width}"/>
             <property name="height" value="${dialog.medium.height}"/>
-            <property name="insets" value="${inset.small}"/>
+            <property name="insets" value="${padding.small}"/>
         </properties>
     </style>
 
@@ -588,14 +588,14 @@
 
     <style name="ButtonRow" type="nextapp.echo2.app.Row">
         <properties>
-            <property name="cellSpacing" value="${cellspacing.medium}"/>
+            <property name="cellSpacing" value="${padding.medium}"/>
         </properties>
     </style>
 
     <style name="DialogButtonRow" base-name="ButtonRow"
            type="nextapp.echo2.app.Row">
         <properties>
-            <property name="insets" value="${inset.medium} 2px"/>
+            <property name="insets" value="${padding.medium} ${padding.tiny}"/>
             <property name="layoutData">
                 <layout-data
                         type="nextapp.echo2.app.layout.SplitPaneLayoutData">
@@ -609,7 +609,7 @@
                                 </image>
                             </fill-image>
                         </property>
-                        <property name="insets" value="2px"/>
+                        <property name="insets" value="${padding.tiny}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -620,7 +620,7 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="lineWrap" value="false"/>
-            <property name="insets" value="${inset.large} 3px"/>
+            <property name="insets" value="${padding.large} ${padding.smaller}"/>
             <property name="disabledForeground" value="#7f7f7f"/>
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#6f0f0f"/>
@@ -661,7 +661,7 @@
 
     <style name="Browser" type="nextapp.echo2.app.Column">
         <properties>
-            <property name="cellSpacing" value="${cellspacing.medium}"/>
+            <property name="cellSpacing" value="${padding.medium}"/>
         </properties>
     </style>
 
@@ -675,75 +675,75 @@
 
     <style name="CellSpacing" type="nextapp.echo2.app.Row">
         <properties>
-            <property name="cellSpacing" value="${cellspacing.medium}"/>
+            <property name="cellSpacing" value="${padding.medium}"/>
         </properties>
     </style>
 
     <style name="WideCellSpacing" type="nextapp.echo2.app.Row">
         <properties>
-            <property name="cellSpacing" value="${cellspacing.large}"/>
+            <property name="cellSpacing" value="${padding.large}"/>
         </properties>
     </style>
 
     <style name="CellSpacing" type="nextapp.echo2.app.Column">
         <properties>
-            <property name="cellSpacing" value="${cellspacing.medium}"/>
+            <property name="cellSpacing" value="${padding.medium}"/>
         </properties>
     </style>
 
     <style name="WideCellSpacing" type="nextapp.echo2.app.Column">
         <properties>
-            <property name="cellSpacing" value="${cellspacing.large}"/>
+            <property name="cellSpacing" value="${padding.large}"/>
         </properties>
     </style>
 
     <style name="ControlRow" base-name="CellSpacing"
            type="nextapp.echo2.app.Row">
         <properties>
-            <property name="insets" value="${inset.medium} 2px"/>
+            <property name="insets" value="${padding.medium} ${padding.tiny}"/>
         </properties>
     </style>
 
     <style name="ControlColumn" base-name="CellSpacing"
            type="nextapp.echo2.app.Column">
         <properties>
-            <property name="insets" value="${inset.medium} 2px"/>
+            <property name="insets" value="${padding.medium} ${padding.tiny}"/>
         </properties>
     </style>
 
     <style name="Inset" type="nextapp.echo2.app.Column">
         <properties>
-            <property name="insets" value="${inset.medium}"/>
+            <property name="insets" value="${padding.medium}"/>
         </properties>
     </style>
 
     <style name="Inset" type="nextapp.echo2.app.Row">
         <properties>
-            <property name="insets" value="${inset.medium}"/>
+            <property name="insets" value="${padding.medium}"/>
         </properties>
     </style>
 
     <style name="Inset.Small" type="nextapp.echo2.app.Row">
         <properties>
-            <property name="insets" value="${inset.small}"/>
+            <property name="insets" value="${padding.small}"/>
         </properties>
     </style>
 
     <style name="Inset.Small" type="nextapp.echo2.app.Column">
         <properties>
-            <property name="insets" value="${inset.small}"/>
+            <property name="insets" value="${padding.small}"/>
         </properties>
     </style>
 
     <style name="InsetX" type="nextapp.echo2.app.Row">
         <properties>
-            <property name="insets" value="${inset.medium} 0px"/>
+            <property name="insets" value="${padding.medium} 0px"/>
         </properties>
     </style>
 
     <style name="Inset.SmallXLargeY" type="nextapp.echo2.app.Column">
         <properties>
-            <property name="insets" value="${inset.small} ${inset.large}"/>
+            <property name="insets" value="${padding.small} ${padding.large}"/>
         </properties>
     </style>
 
@@ -751,7 +751,7 @@
         <properties>
             <property name="foreground" value="#0000ff"/>
             <property name="font">
-                <font size="${font.large.size}" bold="true"/>
+                <font size="${font.h2.size}" bold="true"/>
             </property>
         </properties>
     </style>
@@ -797,15 +797,15 @@
 
     <style name="Palette" type="nextapp.echo2.app.Row">
         <propertiesr>
-            <property name="insets" value="10px 10px"/>
-            <property name="cellSpacing" value="10px"/>
+            <property name="insets" value="${padding.medium}"/>
+            <property name="cellSpacing" value="${padding.medium}"/>
         </propertiesr>
     </style>
 
     <style name="Palette.ListColumn" type="nextapp.echo2.app.Column">
         <properties>
             <property name="cellSpacing" value="3px"/>
-            <property name="insets" value="10px 10px"/>
+            <property name="insets" value="${padding.medium}"/>
         </properties>
     </style>
 
@@ -829,7 +829,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="${padding.medium} 1px"/>
                         <property name="background" value="#afafef"/>
                     </properties>
                 </layout-data>
@@ -857,7 +857,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="${padding.medium} 1px"/>
                         <property name="background" value="#afafef"/>
                     </properties>
                 </layout-data>
@@ -870,7 +870,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="5px 1px"/>
+                        <property name="insets" value="${padding.small} 1px"/>
                         <property name="background" value="#d1d1d1"/>
                     </properties>
                 </layout-data>
@@ -883,7 +883,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="10px 1px"/>
+                        <property name="insets" value="${padding.medium} 1px"/>
                         <property name="background" value="#d1d1d1"/>
                     </properties>
                 </layout-data>
@@ -896,7 +896,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="5px 1px"/>
+                        <property name="insets" value="${padding.small} 1px"/>
                         <property name="background" value="#ffffff"/>
                     </properties>
                 </layout-data>
@@ -909,7 +909,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="10px 1px"/>
+                        <property name="insets" value="${padding.medium} 1px"/>
                         <property name="background" value="#ffffff"/>
                     </properties>
                 </layout-data>
@@ -1433,7 +1433,7 @@
             <property type="java.lang.Boolean"
                       name="nextapp.echo2.webcontainer.syncpeer.WindowPanePeer.ieAlphaRenderBorder"
                       value="true"/>
-            <property name="titleInsets" value="10px 5px"/>
+            <property name="titleInsets" value="${padding.medium} ${padding.small}"/>
             <property name="titleBackground" value="#99cc66"/>
             <!--property name="titleBackgroundImage">
                 <fill-image vertical="100%" repeat="horizontal">
@@ -1445,10 +1445,12 @@
             </property-->
             <property name="titleForeground" value="#ffffff"/>
             <property name="titleFont">
-                <font size="10pt">
-                    <typeface name="arial,sans-serif"/>
+                <font size="${font.h4.size}" bold="true">
+                    <typeface name="${font.typeface}"/>
                 </font>
             </property>
+            <property name="titleHeight" value="${dialog.title.height}"/>
+            <property name="closeIconInsets" value="${padding.small}"/>
             <property name="border">
                 <fill-image-border content-insets="8px 8px 14px 14px"
                                    border-insets="17px 17px 23px 23px">
@@ -1613,7 +1615,7 @@
 
     <style name="default" type="nextapp.echo2.app.Grid">
         <properties>
-            <property name="insets" value="5px"/>
+            <property name="insets" value="${padding.small}"/>
         </properties>
     </style>
 
@@ -1707,7 +1709,7 @@
             </property>
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#ffb6c1"/>
-            <property name="insets" value="20px 3px"/>
+            <property name="insets" value="${padding.large} ${padding.smaller}"/>
         </properties>
     </style>
 

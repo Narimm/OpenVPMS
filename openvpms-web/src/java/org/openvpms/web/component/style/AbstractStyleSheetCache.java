@@ -233,7 +233,7 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
         if (result == null) {
             Dimension best = null;
             for (Dimension resolution : getResolutions()) {
-                if (resolution.width <= size.width) {
+                if (resolution.width <= size.width || best == null) {
                     if (best == null) {
                         best = resolution;
                     } else if (best.width != resolution.width
