@@ -20,8 +20,8 @@
             top: 50%;
             left: 50%;
             width: 24em;
-            margin-left: -12em;     <!-- ~ half the width of the dialog -->
-            margin-top : - 91 px;   <!-- half the height of the dialog -->
+            margin-left: -12em;     /* ~ half the width of the dialog */
+            margin-top : -91px;     /* half the height of the dialog */
         }
 
         .border-br {
