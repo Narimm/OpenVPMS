@@ -1450,6 +1450,9 @@
                 </font>
             </property>
             <property name="titleHeight" value="${dialog.title.height}"/>
+            <property name="closeIcon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/${dialog.closeicon}"/>
+            </property>
             <property name="closeIconInsets" value="${padding.small}"/>
             <property name="border">
                 <fill-image-border content-insets="8px 8px 14px 14px"
