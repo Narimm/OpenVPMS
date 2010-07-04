@@ -113,12 +113,10 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
         ArchetypeQuery query = super.createQuery();
         query.add(new ObjectSelectConstraint("customer"));
         if (isSearchingOnPatient()) {
-            ShortNameConstraint relationship = new ShortNameConstraint("rel", "entityRelationship.patient*");
-            ShortNameConstraint patient = new ShortNameConstraint("patient", "party.patientpet");
-            query.add(Constraints.join("patients", relationship));
-            query.add(patient);
-            query.add(new IdConstraint("rel.source", "customer"));
-            query.add(new IdConstraint("rel.target", "patient"));
+            query.add(Constraints.join("patients"));
+            query.add(Constraints.shortName("patient", "party.patientpet"));
+            query.add(new IdConstraint("source", "customer"));
+            query.add(new IdConstraint("target", "patient"));
             Long id = getId(patientName);
             if (id != null) {
                 query.add(Constraints.eq("patient.id", id));
@@ -128,8 +126,7 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
             query.add(new ObjectSelectConstraint("patient"));
         }
         if (isSearchingOnContact()) {
-            ShortNameConstraint shortName = new ShortNameConstraint("contact", "contact.*");
-            query.add(Constraints.join("contacts", shortName).add(Constraints.eq("description", contact)));
+            query.add(Constraints.join("contacts", "contact").add(Constraints.eq("description", contact)));
             query.add(new ObjectSelectConstraint("contact"));
         }
         if (isSearchingIdentities()) {

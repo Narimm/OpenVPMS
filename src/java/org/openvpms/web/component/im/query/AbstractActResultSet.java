@@ -35,6 +35,7 @@ import static org.openvpms.component.system.common.query.ParticipationConstraint
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 
 import java.util.Date;
 
@@ -313,10 +314,7 @@ public abstract class AbstractActResultSet<T>
      */
     @Override
     protected void addReferenceConstraint(ArchetypeQuery query, IMObjectReference reference) {
-        // NOTE: can't use an ObjectRefConstraint as this adds a join.
-        // Also, this won't detect if an object has changed type
-        String node = (archetypes.getAlias() != null) ? archetypes.getAlias() + ".id" : "id";
-        query.add(new NodeConstraint(node, reference.getId()));
+        query.add(new ObjectRefConstraint(archetypes.getAlias(), reference));
     }
 
     /**
