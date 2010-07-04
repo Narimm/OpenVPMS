@@ -45,6 +45,7 @@ import org.openvpms.web.app.product.stock.StockAdjustEditor;
 import org.openvpms.web.app.product.stock.StockAdjustItemEditor;
 import org.openvpms.web.app.product.stock.StockTransferEditor;
 import org.openvpms.web.app.product.stock.StockTransferItemEditor;
+import org.openvpms.web.app.supplier.SupplierStockLocationRelationshipESCIEditor;
 import org.openvpms.web.app.supplier.charge.SupplierChargeActEditor;
 import org.openvpms.web.app.supplier.charge.SupplierChargeActItemEditor;
 import org.openvpms.web.app.supplier.delivery.DeliveryEditor;
@@ -106,9 +107,10 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
         for (String shortName : shortNames) {
             if (shortName.equals("entityRelationship.patientOwner")) {
                 checkCreate(shortName, PatientOwnerRelationshipEditor.class);
-            } else if (shortName.equals(
-                    "entityRelationship.documentTemplatePrinter")) {
+            } else if (shortName.equals("entityRelationship.documentTemplatePrinter")) {
                 checkCreate(shortName, DocumentTemplatePrinterEditor.class);
+            } else if (shortName.equals("entityRelationship.supplierStockLocationESCI")) {
+                checkCreate(shortName, SupplierStockLocationRelationshipESCIEditor.class);
             } else {
                 checkCreate(shortName, EntityRelationshipEditor.class);
             }

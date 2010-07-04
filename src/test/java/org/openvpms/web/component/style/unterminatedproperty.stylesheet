@@ -1,0 +1,9 @@
+<stylesheet>
+
+    <style name="button" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="background" value="${background"/>
+        </properties>
+    </style>
+
+</stylesheet>
