@@ -161,6 +161,8 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
 
     /**
      * Returns the screen resolutions for which there are specific properties.
+     * <p/>
+     * These are ordered from smallest to largest.
      *
      * @return the screen resolutions
      */
@@ -289,7 +291,7 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
     }
 
     /**
-     * Helper to return resolutions as an ordered array, from smallest to largest
+     * Helper to return resolutions as an ordered array, from smallest to largest.
      *
      * @param resolutions the resolutions to sort
      * @return the screen resolutions

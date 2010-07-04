@@ -52,14 +52,29 @@ public class StylePropertyEvaluator {
      */
     private static final String FONT_SIZE = "font.size";
 
+    /**
+     * Large padding property.
+     */
     private static final String PADDING_LARGE = "padding.large";
 
+    /**
+     * Medium padding property.
+     */
     private static final String PADDING_MEDIUM = "padding.medium";
 
+    /**
+     * Small padding property.
+     */
     private static final String PADDING_SMALL = "padding.small";
 
+    /**
+     * Smaller padding property.
+     */
     private static final String PADDING_SMALLER = "padding.smaller";
 
+    /**
+     * Tiny padding property.
+     */
     private static final String PADDING_TINY = "padding.tiny";
 
 
@@ -167,7 +182,7 @@ public class StylePropertyEvaluator {
                 result = value.toString();
             }
         } catch (Throwable exception) {
-            throw new RuntimeException("Failed to evaluate: " + expression, exception);
+            throw new StyleSheetException(StyleSheetException.ErrorCode.InvalidExpression, exception, expression);
         }
         return result;
     }

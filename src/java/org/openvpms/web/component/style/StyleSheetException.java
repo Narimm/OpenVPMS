@@ -34,8 +34,8 @@ public class StyleSheetException extends OpenVPMSException {
     public enum ErrorCode {
         ResourceNotFound,
         InvalidStyleSheet,
-        InvalidProperty,
         InvalidResolution,
+        InvalidExpression,
         UndefinedProperty,
         UnterminatedProperty
     }
