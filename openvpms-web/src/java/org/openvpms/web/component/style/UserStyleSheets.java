@@ -123,6 +123,8 @@ public class UserStyleSheets extends AbstractStyleSheetCache {
 
     /**
      * Returns the screen resolutions for which there are specific properties.
+     * <p/>
+     * These are ordered from smallest to largest.
      *
      * @return the screen resolutions
      */
