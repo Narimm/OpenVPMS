@@ -92,9 +92,11 @@ public class AppointmentActEditor extends AbstractActEditor {
         Date startTime = getStartTime();
         if (startTime == null) {
             Date scheduleDate = context.getContext().getScheduleDate();
-            startTime = getDefaultStartTime(scheduleDate);
+            if (scheduleDate != null) {
+                startTime = getDefaultStartTime(scheduleDate);
 
-            setStartTime(startTime, true);
+                setStartTime(startTime, true);
+            }
         }
 
         startTimeField = DateTimeFieldFactory.create(getProperty("startTime"));
