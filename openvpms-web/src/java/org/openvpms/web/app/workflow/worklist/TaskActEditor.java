@@ -71,7 +71,9 @@ public class TaskActEditor extends AbstractActEditor {
 
         if (getStartTime() == null) {
             Date date = context.getContext().getWorkListDate();
-            setStartTime(getDefaultStartTime(date), true);
+            if (date != null) {
+                setStartTime(getDefaultStartTime(date), true);
+            }
         }
 
         addStartEndTimeListeners();

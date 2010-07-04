@@ -80,8 +80,11 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     public IMObjectReference getCustomerRef() {
         Act act = (Act) getParent();
-        ActBean bean = new ActBean(act);
-        return bean.getParticipantRef("participation.customer");
+        if (act != null) {
+            ActBean bean = new ActBean(act);
+            return bean.getParticipantRef("participation.customer");
+        }
+        return null;
     }
 
     /**
@@ -342,7 +345,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
         /**
          * Returns a node filter to filter nodes.
          *
-         * @param object
+         * @param object  the object to filter nodes for
          * @param context the context
          * @return a node filter to filter nodes, or <tt>null</tt> if no
          *         filterering is required

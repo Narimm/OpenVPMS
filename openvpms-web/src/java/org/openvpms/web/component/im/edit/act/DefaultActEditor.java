@@ -48,7 +48,6 @@ public class DefaultActEditor extends ActEditor {
         super(act, parent, context);
 
         initParticipant("patient", context.getContext().getPatient());
-        initParticipant("author", context.getContext().getUser());
     }
 
 }
