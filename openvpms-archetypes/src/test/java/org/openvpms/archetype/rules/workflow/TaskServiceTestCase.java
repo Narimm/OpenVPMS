@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;

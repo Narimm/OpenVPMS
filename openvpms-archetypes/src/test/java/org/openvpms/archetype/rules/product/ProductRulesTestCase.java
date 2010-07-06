@@ -83,7 +83,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
         assertEquals(1, productPrices.size());
         ProductPrice priceCopy = productPrices.toArray(new ProductPrice[productPrices.size()])[0];
         assertTrue(unitPrice.getId() != priceCopy.getId());
-        assertEquals(unitPrice.getPrice(), priceCopy.getPrice());
+        checkEquals(unitPrice.getPrice(), priceCopy.getPrice());
 
         // verify the product supplier relationship has been copied
         ProductSupplier psCopy = rules.getProductSupplier(copy, supplier,

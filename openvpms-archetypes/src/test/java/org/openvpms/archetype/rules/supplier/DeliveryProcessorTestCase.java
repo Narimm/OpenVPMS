@@ -300,8 +300,8 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         assertEquals(1, prices.size());
         ProductPrice p = prices.toArray(new ProductPrice[prices.size()])[0];
         IMObjectBean bean = new IMObjectBean(p);
-        assertEquals(cost, bean.getBigDecimal("cost"));
-        assertEquals(price, bean.getBigDecimal("price"));
+        checkEquals(cost, bean.getBigDecimal("cost"));
+        checkEquals(price, bean.getBigDecimal("price"));
     }
 
     /**
@@ -321,7 +321,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         assertEquals(status.toString(), bean.getString("deliveryStatus"));
 
         ActBean itemBean = new ActBean(orderItem);
-        assertEquals(quantity, itemBean.getBigDecimal("receivedQuantity"));
+        checkEquals(quantity, itemBean.getBigDecimal("receivedQuantity"));
     }
 
     /**
@@ -338,7 +338,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         } else {
             ProductSupplier ps = getProductSupplier(packageSize);
             assertNotNull(ps);
-            assertEquals(nettPrice, ps.getNettPrice());
+            checkEquals(nettPrice, ps.getNettPrice());
         }
     }
 

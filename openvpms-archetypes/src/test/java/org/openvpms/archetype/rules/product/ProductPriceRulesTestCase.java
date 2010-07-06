@@ -259,7 +259,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         BigDecimal markup = BigDecimal.valueOf(100); // 100% markup
         BigDecimal price = rules.getPrice(product, cost, markup, practice,
                                           currency);
-        assertEquals(new BigDecimal("2.20"), price);
+        checkEquals(new BigDecimal("2.20"), price);
     }
 
     /**
@@ -269,7 +269,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         BigDecimal cost = BigDecimal.ONE;
         BigDecimal price = new BigDecimal("2.20");
         BigDecimal markup = rules.getMarkup(product, cost, price, practice);
-        assertEquals(BigDecimal.valueOf(100), markup);
+        checkEquals(BigDecimal.valueOf(100), markup);
     }
 
     /**

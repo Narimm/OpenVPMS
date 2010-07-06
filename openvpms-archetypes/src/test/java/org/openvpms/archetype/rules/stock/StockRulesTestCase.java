@@ -94,15 +94,15 @@ public class StockRulesTestCase extends AbstractStockTest {
         Product product = TestHelper.createProduct();
 
         // no product-stock location relationship to begin with
-        assertEquals(BigDecimal.ZERO, rules.getStock(product, stockLocation));
+        checkEquals(BigDecimal.ZERO, rules.getStock(product, stockLocation));
 
         // add stock and verify it is added
         rules.updateStock(product, stockLocation, quantity);
-        assertEquals(quantity, rules.getStock(product, stockLocation));
+        checkEquals(quantity, rules.getStock(product, stockLocation));
 
         // remove stock and verify it is removed
         rules.updateStock(product, stockLocation, quantity.negate());
-        assertEquals(BigDecimal.ZERO, rules.getStock(product, stockLocation));
+        checkEquals(BigDecimal.ZERO, rules.getStock(product, stockLocation));
     }
 
     /**
@@ -116,8 +116,8 @@ public class StockRulesTestCase extends AbstractStockTest {
         Product product = TestHelper.createProduct();
 
         rules.transfer(product, from, to, quantity);
-        assertEquals(quantity.negate(), rules.getStock(product, from));
-        assertEquals(quantity, rules.getStock(product, to));
+        checkEquals(quantity.negate(), rules.getStock(product, from));
+        checkEquals(quantity, rules.getStock(product, to));
     }
 
     /**

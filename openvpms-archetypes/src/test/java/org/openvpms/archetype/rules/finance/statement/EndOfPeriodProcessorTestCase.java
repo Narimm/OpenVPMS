@@ -286,7 +286,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // verify the fee has been added to the balance
         CustomerAccountRules rules = new CustomerAccountRules();
-        assertEquals(closingBalance, rules.getBalance(customer));
+        checkEquals(closingBalance, rules.getBalance(customer));
     }
 
     /**
@@ -335,7 +335,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // should be a zero balance
         CustomerAccountRules rules = new CustomerAccountRules();
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // now run end-of-period
         Date statementDate = getDate("2007-05-02");
@@ -382,7 +382,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // should be a negative 100 balance
         CustomerAccountRules rules = new CustomerAccountRules();
-        assertEquals(amount.negate(), rules.getBalance(customer));
+        checkEquals(amount.negate(), rules.getBalance(customer));
 
         // now run end-of-period
         Date statementDate = getDate("2007-02-01");
@@ -403,7 +403,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         FinancialAct opening = (FinancialAct) acts.get(0);
         checkOpeningBalance(opening, amount);
         assertTrue(opening.isCredit());
-        assertEquals(amount.negate(), rules.getBalance(customer));
+        checkEquals(amount.negate(), rules.getBalance(customer));
 
         // run end of period again
         processor = new EndOfPeriodProcessor(nextStatementDate, true,
@@ -713,7 +713,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // verify the fee has been added to the balance
         CustomerAccountRules rules = new CustomerAccountRules();
-        assertEquals(closingBalance, rules.getBalance(customer));
+        checkEquals(closingBalance, rules.getBalance(customer));
 
         // check there is an opening balance for the next statement date
         Date statementDate3 = getDate("2008-06-30");
@@ -799,7 +799,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // verify the fee has been added to the balance
         CustomerAccountRules rules = new CustomerAccountRules();
-        assertEquals(closingBalance, rules.getBalance(customer));
+        checkEquals(closingBalance, rules.getBalance(customer));
 
         // check there is an opening balance for the next statement date
         Date statementDate4 = getDate("2007-07-31");
@@ -829,7 +829,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
                                      BigDecimal overdue) {
         checkAct(act, CLOSING_BALANCE, amount, FinancialActStatus.POSTED);
         ActBean bean = new ActBean(act);
-        assertEquals(overdue, bean.getBigDecimal("overdueBalance"));
+        checkEquals(overdue, bean.getBigDecimal("overdueBalance"));
     }
 
 }

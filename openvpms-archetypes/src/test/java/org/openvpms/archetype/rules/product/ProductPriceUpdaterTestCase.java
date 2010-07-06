@@ -369,8 +369,8 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         assertEquals(1, prices.size());
         ProductPrice p = prices.toArray(new ProductPrice[prices.size()])[0];
         IMObjectBean bean = new IMObjectBean(p);
-        assertEquals(cost, bean.getBigDecimal("cost"));
-        assertEquals(price, bean.getBigDecimal("price"));
+        checkEquals(cost, bean.getBigDecimal("cost"));
+        checkEquals(price, bean.getBigDecimal("price"));
     }
 
     /**

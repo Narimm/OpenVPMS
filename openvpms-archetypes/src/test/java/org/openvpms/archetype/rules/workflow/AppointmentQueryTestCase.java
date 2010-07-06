@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.workflow;
 
 import org.apache.commons.lang.time.DateUtils;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;

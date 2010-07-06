@@ -20,6 +20,7 @@ package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;

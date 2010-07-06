@@ -80,21 +80,21 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         Product productNoTax = createProduct();
 
         BigDecimal ten = new BigDecimal(10);
-        assertEquals(BigDecimal.ZERO,
+        checkEquals(BigDecimal.ZERO,
                      rules.calculateTax(ten, productNoTax, false));
-        assertEquals(BigDecimal.ZERO,
+        checkEquals(BigDecimal.ZERO,
                      rules.calculateTax(ten, productNoTax, true));
 
         Product product10Tax = createProductWithTax();
-        assertEquals(BigDecimal.ONE,
+        checkEquals(BigDecimal.ONE,
                      rules.calculateTax(ten, product10Tax, false));
-        assertEquals(new BigDecimal("0.909"),
+        checkEquals(new BigDecimal("0.909"),
                      rules.calculateTax(ten, product10Tax, true));
 
         Product productType10Tax = createProductWithProductTypeTax();
-        assertEquals(BigDecimal.ONE,
+        checkEquals(BigDecimal.ONE,
                      rules.calculateTax(ten, productType10Tax, false));
-        assertEquals(new BigDecimal("0.909"),
+        checkEquals(new BigDecimal("0.909"),
                      rules.calculateTax(ten, productType10Tax, true));
     }
 

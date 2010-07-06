@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.supplier;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -91,7 +92,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
         FinancialAct copyItem = (FinancialAct) items.get(0);
         assertTrue(TypeHelper.isA(copyItem, SupplierArchetypes.ORDER_ITEM));
         assertFalse(copyItem.equals(orderItem));
-        assertEquals(quantity, copyItem.getQuantity());
+        checkEquals(quantity, copyItem.getQuantity());
     }
 
     /**
@@ -119,7 +120,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
         FinancialAct item = rules.createDeliveryItem(orderItem);
 
         assertTrue(TypeHelper.isA(item, SupplierArchetypes.DELIVERY_ITEM));
-        assertEquals(expectedQuantity, item.getQuantity());
+        checkEquals(expectedQuantity, item.getQuantity());
 
         // the delivery item shouldn't have any relationships
         ActBean bean = new ActBean(item);
@@ -149,7 +150,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
         FinancialAct item = rules.createReturnItem(orderItem);
 
         assertTrue(TypeHelper.isA(item, SupplierArchetypes.RETURN_ITEM));
-        assertEquals(received, item.getQuantity());
+        checkEquals(received, item.getQuantity());
 
         // the return item shouldn't have any relationships
         ActBean bean = new ActBean(item);
@@ -184,7 +185,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
 
         FinancialAct item = (FinancialAct) acts.get(0);
         assertTrue(TypeHelper.isA(item, SupplierArchetypes.INVOICE_ITEM));
-        assertEquals(total, item.getTotal());
+        checkEquals(total, item.getTotal());
     }
 
     /**

@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.product;
 
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.product.Product;

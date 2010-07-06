@@ -158,7 +158,7 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
         save(invoice);
         save(opening1, payment, closing1, opening2);
 
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         try {
             rules.getDefinitiveBalance(customer);
@@ -168,21 +168,21 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
                          expected.getErrorCode());
         }
 
-        assertEquals(new BigDecimal(-20), generate(customer));
+        checkEquals(new BigDecimal(-20), generate(customer));
 
-        assertEquals(new BigDecimal(-20), rules.getBalance(customer));
+        checkEquals(new BigDecimal(-20), rules.getBalance(customer));
 
         opening1 = get(opening1);
         closing1 = get(closing1);
         opening2 = get(opening2);
 
-        assertEquals(new BigDecimal(10), opening1.getTotal());
+        checkEquals(new BigDecimal(10), opening1.getTotal());
         assertFalse(opening1.isCredit());
 
-        assertEquals(new BigDecimal(20), closing1.getTotal());
+        checkEquals(new BigDecimal(20), closing1.getTotal());
         assertFalse(closing1.isCredit());
 
-        assertEquals(new BigDecimal(20), opening2.getTotal());
+        checkEquals(new BigDecimal(20), opening2.getTotal());
         assertTrue(opening2.isCredit());
     }
 
@@ -214,7 +214,7 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
         Party customer = getCustomer();
 
         // initial balance is zero
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
         assertTrue(checkBalance(customer));
 
         // save the debit act, and verify the balance is the same as the debit
@@ -224,8 +224,8 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
         // definitive balance out of sync with balance until generate invoked
         assertFalse(checkBalance(customer));
         FinancialAct debit = debits.get(0);
-        assertEquals(debit.getTotal(), generate(customer));
-        assertEquals(debit.getTotal(), rules.getBalance(customer));
+        checkEquals(debit.getTotal(), generate(customer));
+        checkEquals(debit.getTotal(), rules.getBalance(customer));
 
         assertTrue(checkBalance(customer)); // should now be in sync
 
@@ -238,7 +238,7 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
 
         // regenerate the balance. This should remove the existing participation
         // and add a new one
-        assertEquals(debit.getTotal(), generate(customer));
+        checkEquals(debit.getTotal(), generate(customer));
 
         // verify the participation has changed
         debit = get(debit);
@@ -249,8 +249,8 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
 
         // save the credit act and update the balance. Balance should be zero
         save(credits);
-        assertEquals(BigDecimal.ZERO, generate(customer));
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, generate(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // verify there is an actRelationship.customerAccountAllocation
         // linking the acts
@@ -265,14 +265,14 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
         // Now delete the credit. The balance will not be updated to reflect
         // the deletion.
         remove(credit);
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // need to regenerate to get the correct balance
-        assertEquals(debit.getTotal(), generate(customer));
-        assertEquals(debit.getTotal(), debit.getAllocatedAmount());
+        checkEquals(debit.getTotal(), generate(customer));
+        checkEquals(debit.getTotal(), debit.getAllocatedAmount());
         debit = get(debit);
-        assertEquals(BigDecimal.ZERO, debit.getAllocatedAmount());
-        assertEquals(debit.getTotal(), rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, debit.getAllocatedAmount());
+        checkEquals(debit.getTotal(), rules.getBalance(customer));
         assertTrue(checkBalance(customer));
 
         // participation.customerAccountBalance will have been recreated
@@ -317,7 +317,7 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
         assertEquals(relationship.getSource(), source.getObjectReference());
         assertEquals(relationship.getTarget(), target.getObjectReference());
         IMObjectBean bean = new IMObjectBean(relationship);
-        assertEquals(allocated, bean.getBigDecimal("allocatedAmount"));
+        checkEquals(allocated, bean.getBigDecimal("allocatedAmount"));
     }
 
     /**
@@ -336,11 +336,11 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
         act.setStatus(status);
         save(acts);
 
-        assertEquals(BigDecimal.ZERO, generate(customer));
+        checkEquals(BigDecimal.ZERO, generate(customer));
         act = get(act);
 
         // verify the act hasn't affected the balance
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // verify a participation.customerAccountBalance has been added,
         // linked to the customer
@@ -351,7 +351,7 @@ public class CustomerBalanceGeneratorTestCase extends AbstractCustomerAccountTes
         assertNull(getAccountAllocationRelationship(act));
 
         // verify the allocated amount is zero
-        assertEquals(BigDecimal.ZERO, act.getAllocatedAmount());
+        checkEquals(BigDecimal.ZERO, act.getAllocatedAmount());
     }
 
     /**

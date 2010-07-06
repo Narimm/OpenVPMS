@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.finance.estimation;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -85,9 +86,9 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
         checkParticipantRef(customer, copyBean, "customer");
         checkParticipantRef(author, copyBean, "author");
 
-        assertEquals(bean.getBigDecimal("lowTotal"),
+        checkEquals(bean.getBigDecimal("lowTotal"),
                      copyBean.getBigDecimal("lowTotal"));
-        assertEquals(bean.getBigDecimal("highTotal"),
+        checkEquals(bean.getBigDecimal("highTotal"),
                      copyBean.getBigDecimal("highTotal"));
 
         List<Act> acts = copyBean.getActs();
@@ -96,11 +97,11 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
         assertTrue(itemCopy.getId() != item.getId());
         ActBean itemCopyBean = new ActBean(itemCopy);
 
-        assertEquals(itemBean.getBigDecimal("fixedPrice"),
+        checkEquals(itemBean.getBigDecimal("fixedPrice"),
                      itemCopyBean.getBigDecimal("fixedPrice"));
-        assertEquals(itemBean.getBigDecimal("lowTotal"),
+        checkEquals(itemBean.getBigDecimal("lowTotal"),
                      itemCopyBean.getBigDecimal("lowTotal"));
-        assertEquals(itemBean.getBigDecimal("highTotal"),
+        checkEquals(itemBean.getBigDecimal("highTotal"),
                      itemCopyBean.getBigDecimal("highTotal"));
 
         checkParticipantRef(patient, itemCopyBean, "patient");
@@ -134,7 +135,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
                 = bean.getNodeActs("items", FinancialAct.class);
         assertEquals(1, items.size());
         ActBean itemBean = new ActBean(items.get(0));
-        assertEquals(estimationBean.getBigDecimal("highTotal"),
+        checkEquals(estimationBean.getBigDecimal("highTotal"),
                      bean.getBigDecimal("amount"));
 
         checkParticipantRef(customer, bean, "customer");
@@ -146,7 +147,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
         checkParticipantRef(author, itemBean, "author");
         checkParticipantRef(clinician, itemBean, "clinician");
 
-        assertEquals(itemBean.getBigDecimal("total"),
+        checkEquals(itemBean.getBigDecimal("total"),
                      estimationItemBean.getBigDecimal("highTotal"));
 
         // check the dispensing act

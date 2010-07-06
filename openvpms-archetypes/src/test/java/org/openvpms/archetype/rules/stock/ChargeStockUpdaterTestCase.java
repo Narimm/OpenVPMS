@@ -170,31 +170,31 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
 
         item.setQuantity(quantity);
 
-        assertEquals(initialQuantity, getStock(stockLocation, product));
+        checkEquals(initialQuantity, getStock(stockLocation, product));
 
         save(acts);
-        assertEquals(expected, getStock(stockLocation, product));
+        checkEquals(expected, getStock(stockLocation, product));
 
         save(acts);  // stock shouldn't change if resaved
-        assertEquals(expected, getStock(stockLocation, product));
+        checkEquals(expected, getStock(stockLocation, product));
 
         item = get(item);
         BigDecimal updatedQty = new BigDecimal(10);
         item.setQuantity(updatedQty);
         expected = getQuantity(initialQuantity, updatedQty, credit);
         save(item);
-        assertEquals(expected, getStock(stockLocation, product));
+        checkEquals(expected, getStock(stockLocation, product));
 
         item = get(item);
         save(item);
-        assertEquals(expected, getStock(stockLocation, product));
+        checkEquals(expected, getStock(stockLocation, product));
 
         ActBean itemBean = new ActBean(item);
         itemBean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION,
                                 product2);
         save(item);
-        assertEquals(BigDecimal.ZERO, getStock(stockLocation, product));
-        assertEquals(expected, getStock(stockLocation, product2));
+        checkEquals(BigDecimal.ZERO, getStock(stockLocation, product));
+        checkEquals(expected, getStock(stockLocation, product2));
     }
 
     /**
@@ -213,12 +213,12 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
         BigDecimal expected = getQuantity(BigDecimal.ZERO, quantity,
                                           act.isCredit());
 
-        assertEquals(expected, getStock(stockLocation, product));
+        checkEquals(expected, getStock(stockLocation, product));
 
         // now remove the charge
         remove(act);
 
-        assertEquals(BigDecimal.ZERO, getStock(stockLocation, product));
+        checkEquals(BigDecimal.ZERO, getStock(stockLocation, product));
     }
 
 
@@ -234,10 +234,10 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
 
         BigDecimal expected = getQuantity(BigDecimal.ZERO, quantity, credit);
 
-        assertEquals(expected, getStock(stockLocation, product));
+        checkEquals(expected, getStock(stockLocation, product));
         remove(item);
 
-        assertEquals(BigDecimal.ZERO, getStock(stockLocation, product));
+        checkEquals(BigDecimal.ZERO, getStock(stockLocation, product));
     }
 
     private List<FinancialAct> createInvoice() {

@@ -63,15 +63,15 @@ public class AccountBalanceToolTestCase extends AbstractCustomerAccountTest {
         FinancialAct debit = createInitialBalance(amount);
         save(debit);
 
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
         assertFalse(tool.check(id));
 
         tool.generate(id);
-        assertEquals(amount, rules.getBalance(customer));
+        checkEquals(amount, rules.getBalance(customer));
         FinancialAct credit = createBadDebt(amount);
         save(credit);
         tool.generate(id);
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
         assertTrue(tool.check(id));
     }
 
@@ -86,15 +86,15 @@ public class AccountBalanceToolTestCase extends AbstractCustomerAccountTest {
         FinancialAct debit = createInitialBalance(amount);
         save(debit);
 
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
         assertFalse(tool.check(name));
 
         tool.generate(name);
-        assertEquals(amount, rules.getBalance(customer));
+        checkEquals(amount, rules.getBalance(customer));
         FinancialAct credit = createBadDebt(amount);
         save(credit);
         tool.generate(name);
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
         assertTrue(tool.check(name));
     }
 
