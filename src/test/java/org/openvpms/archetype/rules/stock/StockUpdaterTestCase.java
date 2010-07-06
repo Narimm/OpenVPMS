@@ -76,8 +76,8 @@ public class StockUpdaterTestCase extends AbstractStockTest {
         save(act, item);
 
         // verify transfer doesn't take place till the act is posted
-        assertEquals(BigDecimal.ZERO, getStock(stockLocation));
-        assertEquals(BigDecimal.ZERO, getStock(xferLocation));
+        checkEquals(BigDecimal.ZERO, getStock(stockLocation));
+        checkEquals(BigDecimal.ZERO, getStock(xferLocation));
 
         // post the transfer
         bean.setValue("status", ActStatus.POSTED);
@@ -85,13 +85,13 @@ public class StockUpdaterTestCase extends AbstractStockTest {
 
         // verify stock at the from and to locations. Note that stock may
         // go negative
-        assertEquals(quantity.negate(), getStock(stockLocation));
-        assertEquals(quantity, getStock(xferLocation));
+        checkEquals(quantity.negate(), getStock(stockLocation));
+        checkEquals(quantity, getStock(xferLocation));
 
         // verify subsequent save doesn't change the stock
         bean.save();
-        assertEquals(quantity.negate(), getStock(stockLocation));
-        assertEquals(quantity, getStock(xferLocation));
+        checkEquals(quantity.negate(), getStock(stockLocation));
+        checkEquals(quantity, getStock(xferLocation));
     }
 
     /**
@@ -113,18 +113,18 @@ public class StockUpdaterTestCase extends AbstractStockTest {
         save(act, item);
 
         // verify stock is not adjusted till the act is posted
-        assertEquals(BigDecimal.ZERO, getStock(stockLocation));
+        checkEquals(BigDecimal.ZERO, getStock(stockLocation));
 
         // post the act
         bean.setValue("status", ActStatus.POSTED);
         bean.save();
 
         // verify stock adjusted
-        assertEquals(quantity, getStock(stockLocation));
+        checkEquals(quantity, getStock(stockLocation));
 
         // verify subsequent save doesn't change the stock
         bean.save();
-        assertEquals(quantity, getStock(stockLocation));
+        checkEquals(quantity, getStock(stockLocation));
     }
 
     /**

@@ -250,7 +250,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(invoiceActs);
 
         // check the balance
-        assertEquals(hundred, rules.getBalance(customer));
+        checkEquals(hundred, rules.getBalance(customer));
 
         // make sure the invoice has an account balance participation
         FinancialAct invoice = invoiceActs.get(0);
@@ -260,8 +260,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // reload and verify act has not changed
         invoice = get(invoice);
-        assertEquals(hundred, invoice.getTotal());
-        assertEquals(BigDecimal.ZERO, invoice.getAllocatedAmount());
+        checkEquals(hundred, invoice.getTotal());
+        checkEquals(BigDecimal.ZERO, invoice.getAllocatedAmount());
         checkAllocation(invoice);
 
         // pay 60 of the debt
@@ -269,18 +269,18 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(payment1);
 
         // check the balance
-        assertEquals(forty, rules.getBalance(customer));
+        checkEquals(forty, rules.getBalance(customer));
 
         // reload and verify the acts have changed
         invoice = get(invoice);
         payment1 = get(payment1);
 
-        assertEquals(hundred, invoice.getTotal());
-        assertEquals(sixty, invoice.getAllocatedAmount());
+        checkEquals(hundred, invoice.getTotal());
+        checkEquals(sixty, invoice.getAllocatedAmount());
         checkAllocation(invoice, payment1);
 
-        assertEquals(sixty, payment1.getTotal());
-        assertEquals(sixty, payment1.getAllocatedAmount());
+        checkEquals(sixty, payment1.getTotal());
+        checkEquals(sixty, payment1.getAllocatedAmount());
         checkAllocation(payment1, invoice);
 
         // pay the remainder of the debt
@@ -288,18 +288,18 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(payment2);
 
         // check the balance
-        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // reload and verify the acts have changed
         invoice = get(invoice);
         payment2 = get(payment2);
 
-        assertEquals(hundred, invoice.getTotal());
-        assertEquals(hundred, invoice.getAllocatedAmount());
+        checkEquals(hundred, invoice.getTotal());
+        checkEquals(hundred, invoice.getAllocatedAmount());
         checkAllocation(invoice, payment1, payment2);
 
-        assertEquals(forty, payment2.getTotal());
-        assertEquals(forty, payment2.getAllocatedAmount());
+        checkEquals(forty, payment2.getTotal());
+        checkEquals(forty, payment2.getAllocatedAmount());
         checkAllocation(payment2, invoice);
     }
 
@@ -319,31 +319,31 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(invoice);
 
         // check the balance for a payment
-        assertEquals(hundred,
+        checkEquals(hundred,
                      rules.getBalance(customer, BigDecimal.ZERO, true));
 
         // check the balance for a refund
-        assertEquals(BigDecimal.ZERO,
+        checkEquals(BigDecimal.ZERO,
                      rules.getBalance(customer, BigDecimal.ZERO,
                                       false));
 
         // simulate payment of 60. Running balance should be 40
-        assertEquals(forty, rules.getBalance(customer, sixty, true));
+        checkEquals(forty, rules.getBalance(customer, sixty, true));
 
         // overpay by 10
         FinancialAct payment1 = createPayment(new Money("110.0"));
         save(payment1);
 
         // check the balance for a payment
-        assertEquals(BigDecimal.ZERO,
+        checkEquals(BigDecimal.ZERO,
                      rules.getBalance(customer, BigDecimal.ZERO,
                                       true));
 
         // check the balance for a refund
-        assertEquals(ten, rules.getBalance(customer, BigDecimal.ZERO, false));
+        checkEquals(ten, rules.getBalance(customer, BigDecimal.ZERO, false));
 
         // check the balance after refunding 5
-        assertEquals(five, rules.getBalance(customer, five, false));
+        checkEquals(five, rules.getBalance(customer, five, false));
     }
 
     /**
@@ -364,17 +364,17 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // check the invoice is not overdue on the day it is saved
         BigDecimal overdue = rules.getOverdueBalance(customer, startTime);
-        assertEquals(BigDecimal.ZERO, overdue);
+        checkEquals(BigDecimal.ZERO, overdue);
 
         // 30 days from saved, amount shouldn't be overdue
         Date now = DateRules.getDate(startTime, 30, DateUnits.DAYS);
         overdue = rules.getOverdueBalance(customer, now);
-        assertEquals(BigDecimal.ZERO, overdue);
+        checkEquals(BigDecimal.ZERO, overdue);
 
         // 31 days from saved, invoice should be overdue.
         now = DateRules.getDate(now, 1, DateUnits.DAYS);
         overdue = rules.getOverdueBalance(customer, now);
-        assertEquals(amount, overdue);
+        checkEquals(amount, overdue);
 
         // now save a credit for the same date as the invoice with total
         // > invoice total. The balance should be negative, but the overdue
@@ -385,7 +385,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(creditActs);
         checkBalance(new Money(-50));
         overdue = rules.getOverdueBalance(customer, now);
-        assertEquals(BigDecimal.ZERO, overdue);
+        checkEquals(BigDecimal.ZERO, overdue);
     }
 
     /**
@@ -409,19 +409,19 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         Date overdueDate = rules.getOverdueDate(customer, startTime);
         BigDecimal overdue = rules.getOverdueBalance(customer, startTime,
                                                      overdueDate);
-        assertEquals(BigDecimal.ZERO, overdue);
+        checkEquals(BigDecimal.ZERO, overdue);
 
         // 30 days from saved, amount shouldn't be overdue
         Date now = DateRules.getDate(startTime, 30, DateUnits.DAYS);
         overdueDate = rules.getOverdueDate(customer, now);
         overdue = rules.getOverdueBalance(customer, now, overdueDate);
-        assertEquals(BigDecimal.ZERO, overdue);
+        checkEquals(BigDecimal.ZERO, overdue);
 
         // 31 days from saved, invoice should be overdue.
         Date statementDate = DateRules.getDate(now, 1, DateUnits.DAYS);
         overdueDate = rules.getOverdueDate(customer, statementDate);
         overdue = rules.getOverdueBalance(customer, statementDate, overdueDate);
-        assertEquals(amount, overdue);
+        checkEquals(amount, overdue);
 
         // now save a credit dated 32 days from saved.
         // The current balance should = -50, but the overdue balance as
@@ -434,7 +434,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         checkBalance(new Money(-50));
         overdue = rules.getOverdueBalance(customer, statementDate, overdueDate);
-        assertEquals(amount, overdue);
+        checkEquals(amount, overdue);
     }
 
     /**
@@ -460,7 +460,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
             // need to negate as credits are negative
             BigDecimal expected = amount.multiply(multiplier).negate();
-            assertEquals(expected, rules.getCreditBalance(getCustomer()));
+            checkEquals(expected, rules.getCreditBalance(getCustomer()));
         }
     }
 
@@ -483,30 +483,30 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         FinancialAct credit = credits.get(0);
         credit.setStatus(ActStatus.IN_PROGRESS);
 
-        assertEquals(BigDecimal.ZERO, rules.getUnbilledAmount(getCustomer()));
+        checkEquals(BigDecimal.ZERO, rules.getUnbilledAmount(getCustomer()));
 
         save(invoices);
-        assertEquals(amount, rules.getUnbilledAmount(getCustomer()));
+        checkEquals(amount, rules.getUnbilledAmount(getCustomer()));
 
         save(counters);
-        assertEquals(amount.multiply(new BigDecimal(2)),
+        checkEquals(amount.multiply(new BigDecimal(2)),
                      rules.getUnbilledAmount(getCustomer()));
 
         save(credits);
-        assertEquals(amount, rules.getUnbilledAmount(getCustomer()));
+        checkEquals(amount, rules.getUnbilledAmount(getCustomer()));
 
         credit.setStatus(ActStatus.POSTED);
         save(credit);
-        assertEquals(amount.multiply(new BigDecimal(2)),
+        checkEquals(amount.multiply(new BigDecimal(2)),
                      rules.getUnbilledAmount(getCustomer()));
 
         counter.setStatus(ActStatus.POSTED);
         save(counter);
-        assertEquals(amount, rules.getUnbilledAmount(getCustomer()));
+        checkEquals(amount, rules.getUnbilledAmount(getCustomer()));
 
         invoice.setStatus(ActStatus.POSTED);
         save(invoice);
-        assertEquals(BigDecimal.ZERO, rules.getUnbilledAmount(getCustomer()));
+        checkEquals(BigDecimal.ZERO, rules.getUnbilledAmount(getCustomer()));
     }
 
     /**
@@ -625,29 +625,29 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         List<FinancialAct> invoices = createChargesInvoice(amount);
         save(invoices);
         FinancialAct invoice = invoices.get(0);
-        assertEquals(BigDecimal.ZERO, invoice.getAllocatedAmount());
+        checkEquals(BigDecimal.ZERO, invoice.getAllocatedAmount());
 
         // pay $60. Payment is fully allocated, $60 of invoice is allocated.
         FinancialAct payment = createPayment(sixty);
         save(payment);
-        assertEquals(sixty, payment.getAllocatedAmount());
+        checkEquals(sixty, payment.getAllocatedAmount());
 
         invoice = get(invoice);
-        assertEquals(sixty, invoice.getAllocatedAmount());
+        checkEquals(sixty, invoice.getAllocatedAmount());
 
         // $40 outstanding balance
         checkBalance(forty);
 
         // reverse the payment.
         FinancialAct reversal = rules.reverse(payment, new Date(), "Test reversal");
-        assertEquals(BigDecimal.ZERO, reversal.getAllocatedAmount());
+        checkEquals(BigDecimal.ZERO, reversal.getAllocatedAmount());
 
         // invoice and payment retain their allocations
         invoice = get(invoice);
-        assertEquals(sixty, invoice.getAllocatedAmount());
+        checkEquals(sixty, invoice.getAllocatedAmount());
 
         payment = get(payment);
-        assertEquals(sixty, payment.getAllocatedAmount());
+        checkEquals(sixty, payment.getAllocatedAmount());
 
         checkBalance(amount);
     }
@@ -706,8 +706,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         FinancialAct reload1 = get(invoice1.get(0));
         FinancialAct reload2 = get(invoice2.get(0));
-        assertEquals(forty, reload1.getAllocatedAmount());
-        assertEquals(BigDecimal.ZERO, reload2.getAllocatedAmount());
+        checkEquals(forty, reload1.getAllocatedAmount());
+        checkEquals(BigDecimal.ZERO, reload2.getAllocatedAmount());
 
         java.sql.Date payTime2 = java.sql.Date.valueOf("2007-4-2");
         FinancialAct payment2 = createPayment(twenty, payTime2);
@@ -715,8 +715,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         reload1 = get(invoice1.get(0));
         reload2 = get(invoice2.get(0));
-        assertEquals(sixty, reload1.getAllocatedAmount());
-        assertEquals(BigDecimal.ZERO, reload2.getAllocatedAmount());
+        checkEquals(sixty, reload1.getAllocatedAmount());
+        checkEquals(BigDecimal.ZERO, reload2.getAllocatedAmount());
 
         java.sql.Date payTime3 = java.sql.Date.valueOf("2007-4-3");
         FinancialAct payment3 = createPayment(forty, payTime3);
@@ -724,8 +724,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         reload1 = get(invoice1.get(0));
         reload2 = get(invoice2.get(0));
-        assertEquals(sixty, reload1.getAllocatedAmount());
-        assertEquals(forty, reload2.getAllocatedAmount());
+        checkEquals(sixty, reload1.getAllocatedAmount());
+        checkEquals(forty, reload2.getAllocatedAmount());
     }
 
     /**
@@ -773,7 +773,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         FinancialAct credit = credits.get(0);
 
         BigDecimal amount = credit.getTotal();
-        assertEquals(amount, debit.getTotal());
+        checkEquals(amount, debit.getTotal());
 
         assertTrue(credit.isCredit());
         assertFalse(debit.isCredit());
@@ -781,8 +781,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // save and reload the debit. The allocated amount should be unchanged
         save(debits);
         debit = get(debit);
-        assertEquals(amount, debit.getTotal());
-        assertEquals(BigDecimal.ZERO, debit.getAllocatedAmount());
+        checkEquals(amount, debit.getTotal());
+        checkEquals(BigDecimal.ZERO, debit.getAllocatedAmount());
         checkAllocation(debit);
 
         // check the outstanding balance
@@ -795,12 +795,12 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         credit = get(credit);
         debit = get(debit);
 
-        assertEquals(amount, credit.getTotal());
-        assertEquals(amount, credit.getAllocatedAmount());
+        checkEquals(amount, credit.getTotal());
+        checkEquals(amount, credit.getAllocatedAmount());
         checkAllocation(credit, debit);
 
-        assertEquals(amount, debit.getTotal());
-        assertEquals(amount, debit.getAllocatedAmount());
+        checkEquals(amount, debit.getTotal());
+        checkEquals(amount, debit.getAllocatedAmount());
         checkAllocation(debit, credit);
 
         // check the outstanding balance
@@ -814,8 +814,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     private void checkBalance(BigDecimal amount) {
         Party customer = getCustomer();
-        assertEquals(amount, rules.getBalance(customer));
-        assertEquals(amount, rules.getDefinitiveBalance(customer));
+        checkEquals(amount, rules.getBalance(customer));
+        checkEquals(amount, rules.getDefinitiveBalance(customer));
     }
 
     /**
@@ -858,7 +858,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
             BigDecimal allocation = relBean.getBigDecimal("allocatedAmount");
             total = total.add(allocation);
         }
-        assertEquals(act.getAllocatedAmount(), total);
+        checkEquals(act.getAllocatedAmount(), total);
 
         assertEquals(acts.length, matches.size());
     }
@@ -924,9 +924,9 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
                 ActBean itemBean = new ActBean(item);
                 BigDecimal roundedAmount
                         = (BigDecimal) itemBean.getValue("roundedAmount");
-                assertEquals(amount, roundedAmount);
+                checkEquals(amount, roundedAmount);
             }
-            assertEquals(amount, ((FinancialAct) item).getTotal());
+            checkEquals(amount, ((FinancialAct) item).getTotal());
         } else {
             if (bean.hasNode("items")) {
                 List<Act> items = bean.getNodeActs("items");

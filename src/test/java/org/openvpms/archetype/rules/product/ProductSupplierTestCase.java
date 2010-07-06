@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.product;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -71,11 +72,11 @@ public class ProductSupplierTestCase extends ArchetypeServiceTest {
 
         BigDecimal listPrice = new BigDecimal("1");
         ps.setListPrice(listPrice);
-        assertEquals(listPrice, ps.getListPrice());
+        checkEquals(listPrice, ps.getListPrice());
 
         BigDecimal nettPrice = new BigDecimal("2");
         ps.setNettPrice(nettPrice);
-        assertEquals(nettPrice, ps.getNettPrice());
+        checkEquals(nettPrice, ps.getNettPrice());
 
         ps.setPreferred(false);
         assertFalse(ps.isPreferred());

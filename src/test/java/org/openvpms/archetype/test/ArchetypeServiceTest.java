@@ -18,7 +18,6 @@
 
 package org.openvpms.archetype.test;
 
-import org.junit.Assert;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -139,22 +138,12 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
     }
 
     /**
-     * Verifies that two objects are equal.
-     *
-     * @param expected the expected value
-     * @param actual   the actual value
-     */
-    protected void assertEquals(Object expected, Object actual) {
-        Assert.assertEquals(expected, actual);
-    }
-
-    /**
      * Verifies two <tt>BigDecimals</tt> are equal.
      *
      * @param expected the expected value
      * @param actual   the actual value
      */
-    protected void assertEquals(BigDecimal expected, BigDecimal actual) {
+    protected void checkEquals(BigDecimal expected, BigDecimal actual) {
         if (expected.compareTo(actual) != 0) {
             fail("Expected " + expected + ", but got " + actual);
         }

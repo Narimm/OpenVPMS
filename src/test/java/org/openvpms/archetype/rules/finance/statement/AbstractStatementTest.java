@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.finance.statement;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.AbstractCustomerAccountTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -144,7 +145,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
                             String status) {
         assertTrue(TypeHelper.isA(act, shortName));
         assertEquals(status, act.getStatus());
-        assertEquals(amount, ((FinancialAct) act).getTotal());
+        checkEquals(amount, ((FinancialAct) act).getTotal());
     }
 
     /**

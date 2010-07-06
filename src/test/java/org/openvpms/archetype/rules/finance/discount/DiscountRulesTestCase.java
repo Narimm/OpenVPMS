@@ -372,7 +372,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         BigDecimal discount = rules.calculateDiscount(
                 date, customer, patient, product, fixedPrice, unitPrice,
                 quantity, maxFixedDiscount, maxUnitDiscount);
-        assertEquals(expectedDiscount, discount);
+        checkEquals(expectedDiscount, discount);
     }
 
     /**

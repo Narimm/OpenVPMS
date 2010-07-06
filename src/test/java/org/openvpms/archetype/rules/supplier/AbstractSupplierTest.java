@@ -443,7 +443,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         } else {
             assertNotNull(relationship);
             IMObjectBean relBean = new IMObjectBean(relationship);
-            assertEquals(quantity, relBean.getBigDecimal("quantity"));
+            checkEquals(quantity, relBean.getBigDecimal("quantity"));
         }
     }
 

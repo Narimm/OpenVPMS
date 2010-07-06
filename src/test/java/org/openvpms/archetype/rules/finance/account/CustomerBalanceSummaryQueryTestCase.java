@@ -101,13 +101,13 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         Date invoiceDate = set.getDate(CustomerBalanceSummaryQuery.LAST_INVOICE_DATE);
         BigDecimal invoiceAmount = set.getBigDecimal(CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);
 
-        assertEquals(fifty, balance);
-        assertEquals(fifty, overdue);
-        assertEquals(BigDecimal.ZERO, credit);
+        checkEquals(fifty, balance);
+        checkEquals(fifty, overdue);
+        checkEquals(BigDecimal.ZERO, credit);
         assertEquals(paymentStartTime, paymentDate);
-        assertEquals(fifty, paymentAmount);
+        checkEquals(fifty, paymentAmount);
         assertEquals(startTime, invoiceDate);
-        assertEquals(hundred, invoiceAmount);
+        checkEquals(hundred, invoiceAmount);
 
         assertFalse(query.hasNext());
     }
@@ -399,9 +399,9 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         assertNotNull(cust1Set);
         assertNotNull(cust2Set);
 
-        assertEquals(cust1Balance, cust1Set.getBigDecimal(
+        checkEquals(cust1Balance, cust1Set.getBigDecimal(
                 CustomerBalanceSummaryQuery.BALANCE));
-        assertEquals(cust2Balance, cust2Set.getBigDecimal(
+        checkEquals(cust2Balance, cust2Set.getBigDecimal(
                 CustomerBalanceSummaryQuery.BALANCE));
     }
 
