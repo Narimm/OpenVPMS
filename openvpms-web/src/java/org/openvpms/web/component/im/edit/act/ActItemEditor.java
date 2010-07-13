@@ -329,6 +329,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
             });
         }
         if (patient != null && product != null) {
+            product.setPatient(patient.getEntity());
             patient.getEditor().addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     product.setPatient(patient.getEntity());

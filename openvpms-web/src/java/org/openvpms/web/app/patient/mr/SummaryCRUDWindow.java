@@ -19,16 +19,13 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -51,7 +48,6 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
      * The current query.
      */
     private PatientSummaryQuery query;
-
 
     /**
      * Creates a new <tt>SummaryCRUDWindow</tt>.
@@ -87,25 +83,6 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
      */
     public void setQuery(PatientSummaryQuery query) {
         this.query = query;
-    }
-
-    /**
-     * Invoked when the edit button is pressed. This edits the current
-     * <em>act.patientClinicalEvent</em>.
-     */
-    @Override
-    public void edit() {
-        Act event = getEvent();
-        if (event != null) {
-            // make sure the latest instance is being used.
-            Act current = IMObjectHelper.reload(event);
-            if (current == null) {
-                ErrorDialog.show(Messages.get("imobject.noexist"),
-                                 DescriptorHelper.getDisplayName(event));
-            } else {
-                edit(current);
-            }
-        }
     }
 
     /**

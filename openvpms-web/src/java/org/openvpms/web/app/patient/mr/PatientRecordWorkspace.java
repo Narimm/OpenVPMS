@@ -18,14 +18,9 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
-
-import java.util.List;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -35,6 +30,8 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
@@ -47,9 +44,11 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.util.DoubleClickMonitor;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+
+import java.util.List;
 
 
 /**
@@ -91,6 +90,11 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     private Archetypes<DocumentAct> docArchetypes;
 
     /**
+     * The double click monitor.
+     */
+    private DoubleClickMonitor click = new DoubleClickMonitor();
+
+    /**
      * The reminder statuses to query.
      */
     private static final ActStatuses STATUSES
@@ -103,7 +107,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     static {
         DOC_STATUSES = new ActStatuses("act.patientDocumentLetter");
-        DOC_STATUSES.setDefault((Lookup)null);
+        DOC_STATUSES.setDefault((Lookup) null);
     }
 
 
@@ -236,16 +240,25 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when an act is selected.
+     * <p/>
+     * This implementation edits the selected act, if the current view is summary view and it has been double
+     * clicked on.
      *
      * @param act the act
      */
     @Override
     protected void onBrowserSelected(Act act) {
-        super.onBrowserSelected(act);
         CRUDWindow<Act> window = getCRUDWindow();
+        super.onBrowserSelected(act);
         if (window instanceof PatientRecordCRUDWindow) {
             Act event = getEvent(act);
             ((PatientRecordCRUDWindow) window).setEvent(event);
+            if (window instanceof SummaryCRUDWindow) {
+                long id = (act != null) ? act.getId() : 0;
+                if (click.isDoubleClick(id)) { // avoid holding onto the act
+                    window.edit();
+                }
+            }
         }
     }
 
@@ -257,7 +270,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         CRUDWindow<Act> window;
         RecordBrowser.View view = browser.getView();
         if (view == RecordBrowser.View.SUMMARY
-                || view == RecordBrowser.View.PROBLEMS) {
+            || view == RecordBrowser.View.PROBLEMS) {
             PatientRecordCRUDWindow w;
             if (view == RecordBrowser.View.SUMMARY) {
                 w = (PatientRecordCRUDWindow) createCRUDWindow();
@@ -357,8 +370,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         if (act != null) {
             List<Act> acts = summary.getObjects();
             int index = acts.indexOf(act);
-            while (!(found = TypeHelper.isA(act, CLINICAL_EVENT))
-                    && index > 0) {
+            while (!(found = TypeHelper.isA(act, CLINICAL_EVENT)) && index > 0) {
                 act = acts.get(--index);
             }
         }

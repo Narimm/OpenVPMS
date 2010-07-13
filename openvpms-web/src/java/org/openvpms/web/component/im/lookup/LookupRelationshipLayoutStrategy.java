@@ -45,11 +45,13 @@ public class LookupRelationshipLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the object to lay out
      * @param properties the object's properties
+     * @param parent     the parent object. May be <tt>null</tt>
      * @param container  the container to use
      * @param context    the layout context
      */
-    protected void doLayout(IMObject object, PropertySet properties,
-                            Component container, LayoutContext context) {
+    @Override
+    protected void doLayout(IMObject object, PropertySet properties, IMObject parent, Component container,
+                            LayoutContext context) {
         Property source = properties.get("source");
         Property target = properties.get("target");
         IMObjectReference srcRef = (IMObjectReference) source.getValue();

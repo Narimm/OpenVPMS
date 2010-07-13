@@ -105,7 +105,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent     the parent object. May be <code>null</code>
+     * @param parent     the parent object. May be <tt>null</tt>
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
@@ -119,7 +119,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         try {
             focusGroup = new FocusGroup(DescriptorHelper.getDisplayName(object));
             Column column = ColumnFactory.create("CellSpacing");
-            doLayout(object, properties, column, context);
+            doLayout(object, properties, parent, column, context);
             setFocus();
             state = new ComponentState(column, focusGroup);
             components.clear();
@@ -147,10 +147,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param object     the object to lay out
      * @param properties the object's properties
+     * @param parent     the parent object. May be <tt>null</tt>
      * @param container  the container to use
      * @param context    the layout context
      */
-    protected void doLayout(IMObject object, PropertySet properties,
+    protected void doLayout(IMObject object, PropertySet properties, IMObject parent,
                             Component container, LayoutContext context) {
         ArchetypeDescriptor archetype = context.getArchetypeDescriptor(object);
         List<NodeDescriptor> simple = getSimpleNodes(archetype);
@@ -160,21 +161,21 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         simple = filter(object, simple, filter);
         complex = filter(object, complex, filter);
 
-        doSimpleLayout(object, simple, properties, container, context);
-        doComplexLayout(object, complex, properties, container, context);
+        doSimpleLayout(object, parent, simple, properties, container, context);
+        doComplexLayout(object, parent, complex, properties, container, context);
     }
 
     /**
      * Lays out child components in a grid.
      *
-     * @param object      the parent object
+     * @param object      the object to lay out
+     * @param parent      the parent object. May be <tt>null</tt>
      * @param descriptors the property descriptors
      * @param properties  the properties
      * @param container   the container to use
      * @param context     the layout context
      */
-    protected void doSimpleLayout(IMObject object,
-                                  List<NodeDescriptor> descriptors,
+    protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
                                   PropertySet properties, Component container,
                                   LayoutContext context) {
         if (!descriptors.isEmpty()) {
@@ -187,19 +188,18 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Lays out each child component in a tabbed pane.
      *
-     * @param object      the parent object
+     * @param object      the object to lay out
+     * @param parent      the parent object. May be <tt>null</tt>
      * @param descriptors the property descriptors
      * @param properties  the properties
      * @param container   the container to use
      * @param context     the layout context
      */
-    protected void doComplexLayout(IMObject object,
-                                   List<NodeDescriptor> descriptors,
+    protected void doComplexLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
                                    PropertySet properties, Component container,
                                    LayoutContext context) {
         if (!descriptors.isEmpty()) {
-            TabModel model = doTabLayout(object, descriptors, properties,
-                                         container, context);
+            TabModel model = doTabLayout(object, descriptors, properties, container, context, false);
             TabbedPane pane = TabbedPaneFactory.create(model);
 
             pane.setSelectedIndex(0);
@@ -346,21 +346,21 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Lays out child components in a tab model.
      *
-     * @param object      the parent object
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param container   the container
-     * @param context     the layout context
+     * @param object       the parent object
+     * @param descriptors  the property descriptors
+     * @param properties   the properties
+     * @param container    the container
+     * @param context      the layout context
+     * @param shortcutHint a hint to display short cuts for tabs. If <tt>false</tt> shortcuts will only be displayed if
+     *                     there is more than one descriptor. Shortcuts will never be displayed if the layout depth
+     *                     is non-zero
      * @return the tab model
      */
-    protected TabPaneModel doTabLayout(IMObject object,
-                                       List<NodeDescriptor> descriptors,
-                                       PropertySet properties,
-                                       Component container,
-                                       LayoutContext context) {
+    protected TabPaneModel doTabLayout(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
+                                       Component container, LayoutContext context, boolean shortcutHint) {
         TabPaneModel model;
         boolean shortcuts = false;
-        if (context.getLayoutDepth() == 0 && descriptors.size() > 1) {
+        if (context.getLayoutDepth() == 0 && (descriptors.size() > 1 || shortcutHint)) {
             model = createTabModel(container);
             shortcuts = true;
         } else {
@@ -396,8 +396,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         for (NodeDescriptor nodeDesc : descriptors) {
             Property property = properties.get(nodeDesc);
             ComponentState child = createComponent(property, object, context);
-            Component inset = ColumnFactory.create("Inset",
-                                                   child.getComponent());
+            Component inset = ColumnFactory.create("Inset", child.getComponent());
             setFocusTraversal(child);
             String text = child.getDisplayName();
             if (text == null) {

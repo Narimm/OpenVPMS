@@ -16,12 +16,11 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.investigation;
+package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -29,7 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.im.doc.DocumentActLayoutStrategy;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -47,7 +46,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 /**
  * Layout strategy that includes a 'Print Form' button to print the act.
  */
-public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStrategy {
+public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLayoutStrategy {
 
     /**
      * Determines if the date node should be displayed read-only.
@@ -102,18 +101,20 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
      *
      * @param object     the object to lay out
      * @param properties the object's properties
+     * @param parent     the parent object. May be <tt>null</tt>
      * @param container  the container to use
      * @param context    the layout context
      */
     @Override
-    protected void doLayout(final IMObject object, PropertySet properties, Component container, LayoutContext context) {
+    protected void doLayout(final IMObject object, PropertySet properties, IMObject parent, Component container,
+                            LayoutContext context) {
         Button print = printLayout.doLayout(container);
         print.addActionListener(new ActionListener() {
             public void onAction(ActionEvent e) {
                 onPrint(object);
             }
         });
-        super.doLayout(object, properties, container, context);
+        super.doLayout(object, properties, parent, container, context);
         getFocusGroup().add(print);
     }
 

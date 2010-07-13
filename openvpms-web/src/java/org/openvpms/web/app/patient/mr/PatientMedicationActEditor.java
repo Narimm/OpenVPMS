@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.medication;
+package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Component;

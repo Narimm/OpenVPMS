@@ -20,9 +20,9 @@ package org.openvpms.web.component.im.layout;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -67,19 +67,20 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the object to lay out
      * @param properties the object's properties
+     * @param parent     the parent object. May be <tt>null</tt>
      * @param container  the container to use
      * @param context    the layout context
      */
     @Override
-    protected void doLayout(final IMObject object, PropertySet properties,
-                            Component container, LayoutContext context) {
+    protected void doLayout(final IMObject object, PropertySet properties, IMObject parent, Component container,
+                            LayoutContext context) {
         Button button = layout.doLayout(container);
         button.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onPrint(object);
             }
         });
-        super.doLayout(object, properties, container, context);
+        super.doLayout(object, properties, parent, container, context);
         getFocusGroup().add(button);
     }
 

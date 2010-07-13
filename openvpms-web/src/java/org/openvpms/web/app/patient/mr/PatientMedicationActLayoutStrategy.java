@@ -16,9 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.medication;
+package org.openvpms.web.app.patient.mr;
 
+import echopointng.TabbedPane;
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -29,6 +32,10 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.util.TabPaneModel;
+import org.openvpms.web.component.util.TabbedPaneFactory;
+
+import java.util.List;
 
 
 /**
@@ -55,7 +62,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
 
 
     /**
-     * Constructs a new <tt>PatientMedicationActLayoutStrategy</tt>.
+     * Constructs a <tt>PatientMedicationActLayoutStrategy</tt>.
      */
     public PatientMedicationActLayoutStrategy() {
         super("button.printlabel");
@@ -68,7 +75,6 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      */
     public void setDateReadOnly(boolean readOnly) {
         showDateReadOnly = readOnly;
-
     }
 
     /**
@@ -150,6 +156,35 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     }
 
     /**
+     * Lays out each child component in a tabbed pane.
+     * <p/>
+     * This implementation displays a patient record summary in a tab if there is no parent object.
+     * This helps provide context to the user when the act is being edited stand-alone.
+     *
+     * @param object      the object to lay out
+     * @param parent      the parent object. May be <tt>null</tt>
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param container   the container to use
+     * @param context     the layout context
+     */
+    @Override
+    protected void doComplexLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
+                                   PropertySet properties, Component container, LayoutContext context) {
+        if (parent == null) {
+            boolean shortcuts = (context.getLayoutDepth() == 0);
+            TabPaneModel model = doTabLayout(object, descriptors, properties, container, context, shortcuts);
+            TabbedPane pane = TabbedPaneFactory.create(model);
+            PatientRecordSummaryTab summary = new PatientRecordSummaryTab();
+            summary.addTab((Act) object, pane, shortcuts);
+            pane.setSelectedIndex(0);
+            container.add(pane);
+        } else {
+            super.doComplexLayout(object, parent, descriptors, properties, container, context);
+        }
+    }
+
+    /**
      * Helper to return a read-only component.
      *
      * @param property the property
@@ -160,8 +195,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     private ComponentState getReadOnlyComponent(Property property,
                                                 IMObject parent,
                                                 LayoutContext context) {
-        ReadOnlyComponentFactory factory
-                = new ReadOnlyComponentFactory(context);
+        ReadOnlyComponentFactory factory = new ReadOnlyComponentFactory(context);
         return factory.create(property, parent);
     }
 
