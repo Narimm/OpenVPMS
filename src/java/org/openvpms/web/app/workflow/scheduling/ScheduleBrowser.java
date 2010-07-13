@@ -46,6 +46,7 @@ import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.component.util.DoubleClickMonitor;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -108,9 +109,9 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     private PropertySet cut;
 
     /**
-     * The last click time, to detect double click.
+     * Used to determine if there has been a double click.
      */
-    private Date lastClick;
+    private final DoubleClickMonitor click = new DoubleClickMonitor();
 
 
     /**
@@ -551,7 +552,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         int column = event.getColumn();
         int row = event.getRow();
         boolean doubleClick = false;
-        if (isDoubleClick()) {
+        if (click.isDoubleClick()) {
             if (model.isSingleScheduleView()) {
                 // click the same row to get double click in single schedule view
                 if (model.getSelectedRow() == row) {
@@ -616,21 +617,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
                 result = event.getReference(ScheduleEvent.ACT_REFERENCE);
             }
         }
-        return result;
-    }
-
-    /**
-     * Determines if the mouse has been clicked twice on the table.
-     * <p/>
-     * This implementation returns <tt>true</tt> if the table has been clicked twice within 2 seconds
-     *
-     * @return <tt>true</tt> if the mouse has been clicked twice
-     */
-    private boolean isDoubleClick() {
-        boolean result;
-        Date now = new Date();
-        result = (lastClick != null && (lastClick.getTime() + 2000) >= now.getTime());
-        lastClick = now;
         return result;
     }
 

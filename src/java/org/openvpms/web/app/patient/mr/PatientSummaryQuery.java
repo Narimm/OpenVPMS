@@ -118,7 +118,7 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
         });
         shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
 
-        Label typeLabel = LabelFactory.create("type");
+        Label typeLabel = LabelFactory.create("query.type");
         container.add(typeLabel);
         container.add(shortNameSelector);
         getFocusGroup().add(shortNameSelector);

@@ -214,20 +214,18 @@ public abstract class AbstractRelationshipEditor
         }
 
         /**
-         * Lays out child components in a 2x2 grid.
+         * Lays out child components in a grid.
          *
-         * @param object      the parent object
+         * @param object      the object to lay out
+         * @param parent      the parent object. May be <tt>null</tt>
          * @param descriptors the property descriptors
          * @param properties  the properties
          * @param container   the container to use
          * @param context     the layout context
          */
         @Override
-        protected void doSimpleLayout(IMObject object,
-                                      List<NodeDescriptor> descriptors,
-                                      PropertySet properties,
-                                      Component container,
-                                      LayoutContext context) {
+        protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
+                                      PropertySet properties, Component container, LayoutContext context) {
             Grid grid = createGrid(descriptors);
             if (!hideSource) {
                 add(grid, new ComponentState(sourceEditor.getComponent(), sourceEditor.getProperty(),

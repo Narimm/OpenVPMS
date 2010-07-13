@@ -81,8 +81,8 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Construct a new <code>ExpandableLayoutStrategy</code>.
      *
-     * @param showOptional if <code>true</code> show optional fields as well as
-     *                     mandatory ones.
+     * @param showOptional if <code>true</code> show optional fields as well as mandatory ones.
+     * @param showButton   if <tt>true</tt> show button to expand/collapse the layout
      */
     public ExpandableLayoutStrategy(boolean showOptional, boolean showButton) {
         _showOptional = showOptional;
@@ -123,13 +123,14 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the object to lay out
      * @param properties the object's properties
+     * @param parent     the parent object. May be <tt>null</tt>
      * @param container  the container to use
      * @param context    the layout context
      */
     @Override
-    protected void doLayout(IMObject object, PropertySet properties,
-                            Component container, LayoutContext context) {
-        super.doLayout(object, properties, container, context);
+    protected void doLayout(IMObject object, PropertySet properties, IMObject parent, Component container,
+                            LayoutContext context) {
+        super.doLayout(object, properties, parent, container, context);
         if (_button == null && _showButton) {
             Row row = getButtonRow();
             ColumnLayoutData right = new ColumnLayoutData();
@@ -142,24 +143,22 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Lays out child components in a 2x2 grid.
      *
-     * @param object      the parent object
+     * @param object      the object to lay out
+     * @param parent      the parent object. May be <tt>null</tt>
      * @param descriptors the property descriptors
      * @param properties  the properties
      * @param container   the container to use
      * @param context     the layout context
      */
     @Override
-    protected void doSimpleLayout(IMObject object,
-                                  List<NodeDescriptor> descriptors,
-                                  PropertySet properties,
-                                  Component container,
-                                  LayoutContext context) {
+    protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
+                                  PropertySet properties, Component container, LayoutContext context) {
         if (_button != null || !_showButton) {
-            super.doSimpleLayout(object, descriptors, properties, container,
+            super.doSimpleLayout(object, parent, descriptors, properties, container,
                                  context);
         } else if (!descriptors.isEmpty()) {
             Row group = RowFactory.create();
-            super.doSimpleLayout(object, descriptors, properties, group,
+            super.doSimpleLayout(object, parent, descriptors, properties, group,
                                  context);
             group.add(getButtonRow());
             container.add(group);
@@ -167,19 +166,18 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Lays out each child component in a group box.
+     * Lays out each child component in a tabbed pane.
      *
-     * @param object      the parent object
+     * @param object      the object to lay out
+     * @param parent      the parent object. May be <tt>null</tt>
      * @param descriptors the property descriptors
      * @param properties  the properties
      * @param container   the container to use
      * @param context     the layout context
      */
     @Override
-    protected void doComplexLayout(IMObject object,
-                                   List<NodeDescriptor> descriptors,
-                                   PropertySet properties, Component container,
-                                   LayoutContext context) {
+    protected void doComplexLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
+                                   PropertySet properties, Component container, LayoutContext context) {
         if (_button == null && _showButton && !descriptors.isEmpty()) {
             Row row = getButtonRow();
             ColumnLayoutData right = new ColumnLayoutData();
@@ -187,17 +185,18 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
             row.setLayoutData(right);
             container.add(row);
         }
-        super.doComplexLayout(object, descriptors, properties, container,
+        super.doComplexLayout(object, parent, descriptors, properties, container,
                               context);
     }
 
     /**
      * Returns a node filter.
      *
-     * @param object
+     * @param object  the object to filter nodes for
      * @param context the context
      * @return a node filter to filter nodes
      */
+    @Override
     protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         return new ComplexNodeFilter(_showOptional, false);
     }

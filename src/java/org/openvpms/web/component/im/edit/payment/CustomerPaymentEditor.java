@@ -272,21 +272,17 @@ public class CustomerPaymentEditor extends PaymentEditor {
         /**
          * Lays out child components in a grid.
          *
-         * @param object      the parent object
+         * @param object      the object to lay out
+         * @param parent      the parent object. May be <tt>null</tt>
          * @param descriptors the property descriptors
          * @param properties  the properties
          * @param container   the container to use
          * @param context     the layout context
          */
         @Override
-        protected void doSimpleLayout(IMObject object,
-                                      List<NodeDescriptor> descriptors,
-                                      PropertySet properties,
-                                      Component container,
-                                      LayoutContext context) {
-            ComponentSet set = createComponentSet(object, descriptors,
-                                                  properties,
-                                                  context);
+        protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
+                                      PropertySet properties, Component container, LayoutContext context) {
+            ComponentSet set = createComponentSet(object, descriptors, properties, context);
             ComponentGrid grid = new ComponentGrid();
             grid.set(0, 0, createComponent(invoiceAmount, object, context));
             grid.set(0, 1, createComponent(previousBalance, object, context));

@@ -18,32 +18,17 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import echopointng.TabbedPane;
-import echopointng.tabbedpane.TabModel;
-import nextapp.echo2.app.Component;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.TabPaneModel;
-import org.openvpms.web.component.util.TabbedPaneFactory;
-import org.openvpms.web.resource.util.Messages;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -105,7 +90,7 @@ public class PatientClinicalEventActEditor extends AbstractActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy();
+        return new PatientRecordLayoutStrategy();
     }
 
     /**
@@ -117,89 +102,6 @@ public class PatientClinicalEventActEditor extends AbstractActEditor {
         String value = (String) status.getValue();
         Date time = COMPLETED.equals(value) ? new Date() : null;
         setEndTime(time, false);
-    }
-
-    class LayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * The summary browser.
-         */
-        private Browser browser;
-
-        /**
-         * Listener to handle tab pane changes.
-         */
-        private PropertyChangeListener listener;
-
-
-        /**
-         * Lays out each child component in a tabbed pane.
-         *
-         * @param object      the parent object
-         * @param descriptors the property descriptors
-         * @param properties  the properties
-         * @param container   the container to use
-         * @param context     the layout context
-         */
-        @Override
-        protected void doComplexLayout(IMObject object,
-                                       List<NodeDescriptor> descriptors,
-                                       PropertySet properties,
-                                       Component container,
-                                       LayoutContext context) {
-            if (!descriptors.isEmpty()) {
-                TabModel model = doTabLayout(object, descriptors, properties,
-                                             container, context);
-                final TabbedPane pane = TabbedPaneFactory.create(model);
-
-                pane.setSelectedIndex(0);
-
-                // register the listener to perform an initial query
-                listener = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (pane.getSelectedIndex() == 1) {
-                            if (browser != null) {
-                                browser.query();
-                            }
-                            // don't need the listener any longer
-                            pane.removePropertyChangeListener(listener);
-                        }
-                    }
-                };
-                pane.addPropertyChangeListener(listener);
-                container.add(pane);
-            }
-        }
-
-        /**
-         * Lays out child components in a tab model.
-         *
-         * @param object      the parent object
-         * @param descriptors the property descriptors
-         * @param properties  the properties
-         * @param context     the layout context
-         * @return the tab model
-         */
-        @Override
-        protected TabPaneModel doTabLayout(IMObject object,
-                                           List<NodeDescriptor> descriptors,
-                                           PropertySet properties,
-                                           Component container,
-                                           LayoutContext context) {
-            TabPaneModel model = super.doTabLayout(object, descriptors,
-                                                   properties, container,
-                                                   context);
-            Party patient = (Party) getParticipant("patient");
-            if (patient != null) {
-                PatientSummaryQuery query = new PatientSummaryQuery(patient);
-                browser = new SummaryTableBrowser(query);
-                String title = Messages.get("button.summary");
-                Component inset = ColumnFactory.create("Inset",
-                                                       browser.getComponent());
-                model.addTab(title, inset);
-            }
-            return model;
-        }
     }
 
 }
