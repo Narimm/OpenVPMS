@@ -125,7 +125,7 @@ public class BrowserDialog<T> extends PopupDialog {
                                                  component);
             getLayout().add(column);
         } else {
-            getLayout().add(component);
+            getLayout().add(ColumnFactory.create("Inset", component));
         }
 
         if (addNew) {

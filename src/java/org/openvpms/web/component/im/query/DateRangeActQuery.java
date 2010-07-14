@@ -136,6 +136,44 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     }
 
     /**
+     * Returns the 'from' date.
+     *
+     * @return the 'from' date, or <tt>null</tt> to query all dates
+     */
+    @Override
+    public Date getFrom() {
+        return getDateRange().getFrom();
+    }
+
+    /**
+     * Sets the 'from' date.
+     *
+     * @param date the 'from' date
+     */
+    public void setFrom(Date date) {
+        getDateRange().setFrom(date);
+    }
+
+    /**
+     * Returns the 'to' date.
+     *
+     * @return the 'to' date, or <tt>null</tt> to query all dates
+     */
+    @Override
+    public Date getTo() {
+        return getDateRange().getTo();
+    }
+
+    /**
+     * Sets the 'to' date.
+     *
+     * @param date the 'to' date
+     */
+    public void setTo(Date date) {
+        getDateRange().setTo(date);
+    }
+
+    /**
      * Lays out the component in a container.
      *
      * @param container the container
@@ -148,44 +186,6 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
 
         addStatusSelector(container);
         addDateRange(container);
-    }
-
-    /**
-     * Returns the 'from' date.
-     *
-     * @return the 'from' date, or <tt>null</tt> to query all dates
-     */
-    @Override
-    protected Date getFrom() {
-        return getDateRange().getFrom();
-    }
-
-    /**
-     * Sets the 'from' date.
-     *
-     * @param date the 'from' date
-     */
-    protected void setFrom(Date date) {
-        getDateRange().setFrom(date);
-    }
-
-    /**
-     * Returns the 'to' date.
-     *
-     * @return the 'to' date, or <tt>null</tt> to query all dates
-     */
-    @Override
-    protected Date getTo() {
-        return getDateRange().getTo();
-    }
-
-    /**
-     * Sets the 'to' date.
-     *
-     * @param date the 'to' date
-     */
-    protected void setTo(Date date) {
-        getDateRange().setTo(date);
     }
 
     /**

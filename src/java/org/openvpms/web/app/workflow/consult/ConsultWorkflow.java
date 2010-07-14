@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
+import org.openvpms.web.app.workflow.EditClinicalEventTask;
 import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
@@ -47,11 +48,6 @@ import org.openvpms.web.component.workflow.WorkflowImpl;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ConsultWorkflow extends WorkflowImpl {
-
-    /**
-     * The event short name.
-     */
-    public static final String EVENT_SHORTNAME = "act.patientClinicalEvent";
 
     /**
      * The initial context.
@@ -90,10 +86,9 @@ public class ConsultWorkflow extends WorkflowImpl {
 
         // get the latest clinical event and edit it.
         addTask(new GetClinicalEventTask());
-        addTask(new EditIMObjectTask(EVENT_SHORTNAME));
+        addTask(new EditClinicalEventTask());
 
-        // get the latest invoice, or create one if none is available, and edit
-        // it
+        // get the latest invoice, or create one if none is available, and edit it
         addTask(new GetInvoiceTask());
         addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
         addTask(new EditIMObjectTask(INVOICE_SHORTNAME));

@@ -24,6 +24,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.CheckBoxFactory;
@@ -31,7 +32,6 @@ import org.openvpms.web.component.util.ComponentHelper;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.archetype.rules.util.DateRules;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -107,12 +107,12 @@ public class DateRange {
      * Constructs a new <tt>DateRange</tt>
      *
      * @param focus   the focus group
-     * @param showAll determines if an 'all' checkbox should be displayed
-     *                to select all dates
+     * @param showAll determines if an 'all' checkbox should be displayed to select all dates
      */
     public DateRange(FocusGroup focus, boolean showAll) {
         this.focus = focus;
         this.showAll = showAll;
+        component = doLayout();
     }
 
     /**
@@ -152,17 +152,34 @@ public class DateRange {
     }
 
     /**
+     * Sets the state of the <em>allDates</em> checkbox, if present.
+     *
+     * @param selected the state of the <em>allDates</em> checkbox
+     */
+    public void setAllDates(boolean selected) {
+        if (showAll) {
+            allDates.setSelected(selected);
+        }
+    }
+
+    /**
+     * Determines if all dates are being selected.
+     *
+     * @return <tt>true</tt> if all dates are being seleced
+     */
+    public boolean getAllDates() {
+        return showAll && allDates.isSelected();
+    }
+
+
+    /**
      * Renders the component.
      *
      * @return the component
      */
     public Component getComponent() {
-        if (component == null) {
-            component = doLayout();
-        }
         return component;
     }
-
 
     /**
      * Lays out the component.
@@ -196,8 +213,7 @@ public class DateRange {
                         onToChanged();
                     }
                 });
-        Row range = RowFactory.create(STYLE, fromLabel, from,
-                                      toLabel, to);
+        Row range = RowFactory.create(STYLE, fromLabel, from, toLabel, to);
         Row result = RowFactory.create(STYLE);
         if (showAll) {
             result.add(allDates);
@@ -236,15 +252,6 @@ public class DateRange {
         if (from != null && from.compareTo(to) > 0) {
             setFrom(to);
         }
-    }
-
-    /**
-     * Determines if all dates are being selected.
-     *
-     * @return <tt>true</tt> if all dates are being seleced
-     */
-    private boolean getAllDates() {
-        return showAll && allDates.isSelected();
     }
 
     /**
