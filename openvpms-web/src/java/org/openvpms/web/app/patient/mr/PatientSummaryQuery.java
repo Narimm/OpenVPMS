@@ -22,12 +22,12 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
@@ -63,10 +63,10 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
      * Document act version short names.
      */
     private static final String[] DOC_VERSION_SHORT_NAMES = new String[]{
-                InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION,
-                PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION,
-                PatientArchetypes.DOCUMENT_IMAGE_VERSION,
-                PatientArchetypes.DOCUMENT_LETTER_VERSION};
+            InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION,
+            PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION,
+            PatientArchetypes.DOCUMENT_IMAGE_VERSION,
+            PatientArchetypes.DOCUMENT_LETTER_VERSION};
 
 
     /**
@@ -90,6 +90,15 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
      */
     public String[] getActItemShortNames() {
         return selectedShortNames;
+    }
+
+    /**
+     * Sets the state of the <em>allDates</em> checkbox, if present.
+     *
+     * @param selected the state of the <em>allDates</em> checkbox
+     */
+    public void setAllDates(boolean selected) {
+        getDateRange().setAllDates(selected);
     }
 
     /**

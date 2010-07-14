@@ -23,8 +23,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -63,11 +64,6 @@ public class CheckInWorkflow extends WorkflowImpl {
      * Task act archetype short name.
      */
     private static final String CUSTOMER_TASK_SHORTNAME = "act.customerTask";
-
-    /**
-     * Clinical event act archetype short name.
-     */
-    private static final String CLINICAL_EVENT = "act.patientClinicalEvent";
 
 
     /**
@@ -151,13 +147,13 @@ public class CheckInWorkflow extends WorkflowImpl {
         // printed on check out if not printed on check in.
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", "Appointment");
-        addTask(new CreateIMObjectTask(CLINICAL_EVENT, eventProps));
+        addTask(new CreateIMObjectTask(GetClinicalEventTask.EVENT_SHORTNAME, eventProps));
 
         // optionally select and print an act.patientDocumentForm
         addTask(new PrintDocumentFormTask());
 
         // edit the act.patientClinicalEvent
-        addTask(new EditIMObjectTask(CLINICAL_EVENT));
+        addTask(new EditIMObjectTask(GetClinicalEventTask.EVENT_SHORTNAME));
 
         // prompt for a patient weight.
         addTask(new PatientWeightTask());
