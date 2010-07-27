@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.doc.DocumentEditor;
+import org.openvpms.web.component.im.doc.DocumentActLayoutStrategy;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.layout.PrintObjectLayoutHelper;
@@ -46,7 +47,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 /**
  * Layout strategy that includes a 'Print Form' button to print the act.
  */
-public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLayoutStrategy {
+public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStrategy {
 
     /**
      * Determines if the date node should be displayed read-only.

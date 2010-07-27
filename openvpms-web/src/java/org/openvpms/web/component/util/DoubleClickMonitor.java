@@ -24,16 +24,15 @@ import java.util.Date;
 
 /**
  * Helper to determine if there has been a double click.
+ * <p/>
+ * This is a workaround for the problem that mouse double clicks are not supported by the Echo Web Framework.
+ * <p/>
+ * Double clicks are simulated by tracking single clicks on the same object, within a configurable time frame.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DoubleClickMonitor {
-
-    /**
-     * The default click interval, i.e. 2 seconds.
-     */
-    public static final int DEFAULT_INTERVAL = 2000;
 
     /**
      * The last clicked on object.
@@ -52,16 +51,18 @@ public class DoubleClickMonitor {
 
 
     /**
-     * Constructs a <tt>DoubleClickMonitor</tt> with the default interval.
+     * Constructs a <tt>DoubleClickMonitor</tt> with no interval.
+     * <p/>
+     * In this mode, any two clicks on the same object will be considered a double click.
      */
     public DoubleClickMonitor() {
-        this(DEFAULT_INTERVAL);
+        this(0);
     }
 
     /**
      * Constructs a <tt>DoubleClickMonitor</tt> with the specified interval.
      *
-     * @param interval the maximum interval between clicks
+     * @param interval the maximum interval between clicks, in milliseconds
      */
     public DoubleClickMonitor(int interval) {
         this.interval = interval;
@@ -79,7 +80,7 @@ public class DoubleClickMonitor {
     public boolean isDoubleClick(Object object) {
         boolean result;
         Date now = new Date();
-        result = (lastClick != null && (lastClick.getTime() + interval) >= now.getTime());
+        result = (lastClick != null && (interval == 0 || (lastClick.getTime() + interval) >= now.getTime()));
         result = result && ObjectUtils.equals(last, object);
         lastClick = now;
         last = object;

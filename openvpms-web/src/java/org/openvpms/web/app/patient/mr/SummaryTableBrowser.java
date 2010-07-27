@@ -81,7 +81,8 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
         IMTable<Act> table = result.getTable();
         table.setDefaultRenderer(Object.class, new SummaryTableCellRenderer());
         table.setHeaderVisible(false);
-        table.setStyleName("plain");
+        table.setStyleName("MedicalRecordSummary");
+        // table.setRolloverEnabled(false); // TODO - ideally set this in style, but it gets overridden by the model
         return result;
     }
 

@@ -21,7 +21,6 @@ package org.openvpms.web.app.patient.mr;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -44,16 +43,6 @@ public class PatientDocumentActEditor extends DocumentActEditor {
                                     LayoutContext context) {
         super(act, parent, context);
         initParticipant("patient", context.getContext().getPatient());
-    }
-
-    /**
-     * Creates the layout strategy.
-     *
-     * @return a new layout strategy
-     */
-    @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new PatientDocumentActLayoutStrategy(getDocumentEditor(), getVersionsEditor());
     }
 
 }

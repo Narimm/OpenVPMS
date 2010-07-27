@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
 import org.openvpms.web.app.patient.mr.SummaryTableBrowser;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -93,8 +92,7 @@ public class EditClinicalEventTask extends AbstractTask {
             query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
             SummaryTableBrowser browser = new SummaryTableBrowser(query);
             browser.setSelected(event);
-            String displayName = DescriptorHelper.getDisplayName(event);
-            String title = Messages.get("imobject.select.title", displayName);
+            String title = Messages.get("workflow.consult.selectrecord.title");
             BrowserDialog dialog = new ClinicalEventBrowserDialog(title, browser, context);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override

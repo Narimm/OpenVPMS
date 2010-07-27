@@ -186,6 +186,15 @@
         </properties>
     </style>
 
+    <style name="MedicalRecordSummary" type="org.openvpms.web.component.table.KeyTable"
+           base-name="plain">
+        <properties>
+            <property name="selectionBackground" value="#47A3FF"/>
+            <property name="rolloverBackground" value="#85c1ff"/>
+            <property name="selectionBlurBackground" value="#47A3FF"/>
+        </properties>
+    </style>
+
     <style name="MedicalRecordSummary.act.patientClinicalEvent"
            type="nextapp.echo2.app.Component">
     </style>
