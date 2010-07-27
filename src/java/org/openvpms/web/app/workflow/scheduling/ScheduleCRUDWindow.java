@@ -126,13 +126,14 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     /**
      * Invoked when the object needs to be refreshed.
      * <p/>
-     * This implementation notifies the registered {@link CRUDWindowListener}
-     * that the object has changed.
+     * This implementation updates the object and notifies any registered listener.
      *
      * @param object the object
      */
     @Override
     protected void onRefresh(Act object) {
+        object = IMObjectHelper.reload(object);
+        setObject(object);
         CRUDWindowListener<Act> listener = getListener();
         if (listener != null) {
             listener.refresh(object);

@@ -159,6 +159,7 @@ public class DateRange {
     public void setAllDates(boolean selected) {
         if (showAll) {
             allDates.setSelected(selected);
+            onAllDatesChanged();
         }
     }
 

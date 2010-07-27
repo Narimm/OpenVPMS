@@ -39,7 +39,7 @@ import java.beans.PropertyChangeListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientRecordSummaryTab {
+class PatientRecordSummaryTab {
 
     /**
      * A listener for tab events.
