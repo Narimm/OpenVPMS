@@ -19,6 +19,9 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -105,6 +108,11 @@ class IdLoader extends AbstractLoader {
      */
     private static final Pattern DEFAULT_PATTERN = Pattern.compile(DEFAULT_REGEXP);
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(IdLoader.class);
+
 
     /**
      * Constructs a new <tt>IdLoader</tt>.
@@ -139,9 +147,18 @@ class IdLoader extends AbstractLoader {
         this.transactionManager = transactionManager;
         shortNames = getDocumentActShortNames();
         this.overwrite = overwrite;
+        if (log.isDebugEnabled()) {
+            log.debug("dir=" + dir);
+            log.debug("recurse=" + recurse);
+        }
         List<File> files = getFiles(dir, recurse);
         iterator = files.iterator();
         this.pattern = pattern;
+        if (log.isDebugEnabled()) {
+            log.debug("shortNames=" + StringUtils.join(shortNames, ", "));
+            log.debug("overwrite=" + overwrite);
+            log.debug("pattern=" + pattern);
+        }
     }
 
     /**
@@ -211,6 +228,11 @@ class IdLoader extends AbstractLoader {
         Matcher matcher = pattern.matcher(name);
         if (matcher.matches()) {
             result = Long.valueOf(matcher.group(1));
+            if (log.isDebugEnabled()) {
+                log.debug("match: " + name + ", id=" + result);
+            }
+        } else if (log.isDebugEnabled()) {
+            log.debug("no match: " + name);
         }
         return result;
     }
