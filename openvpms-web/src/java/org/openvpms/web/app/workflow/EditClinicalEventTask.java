@@ -187,13 +187,24 @@ public class EditClinicalEventTask extends AbstractTask {
          */
         private void onEdit() {
             Act selected = getSelected();
+            if (selected != null) {
+                edit(selected);
+            }
+        }
+
+        /**
+         * Returns the selected object.
+         *
+         * @return the selected object, or <tt>null</tt> if none was selected
+         */
+        @Override
+        public Act getSelected() {
+            Act selected = super.getSelected();
             if (selected == null) {
                 // get the default from the browser
                 selected = getBrowser().getSelected();
             }
-            if (selected != null) {
-                edit(selected);
-            }
+            return selected;
         }
 
         /**
