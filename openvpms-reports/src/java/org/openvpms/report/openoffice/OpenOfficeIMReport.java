@@ -256,8 +256,8 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
         String mimeType = null;
         for (String type : mimeTypes) {
             if (DocFormats.ODT_TYPE.equals(type)
-                    || DocFormats.PDF_TYPE.equals(type)
-                    || DocFormats.DOC_TYPE.equals(type)) {
+                || DocFormats.PDF_TYPE.equals(type)
+                || DocFormats.DOC_TYPE.equals(type)) {
                 mimeType = type;
                 break;
             }
@@ -320,7 +320,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             PrintService service = OpenOfficeHelper.getPrintService();
             connection = OpenOfficeHelper.getConnectionPool().getConnection();
             doc = create(objects, parameters, connection);
-            service.print(doc, properties.getPrinterName(), true);
+            service.print(doc, properties.getPrinterName(), properties.getCopies(), true);
         } catch (OpenOfficeException exception) {
             throw new ReportException(exception,
                                       FailedToPrintReport,
@@ -336,6 +336,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @param objects    the objects to generate the document from
      * @param connection a connection to the OpenOffice service
+     * @param parameters a map of parameter names and their values, to pass to the report. May be <tt>null</tt>
      * @return a new openoffice document
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
@@ -356,7 +357,9 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
 
         try {
             doc = createDocument(template, connection, handlers);
-            populateInputFields(doc, parameters);
+            if (parameters != null) {
+                populateInputFields(doc, parameters);
+            }
             populateUserFields(doc, object);
 
             // refresh the text fields
@@ -407,7 +410,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
         for (Map.Entry<String, Object> p : parameters.entrySet()) {
             String name = p.getKey();
             String value = (p.getValue() != null)
-                    ? p.getValue().toString() : null;
+                           ? p.getValue().toString() : null;
             document.setInputField(name, value);
         }
     }
