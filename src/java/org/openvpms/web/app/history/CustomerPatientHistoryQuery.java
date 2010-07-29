@@ -159,6 +159,16 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
     }
 
     /**
+     * Determines if the query selects a particular object reference.
+     *
+     * @param reference the object reference to check
+     * @return <tt>false</tt>
+     */
+    public boolean selects(IMObjectReference reference) {
+        return false;
+    }
+
+    /**
      * Returns a list of {@link CustomerPatient} instances representing the selected customers and their corresponding
      * patients, ordered on most recent selection first.
      *

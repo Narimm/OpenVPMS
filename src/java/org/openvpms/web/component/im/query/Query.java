@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -101,6 +102,14 @@ public interface Query<T> extends Iterable<T> {
      * @return <tt>true</tt> if the object is selected by the query
      */
     boolean selects(T object);
+
+    /**
+     * Determines if the query selects a particular object reference.
+     *
+     * @param reference the object reference to check
+     * @return <tt>true</tt> if the object reference is selected by the query
+     */
+    boolean selects(IMObjectReference reference);
 
     /**
      * Performs the query using the default sort constraint (if any), and

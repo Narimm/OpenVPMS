@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.IMObjectSorter;
@@ -83,4 +84,21 @@ public class ListQuery<T> extends NonRenderingQuery<T> {
         return new ListResultSet<T>(objects, getMaxResults());
     }
 
+    /**
+     * Determines if the query selects a particular object reference.
+     *
+     * @param reference the object reference to check
+     * @return <tt>true</tt> if the object reference is selected by the query
+     */
+    public boolean selects(IMObjectReference reference) {
+        if (IMObject.class.isAssignableFrom(getType())) {
+            for (Object object : objects) {
+                IMObject o = (IMObject) object;
+                if (o.getObjectReference().equals(reference)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
