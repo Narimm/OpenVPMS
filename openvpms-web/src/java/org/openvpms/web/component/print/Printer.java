@@ -80,4 +80,18 @@ public interface Printer {
      * @throws OpenVPMSException for any error
      */
     boolean getInteractive();
+
+    /**
+     * Sets the number of copies to print.
+     *
+     * @param copies the no. of copies to print
+     */
+    void setCopies(int copies);
+
+    /**
+     * Returns the number of copies to print.
+     *
+     * @return the no. of copies to print
+     */
+    int getCopies();
 }

@@ -928,6 +928,39 @@
 
 
     <!-- =================================================================== -->
+    <!--  SpinBox                                                            -->
+    <!-- =================================================================== -->
+    <style name="SpinBox.button" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="background" value="#d1d1d1"/>
+            <property name="pressedBackground" value="#ffffff"/>
+            <property name="insets" value="${padding.small} ${padding.tiny}"/>
+            <property name="border">
+                <border size="2px" style="outset" color="#7b68ee"/>
+            </property>
+            <property name="rolloverBorder">
+                <border size="2px" style="outset"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="SpinBox.increment" base-name="SpinBox.button" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/spinbox-inc.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="SpinBox.decrement" base-name="SpinBox.button" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/spinbox-dec.gif"/>
+            </property>
+        </properties>
+    </style>
+    
+    <!-- =================================================================== -->
     <!--  Date selector                                                      -->
     <!-- =================================================================== -->
 

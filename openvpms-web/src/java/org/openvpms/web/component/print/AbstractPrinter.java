@@ -53,6 +53,11 @@ public abstract class AbstractPrinter implements Printer {
     private boolean interactive = true;
 
     /**
+     * The no. of copies to print.
+     */
+    private int copies;
+
+    /**
      * The template helper.
      */
     private final TemplateHelper helper;
@@ -85,6 +90,24 @@ public abstract class AbstractPrinter implements Printer {
     }
 
     /**
+     * Sets the number of copies to print.
+     *
+     * @param copies the no. of copies to print
+     */
+    public void setCopies(int copies) {
+        this.copies = copies;
+    }
+
+    /**
+     * Returns the number of copies to print.
+     *
+     * @return the no. of copies to print
+     */
+    public int getCopies() {
+        return copies;
+    }
+
+    /**
      * Returns the print properties for an object.
      *
      * @param printer the printer
@@ -92,7 +115,9 @@ public abstract class AbstractPrinter implements Printer {
      * @throws OpenVPMSException for any error
      */
     protected PrintProperties getProperties(String printer) {
-        return new PrintProperties(printer);
+        PrintProperties result = new PrintProperties(printer);
+        result.setCopies(getCopies());
+        return result;
     }
 
     /**
@@ -105,6 +130,7 @@ public abstract class AbstractPrinter implements Printer {
      */
     protected PrintProperties getProperties(String printer, Entity template) {
         PrintProperties properties = new PrintProperties(printer);
+        properties.setCopies(getCopies());
         if (template != null) {
             properties.setMediaSize(getMediaSize(template));
             properties.setOrientation(getOrientation(template));
@@ -122,9 +148,8 @@ public abstract class AbstractPrinter implements Printer {
      */
     protected void print(Document document, String printer) {
         String mimeType = document.getMimeType();
-        if (DocFormats.ODT_TYPE.equals(mimeType)
-            || DocFormats.DOC_TYPE.equals(mimeType)) {
-            OpenOfficeHelper.getPrintService().print(document, printer);
+        if (DocFormats.ODT_TYPE.equals(mimeType) || DocFormats.DOC_TYPE.equals(mimeType)) {
+            OpenOfficeHelper.getPrintService().print(document, printer, getCopies());
         } else {
             DownloadServlet.startDownload(document);
         }
