@@ -201,6 +201,24 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
+     * Sets the number of copies to print.
+     *
+     * @param copies the no. of copies to print
+     */
+    public void setCopies(int copies) {
+        printer.setCopies(copies);
+    }
+
+    /**
+     * Returns the number of copies to print.
+     *
+     * @return the no. of copies to print
+     */
+    public int getCopies() {
+        return printer.getCopies();
+    }
+
+    /**
      * Sets the listener for print events.
      *
      * @param listener the listener. May be <tt>null</tt>
@@ -257,25 +275,27 @@ public class InteractivePrinter implements Printer {
     /**
      * Prints interactively.
      *
-     * @param printer the default printer to print to
+     * @param printerName the default printer to print to
      * @throws OpenVPMSException for any error
      */
-    protected void printInteractive(String printer) {
+    protected void printInteractive(String printerName) {
         final PrintDialog dialog = createDialog();
-        if (printer == null) {
-            printer = getDefaultPrinter();
+        if (printerName == null) {
+            printerName = getDefaultPrinter();
         }
-        dialog.setDefaultPrinter(printer);
+        dialog.setDefaultPrinter(printerName);
+        dialog.setCopies(printer.getCopies());
         dialog.setCancelListener(cancelListener);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 String action = dialog.getAction();
                 if (PrintDialog.OK_ID.equals(action)) {
-                    String printer = dialog.getPrinter();
-                    if (printer == null) {
+                    String printerName = dialog.getPrinter();
+                    if (printerName == null) {
                         doPrintPreview();
                     } else {
-                        doPrint(printer);
+                        printer.setCopies(dialog.getCopies());
+                        doPrint(printerName);
                     }
                 } else if (PrintDialog.SKIP_ID.equals(action)) {
                     skipped();

@@ -20,16 +20,18 @@ package org.openvpms.web.component.print;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.list.DefaultListModel;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.SpinBox;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -40,11 +42,6 @@ import org.openvpms.web.resource.util.Messages;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PrintDialog extends PopupDialog {
-
-    /**
-     * The print label.
-     */
-    private Label label;
 
     /**
      * The printers.
@@ -61,9 +58,14 @@ public class PrintDialog extends PopupDialog {
      */
     private static final String PREVIEW_ID = "preview";
 
+    /**
+     * The no. of copies to print.
+     */
+    private SpinBox copies;
+
 
     /**
-     * Constructs a new <tt>PrintDialog</tt>.
+     * Constructs a <tt>PrintDialog</tt>.
      */
     public PrintDialog() {
         this(Messages.get("printdialog.title"));
@@ -99,6 +101,7 @@ public class PrintDialog extends PopupDialog {
     public PrintDialog(String title, boolean preview, boolean skip) {
         super(title, "PrintDialog", (skip) ? OK_SKIP_CANCEL : OK_CANCEL);
         setModal(true);
+        copies = new SpinBox(1, 99);
         DefaultListModel model = new DefaultListModel(
                 PrintHelper.getPrinters());
         printers = SelectFieldFactory.create(model);
@@ -128,6 +131,24 @@ public class PrintDialog extends PopupDialog {
     }
 
     /**
+     * Sets the number of copies to print.
+     *
+     * @param copies the number of copies to print
+     */
+    public void setCopies(int copies) {
+        this.copies.setValue(copies);
+    }
+
+    /**
+     * Returns the number of copies to print.
+     *
+     * @return the number of copies to print
+     */
+    public int getCopies() {
+        return copies.getValue();
+    }
+
+    /**
      * Lays out the component prior to display.
      */
     @Override
@@ -143,7 +164,6 @@ public class PrintDialog extends PopupDialog {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        label = LabelFactory.create("printdialog.printer");
         if (preview) {
             addButton(PREVIEW_ID, new ActionListener() {
                 public void onAction(ActionEvent e) {
@@ -152,20 +172,21 @@ public class PrintDialog extends PopupDialog {
             });
         }
 
-        Column column = ColumnFactory.create("CellSpacing", label,
-                                             RowFactory.create(printers));
-        // wrap printers in a row so it renders min width on FF
+        FocusGroup parent = getFocusGroup();
+        FocusGroup child = new FocusGroup("PrintDialog");
+        child.add(printers);
+        child.add(copies.getFocusGroup());
+        parent.add(0, child); // insert before buttons
 
-        container.add(column);
-    }
+        Grid grid = GridFactory.create(2);
+        grid.add(LabelFactory.create("printdialog.printer"));
+        grid.add(printers);
+        grid.add(LabelFactory.create("printdialog.copies"));
+        grid.add(copies);
 
-    /**
-     * Returns the printer label.
-     *
-     * @return the printer label
-     */
-    protected Label getPrinterLabel() {
-        return label;
+        setFocus(copies);
+
+        container.add(grid);
     }
 
     /**
