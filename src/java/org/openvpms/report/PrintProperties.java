@@ -51,9 +51,14 @@ public class PrintProperties {
      */
     private MediaTray mediaTray;
 
+    /**
+     * The no. of copies
+     */
+    private int copies = 1;
+
 
     /**
-     * Constructs a new <code>PrintProperties</code>.
+     * Constructs a <tt>PrintProperties</tt>.
      *
      * @param printerName the printer name
      */
@@ -122,6 +127,24 @@ public class PrintProperties {
      */
     public MediaTray getMediaTray() {
         return mediaTray;
+    }
+
+    /**
+     * Sets the no. of copies to print.
+     *
+     * @param copies the no. of copies
+     */
+    public void setCopies(int copies) {
+        this.copies = copies;
+    }
+
+    /**
+     * Returns the no. of copies to print.
+     *
+     * @return the no. of copies
+     */
+    public int getCopies() {
+        return copies;
     }
 
 }

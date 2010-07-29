@@ -28,7 +28,7 @@ import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.design.JRDefaultCompiler;
+import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.export.JRCsvExporter;
 import net.sf.jasperreports.engine.export.JRCsvExporterParameter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
@@ -637,9 +637,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         exporter.setParameter(JRPrintServiceExporterParameter.JASPER_PRINT,
                               print);
 
-        // print 1 copy
         PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
-        aset.add(new Copies(1));
+        aset.add(new Copies(properties.getCopies()));
         MediaSizeName mediaSize = properties.getMediaSize();
         OrientationRequested orientation = properties.getOrientation();
         MediaTray tray = properties.getMediaTray();
@@ -686,8 +685,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     private JREvaluator getEvaluator() throws JRException {
         if (evaluator == null) {
-            JRDefaultCompiler compiler = JRDefaultCompiler.getInstance();
-            evaluator = compiler.loadEvaluator(getReport());
+            evaluator = JasperCompileManager.loadEvaluator(getReport());
         }
         return evaluator;
     }

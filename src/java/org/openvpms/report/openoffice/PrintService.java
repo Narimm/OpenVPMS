@@ -65,13 +65,23 @@ public class PrintService {
      * @throws OpenOfficeException for any error
      */
     public void print(Document document, String printer) {
+        print(document, printer, 1);
+    }
+
+    /**
+     * Prints a document.
+     *
+     * @param document the document to print
+     * @param printer  the printer name
+     * @param copies the number of copies to print
+     * @throws OpenOfficeException for any error
+     */
+    public void print(Document document, String printer, int copies) {
         OOConnection connection = null;
         try {
             connection = pool.getConnection();
-            OpenOfficeDocument doc = new OpenOfficeDocument(document,
-                                                            connection,
-                                                            handlers);
-            print(doc, printer, true);
+            OpenOfficeDocument doc = new OpenOfficeDocument(document, connection, handlers);
+            print(doc, printer, copies, true);
         } finally {
             OpenOfficeHelper.close(connection);
 
@@ -83,17 +93,28 @@ public class PrintService {
      *
      * @param document the document to print
      * @param printer  the printer name
-     * @param close    if <code>true</code>, close the document when printing
-     *                 completes
+     * @param close    if <tt>true</tt>, close the document when printing completes
      * @throws OpenOfficeException for any error
      */
-    public void print(final OpenOfficeDocument document, String printer,
-                      boolean close) {
+    public void print(OpenOfficeDocument document, String printer, boolean close) {
+        print(document, printer, 1, close);
+    }
+
+    /**
+     * Prints a document.
+     *
+     * @param document the document to print
+     * @param printer  the printer name
+     * @param copies   the number of copies of the document to print
+     * @param close    if <tt>true</tt>, close the document when printing completes
+     * @throws OpenOfficeException for any error
+     */
+    public void print(final OpenOfficeDocument document, String printer, int copies, boolean close) {
         XPrintable printable = (XPrintable) UnoRuntime.queryInterface(
                 XPrintable.class, document.getComponent());
 
         PropertyValue[] printerDesc = {newProperty("Name", printer)};
-        PropertyValue[] printOpts = {newProperty("Wait", true)};
+        PropertyValue[] printOpts = {newProperty("Wait", true), newProperty("CopyCount", copies)};
 
 /*
         todo - replaced asynchronous notification of print completion with
