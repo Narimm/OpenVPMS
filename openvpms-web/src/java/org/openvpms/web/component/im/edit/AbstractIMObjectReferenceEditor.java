@@ -24,6 +24,8 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -378,15 +380,14 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         IMObjectReference reference = (IMObjectReference) getProperty().getValue();
         boolean result = true;
         if (reference != null && !reference.isNew()) {
-            T object = getObject();
-            if (object != null) {
                 Query<T> query = createQuery(null);
-                if (!query.selects(object)) {
+                if (!query.selects(reference)) {
                     result = false;
-                    String message = Messages.get("imobject.invalidreference", object.getName());
+                    ArchetypeId archetypeId = reference.getArchetypeId();
+                    String displayName = DescriptorHelper.getDisplayName(archetypeId.getShortName());
+                    String message = Messages.get("imobject.invalidreference", displayName);
                     validator.add(this, new ValidatorError(getProperty(), message));
                 }
-            }
         }
         return result;
     }

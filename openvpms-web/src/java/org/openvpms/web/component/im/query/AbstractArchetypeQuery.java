@@ -208,6 +208,27 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
+     * Determines if the query selects a particular object reference.
+     * <p/>
+     * Note that this implementation only supports {@link AbstractArchetypeServiceResultSet}.
+     * Derived classes using different {@link ResultSet} implementations must override it.
+     *
+     * @param reference the object reference to check
+     * @return <tt>true</tt> if the object reference is selected by the query
+     */
+    public boolean selects(IMObjectReference reference) {
+        ResultSet<T> set = query();
+        boolean result;
+        if (set instanceof AbstractArchetypeServiceResultSet) {
+            ((AbstractArchetypeServiceResultSet<T>) set).setReferenceConstraint(reference);
+            result = set.hasNext();
+        } else {
+            result = false;
+        }
+        return result;
+    }
+
+    /**
      * Sets the value to query on.
      *
      * @param value the value. May contain wildcards, or be <tt>null</tt>

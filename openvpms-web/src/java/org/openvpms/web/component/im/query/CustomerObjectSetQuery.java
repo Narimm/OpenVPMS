@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -96,10 +97,19 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * @return <tt>true</tt> if the object is selected by the query
      */
     public boolean selects(IMObject object) {
+        return selects(object.getObjectReference());
+    }
+
+    /**
+     * Determines if the query selects a particular object reference.
+     *
+     * @param reference the object reference to check
+     * @return <tt>true</tt> if the object reference is selected by the query
+     */
+    @Override
+    public boolean selects(IMObjectReference reference) {
         CustomerResultSet set = (CustomerResultSet) createResultSet(null);
-        if (object != null) {
-            set.setReferenceConstraint(object.getObjectReference());
-        }
+        set.setReferenceConstraint(reference);
         return set.hasNext();
     }
 

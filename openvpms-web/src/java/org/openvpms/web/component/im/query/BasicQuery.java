@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -56,5 +57,17 @@ public class BasicQuery<T extends IMObject> extends NonRenderingQuery<T> {
         return new DefaultResultSet<T>(getArchetypes(), getValue(),
                                        getConstraints(), sort, getMaxResults(),
                                        isDistinct());
+    }
+
+    /**
+     * Determines if the query selects a particular object reference.
+     *
+     * @param reference the object reference to check
+     * @return <tt>true</tt> if the object reference is selected by the query
+     */
+    public boolean selects(IMObjectReference reference) {
+        DefaultResultSet<T> set = (DefaultResultSet<T>) query(null);
+        set.setReferenceConstraint(reference);
+        return set.hasNext();
     }
 }
