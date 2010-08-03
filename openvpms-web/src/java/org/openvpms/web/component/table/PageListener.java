@@ -49,4 +49,13 @@ public abstract class PageListener extends ActionListener {
      */
     public static final String PAGE_LAST = "last";
 
+    /**
+     * Action command to indicate to move to the top (i.e. first row) of the next page.
+     */
+    public static final String PAGE_NEXT_TOP = "next-top";
+
+    /**
+     * Action command to indicate to move to the bottom (i.e. last row) of the previous page.
+     */
+    public static final String PAGE_PREVIOUS_BOTTOM = "previous-bottom";
 }

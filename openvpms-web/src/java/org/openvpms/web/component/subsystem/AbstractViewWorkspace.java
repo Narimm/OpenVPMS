@@ -251,12 +251,8 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      */
     protected void onSelect() {
         try {
-            final Browser<T> browser = createSelectBrowser();
-
-            String title = Messages.get("imobject.select.title",
-                                        getArchetypes().getDisplayName());
-            final BrowserDialog<T> popup = new BrowserDialog<T>(
-                    title, browser);
+            Browser<T> browser = createSelectBrowser();
+            final BrowserDialog<T> popup = createBrowserDialog(browser);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
@@ -280,6 +276,17 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      */
     protected void onSelected(T object) {
         setObject(object);
+    }
+
+    /**
+     * Creates a new dialog to select an object.
+     *
+     * @param browser the browser
+     * @return a new dialog
+     */
+    protected BrowserDialog<T> createBrowserDialog(Browser<T> browser) {
+        String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
+        return new BrowserDialog<T>(title, browser);
     }
 
     /**

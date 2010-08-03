@@ -83,14 +83,24 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     }
 
     /**
+     * Notifies listeners when an object is browsed.
+     *
+     * @param browsed the browsed object
+     */
+    protected void notifyBrowsed(T browsed) {
+        for (QueryBrowserListener<T> listener : getQueryListeners()) {
+            listener.browsed(browsed);
+        }
+    }
+
+    /**
      * Returns the listeners.
      *
      * @return the listeners
      */
     @SuppressWarnings("unchecked")
     protected QueryBrowserListener<T>[] getQueryListeners() {
-        return (QueryBrowserListener<T>[]) this.listeners.toArray(
-                new QueryBrowserListener[0]);
+        return listeners.toArray(new QueryBrowserListener[listeners.size()]);
     }
 
 }

@@ -20,7 +20,9 @@ package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.system.common.query.IPage;
 
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 
@@ -30,7 +32,7 @@ import java.util.NoSuchElementException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ResultSetIterator<T> implements Iterator<T> {
+public class ResultSetIterator<T> implements ListIterator<T> {
 
     /**
      * The result set.
@@ -40,16 +42,42 @@ public class ResultSetIterator<T> implements Iterator<T> {
     /**
      * Iterator over the current page.
      */
-    private Iterator<T> pageIterator;
+    private ListIterator<T> pageIterator;
+
+    /**
+     * The
+     */
+    private int initialIndex;
+
+    /**
+     * The page offset into the results, use to help iterate through the result set.
+     */
+    int firstResult = -1;
+
+    /**
+     * The no. of elements in the last-read page.
+     */
+    int count;
 
 
     /**
-     * Constructs a new <tt>ResultSetIterator</tt>.
+     * Constructs a <tt>ResultSetIterator</tt>.
      *
      * @param set the result set
      */
     public ResultSetIterator(ResultSet<T> set) {
+        this(set, -1);
+    }
+
+    /**
+     * Constructs a new <tt>ResultSetIterator</tt>.
+     *
+     * @param set   the result set
+     * @param index start iteration at the specified index, or <tt>-1</tt> to start at the beginning
+     */
+    public ResultSetIterator(ResultSet<T> set, int index) {
         this.set = set;
+        this.initialIndex = index;
     }
 
     /**
@@ -61,9 +89,25 @@ public class ResultSetIterator<T> implements Iterator<T> {
      */
     public boolean hasNext() {
         if (pageIterator == null || !pageIterator.hasNext()) {
-            advance();
+            moveNext();
         }
         return pageIterator != null && pageIterator.hasNext();
+    }
+
+    /**
+     * Returns <tt>true</tt> if this list iterator has more elements when
+     * traversing the list in the reverse direction.  (In other words, returns
+     * <tt>true</tt> if <tt>previous</tt> would return an element rather than
+     * throwing an exception.)
+     *
+     * @return <tt>true</tt> if the list iterator has more elements when
+     *         traversing the list in the reverse direction.
+     */
+    public boolean hasPrevious() {
+        if (pageIterator == null || !pageIterator.hasPrevious()) {
+            movePrevious();
+        }
+        return pageIterator != null && pageIterator.hasPrevious();
     }
 
     /**
@@ -76,11 +120,96 @@ public class ResultSetIterator<T> implements Iterator<T> {
      */
     public T next() {
         if (pageIterator == null || !pageIterator.hasNext()) {
-            if (!advance()) {
+            if (!moveNext()) {
                 throw new NoSuchElementException();
             }
         }
         return pageIterator.next();
+    }
+
+    /**
+     * Returns the previous element in the list.  This method may be called
+     * repeatedly to iterate through the list backwards, or intermixed with
+     * calls to <tt>next</tt> to go back and forth.  (Note that alternating
+     * calls to <tt>next</tt> and <tt>previous</tt> will return the same
+     * element repeatedly.)
+     *
+     * @return the previous element in the list.
+     * @throws java.util.NoSuchElementException
+     *          if the iteration has no previous element
+     */
+    public T previous() {
+        if (pageIterator == null || !pageIterator.hasPrevious()) {
+            if (!movePrevious()) {
+                throw new NoSuchElementException();
+            }
+        }
+        return pageIterator.previous();
+    }
+
+    /**
+     * Returns the index of the element that would be returned by a subsequent
+     * call to <tt>next</tt>. (Returns list size if the list iterator is at the
+     * end of the list.)
+     *
+     * @return the index of the element that would be returned by a subsequent
+     *         call to <tt>next</tt>, or list size if list iterator is at end
+     *         of list.
+     */
+    public int nextIndex() {
+        int offset = (pageIterator == null) ? 0 : pageIterator.nextIndex();
+        int page = set.previousIndex();
+        if (page < 0) {
+            page = 0;
+        }
+        return set.getPageSize() * page + offset;
+    }
+
+    /**
+     * Returns the index of the element that would be returned by a subsequent
+     * call to <tt>previous</tt>. (Returns -1 if the list iterator is at the
+     * beginning of the list.)
+     *
+     * @return the index of the element that would be returned by a subsequent
+     *         call to <tt>previous</tt>, or -1 if list iterator is at
+     *         beginning of list.
+     */
+    public int previousIndex() {
+        int page;
+        int offset;
+        if (pageIterator == null || !pageIterator.hasPrevious()) {
+            page = set.previousIndex();
+            if (set.hasNext()) {
+                offset = set.getPageSize() - 1;
+            } else {
+                offset = count - 1;
+            }
+        } else {
+            page = set.nextIndex();
+            offset = pageIterator.previousIndex();
+        }
+        return (page >= 0) ? set.getPageSize() * page + offset : -1;
+    }
+
+    /**
+     * Not supported.
+     *
+     * @param t the element with which to replace the last element returned by
+     *          <tt>next</tt> or <tt>previous</tt>.
+     * @throws UnsupportedOperationException if invoked
+     */
+    public void set(T t) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Not supported.
+     *
+     * @param e the element to insert.
+     * @throws UnsupportedOperationException if invoked
+     */
+    public void add(T e) {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -93,17 +222,74 @@ public class ResultSetIterator<T> implements Iterator<T> {
     }
 
     /**
-     * Attempts to advance to the next page.
+     * Attempts to move to the next page.
      *
-     * @return <tt>true</tt> if the advance was successful.
+     * @return <tt>true</tt> if the move was successful.
      */
-    private boolean advance() {
+    private boolean moveNext() {
+        boolean result = false;
+        IPage<T> page = null;
         if (set.hasNext()) {
-            IPage<T> page = set.next();
-            pageIterator = page.getResults().iterator();
-            return true;
+            page = set.next();
+            if (firstResult == page.getFirstResult()) {
+                // have just done a movePrevious()/moveNext() which returns the same page.
+                // Discard it, and try and get the next one
+                if (set.hasNext()) {
+                    page = set.next();
+                } else {
+                    page = null;
+                }
+            }
         }
-        return false;
+        if (page != null) {
+            pageIterator = page.getResults().listIterator();
+            count = page.getResults().size();
+            if (initialIndex != -1) {
+                // skip forward to the specified index
+                while (pageIterator.hasNext() && pageIterator.nextIndex() != initialIndex) {
+                    pageIterator.next();
+                }
+                initialIndex = -1;
+            }
+            firstResult = page.getFirstResult();
+            result = true;
+        } else {
+            firstResult += set.getPageSize();
+            pageIterator = Collections.<T>emptyList().listIterator();
+        }
+        return result;
+    }
+
+    /**
+     * Attempts to move to the previous page.
+     *
+     * @return <tt>true</tt> if the move was successful.
+     */
+    private boolean movePrevious() {
+        boolean result = false;
+        IPage<T> page = null;
+        if (set.hasPrevious()) {
+            page = set.previous();
+            if (firstResult == page.getFirstResult()) {
+                // have just done a moveNext()/movePrevious() which returns the same page.
+                // Discard it, and try and get the prior one
+                if (set.hasPrevious()) {
+                    page = set.previous();
+                } else {
+                    page = null;
+                }
+            }
+        }
+        if (page != null) {
+            List<T> list = page.getResults();
+            pageIterator = list.listIterator(list.size());
+            firstResult = page.getFirstResult();
+            result = true;
+        } else {
+            firstResult -= set.getPageSize();
+            pageIterator = Collections.<T>emptyList().listIterator();
+        }
+        return result;
     }
 
 }

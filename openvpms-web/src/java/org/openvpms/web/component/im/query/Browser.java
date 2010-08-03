@@ -80,4 +80,9 @@ public interface Browser<T> {
      * @return the focus group
      */
     FocusGroup getFocusGroup();
+
+    /**
+     * Sets focus on the results.
+     */
+    void setFocusOnResults();
 }

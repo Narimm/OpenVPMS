@@ -100,9 +100,9 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     private static final String DEACTIVATED_ID = "deactivated";
 
     /**
-     * Button row style name.
+     * Row style name.
      */
-    private static final String ROW_STYLE = "ControlRow";
+    private static final String ROW_STYLE = "CellSpacing";
 
     /**
      * The logger.

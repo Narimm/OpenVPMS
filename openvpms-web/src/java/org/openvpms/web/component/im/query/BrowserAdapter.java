@@ -72,7 +72,8 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      *         selected.
      */
     public T getSelected() {
-        return convert(browser.getSelected());
+        A selected = browser.getSelected();
+        return (selected != null) ? convert(selected) : null;
     }
 
     /**
@@ -121,6 +122,10 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
             public void selected(A object) {
                 listener.selected(convert(object));
             }
+
+            public void browsed(A object) {
+                listener.browsed(convert(object));
+            }
         });
     }
 
@@ -138,6 +143,13 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      */
     public FocusGroup getFocusGroup() {
         return browser.getFocusGroup();
+    }
+
+    /**
+     * Sets focus on the results.
+     */
+    public void setFocusOnResults() {
+        getBrowser().setFocusOnResults();
     }
 
     /**

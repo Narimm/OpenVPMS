@@ -11,31 +11,25 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
-
-package org.openvpms.web.app.admin;
-
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
-
+package org.openvpms.web.component.im.query;
 
 /**
- * Product type workspace.
+ * A {@link Browser} that provides access to the query results as a {@link ResultSet}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProductTypeWorkspace extends ResultSetCRUDWorkspace<Entity> {
+public interface ResultSetBrowser<T> extends Browser<T> {
 
     /**
-     * Constructs an <tt>ProductTypeWorkspace</tt>.
+     * Returns the result set.
+     *
+     * @return the result set
      */
-    public ProductTypeWorkspace() {
-        super("admin", "productType");
-        setArchetypes(Entity.class, "entity.productType");
-    }
+    ResultSet<T> getResultSet();
 
 }

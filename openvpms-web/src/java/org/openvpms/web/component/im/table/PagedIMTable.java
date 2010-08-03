@@ -46,7 +46,7 @@ public class PagedIMTable<T> extends Column {
     private TableNavigator navigator;
 
     /**
-     * Constructs a new <tt>PagedIMTable</tt>.
+     * Constructs a <tt>PagedIMTable</tt>.
      *
      * @param model the table model
      */
@@ -60,6 +60,7 @@ public class PagedIMTable<T> extends Column {
         }
         table = new IMTable<T>(paged);
         table.setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
+        table.setRolloverEnabled(false);
         add(table);
         table.addPageListener(new PageListener() {
             public void onAction(ActionEvent event) {
@@ -69,7 +70,7 @@ public class PagedIMTable<T> extends Column {
     }
 
     /**
-     * Constructs a new <tt>PagedIMTable</tt>.
+     * Constructs a <tt>PagedIMTable</tt>.
      *
      * @param model the model to render results
      * @param set   the result set
@@ -110,6 +111,15 @@ public class PagedIMTable<T> extends Column {
     }
 
     /**
+     * Returns the result set.
+     *
+     * @return the result set, or <tt>null</tt> if none has been set
+     */
+    public ResultSet<T> getResultSet() {
+        return getPagedIMTableModel().getResultSet();
+    }
+
+    /**
      * Returns the underlying table.
      *
      * @return the underlying table
@@ -132,17 +142,29 @@ public class PagedIMTable<T> extends Column {
         table.setFocusTraversalIndex(newValue);
     }
 
+    /**
+     * Invoked when the table navigator changes pages.
+     *
+     * @param event the page event
+     */
     private void doPage(ActionEvent event) {
         if (navigator != null) {
             String key = event.getActionCommand();
             if (PageListener.PAGE_PREVIOUS.equals(key)) {
                 navigator.previous();
-            } else if (PageListener.PAGE_NEXT.equals(key)) {
+            } else if (PageListener.PAGE_NEXT.equals(key) || PageListener.PAGE_NEXT_TOP.equals(key)) {
                 navigator.next();
             } else if (PageListener.PAGE_FIRST.equals(key)) {
                 navigator.first();
             } else if (PageListener.PAGE_LAST.equals(key)) {
                 navigator.last();
+            } else if (PageListener.PAGE_PREVIOUS_BOTTOM.equals(key)) {
+                if (navigator.previous()) {
+                    int rows = table.getModel().getRowCount();
+                    if (rows > 0) {
+                        table.getSelectionModel().setSelectedIndex(rows - 1, true);
+                    }
+                }
             }
 
             // refocus on the table

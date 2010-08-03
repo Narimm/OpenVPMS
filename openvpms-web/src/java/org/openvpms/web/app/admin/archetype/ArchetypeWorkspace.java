@@ -19,8 +19,9 @@
 package org.openvpms.web.app.admin.archetype;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.im.query.ResultSetBrowser;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 
 
 /**
@@ -29,11 +30,10 @@ import org.openvpms.web.app.subsystem.CRUDWindow;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeWorkspace
-        extends BasicCRUDWorkspace<ArchetypeDescriptor> {
+public class ArchetypeWorkspace extends ResultSetCRUDWorkspace<ArchetypeDescriptor> {
 
     /**
-     * Constructs a new <tt>ArchetypeWorkspace</tt>.
+     * Constructs an <tt>ArchetypeWorkspace</tt>.
      */
     public ArchetypeWorkspace() {
         super("admin", "archetype");
@@ -46,8 +46,9 @@ public class ArchetypeWorkspace
      * @return a new CRUD window
      */
     @Override
-    protected CRUDWindow<ArchetypeDescriptor> createCRUDWindow() {
-        return new ArchetypeCRUDWindow(getArchetypes());
+    protected ResultSetCRUDWindow<ArchetypeDescriptor> createCRUDWindow() {
+        ResultSetBrowser<ArchetypeDescriptor> browser = getBrowser();
+        return new ArchetypeCRUDWindow(getArchetypes(), browser.getResultSet());
     }
 
 }

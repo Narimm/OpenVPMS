@@ -68,7 +68,7 @@ public class FocusHelper {
      * Sets the focus on the first component that may have focus set.
      *
      * @param component the component
-     * @return the focused component or <tt>null</tt> if no component may
+     * @return the focussed component or <tt>null</tt> if no component may
      *         receive the focus
      */
     public static Component setFocus(Component component) {
@@ -80,6 +80,16 @@ public class FocusHelper {
         return focusable;
     }
 
+    /**
+     * Returns the component with the focus.
+     *
+     * @return the focussed component, or <tt>null</tt> if no component currently has the focus.
+     */
+    public static Component getFocus() {
+        ApplicationInstance active = ApplicationInstance.getActive();
+        return (active != null) ? active.getFocusedComponent() : null;
+    }
+    
     /**
      * Determines if a component is one that may receive focus.
      *

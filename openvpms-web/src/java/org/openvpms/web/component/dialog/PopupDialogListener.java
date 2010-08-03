@@ -20,6 +20,7 @@ package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
@@ -38,7 +39,11 @@ public abstract class PopupDialogListener extends WindowPaneListener {
     public void onClose(WindowPaneEvent event) {
         if (event.getSource() instanceof PopupDialog) {
             PopupDialog dialog = (PopupDialog) event.getSource();
-            onAction(dialog);
+            try {
+                onAction(dialog);
+            } catch (Throwable exception) {
+                ErrorHelper.show(exception);
+            }
         }
     }
 

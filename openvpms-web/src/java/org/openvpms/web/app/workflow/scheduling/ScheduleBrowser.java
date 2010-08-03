@@ -326,6 +326,14 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
+     * Sets focus on the results.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    public void setFocusOnResults() {
+    }
+
+    /**
      * Returns the table model.
      *
      * @return the table model. May be <tt>null</tt>

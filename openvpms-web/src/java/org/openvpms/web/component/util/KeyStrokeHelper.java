@@ -51,9 +51,15 @@ public class KeyStrokeHelper {
         Window root = ApplicationInstance.getActive().getDefaultWindow();
         reregisterKeyStrokeListeners(root);
 
-        // force the focus back onto the first available component,
+        // if the focus isn't currently on a visisble component, force it focus back onto the first available component,
         // otherwise Firefox doesn't forward key events to the app
-        FocusHelper.setFocus(root);
+        Component component = FocusHelper.getFocus();
+        while (component != null && component != root) {
+            component = component.getParent();
+        }
+        if (component != root) {
+            FocusHelper.setFocus(root);
+        }
     }
 
     /**
@@ -62,6 +68,7 @@ public class KeyStrokeHelper {
      * interface.
      *
      * @see KeyStrokeHandler
+     * @param component the root of the component heirarchy to traverse  
      */
     public static void reregisterKeyStrokeListeners(Component component) {
         if (component instanceof KeyStrokeHandler) {

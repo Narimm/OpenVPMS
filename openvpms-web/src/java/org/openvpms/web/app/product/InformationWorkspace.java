@@ -20,9 +20,10 @@ package org.openvpms.web.app.product;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.query.ResultSetBrowser;
 
 
 /**
@@ -31,7 +32,7 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InformationWorkspace extends BasicCRUDWorkspace<Product> {
+public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
 
     /**
      * Construct a new <tt>InformationWorkspace</tt>.
@@ -72,7 +73,8 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Product> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Product> createCRUDWindow() {
-        return new ProductCRUDWindow(getArchetypes());
+        ResultSetBrowser<Product> browser = getBrowser();
+        return new ProductCRUDWindow(getArchetypes(), browser.getResultSet());
     }
 
 }

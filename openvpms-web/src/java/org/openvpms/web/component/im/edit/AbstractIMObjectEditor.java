@@ -642,7 +642,6 @@ public abstract class AbstractIMObjectEditor
      */
     protected LayoutContext getLayoutContext() {
         return context;
-
     }
 
     /**

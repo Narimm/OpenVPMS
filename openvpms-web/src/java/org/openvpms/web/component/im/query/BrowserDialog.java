@@ -23,8 +23,8 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -142,6 +142,10 @@ public class BrowserDialog<T> extends PopupDialog {
             public void selected(T object) {
                 onSelected(object);
             }
+
+            public void browsed(T object) {
+                onBrowsed(object);
+            }
         });
         this.browser = browser;
     }
@@ -205,6 +209,21 @@ public class BrowserDialog<T> extends PopupDialog {
     }
 
     /**
+     * Sets the action and closes the window.
+     * <p/>
+     * If the action is {@link #CANCEL_ID} any selection will be discarded.
+     *
+     * @param action the action
+     */
+    @Override
+    protected void close(String action) {
+        if (CANCEL_ID.equals(action)) {
+            selected = null;
+        }
+        super.close(action);
+    }
+
+    /**
      * Select the current object, and if <tt>closeOnSelection</tt> is <tt>true</tt>, closes the browser.
      *
      * @param object the selected object
@@ -216,6 +235,15 @@ public class BrowserDialog<T> extends PopupDialog {
         }
     }
 
+    /**
+     * Updates the current selection, but doesn't close the browser.
+     *
+     * @param object the selected object
+     */
+    protected void onBrowsed(T object) {
+        selected = object;
+    }
+    
     /**
      * Flags that the user wants to create a new instance, and closes the
      * browser.

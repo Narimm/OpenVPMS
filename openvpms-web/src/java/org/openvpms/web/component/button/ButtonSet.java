@@ -242,6 +242,19 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
+     * Enables or disables a button.
+     *
+     * @param id      the button identifer
+     * @param enabled if <tt>true</tt> enable the button, otherwise disable it
+     */
+    public void setEnabled(String id, boolean enabled) {
+        Button button = getButton(id);
+        if (button != null) {
+            button.setEnabled(enabled);
+        }
+    }
+
+    /**
      * Adds a listener for a specific key code.
      *
      * @param keyCode  the key code
@@ -249,7 +262,6 @@ public class ButtonSet implements KeyStrokeHandler {
      */
     public void addKeyListener(int keyCode, ActionListener listener) {
         buttons.addListener(keyCode, listener);
-
     }
 
     /**
