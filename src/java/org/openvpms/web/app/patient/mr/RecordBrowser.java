@@ -115,6 +115,7 @@ public class RecordBrowser implements Browser<Act> {
      * @param problems      query for problems
      * @param reminderAlert query for reminders/alerts
      * @param document      query for documents
+     * @param charges       query for charges
      */
     public RecordBrowser(PatientSummaryQuery summary, Query<Act> problems,
                          Query<Act> reminderAlert, Query<Act> document,
@@ -289,6 +290,13 @@ public class RecordBrowser implements Browser<Act> {
      */
     public FocusGroup getFocusGroup() {
         return focusGroup;
+    }
+
+    /**
+     * Sets focus on the results.
+     */
+    public void setFocusOnResults() {
+        getCurrent().setFocusOnResults();
     }
 
     /**

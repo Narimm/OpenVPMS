@@ -21,8 +21,8 @@ package org.openvpms.web.app.admin;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 
 
 /**
@@ -31,15 +31,14 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OrganisationWorkspace extends BasicCRUDWorkspace<Entity> {
+public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
 
     /**
-     * Constructs a new <tt>OrganisationWorkspace</tt>.
+     * Constructs an <tt>OrganisationWorkspace</tt>.
      */
     public OrganisationWorkspace() {
         super("admin", "organisation");
-        setArchetypes(Entity.class, "party.organisation*",
-                      "entity.organisation*");
+        setArchetypes(Entity.class, "party.organisation*", "entity.organisation*");
     }
 
     /**

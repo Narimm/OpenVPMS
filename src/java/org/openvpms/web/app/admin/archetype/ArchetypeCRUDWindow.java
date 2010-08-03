@@ -20,7 +20,6 @@ package org.openvpms.web.app.admin.archetype;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -33,15 +32,17 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.Change;
-import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -63,8 +64,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ArchetypeCRUDWindow
-        extends AbstractViewCRUDWindow<ArchetypeDescriptor> {
+public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor> {
 
     /**
      * The import button.
@@ -93,12 +93,13 @@ public class ArchetypeCRUDWindow
 
 
     /**
-     * Constructs a new <tt>ArchetypeCRUDWindow</tt>.
+     * Constructs an <tt>ArchetypeCRUDWindow</tt>.
      *
-     * @param archetypes the archetypes that this may create.
+     * @param archetypes the archetypes that this may create
+     * @param set        the result set
      */
-    public ArchetypeCRUDWindow(Archetypes<ArchetypeDescriptor> archetypes) {
-        super(archetypes);
+    public ArchetypeCRUDWindow(Archetypes<ArchetypeDescriptor> archetypes, ResultSet<ArchetypeDescriptor> set) {
+        super(archetypes, set);
     }
 
     /**
@@ -122,12 +123,7 @@ public class ArchetypeCRUDWindow
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.remove(getImportButton());
-        buttons.remove(getExportButton());
-        buttons.add(getImportButton());
-        if (enable) {
-            buttons.add(getExportButton());
-        }
+        getExportButton().setEnabled(enable);
     }
 
     /**

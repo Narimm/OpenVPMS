@@ -280,6 +280,10 @@ public abstract class SchedulingWorkspace
                 eventSelected(object);
             }
 
+            public void browsed(PropertySet object) {
+                eventSelected(object);
+            }
+
             public void edit(PropertySet set) {
                 onEdit(set);
             }

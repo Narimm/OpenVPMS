@@ -33,4 +33,11 @@ public interface QueryBrowserListener<T> extends QueryListener {
      * @param object the selected object
      */
     void selected(T object);
+
+    /**
+     * Invoked when an object is browsed.
+     *
+     * @param object the browsed object
+     */
+    void browsed(T object);
 }

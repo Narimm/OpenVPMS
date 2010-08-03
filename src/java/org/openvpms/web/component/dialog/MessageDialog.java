@@ -20,6 +20,7 @@ package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import org.openvpms.web.component.focus.FocusCommand;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
@@ -41,6 +42,11 @@ public abstract class MessageDialog extends PopupDialog {
      * Dialog style name.
      */
     private static final String STYLE = "MessageDialog";
+
+    /**
+     * The focus, prior to the dialog being shown.
+     */
+    private FocusCommand focus;
 
 
     /**
@@ -67,6 +73,18 @@ public abstract class MessageDialog extends PopupDialog {
         super(title, style, buttons);
         this.message = message;
         setModal(true);
+        focus = new FocusCommand();
+    }
+
+    /**
+     * Processes a user request to close the window (via the close button).
+     * <p/>
+     * This restores the previous focus
+     */
+    @Override
+    public void userClose() {
+        focus.restore();
+        super.userClose();
     }
 
     /**

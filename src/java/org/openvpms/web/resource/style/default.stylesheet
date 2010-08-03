@@ -630,7 +630,14 @@
         <properties>
             <property name="lineWrap" value="false"/>
             <property name="insets" value="${padding.large} ${padding.smaller}"/>
-            <property name="disabledForeground" value="#7f7f7f"/>
+            <property name="disabledBackgroundImage">
+                <fill-image>
+                    <image type="nextapp.echo2.app.ResourceImageReference">
+                        <resource-image-reference
+                                resource="/org/openvpms/web/resource/image/check-alpha.png"/>
+                    </image>
+                </fill-image>
+            </property>
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#6f0f0f"/>
             <property name="background" value="#99cc66"/>
@@ -959,7 +966,7 @@
             </property>
         </properties>
     </style>
-    
+
     <!-- =================================================================== -->
     <!--  Date selector                                                      -->
     <!-- =================================================================== -->
@@ -1754,6 +1761,14 @@
             </property>
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#ffb6c1"/>
+            <property name="disabledBackgroundImage">
+                <fill-image>
+                    <image type="nextapp.echo2.app.ResourceImageReference">
+                        <resource-image-reference
+                                resource="/org/openvpms/web/resource/image/check-alpha.png"/>
+                    </image>
+                </fill-image>
+            </property>
             <property name="insets" value="${padding.large} ${padding.smaller}"/>
         </properties>
     </style>

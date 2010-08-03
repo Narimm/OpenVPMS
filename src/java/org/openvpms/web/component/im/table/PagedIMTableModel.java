@@ -119,6 +119,15 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
     }
 
     /**
+     * Returns the result set.
+     *
+     * @return the result set, or <tt>null</tt> if it hasn't been set.
+     */
+    public ResultSet<T> getResultSet() {
+        return set;
+    }
+
+    /**
      * Attempts to set the current page.
      *
      * @param page the page to set

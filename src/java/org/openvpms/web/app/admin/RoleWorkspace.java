@@ -19,7 +19,7 @@
 package org.openvpms.web.app.admin;
 
 import org.openvpms.component.business.domain.im.security.SecurityRole;
-import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 
 
 /**
@@ -28,10 +28,10 @@ import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class RoleWorkspace extends BasicCRUDWorkspace<SecurityRole> {
+public class RoleWorkspace extends ResultSetCRUDWorkspace<SecurityRole> {
 
     /**
-     * Constructs a new <tt>RoleWorkspace</tt>.
+     * Constructs a <tt>RoleWorkspace</tt>.
      */
     public RoleWorkspace() {
         super("admin", "role");

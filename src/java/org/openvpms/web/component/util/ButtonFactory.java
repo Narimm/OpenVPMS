@@ -193,6 +193,7 @@ public final class ButtonFactory extends ComponentFactory {
         MutableStyle defaultStyle = (MutableStyle) ButtonEx.DEFAULT_STYLE;
         defaultStyle.removeProperty(ButtonEx.PROPERTY_BACKGROUND);
         defaultStyle.removeProperty(ButtonEx.PROPERTY_ROLLOVER_BACKGROUND);
+        defaultStyle.removeProperty(ButtonEx.PROPERTY_DISABLED_FOREGROUND);
     }
 
 }

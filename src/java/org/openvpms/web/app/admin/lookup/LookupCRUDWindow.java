@@ -19,24 +19,25 @@ package org.openvpms.web.app.admin.lookup;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -52,7 +53,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
+public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
 
     /**
      * The 'replace' button.
@@ -69,9 +70,21 @@ public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
      * Constructs a <tt>LookupCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
+     * @param lookups    the lookups
      */
-    public LookupCRUDWindow(Archetypes<Lookup> archetypes) {
-        super(archetypes);
+    public LookupCRUDWindow(Archetypes<Lookup> archetypes, ResultSet<Lookup> lookups) {
+        super(archetypes, lookups);
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        super.layoutButtons(buttons);
+        buttons.add(getReplaceButton());
     }
 
     /**
@@ -83,14 +96,7 @@ public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        Button button = getReplaceButton();
-        if (enable) {
-            if (!buttons.contains(button)) {
-                buttons.add(button);
-            }
-        } else {
-            buttons.remove(button);
-        }
+        getReplaceButton().setEnabled(enable);
     }
 
     /**
@@ -159,7 +165,7 @@ public class LookupCRUDWindow extends AbstractViewCRUDWindow<Lookup> {
      */
     private void doReplace(final Lookup source, final Lookup target, final boolean delete) {
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-        template.execute(new TransactionCallback() {
+        template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
                 ILookupService lookupService = ServiceHelper.getLookupService();

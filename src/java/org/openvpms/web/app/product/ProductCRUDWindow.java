@@ -20,17 +20,18 @@ package org.openvpms.web.app.product;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -42,7 +43,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-11-15 17:59:45 +1100 (Thu, 15 Nov 2007) $
  */
-public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
+public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
 
     /**
      * The copy button.
@@ -56,12 +57,13 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
 
 
     /**
-     * Creates a new <tt>ProductCRUDWindow</tt>.
+     * Constructs a <tt>ProductCRUDWindow</tt>.
      *
-     * @param archetypes the archetypes that thi may create
+     * @param archetypes the archetypes that this may create
+     * @param set        the result set. May be <tt>null</tt>
      */
-    public ProductCRUDWindow(Archetypes<Product> archetypes) {
-        super(archetypes);
+    public ProductCRUDWindow(Archetypes<Product> archetypes, ResultSet<Product> set) {
+        super(archetypes, set);
     }
 
     /**
@@ -71,9 +73,14 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        super.layoutButtons(buttons);
-        // If the logged in user is an admin, show the copy button
-        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+        buttons.add(getViewButton());
+        buttons.add(getCreateButton());
+
+        // If the logged in user is an admin, show the copy, edit and delete buttons
+        boolean admin = UserHelper.isAdmin(GlobalContext.getInstance().getUser());
+        if (admin) {
+            buttons.add(getEditButton());
+            buttons.add(getDeleteButton());
             if (copy == null) {
                 copy = ButtonFactory.create(COPY_ID, new ActionListener() {
                     public void onAction(ActionEvent event) {
@@ -81,6 +88,7 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
                     }
                 });
             }
+            buttons.add(copy);
         }
     }
 
@@ -92,20 +100,15 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-    	buttons.removeAll();
-    	if (enable) {
-    		buttons.add(getCreateButton());
-    		if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
-    			buttons.add(getEditButton());
-    			buttons.add(getDeleteButton());
-    		}
+        Button view = getViewButton();
+        view.setEnabled(getResultSet() != null && enable);
+        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+            getEditButton().setEnabled(enable);
+            getDeleteButton().setEnabled(enable);
             if (copy != null) {
-            	buttons.add(copy);
+                copy.setEnabled(enable);
             }
-    	}
-    	else {
-    		buttons.add(getCreateButton());    		
-    	}
+        }
     }
 
     /**

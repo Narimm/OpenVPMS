@@ -21,17 +21,20 @@ package org.openvpms.web.component.im.query;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.util.LabelFactory;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 
@@ -128,10 +131,25 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
         PagedIMTable<T> table = getTable();
         table.setResultSet(set);
         IMTable<T> imTable = table.getTable();
-        if (!imTable.getObjects().isEmpty()
-                && imTable.isFocusTraversalParticipant()) {
+        if (!imTable.getObjects().isEmpty() && imTable.isFocusTraversalParticipant()) {
             FocusHelper.setFocus(imTable);
         }
+    }
+
+    /**
+     * Returns the result set.
+     *
+     * @return the result set
+     */
+    public ResultSet<T> getResultSet() {
+        return getTable().getResultSet();
+    }
+
+    /**
+     * Sets focus on the results.
+     */
+    public void setFocusOnResults() {
+        FocusHelper.setFocus(getTable());
     }
 
     /**
@@ -199,6 +217,11 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
                     onSelect();
                 }
             });
+            table.getTable().addPropertyChangeListener(Table.SELECTION_CHANGED_PROPERTY, new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    onBrowse();
+                }
+            });
         }
         return table;
     }
@@ -251,6 +274,16 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
         T selected = getSelected();
         if (selected != null) {
             notifySelected(selected);
+        }
+    }
+
+    /**
+     * Notifies any listeners when an object is browsed.
+     */
+    private void onBrowse() {
+        T selected = getSelected();
+        if (selected != null) {
+            notifyBrowsed(selected);
         }
     }
 

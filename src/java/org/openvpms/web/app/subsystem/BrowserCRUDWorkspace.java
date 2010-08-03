@@ -82,7 +82,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Constructs a new <tt>BrowserCRUDWorkspace</tt>.
+     * Constructs a <tt>BrowserCRUDWorkspace</tt>.
      * <p/>
      * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
      * be invoked to set archetypes that the workspace supports, before
@@ -197,6 +197,10 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
                 public void selected(Child object) {
                     onBrowserSelected(object);
                 }
+
+                public void browsed(Child object) {
+                    onBrowserViewed(object);
+                }
             });
         }
         this.browser = browser;
@@ -254,6 +258,17 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
+     * Invoked when a browser object is viewed (aka 'browsed').
+     * <p/>
+     * This implementation sets the object in the CRUD window.
+     *
+     * @param object the selected object
+     */
+    protected void onBrowserViewed(Child object) {
+        getCRUDWindow().setObject(object);
+    }
+
+    /**
      * Invoked when the object has been saved.
      *
      * @param object the object
@@ -275,6 +290,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
         if (updateSummaryOnChildUpdate()) {
             firePropertyChange(SUMMARY_PROPERTY, null, null);
         }
+        browser.setFocusOnResults();
     }
 
     /**
@@ -288,6 +304,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
         if (updateSummaryOnChildUpdate()) {
             firePropertyChange(SUMMARY_PROPERTY, null, null);
         }
+        browser.setFocusOnResults();
     }
 
     /**
@@ -302,6 +319,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
         if (updateSummaryOnChildUpdate()) {
             firePropertyChange(SUMMARY_PROPERTY, null, null);
         }
+        browser.setFocusOnResults();
     }
 
     /**

@@ -101,8 +101,7 @@ public class ShortcutButtons extends AbstractKeystrokeHandler {
                 ActionEvent buttonEvent = new ActionEvent(button, command);
                 button.fireActionPerformed(buttonEvent);
             } else {
-                log.warn("Keystroke received but not handled, actionCommand="
-                         + command);
+                log.debug("Keystroke received but not handled, actionCommand=" + command);
             }
         } else {
             log.warn("Keystroke received but not handled");

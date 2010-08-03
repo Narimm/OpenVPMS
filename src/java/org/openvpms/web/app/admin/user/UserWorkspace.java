@@ -19,7 +19,7 @@
 package org.openvpms.web.app.admin.user;
 
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 
 
 /**
@@ -28,10 +28,10 @@ import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class UserWorkspace extends BasicCRUDWorkspace<User> {
+public class UserWorkspace extends ResultSetCRUDWorkspace<User> {
 
     /**
-     * Constructs a new <tt>UserWorkspace</tt>.
+     * Constructs an <tt>UserWorkspace</tt>.
      */
     public UserWorkspace() {
         super("admin", "user");

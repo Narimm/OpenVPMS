@@ -120,6 +120,10 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
             public void selected(Entity object) {
                 setObject(object);
             }
+
+            public void browsed(Entity object) {
+                setObject(object);
+            }
         });
         Column entities = ColumnFactory.create("Inset", browser.getComponent());
         container.add(entities);

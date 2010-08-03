@@ -88,6 +88,10 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
             public void query() {
                 // no-op
             }
+
+            public void browsed(Act object) {
+                // no-op
+            }
         });
         return browser;
     }

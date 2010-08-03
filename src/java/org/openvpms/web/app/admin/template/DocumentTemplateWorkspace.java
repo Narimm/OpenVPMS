@@ -19,7 +19,7 @@
 package org.openvpms.web.app.admin.template;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 
 
 /**
@@ -28,10 +28,10 @@ import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DocumentTemplateWorkspace extends BasicCRUDWorkspace<Entity> {
+public class DocumentTemplateWorkspace extends ResultSetCRUDWorkspace<Entity> {
 
     /**
-     * Constructs a new <tt>DocumentTemplateWorkspace</tt>.
+     * Constructs a <tt>DocumentTemplateWorkspace</tt>.
      */
     public DocumentTemplateWorkspace() {
         super("admin", "documentTemplate");

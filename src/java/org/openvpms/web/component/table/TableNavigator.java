@@ -127,44 +127,58 @@ public class TableNavigator extends Row {
 
     /**
      * Displays the first page.
+     *
+     * @return <tt>true</tt> if the page was changed
      */
-    public void first() {
+    public boolean first() {
+        boolean result = false;
         int page = getModel().getPage();
         if (page != 0) {
-            changePage(0);
+            result = changePage(0);
         }
+        return result;
     }
 
     /**
      * Displays the previous page.
+     *
+     * @return <tt>true</tt> if the page was changed
      */
-    public void previous() {
+    public boolean previous() {
+        boolean result = false;
         PageableTableModel model = getModel();
         int page = model.getPage();
         if (page > 0) {
-            changePage(page - 1);
+            result = changePage(page - 1);
         }
+        return result;
     }
 
     /**
      * Displays the next page.
+     *
+     * @return <tt>true</tt> if the page was changed
      */
-    public void next() {
+    public boolean next() {
         PageableTableModel model = getModel();
         int page = model.getPage();
-        changePage(page + 1);
+        return changePage(page + 1);
     }
 
     /**
      * Displays the last page.
+     *
+     * @return <tt>true</tt> if the page was changed
      */
-    public void last() {
+    public boolean last() {
+        boolean result = false;
         PageableTableModel model = getModel();
         int lastPage = getLastPage();
         int page = model.getPage();
         if (page != lastPage) {
-            changePage(lastPage);
+            result = changePage(lastPage);
         }
+        return result;
     }
 
     /**
@@ -228,18 +242,22 @@ public class TableNavigator extends Row {
      * Attempts to change to the specified page.
      *
      * @param page the new page
+     * @return <tt>true</tt> if the page was changed
      */
-    protected void changePage(int page) {
+    protected boolean changePage(int page) {
+        boolean result = false;
         PageableTableModel model = getModel();
         if (model.setPage(page)) {
             table.setSelectionModel(new DefaultListSelectionModel());
             pageSelector.setSelectedIndex(page);
+            result = true;
         } else {
             // failed to set the current page
             if (model.getPage() == (page - 1)) {
                 setTotal(model.getPage() + 1);
             }
         }
+        return result;
     }
 
     /**

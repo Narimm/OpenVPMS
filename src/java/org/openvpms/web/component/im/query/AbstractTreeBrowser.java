@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.tree.IMObjectTreeNode;
 import org.openvpms.web.component.im.tree.TreeBuilder;
 import org.openvpms.web.component.tree.DefaultTree;
+import org.openvpms.web.component.focus.FocusHelper;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -163,6 +164,15 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
     }
 
     /**
+     * Returns the result set.
+     *
+     * @return the result set
+     */
+    public ResultSet<T> getResultSet() {
+        return doQuery();
+    }
+
+    /**
      * Returns the parent of an object.
      *
      * @param object the object
@@ -179,6 +189,13 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
             }
         }
         return null;
+    }
+
+    /**
+     * Sets focus on the results.
+     */
+    public void setFocusOnResults() {
+        FocusHelper.setFocus(_tree);
     }
 
     /**
