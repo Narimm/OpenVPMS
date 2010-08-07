@@ -18,15 +18,13 @@
 
 package org.openvpms.web.component.im.relationship;
 
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditorTest;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.test.TestHelper;
 
 
 /**
@@ -46,23 +44,12 @@ public class LookupRelationshipCollectionPropertyEditorTestCase
     @Override
     public void setUp() {
         super.setUp();
-        ILookupService service = ServiceHelper.getLookupService();
-        Lookup lookup = service.getLookup("lookup.state", "VIC");
-        if (lookup != null) {
-            lookup = (Lookup) get(lookup);
-            if (lookup != null) {
-                // remove existing relationships
-                lookup.getSourceLookupRelationships().clear();
-                TestHelper.save(lookup);
-            }
+        state = TestHelper.getLookup("lookup.state", "VIC");
+        if (!state.getLookupRelationships().isEmpty()) {
+            // remove existing relationships
+            state.getSourceLookupRelationships().clear();
+            save(state);
         }
-        if (lookup == null) {
-            lookup = (Lookup) TestHelper.create("lookup.state");
-            lookup.setCode("VIC");
-            lookup.setName("Victoria");
-            TestHelper.save(lookup);
-        }
-        state = lookup;
     }
 
     /**
@@ -103,13 +90,10 @@ public class LookupRelationshipCollectionPropertyEditorTestCase
      * @return a new object to add to the collection
      */
     protected IMObject createObject(IMObject parent) {
-        LookupRelationship result = (LookupRelationship) TestHelper.create(
-                "lookupRelationship.stateSuburb");
+        LookupRelationship result = (LookupRelationship) TestHelper.create("lookupRelationship.stateSuburb");
         result.setSource(parent.getObjectReference());
-        Lookup target = (Lookup) TestHelper.create("lookup.suburb");
-        target.setCode("ASUBURB" + System.currentTimeMillis());
-        target.setName("A Suburb");
-        TestHelper.save(target);
+        String code = "ASUBURB" + System.currentTimeMillis() + System.nanoTime();
+        Lookup target = TestHelper.getLookup("lookup.suburb", code);
         result.setTarget(target.getObjectReference());
         return result;
     }
