@@ -20,6 +20,8 @@ package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
@@ -27,6 +29,8 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
+
+import java.util.Iterator;
 
 
 /**
@@ -85,6 +89,25 @@ public class QueryHelper {
         particJoin.add(entityJoin);
         acts.add(particJoin);
         query.add(Constraints.sort(entityJoin.getAlias(), "name", ascending));
+    }
+
+    /**
+     * Determines if a result set selects an object, using a linear search.
+     *
+     * @param set       the query
+     * @param reference the object reference to check
+     * @return <tt>true</tt> if the query selects the reference; otherwise <tt>false</tt>
+     */
+    public static <T extends IMObject> boolean selects(ResultSet<T> set, IMObjectReference reference) {
+        boolean result = false;
+        Iterator<T> iter = new ResultSetIterator<T>(set);
+        while (iter.hasNext()) {
+            if (iter.next().getObjectReference().equals(reference)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     /**

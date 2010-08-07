@@ -27,8 +27,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.CharSetUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -44,8 +42,6 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
-
-import java.util.Iterator;
 
 
 /**
@@ -103,11 +99,6 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      * Row style name.
      */
     private static final String ROW_STYLE = "CellSpacing";
-
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(AbstractArchetypeQuery.class);
 
 
     /**
@@ -176,35 +167,16 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
 
     /**
      * Determines if the query selects a particular object.
+     * <p/>
+     * NOTE: This implementation only supports objects of type <tt>IMObject</tt>, delegating to
+     * {@link #selects(org.openvpms.component.business.domain.im.common.IMObjectReference)}.
      *
      * @param object the object to check
      * @return <tt>true</tt> if the object is selected by the query
      */
     @Override
     public boolean selects(T object) {
-        ResultSet<T> set = query();
-        boolean result = false;
-        if (set instanceof AbstractArchetypeServiceResultSet && object instanceof IMObject) {
-            IMObjectReference reference = ((IMObject) object).getObjectReference();
-            ((AbstractArchetypeServiceResultSet<T>) set).setReferenceConstraint(reference);
-            result = set.hasNext();
-        } else {
-            // fall back to linear search, If it takes more than a second then optimization is required.
-            // Could argue that a second is too long.
-            long start = System.currentTimeMillis();
-            Iterator<T> iter = new ResultSetIterator<T>(set);
-            while (iter.hasNext()) {
-                if (iter.next().equals(object)) {
-                    result = true;
-                    break;
-                }
-            }
-            long end = System.currentTimeMillis();
-            if ((end - start) > 1000) {
-                log.warn("Slow query: " + getClass().getName() + " performing linear search");
-            }
-        }
-        return result;
+        return object instanceof IMObject && selects(((IMObject) object).getObjectReference());
     }
 
     /**

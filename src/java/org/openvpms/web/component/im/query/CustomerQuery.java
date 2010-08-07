@@ -49,6 +49,24 @@ public class CustomerQuery extends QueryAdapter<ObjectSet, Party> {
     }
 
     /**
+     * Sets the name or id of the patient to search on.
+     *
+     * @param value the patient name or id. May be <tt>null</tt>
+     */
+    public void setPatient(String value) {
+        ((CustomerObjectSetQuery) getQuery()).setPatient(value);
+    }
+
+    /**
+     * Sets the contact description to search on.
+     *
+     * @param value the contact description to search on. May be <tt>null</tt>
+     */
+    public void setContact(String value) {
+        ((CustomerObjectSetQuery) getQuery()).setContact(value);
+    }
+
+    /**
      * Determines if the query selects a particular object.
      *
      * @param object the object to check

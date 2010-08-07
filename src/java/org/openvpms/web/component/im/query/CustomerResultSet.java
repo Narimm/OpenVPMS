@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IdConstraint;
+import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -55,9 +56,9 @@ import org.openvpms.component.system.common.query.SortConstraint;
 public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
 
     /**
-     * The patient name to query on. May be <tt>null</tt>
+     * The patient value to query on. May be <tt>null</tt>
      */
-    private final String patientName;
+    private final String patient;
 
     /**
      * The contact description to query on. May be <tt>null</tt>
@@ -71,17 +72,17 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
      * @param archetypes       the archetypes to query
      * @param value            the value to query on. May be <tt>null</tt>
      * @param searchIdentities if <tt>true</tt> search on identity name
-     * @param patientName      if non-null, query on patient name
+     * @param patient          if non-null, query on patient name/id
      * @param contact          if non-null,  query on contact description
      * @param sort             the sort criteria. May be <tt>null</tt>
      * @param rows             the maximum no. of rows per page
      * @param distinct         if <tt>true</tt> filter duplicate rows
      */
     public CustomerResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
-                             String patientName, String contact, SortConstraint[] sort, int rows, boolean distinct) {
+                             String patient, String contact, SortConstraint[] sort, int rows, boolean distinct) {
         super(archetypes, value, searchIdentities, null, sort, rows, distinct, new ObjectSetQueryExecutor());
         archetypes.setAlias("customer");
-        this.patientName = patientName;
+        this.patient = patient;
         this.contact = contact;
     }
 
@@ -91,7 +92,7 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
      * @return <tt>true</tt> if the result set contains patient details
      */
     public boolean isSearchingOnPatient() {
-        return !StringUtils.isEmpty(patientName);
+        return !StringUtils.isEmpty(patient);
     }
 
     /**
@@ -113,15 +114,16 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
         ArchetypeQuery query = super.createQuery();
         query.add(new ObjectSelectConstraint("customer"));
         if (isSearchingOnPatient()) {
-            query.add(Constraints.join("patients"));
             query.add(Constraints.shortName("patient", "party.patientpet"));
-            query.add(new IdConstraint("source", "customer"));
-            query.add(new IdConstraint("target", "patient"));
-            Long id = getId(patientName);
+            JoinConstraint join = Constraints.join("patients");
+            join.add(new IdConstraint("source", "customer"));
+            join.add(new IdConstraint("target", "patient"));
+            query.add(join);
+            Long id = getId(patient);
             if (id != null) {
                 query.add(Constraints.eq("patient.id", id));
             } else {
-                query.add(Constraints.eq("patient.name", patientName));
+                query.add(Constraints.eq("patient.name", patient));
             }
             query.add(new ObjectSelectConstraint("patient"));
         }

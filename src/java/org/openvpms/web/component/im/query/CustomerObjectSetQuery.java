@@ -38,7 +38,8 @@ import org.openvpms.web.component.util.TextComponentFactory;
  * Query implementation that queries customers. The search can be further
  * constrained to match on:
  * <ul>
- * <li>partial patient name; and/or
+ * <li>partial patient name;
+ * <li>patient id; and/or
  * <li>partial contact description
  * </ul>
  * <p/>
@@ -61,9 +62,9 @@ import org.openvpms.web.component.util.TextComponentFactory;
 public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
 
     /**
-     * The patient name field.
+     * The patient field.
      */
-    private TextField patientName;
+    private TextField patient;
 
     /**
      * The contact field.
@@ -88,6 +89,24 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     public CustomerObjectSetQuery(String[] shortNames) {
         super(shortNames, ObjectSet.class);
         setDefaultSortConstraint(DEFAULT_SORT);
+    }
+
+    /**
+     * Sets the name or id of the patient to search on.
+     *
+     * @param value the patient name or id. May be <tt>null</tt>
+     */
+    public void setPatient(String value) {
+        getPatient().setText(value);
+    }
+
+    /**
+     * Sets the contact description to search on.
+     *
+     * @param value the contact description to search on. May be <tt>null</tt>
+     */
+    public void setContact(String value) {
+        getContact().setText(value);
     }
 
     /**
@@ -120,7 +139,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * @return a new result set
      */
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        String patientWildcard = getWildcardedText(getPatientName());
+        String patientWildcard = getWildcardedText(getPatient());
         String contactWildcard = getWildcardedText(getContact(), true);
 
         return new CustomerResultSet(getArchetypeConstraint(), getValue(),
@@ -164,7 +183,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * @param container the container
      */
     protected void addPatientName(Component container) {
-        TextField field = getPatientName();
+        TextField field = getPatient();
         container.add(LabelFactory.create("customerquery.patient"));
         container.add(field);
         getFocusGroup().add(field);
@@ -183,20 +202,20 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     }
 
     /**
-     * Returns the patient name field.
+     * Returns the patient field.
      *
-     * @return the patient name field
+     * @return the patient field
      */
-    private TextField getPatientName() {
-        if (patientName == null) {
-            patientName = TextComponentFactory.create();
-            patientName.addActionListener(new ActionListener() {
+    private TextField getPatient() {
+        if (patient == null) {
+            patient = TextComponentFactory.create();
+            patient.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onQuery();
                 }
             });
         }
-        return patientName;
+        return patient;
     }
 
     /**
