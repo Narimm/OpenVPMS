@@ -17,9 +17,15 @@
  */
 package org.openvpms.web.component.im.query;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.test.TestHelper;
+
+import java.util.List;
 
 
 /**
@@ -28,12 +34,83 @@ import org.openvpms.web.test.TestHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerQueryTestCase extends AbstractQueryTest<Party> {
+public class CustomerQueryTestCase extends AbstractEntityQueryTest<Party> {
 
     /**
      * Customer archetype short names.
      */
     private static final String[] SHORT_NAMES = new String[]{CustomerArchetypes.PERSON, CustomerArchetypes.OTC};
+
+    /**
+     * Tests querying customers by contact details.
+     */
+    @Test
+    public void testQueryByContact() {
+        Party customer = createObject(true);
+        String address = getUniqueValue("ZAddress");
+
+        CustomerQuery query = (CustomerQuery) createQuery();
+        query.setContact(address);
+        ResultSet<Party> results = query.query();
+        assertNotNull(results);
+        assertEquals(0, results.getResults());
+        checkSelects(false, query, customer);
+
+        Contact location = TestHelper.createLocationContact(address, "VIC", "MELBOURNE", "3001");
+        customer.addContact(location);
+        save(customer);
+
+        results = query.query();
+        List<Party> list = results.getPage(0).getResults();
+        assertEquals(1, list.size());
+        assertEquals(customer, list.get(0));
+        checkSelects(true, query, customer);
+    }
+
+    /**
+     * Tests querying customers by patient name.
+     */
+    @Test
+    public void testQueryByPatientName() {
+        String patientName = getUniqueValue("ZPatient");
+        Party customer = createObject(true);
+
+        CustomerQuery query = (CustomerQuery) createQuery();
+        query.setPatient(patientName);
+        ResultSet<Party> results = query.query();
+        assertNotNull(results);
+        assertEquals(0, results.getResults());
+        checkSelects(false, query, customer);
+
+        // create a patient owned by the customer
+        Party patient = TestHelper.createPatient(customer, false);
+        patient.setName(patientName);
+        save(customer, patient);
+
+        List<Party> list = results.getPage(0).getResults();
+        assertEquals(1, list.size());
+        assertEquals(customer, list.get(0));
+        checkSelects(true, query, customer);
+    }
+
+    /**
+     * Tests querying customers by patient id.
+     */
+    @Test
+    public void testQueryByPatientId() {
+        // create a customer and patient
+        Party customer = createObject(true);
+        Party patient = TestHelper.createPatient(customer);
+
+        CustomerQuery query = (CustomerQuery) createQuery();
+        query.setPatient(Long.toString(patient.getId()));
+        ResultSet<Party> results = query.query();
+        assertNotNull(results);
+        List<Party> list = results.getPage(0).getResults();
+        assertEquals(1, list.size());
+        assertEquals(customer, list.get(0));
+        checkSelects(true, query, customer);
+    }
 
     /**
      * Creates a new query.
@@ -61,6 +138,6 @@ public class CustomerQueryTestCase extends AbstractQueryTest<Party> {
      * @return a unique value
      */
     protected String getUniqueValue() {
-        return "ZCustomer-" + System.currentTimeMillis() + "-" + System.nanoTime();
+        return getUniqueValue("ZCustomer");
     }
 }

@@ -19,19 +19,7 @@
 package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
-import org.openvpms.web.component.im.query.IMObjectListResultSet;
-import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.openvpms.web.app.workflow.ScheduleTypeQuery;
 
 
 /**
@@ -40,12 +28,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentTypeQuery extends AbstractIMObjectQuery<Entity> {
-
-    /**
-     * The schedule to constraint appointment types to.
-     */
-    private final Entity schedule;
+public class AppointmentTypeQuery extends ScheduleTypeQuery {
 
 
     /**
@@ -55,85 +38,7 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<Entity> {
      * @param schedule the schedule. May be <tt>null</tt>
      */
     public AppointmentTypeQuery(Entity schedule) {
-        super(new String[]{"entity.appointmentType"}, Entity.class);
-        this.schedule = schedule;
-    }
-
-    /**
-     * Performs the query.
-     *
-     * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set
-     * @throws ArchetypeServiceException if the query fails
-     */
-    @Override
-    public ResultSet<Entity> query(SortConstraint[] sort) {
-        getComponent();  // ensure the component is rendered
-        ResultSet<Entity> result;
-        if (schedule == null) {
-            result = super.query(sort);
-        } else {
-            List<Entity> objects = filterForSchedule();
-            if (objects == null) {
-                objects = Collections.emptyList();
-            }
-            result = new IMObjectListResultSet<Entity>(objects,
-                                                       getMaxResults());
-            if (sort != null) {
-                result.sort(sort);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Determines if the query should be run automatically.
-     *
-     * @return <tt>true</tt> if the query should be run automaticaly;
-     *         otherwie <tt>false</tt>
-     */
-    @Override
-    public boolean isAuto() {
-        return (schedule != null);
-    }
-
-    /**
-     * Filter appointment types associated with a schedule.
-     *
-     * @return a list of appointment types associated with the schedule that
-     *         matches the specified criteria
-     */
-    private List<Entity> filterForSchedule() {
-        List<Entity> types = getAppointmentTypes(schedule);
-        String name = getValue();
-        types = IMObjectHelper.findByName(name, types);
-        List<Entity> result = new ArrayList<Entity>();
-        for (IMObject type : types) {
-            if (type.isActive()) {
-                result.add((Entity) type);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the appointment types associated with a schedule.
-     *
-     * @param schedule the schedule
-     * @return a list of appointment types associated with <tt>schedule</tt>
-     */
-    private List<Entity> getAppointmentTypes(Entity schedule) {
-        List<Entity> result = new ArrayList<Entity>();
-        EntityBean bean = new EntityBean(schedule);
-        List<IMObject> relationships = bean.getValues("appointmentTypes");
-        for (IMObject object : relationships) {
-            EntityRelationship relationship = (EntityRelationship) object;
-            IMObject type = IMObjectHelper.getObject(relationship.getTarget());
-            if (type != null) {
-                result.add((Entity) type);
-            }
-        }
-        return result;
+        super(new String[]{"entity.appointmentType"}, schedule, "appointmentTypes");
     }
 
 }

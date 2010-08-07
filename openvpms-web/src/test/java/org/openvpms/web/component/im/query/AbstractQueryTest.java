@@ -17,13 +17,16 @@
  */
 package org.openvpms.web.component.im.query;
 
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.*;
+import org.apache.commons.collections.CollectionUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.test.TestHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -63,8 +66,8 @@ public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppT
         ResultSet<T> results = query.query();
         assertNotNull(results);
         int size = results.getResults();
-        createObject(getUniqueValue(), true);
-        createObject(getUniqueValue(), true);
+        createObject(true);
+        createObject(true);
 
         results = query.query();
         assertEquals(size + 2, results.getResults());
@@ -78,9 +81,50 @@ public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppT
         Query<T> query = createQuery();
 
         T object = createObject(getUniqueValue(), false);
-        assertFalse(query.selects(object));
+        checkSelects(false, query, object);
         TestHelper.save(object);
-        assertTrue(query.selects(object));
+        checkSelects(true, query, object);
+    }
+
+    /**
+     * Checks that a query selects/doesn't select an object.
+     *
+     * @param selects if <tt>true</tt> expects the query to select the object, otherwise don't expect it
+     * @param query   the query to check
+     * @param value   the value to check
+     */
+    protected void checkSelects(boolean selects, Query<T> query, T value) {
+        assertEquals(selects, query.selects(value));
+        assertEquals(selects, query.selects(value.getObjectReference()));
+    }
+
+    /**
+     * Checks to see if an objects is returned by a query and that the {@link Query#selects} method agrees.
+     *
+     * @param object the object
+     * @param query  the query
+     * @param exists determines if the object should exist or not
+     * @return the list of the references that matched the query
+     */
+    protected List<IMObjectReference> checkExists(T object, Query<T> query, boolean exists) {
+        List<IMObjectReference> matches = getObjectRefs(query);
+        checkExists(object, query, matches, exists);
+        return matches;
+    }
+
+    /**
+     * Checks to see if an objects exists in a list of matches and that the {@link Query#selects} method agrees.
+     *
+     * @param object  the object
+     * @param query   the query
+     * @param matches the query results
+     * @param exists  determines if the object should exist or not
+     */
+    protected void checkExists(T object, Query<T> query, List<IMObjectReference> matches, boolean exists) {
+        int cardinality = (exists) ? 1 : 0;
+        assertEquals(cardinality, CollectionUtils.cardinality(object.getObjectReference(), matches));
+        assertEquals(exists, query.selects(object));
+        assertEquals(exists, query.selects(object.getObjectReference()));
     }
 
     /**
@@ -89,6 +133,16 @@ public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppT
      * @return a new query
      */
     protected abstract Query<T> createQuery();
+
+    /**
+     * Creates a new object, selected by the query.
+     *
+     * @param save if <tt>true</tt> save the object, otherwise don't save it
+     * @return the new object
+     */
+    protected T createObject(boolean save) {
+        return createObject(getUniqueValue(), save);
+    }
 
     /**
      * Creates a new object, selected by the query.
@@ -105,4 +159,28 @@ public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppT
      * @return a unique value
      */
     protected abstract String getUniqueValue();
+
+    /**
+     * Helper to generate a unique value, based on the current system time and a prefix.
+     *
+     * @param prefix a prefix for the value
+     * @return an unque value
+     */
+    protected String getUniqueValue(String prefix) {
+        return prefix + "-" + System.currentTimeMillis() + "-" + System.nanoTime();
+    }
+
+    /**
+     * Helper to return all object references matching the query.
+     *
+     * @param query the query
+     * @return the matching object's references
+     */
+    protected List<IMObjectReference> getObjectRefs(Query<T> query) {
+        List<IMObjectReference> result = new ArrayList<IMObjectReference>();
+        for (T object : query) {
+            result.add(object.getObjectReference());
+        }
+        return result;
+    }
 }

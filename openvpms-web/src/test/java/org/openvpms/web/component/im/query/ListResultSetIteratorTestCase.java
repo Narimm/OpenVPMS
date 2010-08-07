@@ -121,14 +121,12 @@ public class ListResultSetIteratorTestCase {
         int expected = -1;
         while (iterator.hasNext()) {
             ++expected;
-            System.out.println(expected);
             assertEquals(expected, iterator.nextIndex());
             assertEquals(expected, iterator.next().intValue());
         }
         assertEquals(count - 1, expected);
 
         while (iterator.hasPrevious()) {
-            System.out.println(expected);
             assertEquals(expected, iterator.previousIndex());
             assertEquals(expected, iterator.previous().intValue());
             --expected;

@@ -20,9 +20,8 @@ package org.openvpms.web.test;
 
 import nextapp.echo2.app.ApplicationInstance;
 import org.junit.Before;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.web.app.OpenVPMSApp;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 
 /**
@@ -31,8 +30,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-@ContextConfiguration("/applicationContext.xml")
-public abstract class AbstractAppTest extends AbstractJUnit4SpringContextTests {
+public abstract class AbstractAppTest extends ArchetypeServiceTest {
 
     /**
      * Sets up the test case.

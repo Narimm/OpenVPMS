@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.query.AbstractEntityQuery;
 import org.openvpms.web.component.im.query.EntityResultSet;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.query.QueryHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,6 +108,20 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
             result = filterOnSpecies(result);
         }
         return result;
+    }
+
+    /**
+     * Determines if the query selects a particular object reference.
+     *
+     * @param reference the object reference to check
+     * @return <tt>true</tt> if the object reference is selected by the query
+     */
+    @Override
+    public boolean selects(IMObjectReference reference) {
+        if (location == null && StringUtils.isEmpty(species)) {
+            return super.selects(reference);
+        }
+        return QueryHelper.selects(query(null), reference); 
     }
 
     /**

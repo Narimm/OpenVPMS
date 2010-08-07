@@ -42,7 +42,18 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public PatientQuery(String[] shortNames, Context context) {
-        super(new PatientObjectSetQuery(shortNames, context.getCustomer()), Party.class);
+        this(shortNames, context.getCustomer());
+    }
+
+    /**
+     * Constructs a <tt>PatientQuery</tt> that queries patients instances with the specified short names.
+     *
+     * @param shortNames the short names
+     * @param customer   the customer. May be <tt>null</tt>
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
+     */
+    public PatientQuery(String[] shortNames, Party customer) {
+        super(new PatientObjectSetQuery(shortNames, customer), Party.class);
     }
 
     /**
