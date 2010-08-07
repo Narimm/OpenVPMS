@@ -46,8 +46,9 @@ public class ScheduleTestHelper extends TestHelper {
      * with associated <em>party.organisationSchedule</em>s.
      *
      * @param schedules the schedules
+     * @return a new schedule view
      */
-    public static Entity createScheduleView(Party ... schedules) {
+    public static Entity createScheduleView(Party... schedules) {
         Entity view = (Entity) create("entity.organisationScheduleView");
         view.setName("XScheduleView");
         EntityBean bean = new EntityBean(view);
@@ -64,9 +65,22 @@ public class ScheduleTestHelper extends TestHelper {
      * @return a new appointment type
      */
     public static Entity createAppointmentType() {
+        return createAppointmentType("XAppointmentType", true);
+    }
+
+    /**
+     * Helper to create a new <em>entity.appointmentType</em>.
+     *
+     * @param name the appointment type name
+     * @param save if <tt>true</tt> save the appointment type
+     * @return a new appointment type
+     */
+    public static Entity createAppointmentType(String name, boolean save) {
         Entity appointmentType = (Entity) create("entity.appointmentType");
-        appointmentType.setName("XAppointmentType");
-        save(appointmentType);
+        appointmentType.setName(name);
+        if (save) {
+            save(appointmentType);
+        }
         return appointmentType;
     }
 
@@ -204,8 +218,9 @@ public class ScheduleTestHelper extends TestHelper {
      * with associated <em>party.organisationWorkList</em>s.
      *
      * @param workLists the work lists
+     * @return a new work list view
      */
-    public static Entity createWorkListView(Party ... workLists) {
+    public static Entity createWorkListView(Party... workLists) {
         Entity view = (Entity) create("entity.organisationWorkListView");
         view.setName("XWorkListView");
         EntityBean bean = new EntityBean(view);
@@ -220,7 +235,7 @@ public class ScheduleTestHelper extends TestHelper {
     /**
      * Helper to create and save a new <em>entity.taskType</em>.
      *
-     * @return a new appointment type
+     * @return a new task type
      */
     public static Entity createTaskType() {
         Entity taskType = (Entity) create("entity.taskType");
@@ -228,6 +243,23 @@ public class ScheduleTestHelper extends TestHelper {
         save(taskType);
         return taskType;
     }
+
+    /**
+     * Helper to create a new <em>entity.taskType</em>.
+     *
+     * @param name the task type name
+     * @param save if <tt>true</tt> save the task type
+     * @return a new task type
+     */
+    public static Entity createTaskType(String name, boolean save) {
+        Entity taskType = (Entity) create("entity.taskType");
+        taskType.setName(name);
+        if (save) {
+            save(taskType);
+        }
+        return taskType;
+    }
+
 
     /**
      * Helper to create a new <em>party.organisationWorkList</em>.
