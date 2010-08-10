@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
@@ -167,4 +168,19 @@ public interface LayoutContext {
      * @return the listener, or a default listener if none is registered
      */
     IMObjectDeletionListener<IMObject> getDeletionListener();
+
+    /**
+     * Registers a listener for context switch events.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
+    void setContextSwitchListener(ContextSwitchListener listener);
+
+    /**
+     * Returns the context switch listener.
+     *
+     * @return the context switch listener, or <tt>null</tt> if none is registered
+     */
+    ContextSwitchListener getContextSwitchListener();
+
 }

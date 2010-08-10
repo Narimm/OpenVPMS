@@ -30,7 +30,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
-import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -112,7 +112,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
     protected void layoutWorkspace(User user, Component container) {
         ReportQuery query = createQuery(user);
         browser = createBrowser(query);
-        browser.addQueryListener(new QueryBrowserListener<Entity>() {
+        browser.addBrowserListener(new BrowserListener<Entity>() {
             public void query() {
                 selectFirst();
             }

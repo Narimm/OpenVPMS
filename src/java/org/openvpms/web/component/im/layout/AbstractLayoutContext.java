@@ -17,20 +17,21 @@
  */
 package org.openvpms.web.component.im.layout;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
+import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
-import org.openvpms.web.component.im.util.IMObjectDeletionListener;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -83,6 +84,11 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * The deletion listener.
      */
     private IMObjectDeletionListener<IMObject> deletionListener = DEFAULT_DELETION_LISTENER;
+
+    /**
+     * The context switch listener.
+     */
+    private ContextSwitchListener contextSwitchListener;
 
     /**
      * The set of rendered objects.
@@ -147,6 +153,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
         layoutFactory = context.getLayoutStrategyFactory();
         depth = context.getLayoutDepth() + 1;
         deletionListener = context.getDeletionListener();
+        contextSwitchListener = context.getContextSwitchListener();
     }
 
     /**
@@ -314,7 +321,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * @param listener the listener
      */
     public void setDeletionListener(IMObjectDeletionListener<IMObject> listener) {
-        this.deletionListener = listener;
+        deletionListener = (listener != null) ? listener : DEFAULT_DELETION_LISTENER;
     }
 
     /**
@@ -324,5 +331,23 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      */
     public IMObjectDeletionListener<IMObject> getDeletionListener() {
         return deletionListener;
+    }
+
+    /**
+     * Registers a listener for context switch events.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
+    public void setContextSwitchListener(ContextSwitchListener listener) {
+        contextSwitchListener = listener;
+    }
+
+    /**
+     * Returns the context switch listener.
+     *
+     * @return the context switch listener, or <tt>null</tt> if none is registered
+     */
+    public ContextSwitchListener getContextSwitchListener() {
+        return contextSwitchListener;
     }
 }

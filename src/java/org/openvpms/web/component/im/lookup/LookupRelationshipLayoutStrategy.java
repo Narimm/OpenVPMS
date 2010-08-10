@@ -23,6 +23,7 @@ import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -73,17 +74,13 @@ public class LookupRelationshipLayoutStrategy extends AbstractLayoutStrategy {
             }
         }
 
-        IMObjectReferenceViewer sourceView
-                = new IMObjectReferenceViewer(srcRef, srcLink);
-
-        IMObjectReferenceViewer targetView
-                = new IMObjectReferenceViewer(tgtRef, tgtLink);
+        ContextSwitchListener listener = context.getContextSwitchListener();
+        IMObjectReferenceViewer sourceView = new IMObjectReferenceViewer(srcRef, (srcLink) ? listener : null);
+        IMObjectReferenceViewer targetView = new IMObjectReferenceViewer(tgtRef, (tgtLink) ? listener : null);
 
         Grid grid = GridFactory.create(4);
-        add(grid, new ComponentState(sourceView.getComponent(),
-                                     source));
-        add(grid, new ComponentState(targetView.getComponent(),
-                                     target));
+        add(grid, new ComponentState(sourceView.getComponent(), source));
+        add(grid, new ComponentState(targetView.getComponent(), target));
         container.add(grid);
     }
 

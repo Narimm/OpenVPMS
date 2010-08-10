@@ -11,36 +11,33 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.scheduling;
-
-import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.web.component.im.query.BrowserListener;
+package org.openvpms.web.component.im.query;
 
 
 /**
- * {@link ScheduleBrowser} event listener.
+ * Event listener for {@link Browser} events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @version $LastChangedDate$
  */
-public interface ScheduleBrowserListener
-        extends BrowserListener<PropertySet> {
+public interface BrowserListener<T> extends QueryListener {
 
     /**
-     * Invoked to create and edit a new event.
-     */
-    void create();
-
-    /**
-     * Invoked to edit an event.
+     * Invoked when an object is selected.
      *
-     * @param event the set representing the event
+     * @param object the selected object
      */
-    void edit(PropertySet event);
+    void selected(T object);
 
+    /**
+     * Invoked when an object is browsed.
+     *
+     * @param object the browsed object
+     */
+    void browsed(T object);
 }

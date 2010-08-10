@@ -30,7 +30,7 @@ import java.util.ListIterator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface ResultSet<T> extends ListIterator<IPage<T>> {
+public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
 
     /**
      * Reset the iterator.
@@ -141,4 +141,21 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      * @param nodes the nodes to query
      */
     void setNodes(String[] nodes);
+
+    /**
+     * Returns the index of the last returned page.
+     *
+     * @return the index of the last returned page, or <tt>-1</tt> if no page has been page
+     */
+    int lastIndex();
+
+    /**
+     * Clones this result set.
+     * <p/>
+     * This copies the state of iterators.
+     *
+     * @return a clone of this
+     * @throws CloneNotSupportedException if the set cannot be cloned
+     */
+    ResultSet<T> clone() throws CloneNotSupportedException;
 }

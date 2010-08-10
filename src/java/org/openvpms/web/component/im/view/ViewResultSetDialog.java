@@ -21,9 +21,11 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.util.KeyStrokeHelper;
@@ -60,7 +62,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
     /**
      * The buttons to display.
      */
-    private static final String[] BUTTONS = {OK_ID, EDIT_ID, PREVIOUS_ID, NEXT_ID};
+    private static final String[] BUTTONS = {CANCEL_ID, EDIT_ID, PREVIOUS_ID, NEXT_ID};
 
     /**
      * The object being viewed.
@@ -71,6 +73,11 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      * The selected object.
      */
     private T selected;
+
+    /**
+     * The listener for context switch events.
+     */
+    private final ContextSwitchListener listener;
 
 
     /**
@@ -83,18 +90,19 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
     public ViewResultSetDialog(String title, T first, ResultSet<T> set) {
         super(title, "IMObjectViewerDialog", BUTTONS);
         setDefaultButton(OK_ID);
-        int currentPage = set.previousIndex();
-        if (currentPage < 0) {
-            currentPage = 0;
-        }
-        IPage<T> page = set.getPage(currentPage);
-        int index = (page != null) ? page.getResults().indexOf(first) : -1;
-        if (index != -1) {
-            ++index; // skip over it when editing
-        }
-        iter = new ResultSetIterator<T>(set, index);
-        view(first);
+        iter = new ResultSetIterator<T>(set, first);
+        listener = new ContextSwitchListener() {
+            public void switchTo(IMObject object) {
+                viewChild(object);
+            }
+
+            public void switchTo(String shortName) {
+            }
+        };
         setModal(true);
+        if (iter.hasNext()) {
+            view(iter.next());
+        }
         enableButtons(true, false);
     }
 
@@ -168,7 +176,9 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      */
     private void view(T object) {
         selected = object;
-        IMObjectViewer viewer = new IMObjectViewer(object, null);
+        LayoutContext context = new DefaultLayoutContext();
+        context.setContextSwitchListener(listener);
+        IMObjectViewer viewer = new IMObjectViewer(object, null, context);
         SplitPane pane = getLayout();
         if (currentViewer != null) {
             pane.remove(currentViewer);
@@ -179,6 +189,8 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
 
     /**
      * Enables/disables the previous and next buttons.
+     * <p/>
+     * This should be invoked <em>after</em> moving the iterator.
      *
      * @param focusOK   if <tt>true</tt> move the focus to the OK button
      * @param focusNext if <tt>true</tt> move the focus to the 'next' button, unless its disabled in which case the
@@ -189,7 +201,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
         Button ok = set.getButton(OK_ID);
         Button previous = set.getButton(PREVIOUS_ID);
         Button next = set.getButton(NEXT_ID);
-        previous.setEnabled(iter.hasPrevious());
+        previous.setEnabled(iter.lastIndex() > 0);
         next.setEnabled(iter.hasNext());
         if (focusOK) {
             setFocus(ok);
@@ -204,6 +216,16 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
         KeyStrokeHelper.reregisterKeyStrokeListeners(this);
         // TODO - without the above, keyboard shortcuts can stop working, despite elements on the dialog
         // having the focus.        
+    }
+
+    /**
+     * Views a child object.
+     *
+     * @param object the object to view
+     */
+    private void viewChild(IMObject object) {
+        IMObjectViewerDialog dialog = new IMObjectViewerDialog(object);
+        dialog.show();
     }
 
 }

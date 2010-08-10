@@ -94,19 +94,17 @@ public class LookupRelationshipTableModel
             IMObjectReference ref = new IMObjectReference(current);
 
             if (relationship.getSource() != null
-                    && ref.equals(relationship.getSource())) {
+                && ref.equals(relationship.getSource())) {
                 entity = relationship.getTarget();
             } else if (relationship.getTarget() != null
-                    && ref.equals(relationship.getTarget())) {
+                       && ref.equals(relationship.getTarget())) {
                 entity = relationship.getSource();
             } else {
                 entity = relationship.getTarget();
             }
         }
 
-        boolean hyperlink = !layoutContext.isEdit();// disable hyperlinks when
-        // editing
-        return new IMObjectReferenceViewer(entity, hyperlink).getComponent();
+        return new IMObjectReferenceViewer(entity, layoutContext.getContextSwitchListener()).getComponent();
     }
 
 }

@@ -30,10 +30,12 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
@@ -153,17 +155,13 @@ public class PatientReminderTableModel extends AbstractActTableModel {
             ReminderEvent event = getEvent(object, row);
             if (event != null && event.getReminderType() != null) {
                 Entity reminderType = event.getReminderType().getEntity();
-                IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(reminderType.getObjectReference(),
-                                                                             reminderType.getName(), false);
-                result = viewer.getComponent();
+                result = createReferenceViewer(reminderType, false);
             }
         } else if (name.equals("patient")) {
             // use the cached patient in the event to reduce queries
             Party patient = getPatient(object, row);
             if (patient != null) {
-                IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(patient.getObjectReference(),
-                                                                             patient.getName(), true);
-                result = viewer.getComponent();
+                result = createReferenceViewer(patient, true);
             }
         } else {
             result = super.getValue(object, column, row);
@@ -272,9 +270,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
         Component result = null;
         Party customer = getPatientOwner(act, row);
         if (customer != null) {
-            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(customer.getObjectReference(),
-                                                                         customer.getName(), true);
-            result = viewer.getComponent();
+            result = createReferenceViewer(customer, true);
         }
         return result;
     }
@@ -339,6 +335,20 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     private Party getPatientOwner(Act act, int row) {
         ReminderEvent event = getEvent(act, row);
         return (event != null) ? event.getCustomer() : null;
+    }
+
+    /**
+     * Creates an {@link IMObjectReferenceViewer} for an object.
+     *
+     * @param object the object
+     * @param link   if <tt>true</tt> enable hyperlinks
+     * @return the viewer component
+     */
+    private Component createReferenceViewer(IMObject object, boolean link) {
+        ContextSwitchListener listener = (link) ? getLayoutContext().getContextSwitchListener() : null;
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(object.getObjectReference(), object.getName(),
+                                                                     listener);
+        return viewer.getComponent();
     }
 
     /**

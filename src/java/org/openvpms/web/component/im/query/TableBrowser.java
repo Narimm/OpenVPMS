@@ -142,7 +142,15 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      * @return the result set
      */
     public ResultSet<T> getResultSet() {
-        return getTable().getResultSet();
+        ResultSet<T> set = getTable().getResultSet();
+        try {
+            if (set != null) {
+                return set.clone();
+            }
+        } catch (CloneNotSupportedException exception) {
+            throw new IllegalStateException(exception);
+        }
+        return null;
     }
 
     /**

@@ -135,7 +135,7 @@ public class BrowserDialog<T> extends PopupDialog {
                 }
             });
         }
-        browser.addQueryListener(new QueryBrowserListener<T>() {
+        browser.addBrowserListener(new BrowserListener<T>() {
             public void query() {
             }
 

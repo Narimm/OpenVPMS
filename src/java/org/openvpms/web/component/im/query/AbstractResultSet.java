@@ -273,6 +273,36 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     }
 
     /**
+     * Returns the index of the last returned page.
+     *
+     * @return the index of the last returned page, or <tt>-1</tt> if no page has been page
+     */
+    public int lastIndex() {
+        int page = -1;
+        if (currentPage != null) {
+            if (pageSize != ArchetypeQuery.ALL_RESULTS) {
+                page = (currentPage.getFirstResult() / pageSize);
+            } else {
+                page = 0;
+            }
+        }
+        return page;
+    }
+
+    /**
+     * Clones this result set.
+     * <p/>
+     * This copies the state of iterators.
+     *
+     * @return a clone of this
+     * @throws CloneNotSupportedException if the instance cannot be cloned
+     */
+    @SuppressWarnings("unchecked")
+    public ResultSet<T> clone() throws CloneNotSupportedException {
+        return (ResultSet<T>) super.clone();
+    }
+
+    /**
      * Returns the no. of pages.
      *
      * @param force if <tt>true</tt> force a calculation of the no. of pages

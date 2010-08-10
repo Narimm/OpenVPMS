@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectViewer;
@@ -30,6 +31,7 @@ import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
 
 
 /**
@@ -60,6 +62,8 @@ public class FinancialActCRUDWindow
      */
     @Override
     protected IMObjectViewer createViewer(IMObject object) {
+        LayoutContext context = new DefaultLayoutContext();
+        context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
         return new IMObjectViewer(object, null, new LayoutStrategy(), null);
     }
 

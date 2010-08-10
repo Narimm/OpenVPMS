@@ -28,6 +28,7 @@ import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.app.ContextSwitchListener;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -154,9 +155,9 @@ public class DelegatingRelationshipStateTableModel
     private Component getSource(int row) {
         if (row < states.size()) {
             RelationshipState state = states.get(row);
-            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
-                    state.getSource(), state.getSourceName(),
-                    !context.isEdit());
+            ContextSwitchListener listener = (context.isEdit()) ? context.getContextSwitchListener() : null;
+            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(state.getSource(), state.getSourceName(),
+                                                                         listener);
             return viewer.getComponent();
         }
         return null;
@@ -172,9 +173,9 @@ public class DelegatingRelationshipStateTableModel
     private Object getTarget(int row) {
         if (row < states.size()) {
             RelationshipState state = states.get(row);
-            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
-                    state.getTarget(), state.getTargetName(),
-                    !context.isEdit());
+            ContextSwitchListener listener = (context.isEdit()) ? context.getContextSwitchListener() : null;
+            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(state.getTarget(), state.getTargetName(),
+                                                                         listener);
             return viewer.getComponent();
         }
         return null;

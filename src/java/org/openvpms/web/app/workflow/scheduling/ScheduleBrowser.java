@@ -37,7 +37,7 @@ import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availab
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.AbstractBrowser;
-import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.table.DefaultTableHeaderRenderer;
@@ -283,7 +283,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * @param listener the listener to add
      */
     public void addScheduleBrowserListener(ScheduleBrowserListener listener) {
-        addQueryListener(listener);
+        addBrowserListener(listener);
     }
 
     /**
@@ -437,7 +437,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      */
     protected void onQuery() {
         query();
-        notifyQueryListeners();
+        notifyBrowserListeners();
     }
 
     /**
@@ -590,13 +590,13 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         }
         if (doubleClick) {
             if (selected == null) {
-                for (QueryBrowserListener<PropertySet> listener : getQueryListeners()) {
+                for (BrowserListener<PropertySet> listener : getBrowserListeners()) {
                     if (listener instanceof ScheduleBrowserListener) {
                         ((ScheduleBrowserListener) listener).create();
                     }
                 }
             } else {
-                for (QueryBrowserListener<PropertySet> listener : getQueryListeners()) {
+                for (BrowserListener<PropertySet> listener : getBrowserListeners()) {
                     if (listener instanceof ScheduleBrowserListener) {
                         ((ScheduleBrowserListener) listener).edit(selected);
                     }

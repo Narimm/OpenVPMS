@@ -20,7 +20,7 @@ package org.openvpms.web.app.admin.lookup;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.component.im.query.ResultSetBrowser;
+import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 
 
@@ -47,7 +47,7 @@ public class LookupWorkspace extends ResultSetCRUDWorkspace<Lookup> {
      */
     @Override
     protected CRUDWindow<Lookup> createCRUDWindow() {
-        ResultSetBrowser<Lookup> browser = getBrowser();
+        QueryBrowser<Lookup> browser = getBrowser();
         return new LookupCRUDWindow(getArchetypes(), browser.getResultSet());
     }
 

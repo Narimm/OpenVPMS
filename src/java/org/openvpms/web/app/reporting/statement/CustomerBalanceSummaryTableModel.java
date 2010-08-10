@@ -198,8 +198,7 @@ public class CustomerBalanceSummaryTableModel
      * @return a component to display the party
      */
     private Component getViewer(IMObjectReference party, String name) {
-        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
-                party, name, true);
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(party, name, true);
         return viewer.getComponent();
     }
 

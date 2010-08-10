@@ -19,7 +19,6 @@ package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -85,18 +84,11 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
      */
     public EditResultSetDialog(String title, T first, ResultSet<T> set) {
         super(title, BUTTONS, true);
-        int currentPage = set.previousIndex();
-        if (currentPage < 0) {
-            currentPage = 0;
+        iter = new ResultSetIterator<T>(set, first);
+        if (iter.hasNext()) {
+            edit(iter.next());
         }
-        IPage<T> page = set.getPage(currentPage);
-        int index = (page != null) ? page.getResults().indexOf(first) : -1;
-        if (index != -1) {
-            ++index; // skip over it when editing
-        }
-        iter = new ResultSetIterator<T>(set, index);
         enableButtons();
-        edit(first);
         setModal(true);
     }
 
@@ -115,8 +107,8 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
                         object = iter.previous();
                     }
                 }
-                enableButtons();
                 edit(object);
+                enableButtons();
             }
         }
     }
@@ -136,8 +128,8 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
                         object = iter.next();
                     }
                 }
-                enableButtons();
                 edit(object);
+                enableButtons();
             }
         }
     }
@@ -220,7 +212,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
      */
     private void enableButtons() {
         ButtonSet set = getButtons();
-        set.setEnabled(PREVIOUS_ID, iter.hasPrevious());
+        set.setEnabled(PREVIOUS_ID, iter.lastIndex() > 0);
         set.setEnabled(NEXT_ID, iter.hasNext());
     }
 

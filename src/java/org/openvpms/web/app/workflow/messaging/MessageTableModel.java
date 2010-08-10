@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.app.ContextSwitchListener;
 
 import java.util.List;
 
@@ -94,7 +95,8 @@ public class MessageTableModel extends AbstractActTableModel {
                 if (result instanceof ActRelationship) {
                     IMObjectReference ref = ((ActRelationship) result).getTarget();
                     String name = DescriptorHelper.getDisplayName(ref.getArchetypeId().getShortName());
-                    result = new IMObjectReferenceViewer(ref, name, true).getComponent();
+                    ContextSwitchListener listener = getLayoutContext().getContextSwitchListener();
+                    result = new IMObjectReferenceViewer(ref, name, listener).getComponent();
                 }
             } else {
                 result = null;

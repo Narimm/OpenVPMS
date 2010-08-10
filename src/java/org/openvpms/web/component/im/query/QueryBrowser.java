@@ -11,33 +11,35 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
-
 package org.openvpms.web.component.im.query;
 
 
 /**
- * Query browser event listener.
+ * A {@link Browser} that provides access to the underlying query.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface QueryBrowserListener<T> extends QueryListener {
+public interface QueryBrowser<T> extends Browser<T> {
 
     /**
-     * Invoked when an object is selected.
+     * Returns the query.
      *
-     * @param object the selected object
+     * @return the query
      */
-    void selected(T object);
+    Query<T> getQuery();
 
     /**
-     * Invoked when an object is browsed.
+     * Returns the result set.
+     * <p/>
+     * Note that this is a snapshot of the browser's result set. Iterating over it will not affect the browser.
      *
-     * @param object the browsed object
+     * @return the result set, or <tt>null</tt> if the query hasn't been executed
      */
-    void browsed(T object);
+    ResultSet<T> getResultSet();
+
 }

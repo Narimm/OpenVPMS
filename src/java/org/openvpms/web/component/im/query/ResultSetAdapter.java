@@ -35,7 +35,7 @@ public abstract class ResultSetAdapter<A, T> implements ResultSet<T> {
     /**
      * The result set to adapt.
      */
-    private final ResultSet<A> set;
+    private ResultSet<A> set;
 
 
     /**
@@ -98,8 +98,8 @@ public abstract class ResultSetAdapter<A, T> implements ResultSet<T> {
     /**
      * Returns the number of results returned per page.
      *
-     * @return the maximum no. of results returned in each page, or {@link
-     *         ArchetypeQuery#ALL_RESULTS} for all results.
+     * @return the maximum no. of results returned in each page, or
+     *         {@link org.openvpms.component.system.common.query.ArchetypeQuery#ALL_RESULTS} for all results.
      */
     public int getPageSize() {
         return set.getPageSize();
@@ -299,6 +299,30 @@ public abstract class ResultSetAdapter<A, T> implements ResultSet<T> {
      */
     public void add(IPage<T> object) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns the index of the last returned page.
+     *
+     * @return the index of the last returned page, or <tt>-1</tt> if no page has been page
+     */
+    public int lastIndex() {
+        return set.lastIndex();
+    }
+
+    /**
+     * Clones this result set.
+     * <p/>
+     * This copies the state of iterators.
+     *
+     * @return a clone of this
+     * @throws CloneNotSupportedException if the set cannot be cloned
+     */
+    @SuppressWarnings("unchecked")
+    public ResultSet<T> clone() throws CloneNotSupportedException {
+        ResultSetAdapter<A, T> result = (ResultSetAdapter<A, T>) super.clone();
+        result.set = set.clone();
+        return result;
     }
 
     /**

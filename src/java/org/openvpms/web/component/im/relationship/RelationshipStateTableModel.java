@@ -25,6 +25,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -62,6 +63,11 @@ public class RelationshipStateTableModel
     private final boolean displayTarget;
 
     /**
+     * The listener to notify when an object is selected.
+     */
+    private final ContextSwitchListener listener;
+
+    /**
      * Name column index.
      */
     private static final int NAME_INDEX = 1;
@@ -91,6 +97,7 @@ public class RelationshipStateTableModel
         this.displayTarget = displayTarget;
         setTableColumnModel(createTableColumnModel());
         setEnableSelection(context.isEdit());
+        this.listener = context.getContextSwitchListener();
     }
 
     /**
@@ -168,8 +175,8 @@ public class RelationshipStateTableModel
             name = state.getSourceName();
         }
 
-        boolean hyperlink = !getEnableSelection();
-        return new IMObjectReferenceViewer(ref, name, hyperlink).getComponent();
+        ContextSwitchListener link = (!getEnableSelection()) ? listener : null;
+        return new IMObjectReferenceViewer(ref, name, link).getComponent();
     }
 
     /**
@@ -181,7 +188,7 @@ public class RelationshipStateTableModel
      */
     protected Object getDescription(RelationshipState state) {
         return displayTarget ? state.getTargetDescription()
-                : state.getSourceDescription();
+                             : state.getSourceDescription();
     }
 
     /**
