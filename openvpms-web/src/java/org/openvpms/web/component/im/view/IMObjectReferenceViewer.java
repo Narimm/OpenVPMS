@@ -22,10 +22,11 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.ContextSwitchListener;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -52,9 +53,14 @@ public class IMObjectReferenceViewer {
     private final String name;
 
     /**
-     * The listener to invoke if the hyperlink is selected.
+     * The listener to invoke if the hyperlink is selected. May be <tt>null</tt>
      */
     private final ActionListener linkListener;
+
+    /**
+     * The context switch listener, to notify when an object hyperlink is selected. May be <tt>null</tt>
+     */
+    private final ContextSwitchListener listener;
 
     /**
      * The style name.
@@ -63,7 +69,7 @@ public class IMObjectReferenceViewer {
 
 
     /**
-     * Construct a new <tt>IMObjectReferenceViewer</tt>.
+     * Constructs an <tt>IMObjectReferenceViewer</tt>.
      *
      * @param reference the reference to view. May be <tt>null</tt>
      * @param link      if <tt>true</tt> enable an hyperlink to the object
@@ -73,16 +79,38 @@ public class IMObjectReferenceViewer {
     }
 
     /**
-     * Construct a new <tt>IMObjectReferenceViewer</tt>.
+     * Constructs an <tt>IMObjectReferenceViewer</tt>.
+     *
+     * @param reference the reference to view. May be <tt>null</tt>
+     * @param listener  the listener to notify. May be <tt>null</tt>
+     */
+    public IMObjectReferenceViewer(IMObjectReference reference, ContextSwitchListener listener) {
+        this(reference, null, listener);
+    }
+
+    /**
+     * Constructs an <tt>IMObjectReferenceViewer</tt>.
      *
      * @param reference the reference to view. May be <tt>null</tt>
      * @param name      the object name. May be <tt>null</tt>
      * @param link      if <tt>true</tt> enable an hyperlink to the object
      */
     public IMObjectReferenceViewer(IMObjectReference reference, String name, boolean link) {
+        this(reference, name, (link) ? DefaultContextSwitchListener.INSTANCE : null);
+    }
+
+    /**
+     * Constructs an <tt>IMObjectReferenceViewer</tt>.
+     *
+     * @param reference the reference to view. May be <tt>null</tt>
+     * @param name      the object name. May be <tt>null</tt>
+     * @param listener  the listener to notify. May be <tt>null</tt>
+     */
+    public IMObjectReferenceViewer(IMObjectReference reference, String name, ContextSwitchListener listener) {
         this.reference = reference;
         this.name = name;
-        if (link) {
+        this.listener = listener;
+        if (listener != null) {
             linkListener = new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onView();
@@ -93,6 +121,7 @@ public class IMObjectReferenceViewer {
         }
     }
 
+
     /**
      * Create a new <tt>IMObjectReferenceViewer</tt> that invokes an action listener
      * when the reference is selected.
@@ -101,10 +130,10 @@ public class IMObjectReferenceViewer {
      * @param name      the object name. May be <tt>null</tt>
      * @param listener  the listener to notify. May be <tt>null</tt>
      */
-    public IMObjectReferenceViewer(IMObjectReference reference, String name,
-                                   final ActionListener listener) {
+    public IMObjectReferenceViewer(IMObjectReference reference, String name, final ActionListener listener) {
         this.reference = reference;
         this.name = name;
+        this.listener = null;
         this.linkListener = new ActionListener() {
             public void onAction(ActionEvent event) {
                 event = new ActionEvent(IMObjectReferenceViewer.this, event.getActionCommand());
@@ -180,7 +209,7 @@ public class IMObjectReferenceViewer {
     protected void onView() {
         IMObject object = IMObjectHelper.getObject(reference);
         if (object != null) {
-            ContextApplicationInstance.getInstance().switchTo(object);
+            listener.switchTo(object);
         }
     }
 

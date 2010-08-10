@@ -66,7 +66,7 @@ public interface Browser<T> {
      *
      * @param listener the listener to add
      */
-    void addQueryListener(QueryBrowserListener<T> listener);
+    void addBrowserListener(BrowserListener<T> listener);
 
     /**
      * Query using the specified criteria, and populate the browser with

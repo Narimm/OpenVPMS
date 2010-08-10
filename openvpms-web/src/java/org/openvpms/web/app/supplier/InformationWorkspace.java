@@ -19,12 +19,12 @@
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.edit.EditListBrowserDialog;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -34,15 +34,14 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
+public class InformationWorkspace extends ResultSetCRUDWorkspace<Party> {
 
     /**
      * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("supplier", "info",
-              Archetypes.create("party.supplier*", Party.class,
-                                Messages.get("supplier.info.type")));
+        super("supplier", "info");
+        setArchetypes(Archetypes.create("party.supplier*", Party.class, Messages.get("supplier.info.type")));
     }
 
     /**
@@ -56,17 +55,14 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
         GlobalContext.getInstance().setSupplier(object);
     }
 
-
-    /**
-     * Creates a new dialog to select an object.
+       /**
+     * Creates a new CRUD window for viewing and editing Products.
      *
-     * @param browser the browser
-     * @return a new dialog
+     * @return a new CRUD window
      */
-    @Override
-    protected BrowserDialog<Party> createBrowserDialog(Browser<Party> browser) {
-        String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
-        return new EditListBrowserDialog<Party>(title, browser);
+    protected CRUDWindow<Party> createCRUDWindow() {
+        QueryBrowser<Party> browser = getBrowser();
+        return new ResultSetCRUDWindow<Party>(getArchetypes(), browser.getResultSet());
     }
 
 }

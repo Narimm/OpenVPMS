@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.query.ResultSetBrowser;
+import org.openvpms.web.component.im.query.QueryBrowser;
 
 
 /**
@@ -73,7 +73,7 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Product> createCRUDWindow() {
-        ResultSetBrowser<Product> browser = getBrowser();
+        QueryBrowser<Product> browser = getBrowser();
         return new ProductCRUDWindow(getArchetypes(), browser.getResultSet());
     }
 

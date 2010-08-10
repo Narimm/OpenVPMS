@@ -26,7 +26,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -189,7 +189,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
      */
     protected void setBrowser(Browser<Child> browser) {
         if (browser != null) {
-            browser.addQueryListener(new QueryBrowserListener<Child>() {
+            browser.addBrowserListener(new BrowserListener<Child>() {
                 public void query() {
                     onBrowserQuery();
                 }

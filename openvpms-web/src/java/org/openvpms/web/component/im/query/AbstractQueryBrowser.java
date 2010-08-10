@@ -30,13 +30,13 @@ import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
- * Abstract implementation of the {@link ResultSetBrowser} interface where
+ * Abstract implementation of the {@link QueryBrowser} interface where
  * the objects being browsed are provided by an {@link Query}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractQueryBrowser<T> extends AbstractBrowser<T> implements ResultSetBrowser<T> {
+public abstract class AbstractQueryBrowser<T> extends AbstractBrowser<T> implements QueryBrowser<T> {
 
     /**
      * The query object.
@@ -178,7 +178,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractBrowser<T> impleme
      */
     private void onQuery() {
         query();
-        notifyQueryListeners();
+        notifyBrowserListeners();
     }
 
 }

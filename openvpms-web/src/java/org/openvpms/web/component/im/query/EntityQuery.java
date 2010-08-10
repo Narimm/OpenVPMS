@@ -18,16 +18,10 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -85,21 +79,7 @@ public class EntityQuery extends QueryAdapter<ObjectSet, Entity> {
      * @return the converted set
      */
     protected ResultSet<Entity> convert(ResultSet<ObjectSet> set) {
-        return new ResultSetAdapter<ObjectSet, Entity>(set) {
-
-            protected IPage<Entity> convert(IPage<ObjectSet> page) {
-                List<Entity> objects = new ArrayList<Entity>();
-                for (ObjectSet set : page.getResults()) {
-                    IMObjectReference ref
-                            = set.getReference("entity.reference");
-                    Entity entity = (Entity) IMObjectHelper.getObject(ref);
-                    objects.add(entity);
-                }
-                return new Page<Entity>(objects, page.getFirstResult(),
-                                        page.getPageSize(),
-                                        page.getTotalResults());
-            }
-        };
+        return new EntityResultSetAdapter((EntityObjectSetResultSet) set);
     }
 
 }

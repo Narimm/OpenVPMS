@@ -28,7 +28,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabPaneModel;
@@ -202,12 +202,12 @@ public class RecordBrowser implements Browser<Act> {
      *
      * @param listener the listener to add
      */
-    public void addQueryListener(QueryBrowserListener<Act> listener) {
-        summary.addQueryListener(listener);
-        problems.addQueryListener(listener);
-        reminderAlert.addQueryListener(listener);
-        document.addQueryListener(listener);
-        charges.addQueryListener(listener);
+    public void addBrowserListener(BrowserListener<Act> listener) {
+        summary.addBrowserListener(listener);
+        problems.addBrowserListener(listener);
+        reminderAlert.addBrowserListener(listener);
+        document.addBrowserListener(listener);
+        charges.addBrowserListener(listener);
     }
 
     /**

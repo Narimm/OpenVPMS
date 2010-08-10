@@ -26,12 +26,8 @@ import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.edit.EditListBrowserDialog;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -122,18 +118,6 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
             ((PatientQuery) query).setShowAllPatients(true);
         }
         return query;
-    }
-
-    /**
-     * Creates a new dialog to select an object.
-     *
-     * @param browser the browser
-     * @return a new dialog
-     */
-    @Override
-    protected BrowserDialog<Party> createBrowserDialog(Browser<Party> browser) {
-        String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
-        return new EditListBrowserDialog<Party>(title, browser);
     }
 
 }

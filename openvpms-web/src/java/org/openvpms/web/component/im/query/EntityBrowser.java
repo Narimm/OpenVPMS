@@ -35,8 +35,12 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityBrowser extends BrowserAdapter<ObjectSet, Entity> {
+public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
 
+    /**
+     * The query.
+     */
+    private EntityQuery query;
 
     /**
      * The table model.
@@ -51,7 +55,28 @@ public class EntityBrowser extends BrowserAdapter<ObjectSet, Entity> {
      * @param query the query
      */
     public EntityBrowser(EntityQuery query) {
+        this.query = query;
         setBrowser(createBrowser(query));
+    }
+
+    /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    public Query<Entity> getQuery() {
+        return query;
+    }
+
+    /**
+     * Returns the result set.
+     * <p/>
+     * Note that this is a snapshot of the browser's result set. Iterating over it will not affect the browser.
+     *
+     * @return the result set
+     */
+    public ResultSet<Entity> getResultSet() {
+        return new EntityResultSetAdapter((EntityObjectSetResultSet) getBrowser().getResultSet());
     }
 
     /**
@@ -85,12 +110,7 @@ public class EntityBrowser extends BrowserAdapter<ObjectSet, Entity> {
             @Override
             protected ResultSet<ObjectSet> doQuery() {
                 ResultSet<ObjectSet> result = super.doQuery();
-                boolean showArchetype;
-                if (query.getShortName() != null) {
-                    showArchetype = false;
-                } else {
-                    showArchetype = query.getShortNames().length > 1;
-                }
+                boolean showArchetype = query.getShortName() == null && query.getShortNames().length > 1;
                 model.showArchetype(showArchetype);
                 return result;
             }

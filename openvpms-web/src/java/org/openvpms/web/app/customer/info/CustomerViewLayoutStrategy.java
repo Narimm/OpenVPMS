@@ -22,13 +22,13 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -60,7 +60,7 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
     protected void doTabLayout(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
                                TabPaneModel model, LayoutContext context, boolean shortcuts) {
         super.doTabLayout(object, descriptors, properties, model, context, shortcuts);
-        Browser<Act> appointments = getAppointments((Party) object);
+        Browser<Act> appointments = getAppointments((Party) object, context);
         Component inset = ColumnFactory.create("Inset", appointments.getComponent());
 
         String label = Messages.get("customer.info.appointments");
@@ -74,15 +74,18 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
      * Creates a new appointment browser.
      *
      * @param customer the customer
+     * @param context the layout context
      * @return a new appointment browser
      */
-    protected Browser<Act> getAppointments(Party customer) {
+    protected Browser<Act> getAppointments(Party customer, LayoutContext context) {
         Query<Act> query = new CustomerAppointmentQuery(customer);
         IMTableModel<Act> model = new CustomerAppointmentTableModel();
         Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, model);
-        browser.addQueryListener(new QueryBrowserListener<Act>() {
+        final ContextSwitchListener listener = context.getContextSwitchListener();
+        browser.addBrowserListener(new BrowserListener<Act>() {
             public void selected(Act object) {
-                switchTo(object);
+                // switch to the appointment workspace, and select the appointment.
+                listener.switchTo(object);
             }
 
             public void query() {
@@ -94,15 +97,6 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
             }
         });
         return browser;
-    }
-
-    /**
-     * Switch to the appointment workspace, and select the appointment.
-     *
-     * @param act the appointment
-     */
-    private void switchTo(Act act) {
-        ContextApplicationInstance.getInstance().switchTo(act);
     }
 
 }

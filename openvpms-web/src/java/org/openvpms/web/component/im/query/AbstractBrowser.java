@@ -35,8 +35,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     /**
      * The event listener list.
      */
-    private List<QueryBrowserListener<T>> listeners
-            = new ArrayList<QueryBrowserListener<T>>();
+    private List<BrowserListener<T>> listeners = new ArrayList<BrowserListener<T>>();
 
     /**
      * The focus group.
@@ -49,7 +48,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      *
      * @param listener the listener to add
      */
-    public void addQueryListener(QueryBrowserListener<T> listener) {
+    public void addBrowserListener(BrowserListener<T> listener) {
         listeners.add(listener);
     }
 
@@ -65,8 +64,8 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     /**
      * Notifies any registered query listeners.
      */
-    protected void notifyQueryListeners() {
-        for (QueryBrowserListener<T> listener : getQueryListeners()) {
+    protected void notifyBrowserListeners() {
+        for (BrowserListener<T> listener : getBrowserListeners()) {
             listener.query();
         }
     }
@@ -77,7 +76,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      * @param selected the selected object
      */
     protected void notifySelected(T selected) {
-        for (QueryBrowserListener<T> listener : getQueryListeners()) {
+        for (BrowserListener<T> listener : getBrowserListeners()) {
             listener.selected(selected);
         }
     }
@@ -88,7 +87,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      * @param browsed the browsed object
      */
     protected void notifyBrowsed(T browsed) {
-        for (QueryBrowserListener<T> listener : getQueryListeners()) {
+        for (BrowserListener<T> listener : getBrowserListeners()) {
             listener.browsed(browsed);
         }
     }
@@ -99,8 +98,8 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      * @return the listeners
      */
     @SuppressWarnings("unchecked")
-    protected QueryBrowserListener<T>[] getQueryListeners() {
-        return listeners.toArray(new QueryBrowserListener[listeners.size()]);
+    protected BrowserListener<T>[] getBrowserListeners() {
+        return listeners.toArray(new BrowserListener[listeners.size()]);
     }
 
 }

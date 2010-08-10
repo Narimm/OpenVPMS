@@ -113,8 +113,8 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      *
      * @param listener the listener to add
      */
-    public void addQueryListener(final QueryBrowserListener<T> listener) {
-        browser.addQueryListener(new QueryBrowserListener<A>() {
+    public void addBrowserListener(final BrowserListener<T> listener) {
+        browser.addBrowserListener(new BrowserListener<A>() {
             public void query() {
                 listener.query();
             }

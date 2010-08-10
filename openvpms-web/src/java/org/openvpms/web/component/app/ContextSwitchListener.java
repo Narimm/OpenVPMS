@@ -15,21 +15,31 @@
  *
  *  $Id$
  */
-package org.openvpms.web.component.im.query;
+package org.openvpms.web.component.app;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+
 
 /**
- * A {@link Browser} that provides access to the query results as a {@link ResultSet}.
+ * A listener to change the view.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface ResultSetBrowser<T> extends Browser<T> {
+public interface ContextSwitchListener {
 
     /**
-     * Returns the result set.
+     * Switches the current view to display an object.
      *
-     * @return the result set
+     * @param object the object to view
      */
-    ResultSet<T> getResultSet();
+    void switchTo(IMObject object);
+
+    /**
+     * Switches the current view to one that supports a particular archetype.
+     *
+     * @param shortName the archetype short name
+     */
+    void switchTo(String shortName);
 
 }

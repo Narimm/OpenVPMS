@@ -20,7 +20,7 @@ package org.openvpms.web.app.subsystem;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.query.ResultSetBrowser;
+import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.DoubleClickMonitor;
@@ -28,7 +28,7 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 
 
 /**
- * A CRUD workspace that provides a {@link ResultSetBrowser} to display objects, and a {@link ResultSetCRUDWindow}
+ * A CRUD workspace that provides a {@link org.openvpms.web.component.im.query.QueryBrowser} to display objects, and a {@link ResultSetCRUDWindow}
  * to view/edit the objects.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -72,7 +72,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
      */
     @Override
     protected CRUDWindow<T> createCRUDWindow() {
-        ResultSetBrowser<T> browser = getBrowser();
+        QueryBrowser<T> browser = getBrowser();
         return new ResultSetCRUDWindow<T>(getArchetypes(), browser.getResultSet());
     }
 
@@ -92,8 +92,8 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
      * @return the browser, or <tt>null</tt> if none has been registered
      */
     @Override
-    protected ResultSetBrowser<T> getBrowser() {
-        return (ResultSetBrowser<T>) super.getBrowser();
+    protected QueryBrowser<T> getBrowser() {
+        return (QueryBrowser<T>) super.getBrowser();
     }
 
     /**
@@ -106,6 +106,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     @Override
     protected void onBrowserSelected(T object) {
         super.onBrowserSelected(object);
+        updateResultSet();
         if (click.isDoubleClick(object.getId())) {
             getCRUDWindow().view();
         }
@@ -182,7 +183,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
      * Updates the CRUD window with the current result set.
      */
     private void updateResultSet() {
-        ResultSetBrowser<T> browser = getBrowser();
+        QueryBrowser<T> browser = getBrowser();
         getCRUDWindow().setResultSet(browser.getResultSet());
     }
 

@@ -45,19 +45,24 @@ public class ResultSetIterator<T> implements ListIterator<T> {
     private ListIterator<T> pageIterator;
 
     /**
-     * The
+     * Indicates to start iteration at the specified offset in first page, or <tt>-1</tt> to start at the beginning
      */
-    private int initialIndex;
+    private int initialOffset;
 
     /**
      * The page offset into the results, use to help iterate through the result set.
      */
-    int firstResult = -1;
+    private int firstResult = -1;
 
     /**
      * The no. of elements in the last-read page.
      */
-    int count;
+    private int count;
+
+    /**
+     * The index of the last returned element.
+     */
+    private int last = -1;
 
 
     /**
@@ -70,14 +75,40 @@ public class ResultSetIterator<T> implements ListIterator<T> {
     }
 
     /**
-     * Constructs a new <tt>ResultSetIterator</tt>.
+     * Constructs a <tt>ResultSetIterator</tt>.
+     *
+     * @param set    the result set
+     * @param offset start iteration at the specified offset in first page, or <tt>-1</tt> to start at the beginning
+     */
+    public ResultSetIterator(ResultSet<T> set, int offset) {
+        this.set = set;
+        this.initialOffset = offset;
+        if (initialOffset != -1) {
+            moveNext();
+        }
+    }
+
+    /**
+     * Constructs a <tt>ResultSetIterator</tt> that attempts to start iteration from the supplied object.
+     * <p/>
+     * NOTE: the object must be in the last-retrieved page, for the iteration to begin at it. It will be
+     * returned by the first call to <tt>next()</tt>.
      *
      * @param set   the result set
-     * @param index start iteration at the specified index, or <tt>-1</tt> to start at the beginning
+     * @param first the first object to return
      */
-    public ResultSetIterator(ResultSet<T> set, int index) {
+    public ResultSetIterator(ResultSet<T> set, T first) {
         this.set = set;
-        this.initialIndex = index;
+        int lastPage = set.lastIndex();
+        if (lastPage != -1) {
+            IPage<T> page = set.getPage(lastPage);
+            if (page != null) {
+                initialOffset = page.getResults().indexOf(first);
+                if (initialOffset != -1) {
+                    moveNext();
+                }
+            }
+        }
     }
 
     /**
@@ -124,7 +155,9 @@ public class ResultSetIterator<T> implements ListIterator<T> {
                 throw new NoSuchElementException();
             }
         }
-        return pageIterator.next();
+        T result = pageIterator.next();
+        last = pageIterator.previousIndex();
+        return result;
     }
 
     /**
@@ -144,7 +177,9 @@ public class ResultSetIterator<T> implements ListIterator<T> {
                 throw new NoSuchElementException();
             }
         }
-        return pageIterator.previous();
+        T result = pageIterator.previous();
+        last = pageIterator.nextIndex();
+        return result;
     }
 
     /**
@@ -189,6 +224,15 @@ public class ResultSetIterator<T> implements ListIterator<T> {
             offset = pageIterator.previousIndex();
         }
         return (page >= 0) ? set.getPageSize() * page + offset : -1;
+    }
+
+    /**
+     * Returns the index of the last returned element.
+     *
+     * @return the index of the last returned element, or <tt>-1</tt> if no element has been returned
+     */
+    public int lastIndex() {
+        return last;
     }
 
     /**
@@ -244,12 +288,12 @@ public class ResultSetIterator<T> implements ListIterator<T> {
         if (page != null) {
             pageIterator = page.getResults().listIterator();
             count = page.getResults().size();
-            if (initialIndex != -1) {
+            if (initialOffset != -1) {
                 // skip forward to the specified index
-                while (pageIterator.hasNext() && pageIterator.nextIndex() != initialIndex) {
+                while (pageIterator.hasNext() && pageIterator.nextIndex() != initialOffset) {
                     pageIterator.next();
                 }
-                initialIndex = -1;
+                initialOffset = -1;
             }
             firstResult = page.getFirstResult();
             result = true;

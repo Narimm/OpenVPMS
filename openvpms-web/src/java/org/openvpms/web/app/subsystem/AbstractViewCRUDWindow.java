@@ -23,8 +23,11 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
 
 
 /**
@@ -75,9 +78,12 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
      * Creates a new {@link IMObjectViewer} for an object.
      *
      * @param object the object to view
+     * @return a new viewer
      */
     protected IMObjectViewer createViewer(IMObject object) {
-        return new IMObjectViewer(object, null);
+        LayoutContext context = new DefaultLayoutContext();
+        context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+        return new IMObjectViewer(object, null, context);
     }
 
     /**

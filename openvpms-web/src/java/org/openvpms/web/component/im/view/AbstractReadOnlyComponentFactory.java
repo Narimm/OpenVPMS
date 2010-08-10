@@ -24,6 +24,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
@@ -138,27 +139,30 @@ public abstract class AbstractReadOnlyComponentFactory
      */
     protected Component getObjectViewer(Property property, IMObject context) {
         IMObjectReference ref = (IMObjectReference) property.getValue();
-        boolean link = true;
-        if (getLayoutContext().isEdit()) {
-            // disable hyperlinks if an edit is in progress.
-            link = false;
+        boolean link = false;
+        ContextSwitchListener listener = null;
+        LayoutContext layout = getLayoutContext();
+        if (!layout.isEdit()) {
+            // enable hyperlinks if no edit is in progress.
+            listener = layout.getContextSwitchListener();
+            link = true;
         }
         String[] range = property.getArchetypeRange();
         if (TypeHelper.matches(range, "document.*")) {
             return new DocumentViewer(ref, context, link).getComponent();
         }
 
-        return new IMObjectReferenceViewer(ref, link).getComponent();
+        return new IMObjectReferenceViewer(ref, listener).getComponent();
     }
 
     /**
      * Returns a component to display a collection.
      *
-     * @param parent the parent object
+     * @param property the collection
+     * @param parent   the parent object
      * @return a collection to display the node
      */
-    protected Component getCollectionViewer(CollectionProperty property,
-                                            IMObject parent) {
+    protected Component getCollectionViewer(CollectionProperty property, IMObject parent) {
         Component result = null;
         if (property.getMaxCardinality() == 1) {
             // handle the special case of a collection of one element.
