@@ -457,7 +457,7 @@ public class TestHelper extends Assert {
      */
     public static Lookup getLookup(String shortName, String code,
                                    boolean save) {
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
         query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);
         QueryIterator<Lookup> iter = new IMObjectQueryIterator<Lookup>(query);
