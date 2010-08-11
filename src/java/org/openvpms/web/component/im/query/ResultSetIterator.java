@@ -155,8 +155,9 @@ public class ResultSetIterator<T> implements ListIterator<T> {
                 throw new NoSuchElementException();
             }
         }
+        int lastIndex = nextIndex();
         T result = pageIterator.next();
-        last = pageIterator.previousIndex();
+        last = lastIndex;
         return result;
     }
 
@@ -177,8 +178,9 @@ public class ResultSetIterator<T> implements ListIterator<T> {
                 throw new NoSuchElementException();
             }
         }
+        int lastIndex = previousIndex();
         T result = pageIterator.previous();
-        last = pageIterator.nextIndex();
+        last = lastIndex;
         return result;
     }
 
