@@ -18,18 +18,13 @@
 
 package org.openvpms.archetype.util;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
 
 
 /**
@@ -164,46 +159,14 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        macro1 = createMacro("macro1", "'macro 1 text'");
-        macro2 = createMacro("macro2", "concat('one', 'two', 'three')");
-        createMacro("displayName", "openvpms:get(., 'displayName')");
-        createMacro("exceptionMacro", "openvpms:get(., 'invalidnode')");
-        createMacro("nested", "concat('nested test: ', $macro1)");
-        createMacro("numbertest", "concat('input number: ', $number)");
+        macro1 = MacroTestHelper.createMacro("macro1", "'macro 1 text'");
+        macro2 = MacroTestHelper.createMacro("macro2", "concat('one', 'two', 'three')");
+        MacroTestHelper.createMacro("displayName", "openvpms:get(., 'displayName')");
+        MacroTestHelper.createMacro("exceptionMacro", "openvpms:get(., 'invalidnode')");
+        MacroTestHelper.createMacro("nested", "concat('nested test: ', $macro1)");
+        MacroTestHelper.createMacro("numbertest", "concat('input number: ', $number)");
         macros = new MacroEvaluator(new MacroCache());
     }
 
-    /**
-     * Helper to create and save a macro.
-     *
-     * @param code       the macro code
-     * @param expression the macro expression
-     * @return the macro
-     */
-    private Lookup createMacro(String code, String expression) {
-        deleteExisting(code);
-        Lookup macro = (Lookup) create("lookup.macro");
-        IMObjectBean bean = new IMObjectBean(macro);
-        bean.setValue("code", code);
-        bean.setValue("name", code);
-        bean.setValue("expression", expression);
-        bean.save();
-        return macro;
-    }
-
-    /**
-     * Deletes any exising macro with the specified code, to avoid duplicate
-     * errors.
-     *
-     * @param code the macro code
-     */
-    private void deleteExisting(String code) {
-        ArchetypeQuery query = new ArchetypeQuery("lookup.macro", false, false);
-        query.add(new NodeConstraint("code", code));
-        IArchetypeService service = getArchetypeService();
-        for (IMObject object : service.get(query).getResults()) {
-            service.remove(object);
-        }
-    }
 
 }

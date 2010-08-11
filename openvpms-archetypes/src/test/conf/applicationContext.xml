@@ -155,7 +155,16 @@
                        value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
                     <bean class="org.openvpms.archetype.function.party.PartyFunctions"/>
-
+                </entry>
+                <entry key="macro">
+                    <bean class="org.openvpms.archetype.function.macro.MacroFunctions">
+                        <constructor-arg index="0">
+                            <bean class="org.openvpms.archetype.util.MacroCache">
+                                <constructor-arg index="0" ref="lookupService"/>
+                                <constructor-arg index="1" ref="archetypeService"/>
+                            </bean>
+                        </constructor-arg>
+                    </bean>
                 </entry>
             </map>
         </constructor-arg>
