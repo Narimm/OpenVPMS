@@ -543,7 +543,16 @@
         </properties>
     </style>
 
-    <style name="ParameterDialog" base-name="PopupWindow"
+    <style name="ParameterDialog2Column" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.large.width}"/>
+            <property name="height" value="${dialog.medium.height}"/>
+            <property name="insets" value="${padding.small}"/>
+        </properties>
+    </style>
+
+    <style name="ParameterDialog1Column" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="${dialog.medium.width}"/>

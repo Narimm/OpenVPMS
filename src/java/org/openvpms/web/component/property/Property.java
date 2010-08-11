@@ -191,6 +191,13 @@ public interface Property extends Modifiable {
     void setTransformer(PropertyTransformer transformer);
 
     /**
+     * Returns the property transformer.
+     *
+     * @return the property transfoer. May be <tt>null</tt>
+     */
+    PropertyTransformer getTransformer();
+
+    /**
      * Notify any listeners that they need to refresh and marks this modified.
      */
     void refresh();

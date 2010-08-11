@@ -538,6 +538,9 @@ public class IMObjectProperty extends AbstractProperty
         }
     }
 
+    /**
+     * Removes any validation errors.
+     */
     private void resetErrors() {
         if (validationErrors != null && !validationErrors.isEmpty()) {
             validationErrors.clear();
@@ -554,6 +557,11 @@ public class IMObjectProperty extends AbstractProperty
                                     descriptor.getName(), message));
     }
 
+    /**
+     * Adds a validation error.
+     *
+     * @param error the validation error
+     */
     private void addError(ValidatorError error) {
         if (validationErrors == null) {
             validationErrors = new ArrayList<ValidatorError>();
@@ -567,7 +575,7 @@ public class IMObjectProperty extends AbstractProperty
      * @param message the key of the message
      * @param args    an array of arguments to be inserted into the message
      */
-    private void addError(String message, Object ... args) {
+    private void addError(String message, Object... args) {
         message = Messages.get(message, args);
         addError(message);
     }

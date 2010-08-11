@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.doc;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -34,6 +35,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
 
 import java.util.ArrayList;
@@ -125,5 +127,19 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
             result.sort(sort);
         }
         return result;
+    }
+
+    /**
+     * Determines if the query selects a particular object reference.
+     *
+     * @param reference the object reference to check
+     * @return <tt>true</tt> if the object reference is selected by the query
+     */
+    @Override
+    public boolean selects(IMObjectReference reference) {
+        if (archetypeShortName == null) {
+            return super.selects(reference);
+        }
+        return QueryHelper.selects(query(), reference);
     }
 }

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.doc;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PopupDialog;
 
@@ -38,17 +39,30 @@ public class ParameterDialog extends PopupDialog {
      */
     private final ReportParameters parameters;
 
+    /**
+     * The 2 column dialog style.
+     */
+    private static final String WIDE_STYLE = "ParameterDialog2Column";
+
+    /**
+     * The 1 column dialog style.
+     */
+    private static final String NARROW_STYLE = "ParameterDialog1Column";
+
 
     /**
      * Constructs a new <tt>ParameterDialog</tt>.
      *
      * @param title      the dialog title
      * @param parameters the report parameter types
+     * @param context    context object for evaluating macros against. If <tt>null</tt> macro expansion is disabled
      */
-    public ParameterDialog(String title, Set<ParameterType> parameters) {
-        super(title, "ParameterDialog", OK_CANCEL);
+    public ParameterDialog(String title, Set<ParameterType> parameters, IMObject context) {
+        super(title, null, OK_CANCEL);
         setModal(true);
-        this.parameters = new ReportParameters(parameters);
+        this.parameters = new ReportParameters(parameters, context);
+        String style = (parameters.size() >= 4) ? WIDE_STYLE : NARROW_STYLE;
+        setStyleName(style);
         getLayout().add(this.parameters.getComponent());
     }
 

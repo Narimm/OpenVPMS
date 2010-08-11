@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.AbstractProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -59,9 +58,9 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
         super(object, parent, layoutContext);
 
         Property code = getProperty("code");
-        if (code != null && code instanceof AbstractProperty) {
+        if (code != null) {
             // disable macro expansion for the code node to avoid the node expanding itself
-            PropertyTransformer transformer = ((AbstractProperty) code).getTransformer();
+            PropertyTransformer transformer = code.getTransformer();
             if (transformer instanceof StringPropertyTransformer) {
                 ((StringPropertyTransformer) transformer).setExpandMacros(false);
             }

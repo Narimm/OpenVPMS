@@ -22,6 +22,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextArea;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.util.TextDocument;
 
@@ -42,7 +43,7 @@ public class BoundTextArea extends TextArea {
 
     /**
      * Constructs a new <tt>BoundTextArea</tt>.
-     * The property is associated with an {@link StringPropertyTransformer}
+     * If not already present, the property is associated with an {@link StringPropertyTransformer}
      * that doesn't trim leading and trailing spaces or new lines.
      *
      * @param property the property to bind
@@ -57,9 +58,14 @@ public class BoundTextArea extends TextArea {
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
-        property.setTransformer(new StringPropertyTransformer(property, false));
+        PropertyTransformer transformer = property.getTransformer();
+        if (!(transformer instanceof StringPropertyTransformer)) {
+            property.setTransformer(new StringPropertyTransformer(property, false));
+        } else {
+            ((StringPropertyTransformer) transformer).setTrim(false);
+        }
     }
-    
+
     /**
      * Life-cycle method invoked when the <tt>Component</tt> is added to a registered hierarchy.
      */
@@ -77,5 +83,5 @@ public class BoundTextArea extends TextArea {
         super.dispose();
         binder.unbind();
     }
-    
+
 }

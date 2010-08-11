@@ -316,6 +316,11 @@
                        value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
                 <entry key="word"
                        value="org.apache.commons.lang.WordUtils"/>
+                <entry key="macro">
+                    <bean class="org.openvpms.archetype.function.macro.MacroFunctions">
+                        <constructor-arg index="0" ref="macroCache"/>
+                    </bean>
+                </entry>
             </map>
         </constructor-arg>
     </bean>
@@ -523,7 +528,10 @@
         <constructor-arg ref="lookupService"/>
     </bean>
 
-    <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache"/>
+    <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache">
+        <constructor-arg index="0" ref="lookupService"/>
+        <constructor-arg index="1" ref="archetypeService"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        PROPER CASING                               -->

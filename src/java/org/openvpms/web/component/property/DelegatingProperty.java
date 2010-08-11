@@ -308,6 +308,15 @@ public abstract class DelegatingProperty implements CollectionProperty {
     }
 
     /**
+     * Returns the property transformer.
+     *
+     * @return the property transfoer. May be <tt>null</tt>
+     */
+    public PropertyTransformer getTransformer() {
+        return property.getTransformer();
+    }
+
+    /**
      * Notify any listeners that they need to refresh and marks this modified.
      */
     public void refresh() {
