@@ -177,7 +177,7 @@ public class DocumentGenerator {
                                   final boolean save) {
         Set<ParameterType> parameters = report.getParameterTypes();
         String title = Messages.get("document.input.parameters");
-        final ParameterDialog dialog = new ParameterDialog(title, parameters);
+        final ParameterDialog dialog = new ParameterDialog(title, parameters, act);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

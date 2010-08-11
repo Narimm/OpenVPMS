@@ -26,10 +26,9 @@ import org.openvpms.web.system.ServiceHelper;
 
 
 /**
- * String property transformer, that provides macro expansion for
- * {@link IMObjectProperty} instances.
+ * String property transformer, that provides macro expansion for {@link IMObjectProperty} instances.
  * <p/>
- * For macro expansion to occur, the property be editable (i.e not read-only or derived)
+ * For macro expansion to occur, the property must be editable (i.e not read-only or derived).
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -45,7 +44,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      * Determines if leading and trailing spaces and new lines should be
      * trimmed.
      */
-    private final boolean trim;
+    private boolean trim;
 
     /**
      * The context.
@@ -59,7 +58,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
 
 
     /**
-     * Constructs a new <tt>StringTransformer</tt>.
+     * Constructs a <tt>StringTransformer</tt>.
      *
      * @param property the property
      */
@@ -68,24 +67,29 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     }
 
     /**
-     * Constructs a new <tt>StringTransformer</tt>.
+     * Constructs a <tt>StringTransformer</tt>.
      *
      * @param property the property
-     * @param trim     if <tt>true</tt> trim the string of leading and trailing
-     *                 spaces, new lines
+     * @param trim     if <tt>true</tt> trim the string of leading and trailing spaces, new lines
      */
     public StringPropertyTransformer(Property property, boolean trim) {
+        this(property, getContext(property), trim);
+    }
+
+    /**
+     * Constructs a <tt>StringTransformer</tt>.
+     *
+     * @param property the property
+     * @param context  the context, used for evaluating macros. If <tt>null</tt>, macros won't be evaluated
+     * @param trim     if <tt>true</tt> trim the string of leading and trailing spaces and new lines
+     */
+    public StringPropertyTransformer(Property property, Object context, boolean trim) {
         super(property);
-        if (property instanceof IMObjectProperty) {
-            if (!property.isReadOnly() && !property.isDerived()) {
-                macros = new MacroEvaluator(ServiceHelper.getMacroCache());
-            } else {
-                macros = null;
-            }
-            context = ((IMObjectProperty) property).getObject();
+        this.context = context;
+        if (context != null && !property.isReadOnly() && !property.isDerived()) {
+            macros = new MacroEvaluator(ServiceHelper.getMacroCache());
         } else {
             macros = null;
-            context = null;
         }
         expandMacros = macros != null;
         this.trim = trim;
@@ -107,6 +111,15 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      */
     public void setExpandMacros(boolean expand) {
         expandMacros = expand;
+    }
+
+    /**
+     * Determines if whitespace should be trimmed.
+     *
+     * @param trim if <tt>true</tt> trim the string of leading and trailing spaces and new lines
+     */
+    public void setTrim(boolean trim) {
+        this.trim = trim;
     }
 
     /**
@@ -151,6 +164,16 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         }
 
         return result;
+    }
+
+    /**
+     * Helper to return the context from a property.
+     *
+     * @param property the property
+     * @return the context, or <tt>null</tt> if the property has no context
+     */
+    private static Object getContext(Property property) {
+        return (property instanceof IMObjectProperty) ? ((IMObjectProperty) property).getObject() : null;
     }
 
 }
