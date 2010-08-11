@@ -44,12 +44,7 @@ public class JXPathHelper {
      */
     private static FunctionLibrary functions = new FunctionLibrary();
 
-    /**
-     * Default constructor.
-     */
-    public JXPathHelper() {
-        // set the factory name so that the correct version context
-        // factory is invoked
+    static {
         System.setProperty(JXPathContextFactory.FACTORY_NAME_PROPERTY,
                            OpenVPMSContextFactoryReferenceImpl.class.getName());
 
@@ -57,8 +52,13 @@ public class JXPathHelper {
         TypeUtils.setTypeConverter(new OpenVPMSTypeConverter());
 
         // now just add the default functions
-        functions.addFunctions(
-                JXPathContext.newContext(new Object()).getFunctions());
+        functions.addFunctions(JXPathContext.newContext(new Object()).getFunctions());
+    }
+
+    /**
+     * Default constructor.
+     */
+    public JXPathHelper() {
     }
 
     /**
@@ -69,8 +69,6 @@ public class JXPathHelper {
      * @param properties the class function luibraries to include
      */
     public JXPathHelper(Map properties) {
-        this();
-        
         // add the extension functions
         if (properties != null) {
             for (Object ns : properties.keySet()) {
