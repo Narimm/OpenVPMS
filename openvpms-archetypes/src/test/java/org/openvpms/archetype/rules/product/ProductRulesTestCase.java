@@ -27,6 +27,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
 import java.math.BigDecimal;
@@ -66,6 +67,13 @@ public class ProductRulesTestCase extends AbstractProductTest {
         stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
         stockRules.updateStock(product, stockLocation, BigDecimal.ONE);
 
+        // add a linked product. This should *not* be copied
+        Product linked = TestHelper.createProduct(ProductArchetypes.PRICE_TEMPLATE, null);
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeRelationship("linked", linked);
+        save(product, linked);
+
+        // now perform the copy
         String name = "Copy";
         Product copy = rules.copy(product, name);
 
@@ -90,8 +98,15 @@ public class ProductRulesTestCase extends AbstractProductTest {
                                                           ps.getPackageSize(),
                                                           ps.getPackageUnits());
         assertNotNull(psCopy);
-        assertTrue(psCopy.getRelationship().getId()
-                   != ps.getRelationship().getId());
+        assertTrue(psCopy.getRelationship().getId() != ps.getRelationship().getId());
+
+        // verify the supplier is the same
+        assertEquals(supplier.getObjectReference(), psCopy.getSupplierRef());
+
+        // verify the linked product is the same
+        List<IMObjectReference> linkedRefs = copyBean.getNodeTargetEntityRefs("linked");
+        assertEquals(1, linkedRefs.size());
+        assertEquals(linked.getObjectReference(), linkedRefs.get(0));
     }
 
     /**
