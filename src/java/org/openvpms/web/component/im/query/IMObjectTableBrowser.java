@@ -44,7 +44,7 @@ public abstract class IMObjectTableBrowser<T extends IMObject>
      * @param query the query
      */
     public IMObjectTableBrowser(Query<T> query) {
-        this(query, createTableModel(query));
+        this(query, (SortConstraint[]) null);
     }
 
     /**
@@ -55,7 +55,7 @@ public abstract class IMObjectTableBrowser<T extends IMObject>
      * @param sort  the sort criteria. May be <tt>null</tt>
      */
     public IMObjectTableBrowser(Query<T> query, SortConstraint[] sort) {
-        super(query, sort, createTableModel(query));
+        super(query, sort, null);
     }
 
     /**
@@ -83,18 +83,23 @@ public abstract class IMObjectTableBrowser<T extends IMObject>
     }
 
     /**
-     * Creates a new table model for the specified query.
+     * Creates a new table model.
      *
-     * @param query the query
      * @return a new table model
      */
-    private static <T extends IMObject> IMTableModel<T> createTableModel(
-            Query<T> query) {
+    protected IMTableModel<T> createTableModel() {
         LayoutContext context = new DefaultLayoutContext();
         IMObjectComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
-        return IMObjectTableModelFactory.create(query.getShortNames(),
-                                                context);
+        Query<T> query = getQuery();
+        String[] shortNames = query.getShortNames();
+        if (query instanceof AbstractQuery) {
+            String shortName = ((AbstractArchetypeQuery<T>) query).getShortName();
+            if (shortName != null) {
+                shortNames = new String[]{shortName};
+            }
+        }
+        return IMObjectTableModelFactory.create(shortNames, context);
     }
 
 }

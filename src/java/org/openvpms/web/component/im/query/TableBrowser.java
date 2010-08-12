@@ -63,6 +63,11 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
     private IMTableModel<T> model;
 
     /**
+     * Determines if the model should be created for each query.
+     */
+    private boolean createModel;
+
+    /**
      * Determines if the component has been laid out.
      */
     private boolean initialLayout = true;
@@ -80,12 +85,12 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      *
      * @param query the query
      * @param sort  the sort criteria. May be <code>null</code>
-     * @param model the table model
+     * @param model the table model. If <tt>null</tt>, one will be created on each query
      */
-    public TableBrowser(Query<T> query, SortConstraint[] sort,
-                        IMTableModel<T> model) {
+    public TableBrowser(Query<T> query, SortConstraint[] sort, IMTableModel<T> model) {
         super(query, sort);
         this.model = model;
+        createModel = (model == null);
     }
 
     /**
@@ -120,6 +125,11 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      */
     public void query() {
         Component component = getComponent();
+        if (createModel) {
+            // Destroy any existing model and tsble. These will be recreated in getTable().
+            destroyTable();
+            initialLayout = true;
+        }
 
         ResultSet<T> set = doQuery();
         boolean hasResults = (set != null && hasResults(set));
@@ -130,10 +140,7 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
         }
         PagedIMTable<T> table = getTable();
         table.setResultSet(set);
-        IMTable<T> imTable = table.getTable();
-        if (!imTable.getObjects().isEmpty() && imTable.isFocusTraversalParticipant()) {
-            FocusHelper.setFocus(imTable);
-        }
+        setFocusOnResults();
     }
 
     /**
@@ -157,7 +164,10 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      * Sets focus on the results.
      */
     public void setFocusOnResults() {
-        FocusHelper.setFocus(getTable());
+        IMTable<T> table = getTable().getTable();
+        if (!table.getObjects().isEmpty() && table.isFocusTraversalParticipant()) {
+            FocusHelper.setFocus(table);
+        }
     }
 
     /**
@@ -219,6 +229,9 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      */
     protected PagedIMTable<T> getTable() {
         if (table == null) {
+            if (model == null) {
+                model = createTableModel();
+            }
             table = createTable(model);
             table.getTable().addActionListener(new ActionListener() {
                 public void onAction(ActionEvent e) {
@@ -232,6 +245,17 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
             });
         }
         return table;
+    }
+
+    /**
+     * Creates a table model.
+     * <p/>
+     * Subclasses must override this method if they do not specify a model at construction.
+     *
+     * @return a table model
+     */
+    protected IMTableModel<T> createTableModel() {
+        throw new IllegalStateException("No table model has been registered");
     }
 
     /**
@@ -264,13 +288,26 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      * @param results   if <tt>true</tt> denotes that there are results to display
      */
     private void switchLayout(Component container, boolean results) {
+        destroyTable();
         container.removeAll();
-        getFocusGroup().remove(table);
         doLayout(container);
         if (results) {
             doLayoutForResults(container);
         } else {
             doLayoutForNoResults(container);
+        }
+    }
+
+    /**
+     * Destroys the existing table, if any.
+     */
+    private void destroyTable() {
+        if (table != null) {
+            getFocusGroup().remove(table);
+            table = null;
+        }
+        if (createModel) {
+            model = null;
         }
     }
 

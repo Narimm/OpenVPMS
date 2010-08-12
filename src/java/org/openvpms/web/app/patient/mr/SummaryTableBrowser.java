@@ -49,7 +49,7 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
      * @param query the query
      */
     public SummaryTableBrowser(PatientSummaryQuery query) {
-        super(query, createTableModel());
+        super(query, newTableModel());
     }
 
     /**
@@ -86,7 +86,12 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
         return result;
     }
 
-    private static IMObjectTableModel<Act> createTableModel() {
+    /**
+     * Creates a new table model.
+     *
+     * @return a new table model
+     */
+    private static IMObjectTableModel<Act> newTableModel() {
         return IMObjectTableModelFactory.create(SummaryTableModel.class, null);
     }
 }
