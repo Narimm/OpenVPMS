@@ -86,7 +86,7 @@ public class ProductRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Product copy(Product product, String name) {
-        IMObjectCopier copier = new IMObjectCopier(new ProductCopyHandler());
+        IMObjectCopier copier = new IMObjectCopier(new ProductCopyHandler(product));
         List<IMObject> objects = copier.apply(product);
         Product copy = (Product) objects.get(0);
         copy.setName(name);

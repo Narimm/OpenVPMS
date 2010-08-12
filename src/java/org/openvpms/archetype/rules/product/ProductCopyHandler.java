@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.product;
 import org.openvpms.archetype.rules.util.MappingCopyHandler;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 
@@ -34,9 +35,17 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHand
 public class ProductCopyHandler extends MappingCopyHandler {
 
     /**
-     * Creates a new <tt>ProductCopyHandler</tt>.
+     * The product being copied.
      */
-    public ProductCopyHandler() {
+    private final IMObjectReference product;
+
+    /**
+     * Creates a <tt>ProductCopyHandler</tt>.
+     *
+     * @param product the product being copied
+     */
+    public ProductCopyHandler(Product product) {
+        this.product = product.getObjectReference();
         setCopy(Product.class);
         setReference(Entity.class); // reference all other entities
     }
@@ -62,4 +71,16 @@ public class ProductCopyHandler extends MappingCopyHandler {
         return getDefaultTreatment();
     }
 
+    /**
+     * Determines if an object should be copied.
+     * <p/>
+     * This implementation returns <tt>true</tt> if the object is the specified product.
+     *
+     * @param object the object to check
+     * @return <tt>true</tt> if it should be copied
+     */
+    @Override
+    protected boolean copy(IMObject object) {
+        return object.getObjectReference().equals(product);
+    }
 }
