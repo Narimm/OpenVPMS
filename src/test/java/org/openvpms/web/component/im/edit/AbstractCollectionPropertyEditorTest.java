@@ -30,7 +30,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.system.ServiceHelper;
@@ -101,8 +100,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertFalse(editor.isModified());
 
         // make sure the element has saved
-        assertEquals("Retrieved element doesnt match that saved",
-                     element, get(element));
+        assertEquals("Retrieved element doesnt match that saved", element, get(element));
 
         // now retrieve parent and verify collection matches the original
         IMObject savedParent = get(parent);
@@ -152,12 +150,9 @@ public abstract class AbstractCollectionPropertyEditorTest
         });
 
         // make sure the elements have saved
-        assertEquals("Retrieved element1 doesnt match that saved",
-                     elt1, get(elt1));
-        assertEquals("Retrieved element2 doesnt match that saved",
-                     elt2, get(elt2));
-        assertEquals("Retrieved element3 doesnt match that saved",
-                     elt3, get(elt3));
+        assertEquals("Retrieved element1 doesnt match that saved", elt1, get(elt1));
+        assertEquals("Retrieved element2 doesnt match that saved", elt2, get(elt2));
+        assertEquals("Retrieved element3 doesnt match that saved", elt3, get(elt3));
 
         // now remove elt1, and elt2, save and verify that they are no longer
         // available
@@ -220,8 +215,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         });
 
         // make sure the element has saved
-        assertEquals("Retrieved element1 doesnt match that saved",
-                     elt1, get(elt1));
+        assertEquals("Retrieved element1 doesnt match that saved", elt1, get(elt1));
 
         // now remove elt1, and add elt2
         // save and verify that it is no longer available
@@ -286,10 +280,8 @@ public abstract class AbstractCollectionPropertyEditorTest
         });
 
         // make sure the elements have saved
-        assertEquals("Retrieved element1 doesnt match that saved",
-                     elt1, get(elt1));
-        assertEquals("Retrieved element2 doesnt match that saved",
-                     elt2, get(elt2));
+        assertEquals("Retrieved element1 doesnt match that saved", elt1, get(elt1));
+        assertEquals("Retrieved element2 doesnt match that saved", elt2, get(elt2));
 
         // reload parent and collection
         final IMObject parent2 = get(parent);
@@ -374,17 +366,6 @@ public abstract class AbstractCollectionPropertyEditorTest
      * @return a new object to add to the collection
      */
     protected abstract IMObject createObject(IMObject parent);
-
-    /**
-     * Helper to retrieve an object from the archetype service using its
-     * reference.
-     *
-     * @param object the object to retrieve
-     * @return the corresponding object or <code>null</code> if none is found
-     */
-    protected IMObject get(IMObject object) {
-        return IMObjectHelper.reload(object);
-    }
 
     /**
      * Executes a callback in a transaction.
