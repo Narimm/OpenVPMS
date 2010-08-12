@@ -19,12 +19,10 @@
 package org.openvpms.web.component.app;
 
 import org.apache.commons.beanutils.MethodUtils;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.lang.reflect.Method;
@@ -187,16 +185,4 @@ public class LocalContextTestCase extends AbstractAppTest {
         return MethodUtils.invokeMethod(context, method, null);
     }
 
-    /**
-     * Helper to create an instance of the specified archetype.
-     *
-     * @param shortName the archetype short name
-     * @return a new object
-     */
-    private IMObject create(String shortName) {
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-        IMObject object = service.create(shortName);
-        assertNotNull(object);
-        return object;
-    }
 }
