@@ -96,7 +96,7 @@ public class DownloadServlet extends HttpServlet {
         uri.append(document.getId());
         Command command = new BrowserOpenWindowCommand(
                 uri.toString(), null,
-                "width=800,height=600,resizable=yes,scrollbars=yes");
+                "width=800,height=600,menubar=yes,toolbar=yes,location=yes,resizable=yes,scrollbars=yes");
         OpenVPMSApp.getInstance().enqueueCommand(command);
     }
 
