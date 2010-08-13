@@ -99,12 +99,23 @@ public class PatientObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     }
 
     /**
-     * Determines if the all patients checbox is selected.
+     * Determines if all patients should be returned by the query.
+     * <p/>
+     * Only applies if the query has a customer. If not, then the flag is ignored.
+     *
+     * @param all if <tt>true</tt> query all patients, otherwise query patients associated with the customer
+     */
+    public void setQueryAllPatients(boolean all) {
+        getAllPatients().setSelected(all);
+    }
+
+    /**
+     * Determines if all patients are being queried.
      *
      * @return <tt>true</tt> if the 'all patients' checkbox is selected
      */
-    public boolean isAllPatientsSelected() {
-        return allPatients != null && allPatients.isSelected();
+    public boolean isQueryAllPatients() {
+        return getAllPatients().isSelected() || customer == null;
     }
 
     /**
@@ -125,7 +136,8 @@ public class PatientObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * @return a new result set
      */
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        return new PatientResultSet(getArchetypeConstraint(), getValue(), isIdentitySearch(), customer, sort,
+        Party party = isQueryAllPatients() ? null : customer;
+        return new PatientResultSet(getArchetypeConstraint(), getValue(), isIdentitySearch(), party, sort,
                                     getMaxResults());
     }
 
@@ -148,17 +160,29 @@ public class PatientObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     }
 
     /**
-     * Adds the inactive checkbox to a container.
+     * Adds the 'all patients' checkbox to a container.
      *
      * @param container the container
      */
     protected void addAllPatients(Component container) {
-        boolean selected = (customer == null);
-        allPatients = CheckBoxFactory.create(selected);
+        CheckBox box = getAllPatients();
         Label label = LabelFactory.create(ALL_PATIENTS_ID);
         container.add(label);
-        container.add(allPatients);
-        getFocusGroup().add(allPatients);
+        container.add(box);
+        getFocusGroup().add(box);
     }
 
+    /**
+     * Returns the 'all patients' check box.
+     *
+     * @return the check box
+     */
+    private CheckBox getAllPatients() {
+        if (allPatients == null) {
+            allPatients = CheckBoxFactory.create();
+            boolean selected = (customer == null);
+            allPatients.setSelected(selected);
+        }
+        return allPatients;
+    }
 }

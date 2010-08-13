@@ -18,6 +18,8 @@
 package org.openvpms.web.component.im.query;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
@@ -99,6 +101,43 @@ public class PatientQueryTestCase extends AbstractEntityQueryTest<Party> {
         assertEquals(1, matches.size());
         checkExists(pet1, query, matches, false);
         checkExists(pet2, query, matches, true);
+    }
+
+    /**
+     * Tests the behaviour of {@link PatientQuery#setQueryAllPatients}
+     */
+    @Test
+    public void testQueryAllPatients() {
+        Party customer = TestHelper.createCustomer(false);
+        Party pet1 = TestHelper.createPatient(customer, false);
+        Party pet2 = TestHelper.createPatient(customer, false);
+        Party pet3 = createObject(false);
+        save(customer, pet1, pet2, pet3);
+
+        PatientQuery query = new PatientQuery(SHORT_NAMES, customer);
+
+        // verify that when a customer is present, only its patients are returned
+        List<IMObjectReference> matches = getObjectRefs(query);
+        assertFalse(query.isQueryAllPatients());
+
+        assertEquals(2, matches.size());
+        checkExists(pet1, query, matches, true);
+        checkExists(pet2, query, matches, true);
+        checkExists(pet3, query, matches, false);
+
+        // verify that when queryAllPatients=true. all patients are returned
+        query.setQueryAllPatients(true);
+        assertTrue(query.isQueryAllPatients());
+        assertTrue(query.selects(pet1));
+        assertTrue(query.selects(pet2));
+        assertTrue(query.selects(pet3));
+
+        // verify that when queryAllPatients=false, only the customer's patients are returned
+        query.setQueryAllPatients(false);
+        assertFalse(query.isQueryAllPatients());
+        assertTrue(query.selects(pet1));
+        assertTrue(query.selects(pet2));
+        assertFalse(query.selects(pet3));
     }
 
     /**
