@@ -66,6 +66,27 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
     }
 
     /**
+     * Determines if all patients should be returned by the query.
+     * <p/>
+     * Only applies if {@link #setShowAllPatients} has been invoked i.e. <tt>setShowAllPatients(true)</tt>
+     *
+     * @param all if <tt>true</tt> query all patients, otherwise query patients associated with the customer
+     */
+    public void setQueryAllPatients(boolean all) {
+        ((PatientObjectSetQuery) getQuery()).setQueryAllPatients(all);
+    }
+
+    /**
+     * Determines if all patients are being queried.
+     *
+     * @return <tt>true</tt> if all patients are being queried, <tt>false</tt> if only those patient associated with
+     *         the customer are being queried
+     */
+    public boolean isQueryAllPatients() {
+        return ((PatientObjectSetQuery) getQuery()).isQueryAllPatients();
+    }
+
+    /**
      * Converts a result set.
      *
      * @param set the set to convert
