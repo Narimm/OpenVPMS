@@ -19,8 +19,7 @@
 	<archetype name="descriptor.archetype.1.0"
 		latest="true" primary="true"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor">
-		<node name="id" path="/id"
-			type="java.lang.Long" />
+		<node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
 		<node name="name" path="/name" type="java.lang.String" displayName="Name"
 			minCardinality="1" />
 		<node name="displayName" path="/displayName"

@@ -19,8 +19,7 @@
     <archetype name="security.user.1.0"
                latest="true" primary="true"
                type="org.openvpms.component.business.domain.im.security.User" displayName="User">
-        <node name="id" path="/id"
-              type="java.lang.Long"/>
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="username" path="/username" type="java.lang.String" displayName="Login Name"
               minCardinality="1" maxLength="20">
             <assertion name="regularExpression">
