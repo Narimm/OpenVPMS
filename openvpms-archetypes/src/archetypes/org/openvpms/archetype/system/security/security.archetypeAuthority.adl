@@ -20,8 +20,7 @@
                latest="true" primary="true"
                type="org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority"
                displayName="Authority">
-        <node name="id" path="/id"
-              type="java.lang.Long"/>
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" path="/name" type="java.lang.String"
               displayName="Authority Name"
               minCardinality="1">
