@@ -20,7 +20,6 @@ package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.workflow.LocalClinicianContext;
@@ -28,6 +27,7 @@ import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -43,11 +43,6 @@ import org.openvpms.web.component.workflow.TaskListener;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class TaskCRUDWindow extends ScheduleCRUDWindow {
-
-    /**
-     * The transfer button.
-     */
-    private Button transfer;
 
     /**
      * Transfer button identifier.
@@ -73,6 +68,27 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
     }
 
     /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        super.layoutButtons(buttons);
+
+        Button transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onTransfer();
+            }
+        });
+
+        buttons.add(createConsultButton());
+        buttons.add(createCheckOutButton());
+        buttons.add(transfer);
+        buttons.add(createOverTheCounterButton());
+    }
+
+    /**
      * Enables/disables the buttons that require an object to be selected.
      *
      * @param buttons the button set
@@ -81,21 +97,13 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        Button consult = getConsultButton();
-        Button checkOut = getCheckOutButton();
-        Button transfer = getTransferButton();
-        buttons.remove(consult);
-        buttons.remove(checkOut);
-        buttons.remove(transfer);
         if (enable) {
             Act act = getObject();
-            if (canCheckoutOrConsult(act)) {
-                buttons.add(consult);
-                buttons.add(checkOut);
-                buttons.add(transfer);
-            }
+            enable = canCheckoutOrConsult(act);
         }
-        buttons.add(getOverTheCounterButton());
+        buttons.setEnabled(CONSULT_ID, enable);
+        buttons.setEnabled(CHECKOUT_ID, enable);
+        buttons.setEnabled(TRANSFER_ID, enable);
     }
 
     /**
@@ -124,22 +132,6 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
         return (TaskStatus.PENDING.equals(status)
                 || TaskStatus.IN_PROGRESS.equals(status)
                 || TaskStatus.BILLED.equals(status));
-    }
-
-    /**
-     * Returns the 'transfer' button.
-     *
-     * @return the 'transfer' button
-     */
-    private Button getTransferButton() {
-        if (transfer == null) {
-            transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onTransfer();
-                }
-            });
-        }
-        return transfer;
     }
 
     /**

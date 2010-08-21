@@ -51,11 +51,6 @@ import org.openvpms.web.resource.util.Messages;
 public class DepositCRUDWindow extends FinancialActCRUDWindow {
 
     /**
-     * The deposit button.
-     */
-    private Button _deposit;
-
-    /**
      * Deposit button identifier.
      */
     private static final String DEPOSIT_ID = "deposit";
@@ -82,14 +77,14 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        _deposit = ButtonFactory.create(DepositCRUDWindow.DEPOSIT_ID,
-                                        new ActionListener() {
-                                            public void onAction(ActionEvent event) {
-                                                onDeposit();
-                                            }
-                                        });
-        buttons.add(_deposit);
-        buttons.add(getPrintButton());
+        Button deposit = ButtonFactory.create(DepositCRUDWindow.DEPOSIT_ID,
+                                              new ActionListener() {
+                                                  public void onAction(ActionEvent event) {
+                                                      onDeposit();
+                                                  }
+                                              });
+        buttons.add(deposit);
+        buttons.add(createPrintButton());
     }
 
     /**
@@ -100,14 +95,13 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
+        boolean enableDeposit = false;
         if (enable) {
             FinancialAct act = getObject();
-            if (UNDEPOSITED.equals(act.getStatus())) {
-                buttons.add(_deposit);
-            }
-            buttons.add(getPrintButton());
+            enableDeposit = UNDEPOSITED.equals(act.getStatus());
         }
+        buttons.setEnabled(DEPOSIT_ID, enableDeposit);
+        buttons.setEnabled(PRINT_ID, enable);
     }
 
     /**

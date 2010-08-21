@@ -50,21 +50,6 @@ import java.util.List;
 public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
-     * The reverse button.
-     */
-    private Button _reverse;
-
-    /**
-     * The statement button.
-     */
-    private Button _statement;
-
-    /**
-     * The adjust button.
-     */
-    private Button _adjust;
-
-    /**
      * Reverse button identifier.
      */
     private static final String REVERSE_ID = "reverse";
@@ -96,22 +81,25 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        _reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
+        Button reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onReverse();
             }
         });
-        _statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
+        Button statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onStatement();
             }
         });
-        _adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
+        Button adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onAdjust();
             }
         });
-        enableButtons(buttons, true);
+        buttons.add(reverse);
+        buttons.add(createPrintButton());
+        buttons.add(statement);
+        buttons.add(adjust);
     }
 
     /**
@@ -122,13 +110,10 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
-        if (enable) {
-            buttons.add(_reverse);
-            buttons.add(getPrintButton());
-            buttons.add(_statement);
-            buttons.add(_adjust);
-        }
+        buttons.setEnabled(REVERSE_ID, enable);
+        buttons.setEnabled(PRINT_ID, enable);
+        buttons.setEnabled(STATEMENT_ID, enable);
+        buttons.setEnabled(ADJUST_ID, enable);
     }
 
     /**

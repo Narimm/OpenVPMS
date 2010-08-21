@@ -48,7 +48,9 @@ public class ChargeCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        enableButtons(buttons, true);
+        super.layoutButtons(buttons);
+        buttons.add(createPostButton());
+        buttons.add(createPreviewButton());
     }
 
     /**
@@ -59,16 +61,9 @@ public class ChargeCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
-        if (enable) {
-            buttons.add(getEditButton());
-            buttons.add(getCreateButton());
-            buttons.add(getDeleteButton());
-            buttons.add(getPostButton());
-            buttons.add(getPreviewButton());
-        } else {
-            buttons.add(getCreateButton());
-        }
+        super.enableButtons(buttons, enable);
+        buttons.setEnabled(POST_ID, enable);
+        buttons.setEnabled(PREVIEW_ID, enable);
     }
 
 }

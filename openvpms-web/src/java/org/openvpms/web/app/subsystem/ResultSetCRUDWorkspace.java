@@ -105,11 +105,24 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
      */
     @Override
     protected void onBrowserSelected(T object) {
-        super.onBrowserSelected(object);
         updateResultSet();
+        super.onBrowserSelected(object);
         if (click.isDoubleClick(object.getId())) {
             getCRUDWindow().view();
         }
+    }
+
+    /**
+     * Invoked when a browser object is viewed (aka 'browsed').
+     * <p/>
+     * This implementation sets the object in the CRUD window.
+     *
+     * @param object the selected object
+     */
+    @Override
+    protected void onBrowserViewed(T object) {
+        updateResultSet();
+        super.onBrowserViewed(object);
     }
 
     /**

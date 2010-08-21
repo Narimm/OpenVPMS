@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -31,7 +32,6 @@ import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
-import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -44,11 +44,6 @@ import org.openvpms.web.resource.util.Messages;
  * @version $LastChangedDate: 2007-11-15 17:59:45 +1100 (Thu, 15 Nov 2007) $
  */
 public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
-
-    /**
-     * The copy button.
-     */
-    private Button copy;
 
     /**
      * Copy button identifier.
@@ -73,21 +68,18 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getViewButton());
-        buttons.add(getCreateButton());
-
+        buttons.add(createNewButton());
+        buttons.add(createViewButton());
         // If the logged in user is an admin, show the copy, edit and delete buttons
         boolean admin = UserHelper.isAdmin(GlobalContext.getInstance().getUser());
         if (admin) {
-            buttons.add(getEditButton());
-            buttons.add(getDeleteButton());
-            if (copy == null) {
-                copy = ButtonFactory.create(COPY_ID, new ActionListener() {
-                    public void onAction(ActionEvent event) {
-                        onCopy();
-                    }
-                });
-            }
+            buttons.add(createEditButton());
+            buttons.add(createDeleteButton());
+            Button copy = ButtonFactory.create(COPY_ID, new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onCopy();
+                }
+            });
             buttons.add(copy);
         }
     }
@@ -100,15 +92,10 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        Button view = getViewButton();
-        view.setEnabled(getResultSet() != null && enable);
-        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
-            getEditButton().setEnabled(enable);
-            getDeleteButton().setEnabled(enable);
-            if (copy != null) {
-                copy.setEnabled(enable);
-            }
-        }
+        buttons.setEnabled(VIEW_ID, getResultSet() != null && enable);
+        buttons.setEnabled(EDIT_ID, enable);
+        buttons.setEnabled(DELETE_ID, enable);
+        buttons.setEnabled(COPY_ID, enable);
     }
 
     /**

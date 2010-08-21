@@ -92,10 +92,8 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getEditButton());
-        buttons.add(getCreateButton());
-        buttons.add(getDeleteButton());
-        buttons.add(getPrintButton());
+        super.layoutButtons(buttons);
+        buttons.add(createPrintButton());
     }
 
     /**
@@ -106,15 +104,8 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
-        if (enable) {
-            buttons.add(getCreateButton());
-            buttons.add(getEditButton());
-            buttons.add(getDeleteButton());
-            buttons.add(getPrintButton());
-        } else {
-            buttons.add(getCreateButton());
-        }
+        super.enableButtons(buttons, enable);
+        buttons.setEnabled(PRINT_ID, enable);
     }
 
     /**

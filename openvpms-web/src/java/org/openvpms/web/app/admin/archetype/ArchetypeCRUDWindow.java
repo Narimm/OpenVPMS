@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -42,7 +43,6 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -65,16 +65,6 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor> {
-
-    /**
-     * The import button.
-     */
-    private Button importButton;
-
-    /**
-     * The export button.
-     */
-    private Button exportButton;
 
     /**
      * The import button identifier.
@@ -110,8 +100,19 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        buttons.add(getImportButton());
-        buttons.add(getExportButton());
+        Button importButton = ButtonFactory.create(IMPORT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onImport();
+            }
+        });
+        Button exportButton = ButtonFactory.create(EXPORT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onExport();
+            }
+        });
+
+        buttons.add(importButton);
+        buttons.add(exportButton);
     }
 
     /**
@@ -123,7 +124,7 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        getExportButton().setEnabled(enable);
+        buttons.setEnabled(EXPORT_ID, enable);
     }
 
     /**
@@ -152,38 +153,6 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
         return new ArchetypeEditDialog(editor);
-    }
-
-    /**
-     * Returns the import button.
-     *
-     * @return the import button
-     */
-    private Button getImportButton() {
-        if (importButton == null) {
-            importButton = ButtonFactory.create(IMPORT_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onImport();
-                }
-            });
-        }
-        return importButton;
-    }
-
-    /**
-     * Returns the export button.
-     *
-     * @return the export button
-     */
-    private Button getExportButton() {
-        if (exportButton == null) {
-            exportButton = ButtonFactory.create(EXPORT_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onExport();
-                }
-            });
-        }
-        return exportButton;
     }
 
     /**

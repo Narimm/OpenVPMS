@@ -61,7 +61,7 @@ public class MedicationRecordCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getEditButton());
+        buttons.add(createEditButton());
     }
 
     /**
@@ -72,10 +72,7 @@ public class MedicationRecordCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
-        if (enable) {
-            buttons.add(getEditButton());
-        }
+        buttons.setEnabled(EDIT_ID, enable);
     }
 
     /**

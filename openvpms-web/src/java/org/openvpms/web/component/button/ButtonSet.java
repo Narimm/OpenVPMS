@@ -52,6 +52,11 @@ public class ButtonSet implements KeyStrokeHandler {
     private final String style;
 
     /**
+     * Determines if disabled buttons should be hidden.
+     */
+    private boolean hideDisabled;
+
+    /**
      * The shortcut buttons.
      */
     private ShortcutButtons buttons;
@@ -63,7 +68,7 @@ public class ButtonSet implements KeyStrokeHandler {
 
 
     /**
-     * Constructs a new <tt>ButtonSet</tt>.
+     * Constructs a <tt>ButtonSet</tt>.
      *
      * @param container the button container
      */
@@ -72,7 +77,7 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
-     * Constructs a new <tt>ButtonSet</tt>.
+     * Constructs a <tt>ButtonSet</tt>.
      *
      * @param container the button container
      * @param focus     the focus group. May be <tt>null</tt>
@@ -82,7 +87,7 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
-     * Construct a new <tt>ButtonSet</tt>.
+     * Constructs a <tt>ButtonSet</tt>.
      *
      * @param container the button container
      * @param focus     the focus group. May be <tt>null</tt>
@@ -139,28 +144,43 @@ public class ButtonSet implements KeyStrokeHandler {
 
     /**
      * Adds a button.
-     * Note that for {@link ShortcutButton} instances, the
-     * {@link ShortcutButton#getActionCommand()} must return non-null in order
-     * for keystroke events to be triggered on the appropriate button.
+     * <p/>
+     * Note that for {@link ShortcutButton} instances, the {@link ShortcutButton#getActionCommand()} must
+     * return non-null in order for keystroke events to be triggered on the appropriate button.
      *
      * @param button the button to add
      * @return the button
      */
     public Button add(Button button) {
+        Component listener = buttons.getKeyStrokeListener();
+        int index;
+        if (listener != null) {
+            // add the button before the keystroke listener to avoid cell spacing issues
+            index = container.indexOf(listener);
+        } else {
+            index = container.getComponentCount();
+        }
+        return add(button, index);
+    }
+
+    /**
+     * Adds a button at the specified position.
+     * <p/>
+     * Note that for {@link ShortcutButton} instances, the {@link ShortcutButton#getActionCommand()} must
+     * return non-null in order for keystroke events to be triggered on the appropriate button.
+     *
+     * @param button the button to add
+     * @param index  the index at which to add the button
+     * @return the button
+     */
+    public Button add(Button button, int index) {
         if (button instanceof ShortcutButton) {
             buttons.add((ShortcutButton) button);
         }
         if (focusGroup != null) {
             focusGroup.add(button);
         }
-        Component listener = buttons.getKeyStrokeListener();
-        if (listener != null) {
-            // add the button before the keystroke listener to avoid
-            // cell spacing issues
-            container.add(button, container.indexOf(listener));
-        } else {
-            container.add(button);
-        }
+        container.add(button, index);
         return button;
     }
 
@@ -220,25 +240,22 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
-     * Determines if the set contains a button.
-     *
-     * @param button the button
-     * @return <tt>true</tt> if the set contains the button, otherwise
-     *         <tt>false</tt>
-     */
-    public boolean contains(Button button) {
-        return (container.indexOf(button) != -1);
-    }
-
-    /**
      * Returns a button given its identifier.
      *
      * @param id the button identifier
-     * @return the button with the corresponding id, or <tt>null</tt> if
-     *         none is found
+     * @return the button with the corresponding id, or <tt>null</tt> if none is found
      */
     public Button getButton(String id) {
         return (Button) container.getComponent(id);
+    }
+
+    /**
+     * Determines if disabled components should be visible.
+     *
+     * @param hide if <tt>true</tt>, hide disabled components
+     */
+    public void setHideDisabled(boolean hide) {
+        this.hideDisabled = hide;
     }
 
     /**
@@ -251,6 +268,9 @@ public class ButtonSet implements KeyStrokeHandler {
         Button button = getButton(id);
         if (button != null) {
             button.setEnabled(enabled);
+            if (hideDisabled) {
+                button.setVisible(enabled);
+            }
         }
     }
 

@@ -56,11 +56,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
 
     /**
-     * The 'replace' button.
-     */
-    private Button replace;
-
-    /**
      * The replace button identifier.
      */
     private static final String REPLACE_ID = "replace";
@@ -84,7 +79,14 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        buttons.add(getReplaceButton());
+
+        Button replace = ButtonFactory.create(REPLACE_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                replace();
+            }
+        });
+
+        buttons.add(replace);
     }
 
     /**
@@ -96,7 +98,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        getReplaceButton().setEnabled(enable);
+        buttons.setEnabled(REPLACE_ID, enable);
     }
 
     /**
@@ -176,22 +178,6 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
                 return null;
             }
         });
-    }
-
-    /**
-     * Returns the 'replace' button.
-     *
-     * @return the replace button.
-     */
-    private Button getReplaceButton() {
-        if (replace == null) {
-            replace = ButtonFactory.create(REPLACE_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    replace();
-                }
-            });
-        }
-        return replace;
     }
 
     private class LookupDeletorListener extends AbstractIMObjectDeletionListener<Lookup> {

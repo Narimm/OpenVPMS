@@ -60,11 +60,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     private final AppointmentBrowser browser;
 
     /**
-     * The check-in button.
-     */
-    private Button checkIn;
-
-    /**
      * Check-in button identifier.
      */
     private static final String CHECKIN_ID = "checkin";
@@ -115,13 +110,15 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        if (checkIn == null) {
-            checkIn = ButtonFactory.create(CHECKIN_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onCheckIn();
-                }
-            });
-        }
+        Button checkIn = ButtonFactory.create(CHECKIN_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onCheckIn();
+            }
+        });
+        buttons.add(checkIn);
+        buttons.add(createConsultButton());
+        buttons.add(createCheckOutButton());
+        buttons.add(createOverTheCounterButton());
         buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'X', new ActionListener() {
             public void onAction(ActionEvent event) {
                 onCut();
@@ -143,23 +140,22 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        Button consult = getConsultButton();
-        Button checkOut = getCheckOutButton();
-        buttons.remove(checkIn);
-        buttons.remove(consult);
-        buttons.remove(checkOut);
+        boolean checkInEnabled = false;
+        boolean checkoutConsultEnabled = false;
         if (enable) {
             Act act = getObject();
             String status = act.getStatus();
             if (AppointmentStatus.PENDING.equals(status)) {
-                buttons.add(checkIn);
+                checkInEnabled = true;
+                checkoutConsultEnabled = false;
             } else if (canCheckoutOrConsult(act)) {
-                buttons.add(consult);
-                buttons.add(checkOut);
+                checkInEnabled = false;
+                checkoutConsultEnabled = true;
             }
         }
-
-        buttons.add(getOverTheCounterButton());
+        buttons.setEnabled(CHECKIN_ID, checkInEnabled);
+        buttons.setEnabled(CONSULT_ID, checkoutConsultEnabled);
+        buttons.setEnabled(CHECKOUT_ID, checkoutConsultEnabled);
     }
 
     /**

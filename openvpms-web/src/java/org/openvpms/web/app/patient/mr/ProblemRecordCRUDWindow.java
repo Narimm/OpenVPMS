@@ -86,6 +86,17 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
     }
 
     /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        super.layoutButtons(buttons);
+        buttons.add(createPrintButton());
+    }
+
+    /**
      * Enables/disables the buttons that require an object to be selected.
      *
      * @param buttons the button set
@@ -93,15 +104,9 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
-        if (enable) {
-            buttons.add(getEditButton());
-            buttons.add(getCreateButton());
-            buttons.add(getDeleteButton());
-            buttons.add(getPrintButton());
-        } else if (getEvent() != null) {
-            buttons.add(getCreateButton());
-        }
+        super.enableButtons(buttons, enable);
+        buttons.setEnabled(NEW_ID, getEvent() != null);
+        buttons.setEnabled(PRINT_ID, enable);
     }
 
     /**
@@ -133,7 +138,7 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
                 String[] shortNames = getClinicalEventItemShortNames();
                 for (Act child : acts) {
                     if (TypeHelper.isA(child, shortNames)
-                            && !hasTargetRelationship(child, event)) {
+                        && !hasTargetRelationship(child, event)) {
                         eventBean.addRelationship(
                                 RELATIONSHIP_CLINICAL_EVENT_ITEM, child);
                         save = true;
@@ -196,19 +201,6 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
     protected boolean canEdit(Act act) {
         // @todo fix when statuses are sorted out
         return true;
-    }
-
-    /**
-     * Lays out the buttons.
-     *
-     * @param buttons the button row
-     */
-    @Override
-    protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getEditButton());
-        buttons.add(getCreateButton());
-        buttons.add(getDeleteButton());
-        buttons.add(getPrintButton());
     }
 
     /**

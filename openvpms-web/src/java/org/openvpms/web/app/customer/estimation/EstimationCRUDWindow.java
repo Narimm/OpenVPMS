@@ -20,7 +20,6 @@ package org.openvpms.web.app.customer.estimation;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import static org.openvpms.archetype.rules.act.EstimationActStatus.INVOICED;
 import static org.openvpms.archetype.rules.act.FinancialActStatus.*;
 import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
@@ -32,6 +31,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -47,16 +47,6 @@ import java.util.Date;
  * @version $LastChangedDate$
  */
 public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
-
-    /**
-     * The copy button.
-     */
-    private Button copy;
-
-    /**
-     * The invoice button.
-     */
-    private Button invoice;
 
     /**
      * Copy button identifier.
@@ -75,7 +65,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
 
 
     /**
-     * Create a new <tt>EstimationCRUDWindow</tt>.
+     * Constructs an <tt>EstimationCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
@@ -91,17 +81,21 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        copy = ButtonFactory.create(COPY_ID, new ActionListener() {
+        super.layoutButtons(buttons);
+        Button copy = ButtonFactory.create(COPY_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onCopy();
             }
         });
-        invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
+        Button invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onInvoice();
             }
         });
-        enableButtons(buttons, true);
+        buttons.add(createPostButton());
+        buttons.add(createPreviewButton());
+        buttons.add(copy);
+        buttons.add(invoice);
     }
 
     /**
@@ -112,18 +106,25 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
+        super.enableButtons(buttons, enable);
+        boolean enableEdit = false;
+        boolean enableDelete = false;
+        boolean enablePost = false;
+        boolean enableInvoice = false;
+
         if (enable) {
-            buttons.add(getEditButton());
-            buttons.add(getCreateButton());
-            buttons.add(getDeleteButton());
-            buttons.add(getPostButton());
-            buttons.add(getPreviewButton());
-            buttons.add(copy);
-            buttons.add(invoice);
-        } else {
-            buttons.add(getCreateButton());
+            Act act = getObject();
+            enableEdit = canEdit(act);
+            enableDelete = canDelete(act);
+            enablePost = canPost(act);
+            enableInvoice = canInvoice(act);
         }
+        buttons.setEnabled(EDIT_ID, enableEdit);
+        buttons.setEnabled(DELETE_ID, enableDelete);
+        buttons.setEnabled(POST_ID, enablePost);
+        buttons.setEnabled(PREVIEW_ID, enable);
+        buttons.setEnabled(COPY_ID, enable);
+        buttons.setEnabled(INVOICE_ID, enableInvoice);
     }
 
     /**
@@ -156,7 +157,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
             showStatusError(act, "customer.estimation.noinvoice.title",
                             "customer.estimation.noinvoice.message");
         } else if (act.getActivityEndTime() != null
-                && act.getActivityEndTime().before(new Date())) {
+                   && act.getActivityEndTime().before(new Date())) {
             showStatusError(act, "customer.estimation.expired.title",
                             "customer.estimation.expired.message");
         } else {
@@ -219,8 +220,32 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     protected boolean canEdit(Act act) {
         String status = act.getStatus();
         return IN_PROGRESS.equals(status) || COMPLETED.equals(status)
-                || CANCELLED.equals(status);
+               || CANCELLED.equals(status);
     }
 
+    /**
+     * Determines if an act can be posted (i.e finalised).
+     * <p/>
+     * This implementation returns <tt>true</tt> if the act isn't <tt>POSTED</tt>,<tt>CANCELLED</tt> nor
+     * <tt>INVOICED</tt>
+     *
+     * @param act the act
+     * @return <tt>true</tt> if the act can be posted
+     */
+    @Override
+    protected boolean canPost(Act act) {
+        return super.canPost(act) && !INVOICED.equals(act.getStatus());
+    }
+
+    /**
+     * Determines if an estimation can be invoiced.
+     *
+     * @param act the estimation
+     * @return <tt>true</tt> if the estimation can be invoiced, otherwise <tt>false</tt>
+     */
+    protected boolean canInvoice(Act act) {
+        String status = act.getStatus();
+        return !CANCELLED.equals(status) && !INVOICED.equals(status);
+    }
 
 }

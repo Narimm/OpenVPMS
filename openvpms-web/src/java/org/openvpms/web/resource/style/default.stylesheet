@@ -634,31 +634,11 @@
         </properties>
     </style>
 
-    <style name="ButtonRow.Button"
+    <style name="ButtonRow.Button" base-name="default"
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="lineWrap" value="false"/>
-            <property name="insets" value="${padding.large} ${padding.smaller}"/>
-            <property name="disabledBackgroundImage">
-                <fill-image>
-                    <image type="nextapp.echo2.app.ResourceImageReference">
-                        <resource-image-reference
-                                resource="/org/openvpms/web/resource/image/check-alpha.png"/>
-                    </image>
-                </fill-image>
-            </property>
-            <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#6f0f0f"/>
-            <property name="background" value="#99cc66"/>
-            <property name="foreground" value="#000000"/>
-            <property name="font">
-                <font size="${font.size}">
-                    <typeface name="${font.typeface}"/>
-                </font>
-            </property>
-            <property name="border">
-                <border size="1px" style="outset" color="#7b68ee"/>
-            </property>
         </properties>
     </style>
 
@@ -1770,14 +1750,19 @@
             </property>
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#ffb6c1"/>
-            <property name="disabledBackgroundImage">
+            <property name="disabledBackground" value="#b0c391"/>
+            <property name="disabledForeground" value="#858879"/>
+            <property name="disabledBorder">
+                <border size="1px" style="solid" color="#b0c391"/>
+            </property>
+            <!--property name="disabledBackgroundImage">
                 <fill-image>
                     <image type="nextapp.echo2.app.ResourceImageReference">
                         <resource-image-reference
                                 resource="/org/openvpms/web/resource/image/check-alpha.png"/>
                     </image>
                 </fill-image>
-            </property>
+            </property-->
             <property name="insets" value="${padding.large} ${padding.smaller}"/>
         </properties>
     </style>
