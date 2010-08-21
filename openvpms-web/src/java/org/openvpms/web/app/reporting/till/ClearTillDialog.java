@@ -30,6 +30,7 @@ import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -60,11 +61,11 @@ public class ClearTillDialog extends PopupDialog {
      * Constructs a <tt>ClearTillDialog</tt>.
      */
     public ClearTillDialog() {
-        super(Messages.get("till.clear.title"), "ClearTillDialog", OK_CANCEL);
+        super(Messages.get("till.clear.title"), null, OK_CANCEL);
         IArchetypeService service = ServiceHelper.getArchetypeService();
         setModal(true);
 
-        amount = new TextField();
+        amount = TextComponentFactory.create();
 
         ArchetypeQuery query = new ArchetypeQuery("party.organisationDeposit", true)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS);
