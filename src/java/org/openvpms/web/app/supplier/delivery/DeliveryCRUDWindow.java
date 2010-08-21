@@ -62,16 +62,6 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     private static final String REVERSE_ID = "reverse";
 
     /**
-     * The invoice button.
-     */
-    private Button invoice;
-
-    /**
-     * The reverse button.
-     */
-    private Button reverse;
-
-    /**
      * The order rules.
      */
     private final OrderRules rules;
@@ -158,17 +148,20 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
+        super.layoutButtons(buttons);
+        Button invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onInvoice(getObject());
             }
         });
-        reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
+        Button reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onReverse();
             }
         });
-        enableButtons(buttons, false);
+        buttons.add(createPostButton());
+        buttons.add(invoice);
+        buttons.add(reverse);
     }
 
     /**
@@ -179,25 +172,22 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
+        boolean editEnabled = false;
+        boolean deleteEnabled = false;
+        boolean postEnabled = false;
+        boolean invoiceReverseEnabled = false;
         if (enable) {
             Act object = getObject();
-            if (canEdit(object)) {
-                buttons.add(getEditButton());
-            }
-            buttons.add(getCreateButton());
-            if (canDelete(object)) {
-                buttons.add(getDeleteButton());
-            }
-            if (!ActStatus.POSTED.equals(object.getStatus())) {
-                buttons.add(getPostButton());
-            } else {
-                buttons.add(invoice);
-                buttons.add(reverse);
-            }
-        } else {
-            buttons.add(getCreateButton());
+            editEnabled = canEdit(object);
+            deleteEnabled = canDelete(object);
+            postEnabled = !ActStatus.POSTED.equals(object.getStatus());
+            invoiceReverseEnabled = !postEnabled;  // can't invoice or reverse a posted act
         }
+        buttons.setEnabled(EDIT_ID, editEnabled);
+        buttons.setEnabled(DELETE_ID, deleteEnabled);
+        buttons.setEnabled(POST_ID, postEnabled);
+        buttons.setEnabled(INVOICE_ID, invoiceReverseEnabled);
+        buttons.setEnabled(REVERSE_ID, invoiceReverseEnabled);
     }
 
     /**

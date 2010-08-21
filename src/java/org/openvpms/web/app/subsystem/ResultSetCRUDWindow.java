@@ -43,19 +43,14 @@ import org.openvpms.web.resource.util.Messages;
 public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<T> {
 
     /**
+     * The view button identifier.
+     */
+    protected static final String VIEW_ID = "view";
+
+    /**
      * A result set to iterate over.
      */
     private ResultSet<T> set;
-
-    /**
-     * The 'view' button.
-     */
-    private Button view;
-
-    /**
-     * The view button identifier.
-     */
-    private static final String VIEW_ID = "view";
 
 
     /**
@@ -77,7 +72,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
     public void setResultSet(ResultSet<T> set) {
         this.set = set;
         boolean enable = getObject() != null && set != null;
-        getViewButton().setEnabled(enable);
+        createViewButton().setEnabled(enable);
     }
 
     /**
@@ -150,8 +145,8 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getViewButton());
         super.layoutButtons(buttons);
+        buttons.add(createViewButton(), 1); // add after new, before edit
     }
 
     /**
@@ -162,27 +157,22 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        Button view = getViewButton();
-        Button edit = getEditButton();
-        Button delete = getDeleteButton();
-        view.setEnabled(set != null && enable);
-        edit.setEnabled(enable);
-        delete.setEnabled(enable);
+        boolean enableViewEdit = enable && set != null;
+        buttons.setEnabled(VIEW_ID, enableViewEdit);
+        buttons.setEnabled(EDIT_ID, enableViewEdit);
+        buttons.setEnabled(DELETE_ID, enable);
     }
 
     /**
-     * Returns the 'view' button.
+     * Helper to create a new button with id {@link #VIEW_ID} linked to {@link #view}.
      *
-     * @return the view button
+     * @return a new view button
      */
-    protected Button getViewButton() {
-        if (view == null) {
-            view = ButtonFactory.create(VIEW_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    view();
-                }
-            });
-        }
-        return view;
+    protected Button createViewButton() {
+        return ButtonFactory.create(VIEW_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                view();
+            }
+        });
     }
 }

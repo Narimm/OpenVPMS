@@ -24,7 +24,6 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -34,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -52,12 +52,6 @@ import org.openvpms.web.resource.util.Messages;
  */
 public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
 
-
-    /**
-     * The refresh button.
-     */
-    private Button refresh;
-
     /**
      * Refresh button identifier.
      */
@@ -65,7 +59,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
 
 
     /**
-     * Create a new <tt>DocumentCRUDWindow</tt>.
+     * Constructs a <tt>DocumentCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
@@ -80,15 +74,14 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        refresh = ButtonFactory.create(REFRESH_ID, new ActionListener() {
+        super.layoutButtons(buttons);
+        Button refresh = ButtonFactory.create(REFRESH_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onRefresh();
             }
         });
-
-        buttons.add(getEditButton());
-        buttons.add(getCreateButton());
-        buttons.add(getDeleteButton());
+        buttons.add(createPrintButton());
+        buttons.add(refresh);
     }
 
     /**
@@ -99,18 +92,10 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
-        if (enable) {
-            buttons.add(getEditButton());
-            buttons.add(getCreateButton());
-            buttons.add(getDeleteButton());
-            buttons.add(getPrintButton());
-            if (canRefresh()) {
-                buttons.add(refresh);
-            }
-        } else {
-            buttons.add(getCreateButton());
-        }
+        super.enableButtons(buttons, enable);
+        buttons.setEnabled(PRINT_ID, enable);
+        boolean enableRefresh = enable && canRefresh();
+        buttons.setEnabled(REFRESH_ID, enableRefresh);
     }
 
     /**

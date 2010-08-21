@@ -20,7 +20,6 @@ package org.openvpms.web.app.patient.info;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
@@ -28,6 +27,7 @@ import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -46,14 +46,14 @@ import org.openvpms.web.resource.util.Messages;
 public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
 
     /**
-     * The check-in button.
+     * The check-in button identifier.
      */
-    private Button checkIn;
+    private static final String CHECKIN_ID = "checkin";
 
     /**
-     * The merge button.
+     * The merge button identifier.
      */
-    private Button merge;
+    private static final String MERGE_ID = "merge";
 
 
     /**
@@ -73,19 +73,20 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        if (checkIn == null) {
-            checkIn = ButtonFactory.create("checkin", new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onCheckIn();
-                }
-            });
-        }
-        if (merge == null) {
-            merge = ButtonFactory.create("merge", new ActionListener() {
+        Button checkIn = ButtonFactory.create("checkin", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onCheckIn();
+            }
+        });
+        buttons.add(checkIn);
+        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+            // only provide merge for admin users
+            Button merge = ButtonFactory.create("merge", new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onMerge();
                 }
             });
+            buttons.add(merge);
         }
     }
 
@@ -98,14 +99,8 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.remove(checkIn);
-        buttons.remove(merge);
-        if (enable) {
-            buttons.add(checkIn);
-            if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
-                buttons.add(merge);
-            }
-        }
+        buttons.setEnabled(CHECKIN_ID, enable);
+        buttons.setEnabled(MERGE_ID, enable);
     }
 
     /**

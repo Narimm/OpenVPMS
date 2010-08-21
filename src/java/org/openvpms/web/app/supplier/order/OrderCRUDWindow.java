@@ -54,11 +54,6 @@ import org.openvpms.web.system.ServiceHelper;
 public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
-     * The copy button.
-     */
-    private Button copy;
-
-    /**
      * Copy button identifier.
      */
     private static final String COPY_ID = "copy";
@@ -80,12 +75,15 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        copy = ButtonFactory.create(COPY_ID, new ActionListener() {
+        Button copy = ButtonFactory.create(COPY_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onCopy();
             }
         });
-        enableButtons(buttons, false);
+        super.layoutButtons(buttons);
+        buttons.add(createPostButton());
+        buttons.add(createPreviewButton());
+        buttons.add(copy);
     }
 
     /**
@@ -96,24 +94,19 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
+        boolean editEnabled = false;
+        boolean deletePostEnabled = false;
         if (enable) {
             FinancialAct object = getObject();
-            if (canEdit(object)) {
-                buttons.add(getEditButton());
-            }
-            buttons.add(getCreateButton());
+            editEnabled = canEdit(object);
             String status = object.getStatus();
-            if (!ActStatus.POSTED.equals(status) &&
-                !ActStatus.CANCELLED.equals(status)) {
-                buttons.add(getDeleteButton());
-                buttons.add(getPostButton());
-            }
-            buttons.add(getPreviewButton());
-            buttons.add(copy);
-        } else {
-            buttons.add(getCreateButton());
+            deletePostEnabled = !ActStatus.POSTED.equals(status) && !ActStatus.CANCELLED.equals(status);
         }
+        buttons.setEnabled(EDIT_ID, editEnabled);
+        buttons.setEnabled(DELETE_ID, deletePostEnabled);
+        buttons.setEnabled(POST_ID, deletePostEnabled);
+        buttons.setEnabled(PREVIEW_ID, enable);
+        buttons.setEnabled(COPY_ID, enable);
     }
 
     /**

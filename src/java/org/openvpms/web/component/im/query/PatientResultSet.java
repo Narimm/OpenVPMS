@@ -30,7 +30,7 @@ import java.util.Date;
 
 
 /**
- * An {@link org.openvpms.web.component.im.query.ResultSet} implementation that queries customers. The search can be
+ * An {@link org.openvpms.web.component.im.query.ResultSet} implementation that queries patients. The search can be
  * further constrained to match on:
  * <ul>
  * <li>partial patient name; and/or

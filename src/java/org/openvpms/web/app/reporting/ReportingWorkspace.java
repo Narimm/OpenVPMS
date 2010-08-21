@@ -58,11 +58,6 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
     private Browser<Entity> browser;
 
     /**
-     * The run button.
-     */
-    private Button run;
-
-    /**
      * Run button identifier.
      */
     private static final String RUN_ID = "run";
@@ -139,23 +134,12 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getRunButton());
-    }
-
-    /**
-     * Returns the run button.
-     *
-     * @return the run button
-     */
-    protected Button getRunButton() {
-        if (run == null) {
-            run = ButtonFactory.create(RUN_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onRun();
-                }
-            });
-        }
-        return run;
+        Button run = ButtonFactory.create(RUN_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onRun();
+            }
+        });
+        buttons.add(run);
     }
 
     /**

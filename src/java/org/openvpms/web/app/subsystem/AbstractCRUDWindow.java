@@ -21,8 +21,6 @@ package org.openvpms.web.app.subsystem;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,10 +29,12 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
-import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -87,44 +87,24 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     private ButtonRow buttons;
 
     /**
-     * The edit button.
-     */
-    private Button edit;
-
-    /**
-     * The create button.
-     */
-    private Button create;
-
-    /**
-     * The delete button.
-     */
-    private Button delete;
-
-    /**
-     * The print button.
-     */
-    private Button print;
-
-    /**
      * Edit button identifier.
      */
-    private static final String EDIT_ID = "edit";
+    protected static final String EDIT_ID = "edit";
 
     /**
      * New button identifier.
      */
-    private static final String NEW_ID = "new";
+    protected static final String NEW_ID = "new";
 
     /**
      * Delete button identifier.
      */
-    private static final String DELETE_ID = "delete";
+    protected static final String DELETE_ID = "delete";
 
     /**
      * Print button identifier.
      */
-    private static final String PRINT_ID = "print";
+    protected static final String PRINT_ID = "print";
 
 
     /**
@@ -251,6 +231,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     protected Component doLayout() {
         buttons = new ButtonRow("ControlRow");
         ButtonSet set = buttons.getButtons();
+        set.setHideDisabled(true);
         layoutButtons(set);
         enableButtons(set, false);
         return buttons;
@@ -262,73 +243,61 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * @param buttons the button row
      */
     protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getEditButton());
-        buttons.add(getCreateButton());
-        buttons.add(getDeleteButton());
+        buttons.add(createNewButton());
+        buttons.add(createEditButton());
+        buttons.add(createDeleteButton());
     }
 
     /**
-     * Returns the edit button.
+     * Helper to create a new button with id {@link #EDIT_ID} linked to {@link #edit()}.
      *
-     * @return the edit button
+     * @return a new button
      */
-    protected Button getEditButton() {
-        if (edit == null) {
-            edit = ButtonFactory.create(EDIT_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    edit();
-                }
-            });
-        }
-        return edit;
+    protected Button createEditButton() {
+        return ButtonFactory.create(EDIT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                edit();
+            }
+        });
     }
 
     /**
-     * Returns the create button.
+     * Helper to create a new button with id {@link #NEW_ID} linked to {@link #create()}.
      *
-     * @return the create button
+     * @return a new button
      */
-    protected Button getCreateButton() {
-        if (create == null) {
-            create = ButtonFactory.create(NEW_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    create();
-                }
-            });
-        }
-        return create;
+    protected Button createNewButton() {
+        return ButtonFactory.create(NEW_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                create();
+            }
+        });
     }
 
     /**
-     * Returns the create button.
+     * Helper to create a new button with id {@link #DELETE_ID} linked to {@link #onDelete()}.
      *
-     * @return the create button
+     * @return a new button
      */
-    protected Button getDeleteButton() {
-        if (delete == null) {
-            delete = ButtonFactory.create(DELETE_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onDelete();
-                }
-            });
-        }
-        return delete;
+    protected Button createDeleteButton() {
+        return ButtonFactory.create(DELETE_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onDelete();
+            }
+        });
     }
 
     /**
-     * Returns the print button.
+     * Helper to create a new button with id {@link #PRINT_ID} linked to {@link #onPrint()}.
      *
-     * @return the print button
+     * @return a new button
      */
-    protected Button getPrintButton() {
-        if (print == null) {
-            print = ButtonFactory.create(PRINT_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onPrint();
-                }
-            });
-        }
-        return print;
+    protected Button createPrintButton() {
+        return ButtonFactory.create(PRINT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onPrint();
+            }
+        });
     }
 
     /**
@@ -347,19 +316,8 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * @param enable  determines if buttons should be enabled
      */
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        Button edit = getEditButton();
-        Button delete = getDeleteButton();
-        if (enable) {
-            if (!buttons.contains(edit)) {
-                buttons.add(edit);
-            }
-            if (!buttons.contains(delete)) {
-                buttons.add(delete);
-            }
-        } else {
-            buttons.remove(edit);
-            buttons.remove(delete);
-        }
+        buttons.setEnabled(EDIT_ID, enable);
+        buttons.setEnabled(DELETE_ID, enable);
     }
 
     /**

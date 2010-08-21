@@ -46,6 +46,18 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
     }
 
     /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        super.layoutButtons(buttons);
+        buttons.add(createPostButton());
+        buttons.add(createPrintButton());
+    }
+
+    /**
      * Enables/disables the buttons that require an object to be selected.
      *
      * @param buttons the button set
@@ -53,22 +65,18 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
+        boolean enableEdit = false;
+        boolean enableDeletePost = false;
         if (enable) {
             Act object = getObject();
-            if (canEdit(object)) {
-                buttons.add(getEditButton());
-            }
-            buttons.add(getCreateButton());
+            enableEdit = canEdit(object);
             String status = object.getStatus();
-            if (!ActStatus.POSTED.equals(status)) {
-                buttons.add(getDeleteButton());
-                buttons.add(getPostButton());
-            }
-            buttons.add(getPrintButton());
-        } else {
-            buttons.add(getCreateButton());
+            enableDeletePost = !ActStatus.POSTED.equals(status);
         }
+        buttons.setEnabled(EDIT_ID, enableEdit);
+        buttons.setEnabled(DELETE_ID, enableDeletePost);
+        buttons.setEnabled(POST_ID, enableDeletePost);
+        buttons.setEnabled(PRINT_ID, enable);
     }
 
     /**

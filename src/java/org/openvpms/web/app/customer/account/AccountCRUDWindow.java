@@ -57,26 +57,6 @@ import java.util.Date;
 public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
-     * The reverse button.
-     */
-    private Button reverse;
-
-    /**
-     * The statement button.
-     */
-    private Button statement;
-
-    /**
-     * The adjust button.
-     */
-    private Button adjust;
-
-    /**
-     * The check button.
-     */
-    private Button check;
-
-    /**
      * Reverse button identifier.
      */
     private static final String REVERSE_ID = "reverse";
@@ -125,28 +105,38 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
+        Button reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onReverse();
             }
         });
-        statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
+        Button statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onStatement();
             }
         });
-        adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
+        Button adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onAdjust();
             }
         });
-        // If thelogged in user is an administrator, show the Check button
+        // If the logged in user is an administrator, show the Check button
+        Button check = null;
         if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
             check = ButtonFactory.create(CHECK_ID, new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onCheck();
                 }
             });
+        }
+
+        buttons.add(adjust);
+        buttons.add(reverse);
+        buttons.add(createPrintButton());
+        buttons.add(statement);
+
+        if (check != null) {
+            buttons.add(check);
         }
 
         enableButtons(buttons, true);
@@ -160,17 +150,10 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
-        buttons.add(adjust);
-        if (enable) {
-            buttons.add(reverse);
-            buttons.add(getPrintButton());
-            buttons.add(statement);
-
-            if (check != null) {
-                buttons.add(check);
-            }
-        }
+        buttons.setEnabled(REVERSE_ID, enable);
+        buttons.setEnabled(PRINT_ID, enable);
+        buttons.setEnabled(STATEMENT_ID, enable);
+        buttons.setEnabled(CHECK_ID, enable);
     }
 
     /**

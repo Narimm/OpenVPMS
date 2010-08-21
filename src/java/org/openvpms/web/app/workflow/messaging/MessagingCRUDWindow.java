@@ -20,8 +20,6 @@ package org.openvpms.web.app.workflow.messaging;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
@@ -31,6 +29,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -48,20 +48,21 @@ import org.openvpms.web.resource.util.Messages;
 public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
     /**
-     * The 'forward' button.
-     */
-    private Button forward;
-
-    /**
-     * The 'completed' button.
-     */
-    private Button completed;
-
-    /**
      * Message archetypes that may be created by this workspace.
      */
     private static final Archetypes<Act> MESSAGES
             = Archetypes.create(MessageArchetypes.USER, Act.class);
+
+    /**
+     * The forward button identifier.
+     */
+    private static final String FORWARD_ID = "forward";
+
+    /**
+     * The completed button identifier.
+     */
+    private static final String COMPLETED_ID = "completed";
+
 
     /**
      * Constructs a <tt>MessagingCRUDWindow</tt>.
@@ -89,21 +90,21 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        if (forward == null) {
-            forward = ButtonFactory.create("forward", new ActionListener() {
-                public void onAction(ActionEvent e) {
-                    onForward();
-                }
-            });
-        }
+        Button forward = ButtonFactory.create(FORWARD_ID, new ActionListener() {
+            public void onAction(ActionEvent e) {
+                onForward();
+            }
+        });
 
-        if (completed == null) {
-            completed = ButtonFactory.create("completed", new ActionListener() {
-                public void onAction(ActionEvent e) {
-                    onCompleted();
-                }
-            });
-        }
+        Button completed = ButtonFactory.create(COMPLETED_ID, new ActionListener() {
+            public void onAction(ActionEvent e) {
+                onCompleted();
+            }
+        });
+        buttons.add(createNewButton());
+        buttons.add(forward);
+        buttons.add(completed);
+        buttons.add(createPrintButton());
     }
 
     /**
@@ -114,15 +115,9 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
-        if (enable) {
-            buttons.add(getCreateButton());
-            buttons.add(forward);
-            buttons.add(completed);
-            buttons.add(getPrintButton());
-        } else {
-            buttons.add(getCreateButton());
-        }
+        buttons.setEnabled(FORWARD_ID, enable);
+        buttons.setEnabled(COMPLETED_ID, enable);
+        buttons.setEnabled(PRINT_ID, enable);
     }
 
     /**

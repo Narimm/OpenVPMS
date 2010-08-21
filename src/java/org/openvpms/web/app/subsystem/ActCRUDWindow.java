@@ -20,6 +20,7 @@ package org.openvpms.web.app.subsystem;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import static org.openvpms.archetype.rules.act.ActStatus.CANCELLED;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -54,34 +55,23 @@ public abstract class ActCRUDWindow<T extends Act>
         extends AbstractViewCRUDWindow<T> {
 
     /**
+     * Post button identifier.
+     */
+    protected static final String POST_ID = "post";
+
+    /**
+     * Preview button identifier.
+     */
+    protected static final String PREVIEW_ID = "preview";
+
+    /**
      * Determines if the current act is posted or not.
      */
     private boolean posted;
 
 
     /**
-     * The 'post' button.
-     */
-    private Button post;
-
-    /**
-     * Post button identifier.
-     */
-    private static final String POST_ID = "post";
-
-    /**
-     * The 'preview' button.
-     */
-    private Button preview;
-
-    /**
-     * Preview button identifier.
-     */
-    private static final String PREVIEW_ID = "preview";
-
-
-    /**
-     * Create a new <tt>ActCRUDWindow</tt>.
+     * Constructs an <tt>ActCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
@@ -154,34 +144,49 @@ public abstract class ActCRUDWindow<T extends Act>
     }
 
     /**
+     * Determines if an act can be posted (i.e finalised).
+     * <p/>
+     * This implementation returns <tt>true</tt> if that act isn't <tt>POSTED</tt> or <tt>CANCELLED</tt>.
+     *
+     * @param act the act
+     * @return <tt>true</tt> if the act can be posted
+     */
+    protected boolean canPost(Act act) {
+        String status = act.getStatus();
+        return !POSTED.equals(status) && !CANCELLED.equals(status);
+    }
+
+    /**
      * Invoked when the 'post' button is pressed.
      */
     protected void onPost() {
-        try {
-            final T act = getObject();
-            String displayName = getArchetypes().getDisplayName();
-            String title = Messages.get("act.post.title", displayName);
-            String message = Messages.get("act.post.message", displayName);
-            final ConfirmationDialog dialog = new ConfirmationDialog(
-                    title, message);
-            dialog.addWindowPaneListener(new PopupDialogListener() {
-                @Override
-                public void onOK() {
-                    try {
-                        boolean saved = post(act);
-                        if (saved) {
-                            // act was saved. Need to refresh
-                            saved(act);
-                            onPosted(act);
+        final T act = getObject();
+        if (canPost(act)) {
+            try {
+                String displayName = getArchetypes().getDisplayName();
+                String title = Messages.get("act.post.title", displayName);
+                String message = Messages.get("act.post.message", displayName);
+                final ConfirmationDialog dialog = new ConfirmationDialog(
+                        title, message);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        try {
+                            boolean saved = post(act);
+                            if (saved) {
+                                // act was saved. Need to refresh
+                                saved(act);
+                                onPosted(act);
+                            }
+                        } catch (OpenVPMSException exception) {
+                            ErrorHelper.show(exception);
                         }
-                    } catch (OpenVPMSException exception) {
-                        ErrorHelper.show(exception);
                     }
-                }
-            });
-            dialog.show();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+                });
+                dialog.show();
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
         }
     }
 
@@ -312,35 +317,29 @@ public abstract class ActCRUDWindow<T extends Act>
     }
 
     /**
-     * Returns the post button.
+     * Helper to create a new button with id {@link #POST_ID} linked to {@link #onPost()}.
      *
-     * @return the post button
+     * @return a new button
      */
-    protected Button getPostButton() {
-        if (post == null) {
-            post = ButtonFactory.create(POST_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onPost();
-                }
-            });
-        }
-        return post;
+    protected Button createPostButton() {
+        return ButtonFactory.create(POST_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onPost();
+            }
+        });
     }
 
     /**
-     * Returns the preview button.
+     * Helper to create a new button with id {@link #PREVIEW_ID} linked to {@link #onPreview()}.
      *
-     * @return the preview button
+     * @return a new button
      */
-    protected Button getPreviewButton() {
-        if (preview == null) {
-            preview = ButtonFactory.create(PREVIEW_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onPreview();
-                }
-            });
-        }
-        return preview;
+    protected Button createPreviewButton() {
+        return ButtonFactory.create(PREVIEW_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onPreview();
+            }
+        });
     }
 
     /**
@@ -350,8 +349,7 @@ public abstract class ActCRUDWindow<T extends Act>
      * @return <tt>true</tt> if the act was saved
      */
     private boolean post(Act act) {
-        String status = act.getStatus();
-        if (!POSTED.equals(status)) {
+        if (canPost(act)) {
             act.setStatus(POSTED);
             // todo - workaround for OVPMS-734
             if (TypeHelper.isA(act, "act.customerAccount*")) {

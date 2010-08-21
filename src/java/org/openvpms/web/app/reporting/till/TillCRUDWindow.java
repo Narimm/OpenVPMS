@@ -22,6 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.till.TillBalanceQuery;
 import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.archetype.rules.finance.till.TillRules;
@@ -76,21 +77,6 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * The selected child act.
      */
     protected FinancialAct childAct;
-
-    /**
-     * The clear button.
-     */
-    private Button clear;
-
-    /**
-     * The adjust button.
-     */
-    private Button adjust;
-
-    /**
-     * The transfer button.
-     */
-    private Button transfer;
 
     /**
      * Clear button identifier.
@@ -158,25 +144,25 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        clear = ButtonFactory.create(CLEAR_ID, new ActionListener() {
+        Button clear = ButtonFactory.create(CLEAR_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onClear();
             }
         });
-        adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
+        Button adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onAdjust();
             }
         });
-        transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
+        Button transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onTransfer();
             }
         });
         buttons.add(clear);
-        buttons.add(getPrintButton());
+        buttons.add(createPrintButton());
         buttons.add(adjust);
-        buttons.add(getEditButton());
+        buttons.add(createEditButton());
         buttons.add(transfer);
     }
 
@@ -188,28 +174,28 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
+        boolean uncleared = false;
+        boolean enableEdit = false;
+        boolean enableTransfer = false;
         if (enable) {
             Act act = getObject();
-            boolean uncleared = false;
             if (TypeHelper.isA(act, TILL_BALANCE)) {
                 uncleared = TillBalanceStatus.UNCLEARED.equals(act.getStatus());
             }
             if (uncleared) {
-                buttons.add(clear);
-            }
-            buttons.add(getPrintButton());
-            if (uncleared) {
-                buttons.add(adjust);
                 if (TypeHelper.isA(childAct, "act.tillBalanceAdjustment")) {
-                    buttons.add(getEditButton());
+                    enableEdit = true;
                 } else if (TypeHelper.isA(childAct,
-                                          "act.customerAccountPayment",
-                                          "act.customerAccountRefund")) {
-                    buttons.add(transfer);
+                                          CustomerAccountArchetypes.PAYMENT, CustomerAccountArchetypes.REFUND)) {
+                    enableTransfer = true;
                 }
             }
         }
+        buttons.setEnabled(CLEAR_ID, uncleared);
+        buttons.setEnabled(PRINT_ID, enable);
+        buttons.setEnabled(ADJUST_ID, uncleared);
+        buttons.setEnabled(EDIT_ID, enableEdit);
+        buttons.setEnabled(TRANSFER_ID, enableTransfer);
     }
 
     /**

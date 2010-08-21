@@ -50,11 +50,6 @@ import org.openvpms.web.system.ServiceHelper;
 public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
-     * The resend button. Only applies when a reminder is selected.
-     */
-    private Button resend;
-
-    /**
      * Reminder and alert shortnames supported by the workspace.
      */
     private static final String[] SHORT_NAMES = {ReminderArchetypes.REMINDER, "act.patientAlert"};
@@ -66,7 +61,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
 
 
     /**
-     * Create a new <tt>ReminderCRUDWindow</tt>.
+     * Constructs a <tt>ReminderCRUDWindow</tt>.
      */
     public ReminderCRUDWindow() {
         super(Archetypes.create(SHORT_NAMES, Act.class,
@@ -80,14 +75,13 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getEditButton());
-        buttons.add(getCreateButton());
-        buttons.add(getDeleteButton());
-        resend = ButtonFactory.create(RESEND_ID, new ActionListener() {
+        super.layoutButtons(buttons);
+        Button resend = ButtonFactory.create(RESEND_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onResend();
             }
         });
+        buttons.add(resend);
     }
 
     /**
@@ -98,17 +92,12 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
+        super.enableButtons(buttons, enable);
+        boolean enableResend = false;
         if (enable) {
-            buttons.add(getEditButton());
-            buttons.add(getCreateButton());
-            buttons.add(getDeleteButton());
-            if (TypeHelper.isA(getObject(), ReminderArchetypes.REMINDER)) {
-                buttons.add(resend);
-            }
-        } else {
-            buttons.add(getCreateButton());
+            enableResend = TypeHelper.isA(getObject(), ReminderArchetypes.REMINDER);
         }
+        buttons.setEnabled(RESEND_ID, enableResend);
     }
 
     /**

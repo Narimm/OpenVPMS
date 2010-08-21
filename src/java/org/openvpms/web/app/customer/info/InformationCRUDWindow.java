@@ -20,14 +20,14 @@ package org.openvpms.web.app.customer.info;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -44,13 +44,13 @@ import org.openvpms.web.component.workflow.TaskListener;
 public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
 
     /**
-     * The merge button.
+     * Merge button identifier.
      */
-    private Button merge;
+    private static final String MERGE_ID = "merge";
 
 
     /**
-     * Creates a new <tt>InformationCRUDWindow</tt>.
+     * Constructs an <tt>InformationCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
@@ -66,12 +66,14 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        if (merge == null) {
-            merge = ButtonFactory.create("merge", new ActionListener() {
+        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+            // only provide merging for admin users
+            Button merge = ButtonFactory.create(MERGE_ID, new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onMerge();
                 }
             });
+            buttons.add(merge);
         }
     }
 
@@ -84,15 +86,8 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.remove(merge);
-        if (enable) {
-            // only add the merge for admin users
-            User user = GlobalContext.getInstance().getUser();
-            if (TypeHelper.isA(getObject(), "party.customerperson")
-                    && UserHelper.isAdmin(user)) {
-                buttons.add(merge);
-            }
-        }
+        boolean enableMerge = enable && TypeHelper.isA(getObject(), CustomerArchetypes.PERSON);
+        buttons.setEnabled(MERGE_ID, enableMerge);
     }
 
     /**

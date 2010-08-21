@@ -29,13 +29,13 @@ import org.openvpms.web.app.workflow.consult.ConsultWorkflow;
 import org.openvpms.web.app.workflow.otc.OverTheCounterWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.Workflow;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -48,43 +48,39 @@ import org.openvpms.web.resource.util.Messages;
 public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
 
     /**
-     * The consult button.
-     */
-    private Button consult;
-
-    /**
-     * The check-out button.
-     */
-    private Button checkOut;
-
-    /**
-     * The over-the-counter button.
-     */
-    private Button overTheCounter;
-
-    /**
      * Consult button identifier.
      */
-    private static final String CONSULT_ID = "consult";
+    protected static final String CONSULT_ID = "consult";
 
     /**
      * Check-out button identifier.
      */
-    private static final String CHECKOUT_ID = "checkout";
+    protected static final String CHECKOUT_ID = "checkout";
 
     /**
      * Over-the-counter button identifier.
      */
-    private static final String OVER_THE_COUNTER_ID = "OTC";
+    protected static final String OVER_THE_COUNTER_ID = "OTC";
 
 
     /**
-     * Constructs a new <tt>ScheduleCRUDWindow</tt>.
+     * Constructs a <tt>ScheduleCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
     public ScheduleCRUDWindow(Archetypes<Act> archetypes) {
         super(archetypes);
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        super.layoutButtons(buttons);
+        buttons.add(createPrintButton());
     }
 
     /**
@@ -96,14 +92,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        Button print = getPrintButton();
-        if (enable) {
-            if (!buttons.contains(print)) {
-                buttons.add(print);
-            }
-        } else {
-            buttons.remove(print);
-        }
+        buttons.setEnabled(PRINT_ID, enable);
     }
 
     /**
@@ -141,53 +130,42 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     }
 
     /**
-     * Returns the 'consult' button.
+     * Helper to create a new button with id {@link #CONSULT_ID} linked to {@link #onConsult()}.
      *
-     * @return the 'consult' button
+     * @return a new button
      */
-    protected Button getConsultButton() {
-        if (consult == null) {
-            consult = ButtonFactory.create(CONSULT_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onConsult();
-                }
-            });
-        }
-        return consult;
+    protected Button createConsultButton() {
+        return ButtonFactory.create(CONSULT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onConsult();
+            }
+        });
     }
 
     /**
-     * Returns the 'check-out' button.
+     * Helper to create a new button with id {@link #CHECKOUT_ID} linked to {@link #onCheckOut()}.
      *
-     * @return the 'check-out' button
+     * @return a new button
      */
-    protected Button getCheckOutButton() {
-        if (checkOut == null) {
-            checkOut = ButtonFactory.create(
-                    CHECKOUT_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onCheckOut();
-                }
-            });
-        }
-        return checkOut;
+    protected Button createCheckOutButton() {
+        return ButtonFactory.create(CHECKOUT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onCheckOut();
+            }
+        });
     }
 
     /**
-     * Returns the 'over-the-counter' button.
+     * Helper to create a new button with id {@link #OVER_THE_COUNTER_ID} linked to {@link #onOverTheCounter()}.
      *
-     * @return the 'over-the-counter' button
+     * @return a new button
      */
-    protected Button getOverTheCounterButton() {
-        if (overTheCounter == null) {
-            overTheCounter = ButtonFactory.create(
-                    OVER_THE_COUNTER_ID, new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onOverTheCounter();
-                }
-            });
-        }
-        return overTheCounter;
+    protected Button createOverTheCounterButton() {
+        return ButtonFactory.create(OVER_THE_COUNTER_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onOverTheCounter();
+            }
+        });
     }
 
     /**
