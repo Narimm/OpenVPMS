@@ -1103,7 +1103,10 @@ public class EntityBean extends IMObjectBean {
             Predicate predicate, RelationshipRef accessor) {
         for (EntityRelationship relationship : relationships) {
             if (predicate.evaluate(relationship)) {
-                return accessor.transform(relationship);
+                IMObjectReference reference = accessor.transform(relationship);
+                if (reference != null) {
+                    return reference;
+                }
             }
         }
         return null;
@@ -1124,7 +1127,10 @@ public class EntityBean extends IMObjectBean {
         List<IMObjectReference> result = new ArrayList<IMObjectReference>();
         relationships = select(relationships, predicate);
         for (EntityRelationship relationship : relationships) {
-            result.add(accessor.transform(relationship));
+            IMObjectReference ref = accessor.transform(relationship);
+            if (ref != null) {
+                result.add(ref);
+            }
         }
         return result;
     }
@@ -1133,7 +1139,7 @@ public class EntityBean extends IMObjectBean {
      * Selects all relationships matching a predicate.
      *
      * @param relationships the source relationships
-     * @param predicate
+     * @param predicate     the predicate
      * @return the relationships matching the predicate
      */
     private List<EntityRelationship> select(

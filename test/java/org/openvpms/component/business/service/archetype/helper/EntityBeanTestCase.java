@@ -551,8 +551,8 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         List<Entity> pets = person.getNodeTargetEntities("patients",
                                                          new Date());
         assertEquals(2, pets.size());
-        assertTrue(pets.contains(pet1.getObject()));
-        assertTrue(pets.contains(pet2.getObject()));
+        assertTrue(pets.contains(pet1.getEntity()));
+        assertTrue(pets.contains(pet2.getEntity()));
 
         List<IMObjectReference> petRefs
                 = person.getNodeTargetEntityRefs("patients", new Date());
@@ -564,7 +564,7 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         List<Entity> people = pet1.getNodeSourceEntities("relationships",
                                                          new Date());
         assertEquals(1, people.size());
-        assertTrue(people.contains(person.getObject()));
+        assertTrue(people.contains(person.getEntity()));
 
         List<IMObjectReference> peopleRefs
                 = pet2.getNodeSourceEntityRefs("relationships", new Date());
@@ -785,6 +785,42 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         assertTrue(petRefs.contains(pet2.getObjectReference()));
     }
 
+    /**
+     * Verifies that null references aren't returned by the {@link EntityBean#getNodeSourceEntityRefs}
+     * and {@link EntityBean#getNodeTargetEntityRefs} methods.
+     */
+    @Test
+    public void testFilterNullRefs() {
+        EntityBean pet1Bean = createPet();
+        EntityBean pet2Bean = createPet();
+        EntityBean personBean = createPerson();
+        Entity pet1 = pet1Bean.getEntity();
+        Entity pet2 = pet2Bean.getEntity();
+
+        // add a relationship to the person and pets
+        EntityRelationship relationship = personBean.addRelationship(OWNER, pet1);
+        personBean.addRelationship(OWNER, pet2);
+
+
+        // verify that the person returns both pet references
+        List<IMObjectReference> references = personBean.getNodeTargetEntityRefs("patients");
+        assertEquals(2, references.size());
+
+        // verify that pet1 returns the customer reference
+        references = pet1Bean.getNodeSourceEntityRefs("customers");
+        assertEquals(1, references.size());
+
+        // now set the target of the relationship to null and verify no null is returned
+        relationship.setTarget(null);
+
+        references = personBean.getNodeTargetEntityRefs("patients");
+        assertTrue(references.contains(pet2.getObjectReference()));
+
+        // now set the source of the relationship to null and verify no null is returned
+        relationship.setSource(null);
+        references = pet1Bean.getNodeSourceEntityRefs("customers");
+        assertEquals(0, references.size());
+    }
 
     /**
      * Verifies that an entity relationship matches that expected.
