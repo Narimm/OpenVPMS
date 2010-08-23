@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -80,22 +81,36 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         Product productNoTax = createProduct();
 
         BigDecimal ten = new BigDecimal(10);
-        checkEquals(BigDecimal.ZERO,
-                     rules.calculateTax(ten, productNoTax, false));
-        checkEquals(BigDecimal.ZERO,
-                     rules.calculateTax(ten, productNoTax, true));
+        checkEquals(BigDecimal.ZERO, rules.calculateTax(ten, productNoTax, false));
+        checkEquals(BigDecimal.ZERO, rules.calculateTax(ten, productNoTax, true));
 
         Product product10Tax = createProductWithTax();
-        checkEquals(BigDecimal.ONE,
-                     rules.calculateTax(ten, product10Tax, false));
-        checkEquals(new BigDecimal("0.909"),
-                     rules.calculateTax(ten, product10Tax, true));
+        checkEquals(BigDecimal.ONE, rules.calculateTax(ten, product10Tax, false));
+        checkEquals(new BigDecimal("0.909"), rules.calculateTax(ten, product10Tax, true));
 
         Product productType10Tax = createProductWithProductTypeTax();
-        checkEquals(BigDecimal.ONE,
-                     rules.calculateTax(ten, productType10Tax, false));
-        checkEquals(new BigDecimal("0.909"),
-                     rules.calculateTax(ten, productType10Tax, true));
+        checkEquals(BigDecimal.ONE, rules.calculateTax(ten, productType10Tax, false));
+        checkEquals(new BigDecimal("0.909"), rules.calculateTax(ten, productType10Tax, true));
+    }
+
+    /**
+     * Verifies that if a product has a product type relationship, but with no product type, a zero tax rate
+     * is returned.
+     * <p/>
+     * This tests the fix for <em>OVPMS-946 NullPointerException on supplier change, when editing
+     * products</em>.
+     */
+    @Test
+    public void testGetTaxRateForInvalidProductType() {
+        Product productNoTax = createProduct();
+        Entity productType = (Entity) create("entity.productType");
+        EntityRelationship relationship = (EntityRelationship) create("entityRelationship.productTypeProduct");
+        relationship.setSource(productType.getObjectReference());
+        relationship.setTarget(productNoTax.getObjectReference());
+        productNoTax.addEntityRelationship(relationship);
+        relationship.setSource(null);
+        BigDecimal rate = rules.getTaxRate(productNoTax);
+        checkEquals(BigDecimal.ZERO, rate);
     }
 
     /**
