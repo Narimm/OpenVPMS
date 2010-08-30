@@ -18,11 +18,10 @@
 
 package org.openvpms.web.component.workflow;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -150,11 +149,10 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
         String[] buttons = isRequired()
                            ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
         boolean addNew = (createTask != null);
-        final BrowserDialog<T> dialog
-                = new BrowserDialog<T>(title, message, buttons, browser,
-                                       addNew);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void onClose(WindowPaneEvent event) {
+        final BrowserDialog<T> dialog = new BrowserDialog<T>(title, message, buttons, browser, addNew);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
                 if (dialog.createNew()) {
                     createTask.addTaskListener(getTaskListeners());
                     createTask.start(context);
@@ -163,12 +161,20 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
                     if (selected != null) {
                         context.addObject(selected);
                         notifyCompleted();
-                    } else if (PopupDialog.SKIP_ID.equals(dialog.getAction())) {
-                        notifySkipped();
                     } else {
-                        notifyCancelled();
+                        notifyCancelled(); // shouldn't occur
                     }
                 }
+            }
+
+            @Override
+            public void onSkip() {
+                notifySkipped();
+            }
+
+            @Override
+            public void onCancel() {
+                notifyCancelled();
             }
         });
         dialog.show();
