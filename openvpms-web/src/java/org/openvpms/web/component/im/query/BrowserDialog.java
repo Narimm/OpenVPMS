@@ -224,14 +224,15 @@ public class BrowserDialog<T> extends PopupDialog {
     }
 
     /**
-     * Select the current object, and if <tt>closeOnSelection</tt> is <tt>true</tt>, closes the browser.
+     * Select the current object, and if <tt>closeOnSelection</tt> is <tt>true</tt>, invokes {@link #onOK} to close
+     * the browser.
      *
      * @param object the selected object
      */
     protected void onSelected(T object) {
         selected = object;
         if (closeOnSelection) {
-            close();
+            onOK();
         }
     }
 
@@ -243,7 +244,7 @@ public class BrowserDialog<T> extends PopupDialog {
     protected void onBrowsed(T object) {
         selected = object;
     }
-    
+
     /**
      * Flags that the user wants to create a new instance, and closes the
      * browser.
