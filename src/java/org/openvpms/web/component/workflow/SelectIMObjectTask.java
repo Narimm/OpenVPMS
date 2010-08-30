@@ -176,6 +176,16 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
             public void onCancel() {
                 notifyCancelled();
             }
+
+            /**
+             * Invoked when an unknown button is selected.
+             *
+             * @param action the dialog action
+             */
+            @Override
+            public void onAction(String action) {
+                notifyCancelled();
+            }
         });
         dialog.show();
     }
