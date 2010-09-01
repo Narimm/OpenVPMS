@@ -18,7 +18,8 @@
 
 package org.openvpms.web.component.button;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 
@@ -28,7 +29,7 @@ import org.junit.Test;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ShortcutHelperTestCase extends TestCase {
+public class ShortcutHelperTestCase {
 
     /**
      * Tests the {@link ShortcutHelper#getShortcut(String)} method.
