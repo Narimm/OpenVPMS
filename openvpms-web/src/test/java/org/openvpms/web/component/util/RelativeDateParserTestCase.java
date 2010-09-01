@@ -18,13 +18,13 @@
 
 package org.openvpms.web.component.util;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import org.junit.Test;
 
 
 /**
@@ -33,7 +33,7 @@ import org.junit.Test;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class RelativeDateParserTestCase extends TestCase {
+public class RelativeDateParserTestCase {
 
     /**
      * Tests the {@link RelativeDateParser#parse(String, Date)} method.
@@ -69,7 +69,8 @@ public class RelativeDateParserTestCase extends TestCase {
      * Tests the {@link RelativeDateParser#parse(String, Date)} method when
      * supplied with invalid strings.
      */
-    @Test public void testInvalidParse() {
+    @Test
+    public void testInvalidParse() {
         RelativeDateParser parser = new RelativeDateParser();
         assertNull(parser.parse(null));
         assertNull(parser.parse(""));

@@ -17,12 +17,15 @@
  */
 package org.openvpms.web.component.bound;
 
-import junit.framework.TestCase;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Window;
 import org.openvpms.web.component.property.Property;
+import org.junit.Test;
+import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 
 /**
@@ -31,7 +34,7 @@ import org.openvpms.web.component.property.Property;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractBoundFieldTest<T, V> extends TestCase {
+public abstract class AbstractBoundFieldTest<T, V> {
 
     /**
      * The first test value.
@@ -67,6 +70,7 @@ public abstract class AbstractBoundFieldTest<T, V> extends TestCase {
     /**
      * Verifies that updates to the property are reflected in the field.
      */
+    @Test
     public void testPropertyUpdate() {
         Property property = createProperty();
         T field = createField(property);
@@ -79,6 +83,7 @@ public abstract class AbstractBoundFieldTest<T, V> extends TestCase {
     /**
      * Verifies that updates to the field are reflected in the property.
      */
+    @Test
     public void testFieldUpdate() {
         Property property = createProperty();
         T field = createField(property);
@@ -94,11 +99,12 @@ public abstract class AbstractBoundFieldTest<T, V> extends TestCase {
      * from its container.
      * <p/>
      * When the component is removed, its <tt>dispose()</tt> method should be invoked which should unbind it from the
-     * property.This ensures that components can be garbage collected.
+     * property. This ensures that components can be garbage collected.
      * <p/>
      * When the component is added, its <tt>init() should be invoked which should bind it to the property.
      * <p/>
      */
+    @Test
     public void testInitDispose() {
         Property property = createProperty();
         T field = createField(property);
@@ -120,6 +126,22 @@ public abstract class AbstractBoundFieldTest<T, V> extends TestCase {
         assertEquals(value2, getValue(field));
         property.setValue(value1);
         assertEquals(value1, getValue(field));
+    }
+
+    /**
+     * Sets up the fixture.
+     */
+    @Before
+    public void setUp() {
+        ApplicationInstance instance = new ApplicationInstance() {
+
+            public Window init() {
+                window.setContent(container);
+                return window;
+            }
+        };
+        ApplicationInstance.setActive(instance);
+        instance.doInit();
     }
 
     /**
@@ -183,22 +205,5 @@ public abstract class AbstractBoundFieldTest<T, V> extends TestCase {
     protected void removeComponent(Component container, T field) {
         container.remove((Component) field);
     }
-
-    /**
-     * Sets up the fixture.
-     */
-    @Override
-    protected void setUp() throws Exception {
-        ApplicationInstance instance = new ApplicationInstance() {
-
-            public Window init() {
-                window.setContent(container);
-                return window;
-            }
-        };
-        ApplicationInstance.setActive(instance);
-        instance.doInit();
-    }
-
 
 }
