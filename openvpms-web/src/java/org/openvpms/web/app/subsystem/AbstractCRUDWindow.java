@@ -451,7 +451,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
         } else if (editor.isSaved()) {
             onSaved((T) editor.getObject(), isNew);
         } else {
+            // cancelled
             GlobalContext.getInstance().setCurrent(null);
+            onRefresh((T) editor.getObject());
         }
     }
 
