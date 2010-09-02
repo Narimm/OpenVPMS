@@ -27,15 +27,15 @@ import net.sf.jasperreports.engine.design.JRDesignParameter;
 import net.sf.jasperreports.engine.design.JRDesignSubreport;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.doc.DocumentException;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.ReportException;
 import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.doc.DocumentHandler;
-import org.openvpms.archetype.rules.doc.DocumentException;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -85,7 +85,7 @@ public class JasperTemplateLoader {
             DocumentHandler handler = handlers.get(template);
             stream = handler.getContent(template);
             JasperDesign report = JRXmlLoader.load(stream);
-            init(report, service, handlers);
+            init(template.getName(), report, service, handlers);
         } catch (DocumentException exception) {
             throw new ReportException(exception, FailedToCreateReport,
                                       exception.getMessage());
@@ -101,14 +101,14 @@ public class JasperTemplateLoader {
     /**
      * Constructs a new <code>JasperTemplateLoader</code>.
      *
-     * @param design  the master report design
-     * @param service the archetype service
+     * @param design   the master report design
+     * @param service  the archetype service
      * @param handlers the document handlers
      * @throws ReportException if the report cannot be created
      */
     public JasperTemplateLoader(JasperDesign design, IArchetypeService service,
                                 DocumentHandlers handlers) {
-        init(design, service, handlers);
+        init(design.getName(), design, service, handlers);
     }
 
     /**
@@ -126,7 +126,7 @@ public class JasperTemplateLoader {
      * @return the sub-reports.
      */
     public JasperReport[] getSubreports() {
-        return subreports.toArray(new JasperReport[0]);
+        return subreports.toArray(new JasperReport[subreports.size()]);
     }
 
     /**
@@ -141,13 +141,13 @@ public class JasperTemplateLoader {
     /**
      * Initialises the report.
      *
-     * @param design  the report design
-     * @param service the archetype service
+     * @param name     the template name
+     * @param design   the report design
+     * @param service  the archetype service
      * @param handlers the document handlers
      * @throws ReportException if the report cannot be initialised
      */
-    protected void init(JasperDesign design, IArchetypeService service,
-                        DocumentHandlers handlers) {
+    protected void init(String name, JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
         try {
             JRElement[] elements = design.getDetail().getElements();
             for (JRElement element : elements) {
@@ -157,10 +157,7 @@ public class JasperTemplateLoader {
                     JasperDesign report = JasperReportHelper.getReport(
                             reportName, service, handlers);
                     if (report == null) {
-                        throw new ReportException(
-                                FailedToCreateReport,
-                                "Failed to find subreport with name: "
-                                        + reportName);
+                        throw new ReportException(ReportException.ErrorCode.FailedToFindSubReport, reportName, name);
                     }
 
                     // replace the original expression with a parameter
