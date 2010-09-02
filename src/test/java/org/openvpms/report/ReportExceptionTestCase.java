@@ -37,9 +37,11 @@ public class ReportExceptionTestCase {
     @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     10, ReportException.ErrorCode.values().length);
+                     11, ReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
+        checkException(FailedToFindSubReport, "There is no sub-report named: foo\nThis is needed by report: bar",
+                       "foo", "bar");
         checkException(FailedToGenerateReport, "Failed to generate report: foo",
                        "foo");
         checkException(FailedToPrintReport, "Failed to print report: foo",

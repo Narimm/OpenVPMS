@@ -40,6 +40,7 @@ public class ReportException extends OpenVPMSException {
      */
     public enum ErrorCode {
         FailedToCreateReport,
+        FailedToFindSubReport,
         FailedToGenerateReport,
         FailedToPrintReport,
         @Deprecated UnsupportedMimeTypes,
