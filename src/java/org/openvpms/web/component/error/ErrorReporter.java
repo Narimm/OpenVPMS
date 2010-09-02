@@ -32,12 +32,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.MessageFormat;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.util.Set;
 
 
 /**
@@ -59,14 +53,9 @@ public class ErrorReporter {
     private String to = "ZXJyb3ItcmVwb3J0c0BsaXN0cy5vcGVudnBtcy5vcmc=";
 
     /**
-     * Exception class names to exclude.
+     * Error reporter configuration.
      */
-    private Set<String> exclude = new HashSet<String>();
-
-    /**
-     * Error reporter resource bundle.
-     */
-    public ResourceBundle bundle;
+    public ErrorReporterConfig config;
 
     /**
      * The logger.
@@ -74,24 +63,22 @@ public class ErrorReporter {
     private Log log = LogFactory.getLog(ErrorReporter.class);
 
     /**
-     * The reporter configuration properties resource name.
+     * The reporter configuration resource name.
      */
-    private static final String RESOURCE = "ErrorReporter";
+    private static final String RESOURCE = "/ErrorReporter.xml";
 
 
     /**
-     * Construct an <tt>ErrorReporter</tt>.
+     * Constructs an <tt>ErrorReporter</tt>.
      */
     public ErrorReporter() {
-        bundle = ResourceBundle.getBundle(RESOURCE);
+        InputStream stream = getClass().getResourceAsStream(RESOURCE);
+        if (stream == null) {
+            throw new IllegalStateException("Failed to find error reporter configuration:" + RESOURCE);
+        }
+        config = ErrorReporterConfig.read(stream);
         from = new String(Base64.decodeBase64(from)); // poor persons anti spam....
         to = new String(Base64.decodeBase64(to));
-        for (Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
-            String key = keys.nextElement();
-            if (key.startsWith("exclude.")) {
-                exclude.add(bundle.getString(key));
-            }
-        }
     }
 
     /**
@@ -122,7 +109,7 @@ public class ErrorReporter {
             JavaMailSender sender = ServiceHelper.getMailSender();
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            String subject = getString("report.subject", report.getVersion(), report.getMessage());
+            String subject = report.getVersion() + ": " + report.getMessage();
             helper.setSubject(subject);
             helper.setFrom(from);
             helper.setTo(to);
@@ -150,7 +137,7 @@ public class ErrorReporter {
      * @return <tt>true</tt> if the exception is reportable
      */
     public boolean isReportable(Throwable exception) {
-        return !exclude.contains(exception.getClass().getName());
+        return !config.isExcluded(exception);
     }
 
     /**
@@ -170,24 +157,4 @@ public class ErrorReporter {
         return null;
     }
 
-    /**
-     * Returns a formatted message
-     *
-     * @param key  the resource bundle key
-     * @param args arguments to format the message with
-     * @return the formatted message
-     */
-    private String getString(String key, String... args) {
-        String result;
-        try {
-            result = bundle.getString(key);
-            if (args.length != 0) {
-                MessageFormat format = new MessageFormat(result);
-                result = format.format(args);
-            }
-        } catch (MissingResourceException exception) {
-            result = '!' + key + '!';
-        }
-        return result;
-    }
 }
