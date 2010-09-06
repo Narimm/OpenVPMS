@@ -34,6 +34,7 @@ import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
+import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskProperties;
@@ -70,11 +71,8 @@ public class ConsultWorkflow extends WorkflowImpl {
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        User clinician = (User) bean.getParticipant("participation.clinician");
         final GlobalContext global = GlobalContext.getInstance();
-        if (clinician == null) {
-            clinician = global.getClinician();
-        }
+        User clinician = global.getClinician();
 
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
@@ -87,6 +85,10 @@ public class ConsultWorkflow extends WorkflowImpl {
         // get the latest clinical event and edit it.
         addTask(new GetClinicalEventTask());
         addTask(new EditClinicalEventTask());
+
+        // Reload the task to refresh the context with any edits made
+        addTask(new ReloadTask(GetClinicalEventTask.EVENT_SHORTNAME));
+
 
         // get the latest invoice, or create one if none is available, and edit it
         addTask(new GetInvoiceTask());

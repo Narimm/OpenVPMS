@@ -25,11 +25,13 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.app.workflow.EditClinicalEventTask;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
+import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -121,9 +123,6 @@ public class CheckInWorkflow extends WorkflowImpl {
         initial.setCustomer(customer);
         initial.setPatient(patient);
 
-        if (clinician == null) {
-            clinician = global.getClinician();
-        }
         initial.setClinician(clinician);
         initial.setUser(global.getUser());
         initial.setWorkListDate(new Date());
@@ -147,13 +146,16 @@ public class CheckInWorkflow extends WorkflowImpl {
         // printed on check out if not printed on check in.
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", "Appointment");
-        addTask(new CreateIMObjectTask(GetClinicalEventTask.EVENT_SHORTNAME, eventProps));
+        addTask(new GetClinicalEventTask());
 
         // optionally select and print an act.patientDocumentForm
         addTask(new PrintDocumentFormTask());
 
         // edit the act.patientClinicalEvent
-        addTask(new EditIMObjectTask(GetClinicalEventTask.EVENT_SHORTNAME));
+        addTask(new EditClinicalEventTask());
+        
+        // Reload the task to refresh the context with any edits made
+        addTask(new ReloadTask(GetClinicalEventTask.EVENT_SHORTNAME));
 
         // prompt for a patient weight.
         addTask(new PatientWeightTask());
@@ -170,7 +172,6 @@ public class CheckInWorkflow extends WorkflowImpl {
             public void execute(TaskContext context) {
                 global.setPatient(context.getPatient());
                 global.setCustomer(context.getCustomer());
-                global.setClinician(context.getClinician());
             }
         });
     }

@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
 import org.openvpms.web.app.patient.mr.SummaryTableBrowser;
@@ -85,10 +86,16 @@ public class EditClinicalEventTask extends AbstractTask {
      */
     protected void edit(Act event, TaskContext context) {
         ActBean bean = new ActBean(event);
+        User clinician = (User)IMObjectHelper.getObject(bean.getNodeParticipantRef("clinician"));
+        // If clinician is null then populate with current context clinician
+        if (clinician == null && context.getClinician() != null) {
+        	bean.addNodeParticipation("clinician", context.getClinician());
+        	bean.save();
+        }
         Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"));
         if (patient != null) {
             PatientSummaryQuery query = new PatientSummaryQuery(patient);
-            query.setAllDates(false);
+            query.setAllDates(true);
             query.setFrom(event.getActivityStartTime());
             query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
             SummaryTableBrowser browser = new SummaryTableBrowser(query);
