@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
@@ -44,6 +45,32 @@ public class GetClinicalEventTask extends SynchronousTask {
      */
     public static final String EVENT_SHORTNAME = "act.patientClinicalEvent";
 
+    /**
+     * Properties to populate the created object with. May be <code>null</code>
+     */
+    private final TaskProperties properties;
+
+    /**
+     * Constructs a new <code>GetClinicalEventTask</code>.
+     *
+     * @param properties properties to populate any created event.
+     *                   May be <code>null</code>
+     */
+    public GetClinicalEventTask() {
+    	this(null);
+    }
+
+
+    /**
+     * Constructs a new <code>GetClinicalEventTask</code>.
+     *
+     * @param properties properties to populate any created event.
+     *                   May be <code>null</code>
+     */
+    public GetClinicalEventTask(TaskProperties properties) {
+    	this.properties = properties;
+    }
+
 
     /**
      * Executes the task.
@@ -59,6 +86,9 @@ public class GetClinicalEventTask extends SynchronousTask {
         MedicalRecordRules rules = new MedicalRecordRules();
         Act event = rules.getEventForAddition(patient, new Date(), clinician);
         if (event.isNew()) {
+        	if (properties != null) {
+            	populate(event, properties, context);        		
+        	}
             ServiceHelper.getArchetypeService().save(event);
         }
         context.addObject(event);
