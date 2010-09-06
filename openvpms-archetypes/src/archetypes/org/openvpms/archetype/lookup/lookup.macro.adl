@@ -29,11 +29,9 @@
         </node>
         <node name="name" type="java.lang.String" path="/name"
               minCardinality="1"/>
+        <node name="description" type="java.lang.String" path="/description"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="expression" type="java.lang.String" path="/details/expression"
               maxLength = "4999" minCardinality="1"/>
-        <node name="description" type="java.lang.String"
-              path="/description" hidden="true" derived="true"
-              derivedValue="concat(/code,' - ',/name)"/>
-        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>
