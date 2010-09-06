@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
 import org.openvpms.web.app.patient.mr.SummaryTableBrowser;
+import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
@@ -218,10 +219,24 @@ public class EditClinicalEventTask extends AbstractTask {
                 layout.setContext(context);
                 IMObjectEditor editor = IMObjectEditorFactory.create(act, layout);
                 EditDialog dialog = EditDialogFactory.create(editor);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    protected void onAction(PopupDialog dialog) {
+                        super.onAction(dialog);
+                        refresh();
+                    }
+                });
                 dialog.show();
             } catch (Throwable exception) {
                 ErrorHelper.show(exception);
             }
+        }
+
+        /**
+         * Refresh the browser.
+         */
+        private void refresh() {
+            getBrowser().query();
         }
     }
 
