@@ -118,10 +118,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         GlobalContext global = GlobalContext.getInstance();
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        User clinician = (User) bean.getParticipant("participation.clinician");
-        if (clinician == null) {
-            clinician = global.getClinician();
-        }
+        User clinician = global.getClinician();
 
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
