@@ -138,7 +138,7 @@ public class PartyFunctions {
      * Returns the full name for the passed party.
      *
      * @param context the expression context. Expected to reference a patient
-     *                party.
+     *                party or an act.
      * @return the parties full name.
      */
     public String getPartyFullName(ExpressionContext context) {
@@ -146,10 +146,12 @@ public class PartyFunctions {
         Object value = pointer.getValue();
         if (value instanceof Party) {
             return getPartyFullName((Party) value);
+        } else if (value instanceof Act) {
+        	return getPartyFullName((Act) value);
         }
         return null;
     }
-
+ 
     /**
      * Returns a formatted name for a party.
      *
@@ -158,6 +160,16 @@ public class PartyFunctions {
      */
     public String getPartyFullName(Party party) {
         return getPartyRules().getFullName(party);
+    }
+
+    /**
+     * Returns a formatted name for an act.
+     *
+     * @param act the act
+     * @return the party's formatted name
+     */
+    public String getPartyFullName(Act act) {
+        return getPartyRules().getFullName(act);
     }
 
     /**

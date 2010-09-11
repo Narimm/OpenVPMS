@@ -127,11 +127,32 @@ public class PartyRules {
     public String getFullName(Party party) {
         String name;
         if (TypeHelper.isA(party, "party.customerperson")) {
-            name = getPersonName(party);
+            IMObjectBean bean = new IMObjectBean(party, service);
+        	if (bean.hasNode("companyName") && (bean.getString("companyName") != null) ) {
+        		name = party.getName();
+        	}
+        	else {
+                name = getPersonName(party);        		
+        	}
         } else {
             name = party.getName();
         }
         return (name != null) ? name : "";
+    }
+    
+    /**
+     * Returns the formatted full name of a party.
+     *
+     * @param act the Act
+     * @return the formatted full name of the party
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getFullName(Act act) {
+        Party party = getCustomer(act);
+        if (party == null) {
+            party = new PatientRules(service).getOwner(act);
+        }
+        return (party != null) ? getFullName(party) : "";
     }
 
     /**
