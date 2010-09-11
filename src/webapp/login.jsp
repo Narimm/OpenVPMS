@@ -151,6 +151,9 @@
                                         <table style="border-collapse: collapse;">
                                             <tbody>
                                             <tr>
+                                            	<img src="images/openvpms.gif">
+                                            </tr>
+                                            <tr>
                                                 <td align="right" style="padding: 5px;">
                                                     <span class="label"><%= Messages.get("label.username") %></span>
                                                 </td>
