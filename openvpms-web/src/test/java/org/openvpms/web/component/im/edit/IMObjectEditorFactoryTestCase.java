@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.web.app.admin.lookup.LookupEditor;
 import org.openvpms.web.app.admin.lookup.SpeciesLookupEditor;
 import org.openvpms.web.app.admin.lookup.SuburbLookupEditor;
+import org.openvpms.web.app.admin.lookup.MacroEditor;
 import org.openvpms.web.app.admin.template.DocumentTemplatePrinterEditor;
 import org.openvpms.web.app.customer.CustomerEditor;
 import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
@@ -438,6 +439,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
         checkCreate("lookup.alertType", LookupEditor.class);
     }
 
+    /**
+     * Verifues that a {@link MacroEditor} is created for <em>lookup.macro</em>/
+     */
+    @Test
+    public void testCreateMacroEdutor() {
+        checkCreate("lookup.macro", MacroEditor.class);
+    }
+    
     /**
      * Verifies that a {@link SuburbLookupEditor} is created for <em>lookup.suburb</em>
      */

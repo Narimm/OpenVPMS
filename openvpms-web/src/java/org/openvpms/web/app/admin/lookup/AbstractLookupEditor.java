@@ -57,16 +57,10 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
     public AbstractLookupEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
 
-        Property code = getProperty("code");
-        if (code != null) {
-            // disable macro expansion for the code node to avoid the node expanding itself
-            PropertyTransformer transformer = code.getTransformer();
-            if (transformer instanceof StringPropertyTransformer) {
-                ((StringPropertyTransformer) transformer).setExpandMacros(false);
-            }
-        }
+        disableMacroExpansion("code");
 
         if (object.isNew()) {
+            Property code = getProperty("code");
             Property name = getProperty("name");
             if (code != null && name != null) {
                 if (code.isHidden()) {
@@ -135,4 +129,19 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
         return code;
     }
 
+    /**
+     * Disables macro expansion of a node, to avoid it expanding itself.
+     *
+     * @param name the node name
+     */
+    protected void disableMacroExpansion(String name) {
+        Property property = getProperty(name);
+        if (property != null) {
+            PropertyTransformer transformer = property.getTransformer();
+            if (transformer instanceof StringPropertyTransformer) {
+                ((StringPropertyTransformer) transformer).setExpandMacros(false);
+            }
+        }
+    }
+    
 }
