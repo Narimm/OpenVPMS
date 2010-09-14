@@ -87,7 +87,7 @@ public class MessageMonitor {
     }
 
     /**
-     * Determines if there are any unread (i.e <em<PENDING</em>) messages for a user.
+     * Determines if there are any unread (i.e <em>PENDING</em>) messages for a user.
      *
      * @param user the user
      * @return <tt>true</tt> if there are unread messages; otherwise <tt>false</tt>
