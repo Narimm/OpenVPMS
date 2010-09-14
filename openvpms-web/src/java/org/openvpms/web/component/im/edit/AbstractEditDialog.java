@@ -19,13 +19,18 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.macro.MacroDialog;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
+import echopointng.KeyStrokes;
 
 
 /**
@@ -96,6 +101,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
         setModal(true);
         setEditor(editor);
         this.save = save;
+        getButtons().addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onMacro();
+            }
+        });
     }
 
     /**
@@ -238,6 +248,14 @@ public abstract class AbstractEditDialog extends PopupDialog {
     protected void onComponentChange(PropertyChangeEvent event) {
         getLayout().remove((Component) event.getOldValue());
         getLayout().add((Component) event.getNewValue());
+    }
+
+    /**
+     * Displays the macros.
+     */
+    protected void onMacro() {
+        MacroDialog dialog = new MacroDialog();
+        dialog.show();
     }
 
     /**

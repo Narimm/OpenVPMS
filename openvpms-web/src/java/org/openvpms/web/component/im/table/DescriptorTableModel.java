@@ -69,9 +69,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      */
     public DescriptorTableModel(LayoutContext context) {
         if (context == null) {
-            context = new DefaultLayoutContext();
-            TableComponentFactory factory = new TableComponentFactory(context);
-            context.setComponentFactory(factory);
+            context = createDefaultLayoutContext();
         }
         this.context = context;
     }
@@ -93,9 +91,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      */
     public DescriptorTableModel(String[] shortNames, LayoutContext context) {
         if (context == null) {
-            context = new DefaultLayoutContext();
-            TableComponentFactory factory = new TableComponentFactory(context);
-            context.setComponentFactory(factory);
+            context = createDefaultLayoutContext();
         }
         this.context = context;
         setTableColumnModel(createColumnModel(shortNames, context));
@@ -365,6 +361,18 @@ public abstract class DescriptorTableModel<T extends IMObject>
      */
     protected int getArchetypeColumnIndex() {
         return 0;
+    }
+
+    /**
+     * Helper to create a default layout context.
+     *
+     * @return a new layout context
+     */
+    protected LayoutContext createDefaultLayoutContext() {
+        LayoutContext context = new DefaultLayoutContext();
+        TableComponentFactory factory = new TableComponentFactory(context);
+        context.setComponentFactory(factory);
+        return context;
     }
 
     /**

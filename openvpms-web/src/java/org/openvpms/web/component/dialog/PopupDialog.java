@@ -41,6 +41,11 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String OK_ID = "ok";
 
     /**
+     * Close button identifier.
+     */
+    public static final String CLOSE_ID = "close";
+
+    /**
      * Apply button identifier.
      */
     public static final String APPLY_ID = "apply";
@@ -74,6 +79,11 @@ public abstract class PopupDialog extends PopupWindow {
      * Helper to create a button row containing the OK button.
      */
     public static final String[] OK = {OK_ID};
+
+    /**
+     * Helper to create a button row containing the CLOSE button.
+     */
+    public static final String[] CLOSE = {CLOSE_ID};
 
     /**
      * Helper to create a button row containing the CANCEL button.
@@ -199,6 +209,8 @@ public abstract class PopupDialog extends PopupWindow {
         try {
             if (OK_ID.equals(button)) {
                 onOK();
+            } else if (CLOSE_ID.equals(button)) {
+                onClose();
             } else if (CANCEL_ID.equals(button)) {
                 onCancel();
             } else if (YES_ID.equals(button)) {
@@ -226,6 +238,13 @@ public abstract class PopupDialog extends PopupWindow {
      */
     protected void onOK() {
         close(OK_ID);
+    }
+
+    /**
+     * Invoked when the 'close' button is pressed. This sets the action to CLOSE and closes the window.
+     */
+    protected void onClose() {
+        close(CLOSE_ID);
     }
 
     /**

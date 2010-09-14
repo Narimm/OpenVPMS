@@ -670,6 +670,14 @@
         </properties>
     </style>
 
+    <style name="MacroDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.medium.width}"/>
+            <property name="height" value="${dialog.large.height}"/>
+            <property name="resizable" value="true"/>
+        </properties>
+    </style>
+
     <style name="IMObjectViewerDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
@@ -1700,7 +1708,6 @@
         </properties>
     </style>
 
-
     <style name="error" base-name="default" type="nextapp.echo2.app.Label">
         <properties>
             <property name="foreground" value="#b0e0e6"/>
@@ -1820,7 +1827,7 @@
 
     <style name="edit" base-name="default" type="nextapp.echo2.app.TextArea">
         <properties>
-            <property name="disabledBackground" value="#d1d1d1"/>
+            <property name="disabledBackground" value="#e1e1e1"/>
         </properties>
     </style>
 
@@ -1843,7 +1850,7 @@
 
     <style name="edit" base-name="default" type="nextapp.echo2.app.text.TextComponent">
         <properties>
-            <property name="disabledBackground" value="#d1d1d1"/>
+            <property name="disabledBackground" value="#e1e1e1"/>
         </properties>
     </style>
 

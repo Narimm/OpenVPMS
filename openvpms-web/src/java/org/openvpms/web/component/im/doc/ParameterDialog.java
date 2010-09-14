@@ -21,9 +21,14 @@ package org.openvpms.web.component.im.doc;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.macro.MacroDialog;
 
 import java.util.Map;
 import java.util.Set;
+
+import echopointng.KeyStrokes;
+import nextapp.echo2.app.event.ActionEvent;
 
 
 /**
@@ -51,7 +56,7 @@ public class ParameterDialog extends PopupDialog {
 
 
     /**
-     * Constructs a new <tt>ParameterDialog</tt>.
+     * Constructs a <tt>ParameterDialog</tt>.
      *
      * @param title      the dialog title
      * @param parameters the report parameter types
@@ -64,6 +69,14 @@ public class ParameterDialog extends PopupDialog {
         String style = (parameters.size() >= 4) ? WIDE_STYLE : NARROW_STYLE;
         setStyleName(style);
         getLayout().add(this.parameters.getComponent());
+
+        if (context != null) {
+            getButtons().addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onMacro();
+                }
+            });
+        }
     }
 
     /**
@@ -84,6 +97,14 @@ public class ParameterDialog extends PopupDialog {
         if (parameters.validate()) {
             super.onOK();
         }
+    }
+
+    /**
+     * Displays the macros.
+     */
+    protected void onMacro() {
+        MacroDialog dialog = new MacroDialog();
+        dialog.show();
     }
 
 }
