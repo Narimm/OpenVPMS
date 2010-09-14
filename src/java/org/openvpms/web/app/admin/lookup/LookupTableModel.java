@@ -37,6 +37,14 @@ public class LookupTableModel extends DescriptorTableModel<Lookup> {
     /**
      * Constructs a <tt>LookupTableModel</tt>.
      * <p/>
+     * The column model must be set using {@link #setTableColumnModel}.
+     */
+    public LookupTableModel() {
+    }
+
+    /**
+     * Constructs a <tt>LookupTableModel</tt>.
+     * <p/>
      * This displays the archetype column if the short names reference multiple archetypes.
      *
      * @param shortNames the archetype short names
