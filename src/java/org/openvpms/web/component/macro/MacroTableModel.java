@@ -17,7 +17,8 @@
  */
 package org.openvpms.web.component.macro;
 
-import org.openvpms.web.app.admin.lookup.LookupTableModel;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.web.component.im.table.DescriptorTableModel;
 
 
 /**
@@ -26,7 +27,7 @@ import org.openvpms.web.app.admin.lookup.LookupTableModel;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MacroTableModel extends LookupTableModel {
+public class MacroTableModel extends DescriptorTableModel<Lookup> {
 
     /**
      * The node names to display. If <tt>null</tt> indicates to display all non-hidden nodes.
@@ -38,6 +39,7 @@ public class MacroTableModel extends LookupTableModel {
      */
     private static final String[] SUMMARY_NODES = {"code", "name", "description"};
 
+    
     /**
      * Constructs a <tt>MacroTablelModel</tt> that displays all non-hidden nodes.
      */

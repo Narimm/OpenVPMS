@@ -132,6 +132,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
                 protected void onAction(PopupDialog dialog) {
                     focus.restore();
                     super.onAction(dialog);
+                    onRefresh(object);
                 }
             });
             dialog.show();

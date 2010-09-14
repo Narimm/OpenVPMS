@@ -181,7 +181,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         if (!descriptors.isEmpty()) {
             Grid grid = createGrid(descriptors);
             doGridLayout(object, descriptors, properties, grid, context);
-            container.add(grid);
+            container.add(ColumnFactory.create("Inset.Small", grid));
         }
     }
 
