@@ -36,7 +36,7 @@ import java.math.BigDecimal;
 import java.util.Random;
 
 /**
- * Tests the {@link CustomerTaxRules} class.
+ * Tests the {@link TaxRules} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
