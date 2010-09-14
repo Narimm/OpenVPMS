@@ -18,7 +18,9 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -29,6 +31,8 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+
+import java.util.List;
 
 
 /**
@@ -52,6 +56,11 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      * Determines if the product node should be displayed read-only.
      */
     private boolean showProductReadOnly;
+
+    /**
+     * A component to display usage notes. May be <tt>null</tt>.
+     */
+    private Component usageNotes;
 
 
     /**
@@ -81,6 +90,17 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     }
 
     /**
+     * Registers a component to display usage notes.
+     * <p/>
+     * If set, this is displayed immediately after the simple properties.
+     *
+     * @param notes the usage notes. May be <tt>null</tt>
+     */
+    public void setUsageNotes(Component notes) {
+        usageNotes = notes;
+    }
+
+    /**
      * Apply the layout strategy.
      * <p/>
      * This renders an object in a <tt>Component</tt>, using a factory to
@@ -104,6 +124,25 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
             }
         }
         return super.apply(object, properties, parent, context);
+    }
+
+    /**
+     * Lays out child components in a grid.
+     *
+     * @param object      the object to lay out
+     * @param parent      the parent object. May be <tt>null</tt>
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param container   the container to use
+     * @param context     the layout context
+     */
+    @Override
+    protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
+                                  PropertySet properties, Component container, LayoutContext context) {
+        super.doSimpleLayout(object, parent, descriptors, properties, container, context);
+        if (usageNotes != null) {
+            container.add(usageNotes);
+        }
     }
 
     /**
