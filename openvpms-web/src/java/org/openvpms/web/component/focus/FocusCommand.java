@@ -52,12 +52,19 @@ public class FocusCommand {
      * Restores the focus to the prior component, if it is still available.
      */
     public void restore() {
-        if (focus != null) {
-            Component component = focus.get();
-            if (component != null) {
-                FocusHelper.setFocus(component);
-            }
+        Component component = getComponent();
+        if (component != null) {
+            FocusHelper.setFocus(component);
         }
+    }
+
+    /**
+     * Returns the component that had the focus.
+     *
+     * @return the component that had the focus, or <tt>null</tt> if it doesn't exist.
+     */
+    public Component getComponent() {
+        return (focus != null) ? focus.get() : null;
     }
 
 }
