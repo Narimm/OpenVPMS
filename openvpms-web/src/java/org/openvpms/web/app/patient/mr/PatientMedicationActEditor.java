@@ -23,7 +23,6 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextArea;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -90,11 +89,6 @@ public class PatientMedicationActEditor extends PatientActEditor {
      */
     private static final int USAGE_NOTES_MAX_HEIGHT = 15;
 
-    /**
-     * The no. of characters to display in the usage nodes field.
-     */
-    private static final int USAGE_NOTES_WIDTH = 80;
-
 
     /**
      * Constructs a <tt>PatientMedicationActEditor</tt>.
@@ -111,6 +105,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
 
         dispensingUnits = LabelFactory.create();
         usageNotes = TextComponentFactory.createTextArea();
+        usageNotes.setWidth(new Extent(100, Extent.PERCENT)); // 100% width
         usageNotes.setStyleName(Styles.EDIT);
         usageNotes.setEnabled(false);
         String displayName = DescriptorHelper.getDisplayName(ProductArchetypes.MEDICATION, "usageNotes");
@@ -263,7 +258,6 @@ public class PatientMedicationActEditor extends PatientActEditor {
             }
         }
         usageNotes.setText(notes);
-        usageNotes.setWidth(new Extent(USAGE_NOTES_WIDTH, Extent.EX));
         usageNotes.setHeight(new Extent(getUsageNotesLinesToDisplay(notes), Extent.EM));
         usageNotesBox.setVisible(!StringUtils.isEmpty(notes));
     }
@@ -277,8 +271,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     private int getUsageNotesLinesToDisplay(String notes) {
         int lines = USAGE_NOTES_MIN_HEIGHT;
         if (notes != null) {
-            // wrap any long lines in the notes and then count the no. of new lines.
-            lines = StringUtils.countMatches(WordUtils.wrap(notes, USAGE_NOTES_WIDTH), "\n");
+            lines = StringUtils.countMatches(notes, "\n");
             if (lines > USAGE_NOTES_MAX_HEIGHT) {
                 lines = USAGE_NOTES_MAX_HEIGHT;
             } else if (lines < USAGE_NOTES_MIN_HEIGHT) {
