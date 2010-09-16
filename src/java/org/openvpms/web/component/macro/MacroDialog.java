@@ -18,20 +18,23 @@
 package org.openvpms.web.component.macro;
 
 import echopointng.KeyStrokes;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusCommand;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * A dialog to browse active macros.
+ * A dialog to browse and select active macros.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -55,6 +58,18 @@ public class MacroDialog extends PopupDialog {
         query.setShowInactive(false);
         MacroTableModel model = new MacroTableModel(false);
         Browser<Lookup> browser = BrowserFactory.create(query, query.getDefaultSortConstraint(), model);
+        browser.addBrowserListener(new BrowserListener<Lookup>() {
+
+            public void selected(Lookup object) {
+                onSelected(object);
+            }
+
+            public void browsed(Lookup object) {
+            }
+
+            public void query() {
+            }
+        });
         getLayout().add(ColumnFactory.create("Inset", browser.getComponent()));
         getButtons().addKeyListener(KeyStrokes.VK_ESCAPE, new ActionListener() {
             public void onAction(ActionEvent event) {
@@ -74,4 +89,28 @@ public class MacroDialog extends PopupDialog {
         focus.restore();
         super.userClose();
     }
+
+    /**
+     * Invoked when a macro is selected.
+     * <p/>
+     * If the focussed component prior to the dialog being opened is an editable text component, the macro's
+     * code is added to the end of the text.
+     * <p/>
+     * Finally, the dialog is closed.
+     *
+     * @param macro the macro
+     */
+    private void onSelected(Lookup macro) {
+        Component component = focus.getComponent();
+        if (component != null && component instanceof TextComponent) {
+            TextComponent text = (TextComponent) component;
+            if (text.isEnabled() && text.isVisible()) {
+                String value = text.getText();
+                value = (value == null) ? macro.getCode() : value + macro.getCode();
+                text.setText(value);
+            }
+        }
+        onClose();
+    }
+
 }
