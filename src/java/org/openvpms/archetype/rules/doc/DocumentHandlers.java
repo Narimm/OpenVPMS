@@ -153,7 +153,7 @@ public class DocumentHandlers {
      * @param name      the document name
      * @param shortName the document archetype short name
      * @param mimeType  the mime type of the document
-     * @return a handler for the document 
+     * @return a handler for the document
      * @throws DocumentException if no handler exists
      */
     public DocumentHandler get(String name, String shortName, String mimeType) {
@@ -171,7 +171,7 @@ public class DocumentHandlers {
      */
     private synchronized DocumentHandler getDefaultHandler() {
         if (defaultHandler == null) {
-            defaultHandler = new DefaultDocumentHandler("document.other");
+            defaultHandler = new DefaultDocumentHandler(DocumentArchetypes.DEFAULT_DOCUMENT);
         }
         return defaultHandler;
     }
