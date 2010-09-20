@@ -105,6 +105,7 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="copies" path="/details/copies" type="java.lang.Integer" minCardinality="0" defaultValue="1"/>
         <node name="paperHeight" displayName="Paper Height" path="/details/paperHeight" type="java.math.BigDecimal"
               defaultValue="0.0"/>
         <node name="paperWidth" displayName="Paper Width" path="/details/paperWidth" type="java.math.BigDecimal"

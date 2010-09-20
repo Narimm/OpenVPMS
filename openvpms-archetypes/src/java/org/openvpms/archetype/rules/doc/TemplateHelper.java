@@ -20,24 +20,20 @@ package org.openvpms.archetype.rules.doc;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
-import javax.print.attribute.standard.MediaTray;
 import java.util.Iterator;
 import java.util.List;
 
@@ -82,13 +78,11 @@ public class TemplateHelper {
      */
     public Document getDocument(String name) {
         Document result = null;
-        ArchetypeQuery query = new ArchetypeQuery("act.documentTemplate",
-                                                  false, true);
+        ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT, false, true);
         query.add(new NodeConstraint("name", name));
         query.setFirstResult(0);
         query.setMaxResults(1);
-        Iterator<DocumentAct> iterator
-                = new IMObjectQueryIterator<DocumentAct>(service, query);
+        Iterator<DocumentAct> iterator = new IMObjectQueryIterator<DocumentAct>(service, query);
         if (iterator.hasNext()) {
             DocumentAct act = iterator.next();
             result = (Document) get(act.getDocument());
@@ -107,10 +101,8 @@ public class TemplateHelper {
      */
     public Entity getTemplateForArchetype(String shortName) {
         Entity result = null;
-        ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate",
-                                                  false, true);
-        Iterator<Entity> iterator
-                = new IMObjectQueryIterator<Entity>(service, query);
+        ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE, false, true);
+        Iterator<Entity> iterator = new IMObjectQueryIterator<Entity>(service, query);
         while (iterator.hasNext()) {
             EntityBean bean = new EntityBean(iterator.next(), service);
             String archetype = bean.getString("archetype");
@@ -123,72 +115,15 @@ public class TemplateHelper {
     }
 
     /**
-     * Returns the <em>entityRelationship.documentTemplatePrinter</em>
-     * associated with an <em>entity.documentTemplate</em> for the given
-     * <em>party.organisationPractice</em> or
-     * <em>party.organisationLocation</em>.
+     * Returns the document template for the specified archetype.
      *
-     * @param template     the template. An <em>entity.documentTemplate</em>
-     * @param organisation the practice. An <em>party.organisationPractice</em>
-     *                     or <em>party.organisationLocation</em>
-     * @return the corresponding document template printer relationship, or
-     *         <tt>null</tt> if none is found
-     */
-    public EntityRelationship getDocumentTemplatePrinter(Entity template,
-                                                         Party organisation) {
-        IMObjectBean templateBean = new IMObjectBean(template, service);
-        IMObjectReference practiceRef = organisation.getObjectReference();
-        for (EntityRelationship relationship :
-                templateBean.getValues("printers", EntityRelationship.class)) {
-            if (relationship.getTarget() != null &&
-                    practiceRef.equals(relationship.getTarget())) {
-                return relationship;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the printer name from a document template printer relationship.
-     *
-     * @param printer the printer.
-     *                An <em>entityRelationship.documentTemplatePrinter</em>
-     * @return the printer name, or <tt>null</tt> if  none is defined
-     */
-    public String getPrinter(EntityRelationship printer) {
-        IMObjectBean bean = new IMObjectBean(printer, service);
-        return bean.getString("printerName");
-    }
-
-    /**
-     * Returns the media tray from a document template printer relationship.
-     *
-     * @param printer the printer.
-     *                An <em>entityRelationship.documentTemplatePrinter</em>
-     * @return the media tray, or <tt>null</tt> if none is defined
+     * @param shortName the archetype short name
+     * @return the template corresponding to <tt>shortName</tt> or <tt>null</tt> if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public MediaTray getMediaTray(EntityRelationship printer) {
-        MediaTray tray = null;
-        IMObjectBean bean = new IMObjectBean(printer, service);
-        String trayName = bean.getString("paperTray");
-        if (trayName != null) {
-            tray = MediaHelper.getTray(trayName);
-        }
-        return tray;
-    }
-
-    /**
-     * Determines if printing for a particular document template printer
-     * relationship should be interactive or not.
-     *
-     * @param printer the printer.
-     *                An <em>entityRelationship.documentTemplatePrinter</em>
-     * @return <tt>true</tt> if printing should occur interactively
-     */
-    public boolean getInteractive(EntityRelationship printer) {
-        IMObjectBean bean = new IMObjectBean(printer);
-        return bean.getBoolean("interactive");
+    public DocumentTemplate getDocumentTemplate(String shortName) {
+        Entity result = getTemplateForArchetype(shortName);
+        return (result != null) ? new DocumentTemplate(result, service) : null;
     }
 
     /**
@@ -215,6 +150,7 @@ public class TemplateHelper {
      * Returns the document associated with an <em>entity.documentTemplate</em>.
      *
      * @param template the template. An <em>entity.documentTemplate</em>
+     * @return the corresponding document, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getDocumentFromTemplate(Entity template) {
