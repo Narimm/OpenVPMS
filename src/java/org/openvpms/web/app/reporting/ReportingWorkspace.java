@@ -35,6 +35,8 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 
 import java.util.List;
 
@@ -147,7 +149,8 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      */
     protected void onRun() {
         try {
-            SQLReportPrinter printer = new SQLReportPrinter(getObject());
+            DocumentTemplate template = new DocumentTemplate(getObject(), ServiceHelper.getArchetypeService());
+            SQLReportPrinter printer = new SQLReportPrinter(template);
             InteractiveSQLReportPrinter iPrinter
                     = new InteractiveSQLReportPrinter(printer);
             iPrinter.print();

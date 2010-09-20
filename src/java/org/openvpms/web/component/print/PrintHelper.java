@@ -18,12 +18,13 @@
 
 package org.openvpms.web.component.print;
 
-import org.openvpms.archetype.rules.doc.TemplateHelper;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.doc.DocumentTemplatePrinter;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.system.ServiceHelper;
 
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
@@ -43,16 +44,15 @@ public class PrintHelper {
      * The printer associated with the location will be returned if present, otherwise the practice relationship will
      * be returned.
      *
-     * @param template an <em>entity.documentTemplate</em>
+     * @param template the document template
      * @param context  the context
      * @return the default printer, or <tt>null</tt> if none is defined
      */
-    public static String getDefaultPrinter(Entity template, Context context) {
+    public static String getDefaultPrinter(DocumentTemplate template, Context context) {
         String result;
-        EntityRelationship printer = getDocumentTemplatePrinter(template, context);
+        DocumentTemplatePrinter printer = getDocumentTemplatePrinter(template, context);
         if (printer != null) {
-            TemplateHelper helper = new TemplateHelper();
-            result = helper.getPrinter(printer);
+            result = printer.getPrinterName();
         } else {
             result = getDefaultLocationPrinter(context.getLocation());
         }
@@ -69,16 +69,29 @@ public class PrintHelper {
      * @param context  the context
      * @return the corresponding document template printer relationship, or <tt>null</tt> if none is found
      */
-    public static EntityRelationship getDocumentTemplatePrinter(Entity template, Context context) {
-        TemplateHelper helper = new TemplateHelper();
-        EntityRelationship printer = null;
+    public static DocumentTemplatePrinter getDocumentTemplatePrinter(Entity template, Context context) {
+        return getDocumentTemplatePrinter(new DocumentTemplate(template, ServiceHelper.getArchetypeService()), context);
+    }
+
+    /**
+     * Returns the <em>entityRelationship.documentTemplatePrinter</em>
+     * associated with an <em>entity.documentTemplate</em> for the context practice or location.
+     * <p/>
+     * The location relationship will be returned if present, otherwise the practice relationship will be returned.
+     *
+     * @param template the document template
+     * @param context  the context
+     * @return the corresponding document template printer relationship, or <tt>null</tt> if none is found
+     */
+    public static DocumentTemplatePrinter getDocumentTemplatePrinter(DocumentTemplate template, Context context) {
+        DocumentTemplatePrinter printer = null;
         Party location = context.getLocation();
         Party practice = context.getPractice();
         if (location != null) {
-            printer = helper.getDocumentTemplatePrinter(template, location);
+            printer = template.getPrinter(location);
         }
         if (printer == null && practice != null) {
-            printer = helper.getDocumentTemplatePrinter(template, practice);
+            printer = template.getPrinter(practice);
         }
         return printer;
     }

@@ -18,8 +18,8 @@
 
 package org.openvpms.web.app.reporting.reminder;
 
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.resource.util.Messages;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -51,7 +51,7 @@ class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
      * @param statistics    the statistics
      */
     public ReminderEmailProgressBarProcessor(List<List<ReminderEvent>> reminders, JavaMailSender sender,
-                                             Party practice, Entity groupTemplate,
+                                             Party practice, DocumentTemplate groupTemplate,
                                              Statistics statistics) {
         super(reminders, statistics, Messages.get("reporting.reminder.run.email"));
         processor = new ReminderEmailProcessor(sender, practice, groupTemplate);

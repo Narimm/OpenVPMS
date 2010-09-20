@@ -19,15 +19,14 @@
 package org.openvpms.web.app.workflow.checkout;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.doc.DocumentTemplatePrinter;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -207,12 +206,9 @@ class PrintDocumentsTask extends AbstractTask {
         if (bean.hasNode("documentTemplate")) {
             Entity template = bean.getNodeParticipant("documentTemplate");
             if (template != null) {
-                EntityRelationship rel = PrintHelper.getDocumentTemplatePrinter(template, context);
-                if (rel != null) {
-                    IMObjectBean relBean = new IMObjectBean(rel);
-                    if (!relBean.getBoolean("printAtCheckout")) {
-                        result = false;
-                    }
+                DocumentTemplatePrinter rel = PrintHelper.getDocumentTemplatePrinter(template, context);
+                if (rel != null && !rel.getPrintAtCheckout()) {
+                    result = false;
                 }
             }
         }

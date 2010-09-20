@@ -22,19 +22,17 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.app.reporting.ReportingException;
@@ -44,6 +42,8 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -92,7 +92,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * The template for grouped reminders.
      */
-    private final Entity groupTemplate;
+    private final DocumentTemplate groupTemplate;
 
 
     /**
@@ -235,7 +235,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             throw new ReportingException(ReportingException.ErrorCode.NoPractice);
         }
         TemplateHelper helper = new TemplateHelper();
-        groupTemplate = helper.getTemplateForArchetype("GROUPED_REMINDERS");
+        groupTemplate = helper.getDocumentTemplate("GROUPED_REMINDERS");
         if (groupTemplate == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);
         }

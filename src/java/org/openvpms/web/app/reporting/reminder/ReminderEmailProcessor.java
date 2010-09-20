@@ -20,11 +20,11 @@ package org.openvpms.web.app.reporting.reminder;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -85,7 +85,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      * @param practice      the practice
      * @param groupTemplate the template for grouped reminders
      */
-    public ReminderEmailProcessor(JavaMailSender sender, Party practice, Entity groupTemplate) {
+    public ReminderEmailProcessor(JavaMailSender sender, Party practice, DocumentTemplate groupTemplate) {
         super(groupTemplate);
         ReminderRules rules = new ReminderRules();
         Contact email = rules.getEmailContact(practice.getContacts());
@@ -111,7 +111,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      * @param shortName        the report archetype short name, used to select the document template if none specified
      * @param documentTemplate the document template to use. May be <tt>null</tt>
      */
-    protected void process(List<ReminderEvent> events, String shortName, Entity documentTemplate) {
+    protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate documentTemplate) {
         ReminderEvent event = events.get(0);
         Contact contact = event.getContact();
 
@@ -124,12 +124,11 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
             helper.setFrom(emailAddress, emailName);
             helper.setTo(to);
 
-            IMObjectBean templateBean = new IMObjectBean(documentTemplate);
-            String subject = templateBean.getString("emailSubject");
+            String subject = documentTemplate.getEmailSubject();
             if (StringUtils.isEmpty(subject)) {
                 subject = documentTemplate.getName();
             }
-            String body = templateBean.getString("emailText");
+            String body = documentTemplate.getEmailText();
             if (StringUtils.isEmpty(body)) {
                 throw new ReportingException(TemplateMissingEmailText, documentTemplate.getName());
             }
@@ -157,7 +156,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         }
     }
 
-    private Document createReport(List<ReminderEvent> events, String shortName, Entity documentTemplate) {
+    private Document createReport(List<ReminderEvent> events, String shortName, DocumentTemplate documentTemplate) {
         Document result;
         if (events.size() > 1) {
             List<ObjectSet> sets = createObjectSets(events);

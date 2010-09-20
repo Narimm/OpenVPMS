@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.report;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -58,7 +58,7 @@ public class IMObjectReporter<T extends IMObject> extends TemplatedReporter<T> {
      * @param object   the object
      * @param template the document template to use. May be <tt>null</tt>
      */
-    public IMObjectReporter(T object, Entity template) {
+    public IMObjectReporter(T object, DocumentTemplate template) {
         super(object, object.getArchetypeId().getShortName(), template);
     }
 
@@ -82,8 +82,7 @@ public class IMObjectReporter<T extends IMObject> extends TemplatedReporter<T> {
      *                  use
      * @param template  the document template to use. May be <tt>null</tt>
      */
-    public IMObjectReporter(Iterable<T> objects, String shortName,
-                            Entity template) {
+    public IMObjectReporter(Iterable<T> objects, String shortName, DocumentTemplate template) {
         super(objects, shortName, template);
     }
 
@@ -99,19 +98,17 @@ public class IMObjectReporter<T extends IMObject> extends TemplatedReporter<T> {
     public IMReport<T> getReport() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        Entity template = getTemplate();
+        DocumentTemplate template = getTemplate();
         DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
         IMReport<IMObject> report;
         if (template == null) {
-            report = ReportFactory.createIMObjectReport(getShortName(), service,
-                                                        handlers);
+            report = ReportFactory.createIMObjectReport(getShortName(), service, handlers);
         } else {
             Document doc = getTemplateDocument();
             if (doc == null) {
                 throw new DocumentException(NotFound);
             }
-            report = ReportFactory.createIMObjectReport(doc, service,
-                                                        handlers);
+            report = ReportFactory.createIMObjectReport(doc, service, handlers);
         }
         return (IMReport<T>) report;
     }

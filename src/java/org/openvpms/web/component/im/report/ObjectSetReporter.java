@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.report;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -59,7 +59,7 @@ public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
      * @param shortName the archetype short name to determine the template to use
      * @param template  the document template to use. May be <tt>null</tt>
      */
-    public ObjectSetReporter(Iterable<ObjectSet> objects, String shortName, Entity template) {
+    public ObjectSetReporter(Iterable<ObjectSet> objects, String shortName, DocumentTemplate template) {
         super(objects, shortName, template);
     }
 
@@ -72,7 +72,7 @@ public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
      * @throws DocumentException         if the template document can't be found
      */
     public IMReport<ObjectSet> getReport() {
-        Entity template = getTemplate();
+        DocumentTemplate template = getTemplate();
         IArchetypeService service = ServiceHelper.getArchetypeService();
         DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
         IMReport<ObjectSet> report;

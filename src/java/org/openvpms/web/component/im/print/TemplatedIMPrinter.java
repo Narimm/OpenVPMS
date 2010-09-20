@@ -18,7 +18,8 @@
 
 package org.openvpms.web.component.im.print;
 
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -51,9 +52,10 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      */
     public TemplatedIMPrinter(TemplatedReporter<T> reporter) {
         super(reporter);
-        Entity template = getTemplate();
+        DocumentTemplate template = getTemplate();
         if (template != null) {
             setInteractive(getInteractive(template, getDefaultPrinter()));
+            setCopies(template.getCopies());
         }
     }
 
@@ -64,7 +66,7 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      */
     public String getDisplayName() {
         if (templateNames == null) {
-            templateNames = LookupNameHelper.getLookupNames("entity.documentTemplate", "archetype");
+            templateNames = LookupNameHelper.getLookupNames(DocumentArchetypes.DOCUMENT_TEMPLATE, "archetype");
         }
         String shortName = getReporter().getShortName();
         String result = templateNames.get(shortName);
@@ -81,7 +83,7 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      * @throws OpenVPMSException for any error
      */
     public String getDefaultPrinter() {
-        Entity template = getTemplate();
+        DocumentTemplate template = getTemplate();
         return (template != null) ? getDefaultPrinter(template) : null;
     }
 
@@ -108,12 +110,12 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
     }
 
     /**
-     * Returns the document template entity.
+     * Returns the document template.
      *
      * @return the document template, or <tt>null</tt> if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected Entity getTemplate() {
+    protected DocumentTemplate getTemplate() {
         return getReporter().getTemplate();
     }
 }

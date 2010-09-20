@@ -22,6 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -42,6 +43,7 @@ import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -147,7 +149,7 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
      */
     private void onPrint(IMObject object) {
         try {
-            Entity template = getTemplate(object);
+            DocumentTemplate template = getTemplate(object);
             if (template != null) {
                 IMPrinter<IMObject> printer = new IMObjectReportPrinter<IMObject>(object, template);
                 InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer);
@@ -159,18 +161,21 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     }
 
     /**
-     * Returns the template associated with the act;s investigation type.
+     * Returns the template associated with the act's investigation type.
      *
      * @param object the act
      * @return the associated investigation template, or <tt>null</tt> if none is found
      */
-    private Entity getTemplate(IMObject object) {
-        Entity result = null;
+    private DocumentTemplate getTemplate(IMObject object) {
+        DocumentTemplate result = null;
         ActBean act = new ActBean((Act) object);
         Entity investigationType = act.getParticipant(InvestigationArchetypes.INVESTIGATION_TYPE_PARTICIPATION);
         if (investigationType != null) {
-            EntityBean entity = new EntityBean(investigationType);
-            result = entity.getNodeTargetEntity("template");
+            EntityBean bean = new EntityBean(investigationType);
+            Entity entity = bean.getNodeTargetEntity("template");
+            if (entity != null) {
+                result = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+            }
         }
         return result;
     }

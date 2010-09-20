@@ -20,6 +20,7 @@ package org.openvpms.web.app.admin.template;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 
 
 /**
@@ -35,7 +36,7 @@ public class DocumentTemplateTableModel extends DescriptorTableModel<Entity> {
      * Creates a <tt>DocumentTemplateTableModel</tt>.
      */
     public DocumentTemplateTableModel() {
-        super(new String[]{"entity.documentTemplate"});
+        super(new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE});
     }
 
     /**

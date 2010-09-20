@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.print;
 
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
@@ -51,7 +51,7 @@ public class IMObjectReportPrinter<T extends IMObject>
      * @param template the document template to use. May be <tt>null</tt>
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportPrinter(T object, Entity template) {
+    public IMObjectReportPrinter(T object, DocumentTemplate template) {
         super(new IMObjectReporter<T>(object, template));
     }
 
@@ -78,8 +78,7 @@ public class IMObjectReportPrinter<T extends IMObject>
      * @param template  the document template to use. May be <tt>null</tt>
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportPrinter(Iterable<T> objects, String shortName,
-                                 Entity template) {
+    public IMObjectReportPrinter(Iterable<T> objects, String shortName, DocumentTemplate template) {
         super(new IMObjectReporter<T>(objects, shortName, template));
     }
 

@@ -19,14 +19,13 @@
 package org.openvpms.web.component.im.mail;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.report.TemplatedReporter;
 
 
 /**
- * Add description here.
+ * Templated report mailer.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -34,20 +33,19 @@ import org.openvpms.web.component.im.report.TemplatedReporter;
 public abstract class TemplatedIMMailer<T> extends AbstractIMMailer<T> {
 
     /**
-     * Constructs a new <tt>TemplatedIMMailer</tt>.
+     * Constructs a <tt>TemplatedIMMailer</tt>.
      *
      * @param reporter the reporter
      */
     public TemplatedIMMailer(TemplatedReporter<T> reporter) {
         super(reporter);
-        Entity template = getTemplate();
+        DocumentTemplate template = getTemplate();
         if (template != null) {
-            IMObjectBean bean = new IMObjectBean(template);
-            String subject = bean.getString("emailSubject");
+            String subject = template.getEmailSubject();
             if (StringUtils.isEmpty(subject)) {
                 subject = template.getName();
             }
-            String body = bean.getString("emailText");
+            String body = template.getEmailText();
             setSubject(subject);
             setBody(body);
         }
@@ -64,12 +62,12 @@ public abstract class TemplatedIMMailer<T> extends AbstractIMMailer<T> {
     }
 
     /**
-     * Returns the document template entity.
+     * Returns the document template.
      *
      * @return the document template, or <tt>null</tt> if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected Entity getTemplate() {
+    protected DocumentTemplate getTemplate() {
         return getReporter().getTemplate();
     }
 }

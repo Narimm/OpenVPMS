@@ -69,24 +69,37 @@ public class SpinBox extends Row {
      */
     private final ModifiableListener listener;
 
+
     /**
      * Constructs a <tt>SpinBox</tt>.
      *
-     * @param min   the minimum (and starting) value
-     * @param max   the maximum value
+     * @param min the minimum (and starting) value
+     * @param max the maximum value
      */
     public SpinBox(int min, int max) {
-        this(min, max, 1);
+        this(createProperty(min), min, max, 1);
     }
 
     /**
      * Constructs a <tt>SpinBox</tt>.
      *
+     * @param property the property to bind to
+     * @param min      the minimum value
+     * @param max      the maximum value
+     */
+    public SpinBox(Property property, int min, int max) {
+        this(property, min, max, 1);
+    }
+
+    /**
+     * Constructs a <tt>SpinBox</tt>.
+     *
+     * @param property  the property to bind to
      * @param min       the minimum (and starting) value
      * @param max       the maximum value
      * @param increment the value to increment by when pressing the buttons
      */
-    public SpinBox(int min, int max, int increment) {
+    public SpinBox(Property property, int min, int max, int increment) {
         this.min = min;
         this.max = max;
         this.increment = increment;
@@ -96,10 +109,11 @@ public class SpinBox extends Row {
                 checkRange();
             }
         };
-        value = new SimpleProperty("value", min, Integer.class);
+        this.value = property;
+        checkRange();
+
         int columns = Integer.toString(max).length() + 2; // add some padding
-        TextField text = TextComponentFactory.createNumeric(value, columns);
-        setValue(min);
+        TextField text = TextComponentFactory.createNumeric(property, columns);
         Button inc = ButtonFactory.create(null, "SpinBox.increment");
         inc.setFocusTraversalParticipant(false);
         inc.addActionListener(new ActionListener() {
@@ -188,6 +202,16 @@ public class SpinBox extends Row {
         } else if (value > max) {
             setValue(max);
         }
+    }
+
+    /**
+     * Helper to create a new property.
+     *
+     * @param initial the initial value
+     * @return a new property
+     */
+    private static Property createProperty(int initial) {
+        return new SimpleProperty("value", initial, Integer.class);
     }
 
 }

@@ -22,10 +22,10 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -37,6 +37,7 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -62,7 +63,7 @@ public class DocumentActDownloader extends Downloader {
     /**
      * The template, when there is no document present.
      */
-    private Entity template;
+    private DocumentTemplate template;
 
     /**
      * Creates a new <tt>DocumentActDownloader</tt>.
@@ -88,7 +89,7 @@ public class DocumentActDownloader extends Downloader {
         String styleName;
         String fileName = act.getFileName();
         if (fileName == null) {
-            Entity template = getTemplate();
+            DocumentTemplate template = getTemplate();
             if (template != null) {
                 fileName = template.getName();
             }
@@ -137,10 +138,9 @@ public class DocumentActDownloader extends Downloader {
         if (ref != null) {
             document = getDocument(ref);
         } else {
-            Entity template = getTemplate();
+            DocumentTemplate template = getTemplate();
             if (template != null) {
-                DocumentActReporter reporter
-                        = new DocumentActReporter(act, template);
+                DocumentActReporter reporter = new DocumentActReporter(act, template);
                 document = reporter.getDocument();
             }
         }
@@ -180,11 +180,15 @@ public class DocumentActDownloader extends Downloader {
      *
      * @return the document template. May be <tt>null</tt>
      */
-    private Entity getTemplate() {
+    private DocumentTemplate getTemplate() {
         if (template == null) {
             ActBean bean = new ActBean(act);
             if (bean.hasNode("documentTemplate")) {
-                template = bean.getNodeParticipant("documentTemplate");
+                Entity participant = bean.getNodeParticipant("documentTemplate");
+                if (participant != null) {
+                    template = new DocumentTemplate(participant, ServiceHelper.getArchetypeService());
+
+                }
             }
         }
         return template;
