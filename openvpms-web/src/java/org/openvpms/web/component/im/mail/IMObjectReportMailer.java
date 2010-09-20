@@ -18,13 +18,14 @@
 
 package org.openvpms.web.component.im.mail;
 
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.report.IMObjectReporter;
 
+
 /**
- * Add description here.
+ * IMObject report mailer.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -33,13 +34,13 @@ public class IMObjectReportMailer<T extends IMObject>
         extends TemplatedIMMailer<T> {
 
     /**
-     * Constructs a new <tt>IMObjectReportMailer</tt>.
+     * Constructs an <tt>IMObjectReportMailer</tt>.
      *
      * @param object   the object to mail
      * @param template the document template to use. May be <tt>null</tt>
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportMailer(T object, Entity template) {
+    public IMObjectReportMailer(T object, DocumentTemplate template) {
         super(new IMObjectReporter<T>(object, template));
     }
 

@@ -18,9 +18,9 @@
 
 package org.openvpms.web.app.reporting.reminder;
 
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -58,7 +58,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      * @param groupTemplate the grouped reminder document template
      * @param listener      the listener for printer events
      */
-    public ReminderPrintProcessor(Entity groupTemplate, PrinterListener listener) {
+    public ReminderPrintProcessor(DocumentTemplate groupTemplate, PrinterListener listener) {
         super(groupTemplate);
         this.listener = listener;
     }
@@ -76,21 +76,21 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
     /**
      * Processes a list of reminder events.
      *
-     * @param events           the events
-     * @param shortName        the report archetype short name, used to select the document template if none specified
-     * @param documentTemplate the document template to use. May be <tt>null</tt>
+     * @param events    the events
+     * @param shortName the report archetype short name, used to select the document template if none specified
+     * @param template  the document template to use. May be <tt>null</tt>
      */
-    protected void process(List<ReminderEvent> events, String shortName, Entity documentTemplate) {
+    protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate template) {
         if (events.size() > 1) {
             List<ObjectSet> sets = createObjectSets(events);
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, shortName, documentTemplate);
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, shortName, template);
             print(printer);
         } else {
             List<Act> acts = new ArrayList<Act>();
             for (ReminderEvent event : events) {
                 acts.add(event.getReminder());
             }
-            IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, shortName, documentTemplate);
+            IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, shortName, template);
             print(printer);
         }
     }

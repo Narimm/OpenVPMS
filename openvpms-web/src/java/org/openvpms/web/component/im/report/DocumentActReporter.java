@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.report;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -63,7 +64,7 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
      * @param template the document template
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public DocumentActReporter(DocumentAct act, Entity template) {
+    public DocumentActReporter(DocumentAct act, DocumentTemplate template) {
         super(act, act.getArchetypeId().getShortName(), template);
     }
 
@@ -110,13 +111,13 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the template cannot be found
      */
-    private static Entity getTemplate(DocumentAct act) {
+    private static DocumentTemplate getTemplate(DocumentAct act) {
         ActBean bean = new ActBean(act);
         Entity template = bean.getParticipant("participation.documentTemplate");
         if (template == null) {
             throw new DocumentException(NotFound);
         }
-        return template;
+        return new DocumentTemplate(template, ServiceHelper.getArchetypeService());
     }
 
 }

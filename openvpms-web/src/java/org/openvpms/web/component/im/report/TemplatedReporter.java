@@ -18,8 +18,8 @@
 
 package org.openvpms.web.component.im.report;
 
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -42,15 +42,14 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     /**
      * The document template entity to use. May be <tt>null</tt>
      */
-    private Entity template;
+    private DocumentTemplate template;
 
 
     /**
      * Constructs a new <tt>TemplatedReporter</tt> for a single object.
      *
      * @param object    the object
-     * @param shortName the archetype short name to determine the template to
-     *                  use
+     * @param shortName the archetype short name to determine the template to use
      */
     public TemplatedReporter(T object, String shortName) {
         this(object, shortName, null);
@@ -60,11 +59,10 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
      * Constructs a new <tt>TemplatedReporter</tt> for a single object.
      *
      * @param object    the object
-     * @param shortName the archetype short name to determine the template to
-     *                  use
+     * @param shortName the archetype short name to determine the template to use
      * @param template  the document template to use. May be <tt>null</tt>
      */
-    public TemplatedReporter(T object, String shortName, Entity template) {
+    public TemplatedReporter(T object, String shortName, DocumentTemplate template) {
         super(object);
         this.shortName = shortName;
         this.template = template;
@@ -88,12 +86,10 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
      * objects.
      *
      * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to
-     *                  use
+     * @param shortName the archetype short name to determine the template to use
      * @param template  the document template to use. May be <tt>null</tt>
      */
-    public TemplatedReporter(Iterable<T> objects, String shortName,
-                             Entity template) {
+    public TemplatedReporter(Iterable<T> objects, String shortName, DocumentTemplate template) {
         super(objects);
         this.shortName = shortName;
         this.template = template;
@@ -101,21 +97,23 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
 
     /**
      * Returns archetype short name to determine which template to use.
+     *
+     * @return the archetype short name
      */
     public String getShortName() {
         return shortName;
     }
 
     /**
-     * Returns the document template entity.
+     * Returns the document template.
      *
      * @return the document template, or <tt>null</tt> if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Entity getTemplate() {
+    public DocumentTemplate getTemplate() {
         if (template == null) {
             TemplateHelper helper = new TemplateHelper();
-            template = helper.getTemplateForArchetype(shortName);
+            template = helper.getDocumentTemplate(shortName);
         }
         return template;
     }
@@ -127,12 +125,8 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getTemplateDocument() {
-        Entity template = getTemplate();
-        if (template != null) {
-            TemplateHelper helper = new TemplateHelper();
-            return helper.getDocumentFromTemplate(template);
-        }
-        return null;
+        DocumentTemplate template = getTemplate();
+        return (template != null) ? template.getDocument() : null;
     }
 
 }

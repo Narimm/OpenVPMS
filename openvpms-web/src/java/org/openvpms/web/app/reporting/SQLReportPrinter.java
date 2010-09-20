@@ -18,12 +18,9 @@
 
 package org.openvpms.web.app.reporting;
 
-import net.sf.jasperreports.engine.JRParameter;
-
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
-import org.openvpms.archetype.rules.doc.TemplateHelper;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -55,9 +52,9 @@ import java.util.Set;
 public class SQLReportPrinter extends AbstractPrinter {
 
     /**
-     * The document template entity.
+     * The document template.
      */
-    private final Entity template;
+    private final DocumentTemplate template;
 
     /**
      * The report.
@@ -83,9 +80,8 @@ public class SQLReportPrinter extends AbstractPrinter {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document template can't be found
      */
-    public SQLReportPrinter(Entity template) {
-        TemplateHelper helper = new TemplateHelper();
-        Document document = helper.getDocumentFromTemplate(template);
+    public SQLReportPrinter(DocumentTemplate template) {
+        Document document = template.getDocument();
         if (document == null) {
             throw new DocumentException(NotFound);
         }
@@ -169,7 +165,7 @@ public class SQLReportPrinter extends AbstractPrinter {
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
-    	return getDocument(DocFormats.PDF_TYPE);
+        return getDocument(DocFormats.PDF_TYPE);
     }
 
     /**

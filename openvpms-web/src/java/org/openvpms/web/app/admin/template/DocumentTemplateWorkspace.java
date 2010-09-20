@@ -20,6 +20,7 @@ package org.openvpms.web.app.admin.template;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 
 
 /**
@@ -35,7 +36,7 @@ public class DocumentTemplateWorkspace extends ResultSetCRUDWorkspace<Entity> {
      */
     public DocumentTemplateWorkspace() {
         super("admin", "documentTemplate");
-        setArchetypes(Entity.class, "entity.documentTemplate");
+        setArchetypes(Entity.class, DocumentArchetypes.DOCUMENT_TEMPLATE);
     }
 
 }

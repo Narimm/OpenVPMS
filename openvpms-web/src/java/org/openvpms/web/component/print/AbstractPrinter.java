@@ -19,12 +19,9 @@
 package org.openvpms.web.component.print;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.doc.MediaHelper;
-import org.openvpms.archetype.rules.doc.TemplateHelper;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.doc.DocumentTemplatePrinter;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.PrintProperties;
@@ -33,10 +30,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.servlet.DownloadServlet;
 
-import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
-import javax.print.attribute.standard.OrientationRequested;
-import java.math.BigDecimal;
 
 
 /**
@@ -57,17 +51,11 @@ public abstract class AbstractPrinter implements Printer {
      */
     private int copies;
 
-    /**
-     * The template helper.
-     */
-    private final TemplateHelper helper;
-
 
     /**
-     * Constructs a new <tt>AbstractPrinter</tt>.
+     * Constructs an <tt>AbstractPrinter</tt>.
      */
     public AbstractPrinter() {
-        helper = new TemplateHelper();
     }
 
     /**
@@ -124,16 +112,16 @@ public abstract class AbstractPrinter implements Printer {
      * Returns the print properties for an object.
      *
      * @param printer  the printer
-     * @param template an <em>entity.documentTemplate</em>. May be <tt>null</tt>
+     * @param template the document template. May be <tt>null</tt>
      * @return the print properties
      * @throws OpenVPMSException for any error
      */
-    protected PrintProperties getProperties(String printer, Entity template) {
+    protected PrintProperties getProperties(String printer, DocumentTemplate template) {
         PrintProperties properties = new PrintProperties(printer);
         properties.setCopies(getCopies());
         if (template != null) {
-            properties.setMediaSize(getMediaSize(template));
-            properties.setOrientation(getOrientation(template));
+            properties.setMediaSize(template.getMediaSize());
+            properties.setOrientation(template.getOrientationRequested());
             properties.setMediaTray(getMediaTray(template, printer));
         }
         return properties;
@@ -171,63 +159,24 @@ public abstract class AbstractPrinter implements Printer {
      * @param template an <em>entity.documentTemplate</em>
      * @return the default printer
      */
-    protected String getDefaultPrinter(Entity template) {
+    protected String getDefaultPrinter(DocumentTemplate template) {
         return PrintHelper.getDefaultPrinter(template, GlobalContext.getInstance());
     }
 
     /**
-     * Helper to return the media size for a document template.
+     * Helper to return the document template printer relationship for a template and printer and current
+     * location/practice.
      *
-     * @param template an <em>entity.documentTemplate</em>
-     * @return the media size for the template, or <tt>null</tt> if none
-     *         is defined
-     * @throws OpenVPMSException for any error
+     * @param template an template
+     * @param printer  the printer name
+     * @return the relationship, or <tt>null</tt> if none is found
      */
-    protected MediaSizeName getMediaSize(Entity template) {
-        IMObjectBean bean = new IMObjectBean(template);
-        String size = bean.getString("paperSize");
-        if (size != null) {
-            BigDecimal width = bean.getBigDecimal("paperWidth");
-            BigDecimal height = bean.getBigDecimal("paperHeight");
-            String units = bean.getString("paperUnits");
-            return MediaHelper.getMedia(size, width, height, units);
-        }
-        return null;
-    }
-
-    /**
-     * Helper to return the media orientation for a document template.
-     *
-     * @param template an <em>entity.documentTemplate</em>
-     * @return the orientation for the template, or <tt>null</tt> if none
-     *         is defined
-     * @throws OpenVPMSException for any error
-     */
-    protected OrientationRequested getOrientation(Entity template) {
-        IMObjectBean bean = new IMObjectBean(template);
-        String orientation = bean.getString("orientation");
-        if (orientation != null) {
-            return MediaHelper.getOrientation(orientation);
-        }
-        return null;
-    }
-
-    /**
-     * Helper to return the <em>entityRelationship.documentTemplatePrinter</em>
-     * for a template and printer and current location/practice.
-     *
-     * @param template an <em>entity.documentTemplate</em>
-     * @param printer  the printer
-     * @return the corresponding
-     *         <em>entityRelationship.documentTemplatePrinter</em>
-     *         or <tt>null</tt> if none is found
-     */
-    protected EntityRelationship getDocumentTemplatePrinter(Entity template, String printer) {
+    protected DocumentTemplatePrinter getDocumentTemplatePrinter(DocumentTemplate template, String printer) {
         Context context = GlobalContext.getInstance();
-        EntityRelationship relationship = PrintHelper.getDocumentTemplatePrinter(template, context);
+        DocumentTemplatePrinter relationship = PrintHelper.getDocumentTemplatePrinter(template, context);
         if (relationship != null) {
             // make sure the relationship is for the same printer
-            if (ObjectUtils.equals(printer, helper.getPrinter(relationship))) {
+            if (ObjectUtils.equals(printer, relationship.getPrinterName())) {
                 return relationship;
             }
         }
@@ -238,14 +187,13 @@ public abstract class AbstractPrinter implements Printer {
      * Helper to return the media tray for a document template for a particular
      * printer for the current practice.
      *
-     * @param template an <em>entity.documentTemplate</em>
+     * @param template the template
      * @param printer  the printer name
-     * @return the media tray for the template, or <tt>null</tt> if none
-     *         is defined
+     * @return the media tray for the template, or <tt>null</tt> if none is defined
      */
-    protected MediaTray getMediaTray(Entity template, String printer) {
-        EntityRelationship r = getDocumentTemplatePrinter(template, printer);
-        return (r != null) ? helper.getMediaTray(r) : null;
+    protected MediaTray getMediaTray(DocumentTemplate template, String printer) {
+        DocumentTemplatePrinter relationship = getDocumentTemplatePrinter(template, printer);
+        return relationship != null ? relationship.getMediaTray() : null;
     }
 
     /**
@@ -253,19 +201,13 @@ public abstract class AbstractPrinter implements Printer {
      * particular document template, printer and the current practice.
      * If no relationship is defined, defaults to <tt>true</tt>.
      *
-     * @param template an <em>entity.documentTemplate</em>. May be <tt>null</tt>
+     * @param template the template
      * @param printer  the printer name
      * @return <tt>true</tt> if printing should occur interactively
      */
-    protected boolean getInteractive(Entity template, String printer) {
-        boolean result = true;
-        if (template != null) {
-            EntityRelationship r = getDocumentTemplatePrinter(template, printer);
-            if (r != null) {
-                result = helper.getInteractive(r);
-            }
-        }
-        return result;
+    protected boolean getInteractive(DocumentTemplate template, String printer) {
+        DocumentTemplatePrinter relationship = getDocumentTemplatePrinter(template, printer);
+        return relationship == null || relationship.getInteractive();
     }
 
 

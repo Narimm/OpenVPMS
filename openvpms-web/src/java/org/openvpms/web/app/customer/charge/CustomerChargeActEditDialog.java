@@ -18,12 +18,11 @@
 package org.openvpms.web.app.customer.charge;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.doc.DocumentTemplatePrinter;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.event.WindowPaneListener;
@@ -89,8 +88,8 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     /**
      * Prints any unprinted documents flagged as <em>interactive</em>, associated with the charge.
      *
-     * @param documents  the documents to print
-     * @param close if <tt>true</tt>, close the edit dialog on completion
+     * @param documents the documents to print
+     * @param close     if <tt>true</tt>, close the edit dialog on completion
      */
     private void printDocuments(List<IMObject> documents, final boolean close) {
         String title = Messages.get("workflow.checkout.print.title");
@@ -134,12 +133,9 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
                 if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
                     Entity template = documentBean.getNodeParticipant("documentTemplate");
                     if (template != null) {
-                        EntityRelationship rel = PrintHelper.getDocumentTemplatePrinter(template, context);
-                        if (rel != null) {
-                            IMObjectBean relBean = new IMObjectBean(rel);
-                            if (relBean.getBoolean("interactive")) {
-                                acts.add(document);
-                            }
+                        DocumentTemplatePrinter rel = PrintHelper.getDocumentTemplatePrinter(template, context);
+                        if (rel != null && rel.getInteractive()) {
+                            acts.add(document);
                         }
                     }
                 }

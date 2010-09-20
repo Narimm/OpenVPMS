@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.print;
 
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
@@ -52,7 +52,7 @@ public class ObjectSetReportPrinter extends TemplatedIMPrinter<ObjectSet> {
      * @param template  the document template. May be <tt>null</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName, Entity template) {
+    public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName, DocumentTemplate template) {
         super(new ObjectSetReporter(set, shortName, template));
     }
 

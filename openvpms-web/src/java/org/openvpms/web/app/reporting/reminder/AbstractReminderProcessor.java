@@ -18,11 +18,12 @@
 package org.openvpms.web.app.reporting.reminder;
 
 import org.openvpms.archetype.component.processor.Processor;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public abstract class AbstractReminderProcessor implements Processor<List<Remind
     /**
      * The grouped reminder template.
      */
-    private final Entity groupTemplate;
+    private final DocumentTemplate groupTemplate;
 
 
     /**
@@ -47,40 +48,40 @@ public abstract class AbstractReminderProcessor implements Processor<List<Remind
      *
      * @param groupTemplate the grouped reminder template
      */
-    public AbstractReminderProcessor(Entity groupTemplate) {
+    public AbstractReminderProcessor(DocumentTemplate groupTemplate) {
         this.groupTemplate = groupTemplate;
     }
 
     /**
      * Processes a list of reminder events.
      * <p/>
-     * This implementation delegates to {@link #process(List, String, Entity)}.
+     * This implementation delegates to {@link #process(List, String, DocumentTemplate)}.
      *
      * @param events the reminder events
      */
     public void process(List<ReminderEvent> events) {
         ReminderEvent event = events.get(0);
         String shortName;
-        Entity documentTemplate;
+        DocumentTemplate template;
 
         if (events.size() > 1) {
             shortName = "GROUPED_REMINDERS";
-            documentTemplate = groupTemplate;
+            template = groupTemplate;
         } else {
             shortName = ReminderArchetypes.REMINDER;
-            documentTemplate = event.getDocumentTemplate();
+            template = new DocumentTemplate(event.getDocumentTemplate(), ServiceHelper.getArchetypeService());
         }
-        process(events, shortName, documentTemplate);
+        process(events, shortName, template);
     }
 
     /**
      * Processes a list of reminder events.
      *
-     * @param events           the events
-     * @param shortName        the report archetype short name, used to select the document template if none specified
-     * @param documentTemplate the document template to use. May be <tt>null</tt>
+     * @param events    the events
+     * @param shortName the report archetype short name, used to select the document template if none specified
+     * @param template  the document template to use. May be <tt>null</tt>
      */
-    protected abstract void process(List<ReminderEvent> events, String shortName, Entity documentTemplate);
+    protected abstract void process(List<ReminderEvent> events, String shortName, DocumentTemplate template);
 
     /**
      * Creates object sets for the specified set of reminder events.

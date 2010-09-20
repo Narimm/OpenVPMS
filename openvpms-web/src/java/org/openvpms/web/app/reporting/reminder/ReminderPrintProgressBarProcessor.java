@@ -17,8 +17,8 @@
  */
 package org.openvpms.web.app.reporting.reminder;
 
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.resource.util.Messages;
@@ -52,7 +52,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
      * @param groupTemplate the grouped reminder document template
      * @param statistics    the statistics
      */
-    public ReminderPrintProgressBarProcessor(List<List<ReminderEvent>> reminders, Entity groupTemplate,
+    public ReminderPrintProgressBarProcessor(List<List<ReminderEvent>> reminders, DocumentTemplate groupTemplate,
                                              Statistics statistics) {
         super(reminders, statistics, Messages.get("reporting.reminder.run.print"));
 
