@@ -569,8 +569,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private IMObjectEditor createMedicationEditor(Act act, boolean dispensingLabel) {
         ActRelationshipCollectionEditor editors = getDispensingCollection();
-
         LayoutContext context = new DefaultLayoutContext(true);
+        context.setContext(getLayoutContext().getContext());
         if (dispensingLabel) {
             context.setLayoutStrategyFactory(FACTORY);
         }
