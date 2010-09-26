@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -62,30 +63,14 @@ import java.util.Map;
 public class MedicalRecordRules {
 
     /**
-     * Clinicial event item act relationship archetype short name.
-     */
-    public static final String CLINICAL_EVENT_ITEM
-            = "actRelationship.patientClinicalEventItem";
-
-    /**
-     * Clinical event archetype short name.
-     */
-    public static final String CLINICAL_EVENT = "act.patientClinicalEvent";
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
 
     /**
-     * Patient participation short name.
+     * Clinical event item short names.
      */
-    private static final String PARTICIPATION_PATIENT = "participation.patient";
-
-    /**
-     * Clinician participation short name.
-     */
-    private static final String PARTICIPATION_CLINICIAN = "participation.clinician";
+    private String[] clinicalEventItems;
 
     /**
      * Start time node name.
@@ -120,7 +105,7 @@ public class MedicalRecordRules {
      * @param act the deleted act
      */
     public void deleteChildRecords(Act act) {
-        if (TypeHelper.isA(act, CLINICAL_EVENT)) {
+        if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
             for (ActRelationship relationship :
                     act.getSourceActRelationships()) {
                 Act child = get(relationship.getTarget());
@@ -146,6 +131,94 @@ public class MedicalRecordRules {
     }
 
     /**
+     * Links a patient medical record to an <em>act.patientClinicalEvent</em>.
+     * If the item is an <em>act.patientClinicalProblem</em>, all of its items will be also be linked to the event.
+     *
+     * @param event the event
+     * @param item  the item
+     */
+    public void linkMedicalRecords(Act event, Act item) {
+        if (TypeHelper.isA(item, PatientArchetypes.CLINICAL_PROBLEM)) {
+            linkMedicalRecords(event, item, null);
+        } else {
+            linkMedicalRecords(event, null, item);
+        }
+    }
+
+    /**
+     * Links a patient medical record to an <em>act.patientClinicalEvent</em>,
+     * and optionally an <em>act.patientClinicalProblem</em>, if no relationship exists.
+     * <p/>
+     * If <tt>problem</tt> is specified:
+     * <ul>
+     * <li>it will be linked to the event, if no relationship exists
+     * <li>any of its items not presently linked to the event will be linked
+     * </ul>
+     *
+     * @param event   the <em>act.patientClinicalEvent</em>
+     * @param problem the <em>act.patientClinicalProblem</em>. May be <tt>null</tt>
+     * @param item    the patient medical record. May be <tt>null</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void linkMedicalRecords(Act event, Act problem, Act item) {
+        if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
+            throw new IllegalArgumentException("Argument 'event' is of the wrong type: "
+                                               + event.getArchetypeId().getShortName());
+        }
+        if (TypeHelper.isA(item, PatientArchetypes.CLINICAL_PROBLEM)) {
+            throw new IllegalArgumentException("Argument 'item' is of the wrong type: "
+                                               + item.getArchetypeId().getShortName());
+        }
+        if (problem != null && !TypeHelper.isA(problem, PatientArchetypes.CLINICAL_PROBLEM)) {
+            throw new IllegalArgumentException("Argument 'problem' is of the wrong type: "
+                                               + problem.getArchetypeId().getShortName());
+        }
+        ActBean bean = new ActBean(event, service);
+
+        if (problem != null && item != null) {
+            // link the problem and item if required
+            ActBean problemBean = new ActBean(problem, service);
+            if (!problemBean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, item)) {
+                problemBean.addNodeRelationship("items", item);
+                service.save(Arrays.asList(problem, item));
+            }
+        }
+
+        if (item != null) {
+            // link the event and item
+            if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, item)) {
+                bean.addNodeRelationship("items", item);
+                service.save(Arrays.asList(event, item));
+            }
+        }
+
+        if (problem != null) {
+            // link the event and problem
+            ActBean problemBean = new ActBean(problem, service);
+            List<Act> toSave = new ArrayList<Act>();
+
+            // if the problem has no parent event, add it
+            if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem)) {
+                bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem);
+                toSave.add(event);
+            }
+
+            // for each of the problem's child acts, link them to the parent event
+            List<Act> acts = problemBean.getNodeActs("items");
+            for (Act child : acts) {
+                if (TypeHelper.isA(child, getClinicalEventItems())
+                    && !bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child)) {
+                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child);
+                    toSave.add(child);
+                }
+            }
+            if (!toSave.isEmpty()) {
+                service.save(toSave);
+            }
+        }
+    }
+
+    /**
      * Adds a list of <em>act.patientMedication</em>,
      * <em>act.patientInvestigation*</em> and <em>act.patientDocument*</em> acts
      * to an <em>act.patientClinicalEvent</em> associated with each act's
@@ -164,8 +237,8 @@ public class MedicalRecordRules {
             boolean save = false;
             ActBean bean = new ActBean(event, service);
             for (Act a : entry.getValue()) {
-                if (!bean.hasRelationship(CLINICAL_EVENT_ITEM, a)) {
-                    bean.addRelationship(CLINICAL_EVENT_ITEM, a);
+                if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, a)) {
+                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, a);
                     save = true;
                 }
             }
@@ -283,8 +356,8 @@ public class MedicalRecordRules {
             boolean save = false;
             ActBean bean = new ActBean(event, service);
             for (Act a : entry.getValue()) {
-                if (!bean.hasRelationship(CLINICAL_EVENT_ITEM, a)) {
-                    bean.addRelationship(CLINICAL_EVENT_ITEM, a);
+                if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, a)) {
+                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, a);
                     save = true;
                 }
             }
@@ -318,7 +391,7 @@ public class MedicalRecordRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act getEvent(IMObjectReference patient) {
-        ArchetypeQuery query = new ArchetypeQuery(CLINICAL_EVENT, true, true);
+        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT, true, true);
         query.add(new CollectionNodeConstraint("patient").add(new ObjectRefNodeConstraint("entity", patient)));
         query.add(new NodeSortConstraint(START_TIME, false));
         query.setMaxResults(1);
@@ -355,7 +428,7 @@ public class MedicalRecordRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act getEvent(IMObjectReference patient, Date date) {
-        ArchetypeQuery query = new ArchetypeQuery(CLINICAL_EVENT, true, true);
+        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT, true, true);
         query.add(new CollectionNodeConstraint("patient").add(
                 new ObjectRefNodeConstraint("entity", patient)));
         OrConstraint or = new OrConstraint();
@@ -394,12 +467,12 @@ public class MedicalRecordRules {
      */
     private Act createEvent(IMObjectReference patient, Date startTime, IMObjectReference clinician) {
         Act event;
-        event = (Act) service.create(CLINICAL_EVENT);
+        event = (Act) service.create(PatientArchetypes.CLINICAL_EVENT);
         event.setActivityStartTime(startTime);
         ActBean eventBean = new ActBean(event, service);
-        eventBean.addParticipation(PARTICIPATION_PATIENT, patient);
+        eventBean.addNodeParticipation("patient", patient);
         if (clinician != null) {
-            eventBean.addParticipation(PARTICIPATION_CLINICIAN, clinician);
+            eventBean.addNodeParticipation("clinician", clinician);
         }
         return event;
     }
@@ -433,9 +506,9 @@ public class MedicalRecordRules {
         Map<IMObjectReference, List<Act>> result = new HashMap<IMObjectReference, List<Act>>();
         for (Act act : acts) {
             ActBean bean = new ActBean(act, service);
-            List<ActRelationship> relationships = bean.getRelationships(CLINICAL_EVENT_ITEM);
+            List<ActRelationship> relationships = bean.getRelationships(PatientArchetypes.CLINICAL_EVENT_ITEM);
             if (relationships.isEmpty()) {
-                IMObjectReference patient = bean.getParticipantRef(PARTICIPATION_PATIENT);
+                IMObjectReference patient = bean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
                 if (patient != null) {
                     List<Act> list = result.get(patient);
                     if (list == null) {
@@ -496,5 +569,18 @@ public class MedicalRecordRules {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the valid short names for an event item relationship.
+     *
+     * @return the short names
+     */
+    private String[] getClinicalEventItems() {
+        if (clinicalEventItems == null) {
+            clinicalEventItems = DescriptorHelper.getNodeShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM, "target",
+                                                                    service);
+        }
+        return clinicalEventItems;
     }
 }

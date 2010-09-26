@@ -312,6 +312,117 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link org.openvpms.archetype.rules.patient.MedicalRecordRules#linkMedicalRecords} method.
+     */
+    @Test
+    public void testLinkMedicalRecords() {
+        Act event = createEvent();
+        Act problem = createProblem();
+        Act note = createNote();
+        rules.linkMedicalRecords(event, problem, note);
+
+        event = get(event);
+        problem = get(problem);
+        note = get(note);
+
+        ActBean eventBean = new ActBean(event);
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem));
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
+
+        ActBean problemBean = new ActBean(problem);
+        assertTrue(problemBean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, note));
+
+        // verify that it can be called again with no ill effect
+        rules.linkMedicalRecords(event, problem, note);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#linkMedicalRecords(Act, Act)} method
+     * passing an <em>act.patientClinicalNote</em>.
+     */
+    @Test
+    public void testLinkMedicalRecordsWithItem() {
+        Act event = createEvent();
+        Act note = createNote();
+
+        rules.linkMedicalRecords(event, note);
+
+        event = get(event);
+        note = get(note);
+
+        ActBean eventBean = new ActBean(event);
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
+
+        // verify that it can be called again with no ill effect
+        rules.linkMedicalRecords(event, note);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#linkMedicalRecords(Act, Act)} method,
+     * passing an <em>act.patientClinicalProblem</em>.
+     */
+    @Test
+    public void testLinkMedicalRecordsWithProblem() {
+        Act event = createEvent();
+        Act problem = createProblem();
+        Act note = createNote();
+
+        ActBean problemBean = new ActBean(problem);
+        problemBean.addNodeRelationship("items", note);
+        save(problem, note);
+
+        rules.linkMedicalRecords(event, problem);
+
+        event = get(event);
+        problem = get(event);
+        note = get(note);
+
+        ActBean eventBean = new ActBean(event);
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem));
+
+        // verify that it can be called again with no ill effect
+        rules.linkMedicalRecords(event, problem);
+    }
+
+    /**
+     * Verifies the {@link MedicalRecordRules#linkMedicalRecords(Act, Act, Act)} method,
+     * links all of a problem's items to the parent event if they aren't already present.
+     */
+    @Test
+    public void testLinkMedicalRecordsForMissingLinks() {
+        Act event = createEvent();
+        Act problem = createProblem();
+        Act note1 = createNote();
+        Act note2 = createNote();
+        Act medication = createMedication(patient);
+        ActBean problemBean = new ActBean(problem);
+        problemBean.addNodeRelationship("items", note1);
+        problemBean.addNodeRelationship("items", medication);
+        save(problem, note1, medication);
+
+        // now link the records to the event
+        rules.linkMedicalRecords(event, problem, note2);
+
+        event = get(event);
+        problem = get(problem);
+        note1 = get(note1);
+        note2 = get(note2);
+        medication = get(medication);
+
+        ActBean eventBean = new ActBean(event);
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem));
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note1));
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note2));
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, medication));
+
+        problemBean = new ActBean(problem);
+        assertTrue(problemBean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, note1));
+        assertTrue(problemBean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, note2));
+        assertTrue(problemBean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, medication));
+    }
+
+    /**
      * Tests the {@link MedicalRecordRules#addToEvents} method.
      */
     @Test

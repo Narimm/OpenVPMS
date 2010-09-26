@@ -36,7 +36,7 @@ public class PatientArchetypes {
      * Patient medication act short name.
      */
     public static final String PATIENT_MEDICATION = "act.patientMedication";
-    
+
     /**
      * Patient participation archetype.
      */
@@ -49,11 +49,37 @@ public class PatientArchetypes {
             = "entityRelationship.patientOwner";
 
     /**
+     * Patient clinical event act short name.
+     */
+    public static final String CLINICAL_EVENT = "act.patientClinicalEvent";
+
+    /**
+     * Clinicial event item act relationship archetype short name.
+     */
+    public static final String CLINICAL_EVENT_ITEM
+            = "actRelationship.patientClinicalEventItem";
+
+    /**
+     * Patient clinical note act short name.
+     */
+    public static final String CLINICAL_NOTE = "act.patientClinicalNote";
+
+    /**
+     * Patient clinical note act short name.
+     */
+    public static final String CLINICAL_PROBLEM = "act.patientClinicalProblem";
+
+       /**
+     * Clinical problem item act relationship short name,
+     */
+    public static String CLINICAL_PROBLEM_ITEM = "actRelationship.patientClinicalProblemItem";
+
+    /**
      * Patient weight act short name.
      */
     public static final String PATIENT_WEIGHT = "act.patientWeight";
 
-   /**
+    /**
      * Patient document attachment act short name.
      */
     public static final String DOCUMENT_ATTACHMENT = "act.patientDocumentAttachment";
@@ -77,7 +103,7 @@ public class PatientArchetypes {
      * Patient document image version act short name.
      */
     public static final String DOCUMENT_IMAGE_VERSION = "act.patientDocumentImageVersion";
-    
+
     /**
      * Patient document letter act short name.
      */
@@ -86,5 +112,5 @@ public class PatientArchetypes {
     /**
      * Patient document letter version act short name.
      */
-    public static final String DOCUMENT_LETTER_VERSION = "act.patientDocumentLetterVersion";    
+    public static final String DOCUMENT_LETTER_VERSION = "act.patientDocumentLetterVersion";
 }
