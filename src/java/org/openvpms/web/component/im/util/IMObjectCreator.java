@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -28,6 +29,7 @@ import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
+import org.openvpms.web.component.list.KeyListBox;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -97,20 +99,51 @@ public final class IMObjectCreator {
      */
     public static void create(String type, String[] shortNames,
                               final IMObjectCreatorListener listener) {
+        create(type, shortNames, null, listener);
+    }
+
+    /**
+     * Create a new object, selected from a list. This implementation pops up a selection dialog if needed.
+     *
+     * @param archetypes the set of possible archetypes to create
+     * @param listener   the listener to notify
+     */
+    public static void create(Archetypes archetypes, IMObjectCreatorListener listener) {
+        create(archetypes.getDisplayName(), archetypes.getShortNames(), archetypes.getDefaultShortName(), listener);
+    }
+
+    /**
+     * Create a new object, selected from a list. This implementation pops up a
+     * selection dialog if needed.
+     *
+     * @param type             the type of object being created, for display purposes
+     * @param shortNames       the archetype shortnames
+     * @param defaultShortName the default short name. May be <tt>null</tt>
+     * @param listener         the listener to notify
+     */
+    public static void create(String type, String[] shortNames, String defaultShortName,
+                              final IMObjectCreatorListener listener) {
         shortNames = DescriptorHelper.getShortNames(shortNames);
         if (shortNames.length == 0) {
             String title = Messages.get("imobject.create.noshortnames");
             ErrorHelper.show(title, type);
             listener.cancelled();
         } else if (shortNames.length > 1) {
-            final ShortNameListModel model
-                    = new ShortNameListModel(shortNames, false);
+            final ShortNameListModel model = new ShortNameListModel(shortNames, false);
             String title = Messages.get("imobject.create.title", type);
             String message = Messages.get("imobject.create.message", type);
-            ListBox list = new ListBox(model);
+            ListBox list = new KeyListBox(model);
+            list.setStyleName("default");
+            list.setHeight(new Extent(10, Extent.EM));
             list.setCellRenderer(new ShortNameListCellRenderer());
-            final SelectionDialog dialog
-                    = new SelectionDialog(title, message, list);
+            if (defaultShortName != null) {
+                int index = model.indexOf(defaultShortName);
+                if (index != -1) {
+                    list.setSelectedIndex(index);
+                }
+            }
+
+            final SelectionDialog dialog = new SelectionDialog(title, message, list);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     int selected = dialog.getSelectedIndex();

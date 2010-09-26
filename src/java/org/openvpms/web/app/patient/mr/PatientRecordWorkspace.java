@@ -21,6 +21,7 @@ package org.openvpms.web.app.patient.mr;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -30,8 +31,6 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
@@ -303,7 +302,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new query
      */
     private DefaultActQuery<Act> createProblemsQuery() {
-        String[] shortNames = {CLINICAL_PROBLEM};
+        String[] shortNames = {PatientArchetypes.CLINICAL_PROBLEM};
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 getObject(), "patient", "participation.patient", shortNames);
         query.setDefaultSortConstraint(DEFAULT_SORT);
@@ -370,7 +369,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         if (act != null) {
             List<Act> acts = summary.getObjects();
             int index = acts.indexOf(act);
-            while (!(found = TypeHelper.isA(act, CLINICAL_EVENT)) && index > 0) {
+            while (!(found = TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) && index > 0) {
                 act = acts.get(--index);
             }
         }

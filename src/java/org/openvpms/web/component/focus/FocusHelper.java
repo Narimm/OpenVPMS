@@ -22,6 +22,7 @@ import echopointng.DateField;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.table.KeyTable;
@@ -46,7 +47,7 @@ public class FocusHelper {
         Component result = null;
         if (component != null) {
             if (isFocusable(component) && component.isEnabled()
-                    && component.isFocusTraversalParticipant()) {
+                && component.isFocusTraversalParticipant()) {
                 if (component instanceof DateField) {
                     result = ((DateField) component).getTextField();
                 } else {
@@ -89,7 +90,7 @@ public class FocusHelper {
         ApplicationInstance active = ApplicationInstance.getActive();
         return (active != null) ? active.getFocusedComponent() : null;
     }
-    
+
     /**
      * Determines if a component is one that may receive focus.
      *
@@ -102,7 +103,8 @@ public class FocusHelper {
                 || component instanceof CheckBox
                 || component instanceof DateField
                 || component instanceof AbstractButton
-                || component instanceof KeyTable);
+                || component instanceof KeyTable
+                || component instanceof ListBox);
     }
 
 }

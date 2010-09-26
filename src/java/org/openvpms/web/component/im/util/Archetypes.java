@@ -48,6 +48,11 @@ public class Archetypes<T extends IMObject> {
     private final Class<T> type;
 
     /**
+     * The default short name.
+     */
+    private final String defaultShortName;
+
+    /**
      * The display name.
      */
     private String displayName;
@@ -72,18 +77,18 @@ public class Archetypes<T extends IMObject> {
      *                    <tt>null</tt>, one will be derived
      */
     public Archetypes(String shortName, Class<T> type, String displayName) {
-        this(new String[]{shortName}, type, displayName);
+        this(new String[]{shortName}, type, null, displayName);
     }
 
     /**
      * Creates a new <tt>Archetypes</tt>.
      *
-     * @param shortNames  the archetype short names. May contain wildcards
-     * @param type        the type that the short names represent
-     * @param displayName the collective noun for the archetypes. If
-     *                    <tt>null</tt>, one will be derived
+     * @param shortNames       the archetype short names. May contain wildcards
+     * @param type             the type that the short names represent
+     * @param defaultShortName the default short name. May be <tt>null</tt>
+     * @param displayName      the collective noun for the archetypes. If
      */
-    public Archetypes(String[] shortNames, Class<T> type, String displayName) {
+    public Archetypes(String[] shortNames, Class<T> type, String defaultShortName, String displayName) {
         expanded = expandShortNames(shortNames);
         Class actual = IMObjectHelper.getType(expanded);
         if (!type.isAssignableFrom(actual)) {
@@ -93,6 +98,7 @@ public class Archetypes<T extends IMObject> {
         }
         this.shortNames = shortNames;
         this.type = type;
+        this.defaultShortName = defaultShortName;
         this.displayName = displayName;
     }
 
@@ -103,7 +109,7 @@ public class Archetypes<T extends IMObject> {
      * @param type       the type that the short names represent
      */
     public Archetypes(String[] shortNames, Class<T> type) {
-        this(shortNames, type, null);
+        this(shortNames, type, null, null);
     }
 
     /**
@@ -113,6 +119,15 @@ public class Archetypes<T extends IMObject> {
      */
     public String[] getShortNames() {
         return shortNames;
+    }
+
+    /**
+     * Returns the default archetype short name.
+     *
+     * @return the default short name. May be <tt>null</tt>
+     */
+    public String getDefaultShortName() {
+        return defaultShortName;
     }
 
     /**
@@ -199,7 +214,7 @@ public class Archetypes<T extends IMObject> {
      */
     public static <T extends IMObject> Archetypes<T> create(
             String[] shortNames, Class<T> type, String displayName) {
-        return new Archetypes<T>(shortNames, type, displayName);
+        return new Archetypes<T>(shortNames, type, null, displayName);
     }
 
     /**

@@ -120,6 +120,21 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
     }
 
     /**
+     * Creates a new column model.
+     *
+     * @param showId          if <tt>true</tt>, show the ID
+     * @param showArchetype   if <tt>true</tt> show the archetype
+     * @param showName        if <tt>true</tt> show the name
+     * @param showDescription if <tt>true</tt> show the description
+     * @return a new column model
+     */
+    protected TableColumnModel createTableColumnModel(boolean showId, boolean showArchetype, boolean showName,
+                                                      boolean showDescription) {
+        TableColumnModel model = new DefaultTableColumnModel();
+        return createTableColumnModel(showId, showArchetype, showName, showDescription, model);
+    }
+
+    /**
      * Adds columns to an existing model.
      *
      * @param showId        if <tt>true</tt>, show the ID
@@ -128,14 +143,33 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      * @return the column model
      */
     protected TableColumnModel createTableColumnModel(boolean showId, boolean showArchetype, TableColumnModel model) {
+        return createTableColumnModel(showId, showArchetype, true, true, model);
+    }
+
+    /**
+     * Adds columns to an existing model.
+     *
+     * @param showId          if <tt>true</tt>, show the ID
+     * @param showArchetype   if <tt>true</tt> show the archetype
+     * @param showName        if <tt>true</tt> show the name
+     * @param showDescription if <tt>true</tt> show the description
+     * @param model           the column model
+     * @return the column model
+     */
+    protected TableColumnModel createTableColumnModel(boolean showId, boolean showArchetype, boolean showName,
+                                                      boolean showDescription, TableColumnModel model) {
         if (showId) {
             model.addColumn(createTableColumn(ID_INDEX, ID));
         }
         if (showArchetype) {
             model.addColumn(createTableColumn(ARCHETYPE_INDEX, ARCHETYPE));
         }
-        model.addColumn(createTableColumn(NAME_INDEX, NAME));
-        model.addColumn(createTableColumn(DESCRIPTION_INDEX, DESCRIPTION));
+        if (showName) {
+            model.addColumn(createTableColumn(NAME_INDEX, NAME));
+        }
+        if (showDescription) {
+            model.addColumn(createTableColumn(DESCRIPTION_INDEX, DESCRIPTION));
+        }
         return model;
     }
 

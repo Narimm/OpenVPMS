@@ -32,8 +32,20 @@ public class DefaultIMObjectTableModel<T extends IMObject>
         extends BaseIMObjectTableModel<T> {
 
     /**
-     * Construct a new <code>DefaultIMObjectTableModel</code>.
+     * Constructs a <tt>DefaultIMObjectTableModel</tt>, displaying the <tt>IMObjects</tt> name and description.
      */
     public DefaultIMObjectTableModel() {
+        this(true, true);
+    }
+
+    /**
+     * Constructs a <tt>DefaultIMObjectTableModel</tt>.
+     *
+     * @param showName        if <tt>true</tt> show the object's name
+     * @param showDescription if <tt>true</tt> show the object's description
+     */
+    public DefaultIMObjectTableModel(boolean showName, boolean showDescription) {
+        super(null);
+        setTableColumnModel(createTableColumnModel(false, false, showName, showDescription));
     }
 }

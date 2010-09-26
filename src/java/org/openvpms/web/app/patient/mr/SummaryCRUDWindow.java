@@ -18,16 +18,26 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.Retryer;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -109,6 +119,58 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
     }
 
     /**
+     * Invoked when the 'new' button is pressed.
+     *
+     * @param archetypes the archetypes
+     */
+    @Override
+    protected void onCreate(Archetypes<Act> archetypes) {
+        Act problem = getProblem(getObject());
+        if (getEvent() != null) {
+            if (problem != null) {
+                String[] shortNames = getShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM,
+                                                    PatientArchetypes.CLINICAL_PROBLEM,
+                                                    PatientArchetypes.CLINICAL_EVENT);
+                archetypes = new Archetypes<Act>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
+                                                 archetypes.getDisplayName());
+            } else {
+                String[] shortNames = getShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM,
+                                                    PatientArchetypes.CLINICAL_EVENT);
+                archetypes = new Archetypes<Act>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
+                                                 archetypes.getDisplayName());
+            }
+        }
+        super.onCreate(archetypes);
+    }
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param act   the object
+     * @param isNew determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(final Act act, final boolean isNew) {
+        Act currentProblem;
+        Act currentItem = null;
+        if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_PROBLEM)) {
+            currentProblem = act;
+        } else {
+            currentProblem = getProblem(getObject());
+            currentItem = act;
+        }
+        PatientMedicalRecordLinker recordAction
+                = new PatientMedicalRecordLinker(getEvent(), currentProblem, currentItem);
+        Runnable done = new Runnable() {
+            public void run() {
+                SummaryCRUDWindow.super.onSaved(act, isNew);
+            }
+        };
+        Retryer retryer = new Retryer(recordAction, done, done);
+        retryer.start();
+    }
+
+    /**
      * Invoked when the 'print' button is pressed.
      * This implementation prints the current summary list, rather than
      * the selected item.
@@ -120,8 +182,7 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
                 Iterable<Act> summary = new ActHierarchyIterator<Act>(
                         query, query.getActItemShortNames());
                 IMObjectReportPrinter<Act> printer
-                        = new IMObjectReportPrinter<Act>(
-                        summary, PatientRecordTypes.CLINICAL_EVENT);
+                        = new IMObjectReportPrinter<Act>(summary, PatientArchetypes.CLINICAL_EVENT);
                 String title = Messages.get("patient.record.summary.print");
                 InteractiveIMPrinter<Act> iPrinter
                         = new InteractiveIMPrinter<Act>(title, printer);
@@ -132,4 +193,34 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
         }
     }
 
+    /**
+     * Helper to concatenate the short names for the target of a relationship with those supplied.
+     *
+     * @param relationship the relationship archetype short name
+     * @param shortNames   the short names to add
+     * @return the archetype shortnames
+     */
+    private String[] getShortNames(String relationship, String... shortNames) {
+        String[] targets = ActHelper.getTargetShortNames(relationship);
+        String[] result = Arrays.copyOf(targets, targets.length + shortNames.length);
+        System.arraycopy(shortNames, 0, result, targets.length, shortNames.length);
+        return result;
+    }
+
+    /**
+     * Determines if the supplied act has a parent <em>act.patientClinicalProblem</em>, and if so, returns it.
+     *
+     * @param act the act. May be <tt>null</tt>
+     * @return the parent <em>act.patientClinicalProblem</em>, or <tt>null</tt> if none is found
+     */
+    private Act getProblem(Act act) {
+        if (act != null) {
+            ActBean bean = new ActBean(act);
+            List<ActRelationship> rels = bean.getRelationships(PatientArchetypes.CLINICAL_PROBLEM_ITEM);
+            if (!rels.isEmpty()) {
+                return (Act) IMObjectHelper.getObject(rels.get(0).getSource());
+            }
+        }
+        return null;
+    }
 }

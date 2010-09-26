@@ -57,8 +57,9 @@ public class PatientActEditor extends AbstractActEditor {
             if (bean.hasNode("patient")) {
                 setPatient(bean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION));
             }
+        } else {
+            initParticipant("patient", context.getContext().getPatient());
         }
-
     }
 
     /**
