@@ -28,8 +28,8 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
-import static org.openvpms.archetype.rules.patient.MedicalRecordRules.CLINICAL_EVENT_ITEM;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_ITEM;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
@@ -189,7 +189,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that reminders that don't have status 'Completed' are removed
      * when an invoice item is deleted.
      */
-    @Test public void testRemoveInvoiceItemIncompleteActs() {
+    @Test
+    public void testRemoveInvoiceItemIncompleteActs() {
         ActBean item = createInvoiceItem();
         item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(true));
         item.save();
@@ -234,7 +235,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that reminders and documents that don't have status 'Completed'
      * or 'Posted' aren't removed when an invoice item is deleted.
      */
-    @Test public void testRemoveInvoiceItemCompleteActs() {
+    @Test
+    public void testRemoveInvoiceItemCompleteActs() {
         ActBean item = createInvoiceItem();
         item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(true));
         item.save();
@@ -288,7 +290,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that reminders and documents that don't have status 'Completed'
      * are removed when an invoice is deleted.
      */
-    @Test public void testRemoveInvoiceIncompleteActs() {
+    @Test
+    public void testRemoveInvoiceIncompleteActs() {
         ActBean invoice = createInvoice();
         ActBean item = createInvoiceItem();
         item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(true));
@@ -336,7 +339,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that investigations, reminders and documents that have status
      * 'Completed' are not removed when an invoice is deleted.
      */
-    @Test public void testRemoveInvoiceCompleteActs() {
+    @Test
+    public void testRemoveInvoiceCompleteActs() {
         ActBean invoice = createInvoice();
         ActBean item = createInvoiceItem();
         item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(true));
@@ -392,7 +396,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that demographic updates associated with a product are processed
      * when an invoice is posted.
      */
-    @Test public void testDemographicUpdates() {
+    @Test
+    public void testDemographicUpdates() {
         Product product = createDesexingProduct();
         ActBean invoice = createInvoice();
         ActBean item = createInvoiceItem();
