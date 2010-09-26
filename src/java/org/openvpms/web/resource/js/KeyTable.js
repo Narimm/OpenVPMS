@@ -383,16 +383,9 @@ KeyTable.prototype.processSelection = function(echoEvent) {
     }
 
     if (index != -1) {
-        var trElement = this.getRowElement(index);
-
-        var distance = trElement.offsetTop + trElement.offsetHeight + 20;
-        if (distance > (this.table.offsetHeight + this.table.scrollTop)) {
-            var scrollTop = distance - this.table.offsetHeight;
-        } else if (trElement.offsetTop < this.table.scrollTop) {
-            var scrollTop = trElement.offsetTop - 5;
-        }
-        if (scrollTop) {
-            this.table.scrollTop = scrollTop;
+        var row = this.getRowElement(index);
+        if (row.scrollIntoView) {
+            row.scrollIntoView(true);
         }
     }
 
@@ -519,14 +512,10 @@ KeyTable.prototype.processFocus = function(echoEvent) {
 //
 KeyTable.prototype.verifyInput = function() {
     var element = this.getElement();
-    if (!EchoModalManager.isElementInModalContext(element)) {
-        var modalElementId = EchoServerMessage.messageDocument.documentElement.getAttribute("modal-id");
-        if (modalElementId) {
-            var modalElement = document.getElementById(modalElementId);
-            if (!EchoDomUtil.isAncestorOf(modalElement, element)) {
-                return false;
-            }
-        } else {
+    // make sure the modal element still exists before checking to see if the table is an ancestor of the modal
+    // element
+    if (EchoModalManager.modalElementId && document.getElementById(EchoModalManager.modalElementId)) {
+        if (!EchoModalManager.isElementInModalContext(element)) {
             return false;
         }
     }
