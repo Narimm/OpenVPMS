@@ -374,7 +374,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         rules.linkMedicalRecords(event, problem);
 
         event = get(event);
-        problem = get(event);
+        problem = get(problem);
         note = get(note);
 
         ActBean eventBean = new ActBean(event);
