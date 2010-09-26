@@ -19,6 +19,7 @@
 package org.openvpms.web.app.reporting.till;
 
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
@@ -264,10 +265,11 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         String title = Messages.get("till.transfer.title");
         String message = Messages.get("till.transfer.message");
         ListBox list = new ListBox(accounts.toArray());
+        list.setStyleName("default");
+        list.setHeight(new Extent(10, Extent.EM));
         list.setCellRenderer(IMObjectListCellRenderer.NAME);
 
-        final SelectionDialog dialog
-                = new SelectionDialog(title, message, list);
+        final SelectionDialog dialog = new SelectionDialog(title, message, list);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent e) {
                 Party selected = (Party) dialog.getSelected();

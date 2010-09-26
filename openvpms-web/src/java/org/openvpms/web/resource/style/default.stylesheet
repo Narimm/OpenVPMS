@@ -730,6 +730,14 @@
         </properties>
     </style>
 
+    <style name="BorderInset" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="border">
+                <border style="inset" size="2px" color="#cfdfff"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="Inset" type="nextapp.echo2.app.Row">
         <properties>
             <property name="insets" value="${padding.medium}"/>
@@ -1365,10 +1373,10 @@
     </style>
 
     <style name="PopupWindow.Layout" type="nextapp.echo2.app.SplitPane"
-           base-name="SplitPane.Dialog">
+           base-name="PopupWindow.SplitPane">
     </style>
 
-    <style name="SplitPane.Dialog" type="nextapp.echo2.app.SplitPane">
+    <style name="PopupWindow.SplitPane" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
             <property name="separatorPosition" value="${splitpane-buttonrow.separatorPosition}"/>
@@ -1641,6 +1649,23 @@
         <properties>
             <property name="border">
                 <border style="none"/>
+            </property>
+        </properties>
+    </style>
+
+    <!-- table that displays like a list. -->
+    <style name="list" type="org.openvpms.web.component.table.KeyTable"
+           base-name="plain">
+        <properties>
+            <property name="background" value="#ffff99"/>
+            <property name="foreground" value="#000000"/>
+            <property name="rolloverEnabled" value="false"/>
+            <property name="selectionBackground" value="#0a246a"/>
+            <property name="selectionForeground" value="#ffffff"/>
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="${font.typeface}"/>
+                </font>
             </property>
         </properties>
     </style>

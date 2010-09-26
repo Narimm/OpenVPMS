@@ -83,7 +83,8 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
      * The default sort constraint.
      */
     private static final SortConstraint[] DEFAULT_SORT = {
-            new NodeSortConstraint("startTime", false)
+            new NodeSortConstraint("startTime", false),
+            new NodeSortConstraint("id")
     };
 
 

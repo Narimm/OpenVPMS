@@ -33,6 +33,8 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -123,7 +125,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     protected Object getValue(Act act, TableColumn column, int row) {
         Object result = null;
         try {
-            if (TypeHelper.isA(act, PatientRecordTypes.CLINICAL_EVENT)) {
+            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
                 result = formatEvent(act);
             } else {
                 result = formatItem(act, row);
@@ -233,9 +235,9 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         boolean showDate = true;
         if (row > 0) {
             Act prev = getObject(row - 1);
-            if (!TypeHelper.isA(prev, PatientRecordTypes.CLINICAL_EVENT)
-                && ObjectUtils.equals(act.getActivityStartTime(),
-                                      prev.getActivityStartTime())) {
+            if (!TypeHelper.isA(prev, PatientArchetypes.CLINICAL_EVENT)
+                && ObjectUtils.equals(DateRules.getDate(act.getActivityStartTime()),
+                                      DateRules.getDate(prev.getActivityStartTime()))) {
                 // act belongs to the same parent act as the prior row,
                 // and has the same date, so don't display it again
                 showDate = false;

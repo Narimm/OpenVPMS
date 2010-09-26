@@ -17,9 +17,9 @@
  */
 package org.openvpms.web.app.patient.mr;
 
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -84,7 +84,8 @@ public class PatientClinicalEventEditDialog extends EditDialog {
                 List<Act> objects = new ArrayList<Act>();
                 objects.add((Act) getEditor().getObject());
                 Iterable<Act> acts = new ActHierarchyIterator<Act>(objects);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, CLINICAL_EVENT);
+                IMObjectReportPrinter<Act> printer
+                        = new IMObjectReportPrinter<Act>(acts, PatientArchetypes.CLINICAL_EVENT);
                 IMPrinter<Act> interactive = new InteractiveIMPrinter<Act>(printer);
                 interactive.print();
             } catch (OpenVPMSException exception) {

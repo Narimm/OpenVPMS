@@ -21,12 +21,13 @@ package org.openvpms.web.app.subsystem;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.BrowserListener;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -319,6 +320,16 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
         if (updateSummaryOnChildUpdate()) {
             firePropertyChange(SUMMARY_PROPERTY, null, null);
         }
+
+        // if the browser selects the object (i.e is visible), set the object back in the CRUD window,
+        // otherwise clear the CRUD window
+        CRUDWindow<Child> window = getCRUDWindow();
+        if (ObjectUtils.equals(browser.getSelected(), object)) {
+            window.setObject(object);
+        } else {
+            window.setObject(null);
+        }
+
         browser.setFocusOnResults();
     }
 
@@ -332,7 +343,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
         if (latest != getObject()) {
             setObject(latest);
         } else if (getObject() == null && getBrowser() == null
-                && isParentOptional()) {
+                   && isParentOptional()) {
             setObject(null);
         } else {
             layoutWorkspace(true);

@@ -219,7 +219,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      *
      * @return the archetypes
      */
-    protected Archetypes getArchetypes() {
+    protected Archetypes<T> getArchetypes() {
         return archetypes;
     }
 
@@ -326,7 +326,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * @param archetypes the archetypes
      */
     @SuppressWarnings("unchecked")
-    protected void onCreate(Archetypes archetypes) {
+    protected void onCreate(Archetypes<T> archetypes) {
         IMObjectCreatorListener listener = new IMObjectCreatorListener() {
             public void created(IMObject object) {
                 onCreated((T) object);
@@ -337,8 +337,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
             }
         };
 
-        IMObjectCreator.create(archetypes.getDisplayName(),
-                               archetypes.getShortNames(), listener);
+        IMObjectCreator.create(archetypes, listener);
     }
 
     /**
@@ -452,7 +451,6 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
             onSaved((T) editor.getObject(), isNew);
         } else {
             // cancelled
-            GlobalContext.getInstance().setCurrent(null);
             onRefresh((T) editor.getObject());
         }
     }

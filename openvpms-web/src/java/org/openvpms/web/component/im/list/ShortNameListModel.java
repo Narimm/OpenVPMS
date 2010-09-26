@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -65,7 +66,7 @@ public class ShortNameListModel extends AllNoneListModel {
      * @param all        if <tt>true</tt>, add a localised "All"
      */
     public ShortNameListModel(List<String> shortNames, boolean all) {
-        this(shortNames.toArray(new String[0]), all, true);
+        this(shortNames.toArray(new String[shortNames.size()]), all, true);
     }
 
     /**
@@ -75,9 +76,8 @@ public class ShortNameListModel extends AllNoneListModel {
      * @param all        if <tt>true</tt>, add a localised "All"
      * @param sort       if <tt>true</tt>, sort the list alphabetically
      */
-    public ShortNameListModel(List<String> shortNames, boolean all,
-                              boolean sort) {
-        this(shortNames.toArray(new String[0]), all, sort);
+    public ShortNameListModel(List<String> shortNames, boolean all, boolean sort) {
+        this(shortNames.toArray(new String[shortNames.size()]), all, sort);
     }
 
     /**
@@ -97,13 +97,31 @@ public class ShortNameListModel extends AllNoneListModel {
      * @param shortNames the short names to populate the list with
      * @param all        if <tt>true</tt> add a localised "All"
      * @param none       if <tt>true</tt>, add a localised "None"
-     * @param sort       if <tt>true</tt>, sort the list alphabetically
+     * @param sort       if <tt>true</tt>, sort the list alphabetically on display name
      */
-    public ShortNameListModel(String[] shortNames, boolean all, boolean none,
-                              boolean sort) {
+    public ShortNameListModel(String[] shortNames, boolean all, boolean none, boolean sort) {
         if (sort) {
             Arrays.sort(shortNames);
         }
+        String[][] map = new String[shortNames.length][2];
+        for (int i = 0; i < shortNames.length; ++i) {
+            String shortName = shortNames[i];
+            map[i][0] = shortName;
+            String displayName = DescriptorHelper.getDisplayName(shortName);
+            if (StringUtils.isEmpty(displayName)) {
+                displayName = shortName;
+            }
+            map[i][1] = displayName;
+        }
+        if (sort) {
+            // sort the map on display name
+            Arrays.sort(map, new Comparator<String[]>() {
+                public int compare(String[] o1, String[] o2) {
+                    return o1[1].compareTo(o2[1]);
+                }
+            });
+        }
+
         int size = shortNames.length;
         int index = 0;
         if (all) {
@@ -119,15 +137,8 @@ public class ShortNameListModel extends AllNoneListModel {
         if (none) {
             setNone(index++);
         }
-        for (int i = 0; i < shortNames.length; ++i, ++index) {
-            String shortName = shortNames[i];
-            this.shortNames[index][0] = shortName;
-            String displayName = DescriptorHelper.getDisplayName(shortName);
-            if (StringUtils.isEmpty(displayName)) {
-                displayName = shortName;
-            }
-            this.shortNames[index][1] = displayName;
-        }
+        // copy the map, but leave room at the start for the All/None elements
+        System.arraycopy(map, 0, this.shortNames, index, map.length);
     }
 
     /**
