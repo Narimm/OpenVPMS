@@ -208,13 +208,17 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
     }
 
     /**
-     * Determines if the supplied act has a parent <em>act.patientClinicalProblem</em>, and if so, returns it.
+     * Determines if the supplied act is a <em>act.patientClinicalProblem</em>, or has a parent problem, and if so,
+     * returns it.
      *
      * @param act the act. May be <tt>null</tt>
-     * @return the parent <em>act.patientClinicalProblem</em>, or <tt>null</tt> if none is found
+     * @return the <em>act.patientClinicalProblem</em>, or <tt>null</tt> if none is found
      */
     private Act getProblem(Act act) {
         if (act != null) {
+            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_PROBLEM)) {
+                return act;
+            }
             ActBean bean = new ActBean(act);
             List<ActRelationship> rels = bean.getRelationships(PatientArchetypes.CLINICAL_PROBLEM_ITEM);
             if (!rels.isEmpty()) {
