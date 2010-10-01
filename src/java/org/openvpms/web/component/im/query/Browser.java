@@ -69,6 +69,13 @@ public interface Browser<T> {
     void addBrowserListener(BrowserListener<T> listener);
 
     /**
+     * Removes a listener to stop receive notification of selection and query actions.
+     *
+     * @param listener the listener to remove
+     */
+    void removeBrowserListener(BrowserListener<T> listener);
+
+    /**
      * Query using the specified criteria, and populate the browser with
      * matches.
      */

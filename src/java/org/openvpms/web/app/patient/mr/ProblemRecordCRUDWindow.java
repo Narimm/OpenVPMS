@@ -100,7 +100,7 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
      */
     @Override
     protected void onSaved(final Act act, final boolean isNew) {
-        PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(getEvent(), act, null);
+        PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(getEvent(), act);
         Runnable done = new Runnable() {
             public void run() {
                 ProblemRecordCRUDWindow.super.onSaved(act, isNew);

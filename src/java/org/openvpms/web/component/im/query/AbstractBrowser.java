@@ -53,6 +53,15 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     }
 
     /**
+     * Removes a listener to stop receive notification of selection and query actions.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeBrowserListener(BrowserListener<T> listener) {
+        listeners.remove(listener);
+    }
+
+    /**
      * Returns the focus group.
      *
      * @return the focus group

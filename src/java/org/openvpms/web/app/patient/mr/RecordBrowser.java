@@ -26,9 +26,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabPaneModel;
@@ -37,6 +37,7 @@ import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -84,6 +85,11 @@ public class RecordBrowser implements Browser<Act> {
     private Browser<Act> charges;
 
     /**
+     * The set of registered listeners.
+     */
+    private List<BrowserListener<Act>> listeners = new ArrayList<BrowserListener<Act>>();
+
+    /**
      * The event listener.
      */
     private RecordBrowserListener listener;
@@ -103,6 +109,7 @@ public class RecordBrowser implements Browser<Act> {
      * The browser view.
      */
     public enum View {
+
         SUMMARY, PROBLEMS, REMINDER_ALERT, DOCUMENTS, CHARGES
     }
 
@@ -203,11 +210,26 @@ public class RecordBrowser implements Browser<Act> {
      * @param listener the listener to add
      */
     public void addBrowserListener(BrowserListener<Act> listener) {
+        listeners.add(listener);
         summary.addBrowserListener(listener);
         problems.addBrowserListener(listener);
         reminderAlert.addBrowserListener(listener);
         document.addBrowserListener(listener);
         charges.addBrowserListener(listener);
+    }
+
+    /**
+     * Removes a listener to stop receive notification of selection and query actions.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeBrowserListener(BrowserListener<Act> listener) {
+        listeners.remove(listener);
+        summary.removeBrowserListener(listener);
+        problems.removeBrowserListener(listener);
+        reminderAlert.removeBrowserListener(listener);
+        document.removeBrowserListener(listener);
+        charges.removeBrowserListener(listener);
     }
 
     /**
@@ -310,13 +332,30 @@ public class RecordBrowser implements Browser<Act> {
 
     /**
      * Queries a browser, preserving the selected act (if possible).
+     * <p/>
+     * Note that this supresses events for all but the current browser, to avoid events from one browser triggering
+     * behaviour in another. TODO - ideally each tab would be treated independently, and refreshed when displayed.
      *
      * @param browser the browser
      */
     private void query(Browser<Act> browser) {
-        Act selected = browser.getSelected();
-        browser.query();
-        browser.setSelected(selected);
+        boolean supressEvents = getCurrent() != browser;
+        if (supressEvents) {
+            for (BrowserListener<Act> l : listeners) {
+                browser.removeBrowserListener(l);
+            }
+        }
+        try {
+            Act selected = browser.getSelected();
+            browser.query();
+            browser.setSelected(selected);
+        } finally {
+            if (supressEvents) {
+                for (BrowserListener<Act> l : listeners) {
+                    browser.addBrowserListener(l);
+                }
+            }
+        }
     }
 
     /**
