@@ -124,6 +124,15 @@ public class Retryer {
     }
 
     /**
+     * Sets the delay between retries.
+     *
+     * @param delay the delay between retries, in milliseconds
+     */
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
+
+    /**
      * Runs the action.
      * <p/>
      * If the action completes successfully, the {@link #runThenAction} will be invoked.
@@ -177,7 +186,7 @@ public class Retryer {
      * @param exception the cause of the failure
      */
     protected void retry(Throwable exception) {
-        log.warn("Retrying " + action + " after " + runs + " attempts", exception);
+        logRetry(exception);
         delay();
         run();
     }
@@ -188,9 +197,27 @@ public class Retryer {
      * @param exception the cause of the failure
      */
     protected void abort(Throwable exception) {
+        logAbort(exception);
+        runElseAction();
+    }
+
+    /**
+     * Logs than an action is being retried.
+     *
+     * @param exception the cause of the retry
+     */
+    protected void logRetry(Throwable exception) {
+        log.warn("Retrying " + action + " after " + runs + " attempts", exception);
+    }
+
+    /**
+     * Logs that an action is being aborted.
+     *
+     * @param exception the cause of the failure
+     */
+    protected void logAbort(Throwable exception) {
         log.warn("Aborting " + action + " after " + runs + " attempts", exception);
         ErrorHelper.show(exception);
-        runElseAction();
     }
 
     /**

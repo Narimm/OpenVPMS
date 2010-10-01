@@ -43,11 +43,6 @@ class PatientMedicalRecordLinker implements Runnable {
     private final Act event;
 
     /**
-     * The patient clinical problem. May be <tt>null</tt>
-     */
-    private final Act problem;
-
-    /**
      * The patient record item.
      */
     private final Act item;
@@ -66,27 +61,16 @@ class PatientMedicalRecordLinker implements Runnable {
     /**
      * Constructs a <tt>PatientMedicalRecordLinker</tt>.
      *
-     * @param event   the patient clinical event
-     * @param problem the patient clinical problem. May be <tt>null</tt>
-     * @param item    the patient record item. May be <tt>null</tt>
+     * @param event the patient clinical event
+     * @param item  the patient record item
      */
-    public PatientMedicalRecordLinker(Act event, Act problem, Act item) {
+    public PatientMedicalRecordLinker(Act event, Act item) {
         this.event = event;
-        this.problem = problem;
         this.item = item;
         if (event.isNew()) {
             throw new IllegalStateException("Argument 'event' must be saved");
         }
-        if (problem != null) {
-            if (!TypeHelper.isA(problem, PatientArchetypes.CLINICAL_PROBLEM)) {
-                throw new IllegalArgumentException("Argument 'problem' is invalid: "
-                                                   + problem.getArchetypeId().getShortName());
-            }
-            if (problem.isNew()) {
-                throw new IllegalStateException("Argument 'problem' must be saved");
-            }
-        }
-        if (item != null && item.isNew()) {
+        if (item.isNew()) {
             throw new IllegalStateException("Argument 'item' must be saved");
         }
         if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
@@ -102,19 +86,15 @@ class PatientMedicalRecordLinker implements Runnable {
      */
     public void run() {
         Act currentEvent = IMObjectHelper.reload(event);
-        Act currentProblem = IMObjectHelper.reload(problem);
         Act currentItem = IMObjectHelper.reload(item);
         if (currentEvent == null) {
             logMissing(event, item, event);
         } else {
-            if (problem != null && currentProblem == null) {
-                logMissing(problem, item, problem);
-            }
-            if (item != null && currentItem == null) {
+            if (currentItem == null) {
                 logMissing(event, item, item);
             }
             // link the records to the event (those that exist...)
-            rules.linkMedicalRecords(currentEvent, currentProblem, currentItem);
+            rules.linkMedicalRecords(currentEvent, currentItem);
         }
     }
 
@@ -124,7 +104,7 @@ class PatientMedicalRecordLinker implements Runnable {
      * @return a string representation of this.
      */
     public String toString() {
-        return "PatientMedicalRecordLinker(" + getId(event) + ", " + getId(problem) + ", " + getId(item) + ")";
+        return "PatientMedicalRecordLinker(" + getId(event) + ", " + getId(item) + ")";
     }
 
     /**

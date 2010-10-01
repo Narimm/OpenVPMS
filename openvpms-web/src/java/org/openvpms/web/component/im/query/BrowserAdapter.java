@@ -22,7 +22,9 @@ import nextapp.echo2.app.Component;
 import org.openvpms.web.component.focus.FocusGroup;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -38,9 +40,15 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      */
     private Browser<A> browser;
 
+    /**
+     * The listeners.
+     */
+    private Map<BrowserListener<T>, BrowserListener<A>> listeners
+            = new HashMap<BrowserListener<T>, BrowserListener<A>>();
+
 
     /**
-     * Creates a new <tt>BrowserAdapter</tt>.
+     * Constructs a <tt>BrowserAdapter</tt>.
      * <p/>
      * The browser to adapt from must be set using {@link #setBrowser}.
      */
@@ -114,7 +122,7 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      * @param listener the listener to add
      */
     public void addBrowserListener(final BrowserListener<T> listener) {
-        browser.addBrowserListener(new BrowserListener<A>() {
+        BrowserListener<A> l = new BrowserListener<A>() {
             public void query() {
                 listener.query();
             }
@@ -126,7 +134,19 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
             public void browsed(A object) {
                 listener.browsed(convert(object));
             }
-        });
+        };
+        browser.addBrowserListener(l);
+        listeners.put(listener, l);
+    }
+
+    /**
+     * Removes a listener to stop receive notification of selection and query actions.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeBrowserListener(BrowserListener<T> listener) {
+        BrowserListener<A> l = listeners.remove(listener);
+        browser.removeBrowserListener(l);
     }
 
     /**
