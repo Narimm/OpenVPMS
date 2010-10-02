@@ -21,6 +21,7 @@ package org.openvpms.web.app.customer.charge;
 
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
@@ -47,12 +48,15 @@ import java.math.BigDecimal;
 public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
-     * Creates a new <tt>ChargeCRUDWindow</tt>.
+     * Constructs a <tt>ChargeCRUDWindow</tt>.
+     * <p/>
+     * This makes the default archetype {@link CustomerAccountArchetypes#INVOICE}.
      *
      * @param archetypes the archetypes that this may create
      */
     public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes);
+        super(new Archetypes<FinancialAct>(archetypes.getShortNames(), archetypes.getType(),
+                                           CustomerAccountArchetypes.INVOICE, archetypes.getDisplayName()));
     }
 
     /**
