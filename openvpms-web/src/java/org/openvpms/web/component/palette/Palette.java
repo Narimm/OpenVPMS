@@ -24,11 +24,11 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.list.ListSelectionModel;
 import org.apache.commons.collections.ListUtils;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -123,11 +123,9 @@ public class Palette extends Row {
     protected void doLayout() {
         final int mode = ListSelectionModel.MULTIPLE_SELECTION;
         _unselectedList = ListBoxFactory.create(_unselected);
-        _unselectedList.setStyleName("Palette.List");
         _unselectedList.setSelectionMode(mode);
 
         _selectedList = ListBoxFactory.create(_selected);
-        _selectedList.setStyleName("Palette.List");
         _selectedList.setSelectionMode(mode);
 
         _add = ButtonFactory.create("right_add", new ActionListener() {

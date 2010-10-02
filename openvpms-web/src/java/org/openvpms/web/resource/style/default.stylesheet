@@ -807,6 +807,10 @@
 
     <style name="SelectionDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.small.width}"/>
+            <property name="height" value="${dialog.small.height}"/>           
+        </properties>
     </style>
 
     <style name="ErrorDialog" base-name="MessageDialog"
@@ -1591,11 +1595,6 @@
     <style name="default" type="nextapp.echo2.app.list.AbstractListComponent">
         <properties>
             <property name="background" value="#ffff99"/>
-            <property name="rolloverEnabled" value="true"/>
-            <property name="rolloverBackground" value="#98FB98"/>
-            <!-- palegreen -->
-            <property name="rolloverForeground" value="#000000"/>
-            <!-- black -->
             <property name="font">
                 <font size="${font.size}">
                     <typeface name="${font.typeface}"/>

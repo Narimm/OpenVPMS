@@ -134,7 +134,7 @@ public final class IMObjectCreator {
             String message = Messages.get("imobject.create.message", type);
             ListBox list = new KeyListBox(model);
             list.setStyleName("default");
-            list.setHeight(new Extent(10, Extent.EM));
+            list.setHeight(new Extent(12, Extent.EM));
             list.setCellRenderer(new ShortNameListCellRenderer());
             if (defaultShortName != null) {
                 int index = model.indexOf(defaultShortName);
