@@ -17,23 +17,22 @@
  */
 package org.openvpms.esci.adapter;
 
-import org.oasis.ubl.OrderType;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.act.Act;
 
 
 /**
- * Maps an <em>act.supplierOrder</em> act to an UBL order.
+ * A listener for invoices received by the {@link InvoiceServiceAdapter}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface OrderMapper {
+public interface InvoiceListener {
 
     /**
-     * Maps an <em>act.suppplierOrder</em> to an UBL order.
+     * Invoked when an invoice has been received and mapped to a delivery.
      *
-     * @param order the order to map
-     * @return the UBL equivalent of the order
+     * @param delivery the delivery
      */
-    OrderType map(FinancialAct order);
+    void receivedInvoice(Act delivery);
+
 }

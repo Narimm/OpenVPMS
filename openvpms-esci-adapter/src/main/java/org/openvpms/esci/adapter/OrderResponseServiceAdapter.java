@@ -18,12 +18,14 @@
 package org.openvpms.esci.adapter;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.OrderResponseSimpleType;
 import org.oasis.ubl.OrderResponseType;
 import org.oasis.ubl.common.basic.IDType;
 import org.oasis.ubl.common.basic.RejectionNoteType;
+import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -31,7 +33,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.exception.ESCIException;
 import org.openvpms.esci.service.OrderResponseService;
-import org.openvpms.archetype.rules.supplier.OrderStatus;
 
 import javax.annotation.Resource;
 
@@ -134,10 +135,8 @@ public class OrderResponseServiceAdapter implements OrderResponseService {
 
     private IMObjectReference getOrderReference(OrderResponseSimpleType response) {
         IDType type = response.getOrderReference().getID();
-        long id;
-        try {
-            id = Long.valueOf(type.getValue());
-        } catch (NumberFormatException exception) {
+        long id = NumberUtils.toLong(type.getValue(), -1);
+        if (id == -1) {
             throw new ESCIException(type.getValue() + " is not a valid order reference");
         }
         return new IMObjectReference(ORDER_ID, id);

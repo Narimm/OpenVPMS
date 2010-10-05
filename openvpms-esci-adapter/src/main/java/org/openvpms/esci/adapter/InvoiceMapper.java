@@ -17,23 +17,24 @@
  */
 package org.openvpms.esci.adapter;
 
-import org.oasis.ubl.OrderType;
+import org.oasis.ubl.InvoiceType;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 
+import java.util.List;
 
 /**
- * Maps an <em>act.supplierOrder</em> act to an UBL order.
+ * Maps UBL invoices to <em>act.supplierDelivery</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface OrderMapper {
+public interface InvoiceMapper {
 
     /**
-     * Maps an <em>act.suppplierOrder</em> to an UBL order.
+     * Maps an UBL invoice to an <em>act.supplierDelivery</em>.
      *
-     * @param order the order to map
-     * @return the UBL equivalent of the order
+     * @param invoice the invoice to map
+     * @return the acts produced in the mapping. The first element is always the <em>act.supplierDelivery</em>
      */
-    OrderType map(FinancialAct order);
+    List<FinancialAct> map(InvoiceType invoice);
 }

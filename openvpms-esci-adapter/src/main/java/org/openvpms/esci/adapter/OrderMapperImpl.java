@@ -19,10 +19,7 @@ package org.openvpms.esci.adapter;
 
 import org.apache.commons.lang.StringUtils;
 import org.oasis.ubl.OrderType;
-import org.oasis.ubl.common.AmountType;
 import org.oasis.ubl.common.CurrencyCodeContentType;
-import org.oasis.ubl.common.IdentifierType;
-import org.oasis.ubl.common.TextType;
 import org.oasis.ubl.common.aggregate.AddressLineType;
 import org.oasis.ubl.common.aggregate.AddressType;
 import org.oasis.ubl.common.aggregate.ContactType;
@@ -45,6 +42,7 @@ import org.oasis.ubl.common.basic.DescriptionType;
 import org.oasis.ubl.common.basic.ElectronicMailType;
 import org.oasis.ubl.common.basic.IDType;
 import org.oasis.ubl.common.basic.IssueDateType;
+import org.oasis.ubl.common.basic.IssueTimeType;
 import org.oasis.ubl.common.basic.LineExtensionAmountType;
 import org.oasis.ubl.common.basic.LineType;
 import org.oasis.ubl.common.basic.NameType;
@@ -64,7 +62,6 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -81,11 +78,8 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 
 import javax.annotation.Resource;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -133,6 +127,22 @@ public class OrderMapperImpl implements OrderMapper {
      */
     private IMObjectBeanFactory factory;
 
+    /**
+     * XML data type factory.
+     */
+    private DatatypeFactory datatypeFactory;
+
+
+    /**
+     * Default constructor.
+     */
+    public OrderMapperImpl() {
+        try {
+            datatypeFactory = DatatypeFactory.newInstance();
+        } catch (DatatypeConfigurationException exception) {
+            throw new IllegalStateException(exception);
+        }
+    }
 
     /**
      * Registers the practice rules.
@@ -214,10 +224,14 @@ public class OrderMapperImpl implements OrderMapper {
         OrderType result = new OrderType();
         CurrencyCodeContentType currencyCode = getCurrencyCode();
 
-        UBLVersionIDType version = initID(new UBLVersionIDType(), "2.0");
-        IDType id = getID(order.getId());
+        UBLVersionIDType version = UBLHelper.initID(new UBLVersionIDType(), "2.0");
+        IDType id = UBLHelper.createID(order.getId());
         CopyIndicatorType copyIndicator = getCopyIndicatorType(false);
-        IssueDateType issueDate = getIssueDate(order.getActivityStartTime());
+
+        GregorianCalendar startTime = new GregorianCalendar();
+        startTime.setTime(order.getActivityStartTime());
+        IssueDateType issueDate = UBLHelper.createIssueDate(startTime, datatypeFactory);
+        IssueTimeType issueTime = UBLHelper.createIssueTime(startTime, datatypeFactory);
 
         ActBean bean = factory.createActBean(order);
         Entity author = bean.getNodeParticipant("author");
@@ -239,6 +253,7 @@ public class OrderMapperImpl implements OrderMapper {
         result.setID(id);
         result.setCopyIndicator(copyIndicator);
         result.setIssueDate(issueDate);
+        result.setIssueTime(issueTime);
         result.setBuyerCustomerParty(customerParty);
         result.setSellerSupplierParty(supplierParty);
         result.setAnticipatedMonetaryTotal(total);
@@ -272,11 +287,13 @@ public class OrderMapperImpl implements OrderMapper {
         String packageUnits = bean.getString("packageUnits");
         String unitCode = getUnitCode(packageUnits);
 
-        IDType id = getID(act.getId());
-        QuantityType quantity = initQuantity(new QuantityType(), bean.getBigDecimal("quantity"), unitCode);
-        LineExtensionAmountType lineAmount = initAmount(new LineExtensionAmountType(), bean.getBigDecimal("total"),
-                                                        currencyCode);
-        TotalTaxAmountType taxAmount = initAmount(new TotalTaxAmountType(), bean.getBigDecimal("tax"), currencyCode);
+        IDType id = UBLHelper.createID(act.getId());
+        QuantityType quantity = UBLHelper.initQuantity(new QuantityType(), bean.getBigDecimal("quantity"), unitCode);
+        LineExtensionAmountType lineAmount =
+                UBLHelper.initAmount(new LineExtensionAmountType(), bean.getBigDecimal("total"),
+                                     currencyCode);
+        TotalTaxAmountType taxAmount =
+                UBLHelper.initAmount(new TotalTaxAmountType(), bean.getBigDecimal("tax"), currencyCode);
         PriceType price = getPrice(bean.getBigDecimal("unitPrice"), unitCode, currencyCode);
 
         lineItem.setID(id);
@@ -317,10 +334,10 @@ public class OrderMapperImpl implements OrderMapper {
                                            product.getName());
         }
         if (!StringUtils.isEmpty(reorderDescription)) {
-            DescriptionType description = initText(new DescriptionType(), reorderDescription);
+            DescriptionType description = UBLHelper.initText(new DescriptionType(), reorderDescription);
             result.getDescription().add(description);
         }
-        NameType name = initName(new NameType(), product.getName());
+        NameType name = UBLHelper.initName(new NameType(), product.getName());
         result.setBuyersItemIdentification(buyersId);
         result.setName(name);
         return result;
@@ -336,9 +353,9 @@ public class OrderMapperImpl implements OrderMapper {
      */
     private PriceType getPrice(BigDecimal price, String unitCode, CurrencyCodeContentType currencyCode) {
         PriceType result = new PriceType();
-        PriceAmountType priceAmount = initAmount(new PriceAmountType(), price, currencyCode);
+        PriceAmountType priceAmount = UBLHelper.initAmount(new PriceAmountType(), price, currencyCode);
         result.setPriceAmount(priceAmount);
-        result.setBaseQuantity(initQuantity(new BaseQuantityType(), BigDecimal.ONE, unitCode));
+        result.setBaseQuantity(UBLHelper.initQuantity(new BaseQuantityType(), BigDecimal.ONE, unitCode));
         return result;
     }
 
@@ -351,37 +368,8 @@ public class OrderMapperImpl implements OrderMapper {
      */
     private MonetaryTotalType getMonetaryTotal(BigDecimal payableAmount, CurrencyCodeContentType currencyCode) {
         MonetaryTotalType result = new MonetaryTotalType();
-        result.setPayableAmount(initAmount(new PayableAmountType(), payableAmount, currencyCode));
+        result.setPayableAmount(UBLHelper.initAmount(new PayableAmountType(), payableAmount, currencyCode));
         return result;
-    }
-
-    /**
-     * Helper to initialise an <tt>AmountType</tt>.
-     *
-     * @param amount       the amount to initialise
-     * @param value        the value
-     * @param currencyCode the currency code
-     * @return the amount
-     */
-    private <T extends AmountType> T initAmount(T amount, BigDecimal value, CurrencyCodeContentType currencyCode) {
-        amount.setCurrencyID(currencyCode);
-        amount.setValue(value);
-        return amount;
-    }
-
-    /**
-     * Helper to initialise a <tt>QuantityType</tt>.
-     *
-     * @param quantity the quantity to initialise
-     * @param value    the value
-     * @param unitCode the quantity unit code. May be <tt>null</tt>
-     * @return the quantity
-     */
-    private <T extends org.oasis.ubl.common.QuantityType> T initQuantity(T quantity, BigDecimal value,
-                                                                         String unitCode) {
-        quantity.setValue(value);
-        quantity.setUnitCode(unitCode);
-        return quantity;
     }
 
     /**
@@ -468,11 +456,12 @@ public class OrderMapperImpl implements OrderMapper {
         Contact faxContact = partyRules.getContact(customer, ContactArchetypes.FAX, "BILLING");
         Contact emailContact = partyRules.getContact(customer, ContactArchetypes.EMAIL, "BILLING");
 
-        CustomerAssignedAccountIDType customerId = initID(new CustomerAssignedAccountIDType(), customer.getId());
+        CustomerAssignedAccountIDType customerId
+                = UBLHelper.initID(new CustomerAssignedAccountIDType(), customer.getId());
 
         IMObjectBean bean = factory.createBean(supplierStockLocation);
         String accountId = bean.getString("accountId");
-        SupplierAssignedAccountIDType supplierId = initID(new SupplierAssignedAccountIDType(), accountId);
+        SupplierAssignedAccountIDType supplierId = UBLHelper.initID(new SupplierAssignedAccountIDType(), accountId);
 
         PartyType party = getParty(customer, locationContact);
         party.setContact(getContact(contactName, phoneContact, faxContact, emailContact));
@@ -492,7 +481,8 @@ public class OrderMapperImpl implements OrderMapper {
     private SupplierPartyType getSupplier(Party supplier) {
         SupplierPartyType result = new SupplierPartyType();
 
-        CustomerAssignedAccountIDType accountId = initID(new CustomerAssignedAccountIDType(), supplier.getId());
+        CustomerAssignedAccountIDType accountId
+                = UBLHelper.initID(new CustomerAssignedAccountIDType(), supplier.getId());
         Contact contact = partyRules.getContact(supplier, ContactArchetypes.LOCATION, null);
 
         result.setCustomerAssignedAccountID(accountId);
@@ -511,7 +501,7 @@ public class OrderMapperImpl implements OrderMapper {
         PartyType result = new PartyType();
 
         PartyNameType partyName = new PartyNameType();
-        partyName.setName(getName(party.getName()));
+        partyName.setName(UBLHelper.createName(party.getName()));
         result.getPartyName().add(partyName);
         if (location != null) {
             result.setPostalAddress(getAddress(location));
@@ -531,7 +521,7 @@ public class OrderMapperImpl implements OrderMapper {
     private ContactType getContact(String name, Contact phone, Contact fax, Contact email) {
         ContactType contact = new ContactType();
         if (!StringUtils.isEmpty(name)) {
-            contact.setName(initName(new NameType(), name));
+            contact.setName(UBLHelper.initName(new NameType(), name));
         }
         contact.setTelephone(getPhone(phone));
         contact.setTelefax(getFax(fax));
@@ -547,7 +537,7 @@ public class OrderMapperImpl implements OrderMapper {
      */
     private TelephoneType getPhone(Contact contact) {
         String phone = formatPhone(contact, "areaCode", "telephoneNumber");
-        return (phone != null) ? initText(new TelephoneType(), phone) : null;
+        return (phone != null) ? UBLHelper.initText(new TelephoneType(), phone) : null;
     }
 
     /**
@@ -558,7 +548,7 @@ public class OrderMapperImpl implements OrderMapper {
      */
     private TelefaxType getFax(Contact contact) {
         String fax = formatPhone(contact, "areaCode", "faxNumber");
-        return (fax != null) ? initText(new TelefaxType(), fax) : null;
+        return (fax != null) ? UBLHelper.initText(new TelefaxType(), fax) : null;
     }
 
     /**
@@ -598,7 +588,7 @@ public class OrderMapperImpl implements OrderMapper {
             IMObjectBean bean = factory.createBean(contact);
             email = StringUtils.trimToNull(bean.getString("emailAddress"));
         }
-        return (email != null) ? initText(new ElectronicMailType(), email) : null;
+        return (email != null) ? UBLHelper.initText(new ElectronicMailType(), email) : null;
     }
 
     /**
@@ -612,61 +602,21 @@ public class OrderMapperImpl implements OrderMapper {
 
         AddressType result = new AddressType();
         AddressLineType addressLineType = new AddressLineType();
-        LineType line = initText(new LineType(), bean.getString("address"));
+        LineType line = UBLHelper.initText(new LineType(), bean.getString("address"));
         addressLineType.setLine(line);
 
         String city = lookupService.getName(contact, "suburb");
-        CityNameType cityName = initName(new CityNameType(), city);
+        CityNameType cityName = UBLHelper.initName(new CityNameType(), city);
 
         String state = lookupService.getName(contact, "state");
-        CountrySubentityType stateName = initText(new CountrySubentityType(), state);
+        CountrySubentityType stateName = UBLHelper.initText(new CountrySubentityType(), state);
 
-        PostalZoneType postCode = initText(new PostalZoneType(), bean.getString("postcode"));
+        PostalZoneType postCode = UBLHelper.initText(new PostalZoneType(), bean.getString("postcode"));
 
         result.getAddressLine().add(addressLineType);
         result.setCityName(cityName);
         result.setCountrySubentity(stateName);
         result.setPostalZone(postCode);
-        return result;
-    }
-
-    /**
-     * Returns an <tt>IssueDateType</tt> for the supplied date/time.
-     * <p/>
-     * Only the date portion will be populated.
-     *
-     * @param datetime the date/time
-     * @return the corresponding <tt>IssueDateType</tt>
-     */
-    private IssueDateType getIssueDate(Date datetime) {
-        IssueDateType result = new IssueDateType();
-        DatatypeFactory factory;
-        try {
-            factory = DatatypeFactory.newInstance();
-        } catch (DatatypeConfigurationException exception) {
-            throw new IllegalStateException(exception);
-        }
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTime(DateRules.getDate(datetime));
-        XMLGregorianCalendar xml = factory.newXMLGregorianCalendar(calendar);
-        xml.setHour(DatatypeConstants.FIELD_UNDEFINED);
-        xml.setMinute(DatatypeConstants.FIELD_UNDEFINED);
-        xml.setSecond(DatatypeConstants.FIELD_UNDEFINED);
-        xml.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
-        xml.setTimezone(DatatypeConstants.FIELD_UNDEFINED);
-        result.setValue(xml);
-        return result;
-    }
-
-    /**
-     * Returns a <tt>NameType</tt> for the given name.
-     *
-     * @param name the name
-     * @return a new <tt>NameType</tt>
-     */
-    private NameType getName(String name) {
-        NameType result = new NameType();
-        result.setValue(name);
         return result;
     }
 
@@ -678,7 +628,7 @@ public class OrderMapperImpl implements OrderMapper {
      */
     private ItemIdentificationType getItemIdentification(long id) {
         ItemIdentificationType result = new ItemIdentificationType();
-        result.setID(getID(id));
+        result.setID(UBLHelper.createID(id));
         return result;
     }
 
@@ -690,7 +640,7 @@ public class OrderMapperImpl implements OrderMapper {
      */
     private ItemIdentificationType getItemIdentification(String id) {
         ItemIdentificationType result = new ItemIdentificationType();
-        result.setID(getID(id));
+        result.setID(UBLHelper.createID(id));
         return result;
     }
 
@@ -707,87 +657,13 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Initialises a <tt>NameType></tt> with the specified value.
-     *
-     * @param name  the name to initialise
-     * @param value the value
-     * @return the name
-     */
-    private <T extends org.oasis.ubl.common.NameType> T initName(T name, String value) {
-        name.setValue(value);
-        return name;
-    }
-
-    /**
-     * Initialises a <tt>TextType></tt> with the specified value.
-     *
-     * @param text  the text to initialise
-     * @param value the value
-     * @return the text
-     */
-    private <T extends TextType> T initText(T text, String value) {
-        text.setValue(value);
-        return text;
-    }
-
-    /**
-     * Initialises an <tt>IdentifierType</tt> with the specified value.
-     *
-     * @param id    the identifier to initialise
-     * @param value the value
-     * @return the id
-     */
-    private <T extends IdentifierType> T initID(T id, long value) {
-        return initID(id, Long.toString(value));
-    }
-
-    /**
-     * Initialises an <tt>IdentifierType</tt> with the specified value.
-     *
-     * @param id    the identifier to initialise
-     * @param value the value
-     * @return the id
-     */
-    private <T extends IdentifierType> T initID(T id, String value) {
-        id.setValue(value);
-        return id;
-    }
-
-    /**
-     * Returns a new <tt>IDType</tt> with the specified value.
-     *
-     * @param id the identifier value
-     * @return a new <tt>IDType</tt>
-     */
-    private IDType getID(long id) {
-        IDType result = new IDType();
-        return initID(result, id);
-    }
-
-    /**
-     * Returns a new <tt>IDType</tt> with the specified value.
-     *
-     * @param id the identifier value
-     * @return a new <tt>IDType</tt>
-     */
-    private IDType getID(String id) {
-        IDType result = new IDType();
-        result.setValue(id);
-        return result;
-    }
-
-    /**
      * Returns the currency code associated with the practice.
      *
      * @return the currency code
      */
     private CurrencyCodeContentType getCurrencyCode() {
-        Party practice = practiceRules.getPractice();
-        if (practice == null) {
-            throw new IllegalStateException("No party.organisationPractice defined");
-        }
-        IMObjectBean bean = factory.createBean(practice);
-        return CurrencyCodeContentType.valueOf(bean.getString("currency"));
+        String code = UBLHelper.getCurrencyCode(practiceRules, factory);
+        return CurrencyCodeContentType.valueOf(code);
     }
 
 }

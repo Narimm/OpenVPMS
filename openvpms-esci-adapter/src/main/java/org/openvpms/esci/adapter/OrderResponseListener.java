@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 
 /**
  * A listener for order responses received by the {@link OrderResponseServiceAdapter}.
- * <p/>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

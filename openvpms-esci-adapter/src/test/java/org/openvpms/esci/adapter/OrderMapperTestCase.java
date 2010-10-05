@@ -18,6 +18,7 @@
 package org.openvpms.esci.adapter;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.oasis.ubl.OrderType;
@@ -159,8 +160,7 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         checkSupplier(order.getSellerSupplierParty(), getSupplier(), supplierContact);
 
         PayableAmountType amount = order.getAnticipatedMonetaryTotal().getPayableAmount();
-        assertEquals(new BigDecimal("50"), amount.getValue());
-        assertEquals("AUD", amount.getCurrencyID().value());
+        checkAmount(amount, 50);
 
         assertEquals(1, order.getOrderLine().size());
         OrderLineType line1 = order.getOrderLine().get(0);
