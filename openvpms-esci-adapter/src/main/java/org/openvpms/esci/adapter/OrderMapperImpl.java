@@ -75,6 +75,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 
 import javax.annotation.Resource;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -241,8 +242,7 @@ public class OrderMapperImpl implements OrderMapper {
         Party supplier = (Party) bean.getNodeParticipant("supplier");
         EntityRelationship supplierStockLocation = supplierRules.getSupplierStockLocation(supplier, stockLocation);
         if (supplierStockLocation == null) {
-            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.ESCINotConfigured, supplier.getId(),
-                                           supplier.getName(), stockLocation.getId(), stockLocation.getName());
+            throw new ESCIAdapterException(ESCIAdapterMessages.ESCINotConfigured(supplier, stockLocation));
         }
         String contactName = (author != null) ? author.getName() : null;
         CustomerPartyType customerParty = getCustomer(contactName, location, supplierStockLocation);
@@ -317,8 +317,7 @@ public class OrderMapperImpl implements OrderMapper {
         ItemIdentificationType buyersId = getItemIdentification(product.getId());
         ProductSupplier ps = getProductSupplier(product, supplier);
         if (ps == null) {
-            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.NoProductSupplier, supplier.getName(),
-                                           product.getName());
+            throw new ESCIAdapterException(ESCIAdapterMessages.noProductSupplierRelationship(supplier, product));
         }
         String reorderCode = ps.getReorderCode();
         String barCode = ps.getBarCode();
@@ -330,8 +329,7 @@ public class OrderMapperImpl implements OrderMapper {
             ItemIdentificationType sellersId = getItemIdentification(barCode);
             result.setSellersItemIdentification(sellersId);
         } else {
-            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.NoSupplierOrderCode, supplier.getName(),
-                                           product.getName());
+            throw new ESCIAdapterException(ESCIAdapterMessages.noSupplierOrderCode(supplier, product));
         }
         if (!StringUtils.isEmpty(reorderDescription)) {
             DescriptionType description = UBLHelper.initText(new DescriptionType(), reorderDescription);

@@ -21,13 +21,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.InvoiceType;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.exception.ESCIException;
 import org.openvpms.esci.service.InvoiceService;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 
 /**
@@ -99,10 +97,9 @@ public class InvoiceServiceAdapter implements InvoiceService {
      * @throws ESCIException for any error
      */
     public void submitInvoice(InvoiceType invoice) throws ESCIException {
-        List<FinancialAct> acts = mapper.map(invoice);
-        service.save(acts);
-        FinancialAct delivery = acts.get(0);
-        notifyListener(delivery);
+        Delivery delivery = mapper.map(invoice);
+        service.save(delivery.getActs());
+        notifyListener(delivery.getDelivery());
     }
 
     /**

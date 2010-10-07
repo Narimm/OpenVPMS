@@ -17,8 +17,8 @@
  */
 package org.openvpms.esci.adapter;
 
-import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.esci.adapter.i18n.Message;
 
 
 /**
@@ -30,58 +30,37 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 public class ESCIAdapterException extends OpenVPMSException {
 
     /**
-     * An enumeration of error codes.
+     * The message.
      */
-    public enum ErrorCode {
-
-        ESCINotConfigured,
-        InvalidSupplierServiceURL,
-        InvalidServiceURL,
-        NoProductSupplier,
-        NoSupplierOrderCode
-    }
-
-    /**
-     * The error code.
-     */
-    private final ErrorCode errorCode;
-
-    /**
-     * The error messages.
-     */
-    private static Messages MESSAGES = Messages.getMessages("org.openvpms.esci.adapter."
-                                                            + OpenVPMSException.ERRMESSAGES_FILE);
+    private Message message;
 
     /**
      * Constructs an <tt>ESCIAdapterException</tt>.
      *
-     * @param errorCode the error code
-     * @param args      arguments to format the message with
+     * @param message the message
      */
-    public ESCIAdapterException(ErrorCode errorCode, Object... args) {
-        super(MESSAGES.getMessage(errorCode.toString(), args));
-        this.errorCode = errorCode;
+    public ESCIAdapterException(Message message) {
+        super(message.getMessage());
+        this.message = message;
     }
 
     /**
      * Constructs an <tt>ESCIAdapterException</tt>.
      *
-     * @param errorCode the error code
-     * @param cause     the root cause
-     * @param args      arguments to format the message with
+     * @param message the message
+     * @param cause   the root cause
      */
-    public ESCIAdapterException(ErrorCode errorCode, Throwable cause, Object... args) {
-        super(MESSAGES.getMessage(errorCode.toString(), args), cause);
-        this.errorCode = errorCode;
+    public ESCIAdapterException(Message message, Throwable cause) {
+        super(message.getMessage(), cause);
     }
 
     /**
-     * Returns the error code.
+     * Returns the message code.
      *
-     * @return the error code
+     * @return the message code
      */
-    public ErrorCode getErrorCode() {
-        return errorCode;
+    public int getMessageCode() {
+        return message.getCode();
     }
 
 }

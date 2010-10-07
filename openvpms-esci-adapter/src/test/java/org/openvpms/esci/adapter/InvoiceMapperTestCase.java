@@ -101,7 +101,8 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
         writer.setFormat(true);
         writer.write(invoice, System.out);
         InvoiceMapper mapper = createMapper();
-        List<FinancialAct> acts = mapper.map(invoice);
+        Delivery delivery = mapper.map(invoice);
+        List<FinancialAct> acts = delivery.getActs();
         assertEquals(2, acts.size());
         
     }

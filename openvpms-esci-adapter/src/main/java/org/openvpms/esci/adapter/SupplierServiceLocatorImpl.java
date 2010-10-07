@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.client.ServiceLocator;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
@@ -95,17 +96,17 @@ public class SupplierServiceLocatorImpl implements SupplierServiceLocator {
      * @param supplier      the supplier
      * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
-     * @throws ESCIAdapterException if the associated <tt>orderServiceURL</tt> is invalid
+     * @throws ESCIAdapterException if the associated <tt>orderServiceURL</tt> is invalid, or the supplier-stock
+     *                              location relationship is not supported
      */
     public OrderService getOrderService(Party supplier, Party stockLocation) {
         EntityRelationship config = rules.getSupplierStockLocation(supplier, stockLocation);
         if (config == null) {
-            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.ESCINotConfigured, supplier.getId(),
-                                           supplier.getName(), stockLocation.getName(), stockLocation.getId());
+            throw new ESCIAdapterException(ESCIAdapterMessages.ESCINotConfigured(supplier, stockLocation));
         }
         if (!TypeHelper.isA(config, SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI)) {
-            throw new IllegalStateException("SupplierServiceLocator cannot support configurations of type: "
-                                            + config.getArchetypeId().getShortName());
+            String shortName = config.getArchetypeId().getShortName();
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierServiceLocatorConfig(shortName));
         }
 
         IMObjectBean bean = factory.createBean(config);
@@ -114,16 +115,14 @@ public class SupplierServiceLocatorImpl implements SupplierServiceLocator {
 
         String serviceURL = bean.getString("orderServiceURL");
         if (StringUtils.isEmpty(serviceURL)) {
-            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidSupplierServiceURL,
-                                           supplier.getId(), supplier.getName(), serviceURL);
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL));
         }
         try {
             ServiceLocator<OrderService> locator
                     = locatorFactory.getServiceLocator(OrderService.class, serviceURL, username, password);
             return locator.getService();
         } catch (MalformedURLException exception) {
-            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidSupplierServiceURL, exception,
-                                           supplier.getId(), supplier.getName(), serviceURL);
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL), exception);
         }
     }
 
@@ -151,7 +150,7 @@ public class SupplierServiceLocatorImpl implements SupplierServiceLocator {
                     = locatorFactory.getServiceLocator(OrderService.class, serviceURL, username, password);
             return locator.getService();
         } catch (MalformedURLException exception) {
-            throw new ESCIAdapterException(ESCIAdapterException.ErrorCode.InvalidServiceURL, exception, serviceURL);
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
         }
     }
 }
