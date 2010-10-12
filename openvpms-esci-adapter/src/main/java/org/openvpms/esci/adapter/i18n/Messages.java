@@ -36,12 +36,12 @@ public class Messages {
 
     private final String bundlePath;
 
-    private final String project;
+    private final String groupId;
 
     private static final Log log = LogFactory.getLog(Messages.class);
 
-    public Messages(String project, String bundlePath) {
-        this.project = project;
+    public Messages(String groupId, String bundlePath) {
+        this.groupId = groupId;
         this.bundlePath = bundlePath;
     }
 
@@ -51,18 +51,18 @@ public class Messages {
 
     public Message getMessage(int code, Locale locale, Object... args) {
         String message = getString(Integer.toString(code), locale, args);
-        return new Message(project, code, message);
+        return new Message(groupId, code, message);
     }
 
-    public String getString(int code, Locale locale, Object... args) {
+    protected String getString(int code, Locale locale, Object... args) {
         return getString(Integer.toString(code), locale, args);
     }
 
-    public String getString(String key, Object... args) {
+    protected String getString(String key, Object... args) {
         return getString(key, Locale.getDefault(), args);
     }
 
-    public String getString(String key, Locale locale, Object... args) {
+    protected String getString(String key, Locale locale, Object... args) {
         String result = getValue(key, locale);
         if (result == null) {
             result = formatMissingKey(key, args);

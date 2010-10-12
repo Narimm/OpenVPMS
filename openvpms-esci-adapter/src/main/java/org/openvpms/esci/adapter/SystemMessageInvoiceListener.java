@@ -25,6 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFact
 
 import javax.annotation.Resource;
 
+
 /**
  * An {@link InvoiceListener}
  *

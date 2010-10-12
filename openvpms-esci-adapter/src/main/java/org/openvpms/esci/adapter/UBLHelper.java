@@ -53,22 +53,18 @@ class UBLHelper {
     /**
      * Returns the <em>lookup.uom</em> code for a given UN/CEFACT unit code.
      *
-     * @param quantity the UN/CEFACT unit code. May be <tt>null</tt>
+     * @param unitCode the UN/CEFACT unit code
      * @param service  the lookup service
      * @param factory  the bean factory
      * @return the corresponding unit code or <tt>null</tt> if none is found
      */
-    public static String getUnitOfMeasure(QuantityType quantity, ILookupService service,
-                                          IMObjectBeanFactory factory) {
-        String unitCode = (quantity != null) ? quantity.getUnitCode() : null;
-        if (unitCode != null) {
-            Collection<Lookup> lookups = service.getLookups("lookup.uom");
-            for (Lookup lookup : lookups) {
-                IMObjectBean lookupBean = factory.createBean(lookup);
-                String code = lookupBean.getString("unitCode");
-                if (StringUtils.equals(unitCode, code)) {
-                    return lookup.getCode();
-                }
+    public static String getUnitOfMeasure(String unitCode, ILookupService service, IMObjectBeanFactory factory) {
+        Collection<Lookup> lookups = service.getLookups("lookup.uom");
+        for (Lookup lookup : lookups) {
+            IMObjectBean lookupBean = factory.createBean(lookup);
+            String code = lookupBean.getString("unitCode");
+            if (StringUtils.equals(unitCode, code)) {
+                return lookup.getCode();
             }
         }
         return null;

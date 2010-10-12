@@ -40,6 +40,9 @@ public class Delivery {
 
     private List<FinancialAct> deliveryItems = new ArrayList<FinancialAct>();
 
+    private Map<IMObjectReference, IMObjectReference> deliveryToOrder
+            = new HashMap<IMObjectReference, IMObjectReference>();
+
     public void setOrder(IMObjectReference reference) {
         this.order = reference;
     }
@@ -60,16 +63,16 @@ public class Delivery {
         deliveryItems.add(item);
     }
 
-    public void setDeliveryItems(List<FinancialAct> items) {
-        this.deliveryItems = items;
-    }
-
-    public void addDeliveryToOrderMapping(IMObjectReference deliveryItem, IMObjectReference orderItem) {
-
+    public void addDeliveryOrderMapping(FinancialAct deliveryItem, IMObjectReference orderItem) {
+        deliveryToOrder.put(deliveryItem.getObjectReference(), orderItem);
     }
 
     public List<FinancialAct> getDeliveryItems() {
         return deliveryItems;
+    }
+
+    public IMObjectReference getOrderItem(FinancialAct deliveryItem) {
+        return deliveryToOrder.get(deliveryItem.getObjectReference());
     }
 
     public List<FinancialAct> getActs() {
