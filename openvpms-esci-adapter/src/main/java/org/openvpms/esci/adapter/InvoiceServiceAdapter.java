@@ -26,6 +26,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
+import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.exception.ESCIException;
 import org.openvpms.esci.service.InvoiceService;
 
@@ -118,10 +120,17 @@ public class InvoiceServiceAdapter implements InvoiceService {
      * @throws ESCIException for any error
      */
     public void submitInvoice(InvoiceType invoice) throws ESCIException {
-        Delivery delivery = mapper.map(invoice);
-        service.save(delivery.getActs());
-        linkDeliveryToOrder(delivery);
-        notifyListener(delivery.getDelivery());
+        try {
+            Delivery delivery = mapper.map(invoice);
+            service.save(delivery.getActs());
+            linkDeliveryToOrder(delivery);
+            notifyListener(delivery.getDelivery());
+        } catch (ESCIException exception) {
+            throw exception;
+        } catch (Throwable exception) {
+            Message message = ESCIAdapterMessages.failedToSubmitInvoice(exception.getMessage());
+            throw new ESCIException(message.toString(), exception);
+        }
     }
 
     /**

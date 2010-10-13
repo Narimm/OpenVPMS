@@ -34,6 +34,8 @@ public interface InvoiceMapper {
      * @return the results of the mapping
      * @throws org.openvpms.esci.exception.ESCIException
      *          if the invoice cannot be mapped
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
+     *          for any OpenVPMS error
      */
     Delivery map(InvoiceType invoice);
 }

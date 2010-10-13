@@ -30,18 +30,12 @@ import org.openvpms.esci.adapter.i18n.Message;
 public class ESCIAdapterException extends OpenVPMSException {
 
     /**
-     * The message.
-     */
-    private Message message;
-
-    /**
      * Constructs an <tt>ESCIAdapterException</tt>.
      *
      * @param message the message
      */
     public ESCIAdapterException(Message message) {
         super(message.getMessage());
-        this.message = message;
     }
 
     /**
@@ -52,15 +46,6 @@ public class ESCIAdapterException extends OpenVPMSException {
      */
     public ESCIAdapterException(Message message, Throwable cause) {
         super(message.getMessage(), cause);
-    }
-
-    /**
-     * Returns the message code.
-     *
-     * @return the message code
-     */
-    public int getMessageCode() {
-        return message.getCode();
     }
 
 }

@@ -119,6 +119,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      */
     private static final ArchetypeId STOCK_LOCATION = new ArchetypeId(StockArchetypes.STOCK_LOCATION);
 
+    private static final String UBL_VERSION = "2.0";
+
 
     /**
      * Default constructor.
@@ -181,10 +183,15 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      *
      * @param invoice the invoice to map
      * @return the acts produced in the mapping. The first element is always the <em>act.supplierDelivery</em>
+     * @throws org.openvpms.esci.exception.ESCIException
+     *          if the invoice cannot be mapped
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
+     *          for any OpenVPMS error
      */
     public Delivery map(InvoiceType invoice) {
         Delivery result = new Delivery();
         String invoiceId = getInvoiceId(invoice);
+        checkUBLVersion(invoice, invoiceId);
         OrderReferenceType orderReference = invoice.getOrderReference();
         if (orderReference != null) {
             IMObjectReference ref = getReference(ORDER, orderReference.getID(), "OrderReference", "Invoice", invoiceId);
@@ -195,7 +202,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         Party stockLocation = getStockLocation(invoice, invoiceId);
         MonetaryTotalType monetaryTotal = invoice.getLegalMonetaryTotal();
         if (monetaryTotal == null) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired("LegalMonetaryTotal", "Invoice", invoiceId);
+            Message message = ESCIAdapterMessages.ublElementRequired("LegalMonetaryTotal", "Invoice", invoiceId);
             throw new ESCIException(message.toString());
         }
         String practiceCurrency = UBLHelper.getCurrencyCode(practiceRules, factory);
@@ -217,8 +224,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         result.setDelivery((FinancialAct) delivery.getAct());
         List<InvoiceLineType> lines = invoice.getInvoiceLine();
         if (lines == null || lines.isEmpty()) {
-            Message message = ESCIAdapterMessages.invoiceInvalidCardinality("InvoiceLine", "Invoice", invoiceId, "1..*",
-                                                                            0);
+            Message message = ESCIAdapterMessages.ublInvalidCardinality("InvoiceLine", "Invoice", invoiceId, "1..*",
+                                                                        0);
             throw new ESCIException(message.toString());
         }
         BigDecimal itemTotal = BigDecimal.ZERO;
@@ -270,8 +277,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         List<OrderLineReferenceType> list = line.getOrderLineReference();
         if (list != null && !list.isEmpty()) {
             if (list.size() != 1) {
-                Message message = ESCIAdapterMessages.invoiceInvalidCardinality("OrderLineReference", "InvoiceLine",
-                                                                                invoiceLineId, "1", list.size());
+                Message message = ESCIAdapterMessages.ublInvalidCardinality("OrderLineReference", "InvoiceLine",
+                                                                            invoiceLineId, "1", list.size());
                 throw new ESCIException(message.toString());
             }
             LineIDType id = list.get(0).getLineID();
@@ -291,8 +298,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
     protected Party getSupplier(InvoiceType invoice, String invoiceId) {
         SupplierPartyType supplierType = invoice.getAccountingSupplierParty();
         if (supplierType == null) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired("AccountingSupplierParty", "Invoice",
-                                                                         invoiceId);
+            Message message = ESCIAdapterMessages.ublElementRequired("AccountingSupplierParty", "Invoice",
+                                                                     invoiceId);
             throw new ESCIException(message.toString());
         }
         CustomerAssignedAccountIDType accountId = supplierType.getCustomerAssignedAccountID();
@@ -317,8 +324,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
     protected Party getStockLocation(InvoiceType invoice, String invoiceId) {
         CustomerPartyType customerType = invoice.getAccountingCustomerParty();
         if (customerType == null) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired("AccountingCustomerParty", "Invoice",
-                                                                         invoiceId);
+            Message message = ESCIAdapterMessages.ublElementRequired("AccountingCustomerParty", "Invoice",
+                                                                     invoiceId);
             throw new ESCIException(message.toString());
         }
         CustomerAssignedAccountIDType accountId = customerType.getCustomerAssignedAccountID();
@@ -359,14 +366,14 @@ public class InvoiceMapperImpl implements InvoiceMapper {
                                                    "LineExtensionAmount", "InvoiceLine", invoiceLineId);
         ItemType item = line.getItem();
         if (item == null) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired("Item", "InvoiceLine", invoiceLineId);
+            Message message = ESCIAdapterMessages.ublElementRequired("Item", "InvoiceLine", invoiceLineId);
             throw new ESCIException(message.toString());
         }
         String reorderCode = getSellerItemId(item);
         String reorderDescription = getSellerItemName(item);
         PriceType price = line.getPrice();
         if (price == null) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired("Price", "InvoiceLine", invoiceLineId);
+            Message message = ESCIAdapterMessages.ublElementRequired("Price", "InvoiceLine", invoiceLineId);
             throw new ESCIException(message.toString());
         }
         BigDecimal unitPrice = getAmount(price.getPriceAmount(), practiceCurrency, "Price/PriceAmount",
@@ -385,10 +392,10 @@ public class InvoiceMapperImpl implements InvoiceMapper {
                 packageUnits = UBLHelper.getUnitOfMeasure(baseUnitCode, lookupService, factory);
             }
         }
-        BigDecimal expectedLineExtensionAmount = unitPrice.multiply(quantity);
-        if (expectedLineExtensionAmount.compareTo(lineExtensionAmount) != 0) {
+        BigDecimal calcLineExtensionAmount = unitPrice.multiply(quantity);
+        if (calcLineExtensionAmount.compareTo(lineExtensionAmount) != 0) {
             Message message = ESCIAdapterMessages.invoiceLineInvalidLineExtensionAmount(
-                    invoiceLineId, expectedLineExtensionAmount, lineExtensionAmount);
+                    invoiceLineId, lineExtensionAmount, calcLineExtensionAmount);
             throw new ESCIException(message.toString());
         }
 
@@ -448,8 +455,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         BigDecimal result = BigDecimal.ZERO;
         if (tax != null && !tax.isEmpty()) {
             if (tax.size() != 1) {
-                Message message = ESCIAdapterMessages.invoiceInvalidCardinality("TaxTotal", parent, id, "1",
-                                                                                tax.size());
+                Message message = ESCIAdapterMessages.ublInvalidCardinality("TaxTotal", parent, id, "1",
+                                                                            tax.size());
                 throw new ESCIException(message.toString());
             }
             TaxTotalType total = tax.get(0);
@@ -476,7 +483,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         Product result = null;
         ItemType item = line.getItem();
         if (item == null) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired("Item", "InvoiceLine", invoiceLineId);
+            Message message = ESCIAdapterMessages.ublElementRequired("Item", "InvoiceLine", invoiceLineId);
             throw new ESCIException(message.toString());
         }
         ItemIdentificationType buyerId = item.getBuyersItemIdentification();
@@ -547,6 +554,21 @@ public class InvoiceMapperImpl implements InvoiceMapper {
     }
 
     /**
+     * Verifies that the UBL version matches that expected.
+     *
+     * @param invoice   the invoice
+     * @param invoiceId the invoice identifier
+     */
+    protected void checkUBLVersion(InvoiceType invoice, String invoiceId) {
+        String value = getId(invoice.getUBLVersionID(), "UBLVersionID", "Invoice", invoiceId);
+        if (!UBL_VERSION.equals(value)) {
+            Message message = ESCIAdapterMessages.ublInvalidValue("UBLVersionID", "Invoice", invoiceId,
+                                                                   UBL_VERSION, value);
+            throw new ESCIException(message.toString());
+        }
+    }
+
+    /**
      * Returns the invoice issue date/time.
      *
      * @param invoice   the invoice
@@ -558,7 +580,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         IssueDateType issueDate = invoice.getIssueDate();
         XMLGregorianCalendar calendar = (issueDate != null) ? issueDate.getValue() : null;
         if (calendar == null) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired("IssueDate", "Invoice", invoiceId);
+            Message message = ESCIAdapterMessages.ublElementRequired("IssueDate", "Invoice", invoiceId);
             throw new ESCIException(message.toString());
         }
 
@@ -587,12 +609,12 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      */
     protected BigDecimal getAmount(AmountType amount, String practiceCurrency, String path, String parent, String id) {
         if (amount == null) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired(path, parent, id);
+            Message message = ESCIAdapterMessages.ublElementRequired(path, parent, id);
             throw new ESCIException(message.toString());
         }
         CurrencyCodeContentType currency = amount.getCurrencyID();
         if (currency == null || StringUtils.isEmpty(currency.value())) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired(path + "/currencyID", parent, id);
+            Message message = ESCIAdapterMessages.ublElementRequired(path + "/currencyID", parent, id);
             throw new ESCIException(message.toString());
         }
         if (!ObjectUtils.equals(practiceCurrency, currency.value())) {
@@ -692,7 +714,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         String value = getId(id, path, parent, parentId);
         long result = NumberUtils.toLong(value, -1);
         if (result == -1) {
-            Message message = ESCIAdapterMessages.invoiceInvalidIdentifier(path, parent, parentId, id.getValue());
+            Message message = ESCIAdapterMessages.ublInvalidIdentifier(path, parent, parentId, id.getValue());
             throw new ESCIException(message.toString());
         }
         return result;
@@ -711,7 +733,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
     protected String getId(IdentifierType id, String path, String parent, String parentId) {
         String result = getId(id);
         if (result == null) {
-            Message message = ESCIAdapterMessages.invoiceElementRequired(path, parent, parentId);
+            Message message = ESCIAdapterMessages.ublElementRequired(path, parent, parentId);
             throw new ESCIException(message.toString());
         }
         return result;

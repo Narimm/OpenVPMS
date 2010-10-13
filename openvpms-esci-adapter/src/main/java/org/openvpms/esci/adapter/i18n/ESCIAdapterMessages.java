@@ -31,85 +31,245 @@ import java.math.BigDecimal;
  */
 public class ESCIAdapterMessages {
 
+    /**
+     * The messages.
+     */
     private static Messages messages = new Messages("ESCIA", ESCIAdapterMessages.class.getName());
 
 
+    /**
+     * Creates a new message for when there is no <em>entityRelationship.supplierStockLocationESCI</em> relationship
+     * between a supplier and stock location.
+     *
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @return a new message
+     */
     public static Message ESCINotConfigured(Party supplier, Party stockLocation) {
-        return messages.getMessage(1, supplier.getId(), supplier.getName(),
-                                   stockLocation.getId(), stockLocation.getName());
+        return messages.getMessage(1, supplier.getId(), supplier.getName(), stockLocation.getId(),
+                                   stockLocation.getName());
     }
 
-    public static Message invalidSupplierServiceLocatorConfig(String shortName) {
-        return messages.getMessage(2, shortName);
-
-    }
-
+    /**
+     * Creates a new message for an invalid supplier service URL.
+     *
+     * @param supplier   the supplier
+     * @param serviceURL the invalid service URL
+     * @return a new message
+     */
     public static Message invalidSupplierURL(Party supplier, String serviceURL) {
         return messages.getMessage(3, supplier.getId(), supplier.getName(), serviceURL);
     }
 
+    /**
+     * Creates a new message for an invalid service URL.
+     *
+     * @param serviceURL the invalid service URL
+     * @return a new message
+     */
     public static Message invalidServiceURL(String serviceURL) {
         return messages.getMessage(4, serviceURL);
     }
 
+    /**
+     * Creates a new message for when there is no relationship between a supplier and product.
+     *
+     * @param supplier the supplier
+     * @param product  the product
+     * @return a new message
+     */
     public static Message noProductSupplierRelationship(Party supplier, Product product) {
         return messages.getMessage(5, supplier.getName(), product.getName());
     }
 
+    /**
+     * Creates a new message for when there is no supplier order code associated with a product.
+     *
+     * @param supplier the supplier
+     * @param product  the product
+     * @return a new message
+     */
     public static Message noSupplierOrderCode(Party supplier, Product product) {
         return messages.getMessage(6, supplier.getName(), product.getName());
     }
 
-    public static Message invoiceElementRequired(String path, String parent, String id) {
+    /**
+     * Creates a new message for a missing UBL element.
+     *
+     * @param path   the path to the element, from the parent
+     * @param parent the parent element path
+     * @param id     the parent element identifier
+     * @return a new message
+     */
+    public static Message ublElementRequired(String path, String parent, String id) {
         return messages.getMessage(100, path, parent, id);
     }
 
-    public static Message invoiceInvalidCardinality(String path, String parent, String id, String expected,
-                                                    int actual) {
+    /**
+     * Creates a new message for an UBL cardinality error.
+     *
+     * @param path     the path to the element, from the parent
+     * @param parent   the parent element path
+     * @param id       the parent element identifier
+     * @param expected the expected cardinality (e.g "1..*", "2")
+     * @param actual   the actual cardinality
+     * @return a new message
+     */
+    public static Message ublInvalidCardinality(String path, String parent, String id, String expected,
+                                                int actual) {
         return messages.getMessage(101, path, parent, id, expected, actual);
     }
 
-    public static Message invoiceInvalidIdentifier(String path, String parent, String parentId, String value) {
+    /**
+     * Creates a new message for an invalid UBL identifier.
+     *
+     * @param path     the path to the element, from the parent
+     * @param parent   the parent element path
+     * @param parentId the parent element identifier
+     * @param value    the invalid identifier value
+     * @return a new message
+     */
+    public static Message ublInvalidIdentifier(String path, String parent, String parentId, String value) {
         return messages.getMessage(102, path, parent, parentId, value);
     }
 
+    /**
+     * Creates a new message for when a UBL value is different to that expected.
+     *
+     * @param path     the path to the element, from the parent
+     * @param parent   the parent element path
+     * @param parentId the parent element identifier
+     * @param expected the expected value
+     * @param actual   the actual value
+     * @return a new message
+     */
+    public static Message ublInvalidValue(String path, String parent, String parentId, String expected,
+                                          String actual) {
+        return messages.getMessage(103, path, parent, parentId, expected, actual);
+    }
+
+    /**
+     * Creates a new message for an invalid supplier referenced by an invoice.
+     *
+     * @param path       the path to the element
+     * @param invoiceId  the invoice identifier
+     * @param supplierId the supplier identifier
+     * @return a new message
+     */
     public static Message invoiceInvalidSupplier(String path, String invoiceId, String supplierId) {
-        return messages.getMessage(103, path, invoiceId, supplierId);
+        return messages.getMessage(200, path, invoiceId, supplierId);
     }
 
+    /**
+     * Creates a new message for an invalid stock location referenced by an invoice.
+     *
+     * @param path            the path to the element
+     * @param invoiceId       the invoice identifier
+     * @param stockLocationId the stock location identifier
+     * @return a new message
+     */
     public static Message invoiceInvalidStockLocation(String path, String invoiceId, String stockLocationId) {
-        return messages.getMessage(104, path, invoiceId, stockLocationId);
+        return messages.getMessage(201, path, invoiceId, stockLocationId);
     }
 
+    /**
+     * Creates a new message for when an invoice line doesn't reference a product.
+     *
+     * @param invoiceLineId the invoice line identifier
+     * @return a new message
+     */
     public static Message invoiceNoProduct(String invoiceLineId) {
-        return messages.getMessage(105, invoiceLineId);
+        return messages.getMessage(202, invoiceLineId);
     }
 
-    public static Message invoiceInvalidPayableAmount(String invoiceId, BigDecimal expected, BigDecimal actual) {
-        return messages.getMessage(106, invoiceId, expected, actual);
+    /**
+     * Creates a new message for when the payable amount on an invoice doesn't match that calculated.
+     *
+     * @param invoiceId     the invoice identifier
+     * @param payableAmount the LegalMonetaryTotal/PayableAmount value
+     * @param calculated    the calculated total
+     * @return a new message
+     */
+    public static Message invoiceInvalidPayableAmount(String invoiceId, BigDecimal payableAmount,
+                                                      BigDecimal calculated) {
+        return messages.getMessage(203, invoiceId, payableAmount, calculated);
     }
 
-    public static Message invoiceInvalidLineExtensionAmount(String invoiceId, BigDecimal expected, BigDecimal actual) {
-        return messages.getMessage(107, invoiceId, expected, actual);
+    /**
+     * Creates a new message for when the line extension amount doesn't match that calculated.
+     *
+     * @param invoiceId           the invoice identifier
+     * @param lineExtensionAmount the LegalMonetaryTotal/LineExtensionAmount value
+     * @param calculated          the calculated line extension amount
+     * @return a new message
+     */
+    public static Message invoiceInvalidLineExtensionAmount(String invoiceId, BigDecimal lineExtensionAmount,
+                                                            BigDecimal calculated) {
+        return messages.getMessage(204, invoiceId, lineExtensionAmount, calculated);
     }
 
-    public static Message invoiceInvalidTax(String invoiceId, BigDecimal expected, BigDecimal actual) {
-        return messages.getMessage(108, invoiceId, expected, actual);
+    /**
+     * Creates a new message for when the invoice tax doesn't match the tax calculated from the items.
+     *
+     * @param invoiceId  the invoice identifier.
+     * @param tax        the invoice tax
+     * @param calculated the calculated tax
+     * @return a new message
+     */
+    public static Message invoiceInvalidTax(String invoiceId, BigDecimal tax, BigDecimal calculated) {
+        return messages.getMessage(205, invoiceId, tax, calculated);
     }
 
-    public static Message invoiceLineInvalidLineExtensionAmount(String invoiceLineId, BigDecimal expected,
-                                                                BigDecimal actual) {
-        return messages.getMessage(109, invoiceLineId, expected, actual);
+    /**
+     * Creates a new message for when an InvoiceLine's LineExtensionAmount doesn't match the calculated amount.
+     *
+     * @param invoiceLineId       the invoice line identifier.
+     * @param lineExtensionAmount the InvoiceLine/LineExtensionAmount value
+     * @param calculated          the calculated line extension amount
+     * @return a new message
+     */
+    public static Message invoiceLineInvalidLineExtensionAmount(String invoiceLineId, BigDecimal lineExtensionAmount,
+                                                                BigDecimal calculated) {
+        return messages.getMessage(206, invoiceLineId, lineExtensionAmount, calculated);
     }
 
+    /**
+     * Creates a new message for when an invoice element's currencyID doesn't match that expected.
+     *
+     * @param path     the path to the element, from the parent
+     * @param parent   the parent element path
+     * @param parentId the parent element identifier
+     * @param expected the expected currencyID value
+     * @param actual   the actual currencyID value
+     * @return a new message
+     */
     public static Message invoiceInvalidCurrency(String path, String parent, String parentId, String expected,
                                                  String actual) {
-        return messages.getMessage(110, path, parent, parentId, expected, actual);
+        return messages.getMessage(207, path, parent, parentId, expected, actual);
     }
 
+    /**
+     * Creates a new message for when an invoice line specifies both an InvoicedQuantity unit code and a BaseQuantity
+     * unit code, and they are different.
+     *
+     * @param invoiceLineId        the invoice line identifier
+     * @param invoicedUnitCode     the InvoicedQuantity unit code
+     * @param baseQuantityUnitCode the BaseQuantity unit code
+     * @return a new message
+     */
     public static Message invoiceUnitCodeMismatch(String invoiceLineId, String invoicedUnitCode,
                                                   String baseQuantityUnitCode) {
-        return messages.getMessage(111, invoiceLineId, invoicedUnitCode, baseQuantityUnitCode);
+        return messages.getMessage(208, invoiceLineId, invoicedUnitCode, baseQuantityUnitCode);
+    }
+
+    /**
+     * Creates a new message for when an invoice cannot be submitted to OpenVPMS.
+     *
+     * @param reason the reason
+     * @return a new message
+     */
+    public static Message failedToSubmitInvoice(String reason) {
+        return messages.getMessage(300, reason);
     }
 
 }

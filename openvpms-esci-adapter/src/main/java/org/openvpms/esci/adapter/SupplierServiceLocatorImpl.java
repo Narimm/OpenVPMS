@@ -101,12 +101,8 @@ public class SupplierServiceLocatorImpl implements SupplierServiceLocator {
      */
     public OrderService getOrderService(Party supplier, Party stockLocation) {
         EntityRelationship config = rules.getSupplierStockLocation(supplier, stockLocation);
-        if (config == null) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.ESCINotConfigured(supplier, stockLocation));
-        }
         if (!TypeHelper.isA(config, SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI)) {
-            String shortName = config.getArchetypeId().getShortName();
-            throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierServiceLocatorConfig(shortName));
+            throw new ESCIAdapterException(ESCIAdapterMessages.ESCINotConfigured(supplier, stockLocation));
         }
 
         IMObjectBean bean = factory.createBean(config);
