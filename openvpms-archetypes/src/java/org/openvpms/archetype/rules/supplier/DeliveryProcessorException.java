@@ -11,31 +11,31 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
-
-package org.openvpms.archetype.rules.product;
+package org.openvpms.archetype.rules.supplier;
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * Exception class for exceptions raised by {@link ProductPriceUpdater}.
+ * Exception class for exceptions raised by {@link DeliveryProcessor}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProductPriceUpdaterException extends OpenVPMSException {
+public class DeliveryProcessorException extends OpenVPMSException {
+
 
     /**
      * An enumeration of error codes.
      */
     public enum ErrorCode {
 
-        NoPractice,
+        NoProduct
     }
 
     /**
@@ -50,7 +50,7 @@ public class ProductPriceUpdaterException extends OpenVPMSException {
      */
     private static Messages MESSAGES
             = Messages.getMessages(
-            "org.openvpms.archetype.rules.product."
+            "org.openvpms.archetype.rules.supplier."
             + OpenVPMSException.ERRMESSAGES_FILE);
 
 
@@ -60,23 +60,8 @@ public class ProductPriceUpdaterException extends OpenVPMSException {
      * @param errorCode the error code
      * @param args      the message arguments
      */
-    public ProductPriceUpdaterException(ErrorCode errorCode,
-                                        Object... args) {
+    public DeliveryProcessorException(ErrorCode errorCode, Object... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args));
-        this.errorCode = errorCode;
-    }
-
-    /**
-     * Constructs a new <tt>ProductPriceUpdater</tt>.
-     *
-     * @param errorCode the error code
-     * @param cause     the root cause
-     * @param args      the message arguments
-     */
-    public ProductPriceUpdaterException(ErrorCode errorCode,
-                                        Throwable cause,
-                                        Object... args) {
-        super(MESSAGES.getMessage(errorCode.toString(), args), cause);
         this.errorCode = errorCode;
     }
 

@@ -45,6 +45,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
@@ -143,6 +144,7 @@ public class DeliveryProcessor {
      * Applies changes, if the act is POSTED and hasn't already been posted.
      *
      * @throws ArchetypeServiceException for any archetype service error
+     * @throws DeliveryProcessorException if an item is missing a product
      */
     public void apply() {
         if (ActStatus.POSTED.equals(act.getStatus())
@@ -172,6 +174,7 @@ public class DeliveryProcessor {
      *
      * @param item the delivery/return item
      * @throws ArchetypeServiceException for any archetype service error
+     * @throws DeliveryProcessorException if the item is missing a product
      */
     private void processItem(Act item) {
         ActBean itemBean = new ActBean(item, service);
@@ -182,6 +185,13 @@ public class DeliveryProcessor {
             receivedQuantity = receivedQuantity.negate();
         }
         Product product = (Product) itemBean.getNodeParticipant("product");
+        if (product == null) {
+            throw new DeliveryProcessorException(DeliveryProcessorException.ErrorCode.NoProduct,
+                                                 DescriptorHelper.getDisplayName(item, service),
+                                                 item.getId(),
+                                                 DescriptorHelper.getDisplayName(act, service),
+                                                 act.getId());
+        }
 
         // update the associated order's received quantity
         for (Act orderItem : itemBean.getNodeActs("order")) {
@@ -190,12 +200,12 @@ public class DeliveryProcessor {
         }
 
         // if its a delivery, update the product-supplier relationship
-        if (delivery && supplier != null && product != null) {
+        if (delivery && supplier != null) {
             updateProductSupplier(product, itemBean);
         }
 
         // update the stock quantity for the product at the stock location
-        if (product != null && stockLocation != null) {
+        if (stockLocation != null) {
             updateStockQuantity(product, stockLocation, receivedQuantity,
                                 receivedPackSize);
         }

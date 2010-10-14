@@ -30,6 +30,7 @@
                 <propertyList name="entries">
                     <property name="ORDER_ACCEPTED" value="Order accepted"/>
                     <property name="ORDER_REJECTED" value="Order rejected" />
+                    <property name="ORDER_INVOICED" value="Order invoiced" />
                 </propertyList>
             </assertion>
         </node>
