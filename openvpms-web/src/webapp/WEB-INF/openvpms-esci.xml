@@ -11,8 +11,9 @@
           http://jax-ws.dev.java.net/spring/servlet http://jax-ws.dev.java.net/spring/servlet.xsd
           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
 
-
-    <bean id="loggingHandler" class="org.openvpms.esci.util.LoggingSOAPHandler"/>
+    <!-- ================================================================== -->
+    <!-- Web service bindings                                               -->
+    <!-- ================================================================== -->
 
     <wss:binding url="/esci/OrderResponseService">
         <wss:service>
@@ -24,16 +25,41 @@
         </wss:service>
     </wss:binding>
 
-    <bean id="serviceAuthenticators" class="org.openvpms.esci.service.client.DefaultServiceAuthenticators"
-            factory-method="getInstance"/>
+    <wss:binding url="/esci/InvoiceService">
+        <wss:service>
+            <ws:service bean="#invoiceService">
+                <ws:handlers>
+                    <ref bean="loggingHandler"/>
+                </ws:handlers>
+            </ws:service>
+        </wss:service>
+    </wss:binding>
 
-    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory">
-        <property name="serviceAuthenticators" ref="serviceAuthenticators"/>
+    <bean id="loggingHandler" class="org.openvpms.esci.util.LoggingSOAPHandler"/>
+
+    <!-- ================================================================== -->
+    <!-- Order service                                                      -->
+    <!-- ================================================================== -->
+
+    <bean id="orderService" class="org.openvpms.esci.adapter.OrderWebServiceAdapter">
+        <property name="factory" ref="imObjectBeanFactory"/>
+        <property name="orderMapper" ref="orderMapper"/>
+        <property name="supplierServiceLocator" ref="supplierServiceLocator"/>
     </bean>
 
-    <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.SupplierServiceLocatorImpl"/>
+    <bean id="orderMapper" class="org.openvpms.esci.adapter.OrderMapperImpl">
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="locationRules" ref="locationRules"/>
+        <property name="lookupService" ref="lookupService"/>
+        <property name="partyRules" ref="partyRules"/>
+        <property name="practiceRules" ref="practiceRules"/>
+        <property name="productRules" ref="productRules"/>
+        <property name="supplierRules" ref="supplierRules"/>
+    </bean>
 
-    <bean id="orderService" class="org.openvpms.esci.adapter.OrderWebServiceAdapter"/>
+    <!-- ================================================================== -->
+    <!-- Order response service                                             -->
+    <!-- ================================================================== -->
 
     <bean id="orderResponseService" class="org.openvpms.esci.service.OrderResponseWebService">
         <property name="orderResponseService" ref="orderResponseServiceAdapter"/>
@@ -41,15 +67,83 @@
 
     <bean id="orderResponseServiceAdapter" class="org.openvpms.esci.adapter.OrderResponseServiceAdapter">
         <property name="orderResponseListener">
-            <bean class="org.openvpms.esci.adapter.SystemMessageOrderResponseListener"/>
+            <bean class="org.openvpms.esci.adapter.SystemMessageOrderResponseListener">
+                <property name="beanFactory" ref="imObjectBeanFactory"/>
+            </bean>
         </property>
     </bean>
 
-    <bean id="orderMapper" class="org.openvpms.esci.adapter.OrderMapperImpl"/>
-    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules"/>
-    <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules"/>
-    <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules"/>
-    <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules"/>
-    <bean id="supplierRules" class="org.openvpms.archetype.rules.supplier.SupplierRules"/>
+    <!-- ================================================================== -->
+    <!-- Invoice service                                                    -->
+    <!-- ================================================================== -->
+
+    <bean id="invoiceService" class="org.openvpms.esci.service.InvoiceWebService">
+        <property name="invoiceService" ref="invoiceServiceAdapter"/>
+    </bean>
+
+    <bean id="invoiceServiceAdapter" class="org.openvpms.esci.adapter.InvoiceServiceAdapter">
+        <property name="archetypeService" ref="archetypeRuleService"/>
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="invoiceListener">
+            <bean class="org.openvpms.esci.adapter.SystemMessageInvoiceListener">
+                <property name="beanFactory" ref="imObjectBeanFactory"/>
+            </bean>
+        </property>
+        <property name="invoiceMapper" ref="invoiceMapper"/>
+        <property name="userRules" ref="userRules"/>
+    </bean>
+
+    <bean id="invoiceMapper" class="org.openvpms.esci.adapter.InvoiceMapperImpl">
+        <property name="archetypeService" ref="archetypeRuleService"/>
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="lookupService" ref="lookupService"/>
+        <property name="practiceRules" ref="practiceRules"/>
+        <property name="supplierRules" ref="supplierRules"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!-- Support for accessing supplier services                            -->
+    <!-- ================================================================== -->
+
+    <bean id="serviceAuthenticators" class="org.openvpms.esci.service.client.DefaultServiceAuthenticators"
+          factory-method="getInstance"/>
+
+    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory">
+        <property name="serviceAuthenticators" ref="serviceAuthenticators"/>
+    </bean>
+
+    <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.SupplierServiceLocatorImpl">
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="serviceLocatorFactory" ref="serviceLocatorFactory"/>
+        <property name="supplierRules" ref="supplierRules"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!-- Business rules                                                     -->
+    <!-- ================================================================== -->
+
+    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="supplierRules" class="org.openvpms.archetype.rules.supplier.SupplierRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="userRules" class="org.openvpms.archetype.rules.user.UserRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
 
 </beans>

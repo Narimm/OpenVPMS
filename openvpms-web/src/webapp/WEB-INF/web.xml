@@ -123,6 +123,11 @@
         <url-pattern>/esci/OrderResponseService</url-pattern>
     </servlet-mapping>
 
+    <servlet-mapping>
+        <servlet-name>jaxws-spring-servlet</servlet-name>
+        <url-pattern>/esci/InvoiceService</url-pattern>
+    </servlet-mapping>
+
     <session-config>
         <session-timeout>120</session-timeout>
         <!-- 2 hours -->
