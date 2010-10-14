@@ -7,8 +7,6 @@
                            http://www.springframework.org/schema/context
                            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <context:annotation-config/>
-    <!-- enable autowiring -->
 
     <!-- ================================================================== -->
     <!--                         GENERAL DEFINITIONS                        -->
@@ -213,12 +211,12 @@
     <!--                           JMX                                      -->
     <!-- ================================================================== -->
 
-    <bean id="hibernateStatisticsMBean" class="org.hibernate.jmx.StatisticsService">
+    <bean id="hibernateStatisticsMBean" class="org.hibernate.jmx.StatisticsService" lazy-init="false">
         <property name="statisticsEnabled" value="true"/>
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
-    <bean id="ehCacheMBeanRegistration" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    <bean id="ehCacheMBeanRegistration" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" lazy-init="false">
         <property name="staticMethod" value="net.sf.ehcache.management.ManagementService.registerMBeans"/>
         <property name="arguments">
             <list>
@@ -232,11 +230,11 @@
         </property>
     </bean>
 
-    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean" lazy-init="false">
         <property name="locateExistingServerIfPossible" value="true"/>
     </bean>
 
-    <bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter">
+    <bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
         <property name="beans">
             <map>
                 <entry key="Hibernate:name=statistics" value-ref="hibernateStatisticsMBean"/>
@@ -554,7 +552,9 @@
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
     <!-- ================================================================== -->
-    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype"/>
+    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype">
+        <property name="styleSheets" ref="userStyleSheets"/>
+    </bean>
 
     <bean id="styleSheetCache" class="org.openvpms.web.component.style.StyleSheetCache">
         <constructor-arg index="0" value="org/openvpms/web/resource/style/default"/>

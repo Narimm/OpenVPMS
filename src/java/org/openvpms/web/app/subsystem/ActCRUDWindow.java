@@ -177,6 +177,8 @@ public abstract class ActCRUDWindow<T extends Act>
                                 // act was saved. Need to refresh
                                 saved(act);
                                 onPosted(act);
+                            } else {
+                                onRefresh(act);
                             }
                         } catch (OpenVPMSException exception) {
                             ErrorHelper.show(exception);
