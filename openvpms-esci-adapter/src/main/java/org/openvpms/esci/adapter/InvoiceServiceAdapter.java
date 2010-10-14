@@ -20,9 +20,11 @@ package org.openvpms.esci.adapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.InvoiceType;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
@@ -30,6 +32,8 @@ import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.exception.ESCIException;
 import org.openvpms.esci.service.InvoiceService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -66,6 +70,11 @@ public class InvoiceServiceAdapter implements InvoiceService {
      * The bean factory.
      */
     private IMObjectBeanFactory factory;
+
+    /**
+     * The user rules.
+     */
+    private UserRules rules;
 
     /**
      * The logger.
@@ -114,6 +123,16 @@ public class InvoiceServiceAdapter implements InvoiceService {
     }
 
     /**
+     * Registers the user rules.
+     *
+     * @param rules the user rules
+     */
+    @Resource
+    public void setUserRules(UserRules rules) {
+        this.rules = rules;
+    }
+
+    /**
      * Submits an invoice.
      *
      * @param invoice the invoice to submit.
@@ -121,7 +140,8 @@ public class InvoiceServiceAdapter implements InvoiceService {
      */
     public void submitInvoice(InvoiceType invoice) throws ESCIException {
         try {
-            Delivery delivery = mapper.map(invoice);
+            User author = getAuthor();
+            Delivery delivery = mapper.map(invoice, author);
             service.save(delivery.getActs());
             linkDeliveryToOrder(delivery);
             notifyListener(delivery.getDelivery());
@@ -160,8 +180,10 @@ public class InvoiceServiceAdapter implements InvoiceService {
             bean.addNodeRelationship("order", order);
             service.save(Arrays.asList(delivery, order));
         } else {
-            log.warn("Cannot link " + delivery.getObjectReference().getArchetypeId() + ":" + delivery.getId()
-                     + " to " + orderRef.getArchetypeId() + ":" + orderRef.getId()
+            // TODO
+            log.warn("Cannot link " + delivery.getObjectReference().getArchetypeId().getShortName() + ":"
+                     + delivery.getId()
+                     + " to " + orderRef.getArchetypeId().getShortName() + ":" + orderRef.getId()
                      + ": order doesn't exist");
         }
     }
@@ -180,6 +202,19 @@ public class InvoiceServiceAdapter implements InvoiceService {
                 log.error("InvoiceListener threw exception", exception);
             }
         }
+    }
+
+    /**
+     * Returns the current user for use as the author participant in a delivery.
+     *
+     * @return the current user, or <tt>null</tt> if it is not found
+     */
+    private User getAuthor() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            return rules.getUser(auth.getName());
+        }
+        return null;
     }
 
 }

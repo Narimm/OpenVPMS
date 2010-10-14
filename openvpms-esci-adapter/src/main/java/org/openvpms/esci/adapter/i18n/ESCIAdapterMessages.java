@@ -157,7 +157,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceInvalidSupplier(String path, String invoiceId, String supplierId) {
-        return messages.getMessage(200, path, invoiceId, supplierId);
+        return messages.getMessage(300, path, invoiceId, supplierId);
     }
 
     /**
@@ -169,7 +169,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceInvalidStockLocation(String path, String invoiceId, String stockLocationId) {
-        return messages.getMessage(201, path, invoiceId, stockLocationId);
+        return messages.getMessage(301, path, invoiceId, stockLocationId);
     }
 
     /**
@@ -179,7 +179,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceNoProduct(String invoiceLineId) {
-        return messages.getMessage(202, invoiceLineId);
+        return messages.getMessage(302, invoiceLineId);
     }
 
     /**
@@ -192,7 +192,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidPayableAmount(String invoiceId, BigDecimal payableAmount,
                                                       BigDecimal calculated) {
-        return messages.getMessage(203, invoiceId, payableAmount, calculated);
+        return messages.getMessage(303, invoiceId, payableAmount, calculated);
     }
 
     /**
@@ -205,7 +205,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidLineExtensionAmount(String invoiceId, BigDecimal lineExtensionAmount,
                                                             BigDecimal calculated) {
-        return messages.getMessage(204, invoiceId, lineExtensionAmount, calculated);
+        return messages.getMessage(304, invoiceId, lineExtensionAmount, calculated);
     }
 
     /**
@@ -217,7 +217,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceInvalidTax(String invoiceId, BigDecimal tax, BigDecimal calculated) {
-        return messages.getMessage(205, invoiceId, tax, calculated);
+        return messages.getMessage(305, invoiceId, tax, calculated);
     }
 
     /**
@@ -230,7 +230,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceLineInvalidLineExtensionAmount(String invoiceLineId, BigDecimal lineExtensionAmount,
                                                                 BigDecimal calculated) {
-        return messages.getMessage(206, invoiceLineId, lineExtensionAmount, calculated);
+        return messages.getMessage(306, invoiceLineId, lineExtensionAmount, calculated);
     }
 
     /**
@@ -245,7 +245,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidCurrency(String path, String parent, String parentId, String expected,
                                                  String actual) {
-        return messages.getMessage(207, path, parent, parentId, expected, actual);
+        return messages.getMessage(307, path, parent, parentId, expected, actual);
     }
 
     /**
@@ -259,7 +259,29 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceUnitCodeMismatch(String invoiceLineId, String invoicedUnitCode,
                                                   String baseQuantityUnitCode) {
-        return messages.getMessage(208, invoiceLineId, invoicedUnitCode, baseQuantityUnitCode);
+        return messages.getMessage(308, invoiceLineId, invoicedUnitCode, baseQuantityUnitCode);
+    }
+
+    /**
+     * Creates a new message for when an invoice refers to an invalid order.
+     *
+     * @param invoiceId the invoice identifier
+     * @param orderId   the order identifier
+     * @return a new message
+     */
+    public static Message invoiceInvalidOrder(String invoiceId, String orderId) {
+        return messages.getMessage(309, invoiceId, orderId);
+    }
+
+    /**
+     * Creates a new message for when an invoice line refers to an invalid order item.
+     *
+     * @param invoiceLineId the invoice identifier
+     * @param orderId       the order item identifier
+     * @return a new message
+     */
+    public static Message invoiceInvalidOrderItem(String invoiceLineId, String orderId) {
+        return messages.getMessage(310, invoiceLineId, orderId);
     }
 
     /**
@@ -269,7 +291,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message failedToSubmitInvoice(String reason) {
-        return messages.getMessage(300, reason);
+        return messages.getMessage(400, reason);
     }
 
 }
