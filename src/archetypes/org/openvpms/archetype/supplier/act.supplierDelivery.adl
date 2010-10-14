@@ -19,6 +19,7 @@
     <archetype name="act.supplierDelivery.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Delivery">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="supplierInvoiceId" path="/details/supplierInvoiceId" type="java.lang.String" minCardinality="0" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
         <node name="supplier" path="/participations" type="java.util.HashSet"

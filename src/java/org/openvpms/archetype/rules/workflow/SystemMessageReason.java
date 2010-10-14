@@ -36,4 +36,9 @@ public class SystemMessageReason {
      */
     public static final String ORDER_REJECTED = "ORDER_REJECTED";    
 
+    /**
+     * Order invoiced reason.
+     */
+    public static final String ORDER_INVOICED = "ORDER_INVOICED";    
+
 }

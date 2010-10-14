@@ -21,6 +21,7 @@
                displayName="Delivery Item">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
+        <node name="supplierInvoiceLineId" path="/details/supplierInvoiceLineId" type="java.lang.String" minCardinality="0" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
               derivedValue="' '"/>
@@ -31,7 +32,7 @@
               type="java.util.Date" hidden="true" minCardinality="0"
               defaultValue="java.util.Date.new()"/>
         <node name="product" path="/participations" type="java.util.HashSet"
-              minCardinality="1" maxCardinality="1"
+              minCardinality="0" maxCardinality="1"
               filter="participation.stock"/>
         <node name="reorderCode" path="/details/reorderCode" type="java.lang.String"
               minCardinality="0"/>
@@ -42,8 +43,7 @@
         <node name="packageUnits" path="/details/packageUnits"
               type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
-                <property name="type" value="lookup"/>
-                <property name="source" value="lookup.uom"/>
+                <property name="type" value="lookup"/> <property name="source" value="lookup.uom"/>
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
