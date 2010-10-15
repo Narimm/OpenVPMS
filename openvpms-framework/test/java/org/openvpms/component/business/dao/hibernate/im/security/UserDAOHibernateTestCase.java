@@ -107,7 +107,7 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
         checkCantRetrieve(name1);
         checkCanRetrieve(name2, password2);
 
-        dao.setUserArchetypes();
+        dao.setUserArchetypes(ESCI_USER_ID.getShortName(), USER_ID.getShortName());
         checkCanRetrieve(name1, password1);
         checkCanRetrieve(name2, password2);
     }
