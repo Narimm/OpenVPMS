@@ -135,6 +135,15 @@ public abstract class HibernateInfoModelTestCase {
     }
 
     /**
+     * Returns the session factory.
+     *
+     * @return the session factory
+     */
+    protected SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
+
+    /**
      * Creates a simple detail object.
      *
      * @return a new map

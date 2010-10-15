@@ -50,17 +50,49 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
     private final CompoundAssembler assembler;
 
     /**
+     * The archetype short names to filter on.
+     */
+    private String[] shortNames;
+
+    /**
+     * The query string.
+     */
+    private String userQuery = QUERY;
+
+    /**
      * User query.
      */
     private static final String QUERY =
-            "from " + UserDOImpl.class.getName()
-            + " as user where user.username = :name";
+            "from " + UserDOImpl.class.getName() + " as user where user.username = ?";
 
     /**
-     * Constructs a new <tt>UserDAOHibernate</tt>.
+     * Constructs an <tt>UserDAOHibernate</tt>.
      */
     public UserDAOHibernate() {
         assembler = new Assembler();
+    }
+
+    /**
+     * Constrains users to the specified archetype short names.
+     *
+     * @param shortNames the user archetype short names
+     */
+    public void setUserArchetypes(String... shortNames) {
+        this.shortNames = shortNames;
+        if (shortNames != null && shortNames.length != 0) {
+            StringBuilder query = new StringBuilder(QUERY);
+            query.append(" and user.archetypeId.shortName in (");
+            for (int i = 0; i < shortNames.length; ++i) {
+                if (i > 0) {
+                    query.append(',');
+                }
+                query.append('?');
+            }
+            query.append(")");
+            userQuery = query.toString();
+        } else {
+            userQuery = QUERY;
+        }
     }
 
     /**
@@ -74,8 +106,13 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
         Session session
                 = getHibernateTemplate().getSessionFactory().openSession();
         try {
-            Query query = session.createQuery(QUERY);
-            query.setString("name", name);
+            Query query = session.createQuery(userQuery);
+            query.setString(0, name);
+            if (shortNames != null && shortNames.length > 0) {
+                for (int i = 0; i < shortNames.length; ++i) {
+                    query.setString(i + 1, shortNames[i]);
+                }
+            }
             Context context = Context.getContext(assembler, session);
             IMObjectResultCollector collector = new IMObjectResultCollector();
             collector.setContext(context);
