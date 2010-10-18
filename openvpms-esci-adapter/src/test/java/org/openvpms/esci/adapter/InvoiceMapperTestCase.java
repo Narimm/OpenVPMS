@@ -41,9 +41,7 @@ import org.oasis.ubl.common.basic.PriceAmountType;
 import org.oasis.ubl.common.basic.TaxAmountType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.archetype.rules.practice.PracticeRules;
-import org.openvpms.archetype.rules.supplier.AbstractSupplierTest;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -73,7 +71,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class InvoiceMapperTestCase extends AbstractSupplierTest {
+public class InvoiceMapperTestCase extends AbstractESCITest {
 
     /**
      * XML data type factory.
@@ -99,7 +97,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
         super.setUp();
 
         // create a new ESCI user, and add a relationship to the supplier
-        user = createUser(getSupplier());
+        user = createESCIUser(getSupplier());
 
         // get the practice currency
         Party practice = getPractice();
@@ -330,7 +328,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
     public void testInvalidSupplier() {
         InvoiceType invoice = createInvoice();
         invoice.getAccountingSupplierParty().getCustomerAssignedAccountID().setValue("0");
-        checkMappingException(invoice, "ESCIA-0300: Invalid supplier: 0 referenced by Invoice: 12345, "
+        checkMappingException(invoice, "ESCIA-0104: Invalid supplier: 0 referenced by Invoice: 12345, "
                                        + "element AccountingSupplierParty/CustomerAssignedAccountID");
     }
 
@@ -342,7 +340,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
     public void testInvalidStockLocation() {
         InvoiceType invoice = createInvoice();
         invoice.getAccountingCustomerParty().getCustomerAssignedAccountID().setValue("0");
-        checkMappingException(invoice, "ESCIA-0301: Invalid stock location: 0 referenced by Invoice: 12345, element "
+        checkMappingException(invoice, "ESCIA-0400: Invalid stock location: 0 referenced by Invoice: 12345, element "
                                        + "AccountingCustomerParty/CustomerAssignedAccountID");
     }
 
@@ -356,7 +354,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
         InvoiceLineType item = invoice.getInvoiceLine().get(0);
         item.getItem().setBuyersItemIdentification(null);
         item.getItem().setSellersItemIdentification(null);
-        checkMappingException(invoice, "ESCIA-0302: Neither Item/BuyersItemIdentification nor "
+        checkMappingException(invoice, "ESCIA-0401: Neither Item/BuyersItemIdentification nor "
                                        + "Item/SellersItemIdentification provided in InvoiceLine: 1");
     }
 
@@ -367,7 +365,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
     public void testInvalidPayableAmount() {
         InvoiceType invoice = createInvoice();
         invoice.getLegalMonetaryTotal().getPayableAmount().setValue(BigDecimal.ONE);
-        checkMappingException(invoice, "ESCIA-0303: Calculated payable amount: 110 for Invoice: 12345 does not match "
+        checkMappingException(invoice, "ESCIA-0402: Calculated payable amount: 110 for Invoice: 12345 does not match "
                                        + "LegalMonetaryTotal/PayableAmount: 1");
     }
 
@@ -378,7 +376,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
     public void testInvalidLineExtensionAmount() {
         InvoiceType invoice = createInvoice();
         invoice.getLegalMonetaryTotal().getLineExtensionAmount().setValue(BigDecimal.ONE);
-        checkMappingException(invoice, "ESCIA-0304: Sum of InvoiceLine/LineExtensionAmount: 100 for Invoice: 12345 "
+        checkMappingException(invoice, "ESCIA-0403: Sum of InvoiceLine/LineExtensionAmount: 100 for Invoice: 12345 "
                                        + "does not match Invoice/LegalMonetaryTotal/LineExtensionAmount: 1");
     }
 
@@ -389,7 +387,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
     public void testInvalidTax() {
         InvoiceType invoice = createInvoice();
         invoice.getTaxTotal().get(0).getTaxAmount().setValue(BigDecimal.ONE);
-        checkMappingException(invoice, "ESCIA-0305: Sum of InvoiceLine/TaxTotal/TaxAmount: 10 for Invoice: 12345 "
+        checkMappingException(invoice, "ESCIA-0404: Sum of InvoiceLine/TaxTotal/TaxAmount: 10 for Invoice: 12345 "
                                        + "does not match TaxTotal/TaxAmount: 1");
     }
 
@@ -402,7 +400,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
         InvoiceType invoice = createInvoice();
         InvoiceLineType item = invoice.getInvoiceLine().get(0);
         item.getLineExtensionAmount().setValue(BigDecimal.ONE);
-        checkMappingException(invoice, "ESCIA-0306: Calculated line extension amount: 100 for InvoiceLine: 1 "
+        checkMappingException(invoice, "ESCIA-0405: Calculated line extension amount: 100 for InvoiceLine: 1 "
                                        + "does not match LineExtensionAmount: 1");
     }
 
@@ -414,7 +412,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
         InvoiceType invoice = createInvoice();
         InvoiceLineType item = invoice.getInvoiceLine().get(0);
         item.getLineExtensionAmount().setCurrencyID(CurrencyCodeContentType.USD);
-        checkMappingException(invoice, "ESCIA-0307: Invalid currencyID for LineExtensionAmount in InvoiceLine: 1. "
+        checkMappingException(invoice, "ESCIA-0406: Invalid currencyID for LineExtensionAmount in InvoiceLine: 1. "
                                        + "Expected AUD but got USD");
     }
 
@@ -428,7 +426,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
         InvoiceLineType item = invoice.getInvoiceLine().get(0);
         item.getInvoicedQuantity().setUnitCode("PK");
         item.getPrice().getBaseQuantity().setUnitCode("BX");
-        checkMappingException(invoice, "ESCIA-0308: InvoicedQuantity/unitCode: PK and BaseQuantity/unitCode: "
+        checkMappingException(invoice, "ESCIA-0407: InvoicedQuantity/unitCode: PK and BaseQuantity/unitCode: "
                                        + "BX must be the same when specified in InvoiceLine: 1");
     }
 
@@ -439,14 +437,14 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
     @Test
     public void testInvalidOrder() {
         Party anotherSupplier = TestHelper.createSupplier();
-        User user = createUser(anotherSupplier);
+        User user = createESCIUser(anotherSupplier);
 
         // create an order with a single item
         Act order = createOrder();
 
         InvoiceType invoice = createInvoice(anotherSupplier);
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
-        checkMappingException(invoice, user, "ESCIA-0309: Invalid Order: " + order.getId()
+        checkMappingException(invoice, user, "ESCIA-0408: Invalid Order: " + order.getId()
                                              + " referenced by Invoice: 12345");
     }
 
@@ -463,7 +461,7 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
         OrderLineReferenceType lineRef = new OrderLineReferenceType();
         lineRef.setLineID(UBLHelper.initID(new LineIDType(), "114"));
         invoice.getInvoiceLine().get(0).getOrderLineReference().add(lineRef);
-        checkMappingException(invoice, "ESCIA-0310: Invalid OrderLine: 114 referenced by InvoiceLine: 1");
+        checkMappingException(invoice, "ESCIA-0408: Invalid OrderLine: 114 referenced by InvoiceLine: 1");
     }
 
     /**
@@ -692,20 +690,6 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
     }
 
     /**
-     * Helper to create a <tt>SupplierPartyType</tt>.
-     *
-     * @param supplier the supplier
-     * @return a new <tt>SupplierPartyType</tt>
-     */
-    private SupplierPartyType createSupplier(Party supplier) {
-        SupplierPartyType supplierType = new SupplierPartyType();
-        CustomerAssignedAccountIDType supplierId = UBLHelper.initID(new CustomerAssignedAccountIDType(),
-                                                                    supplier.getId());
-        supplierType.setCustomerAssignedAccountID(supplierId);
-        return supplierType;
-    }
-
-    /**
      * Helper to create a <tt>CustomerPartyType</tt>.
      *
      * @return a new <tt>CustomerPartyType</tt>
@@ -730,35 +714,6 @@ public class InvoiceMapperTestCase extends AbstractSupplierTest {
         mapper.setArchetypeService(getArchetypeService());
         mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
         return mapper;
-    }
-
-    /**
-     * Helper to create an order with a single item.
-     *
-     * @return a new order
-     */
-    private FinancialAct createOrder() {
-        FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
-        FinancialAct order = createOrder(orderItem);
-        save(order, orderItem);
-        return order;
-    }
-
-    /**
-     * Creates a new <em>user.esci</em>, linked to a supplier.
-     *
-     * @param supplier the supplier
-     * @return a new user
-     */
-    private User createUser(Party supplier) {
-        User user = (User) create(UserArchetypes.ESCI_USER);
-        EntityBean userBean = new EntityBean(user);
-        userBean.setValue("username", "z" + System.currentTimeMillis());
-        userBean.setValue("name", "foo");
-        userBean.setValue("password", "bar");
-        userBean.addNodeRelationship("supplier", supplier);
-        save(user, supplier);
-        return user;
     }
 
 }

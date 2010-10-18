@@ -17,20 +17,16 @@
  */
 package org.openvpms.esci.adapter;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.OrderResponseSimpleType;
 import org.oasis.ubl.OrderResponseType;
-import org.oasis.ubl.common.basic.IDType;
-import org.oasis.ubl.common.basic.RejectionNoteType;
-import org.openvpms.archetype.rules.supplier.OrderStatus;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
+import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.exception.ESCIException;
 import org.openvpms.esci.service.OrderResponseService;
 
@@ -44,22 +40,22 @@ import javax.annotation.Resource;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OrderResponseServiceAdapter implements OrderResponseService {
+public class OrderResponseServiceAdapter extends AbstractUBLServiceAdapter implements OrderResponseService {
 
     /**
-     * The bean factory.
+     * The order response mapper.
      */
-    private IMObjectBeanFactory factory;
-
-    /**
-     * Order archetype identifier.
-     */
-    private ArchetypeId ORDER_ID = new ArchetypeId("act.supplierOrder");
+    private OrderResponseMapper mapper;
 
     /**
      * Listener to notify when an order response is received.
      */
     private OrderResponseListener listener;
+
+    /**
+     * The archetype service.
+     */
+    private IArchetypeService service;
 
     /**
      * The logger.
@@ -73,13 +69,13 @@ public class OrderResponseServiceAdapter implements OrderResponseService {
     }
 
     /**
-     * Registers the bean factory.
+     * Registers the order response mapper.
      *
-     * @param factory the factory
+     * @param mapper the mapper
      */
     @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
+    public void setOrderResponseMapper(OrderResponseMapper mapper) {
+        this.mapper = mapper;
     }
 
     /**
@@ -87,8 +83,19 @@ public class OrderResponseServiceAdapter implements OrderResponseService {
      *
      * @param listener the listener to notify. May be <tt>null</tt>
      */
+    @Resource
     public void setOrderResponseListener(OrderResponseListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Registers the archetype service.
+     *
+     * @param service the archetype service
+     */
+    @Resource
+    public void setArchetypeService(IArchetypeService service) {
+        this.service = service;
     }
 
     /**
@@ -98,29 +105,17 @@ public class OrderResponseServiceAdapter implements OrderResponseService {
      * @throws ESCIException if the response is invalid or cannot be processed
      */
     public void submitSimpleResponse(OrderResponseSimpleType response) throws ESCIException {
-        IMObjectReference reference = getOrderReference(response);
-        ActBean bean = factory.createActBean(reference);
-        if (bean == null) {
-            throw new ESCIException("OrderReference with ID " + reference.getId()
-                                    + " does not refer to a valid order");
+        try {
+            User user = getUser();
+            FinancialAct order = mapper.map(response, user);
+            service.save(order);
+            notifyListener(order);
+        } catch (ESCIException exception) {
+            throw exception;
+        } catch (Throwable exception) {
+            Message message = ESCIAdapterMessages.failedToSubmitOrderResponse(exception.getMessage());
+            throw new ESCIException(message.toString(), exception);
         }
-        if (response.getAcceptedIndicator().isValue()) {
-            bean.setValue("status", OrderStatus.ACCEPTED);
-            bean.setValue("supplierResponse", "Order Accepted");   // TODO localise
-        } else {
-            String message = null;
-            RejectionNoteType note = response.getRejectionNote();
-            if (note != null) {
-                message = note.getValue();
-            }
-            if (StringUtils.isEmpty(message)) {
-                message = "Order rejected without any message";   // TODO localise
-            }
-            bean.setValue("status", OrderStatus.REJECTED);
-            bean.setValue("supplierResponse", message);
-        }
-        bean.save();
-        notifyListener(bean.getAct());
     }
 
     /**
@@ -131,15 +126,6 @@ public class OrderResponseServiceAdapter implements OrderResponseService {
      */
     public void submitResponse(OrderResponseType response) throws ESCIException {
         throw new ESCIException("Unsupported operation");
-    }
-
-    private IMObjectReference getOrderReference(OrderResponseSimpleType response) {
-        IDType type = response.getOrderReference().getID();
-        long id = NumberUtils.toLong(type.getValue(), -1);
-        if (id == -1) {
-            throw new ESCIException(type.getValue() + " is not a valid order reference");
-        }
-        return new IMObjectReference(ORDER_ID, id);
     }
 
     /**

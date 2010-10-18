@@ -19,11 +19,9 @@ package org.openvpms.esci.adapter;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.oasis.ubl.InvoiceType;
 import org.oasis.ubl.common.AmountType;
 import org.oasis.ubl.common.CurrencyCodeContentType;
-import org.oasis.ubl.common.IdentifierType;
 import org.oasis.ubl.common.aggregate.CustomerPartyType;
 import org.oasis.ubl.common.aggregate.InvoiceLineType;
 import org.oasis.ubl.common.aggregate.ItemIdentificationType;
@@ -32,7 +30,6 @@ import org.oasis.ubl.common.aggregate.MonetaryTotalType;
 import org.oasis.ubl.common.aggregate.OrderLineReferenceType;
 import org.oasis.ubl.common.aggregate.OrderReferenceType;
 import org.oasis.ubl.common.aggregate.PriceType;
-import org.oasis.ubl.common.aggregate.SupplierPartyType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
 import org.oasis.ubl.common.basic.BaseQuantityType;
 import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
@@ -51,19 +48,14 @@ import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.exception.ESCIException;
@@ -81,7 +73,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class InvoiceMapperImpl implements InvoiceMapper {
+public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMapper {
 
     /**
      * The practice rules.
@@ -97,11 +89,6 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      * The supplier rules.
      */
     private SupplierRules supplierRules;
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
 
     /**
      * The bean factory.
@@ -122,11 +109,6 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      * Stock location archetype id.
      */
     private static final ArchetypeId STOCK_LOCATION = new ArchetypeId(StockArchetypes.STOCK_LOCATION);
-
-    /**
-     * Expected UBL version.
-     */
-    private static final String UBL_VERSION = "2.0";
 
 
     /**
@@ -166,16 +148,6 @@ public class InvoiceMapperImpl implements InvoiceMapper {
     }
 
     /**
-     * Registers the archetype service.
-     *
-     * @param service the archetype service
-     */
-    @Resource
-    public void setArchetypeService(IArchetypeService service) {
-        this.service = service;
-    }
-
-    /**
      * Registers the bean factory.
      *
      * @param factory the bean factory
@@ -204,7 +176,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         Date issueDatetime = getIssueDatetime(invoice, invoiceId);
         String note = getNote(invoice);
         Party supplier = getSupplier(invoice, invoiceId);
-        checkSupplier(supplier, user);
+        checkSupplier(supplier, user, factory);
         Party stockLocation = getStockLocation(invoice, invoiceId);
 
         ActBean order = null;
@@ -214,11 +186,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
             result.setOrder((FinancialAct) order.getAct());
         }
 
-        MonetaryTotalType monetaryTotal = invoice.getLegalMonetaryTotal();
-        if (monetaryTotal == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired("LegalMonetaryTotal", "Invoice", invoiceId);
-            throw new ESCIException(message.toString());
-        }
+        MonetaryTotalType monetaryTotal = getRequired(invoice.getLegalMonetaryTotal(), "LegalMonetaryTotal", "Invoice",
+                                                      invoiceId);
         String practiceCurrency = UBLHelper.getCurrencyCode(practiceRules, factory);
         BigDecimal payableAmount = getAmount(monetaryTotal.getPayableAmount(), practiceCurrency,
                                              "LegalMonetaryTotal/PayableAmount", "Invoice", invoiceId);
@@ -253,7 +222,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
             BigDecimal amount = getAmount(line.getLineExtensionAmount(), practiceCurrency,
                                           "LineExtensionAmount", "InvoiceLine", lineId);
             FinancialAct item = mapInvoiceLine(line, issueDatetime, practiceCurrency, supplier, order, lineId);
-            service.deriveValues(item);
+            getArchetypeService().deriveValues(item);
             delivery.addNodeRelationship("items", item);
             result.addDeliveryItem(item);
             itemLineExtensionAmount = itemLineExtensionAmount.add(amount);
@@ -303,9 +272,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
                 throw new ESCIException(message.toString());
             }
             LineIDType id = list.get(0).getLineID();
-            IMObjectReference ref = getReference(ORDER_ITEM, id, "OrderLineReference/LineID", "InvoiceLine",
-                                                 invoiceLineId);
-            result = (FinancialAct) service.get(ref);
+            result = (FinancialAct) getObject(ORDER_ITEM, id, "OrderLineReference/LineID", "InvoiceLine",
+                                              invoiceLineId);
             if (result == null || !order.hasRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, result)) {
                 Message message = ESCIAdapterMessages.invoiceInvalidOrderItem(invoiceLineId, id.getValue());
                 throw new ESCIException(message.toString());
@@ -349,21 +317,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      * @throws ESCIException if the supplier was not found
      */
     protected Party getSupplier(InvoiceType invoice, String invoiceId) {
-        SupplierPartyType supplierType = invoice.getAccountingSupplierParty();
-        if (supplierType == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired("AccountingSupplierParty", "Invoice",
-                                                                     invoiceId);
-            throw new ESCIException(message.toString());
-        }
-        CustomerAssignedAccountIDType accountId = supplierType.getCustomerAssignedAccountID();
-        long id = getNumericId(accountId, "AccountingSupplierParty/CustomerAssignedAccountID", "Invoice", invoiceId);
-        Party supplier = (Party) getObject(id, "party.supplier*");
-        if (supplier == null) {
-            Message message = ESCIAdapterMessages.invoiceInvalidSupplier(
-                    "AccountingSupplierParty/CustomerAssignedAccountID", invoiceId, accountId.getValue());
-            throw new ESCIException(message.toString());
-        }
-        return supplier;
+        return getSupplier(invoice.getAccountingSupplierParty(), "AccountingSupplierParty", "Invoice", invoiceId);
     }
 
     /**
@@ -375,16 +329,11 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      * @throws ESCIException if the stock location was not found
      */
     protected Party getStockLocation(InvoiceType invoice, String invoiceId) {
-        CustomerPartyType customerType = invoice.getAccountingCustomerParty();
-        if (customerType == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired("AccountingCustomerParty", "Invoice",
-                                                                     invoiceId);
-            throw new ESCIException(message.toString());
-        }
+        CustomerPartyType customerType = getRequired(invoice.getAccountingCustomerParty(), "AccountingCustomerParty",
+                                                     "Invoice", invoiceId);
         CustomerAssignedAccountIDType accountId = customerType.getCustomerAssignedAccountID();
-        IMObjectReference ref = getReference(STOCK_LOCATION, accountId,
-                                             "AccountingCustomerParty/CustomerAssignedAccountID", "Invoice", invoiceId);
-        Party location = (Party) service.get(ref);
+        Party location = (Party) getObject(STOCK_LOCATION, accountId,
+                                           "AccountingCustomerParty/CustomerAssignedAccountID", "Invoice", invoiceId);
         if (location == null) {
             Message message = ESCIAdapterMessages.invoiceInvalidStockLocation(
                     "AccountingCustomerParty/CustomerAssignedAccountID", invoiceId, accountId.getValue());
@@ -408,18 +357,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      */
     protected ActBean mapOrderReference(OrderReferenceType order, Party supplier, String invoiceId) {
         IMObjectReference ref = getReference(ORDER, order.getID(), "OrderReference", "Invoice", invoiceId);
-        boolean valid = false;
-        ActBean bean = factory.createActBean(ref);
-        if (bean != null) {
-            if (ObjectUtils.equals(bean.getNodeParticipantRef("supplier"), supplier.getObjectReference())) {
-                valid = true;
-            }
-        }
-        if (!valid) {
-            Message message = ESCIAdapterMessages.invoiceInvalidOrder(invoiceId, order.getID().getValue());
-            throw new ESCIException(message.toString());
-        }
-        return bean;
+        FinancialAct result = getOrder(ref, supplier, "Invoice", invoiceId);
+        return factory.createActBean(result);
     }
 
     /**
@@ -450,18 +389,10 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         Product product = getProduct(line, supplier, invoiceLineId);
         BigDecimal lineExtensionAmount = getAmount(line.getLineExtensionAmount(), practiceCurrency,
                                                    "LineExtensionAmount", "InvoiceLine", invoiceLineId);
-        ItemType item = line.getItem();
-        if (item == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired("Item", "InvoiceLine", invoiceLineId);
-            throw new ESCIException(message.toString());
-        }
+        ItemType item = getRequired(line.getItem(), "Item", "InvoiceLine", invoiceLineId);
         String reorderCode = getSellerItemId(item);
         String reorderDescription = getSellerItemName(item);
-        PriceType price = line.getPrice();
-        if (price == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired("Price", "InvoiceLine", invoiceLineId);
-            throw new ESCIException(message.toString());
-        }
+        PriceType price = getRequired(line.getPrice(), "Price", "InvoiceLine", invoiceLineId);
         BigDecimal unitPrice = getAmount(price.getPriceAmount(), practiceCurrency, "Price/PriceAmount",
                                          "InvoiceLine", invoiceLineId);
         BigDecimal tax = getTax(line, practiceCurrency, invoiceLineId);
@@ -502,7 +433,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
             deliveryItem.addNodeRelationship("order", orderItem);
         }
 
-        service.deriveValues(deliveryItem.getObject());
+        getArchetypeService().deriveValues(deliveryItem.getObject());
         return (FinancialAct) deliveryItem.getAct();
     }
 
@@ -573,11 +504,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      */
     protected Product getProduct(InvoiceLineType line, Party supplier, String invoiceLineId) {
         Product result = null;
-        ItemType item = line.getItem();
-        if (item == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired("Item", "InvoiceLine", invoiceLineId);
-            throw new ESCIException(message.toString());
-        }
+        ItemType item = getRequired(line.getItem(), "Item", "InvoiceLine", invoiceLineId);
         ItemIdentificationType buyerId = item.getBuyersItemIdentification();
         ItemIdentificationType sellerId = item.getSellersItemIdentification();
         if (buyerId == null && sellerId == null) {
@@ -661,21 +588,6 @@ public class InvoiceMapperImpl implements InvoiceMapper {
     }
 
     /**
-     * Verifies that an user is linked to a supplier.
-     *
-     * @param supplier the supplier
-     * @param user     the ESCI user that submitted the innvoice
-     * @throws ESCIException if the user has no relationship to the supplier
-     */
-    protected void checkSupplier(Party supplier, User user) {
-        EntityBean bean = factory.createEntityBean(user);
-        if (!bean.getNodeTargetEntityRefs("supplier").contains(supplier.getObjectReference())) {
-            Message message = ESCIAdapterMessages.userNotLinkedToSupplier(user, supplier);
-            throw new ESCIException(message.toString());
-        }
-    }    
-
-    /**
      * Returns the invoice issue date/time.
      *
      * @param invoice   the invoice
@@ -684,12 +596,9 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      * @throws ESCIException if the issue date isn't set
      */
     protected Date getIssueDatetime(InvoiceType invoice, String invoiceId) {
-        IssueDateType issueDate = invoice.getIssueDate();
-        XMLGregorianCalendar calendar = (issueDate != null) ? issueDate.getValue() : null;
-        if (calendar == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired("IssueDate", "Invoice", invoiceId);
-            throw new ESCIException(message.toString());
-        }
+        IssueDateType issueDate = getRequired(invoice.getIssueDate(), "IssueDate", "Invoice", invoiceId);
+        XMLGregorianCalendar calendar = issueDate.getValue();
+        checkRequired(calendar, "IssueDate", "Invoice", invoiceId);
 
         IssueTimeType issueTime = invoice.getIssueTime();
         if (issueTime != null) {
@@ -715,15 +624,8 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      * @return the amount value
      */
     protected BigDecimal getAmount(AmountType amount, String practiceCurrency, String path, String parent, String id) {
-        if (amount == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired(path, parent, id);
-            throw new ESCIException(message.toString());
-        }
-        CurrencyCodeContentType currency = amount.getCurrencyID();
-        if (currency == null || StringUtils.isEmpty(currency.value())) {
-            Message message = ESCIAdapterMessages.ublElementRequired(path + "/currencyID", parent, id);
-            throw new ESCIException(message.toString());
-        }
+        checkRequired(amount, path, parent, id);
+        CurrencyCodeContentType currency = getRequired(amount.getCurrencyID(), path + "/currencyID", parent, id);
         if (!ObjectUtils.equals(practiceCurrency, currency.value())) {
             Message message = ESCIAdapterMessages.invoiceInvalidCurrency(path, parent, id, practiceCurrency,
                                                                          currency.value());
@@ -771,96 +673,6 @@ public class InvoiceMapperImpl implements InvoiceMapper {
     }
 
     /**
-     * Returns an object given its id.
-     *
-     * @param id         the object identifier
-     * @param shortNames the possible archetype short names for the object
-     * @return the corresponding object or <tt>null</tt> if it is not found
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
-     */
-    protected IMObject getObject(long id, String... shortNames) {
-        IMObject result = null;
-        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
-        query.add(Constraints.eq("id", id));
-        IPage<IMObject> page = service.get(query);
-        if (page.getResults().size() == 1) {
-            result = page.getResults().get(0);
-        }
-        return result;
-    }
-
-    /**
-     * Returns an <tt>IMObjectReference</tt> for a given archetype id and <tt>IdentfierType</tt>.
-     *
-     * @param archetypeId the archetype identifier
-     * @param id          the identifier
-     * @param path        the identifier element path
-     * @param parent      the parent element
-     * @param parentId    the parent element identifier
-     * @return the corresponding reference
-     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
-     */
-    protected IMObjectReference getReference(ArchetypeId archetypeId, IdentifierType id, String path, String parent,
-                                             String parentId) {
-        long objectId = getNumericId(id, path, parent, parentId);
-        return new IMObjectReference(archetypeId, objectId);
-    }
-
-    /**
-     * Returns the numeric value of an <tt>IdentifierType</tt>.
-     *
-     * @param id       the identifier
-     * @param path     the identifier element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @return the numeric value of <tt>id</tt>
-     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
-     */
-    protected long getNumericId(IdentifierType id, String path, String parent, String parentId) {
-        String value = getId(id, path, parent, parentId);
-        long result = NumberUtils.toLong(value, -1);
-        if (result == -1) {
-            Message message = ESCIAdapterMessages.ublInvalidIdentifier(path, parent, parentId, id.getValue());
-            throw new ESCIException(message.toString());
-        }
-        return result;
-    }
-
-    /**
-     * Returns the string value of an <tt>IdentifierType</tt>.
-     *
-     * @param id       the identifier
-     * @param path     the identifier element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @return the value of <tt>id</tt>
-     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
-     */
-    protected String getId(IdentifierType id, String path, String parent, String parentId) {
-        String result = getId(id);
-        if (result == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired(path, parent, parentId);
-            throw new ESCIException(message.toString());
-        }
-        return result;
-    }
-
-    /**
-     * Returns the string value of an identifier.
-     *
-     * @param id the identifier. May be <tt>null</tt>
-     * @return the identifier value. May be <tt>null</tt>
-     */
-    protected String getId(IdentifierType id) {
-        String result = null;
-        if (id != null) {
-            result = StringUtils.trimToNull(id.getValue());
-        }
-        return result;
-    }
-
-    /**
      * Returns an author to associate with the delivery.
      * <p/>
      * This returns the author of the original order, if present. If not, it returns that from the stock location.
@@ -880,6 +692,5 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         }
         return result;
     }
-
 
 }

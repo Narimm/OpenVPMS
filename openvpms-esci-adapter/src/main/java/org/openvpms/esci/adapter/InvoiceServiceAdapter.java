@@ -20,18 +20,13 @@ package org.openvpms.esci.adapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.InvoiceType;
-import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.exception.ESCIException;
 import org.openvpms.esci.service.InvoiceService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Resource;
 
@@ -46,7 +41,7 @@ import javax.annotation.Resource;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class InvoiceServiceAdapter implements InvoiceService {
+public class InvoiceServiceAdapter extends AbstractUBLServiceAdapter implements InvoiceService {
 
     /**
      * The archetype service.
@@ -62,11 +57,6 @@ public class InvoiceServiceAdapter implements InvoiceService {
      * The listener to notify when an invoice is received. May be <tt>null</tt>
      */
     private InvoiceListener listener;
-
-    /**
-     * The user rules.
-     */
-    private UserRules rules;
 
     /**
      * The logger.
@@ -105,16 +95,6 @@ public class InvoiceServiceAdapter implements InvoiceService {
     }
 
     /**
-     * Registers the user rules.
-     *
-     * @param rules the user rules
-     */
-    @Resource
-    public void setUserRules(UserRules rules) {
-        this.rules = rules;
-    }
-
-    /**
      * Submits an invoice.
      *
      * @param invoice the invoice to submit.
@@ -123,10 +103,6 @@ public class InvoiceServiceAdapter implements InvoiceService {
     public void submitInvoice(InvoiceType invoice) throws ESCIException {
         try {
             User user = getUser();
-            if (user == null) {
-                Message message = ESCIAdapterMessages.noESCIUser();
-                throw new ESCIException(message.toString());
-            }
             Delivery delivery = mapper.map(invoice, user);
             service.save(delivery.getActs());
             notifyListener(delivery.getDelivery());
@@ -136,23 +112,6 @@ public class InvoiceServiceAdapter implements InvoiceService {
             Message message = ESCIAdapterMessages.failedToSubmitInvoice(exception.getMessage());
             throw new ESCIException(message.toString(), exception);
         }
-    }
-
-    /**
-     * Returns the current ESCI user.
-     *
-     * @return the user, or <tt>null</tt> if none is found
-     */
-    protected User getUser() {
-        User result = null;
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            User user = rules.getUser(auth.getName());
-            if (TypeHelper.isA(user, UserArchetypes.ESCI_USER)) {
-                result = user;
-            }
-        }
-        return result;
     }
 
     /**

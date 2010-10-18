@@ -227,7 +227,7 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
      *
      * @return a new mapper
      */
-    private OrderMapperImpl createMapper() {
+    private OrderMapper createMapper() {
         OrderMapperImpl mapper = new OrderMapperImpl();
         mapper.setPracticeRules(new PracticeRules());
         mapper.setLocationRules(new LocationRules());
