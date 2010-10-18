@@ -32,12 +32,12 @@ public interface InvoiceMapper {
      * Maps an UBL invoice to an <em>act.supplierDelivery</em>.
      *
      * @param invoice the invoice to map
-     * @param author  the author to assign to the delivery. May be <tt>null</tt>
+     * @param user    the ESCI user that submitted the invoice
      * @return the results of the mapping
      * @throws org.openvpms.esci.exception.ESCIException
      *          if the invoice cannot be mapped
      * @throws org.openvpms.component.system.common.exception.OpenVPMSException
      *          for any OpenVPMS error
      */
-    Delivery map(InvoiceType invoice, User author);
+    Delivery map(InvoiceType invoice, User user);
 }

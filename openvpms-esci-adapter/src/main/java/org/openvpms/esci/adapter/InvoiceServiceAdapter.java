@@ -20,14 +20,12 @@ package org.openvpms.esci.adapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.InvoiceType;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.exception.ESCIException;
@@ -36,7 +34,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 
 
 /**
@@ -65,11 +62,6 @@ public class InvoiceServiceAdapter implements InvoiceService {
      * The listener to notify when an invoice is received. May be <tt>null</tt>
      */
     private InvoiceListener listener;
-
-    /**
-     * The bean factory.
-     */
-    private IMObjectBeanFactory factory;
 
     /**
      * The user rules.
@@ -113,16 +105,6 @@ public class InvoiceServiceAdapter implements InvoiceService {
     }
 
     /**
-     * Registers the bean factory.
-     *
-     * @param factory the bean factory
-     */
-    @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
-    }
-
-    /**
      * Registers the user rules.
      *
      * @param rules the user rules
@@ -140,10 +122,13 @@ public class InvoiceServiceAdapter implements InvoiceService {
      */
     public void submitInvoice(InvoiceType invoice) throws ESCIException {
         try {
-            User author = getAuthor();
-            Delivery delivery = mapper.map(invoice, author);
+            User user = getUser();
+            if (user == null) {
+                Message message = ESCIAdapterMessages.noESCIUser();
+                throw new ESCIException(message.toString());
+            }
+            Delivery delivery = mapper.map(invoice, user);
             service.save(delivery.getActs());
-            linkDeliveryToOrder(delivery);
             notifyListener(delivery.getDelivery());
         } catch (ESCIException exception) {
             throw exception;
@@ -154,38 +139,20 @@ public class InvoiceServiceAdapter implements InvoiceService {
     }
 
     /**
-     * Links delivery items to their corresponding order items.
+     * Returns the current ESCI user.
      *
-     * @param delivery the delivery
+     * @return the user, or <tt>null</tt> if none is found
      */
-    private void linkDeliveryToOrder(Delivery delivery) {
-        for (FinancialAct item : delivery.getDeliveryItems()) {
-            IMObjectReference orderItemRef = delivery.getOrderItem(item);
-            if (orderItemRef != null) {
-                linkItem(item, orderItemRef);
+    protected User getUser() {
+        User result = null;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            User user = rules.getUser(auth.getName());
+            if (TypeHelper.isA(user, UserArchetypes.ESCI_USER)) {
+                result = user;
             }
         }
-    }
-
-    /**
-     * Links an <em>act.supplierDeliveryItem</em> to an <em>act.supplierOrderItem</em>, if it exists
-     *
-     * @param delivery the delivery item
-     * @param orderRef the order item referemce
-     */
-    private void linkItem(FinancialAct delivery, IMObjectReference orderRef) {
-        FinancialAct order = (FinancialAct) service.get(orderRef);
-        if (order != null) {
-            ActBean bean = factory.createActBean(delivery);
-            bean.addNodeRelationship("order", order);
-            service.save(Arrays.asList(delivery, order));
-        } else {
-            // TODO
-            log.warn("Cannot link " + delivery.getObjectReference().getArchetypeId().getShortName() + ":"
-                     + delivery.getId()
-                     + " to " + orderRef.getArchetypeId().getShortName() + ":" + orderRef.getId()
-                     + ": order doesn't exist");
-        }
+        return result;
     }
 
     /**
@@ -202,19 +169,6 @@ public class InvoiceServiceAdapter implements InvoiceService {
                 log.error("InvoiceListener threw exception", exception);
             }
         }
-    }
-
-    /**
-     * Returns the current user for use as the author participant in a delivery.
-     *
-     * @return the current user, or <tt>null</tt> if it is not found
-     */
-    private User getAuthor() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            return rules.getUser(auth.getName());
-        }
-        return null;
     }
 
 }

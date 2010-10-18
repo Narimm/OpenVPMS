@@ -23,6 +23,7 @@ import org.oasis.ubl.common.CurrencyCodeContentType;
 import org.oasis.ubl.common.IdentifierType;
 import org.oasis.ubl.common.QuantityType;
 import org.oasis.ubl.common.TextType;
+import org.oasis.ubl.common.aggregate.OrderReferenceType;
 import org.oasis.ubl.common.basic.IDType;
 import org.oasis.ubl.common.basic.IssueDateType;
 import org.oasis.ubl.common.basic.IssueTimeType;
@@ -41,6 +42,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
 
 /**
  * UBL helper methods.
@@ -198,20 +200,79 @@ class UBLHelper {
         return quantity;
     }
 
-
+    /**
+     * Creates a new <tt>IssueDateType</tt> from a date.
+     *
+     * @param date    the date
+     * @param factory the XML data type factory
+     * @return a new <tt>IssueDateType</tt>
+     */
     public static IssueDateType createIssueDate(Date date, DatatypeFactory factory) {
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(date);
         return createIssueDate(calendar, factory);
     }
 
+    /**
+     * Creates a new <tt>IssueDateType</tt> from a date.
+     *
+     * @param calendar the calendar
+     * @param factory  the XML data type factory
+     * @return a new <tt>IssueDateType</tt>
+     */
     public static IssueDateType createIssueDate(GregorianCalendar calendar, DatatypeFactory factory) {
         IssueDateType result = new IssueDateType();
         result.setValue(getDate(calendar, factory));
         return result;
     }
 
-    public static XMLGregorianCalendar getDate(GregorianCalendar calendar, DatatypeFactory factory) {
+    /**
+     * Creates a new <tt>IssueTimeType</tt> from a date.
+     *
+     * @param date    the date
+     * @param factory the XML data type factory
+     * @return a new <tt>IssueTimeType</tt>
+     */
+    public static IssueTimeType createIssueTime(Date date, DatatypeFactory factory) {
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        return createIssueTime(calendar, factory);
+    }
+
+    /**
+     * Creates a new <tt>IssueTimeType</tt> from a calendar.
+     *
+     * @param calendar the calendar
+     * @param factory  the XML data type factory
+     * @return a new <tt>IssueTimeType</tt>
+     */
+    public static IssueTimeType createIssueTime(GregorianCalendar calendar, DatatypeFactory factory) {
+        IssueTimeType result = new IssueTimeType();
+        result.setValue(getTime(calendar, factory));
+        return result;
+    }
+
+    /**
+     * Creates a new <tt>OrderReferenceType</tt>.
+     *
+     * @param id the identifier
+     * @return a new <tt>OrderReferenceType</tt>
+     */
+    public static OrderReferenceType createOrderReference(long id) {
+        OrderReferenceType result = new OrderReferenceType();
+        result.setID(createID(id));
+        return result;
+    }
+
+    /**
+     * Helper to create a new <tt>XMLGregorianCalendar</tt> from an <tt>GregorianCalendar</tt>, populating just
+     * the date components.
+     *
+     * @param calendar the calendar
+     * @param factory  the XML data type factory
+     * @return a new <tt>XMLGregorianCalendar</tt>
+     */
+    private static XMLGregorianCalendar getDate(GregorianCalendar calendar, DatatypeFactory factory) {
         XMLGregorianCalendar xml = factory.newXMLGregorianCalendar(calendar);
         xml.setHour(DatatypeConstants.FIELD_UNDEFINED);
         xml.setMinute(DatatypeConstants.FIELD_UNDEFINED);
@@ -221,19 +282,15 @@ class UBLHelper {
         return xml;
     }
 
-    public static IssueTimeType createIssueTime(Date date, DatatypeFactory factory) {
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTime(date);
-        return createIssueTime(calendar, factory);
-    }
-
-    public static IssueTimeType createIssueTime(GregorianCalendar calendar, DatatypeFactory factory) {
-        IssueTimeType result = new IssueTimeType();
-        result.setValue(getTime(calendar, factory));
-        return result;
-    }
-
-    public static XMLGregorianCalendar getTime(GregorianCalendar calendar, DatatypeFactory factory) {
+    /**
+     * Helper to create a new <tt>XMLGregorianCalendar</tt> from an <tt>GregorianCalendar</tt>, populating just
+     * the time components.
+     *
+     * @param calendar the calendar
+     * @param factory  the XML data type factory
+     * @return a new <tt>XMLGregorianCalendar</tt>
+     */
+    private static XMLGregorianCalendar getTime(GregorianCalendar calendar, DatatypeFactory factory) {
         XMLGregorianCalendar xml = factory.newXMLGregorianCalendar(calendar);
         xml.setDay(DatatypeConstants.FIELD_UNDEFINED);
         xml.setMonth(DatatypeConstants.FIELD_UNDEFINED);
@@ -241,4 +298,5 @@ class UBLHelper {
         xml.setTimezone(DatatypeConstants.FIELD_UNDEFINED);
         return xml;
     }
+
 }

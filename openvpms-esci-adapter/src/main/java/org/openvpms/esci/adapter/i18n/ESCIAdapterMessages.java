@@ -19,6 +19,7 @@ package org.openvpms.esci.adapter.i18n;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 
 import java.math.BigDecimal;
 
@@ -79,7 +80,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message noProductSupplierRelationship(Party supplier, Product product) {
-        return messages.getMessage(5, supplier.getName(), product.getName());
+        return messages.getMessage(5, supplier.getId(), supplier.getName(), product.getId(), product.getName());
     }
 
     /**
@@ -90,7 +91,27 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message noSupplierOrderCode(Party supplier, Product product) {
-        return messages.getMessage(6, supplier.getName(), product.getName());
+        return messages.getMessage(6, supplier.getId(), supplier.getName(), product.getId(), product.getName());
+    }
+
+    /**
+     * Creates a new message for when no ESCI user can be determined from the current context.
+     *
+     * @return a new message
+     */
+    public static Message noESCIUser() {
+        return messages.getMessage(7);
+    }
+
+    /**
+     * Creates a new message for when a user has no relationship to a supplier.
+     *
+     * @param user     the ESCI user
+     * @param supplier the supplier
+     * @return a new message
+     */
+    public static Message userNotLinkedToSupplier(User user, Party supplier) {
+        return messages.getMessage(8, user.getId(), user.getName(), supplier.getId(), supplier.getName());
     }
 
     /**

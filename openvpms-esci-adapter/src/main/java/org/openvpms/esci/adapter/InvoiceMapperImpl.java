@@ -50,6 +50,7 @@ import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -57,6 +58,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -187,14 +189,14 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      * Maps an UBL invoice to an <em>act.supplierDelivery</em>.
      *
      * @param invoice the invoice to map
-     * @param author  the author to assign to the delivery. May be <tt>null</tt>
+     * @param user    the ESCI user that submitted the invoice
      * @return the acts produced in the mapping. The first element is always the <em>act.supplierDelivery</em>
      * @throws org.openvpms.esci.exception.ESCIException
      *          if the invoice cannot be mapped
      * @throws org.openvpms.component.system.common.exception.OpenVPMSException
      *          for any OpenVPMS error
      */
-    public Delivery map(InvoiceType invoice, User author) {
+    public Delivery map(InvoiceType invoice, User user) {
         Delivery result = new Delivery();
         String invoiceId = getInvoiceId(invoice);
         checkUBLVersion(invoice, invoiceId);
@@ -202,13 +204,14 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         Date issueDatetime = getIssueDatetime(invoice, invoiceId);
         String note = getNote(invoice);
         Party supplier = getSupplier(invoice, invoiceId);
+        checkSupplier(supplier, user);
         Party stockLocation = getStockLocation(invoice, invoiceId);
 
-        FinancialAct order = null;
+        ActBean order = null;
 
         if (orderReference != null) {
             order = mapOrderReference(orderReference, supplier, invoiceId);
-            result.setOrder(order);
+            result.setOrder((FinancialAct) order.getAct());
         }
 
         MonetaryTotalType monetaryTotal = invoice.getLegalMonetaryTotal();
@@ -232,10 +235,10 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         delivery.setValue("supplierInvoiceId", invoiceId);
         delivery.addNodeParticipation("supplier", supplier);
         delivery.addNodeParticipation("stockLocation", stockLocation);
+        Entity author = getAuthor(order, stockLocation);
         if (author != null) {
             delivery.addNodeParticipation("author", author);
         }
-
         result.setDelivery((FinancialAct) delivery.getAct());
         List<InvoiceLineType> lines = invoice.getInvoiceLine();
         if (lines == null || lines.isEmpty()) {
@@ -249,18 +252,13 @@ public class InvoiceMapperImpl implements InvoiceMapper {
             String lineId = getInvoiceLineId(line);
             BigDecimal amount = getAmount(line.getLineExtensionAmount(), practiceCurrency,
                                           "LineExtensionAmount", "InvoiceLine", lineId);
-            FinancialAct item = mapInvoiceLine(line, issueDatetime, practiceCurrency, supplier, lineId);
+            FinancialAct item = mapInvoiceLine(line, issueDatetime, practiceCurrency, supplier, order, lineId);
             service.deriveValues(item);
             delivery.addNodeRelationship("items", item);
             result.addDeliveryItem(item);
             itemLineExtensionAmount = itemLineExtensionAmount.add(amount);
             itemTax = itemTax.add(item.getTaxAmount());
             itemTotal = itemTotal.add(item.getTotal());
-
-            IMObjectReference orderItem = mapOrderItem(order, line, lineId);
-            if (orderItem != null) {
-                result.addDeliveryOrderMapping(item, orderItem);
-            }
         }
         if (payableAmount.compareTo(itemTotal) != 0) {
             Message message = ESCIAdapterMessages.invoiceInvalidPayableAmount(invoiceId, payableAmount, itemTotal);
@@ -280,20 +278,24 @@ public class InvoiceMapperImpl implements InvoiceMapper {
 
     /**
      * Returns the associated order item for an invoice line.
+     * <p/>
+     * If no order is supplied, this verifies that there are no references to order items.
      *
-     * @param order         the order
+     * @param order         the order. May be <tt>null</tt>
      * @param line          the invoice line
      * @param invoiceLineId the invoice line identifier
-     * @return the corresponding order item reference, or <tt>null</tt> if none is present
+     * @return the corresponding order item, or <tt>null</tt> if none is present
      * @throws ESCIException if the order reference was inccrrectly specified
      */
-    protected IMObjectReference mapOrderItem(FinancialAct order, InvoiceLineType line, String invoiceLineId) {
-        IMObjectReference result = null;
+    protected FinancialAct mapOrderItem(ActBean order, InvoiceLineType line, String invoiceLineId) {
+        FinancialAct result = null;
         List<OrderLineReferenceType> list = line.getOrderLineReference();
-        if (order == null && list != null && !list.isEmpty()) {
-            Message message = ESCIAdapterMessages.ublInvalidCardinality("OrderLineReference", "InvoiceLine",
-                                                                        invoiceLineId, "0", list.size());
-            throw new ESCIException(message.toString());
+        if (order == null) {
+            if (list != null && !list.isEmpty()) {
+                Message message = ESCIAdapterMessages.ublInvalidCardinality("OrderLineReference", "InvoiceLine",
+                                                                            invoiceLineId, "0", list.size());
+                throw new ESCIException(message.toString());
+            }
         } else if (list != null && !list.isEmpty()) {
             if (list.size() != 1) {
                 Message message = ESCIAdapterMessages.ublInvalidCardinality("OrderLineReference", "InvoiceLine",
@@ -301,9 +303,10 @@ public class InvoiceMapperImpl implements InvoiceMapper {
                 throw new ESCIException(message.toString());
             }
             LineIDType id = list.get(0).getLineID();
-            result = getReference(ORDER_ITEM, id, "OrderLineReference/LineID", "InvoiceLine", invoiceLineId);
-            ActBean bean = factory.createActBean(order);
-            if (!bean.hasRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, order)) {
+            IMObjectReference ref = getReference(ORDER_ITEM, id, "OrderLineReference/LineID", "InvoiceLine",
+                                                 invoiceLineId);
+            result = (FinancialAct) service.get(ref);
+            if (result == null || !order.hasRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, result)) {
                 Message message = ESCIAdapterMessages.invoiceInvalidOrderItem(invoiceLineId, id.getValue());
                 throw new ESCIException(message.toString());
             }
@@ -403,8 +406,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
      *                       for any archetype service error
      */
-    protected FinancialAct mapOrderReference(OrderReferenceType order, Party supplier, String invoiceId) {
-        FinancialAct result;
+    protected ActBean mapOrderReference(OrderReferenceType order, Party supplier, String invoiceId) {
         IMObjectReference ref = getReference(ORDER, order.getID(), "OrderReference", "Invoice", invoiceId);
         boolean valid = false;
         ActBean bean = factory.createActBean(ref);
@@ -417,8 +419,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
             Message message = ESCIAdapterMessages.invoiceInvalidOrder(invoiceId, order.getID().getValue());
             throw new ESCIException(message.toString());
         }
-        result = (FinancialAct) bean.getAct();
-        return result;
+        return bean;
     }
 
     /**
@@ -428,6 +429,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      * @param startTime        the invoice start time
      * @param practiceCurrency the practice currency. All amounts must be expressed in this currency
      * @param supplier         the supplier
+     * @param order            the original order. May be <tt>null</tt>
      * @param invoiceLineId    the invoice line identifier
      * @return a new <em>act.supplierDeliveryItem</em> corresponding to the invoice line
      * @throws ESCIException if the order wasn't submitted by the supplier
@@ -435,7 +437,7 @@ public class InvoiceMapperImpl implements InvoiceMapper {
      *                       for any archetype service error
      */
     protected FinancialAct mapInvoiceLine(InvoiceLineType line, Date startTime, String practiceCurrency, Party supplier,
-                                          String invoiceLineId) {
+                                          ActBean order, String invoiceLineId) {
         ActBean deliveryItem = factory.createActBean(SupplierArchetypes.DELIVERY_ITEM);
         InvoicedQuantityType invoicedQuantity = line.getInvoicedQuantity();
         BigDecimal quantity = BigDecimal.ONE;
@@ -494,6 +496,12 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         }
         deliveryItem.setValue("reorderCode", reorderCode);
         deliveryItem.setValue("reorderDescription", reorderDescription);
+
+        FinancialAct orderItem = mapOrderItem(order, line, invoiceLineId);
+        if (orderItem != null) {
+            deliveryItem.addNodeRelationship("order", orderItem);
+        }
+
         service.deriveValues(deliveryItem.getObject());
         return (FinancialAct) deliveryItem.getAct();
     }
@@ -651,6 +659,21 @@ public class InvoiceMapperImpl implements InvoiceMapper {
             throw new ESCIException(message.toString());
         }
     }
+
+    /**
+     * Verifies that an user is linked to a supplier.
+     *
+     * @param supplier the supplier
+     * @param user     the ESCI user that submitted the innvoice
+     * @throws ESCIException if the user has no relationship to the supplier
+     */
+    protected void checkSupplier(Party supplier, User user) {
+        EntityBean bean = factory.createEntityBean(user);
+        if (!bean.getNodeTargetEntityRefs("supplier").contains(supplier.getObjectReference())) {
+            Message message = ESCIAdapterMessages.userNotLinkedToSupplier(user, supplier);
+            throw new ESCIException(message.toString());
+        }
+    }    
 
     /**
      * Returns the invoice issue date/time.
@@ -836,5 +859,27 @@ public class InvoiceMapperImpl implements InvoiceMapper {
         }
         return result;
     }
+
+    /**
+     * Returns an author to associate with the delivery.
+     * <p/>
+     * This returns the author of the original order, if present. If not, it returns that from the stock location.
+     *
+     * @param order         the order. May be <tt>null</tt>
+     * @param stockLocation the stock location
+     * @return the author reference, or <tt>null</tt> if none is available
+     */
+    private Entity getAuthor(ActBean order, Party stockLocation) {
+        Entity result = null;
+        if (order != null) {
+            result = order.getNodeParticipant("author");
+        }
+        if (result == null) {
+            EntityBean bean = factory.createEntityBean(stockLocation);
+            result = bean.getNodeTargetEntity("defaultAuthor");
+        }
+        return result;
+    }
+
 
 }
