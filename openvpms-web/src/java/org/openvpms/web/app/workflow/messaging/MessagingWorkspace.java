@@ -19,6 +19,7 @@
 package org.openvpms.web.app.workflow.messaging;
 
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
@@ -42,7 +43,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
      */
     public MessagingWorkspace() {
         super("workflow", "messaging", false);
-        setArchetypes(User.class, "security.user");
+        setArchetypes(User.class, UserArchetypes.USER);
         setChildArchetypes(Act.class, MessageArchetypes.USER, MessageArchetypes.SYSTEM);
     }
 

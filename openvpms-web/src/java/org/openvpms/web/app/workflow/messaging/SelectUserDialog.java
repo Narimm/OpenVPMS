@@ -28,6 +28,7 @@ import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 
 
 /**
@@ -52,9 +53,9 @@ public class SelectUserDialog extends PopupDialog {
     public SelectUserDialog(String title) {
         super(title, "SelectUserDialog", CANCEL);
 
-        String shortName = "security.user";
+        String shortName = UserArchetypes.USER;
         String type = DescriptorHelper.getDisplayName(shortName);
-        selector = new IMObjectSelector<User>(type, new String[]{shortName});
+        selector = new IMObjectSelector<User>(type, shortName);
         selector.setListener(new IMObjectSelectorListener<User>() {
             public void selected(User object) {
                 onSelected(object);

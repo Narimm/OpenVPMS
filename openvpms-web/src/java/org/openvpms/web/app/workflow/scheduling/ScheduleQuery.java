@@ -24,6 +24,7 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -472,7 +473,7 @@ public abstract class ScheduleQuery {
     private SelectField createClinicianSelector() {
         UserRules rules = new UserRules();
         List<IMObject> clinicians = new ArrayList<IMObject>();
-        ArchetypeQuery query = new ArchetypeQuery("security.user", true, true);
+        ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         Iterator<User> iter = new IMObjectQueryIterator<User>(query);
         while (iter.hasNext()) {
