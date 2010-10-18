@@ -18,8 +18,11 @@
 
 package org.openvpms.web.app.admin.user;
 
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.im.util.Archetypes;
 
 
 /**
@@ -35,7 +38,8 @@ public class UserWorkspace extends ResultSetCRUDWorkspace<User> {
      */
     public UserWorkspace() {
         super("admin", "user");
-        setArchetypes(User.class, "security.user*");
+        setArchetypes(Archetypes.create(UserArchetypes.USER_ARCHETYPES, User.class, UserArchetypes.USER,
+                                        DescriptorHelper.getDisplayName(UserArchetypes.USER)));
     }
 
 }

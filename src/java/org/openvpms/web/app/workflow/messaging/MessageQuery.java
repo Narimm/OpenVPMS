@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageStatus;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -78,8 +79,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
         super(user, "to", "participation.user", ARCHETYPES, STATUSES, Act.class);
         setStatuses(DEFAULT_STATUSES);
 
-        this.user = new IMObjectSelector<Entity>(Messages.get("messaging.user"),
-                                                 "security.user");
+        this.user = new IMObjectSelector<Entity>(Messages.get("messaging.user"), UserArchetypes.USER);
         this.user.setListener(new IMObjectSelectorListener<Entity>() {
             public void selected(Entity object) {
                 setEntity(object);

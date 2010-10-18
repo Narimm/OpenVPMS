@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://www.springframework.org/schema/security
+                           http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+
+    <!-- ================================================================== -->
+    <!--                            ESCI FILTER CHAIN                       -->
+    <!-- ================================================================== -->
+
+    <!-- channel processing filter for ESCI that ensures all requests go over https -->
+    <bean id="esciChannelProcessingFilter" class="org.openvpms.web.servlet.ChannelProcessingFilter">
+        <property name="secure" value="${openvpms.webservice.secure}"/>
+    </bean>
+
+    <!--bean id="esciChannelProcessingFilter2"
+          class="org.springframework.security.web.access.channel.ChannelProcessingFilter">
+        <property name="channelDecisionManager">
+            <bean class="org.springframework.security.web.access.channel.ChannelDecisionManagerImpl">
+                <property name="channelProcessors">
+                    <list>
+                        <bean class="org.springframework.security.web.access.channel.SecureChannelProcessor"/>
+                    </list>
+                </property>
+            </bean>
+        </property>
+        <property name="securityMetadataSource">
+            <security:filter-security-metadata-source path-type="ant">
+                <security:intercept-url pattern="/**"/>
+            </security:filter-security-metadata-source>
+        </property>
+    </bean-->
+
+    <!-- BASIC authentication filter for ESCI. Only enable if using https -->
+    <bean id="esciBasicAuthenticationFilter"
+          class="org.springframework.security.web.authentication.www.BasicAuthenticationFilter">
+        <property name="authenticationManager" ref="esciAuthenticationManager"/>
+        <property name="authenticationEntryPoint" ref="esciBasicAuthenticationPoint"/>
+    </bean>
+
+    <bean name="esciBasicAuthenticationPoint"
+          class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
+        <property name="realmName" value="ESCI"/>
+    </bean>
+
+    <!-- DIGEST authentication filter for ESCI. Use this if using http instead of https                         -->
+    <!-- If using digest authentication, then the 'requires-channel' attribute of esciFilterSecurityInterceptor -->
+    <!-- can be set to 'http'                                                                                   -->
+    <!-- bean id="esciDigestAuthenticationFilter"
+          class="org.springframework.security.web.authentication.www.DigestAuthenticationFilter">
+        <property name="userDetailsService" ref="userService"/>
+        <property name="authenticationEntryPoint" ref="esciDigestAuthenticationEntryPoint"/>
+    </bean>
+
+    <bean id="esciDigestAuthenticationEntryPoint"
+          class="org.springframework.security.web.authentication.www.DigestAuthenticationEntryPoint">
+        <property name="realmName" value="ESCI"/>
+        <property name="key" value="acegi"/>
+    </bean -->
+
+    <bean id="esciExceptionTranslationFilter"
+          class="org.springframework.security.web.access.ExceptionTranslationFilter">
+        <property name="authenticationEntryPoint" ref="esciBasicAuthenticationPoint"/>
+    </bean>
+
+    <bean id="esciFilterSecurityInterceptor"
+          class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+        <property name="authenticationManager" ref="esciAuthenticationManager"/>
+        <property name="accessDecisionManager" ref="authenticatedVoterAccessDecisionManager"/>
+        <property name="securityMetadataSource">
+            <security:filter-security-metadata-source path-type="ant">
+                <security:intercept-url pattern="/**" access="IS_AUTHENTICATED_FULLY"/>
+            </security:filter-security-metadata-source>
+        </property>
+    </bean>
+
+    <bean name="esciAuthenticationManager" class="org.springframework.security.authentication.ProviderManager">
+        <property name="providers">
+            <list>
+                <ref local="esciAuthenticationProvider"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="esciAuthenticationProvider"
+          class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+        <property name="userDetailsService" ref="esciUserService"/>
+    </bean>
+
+    <bean id="esciUserDAO"
+          class="org.openvpms.component.business.dao.hibernate.im.security.UserDAOHibernate">
+        <property name="sessionFactory" ref="sessionFactory"/>
+        <property name="userArchetypes" value="user.esci"/>
+    </bean>
+
+    <bean id="esciUserService"
+          class="org.openvpms.component.business.service.security.UserService">
+        <constructor-arg index="0">
+            <ref local="esciUserDAO"/>
+        </constructor-arg>
+    </bean>
+
+</beans>
+

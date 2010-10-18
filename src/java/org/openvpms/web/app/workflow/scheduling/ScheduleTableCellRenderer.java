@@ -28,6 +28,7 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -121,7 +122,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      */
     public void refresh() {
         eventColours = getColours(scheduleTypeShortName);
-        clinicianColours = getColours("security.user");
+        clinicianColours = getColours(UserArchetypes.USER);
     }
 
     /**

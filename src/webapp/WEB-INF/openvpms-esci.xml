@@ -83,14 +83,13 @@
 
     <bean id="invoiceServiceAdapter" class="org.openvpms.esci.adapter.InvoiceServiceAdapter">
         <property name="archetypeService" ref="archetypeRuleService"/>
-        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="userRules" ref="userRules"/>
         <property name="invoiceListener">
             <bean class="org.openvpms.esci.adapter.SystemMessageInvoiceListener">
                 <property name="beanFactory" ref="imObjectBeanFactory"/>
             </bean>
         </property>
         <property name="invoiceMapper" ref="invoiceMapper"/>
-        <property name="userRules" ref="userRules"/>
     </bean>
 
     <bean id="invoiceMapper" class="org.openvpms.esci.adapter.InvoiceMapperImpl">

@@ -214,7 +214,21 @@ public class Archetypes<T extends IMObject> {
      */
     public static <T extends IMObject> Archetypes<T> create(
             String[] shortNames, Class<T> type, String displayName) {
-        return new Archetypes<T>(shortNames, type, null, displayName);
+        return create(shortNames, type, null, displayName);
+    }
+
+    /**
+     * Helper to create a new instance.
+     *
+     * @param shortNames       the archetype short names. May contain wildcards.
+     * @param type             the type that the short names represent
+     * @param defaultShortName the default short name. May be <tt>null</tt>
+     * @param displayName      the collective noun for the archetype(s). If <tt>null</tt>, one will be derived
+     * @return a new instance
+     */
+    public static <T extends IMObject> Archetypes<T> create(
+            String[] shortNames, Class<T> type, String defaultShortName, String displayName) {
+        return new Archetypes<T>(shortNames, type, defaultShortName, displayName);
     }
 
     /**
