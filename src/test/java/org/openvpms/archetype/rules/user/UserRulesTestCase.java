@@ -64,6 +64,11 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
                 = TestHelper.getLookup("lookup.userType", "CLINICIAN");
         user.addClassification(clinicianClassification);
         assertTrue(rules.isClinician(user));
+
+        // verify that ESCI users can't be clinicians
+        User esci = (User) create(UserArchetypes.ESCI_USER);
+        esci.addClassification(clinicianClassification);
+        assertFalse(rules.isClinician(esci));
     }
 
     /**
@@ -116,5 +121,24 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
         EntityRelationshipHelper.setDefault(user, "locations", rel2,
                                             getArchetypeService());
         assertEquals(location2, rules.getDefaultLocation(user));
+    }
+
+    /**
+     * Tests the {@link UserRules#isAdministrator} method.
+     */
+    @Test
+    public void testIsAdministrator() {
+        User user = TestHelper.createUser();
+        UserRules rules = new UserRules();
+        assertFalse(rules.isAdministrator(user));
+
+        Lookup adminClassification = TestHelper.getLookup("lookup.userType", "ADMINISTRATOR");
+        user.addClassification(adminClassification);
+        assertTrue(rules.isAdministrator(user));
+
+        // verify that ESCI users can't be administrators
+        User esci = (User) create(UserArchetypes.ESCI_USER);
+        esci.addClassification(adminClassification);
+        assertFalse(rules.isAdministrator(esci));
     }
 }

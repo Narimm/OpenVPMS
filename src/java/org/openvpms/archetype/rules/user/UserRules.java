@@ -72,8 +72,7 @@ public class UserRules {
      * @return the corresponding user, or <tt>null</tt> if none is found
      */
     public User getUser(String username) {
-        ArchetypeQuery query = new ArchetypeQuery("security.user",
-                                                  true, true);
+        ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER_ARCHETYPES, true, true);
         query.add(new NodeConstraint("username", username));
         query.setMaxResults(1);
         Iterator<User> iterator = new IMObjectQueryIterator<User>(query);
@@ -91,10 +90,12 @@ public class UserRules {
      *         otherwise <tt>false</tt>
      */
     public boolean isClinician(User user) {
-        for (Lookup lookup : user.getClassifications()) {
-            if (TypeHelper.isA(lookup, "lookup.userType")
+        if (TypeHelper.isA(user, UserArchetypes.USER)) {
+            for (Lookup lookup : user.getClassifications()) {
+                if (TypeHelper.isA(lookup, "lookup.userType")
                     && "CLINICIAN".equals(lookup.getCode())) {
-                return true;
+                    return true;
+                }
             }
         }
         return false;
@@ -104,18 +105,19 @@ public class UserRules {
      * Determines if a user has administrator priviledges.
      * TODO - needs to be updated for OVPMS-702.
      *
+     * @param user the user to check
      * @return <tt>true</tt> if the user is an administrator
      */
     public boolean isAdministrator(User user) {
-    	
-        if ("admin".equals(user.getUsername())) {
-        	return true;
-        }
-        else {
-            for (Lookup lookup : user.getClassifications()) {
-                if (TypeHelper.isA(lookup, "lookup.userType")
+        if (TypeHelper.isA(user, UserArchetypes.USER)) {
+            if ("admin".equals(user.getUsername())) {
+                return true;
+            } else {
+                for (Lookup lookup : user.getClassifications()) {
+                    if (TypeHelper.isA(lookup, "lookup.userType")
                         && "ADMINISTRATOR".equals(lookup.getCode())) {
-                    return true;
+                        return true;
+                    }
                 }
             }
         }

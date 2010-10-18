@@ -28,9 +28,19 @@ package org.openvpms.archetype.rules.user;
 public class UserArchetypes {
 
     /**
-     * User.
+     * Default user.
      */
     public static final String USER = "security.user";
+
+    /**
+     * User for ESCI web services.
+     */
+    public static final String ESCI_USER = "user.esci";
+
+    /**
+     * User archetype short names.
+     */
+    public static final String[] USER_ARCHETYPES = {USER, ESCI_USER};
 
     /**
      * Clinician participation.
