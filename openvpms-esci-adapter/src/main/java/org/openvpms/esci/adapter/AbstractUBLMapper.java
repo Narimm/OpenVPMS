@@ -20,7 +20,10 @@ package org.openvpms.esci.adapter;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.oasis.ubl.common.AmountType;
+import org.oasis.ubl.common.CurrencyCodeContentType;
 import org.oasis.ubl.common.IdentifierType;
+import org.oasis.ubl.common.QuantityType;
 import org.oasis.ubl.common.aggregate.SupplierPartyType;
 import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -41,6 +44,7 @@ import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.exception.ESCIException;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 
 
 /**
@@ -134,6 +138,69 @@ public class AbstractUBLMapper {
             throw new ESCIException(message.toString());
         }
         return order;
+    }
+
+    /**
+     * Gets the value from an amount, verifying the practice currency.
+     *
+     * @param amount           the amount
+     * @param practiceCurrency the practice currency. All amounts must be expressed in this
+     * @param path             the path to the element for error reporting
+     * @param parent           the parent element
+     * @param id               the parent element identfier
+     * @return the amount value
+     */
+    protected BigDecimal getAmount(AmountType amount, String practiceCurrency, String path, String parent, String id) {
+        checkRequired(amount, path, parent, id);
+        checkRequired(amount.getValue(), path, parent, id);
+        CurrencyCodeContentType currency = getRequired(amount.getCurrencyID(), path + "@currencyID", parent, id);
+        if (!ObjectUtils.equals(practiceCurrency, currency.value())) {
+            Message message = ESCIAdapterMessages.invalidCurrency(path, parent, id, practiceCurrency, currency.value());
+            throw new ESCIException(message.toString());
+        }
+        BigDecimal result = amount.getValue();
+        if (result.signum() == -1) {
+            Message message = ESCIAdapterMessages.invalidAmount(path, parent, id, result);
+            throw new ESCIException(message.toString());
+        }
+        return amount.getValue();
+    }
+
+    /**
+     * Returns the value for a quantity, verifying thhat it is greater than zero.
+     *
+     * @param quantity the quantity
+     * @param path     the path to the element for error reporting
+     * @param parent   the parent element
+     * @param id       the parent element identfier
+     * @return the quantity value
+     * @throws ESCIException if the quantity doesn't exist or is &lt;= zero
+     */
+    protected BigDecimal getQuantity(QuantityType quantity, String path, String parent, String id) {
+        checkRequired(quantity, path, parent, id);
+        checkRequired(quantity.getValue(), path, parent, id);
+        BigDecimal result = quantity.getValue();
+        if (result.compareTo(BigDecimal.ZERO) <= 0) {
+            Message message = ESCIAdapterMessages.invalidQuantity(path, parent, id, result);
+            throw new ESCIException(message.toString());
+        }
+        return result;
+    }
+
+    /**
+     * Verifies that the UBL version matches that expected.
+     *
+     * @param identifier the UBL identifier. May be <tt>null</tt>
+     * @param parent     the parent element
+     * @param parentId   the parent element identifier
+     * @throws ESCIException if the UBL identifier is <tt>null</tt> or not the expected value
+     */
+    protected void checkUBLVersion(IdentifierType identifier, String parent, String parentId) {
+        String value = getId(identifier, "UBLVersionID", parent, parentId);
+        if (!UBL_VERSION.equals(value)) {
+            Message message = ESCIAdapterMessages.ublInvalidValue("UBLVersionID", parent, parentId, UBL_VERSION, value);
+            throw new ESCIException(message.toString());
+        }
     }
 
     /**

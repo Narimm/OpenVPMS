@@ -17,11 +17,8 @@
  */
 package org.openvpms.esci.adapter;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.oasis.ubl.InvoiceType;
-import org.oasis.ubl.common.AmountType;
-import org.oasis.ubl.common.CurrencyCodeContentType;
 import org.oasis.ubl.common.aggregate.CustomerPartyType;
 import org.oasis.ubl.common.aggregate.InvoiceLineType;
 import org.oasis.ubl.common.aggregate.ItemIdentificationType;
@@ -30,8 +27,8 @@ import org.oasis.ubl.common.aggregate.MonetaryTotalType;
 import org.oasis.ubl.common.aggregate.OrderLineReferenceType;
 import org.oasis.ubl.common.aggregate.OrderReferenceType;
 import org.oasis.ubl.common.aggregate.PriceType;
+import org.oasis.ubl.common.aggregate.PricingReferenceType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
-import org.oasis.ubl.common.basic.BaseQuantityType;
 import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.oasis.ubl.common.basic.IDType;
 import org.oasis.ubl.common.basic.InvoicedQuantityType;
@@ -39,6 +36,7 @@ import org.oasis.ubl.common.basic.IssueDateType;
 import org.oasis.ubl.common.basic.IssueTimeType;
 import org.oasis.ubl.common.basic.LineIDType;
 import org.oasis.ubl.common.basic.NoteType;
+import org.oasis.ubl.common.basic.PriceTypeCodeType;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductSupplier;
@@ -110,6 +108,12 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      */
     private static final ArchetypeId STOCK_LOCATION = new ArchetypeId(StockArchetypes.STOCK_LOCATION);
 
+    /**
+     * UN/CEFACT wholesale price type code identifier.
+     * See http://www.unece.org/uncefact/codelist/standard/UNECE_PriceTypeCode_D09B.xsd
+     */
+    private static final String WHOLESALE = "WS";
+
 
     /**
      * Default constructor.
@@ -174,7 +178,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         checkUBLVersion(invoice, invoiceId);
         OrderReferenceType orderReference = invoice.getOrderReference();
         Date issueDatetime = getIssueDatetime(invoice, invoiceId);
-        String note = getNote(invoice);
+        String notes = getNotes(invoice);
         Party supplier = getSupplier(invoice, invoiceId);
         checkSupplier(supplier, user, factory);
         Party stockLocation = getStockLocation(invoice, invoiceId);
@@ -198,7 +202,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
 
         ActBean delivery = factory.createActBean(SupplierArchetypes.DELIVERY);
         delivery.setValue("startTime", issueDatetime);
-        delivery.setValue("title", note);
+        delivery.setValue("supplierNotes", notes);
         delivery.setValue("amount", payableAmount);
         delivery.setValue("tax", tax);
         delivery.setValue("supplierInvoiceId", invoiceId);
@@ -283,14 +287,14 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
-     * Returns the invoice note.
+     * Returns the invoice notes.
      * <p/>
      * If there are multiple notes, these will be concatenated, separated by newlines.
      *
      * @param invoice the invoice
      * @return the invoice note. May be <tt>null</tt>
      */
-    protected String getNote(InvoiceType invoice) {
+    protected String getNotes(InvoiceType invoice) {
         String result = null;
         List<NoteType> notes = invoice.getNote();
         if (notes != null && !notes.isEmpty()) {
@@ -379,13 +383,11 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
                                           ActBean order, String invoiceLineId) {
         ActBean deliveryItem = factory.createActBean(SupplierArchetypes.DELIVERY_ITEM);
         InvoicedQuantityType invoicedQuantity = line.getInvoicedQuantity();
-        BigDecimal quantity = BigDecimal.ONE;
-        String invoicedUnitCode = null;
 
-        if (invoicedQuantity != null) {
-            quantity = invoicedQuantity.getValue();
-            invoicedUnitCode = invoicedQuantity.getUnitCode();
-        }
+        BigDecimal quantity = getQuantity(invoicedQuantity, "InvoicedQuantity", "InvoiceLine", invoiceLineId);
+        String invoicedUnitCode = getRequired(invoicedQuantity.getUnitCode(), "InvoicedQuantity@unitCode",
+                                              "InvoiceLine", invoiceLineId);
+
         Product product = getProduct(line, supplier, invoiceLineId);
         BigDecimal lineExtensionAmount = getAmount(line.getLineExtensionAmount(), practiceCurrency,
                                                    "LineExtensionAmount", "InvoiceLine", invoiceLineId);
@@ -395,20 +397,9 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         PriceType price = getRequired(line.getPrice(), "Price", "InvoiceLine", invoiceLineId);
         BigDecimal unitPrice = getAmount(price.getPriceAmount(), practiceCurrency, "Price/PriceAmount",
                                          "InvoiceLine", invoiceLineId);
+        BigDecimal listPrice = getListPrice(line, practiceCurrency, invoiceLineId);
         BigDecimal tax = getTax(line, practiceCurrency, invoiceLineId);
-        BaseQuantityType baseQuantity = price.getBaseQuantity();
-        String packageUnits = null;
-        if (baseQuantity != null) {
-            String baseUnitCode = baseQuantity.getUnitCode();
-            if (baseUnitCode != null) {
-                if (invoicedUnitCode != null && !StringUtils.equals(baseUnitCode, invoicedUnitCode)) {
-                    Message message = ESCIAdapterMessages.invoiceUnitCodeMismatch(invoiceLineId, invoicedUnitCode,
-                                                                                  baseUnitCode);
-                    throw new ESCIException(message.toString());
-                }
-                packageUnits = UBLHelper.getUnitOfMeasure(baseUnitCode, lookupService, factory);
-            }
-        }
+        String packageUnits = UBLHelper.getUnitOfMeasure(invoicedUnitCode, lookupService, factory);
         BigDecimal calcLineExtensionAmount = unitPrice.multiply(quantity);
         if (calcLineExtensionAmount.compareTo(lineExtensionAmount) != 0) {
             Message message = ESCIAdapterMessages.invoiceLineInvalidLineExtensionAmount(
@@ -420,6 +411,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         deliveryItem.setValue("startTime", startTime);
         deliveryItem.setValue("quantity", quantity);
         deliveryItem.setValue("unitPrice", unitPrice);
+        deliveryItem.setValue("listPrice", listPrice);
         deliveryItem.setValue("tax", tax);
         deliveryItem.setValue("packageUnits", packageUnits);
         if (product != null) {
@@ -526,6 +518,41 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
+     * Returns the list price.
+     * <p/>
+     * This looks for a single PricingReference/AlternativeConditionPrice. If present, it must have a PriceTypeCode
+     * of "WS" (wholesale).
+     *
+     * @param line             the invoice line
+     * @param practiceCurrency the practice currency
+     * @param invoiceLineId    the invoice line identifier
+     * @return the list price, or <tt>0.0</tt> if no wholesale price is specified
+     */
+    protected BigDecimal getListPrice(InvoiceLineType line, String practiceCurrency, String invoiceLineId) {
+        BigDecimal result = BigDecimal.ZERO;
+        PricingReferenceType pricing = line.getPricingReference();
+        if (pricing != null) {
+            List<PriceType> prices = pricing.getAlternativeConditionPrice();
+            if (!prices.isEmpty()) {
+                PriceType price = prices.get(0);
+                result = getAmount(price.getPriceAmount(), practiceCurrency,
+                                   "PricingReference/AlternativeConditionPrice/PriceAmount", "InvoiceLine",
+                                   invoiceLineId);
+                PriceTypeCodeType code = getRequired(
+                        price.getPriceTypeCode(), "PricingReference/AlternativeConditionPrice/PriceTypeCode",
+                        "InvoiceLine", invoiceLineId);
+                if (!WHOLESALE.equals(code.getValue())) {
+                    Message message = ESCIAdapterMessages.ublInvalidValue(
+                            "PricingReference/AlternativeConditionPrice/PriceTypeCode", "InvoiceLine", invoiceLineId,
+                            WHOLESALE, code.getValue());
+                    throw new ESCIException(message.toString());
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the seller's item id for an invoice line.
      *
      * @param item the invoice line item
@@ -579,12 +606,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * @param invoiceId the invoice identifier
      */
     protected void checkUBLVersion(InvoiceType invoice, String invoiceId) {
-        String value = getId(invoice.getUBLVersionID(), "UBLVersionID", "Invoice", invoiceId);
-        if (!UBL_VERSION.equals(value)) {
-            Message message = ESCIAdapterMessages.ublInvalidValue("UBLVersionID", "Invoice", invoiceId,
-                                                                  UBL_VERSION, value);
-            throw new ESCIException(message.toString());
-        }
+        checkUBLVersion(invoice.getUBLVersionID(), "Invoice", invoiceId);
     }
 
     /**
@@ -611,27 +633,6 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
             }
         }
         return calendar.toGregorianCalendar().getTime();
-    }
-
-    /**
-     * Gets the value from an amount, verifying the practice currency.
-     *
-     * @param amount           the amount
-     * @param practiceCurrency the practice currency. All amounts must be expressed in this
-     * @param path             the path to the element for error reporting
-     * @param parent           the parent element
-     * @param id               the parent element identfier
-     * @return the amount value
-     */
-    protected BigDecimal getAmount(AmountType amount, String practiceCurrency, String path, String parent, String id) {
-        checkRequired(amount, path, parent, id);
-        CurrencyCodeContentType currency = getRequired(amount.getCurrencyID(), path + "/currencyID", parent, id);
-        if (!ObjectUtils.equals(practiceCurrency, currency.value())) {
-            Message message = ESCIAdapterMessages.invoiceInvalidCurrency(path, parent, id, practiceCurrency,
-                                                                         currency.value());
-            throw new ESCIException(message.toString());
-        }
-        return amount.getValue();
     }
 
     /**

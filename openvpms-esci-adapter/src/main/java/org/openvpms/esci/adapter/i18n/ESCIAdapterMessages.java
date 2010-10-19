@@ -170,6 +170,47 @@ public class ESCIAdapterMessages {
     }
 
     /**
+     * Creates a new message for an invalid amount in an UBL document.
+     *
+     * @param path     the path to the amount
+     * @param parent   the parent element
+     * @param parentId the parent element identifier
+     * @param amount   the invalid amount
+     * @return a new message
+     */
+    public static Message invalidAmount(String path, String parent, String parentId, BigDecimal amount) {
+        return messages.getMessage(104, path, parent, parentId, amount);
+    }
+
+    /**
+     * Creates a new message for when an invoice element's currencyID doesn't match that expected.
+     *
+     * @param path     the path to the element, from the parent
+     * @param parent   the parent element path
+     * @param parentId the parent element identifier
+     * @param expected the expected currencyID value
+     * @param actual   the actual currencyID value
+     * @return a new message
+     */
+    public static Message invalidCurrency(String path, String parent, String parentId, String expected,
+                                          String actual) {
+        return messages.getMessage(105, path, parent, parentId, expected, actual);
+    }
+
+    /**
+     * Creates a new message for an invalid quantity in an UBL document.
+     *
+     * @param path     the path to the amount
+     * @param parent   the parent element
+     * @param parentId the parent element identifier
+     * @param quantity the invalid quantity
+     * @return a new message
+     */
+    public static Message invalidQuantity(String path, String parent, String parentId, BigDecimal quantity) {
+        return messages.getMessage(106, path, parent, parentId, quantity);
+    }
+
+    /**
      * Creates a new message for an invalid supplier referenced by an UBL document.
      *
      * @param path       the path to the element
@@ -179,7 +220,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidSupplier(String path, String parent, String parentId, String supplierId) {
-        return messages.getMessage(104, path, parent, parentId, supplierId);
+        return messages.getMessage(107, path, parent, parentId, supplierId);
     }
 
     /**
@@ -191,7 +232,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidOrder(String parent, String parentId, long orderId) {
-        return messages.getMessage(105, parent, parentId, orderId);
+        return messages.getMessage(108, parent, parentId, orderId);
     }
 
     /**
@@ -306,35 +347,6 @@ public class ESCIAdapterMessages {
     }
 
     /**
-     * Creates a new message for when an invoice element's currencyID doesn't match that expected.
-     *
-     * @param path     the path to the element, from the parent
-     * @param parent   the parent element path
-     * @param parentId the parent element identifier
-     * @param expected the expected currencyID value
-     * @param actual   the actual currencyID value
-     * @return a new message
-     */
-    public static Message invoiceInvalidCurrency(String path, String parent, String parentId, String expected,
-                                                 String actual) {
-        return messages.getMessage(406, path, parent, parentId, expected, actual);
-    }
-
-    /**
-     * Creates a new message for when an invoice line specifies both an InvoicedQuantity unit code and a BaseQuantity
-     * unit code, and they are different.
-     *
-     * @param invoiceLineId        the invoice line identifier
-     * @param invoicedUnitCode     the InvoicedQuantity unit code
-     * @param baseQuantityUnitCode the BaseQuantity unit code
-     * @return a new message
-     */
-    public static Message invoiceUnitCodeMismatch(String invoiceLineId, String invoicedUnitCode,
-                                                  String baseQuantityUnitCode) {
-        return messages.getMessage(407, invoiceLineId, invoicedUnitCode, baseQuantityUnitCode);
-    }
-
-    /**
      * Creates a new message for when an invoice line refers to an invalid order item.
      *
      * @param invoiceLineId the invoice identifier
@@ -342,7 +354,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceInvalidOrderItem(String invoiceLineId, String orderId) {
-        return messages.getMessage(408, invoiceLineId, orderId);
+        return messages.getMessage(406, invoiceLineId, orderId);
     }
 
     /**

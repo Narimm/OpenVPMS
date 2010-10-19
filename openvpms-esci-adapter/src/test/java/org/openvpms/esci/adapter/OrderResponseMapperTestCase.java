@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.oasis.ubl.OrderResponseSimpleType;
 import org.oasis.ubl.common.basic.AcceptedIndicatorType;
 import org.oasis.ubl.common.basic.RejectionNoteType;
+import org.oasis.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.security.User;
@@ -72,14 +73,8 @@ public class OrderResponseMapperTestCase extends AbstractESCITest {
     public void testMapResponseNoOrder() {
         User user = createESCIUser(getSupplier());
         OrderResponseSimpleType response = createOrderResponseSimple(934, true);
-        OrderResponseMapper mapper = createOrderResponseMapper();
-        try {
-            mapper.map(response, user);
-            fail("Expected mapping to fail");
-        } catch (ESCIException expected) {
-            assertEquals("ESCIA-0105: Invalid order: 934 referenced by OrderResponseSimple: 12345",
-                         expected.getMessage());
-        }
+        checkMappingException(response, user,
+                              "ESCIA-0108: Invalid Order: 934 referenced by OrderResponseSimple: 12345");
     }
 
     /**
@@ -90,14 +85,20 @@ public class OrderResponseMapperTestCase extends AbstractESCITest {
         User user = createESCIUser();
         FinancialAct order = createOrder();
         OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), true);
-        OrderResponseMapper mapper = createOrderResponseMapper();
-        try {
-            mapper.map(response, user);
-            fail("Expected mapping to fail");
-        } catch (ESCIException expected) {
-            assertEquals("ESCIA-0008: User Foo (" + user.getId() + ") has no relationship to supplier Xsupplier ("
-                         + getSupplier().getId() + ")", expected.getMessage());
-        }
+        String expectedMessage = "ESCIA-0008: User Foo (" + user.getId()
+                                 + ") has no relationship to supplier Xsupplier (" + getSupplier().getId() + ")";
+        checkMappingException(response, user, expectedMessage);
+    }
+
+    /**
+     * Verifies that an {@link ESCIException} is raised if the UBL version doesn't match that expected.
+     */
+    @Test
+    public void testInvalidUBLVersion() {
+        OrderResponseSimpleType response = createOrderResponseSimple(123, true);
+        response.getUBLVersionID().setValue("2.1");
+        checkMappingException(response, createESCIUser(),
+                              "ESCIA-0103: Expected 2.0 for UBLVersionID in OrderResponseSimple: 12345 but got 2.1");
     }
 
     /**
@@ -124,6 +125,22 @@ public class OrderResponseMapperTestCase extends AbstractESCITest {
         assertEquals(message, bean.getString("supplierResponse"));
     }
 
+    /**
+     * Verifies that mapping an invalid response fails with an appropriate exception.
+     *
+     * @param response        the invalid response
+     * @param user            the ESCI user
+     * @param expectedMessage the expected exception message
+     */
+    private void checkMappingException(OrderResponseSimpleType response, User user, String expectedMessage) {
+        OrderResponseMapper mapper = createOrderResponseMapper();
+        try {
+            mapper.map(response, user);
+            fail("Expected mapping to fail");
+        } catch (ESCIException expected) {
+            assertEquals(expectedMessage, expected.getMessage());
+        }
+    }
 
     /**
      * Creates a new order response.
@@ -135,6 +152,7 @@ public class OrderResponseMapperTestCase extends AbstractESCITest {
     private OrderResponseSimpleType createOrderResponseSimple(long orderId, boolean accepted) {
         OrderResponseSimpleType result = new OrderResponseSimpleType();
         result.setID(UBLHelper.createID("12345"));
+        result.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
         result.setOrderReference(UBLHelper.createOrderReference(orderId));
         AcceptedIndicatorType indicator = new AcceptedIndicatorType();
         indicator.setValue(accepted);

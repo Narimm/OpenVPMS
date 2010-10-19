@@ -19,6 +19,7 @@ package org.openvpms.esci.adapter;
 
 import org.apache.commons.lang.StringUtils;
 import org.oasis.ubl.common.AmountType;
+import org.oasis.ubl.common.CodeType;
 import org.oasis.ubl.common.CurrencyCodeContentType;
 import org.oasis.ubl.common.IdentifierType;
 import org.oasis.ubl.common.QuantityType;
@@ -262,6 +263,18 @@ class UBLHelper {
         OrderReferenceType result = new OrderReferenceType();
         result.setID(createID(id));
         return result;
+    }
+
+    /**
+     * Initialises a code.
+     *
+     * @param code  the code to initialise
+     * @param value the code value
+     * @return the code
+     */
+    public static <T extends CodeType> T initCode(T code, String value) {
+        code.setValue(value);
+        return code;
     }
 
     /**

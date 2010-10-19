@@ -29,15 +29,17 @@ import org.oasis.ubl.common.aggregate.ItemType;
 import org.oasis.ubl.common.aggregate.MonetaryTotalType;
 import org.oasis.ubl.common.aggregate.OrderLineReferenceType;
 import org.oasis.ubl.common.aggregate.PriceType;
+import org.oasis.ubl.common.aggregate.PricingReferenceType;
 import org.oasis.ubl.common.aggregate.SupplierPartyType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
-import org.oasis.ubl.common.basic.BaseQuantityType;
 import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.oasis.ubl.common.basic.InvoicedQuantityType;
 import org.oasis.ubl.common.basic.LineExtensionAmountType;
 import org.oasis.ubl.common.basic.LineIDType;
+import org.oasis.ubl.common.basic.NoteType;
 import org.oasis.ubl.common.basic.PayableAmountType;
 import org.oasis.ubl.common.basic.PriceAmountType;
+import org.oasis.ubl.common.basic.PriceTypeCodeType;
 import org.oasis.ubl.common.basic.TaxAmountType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.archetype.rules.practice.PracticeRules;
@@ -56,10 +58,15 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFact
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.esci.exception.ESCIException;
 import org.openvpms.ubl.io.UBLDocumentContext;
+import org.openvpms.ubl.io.UBLDocumentReader;
 import org.openvpms.ubl.io.UBLDocumentWriter;
+import org.xml.sax.SAXException;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -126,6 +133,7 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
     public void testMap() throws Exception {
         Product product1 = TestHelper.createProduct();
         BigDecimal price1 = new BigDecimal(100);
+        BigDecimal listPrice1 = new BigDecimal(105);
         BigDecimal quantity1 = BigDecimal.ONE;
         BigDecimal lineExtension1 = price1.multiply(quantity1);
         BigDecimal tax1 = lineExtension1.multiply(new BigDecimal("0.10"));
@@ -135,6 +143,7 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
 
         Product product2 = TestHelper.createProduct();
         BigDecimal price2 = new BigDecimal(40);
+        BigDecimal listPrice2 = new BigDecimal(41);
         BigDecimal quantity2 = BigDecimal.ONE;
         BigDecimal lineExtension2 = price2.multiply(quantity2);
         BigDecimal tax2 = lineExtension2.multiply(new BigDecimal("0.10"));
@@ -155,32 +164,31 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
         Date issueDatetime = new Date();
         invoice.setIssueDate(UBLHelper.createIssueDate(issueDatetime, factory));
         invoice.setIssueTime(UBLHelper.createIssueTime(issueDatetime, factory));
+        invoice.getNote().add(UBLHelper.initText(new NoteType(), "a note"));
+        invoice.getNote().add(UBLHelper.initText(new NoteType(), "another note"));
         invoice.setAccountingSupplierParty(supplierType);
         invoice.setAccountingCustomerParty(customerType);
         invoice.setLegalMonetaryTotal(monetaryTotal);
         invoice.getTaxTotal().add(createTaxTotal(new BigDecimal(14)));
-        InvoiceLineType item1 = createInvoiceLine("1", product1, reorder1, reorderDesc1, price1, quantity1,
+        InvoiceLineType item1 = createInvoiceLine("1", product1, reorder1, reorderDesc1, listPrice1, price1, quantity1,
                                                   lineExtension1, tax1);
-        InvoiceLineType item2 = createInvoiceLine("2", product2, reorder2, reorderDesc2, price2, quantity2,
+        InvoiceLineType item2 = createInvoiceLine("2", product2, reorder2, reorderDesc2, listPrice2, price2, quantity2,
                                                   lineExtension2, tax2);
         invoice.getInvoiceLine().add(item1);
         invoice.getInvoiceLine().add(item2);
 
-        UBLDocumentContext context = new UBLDocumentContext();
-        UBLDocumentWriter writer = context.createWriter();
-        writer.setFormat(true);
-        writer.write(invoice, System.out);
+        invoice = serialize(invoice);
         InvoiceMapper mapper = createMapper();
         Delivery mapped = mapper.map(invoice, user);
         List<FinancialAct> acts = mapped.getActs();
         assertEquals(3, acts.size());
         getArchetypeService().save(acts);
 
-        checkDelivery(mapped.getDelivery(), "12345", issueDatetime, total, totalTax);
-        checkDeliveryItem(mapped.getDeliveryItems().get(0), "1", issueDatetime, quantity1, price1, "BOX", reorder1,
-                          reorderDesc1, total1, tax1);
-        checkDeliveryItem(mapped.getDeliveryItems().get(1), "2", issueDatetime, quantity2, price2, "BOX", reorder2,
-                          reorderDesc2, total2, tax2);
+        checkDelivery(mapped.getDelivery(), "12345", issueDatetime, "a note\nanother note", total, totalTax);
+        checkDeliveryItem(mapped.getDeliveryItems().get(0), "1", issueDatetime, product1, quantity1, listPrice1, price1,
+                          "BOX", reorder1, reorderDesc1, total1, tax1);
+        checkDeliveryItem(mapped.getDeliveryItems().get(1), "2", issueDatetime, product2, quantity2, listPrice2, price2,
+                          "BOX", reorder2, reorderDesc2, total2, tax2);
     }
 
     /**
@@ -321,6 +329,38 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
     }
 
     /**
+     * Verifies that an {@link ESCIException} is raised if an amount is invalid.
+     */
+    @Test
+    public void testInvalidAmount() {
+        InvoiceType invoice = createInvoice();
+        invoice.getInvoiceLine().get(0).getPrice().getPriceAmount().setValue(new BigDecimal(-1));
+        checkMappingException(invoice, "ESCIA-0104: Invalid amount: -1 for Price/PriceAmount in InvoiceLine: 1");
+    }
+
+    /**
+     * Verifies that an {@link ESCIException} is raised if an amount's currency doesn't match the practice currency.
+     */
+    @Test
+    public void testInvalidCurrency() {
+        InvoiceType invoice = createInvoice();
+        InvoiceLineType item = invoice.getInvoiceLine().get(0);
+        item.getLineExtensionAmount().setCurrencyID(CurrencyCodeContentType.USD);
+        checkMappingException(invoice, "ESCIA-0105: Invalid currencyID for LineExtensionAmount in InvoiceLine: 1. "
+                                       + "Expected AUD but got USD");
+    }
+
+    /**
+     * Verifies that an {@link ESCIException} is raised if an amount is invalid.
+     */
+    @Test
+    public void testInvalidQuantity() {
+        InvoiceType invoice = createInvoice();
+        invoice.getInvoiceLine().get(0).getInvoicedQuantity().setValue(new BigDecimal(-2));
+        checkMappingException(invoice, "ESCIA-0106: Invalid quantity: -2 for InvoicedQuantity in InvoiceLine: 1");
+    }
+
+    /**
      * Verifies that an {@link ESCIException} is raised if the
      * <em>Invoice/AccountingSupplierParty/CustomerAssignedAccountID</em> doesn't correspond to a valid supplier.
      */
@@ -328,7 +368,7 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
     public void testInvalidSupplier() {
         InvoiceType invoice = createInvoice();
         invoice.getAccountingSupplierParty().getCustomerAssignedAccountID().setValue("0");
-        checkMappingException(invoice, "ESCIA-0104: Invalid supplier: 0 referenced by Invoice: 12345, "
+        checkMappingException(invoice, "ESCIA-0107: Invalid supplier: 0 referenced by Invoice: 12345, "
                                        + "element AccountingSupplierParty/CustomerAssignedAccountID");
     }
 
@@ -405,32 +445,6 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an amount's currency doesn't match the practice currency.
-     */
-    @Test
-    public void testInvalidCurrency() {
-        InvoiceType invoice = createInvoice();
-        InvoiceLineType item = invoice.getInvoiceLine().get(0);
-        item.getLineExtensionAmount().setCurrencyID(CurrencyCodeContentType.USD);
-        checkMappingException(invoice, "ESCIA-0406: Invalid currencyID for LineExtensionAmount in InvoiceLine: 1. "
-                                       + "Expected AUD but got USD");
-    }
-
-    /**
-     * Verifies that an {@link ESCIException} is raised if both InvoicedQuantity and BaseQuantity unit codes are
-     * specified but different.
-     */
-    @Test
-    public void testMismatchUnitCodes() {
-        InvoiceType invoice = createInvoice();
-        InvoiceLineType item = invoice.getInvoiceLine().get(0);
-        item.getInvoicedQuantity().setUnitCode("PK");
-        item.getPrice().getBaseQuantity().setUnitCode("BX");
-        checkMappingException(invoice, "ESCIA-0407: InvoicedQuantity/unitCode: PK and BaseQuantity/unitCode: "
-                                       + "BX must be the same when specified in InvoiceLine: 1");
-    }
-
-    /**
      * Verifies that an {@link ESCIException} is raised if an invoice references an order which was not sent to the
      * supplier.
      */
@@ -444,7 +458,7 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
 
         InvoiceType invoice = createInvoice(anotherSupplier);
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
-        checkMappingException(invoice, user, "ESCIA-0408: Invalid Order: " + order.getId()
+        checkMappingException(invoice, user, "ESCIA-0108: Invalid Order: " + order.getId()
                                              + " referenced by Invoice: 12345");
     }
 
@@ -461,7 +475,7 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
         OrderLineReferenceType lineRef = new OrderLineReferenceType();
         lineRef.setLineID(UBLHelper.initID(new LineIDType(), "114"));
         invoice.getInvoiceLine().get(0).getOrderLineReference().add(lineRef);
-        checkMappingException(invoice, "ESCIA-0408: Invalid OrderLine: 114 referenced by InvoiceLine: 1");
+        checkMappingException(invoice, "ESCIA-0406: Invalid OrderLine: 114 referenced by InvoiceLine: 1");
     }
 
     /**
@@ -487,6 +501,39 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
         InvoiceType invoice = createInvoice(anotherSupplier);
         checkMappingException(invoice, "ESCIA-0008: User Foo (" + user.getId() + ") has no relationship to supplier "
                                        + anotherSupplier.getName() + " (" + anotherSupplier.getId() + ")");
+    }
+
+    /**
+     * Verifies that an {@link ESCIException} is raised if an alternative condition price is supplied but doesn't
+     * specify a wholesale PriceTypeCode.
+     */
+    @Test
+    public void testIncorrectWholesalePrice() {
+        InvoiceType invoice = createInvoice();
+        InvoiceLineType line = invoice.getInvoiceLine().get(0);
+        PriceType price = line.getPricingReference().getAlternativeConditionPrice().get(0);
+        price.getPriceTypeCode().setValue("RS");
+        checkMappingException(invoice, "ESCIA-0103: Expected WS for "
+                                       + "PricingReference/AlternativeConditionPrice/PriceTypeCode in InvoiceLine: 1 "
+                                       + "but got RS");
+    }
+
+    /**
+     * Serializes and deserializes an invoice to ensure its validitity.
+     *
+     * @param invoice the invoice
+     * @return the deserialized invoice
+     * @throws JAXBException for any JAXB exception
+     * @throws SAXException  for any SAX exception
+     */
+    private InvoiceType serialize(InvoiceType invoice) throws JAXBException, SAXException {
+        UBLDocumentContext context = new UBLDocumentContext();
+        UBLDocumentWriter writer = context.createWriter();
+        ByteArrayOutputStream o = new ByteArrayOutputStream();
+        writer.setFormat(true);
+        writer.write(invoice, o);
+        UBLDocumentReader reader = context.createReader();
+        return (InvoiceType) reader.read(new ByteArrayInputStream(o.toByteArray()));
     }
 
     /**
@@ -522,14 +569,16 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
      * @param delivery  the delivery to check
      * @param invoiceId the expected supplier invoice identifier
      * @param startTime the expected start time
+     * @param notes     expected supplier notes
      * @param total     the expected total
      * @param tax       the expected tax
      */
-    private void checkDelivery(FinancialAct delivery, String invoiceId, Date startTime, BigDecimal total,
+    private void checkDelivery(FinancialAct delivery, String invoiceId, Date startTime, String notes, BigDecimal total,
                                BigDecimal tax) {
         ActBean bean = new ActBean(delivery);
         assertEquals(startTime, bean.getDate("startTime"));
         assertEquals(invoiceId, bean.getString("supplierInvoiceId"));
+        assertEquals(notes, bean.getString("supplierNotes"));
         checkEquals(total, bean.getBigDecimal("amount"));
         checkEquals(tax, bean.getBigDecimal("tax"));
     }
@@ -540,7 +589,9 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
      * @param item               the delivery item to check
      * @param id                 the expected supplier invoice line identifier
      * @param startTime          the expected start time
+     * @param product            the expected product
      * @param quantity           the expected quantity
+     * @param listPrice          the expected list price
      * @param unitPrice          the expected unit price
      * @param packageUnits       the expected package units
      * @param reorderCode        the expected re-order code
@@ -548,13 +599,15 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
      * @param total              the expected total
      * @param tax                the expected tax
      */
-    private void checkDeliveryItem(FinancialAct item, String id, Date startTime, BigDecimal quantity,
-                                   BigDecimal unitPrice, String packageUnits, String reorderCode,
+    private void checkDeliveryItem(FinancialAct item, String id, Date startTime, Product product, BigDecimal quantity,
+                                   BigDecimal listPrice, BigDecimal unitPrice, String packageUnits, String reorderCode,
                                    String reorderDescription, BigDecimal total, BigDecimal tax) {
         ActBean bean = new ActBean(item);
         assertEquals(id, bean.getString("supplierInvoiceLineId"));
         assertEquals(startTime, bean.getDate("startTime"));
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
         checkEquals(quantity, bean.getBigDecimal("quantity"));
+        checkEquals(listPrice, bean.getBigDecimal("listPrice"));
         checkEquals(unitPrice, bean.getBigDecimal("unitPrice"));
         assertEquals(packageUnits, bean.getString("packageUnits"));
         assertEquals(reorderCode, bean.getString("reorderCode"));
@@ -594,8 +647,9 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
         invoice.setAccountingCustomerParty(customerType);
         invoice.setLegalMonetaryTotal(monetaryTotal);
         invoice.getTaxTotal().add(createTaxTotal(new BigDecimal(10)));
-        InvoiceLineType item1 = createInvoiceLine("1", product, "aproduct1", "aproduct name", new BigDecimal(100),
-                                                  BigDecimal.ONE, new BigDecimal(100), new BigDecimal(10));
+        InvoiceLineType item1 = createInvoiceLine("1", product, "aproduct1", "aproduct name", new BigDecimal(105),
+                                                  new BigDecimal(100), BigDecimal.ONE, new BigDecimal(100),
+                                                  new BigDecimal(10));
         invoice.getInvoiceLine().add(item1);
         return invoice;
     }
@@ -607,6 +661,7 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
      * @param product             the product
      * @param supplierId          the supplier's identifier for the product
      * @param supplierName        the supplier's name for the product
+     * @param listPrice           the list (or wholesale) price
      * @param price               the price
      * @param quantity            the quantity
      * @param lineExtensionAmount the line extension amount
@@ -614,7 +669,7 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
      * @return a new <tt>InvoiceLineType</tt>
      */
     private InvoiceLineType createInvoiceLine(String id, Product product, String supplierId, String supplierName,
-                                              BigDecimal price, BigDecimal quantity,
+                                              BigDecimal listPrice, BigDecimal price, BigDecimal quantity,
                                               BigDecimal lineExtensionAmount, BigDecimal tax) {
         InvoiceLineType result = new InvoiceLineType();
         result.setID(UBLHelper.createID(id));
@@ -622,7 +677,12 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
         result.setLineExtensionAmount(UBLHelper.initAmount(new LineExtensionAmountType(), lineExtensionAmount,
                                                            currency));
         result.setItem(createItem(product, supplierId, supplierName));
-        result.setPrice(createPrice(price, quantity));
+        result.setPrice(createPrice(price));
+        PricingReferenceType pricingRef = new PricingReferenceType();
+        PriceType priceType = createPrice(listPrice);
+        priceType.setPriceTypeCode(UBLHelper.initCode(new PriceTypeCodeType(), "WS"));
+        pricingRef.getAlternativeConditionPrice().add(priceType);
+        result.setPricingReference(pricingRef);
         result.getTaxTotal().add(createTaxTotal(tax));
         return result;
     }
@@ -651,13 +711,11 @@ public class InvoiceMapperTestCase extends AbstractESCITest {
     /**
      * Helper to create a <tt>PriceType</tt>.
      *
-     * @param price    the price
-     * @param quantity the quantity
+     * @param price the price
      * @return a new <tt>PriceType</tt>
      */
-    private PriceType createPrice(BigDecimal price, BigDecimal quantity) {
+    private PriceType createPrice(BigDecimal price) {
         PriceType result = new PriceType();
-        result.setBaseQuantity(UBLHelper.initQuantity(new BaseQuantityType(), quantity, "BX"));
         result.setPriceAmount(UBLHelper.initAmount(new PriceAmountType(), price, currency));
         return result;
     }

@@ -75,6 +75,7 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
      */
     public FinancialAct map(OrderResponseSimpleType response, User user) {
         String responseId = getResponseId(response);
+        checkUBLVersion(response.getUBLVersionID(), "OrderResponseSimple", responseId);
         Party supplier = getSupplier(response, responseId);
         checkSupplier(supplier, user, factory);
         FinancialAct order = getOrder(response, supplier, responseId);
