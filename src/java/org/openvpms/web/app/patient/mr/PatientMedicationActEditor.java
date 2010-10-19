@@ -19,9 +19,7 @@
 package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.TextArea;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -42,11 +40,9 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
-import org.openvpms.web.resource.util.Styles;
+import org.openvpms.web.component.util.TitledTextArea;
 
 import java.math.BigDecimal;
 
@@ -65,29 +61,14 @@ public class PatientMedicationActEditor extends PatientActEditor {
     private Label dispensingUnits;
 
     /**
-     * Usage notes group box.
+     * Usage notes text.
      */
-    private Component usageNotesBox;
-
-    /**
-     * Usage notes label.
-     */
-    private TextArea usageNotes;
+    private TitledTextArea usageNotes;
 
     /**
      * Determines if the product node should be displayed read-only.
      */
     private boolean showProductReadOnly = false;
-
-    /**
-     * The minumum no. of lines to display in the usage note field.
-     */
-    private static final int USAGE_NOTES_MIN_HEIGHT = 6;
-
-    /**
-     * The maximum no. of lines to display in the usage note field.
-     */
-    private static final int USAGE_NOTES_MAX_HEIGHT = 15;
 
 
     /**
@@ -104,14 +85,9 @@ public class PatientMedicationActEditor extends PatientActEditor {
         }
 
         dispensingUnits = LabelFactory.create();
-        usageNotes = TextComponentFactory.createTextArea();
-        usageNotes.setWidth(new Extent(100, Extent.PERCENT)); // 100% width
-        usageNotes.setStyleName(Styles.EDIT);
-        usageNotes.setEnabled(false);
         String displayName = DescriptorHelper.getDisplayName(ProductArchetypes.MEDICATION, "usageNotes");
-        Label usageNotesTitle = LabelFactory.create();
-        usageNotesTitle.setText(displayName);
-        usageNotesBox = ColumnFactory.create("Inset", ColumnFactory.create("CellSpacing", usageNotesTitle, usageNotes));
+        usageNotes = new TitledTextArea(displayName);
+        usageNotes.setEnabled(false);
 
         if (parent != null) {
             ActBean bean = new ActBean(parent);
@@ -133,7 +109,6 @@ public class PatientMedicationActEditor extends PatientActEditor {
             updateUsageNotes(product);
         }
     }
-
 
     /**
      * Updates the product.
@@ -193,7 +168,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
             }
         };
         strategy.setProductReadOnly(showProductReadOnly);
-        strategy.setUsageNotes(usageNotesBox);
+        strategy.setUsageNotes(usageNotes);
         return strategy;
     }
 
@@ -258,27 +233,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
             }
         }
         usageNotes.setText(notes);
-        usageNotes.setHeight(new Extent(getUsageNotesLinesToDisplay(notes), Extent.EM));
-        usageNotesBox.setVisible(!StringUtils.isEmpty(notes));
-    }
-
-    /**
-     * Determines the no. of lines to display for the dispensing notes.
-     *
-     * @param notes the notes. May be <tt>null</tt>
-     * @return the lines to display
-     */
-    private int getUsageNotesLinesToDisplay(String notes) {
-        int lines = USAGE_NOTES_MIN_HEIGHT;
-        if (notes != null) {
-            lines = StringUtils.countMatches(notes, "\n");
-            if (lines > USAGE_NOTES_MAX_HEIGHT) {
-                lines = USAGE_NOTES_MAX_HEIGHT;
-            } else if (lines < USAGE_NOTES_MIN_HEIGHT) {
-                lines = USAGE_NOTES_MIN_HEIGHT;
-            }
-        }
-        return lines;
+        usageNotes.setVisible(!StringUtils.isEmpty(notes));
     }
 
     /**

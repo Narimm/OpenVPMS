@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.subsystem;
 
-import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.apache.commons.lang.ObjectUtils;
@@ -31,7 +30,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
 import java.util.List;
@@ -413,9 +412,9 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
      * @return a new workspace
      */
     protected Component createWorkspace() {
-        GroupBox box = GroupBoxFactory.create(getBrowser().getComponent());
+        Component browser = ColumnFactory.create("Inset", getBrowser().getComponent());
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                                       "BrowserCRUDWorkspace.Layout", box,
+                                       "BrowserCRUDWorkspace.Layout", browser,
                                        getCRUDWindow().getComponent());
     }
 

@@ -762,6 +762,12 @@
         </properties>
     </style>
 
+    <style name="InsetX" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="insets" value="${padding.medium} 0px"/>
+        </properties>
+    </style>
+
     <style name="Inset.SmallXLargeY" type="nextapp.echo2.app.Column">
         <properties>
             <property name="insets" value="${padding.small} ${padding.large}"/>

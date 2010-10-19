@@ -68,7 +68,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
     /**
      * Type label id.
      */
-    private static final String TYPE_ID = "type";
+    private static final String TYPE_ID = "query.type";
 
 
     /**
