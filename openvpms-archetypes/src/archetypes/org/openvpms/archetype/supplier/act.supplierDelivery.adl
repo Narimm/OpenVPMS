@@ -52,6 +52,8 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
+        <node name="supplierNotes" path="/details/supplierNotes" type="java.lang.String" minCardinality="0"
+              maxLength="5000" readOnly="true" defaultValue=""/>
         <node name="items" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
             <assertion name="archetypeRange">
