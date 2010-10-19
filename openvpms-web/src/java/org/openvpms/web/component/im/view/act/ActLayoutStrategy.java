@@ -154,7 +154,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * Returns a node filter to filter nodes. This implementation filters the
      * "items" node.
      *
-     * @param object
+     * @param object  the object
      * @param context the context
      * @return a node filter to filter nodes
      */

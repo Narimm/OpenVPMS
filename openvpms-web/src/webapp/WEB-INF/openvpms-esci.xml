@@ -66,11 +66,19 @@
     </bean>
 
     <bean id="orderResponseServiceAdapter" class="org.openvpms.esci.adapter.OrderResponseServiceAdapter">
+        <property name="orderResponseMapper" ref="orderResponseMapper"/>
         <property name="orderResponseListener">
             <bean class="org.openvpms.esci.adapter.SystemMessageOrderResponseListener">
                 <property name="beanFactory" ref="imObjectBeanFactory"/>
             </bean>
         </property>
+        <property name="archetypeService" ref="archetypeRuleService"/>
+        <property name="userRules" ref="userRules"/>
+    </bean>
+
+    <bean id="orderResponseMapper" class="org.openvpms.esci.adapter.OrderResponseMapperImpl">
+        <property name="archetypeService" ref="archetypeRuleService"/>
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
     </bean>
 
     <!-- ================================================================== -->

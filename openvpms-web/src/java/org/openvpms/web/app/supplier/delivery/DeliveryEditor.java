@@ -22,12 +22,12 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * An editor for <em>act.supplierDelivery</em> and <em>act.supplierReturn</em>
- * acts.
+ * An editor for <em>act.supplierDelivery</em> and <em>act.supplierReturn</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -35,14 +35,13 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 public class DeliveryEditor extends FinancialActEditor {
 
     /**
-     * Construct a new <tt>ActEditor</tt>.
+     * Constructs a <tt>DeliveryEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context. May be <tt>null</tt>
      */
-    public DeliveryEditor(FinancialAct act, IMObject parent,
-                          LayoutContext context) {
+    public DeliveryEditor(FinancialAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
     }
 
@@ -55,9 +54,18 @@ public class DeliveryEditor extends FinancialActEditor {
     public void addItem(FinancialAct delivery, FinancialAct order) {
         ActRelationshipCollectionEditor items = getEditor();
         items.add(delivery);
-        DeliveryItemEditor itemEditor
-                = (DeliveryItemEditor) getEditor().getEditor(delivery);
+        DeliveryItemEditor itemEditor = (DeliveryItemEditor) getEditor().getEditor(delivery);
         itemEditor.setOrderItem(order);
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new DeliveryLayoutStrategy(getEditor());
     }
 
 }

@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.util.ColumnFactory;
 
 import java.util.List;
 
@@ -141,7 +142,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
                                   PropertySet properties, Component container, LayoutContext context) {
         super.doSimpleLayout(object, parent, descriptors, properties, container, context);
         if (usageNotes != null) {
-            container.add(usageNotes);
+            container.add(ColumnFactory.create("InsetX", usageNotes));
         }
     }
 
