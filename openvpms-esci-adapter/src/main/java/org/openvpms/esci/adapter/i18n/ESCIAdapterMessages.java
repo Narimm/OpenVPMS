@@ -59,7 +59,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidSupplierURL(Party supplier, String serviceURL) {
-        return messages.getMessage(3, supplier.getId(), supplier.getName(), serviceURL);
+        return messages.getMessage(2, supplier.getId(), supplier.getName(), serviceURL);
     }
 
     /**
@@ -69,49 +69,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidServiceURL(String serviceURL) {
-        return messages.getMessage(4, serviceURL);
-    }
-
-    /**
-     * Creates a new message for when there is no relationship between a supplier and product.
-     *
-     * @param supplier the supplier
-     * @param product  the product
-     * @return a new message
-     */
-    public static Message noProductSupplierRelationship(Party supplier, Product product) {
-        return messages.getMessage(5, supplier.getId(), supplier.getName(), product.getId(), product.getName());
-    }
-
-    /**
-     * Creates a new message for when there is no supplier order code associated with a product.
-     *
-     * @param supplier the supplier
-     * @param product  the product
-     * @return a new message
-     */
-    public static Message noSupplierOrderCode(Party supplier, Product product) {
-        return messages.getMessage(6, supplier.getId(), supplier.getName(), product.getId(), product.getName());
-    }
-
-    /**
-     * Creates a new message for when no ESCI user can be determined from the current context.
-     *
-     * @return a new message
-     */
-    public static Message noESCIUser() {
-        return messages.getMessage(7);
-    }
-
-    /**
-     * Creates a new message for when a user has no relationship to a supplier.
-     *
-     * @param user     the ESCI user
-     * @param supplier the supplier
-     * @return a new message
-     */
-    public static Message userNotLinkedToSupplier(User user, Party supplier) {
-        return messages.getMessage(8, user.getId(), user.getName(), supplier.getId(), supplier.getName());
+        return messages.getMessage(3, serviceURL);
     }
 
     /**
@@ -236,12 +194,54 @@ public class ESCIAdapterMessages {
     }
 
     /**
+     * Creates a new message for when a user has no relationship to a supplier.
+     *
+     * @param user     the ESCI user
+     * @param supplier the supplier
+     * @return a new message
+     */
+    public static Message userNotLinkedToSupplier(User user, Party supplier) {
+        return messages.getMessage(109, user.getId(), user.getName(), supplier.getId(), supplier.getName());
+    }
+    
+    /**
+     * Creates a new message for when no ESCI user can be determined from the current context.
+     *
+     * @return a new message
+     */
+    public static Message noESCIUser() {
+        return messages.getMessage(200);
+    }
+
+    /**
+     * Creates a new message for when there is no relationship between a supplier and product.
+     *
+     * @param supplier the supplier
+     * @param product  the product
+     * @return a new message
+     */
+    public static Message noProductSupplierRelationship(Party supplier, Product product) {
+        return messages.getMessage(109, supplier.getId(), supplier.getName(), product.getId(), product.getName());
+    }
+
+    /**
+     * Creates a new message for when there is no supplier order code associated with a product.
+     *
+     * @param supplier the supplier
+     * @param product  the product
+     * @return a new message
+     */
+    public static Message noSupplierOrderCode(Party supplier, Product product) {
+        return messages.getMessage(300, supplier.getId(), supplier.getName(), product.getId(), product.getName());
+    }
+
+    /**
      * Creates a new message for when an order is accepted.
      *
      * @return a new message
      */
     public static Message orderAccepted() {
-        return messages.getMessage(200);
+        return messages.getMessage(400);
     }
 
     /**
@@ -251,7 +251,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message orderRejected(String reason) {
-        return messages.getMessage(201, reason);
+        return messages.getMessage(401, reason);
     }
 
     /**
@@ -260,7 +260,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message orderRejectedNoReason() {
-        return messages.getMessage(202);
+        return messages.getMessage(402);
     }
 
     /**
@@ -270,7 +270,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message failedToSubmitOrderResponse(String reason) {
-        return messages.getMessage(300, reason);
+        return messages.getMessage(500, reason);
     }
 
     /**
@@ -282,7 +282,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceInvalidStockLocation(String path, String invoiceId, String stockLocationId) {
-        return messages.getMessage(400, path, invoiceId, stockLocationId);
+        return messages.getMessage(600, path, invoiceId, stockLocationId);
     }
 
     /**
@@ -292,7 +292,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceNoProduct(String invoiceLineId) {
-        return messages.getMessage(401, invoiceLineId);
+        return messages.getMessage(601, invoiceLineId);
     }
 
     /**
@@ -305,7 +305,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidPayableAmount(String invoiceId, BigDecimal payableAmount,
                                                       BigDecimal calculated) {
-        return messages.getMessage(402, invoiceId, payableAmount, calculated);
+        return messages.getMessage(602, invoiceId, payableAmount, calculated);
     }
 
     /**
@@ -318,7 +318,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidLineExtensionAmount(String invoiceId, BigDecimal lineExtensionAmount,
                                                             BigDecimal calculated) {
-        return messages.getMessage(403, invoiceId, lineExtensionAmount, calculated);
+        return messages.getMessage(603, invoiceId, lineExtensionAmount, calculated);
     }
 
     /**
@@ -330,7 +330,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceInvalidTax(String invoiceId, BigDecimal tax, BigDecimal calculated) {
-        return messages.getMessage(404, invoiceId, tax, calculated);
+        return messages.getMessage(604, invoiceId, tax, calculated);
     }
 
     /**
@@ -343,7 +343,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceLineInvalidLineExtensionAmount(String invoiceLineId, BigDecimal lineExtensionAmount,
                                                                 BigDecimal calculated) {
-        return messages.getMessage(405, invoiceLineId, lineExtensionAmount, calculated);
+        return messages.getMessage(605, invoiceLineId, lineExtensionAmount, calculated);
     }
 
     /**
@@ -354,7 +354,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceInvalidOrderItem(String invoiceLineId, String orderId) {
-        return messages.getMessage(406, invoiceLineId, orderId);
+        return messages.getMessage(606, invoiceLineId, orderId);
     }
 
     /**
@@ -364,7 +364,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message failedToSubmitInvoice(String reason) {
-        return messages.getMessage(500, reason);
+        return messages.getMessage(700, reason);
     }
 
 }

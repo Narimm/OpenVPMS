@@ -25,8 +25,11 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.esci.adapter.map.UBLHelper;
+import org.springframework.core.io.ClassPathResource;
 
 import java.math.BigDecimal;
+import java.io.IOException;
 
 
 /**
@@ -92,4 +95,15 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
         return supplierType;
     }
 
+    /**
+     * Helper to return the URL of a WSDL file, given its resource path.
+     *
+     * @param resourcePath the path to the WSDL resource
+     * @return the URL of the WSDL resource
+     * @throws java.io.IOException if the URL is invalid
+     */
+    protected String getWSDL(String resourcePath) throws IOException {
+        ClassPathResource wsdl = new ClassPathResource(resourcePath);
+        return wsdl.getURL().toString();
+    }
 }

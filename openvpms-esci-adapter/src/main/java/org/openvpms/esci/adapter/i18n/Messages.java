@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+
 /**
  * Add description here.
  *
@@ -68,7 +69,11 @@ public class Messages {
             result = formatMissingKey(key, args);
         } else if (args.length != 0) {
             MessageFormat format = new MessageFormat(result, locale);
-            result = format.format(args);
+            try {
+                result = format.format(args);
+            } catch (Throwable exception) {
+                result = formatFailed(key, result, args, exception);
+            }
         }
         return result;
     }
@@ -100,17 +105,50 @@ public class Messages {
         return (result != null) ? result : getClass().getClassLoader();
     }
 
+    /**
+     * Formats a message when the corresponding resource bundle key doesn't exist.
+     * <p/>
+     * This is to help return some message to the user, in the case where the resource bundle is not in sync with
+     * the code that generates the message.
+     *
+     * @param key  the resource bundle key
+     * @param args the arguments to format
+     * @return a message
+     */
     protected String formatMissingKey(String key, Object... args) {
         log.error("ResourceBundle=" + bundlePath + " missing key=" + key);
         StringBuilder result = new StringBuilder("?" + key + "?");
         if (args.length != 0) {
             result.append('[');
-            for (int i = 0; i < args.length; ++i) {
-                if (i > 0) {
-                    result.append(", ");
-                }
-                result.append(args[i]);
-            }
+            result.append(StringUtils.join(args, ','));
+            result.append(']');
+        }
+        return result.toString();
+    }
+
+    /**
+     * Formats a message when it cannot be formattted by a <tt>MessageFormat</tt> throws an exception.
+     * <p/>
+     * This is to help return some message to the user, in the case where the resource bundle is not in sync with
+     * the code that generates the message.
+     *
+     * @param key       the resource bundle key
+     * @param message   the message
+     * @param args      the arguments to format
+     * @param exception the cause of the failure
+     * @return a message corresponding to the arguments
+     */
+    protected String formatFailed(String key, String message, Object[] args, Throwable exception) {
+        String argText = StringUtils.join(args, ',');
+        log.error("Failed to format message, bundle=" + bundlePath + ", key=" + key + ", text='" + message
+                  + "', arguments=[" + argText + "]", exception);
+        StringBuilder result = new StringBuilder("Message='");
+        result.append(message);
+        result.append("'");
+        if (args.length != 0) {
+            result.append(". Arguments=[");
+            result.append(argText);
+            result.append(']');
         }
         return result.toString();
     }
