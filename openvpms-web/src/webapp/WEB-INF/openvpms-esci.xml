@@ -41,13 +41,13 @@
     <!-- Order service                                                      -->
     <!-- ================================================================== -->
 
-    <bean id="orderService" class="org.openvpms.esci.adapter.OrderWebServiceAdapter">
+    <bean id="orderService" class="org.openvpms.esci.adapter.client.impl.OrderServiceAdapterImpl">
         <property name="factory" ref="imObjectBeanFactory"/>
         <property name="orderMapper" ref="orderMapper"/>
         <property name="supplierServiceLocator" ref="supplierServiceLocator"/>
     </bean>
 
-    <bean id="orderMapper" class="org.openvpms.esci.adapter.OrderMapperImpl">
+    <bean id="orderMapper" class="org.openvpms.esci.adapter.map.order.OrderMapperImpl">
         <property name="beanFactory" ref="imObjectBeanFactory"/>
         <property name="locationRules" ref="locationRules"/>
         <property name="lookupService" ref="lookupService"/>
@@ -65,10 +65,10 @@
         <property name="orderResponseService" ref="orderResponseServiceAdapter"/>
     </bean>
 
-    <bean id="orderResponseServiceAdapter" class="org.openvpms.esci.adapter.OrderResponseServiceAdapter">
+    <bean id="orderResponseServiceAdapter" class="org.openvpms.esci.adapter.service.OrderResponseServiceAdapter">
         <property name="orderResponseMapper" ref="orderResponseMapper"/>
         <property name="orderResponseListener">
-            <bean class="org.openvpms.esci.adapter.SystemMessageOrderResponseListener">
+            <bean class="org.openvpms.esci.adapter.service.SystemMessageOrderResponseListener">
                 <property name="beanFactory" ref="imObjectBeanFactory"/>
             </bean>
         </property>
@@ -76,7 +76,7 @@
         <property name="userRules" ref="userRules"/>
     </bean>
 
-    <bean id="orderResponseMapper" class="org.openvpms.esci.adapter.OrderResponseMapperImpl">
+    <bean id="orderResponseMapper" class="org.openvpms.esci.adapter.map.order.OrderResponseMapperImpl">
         <property name="archetypeService" ref="archetypeRuleService"/>
         <property name="beanFactory" ref="imObjectBeanFactory"/>
     </bean>
@@ -89,18 +89,18 @@
         <property name="invoiceService" ref="invoiceServiceAdapter"/>
     </bean>
 
-    <bean id="invoiceServiceAdapter" class="org.openvpms.esci.adapter.InvoiceServiceAdapter">
+    <bean id="invoiceServiceAdapter" class="org.openvpms.esci.adapter.service.InvoiceServiceAdapter">
         <property name="archetypeService" ref="archetypeRuleService"/>
         <property name="userRules" ref="userRules"/>
         <property name="invoiceListener">
-            <bean class="org.openvpms.esci.adapter.SystemMessageInvoiceListener">
+            <bean class="org.openvpms.esci.adapter.service.SystemMessageInvoiceListener">
                 <property name="beanFactory" ref="imObjectBeanFactory"/>
             </bean>
         </property>
         <property name="invoiceMapper" ref="invoiceMapper"/>
     </bean>
 
-    <bean id="invoiceMapper" class="org.openvpms.esci.adapter.InvoiceMapperImpl">
+    <bean id="invoiceMapper" class="org.openvpms.esci.adapter.map.invoice.InvoiceMapperImpl">
         <property name="archetypeService" ref="archetypeRuleService"/>
         <property name="beanFactory" ref="imObjectBeanFactory"/>
         <property name="lookupService" ref="lookupService"/>
@@ -119,7 +119,7 @@
         <property name="serviceAuthenticators" ref="serviceAuthenticators"/>
     </bean>
 
-    <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.SupplierServiceLocatorImpl">
+    <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator">
         <property name="beanFactory" ref="imObjectBeanFactory"/>
         <property name="serviceLocatorFactory" ref="serviceLocatorFactory"/>
         <property name="supplierRules" ref="supplierRules"/>
