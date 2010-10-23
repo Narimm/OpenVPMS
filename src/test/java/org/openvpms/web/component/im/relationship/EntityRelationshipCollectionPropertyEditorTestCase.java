@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditorTest;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.test.TestHelper;
+import org.openvpms.archetype.test.TestHelper;
 
 
 /**
@@ -75,8 +75,7 @@ public class EntityRelationshipCollectionPropertyEditorTestCase
      * @return a new object to add to the collection
      */
     protected IMObject createObject(IMObject parent) {
-        EntityRelationship result = (EntityRelationship) TestHelper.create(
-                "entityRelationship.patientOwner");
+        EntityRelationship result = (EntityRelationship) create("entityRelationship.patientOwner");
         result.setSource(parent.getObjectReference());
         Party patient = TestHelper.createPatient(true);
         result.setTarget(patient.getObjectReference());

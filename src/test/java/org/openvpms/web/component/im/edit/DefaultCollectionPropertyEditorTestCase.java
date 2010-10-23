@@ -33,7 +33,6 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.test.TestHelper;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -72,7 +71,7 @@ public class DefaultCollectionPropertyEditorTestCase
      * @return the parent object
      */
     protected IMObject createParent() {
-        Party party = (Party) TestHelper.create("party.customerperson");
+        Party party = (Party) create("party.customerperson");
         // remove default contacts
         for (Contact contact : party.getContacts().toArray(new Contact[party.getContacts().size()])) {
             party.removeContact(contact);
@@ -111,7 +110,7 @@ public class DefaultCollectionPropertyEditorTestCase
      * @return a new object to add to the collection
      */
     protected IMObject createObject(IMObject parent) {
-        return TestHelper.create(ContactArchetypes.LOCATION);
+        return create(ContactArchetypes.LOCATION);
     }
 
 }

@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.test.TestHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +81,7 @@ public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppT
 
         T object = createObject(getUniqueValue(), false);
         checkSelects(false, query, object);
-        TestHelper.save(object);
+        save(object);
         checkSelects(true, query, object);
     }
 

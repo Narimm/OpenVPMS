@@ -142,7 +142,7 @@ public class LocalContextTestCase extends AbstractAppTest {
     /**
      * Creates a new local context.
      *
-     * @param withParent if <tt>true</tt> soecify a parent
+     * @param withParent if <tt>true</tt> specify a parent
      * @return a new context
      */
     private LocalContext createContext(boolean withParent) {

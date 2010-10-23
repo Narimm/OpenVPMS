@@ -27,6 +27,7 @@ package org.openvpms.web.component.im.edit.act;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -36,7 +37,6 @@ import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditorTest;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.test.TestHelper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
@@ -126,7 +126,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
      * @return the parent object
      */
     protected IMObject createParent() {
-        Act act = (Act) TestHelper.create("act.customerEstimation");
+        Act act = (Act) create("act.customerEstimation");
         ActBean bean = new ActBean(act);
 
         Party customer = TestHelper.createCustomer(true);
@@ -164,10 +164,9 @@ public class ActRelationshipCollectionPropertyEditorTestCase
      * @return a new object to add to the collection
      */
     protected IMObject createObject(IMObject parent) {
-        Act act = (Act) TestHelper.create("act.customerEstimationItem");
-        assertNotNull(act);
+        Act act = (Act) create("act.customerEstimationItem");
 
-        Product product = TestHelper.createProduct(true);
+        Product product = TestHelper.createProduct();
         Party patient = TestHelper.createPatient(true);
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);

@@ -30,7 +30,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.SelectionHistory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.test.TestHelper;
+import org.openvpms.archetype.test.TestHelper;
 
 import java.util.Date;
 import java.util.List;
@@ -106,8 +106,8 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
         Party customer1 = TestHelper.createCustomer("", "XC", true);
         Party customer2 = TestHelper.createCustomer("", "XA", true);
         Party customer3 = TestHelper.createCustomer("", "XB", true);
-        Party patient1 = TestHelper.createPatient("XZ", true);
-        Party patient2 = TestHelper.createPatient("XY", true);
+        Party patient1 = TestHelper.createPatient(true);
+        Party patient2 = TestHelper.createPatient(true);
         customers.add(customer1);
         customers.add(customer2);
         customers.add(customer3);
@@ -144,8 +144,8 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
         Party customer1 = TestHelper.createCustomer("", "XC", true);
         Party customer2 = TestHelper.createCustomer("", "XA", true);
         Party customer3 = TestHelper.createCustomer("", "XB", true);
-        Party patient1 = TestHelper.createPatient("XAA", true);
-        Party patient2 = TestHelper.createPatient("XBB", true);
+        Party patient1 = TestHelper.createPatient(true);
+        Party patient2 = TestHelper.createPatient(true);
         customers.add(customer1);
         customers.add(customer2);
         customers.add(customer3);
@@ -261,7 +261,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
     private void addOwnerRelationship(Party customer, Party patient) {
         EntityBean bean = new EntityBean(customer);
         bean.addRelationship("entityRelationship.patientOwner", patient);
-        TestHelper.save(customer, patient);
+        save(customer, patient);
     }
 
 }

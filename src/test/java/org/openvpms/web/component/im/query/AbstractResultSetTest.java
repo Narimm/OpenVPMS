@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.test.TestHelper;
 
 
 /**
@@ -58,7 +57,7 @@ public class AbstractResultSetTest extends AbstractAppTest {
         childBean.addParticipation("participation.product", product);
         bean.addRelationship("actRelationship.customerEstimationItem", child);
 
-        TestHelper.save(act, child);
+        save(act, child);
         return act;
     }
 
@@ -69,7 +68,7 @@ public class AbstractResultSetTest extends AbstractAppTest {
      * @return a new act
      */
     protected Act createAct(String shortName) {
-        return (Act) TestHelper.create(shortName);
+        return (Act) create(shortName);
     }
 
 }
