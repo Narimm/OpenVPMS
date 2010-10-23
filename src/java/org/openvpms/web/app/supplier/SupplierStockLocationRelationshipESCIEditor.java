@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.esci.adapter.SupplierServiceLocator;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -41,6 +40,7 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 
 import java.util.List;
 
