@@ -32,7 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.test.TestHelper;
+import org.openvpms.archetype.test.TestHelper;
 
 
 /**

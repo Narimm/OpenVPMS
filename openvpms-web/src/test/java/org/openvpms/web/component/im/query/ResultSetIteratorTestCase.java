@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.test.TestHelper;
+import org.openvpms.archetype.test.TestHelper;
 
 import java.util.Date;
 import java.util.NoSuchElementException;
@@ -68,7 +68,7 @@ public class ResultSetIteratorTestCase extends AbstractResultSetTest {
     @Test
     public void testIteration() {
         Party patient = TestHelper.createPatient(true);
-        Product product = TestHelper.createProduct(true);
+        Product product = TestHelper.createProduct();
 
         final int count = 10;
         for (int i = 0; i < count; ++i) {

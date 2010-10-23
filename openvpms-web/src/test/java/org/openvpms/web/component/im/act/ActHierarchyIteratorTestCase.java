@@ -26,7 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.test.TestHelper;
+import org.openvpms.archetype.test.TestHelper;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -124,7 +124,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
                              problem);
         bean.addRelationship("actRelationship.patientClinicalEventItem",
                              weight);
-        TestHelper.save(event, note, problem, weight);
+        save(event, note, problem, weight);
         bean.save();
         return event;
     }
@@ -138,7 +138,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
      * @return a new act
      */
     private Act createAct(String shortName, Party patient, Date startTime) {
-        Act act = (Act) TestHelper.create(shortName);
+        Act act = (Act) create(shortName);
         act.setActivityStartTime(createRandTime(startTime));
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);

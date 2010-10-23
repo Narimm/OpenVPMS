@@ -23,7 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.customer.charge.CustomerInvoiceEditDialog;
@@ -82,7 +82,7 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
      * Verifies that a {@link PatientClinicalEventEditDialog} is returned for an <em>act.patientClinicalEvent</em>.
      */
     public void testCreatePatientClinicalEventEditDialog() {
-        checkCreate(MedicalRecordRules.CLINICAL_EVENT, PatientClinicalEventEditDialog.class);
+        checkCreate(PatientArchetypes.CLINICAL_EVENT, PatientClinicalEventEditDialog.class);
     }
 
     /**

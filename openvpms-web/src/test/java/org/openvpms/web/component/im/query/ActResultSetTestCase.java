@@ -18,14 +18,15 @@
 
 package org.openvpms.web.component.im.query;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.test.TestHelper;
-import org.junit.Test; import static org.junit.Assert.*;
 
 import java.util.Date;
 
@@ -77,13 +78,14 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
         assertEquals(rowsPerPage, set.getPageSize());
         assertTrue(set.isSortedAscending());
         assertTrue(set.getSortConstraints() != null
-                && set.getSortConstraints().length == 0);
+                   && set.getSortConstraints().length == 0);
     }
 
     /**
      * Tests iteration.
      */
-    @Test public void testIteration() {
+    @Test
+    public void testIteration() {
         final int rowsPerPage = 5;
         final int total = acts.length;
         int expectedPages = (total / rowsPerPage);
@@ -123,7 +125,8 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
     /**
      * Tests random access.
      */
-    @Test public void testRandomAccess() {
+    @Test
+    public void testRandomAccess() {
         final int rowsPerPage = 2;
         final int total = acts.length;
         int expectedPages = getPages(rowsPerPage, total);
@@ -152,7 +155,8 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
     /**
      * Verifies that non-primary archetypes can be specified.
      */
-    @Test public void testNonPrimary() {
+    @Test
+    public void testNonPrimary() {
         Party patient = TestHelper.createPatient(true);
         String[] shortNames = {"act.customerAccountInvoiceItem",
                                "act.customerAccountCreditItem"};
@@ -180,7 +184,7 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
 
         customer = TestHelper.createCustomer(true);
         Party patient = TestHelper.createPatient(true);
-        Product product = TestHelper.createProduct(true);
+        Product product = TestHelper.createProduct();
 
         final int count = 12;
         acts = new Act[count];
