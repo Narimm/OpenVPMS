@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
@@ -95,8 +96,7 @@ public class OrderServiceAdapterImpl implements OrderServiceAdapter {
      * Submits an order to a supplier.
      *
      * @param order the <em>act.supplierOrder</em> to submit
-     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
-     *          for any error
+     * @throws OpenVPMSException for any error
      */
     public void submitOrder(FinancialAct order) {
         ActBean bean = factory.createActBean(order);

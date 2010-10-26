@@ -17,8 +17,7 @@
  */
 package org.openvpms.esci.adapter.map.order;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.oasis.ubl.OrderType;
@@ -41,7 +40,6 @@ import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
-import org.openvpms.archetype.rules.supplier.AbstractSupplierTest;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.test.TestHelper;
@@ -57,6 +55,8 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.esci.adapter.AbstractESCITest;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.ubl.io.UBLDocumentContext;
 import org.openvpms.ubl.io.UBLDocumentWriter;
 
@@ -73,7 +73,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OrderMapperTestCase extends AbstractSupplierTest {
+public class OrderMapperTestCase extends AbstractESCITest {
 
     /**
      * The practice location contact.
@@ -174,9 +174,67 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         checkItem(item1.getItem(), getProduct());
     }
 
+    /**
+     * Verifies that an {@link ESCIAdapterException} is thrown if there is no relationship between a supplier
+     * and stock location.
+     */
+    @Test
+    public void testNoSupplierStockLocationRelationship() {
+        FinancialAct order = createOrder();
+
+        // remove the supplier/stock location
+        Party supplier = getSupplier();
+        Party location = getStockLocation();
+        EntityBean bean = new EntityBean(supplier);
+        EntityRelationship relationship = bean.getRelationship(location);
+        supplier.removeEntityRelationship(relationship);
+        location.removeEntityRelationship(relationship);
+        save(supplier, location);
+
+        String expected = "ESCIA-0001: e-Supply Chain Interface support is not configured for " + supplier.getName()
+                          + " (" + supplier.getId() + ") and " + location.getName() + " (" + location.getId() + ")";
+        checkMappingException(order, expected);
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is thrown if there is no relationship between a supplier and
+     * product.
+     */
     @Test
     public void testNoProductSupplierRelationship() {
-        // TODO
+        FinancialAct order = createOrder();
+
+        Product product = getProduct();
+        Party supplier = getSupplier();
+        EntityBean productBean = new EntityBean(product);
+        EntityRelationship relationship = productBean.getRelationship(supplier);
+        assertNotNull(relationship);
+        product.removeEntityRelationship(relationship);
+        supplier.removeEntityRelationship(relationship);
+        save(product, supplier);
+
+        String expected = "ESCIA-0300: Supplier " + supplier.getName() + " (" + supplier.getId()
+                          + ") has no relationship to product " + product.getName() + " (" + product.getId() + ")";
+        checkMappingException(order, expected);
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is thrown if the product has no supplier order code.
+     */
+    @Test
+    public void testNoSupplierOrderCode() {
+        FinancialAct order = createOrder();
+        Product product = getProduct();
+        Party supplier = getSupplier();
+        EntityBean productBean = new EntityBean(product);
+        EntityRelationship relationship = productBean.getRelationship(supplier);
+        assertNotNull(relationship);
+        IMObjectBean bean = new IMObjectBean(relationship);
+        bean.setValue("reorderCode", null);
+        save(product, supplier);
+        String expected = "ESCIA-0301: Supplier " + supplier.getName() + " (" + supplier.getId()
+                          + ") has no order code for product " + product.getName() + " (" + product.getId() + ")";
+        checkMappingException(order, expected);
     }
 
     /**
@@ -206,11 +264,8 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         supplier.addContact(supplierContact);
 
         // add a product supplier relationship
-        Product product = getProduct();
-        ProductRules productRules = new ProductRules();
-        productSupplier = productRules.createProductSupplier(product, supplier);
-        productSupplier.setReorderCode("AREORDERCODE");
-        productSupplier.setReorderDescription("A reorder description");
+        productSupplier = addProductSupplierRelationship(getProduct(), supplier, "AREORDERCODE", 
+                                                         "A reorder description");
 
         // create a user for associating with orders
         author = TestHelper.createUser();
@@ -224,7 +279,7 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         bean.setValue("accountId", SUPPLIER_ACCOUNT_ID);
         bean.setValue("orderServiceURL", "https://foo.openvpms.org/orderservice");
 
-        save(supplier, product, stockLocation);
+        save(supplier, stockLocation);
     }
 
     /**
@@ -242,6 +297,22 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         mapper.setLookupService(LookupServiceHelper.getLookupService());
         mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
         return mapper;
+    }
+
+    /**
+     * Verifies that an invalid order fails mapping with a exception.
+     *
+     * @param order           the order
+     * @param expectedMessage the expected error message
+     */
+    private void checkMappingException(FinancialAct order, String expectedMessage) {
+        OrderMapper mapper = createMapper();
+        try {
+            mapper.map(order);
+            fail("Expected mapping to fail");
+        } catch (ESCIAdapterException exception) {
+            assertEquals(expectedMessage, exception.getMessage());
+        }
     }
 
     /**
@@ -366,6 +437,26 @@ public class OrderMapperTestCase extends AbstractSupplierTest {
         assertEquals(cityName, postalAddress.getCityName().getValue());
         assertEquals(postalZone, postalAddress.getPostalZone().getValue());
         assertEquals(countrySubentity, postalAddress.getCountrySubentity().getValue());
+    }
+
+    /**
+     * Helper to create a new POSTED order.
+     *
+     * @return a new order
+     */
+    @Override
+    protected FinancialAct createOrder() {
+        BigDecimal quantity = new BigDecimal(5);
+        BigDecimal unitPrice = new BigDecimal(10);
+
+        // create an order with a single item, and post it
+        FinancialAct actItem = createOrderItem(quantity, 1, unitPrice);
+        FinancialAct act = createOrder(actItem);
+        act.setStatus(ActStatus.POSTED);
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("author", author);
+        bean.save();
+        return act;
     }
 
     /**

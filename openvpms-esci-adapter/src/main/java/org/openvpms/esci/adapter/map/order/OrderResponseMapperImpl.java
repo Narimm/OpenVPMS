@@ -17,15 +17,9 @@
  */
 package org.openvpms.esci.adapter.map.order;
 
-import org.apache.commons.lang.StringUtils;
 import org.oasis.ubl.OrderResponseSimpleType;
-import org.oasis.ubl.common.aggregate.OrderReferenceType;
-import org.oasis.ubl.common.basic.AcceptedIndicatorType;
-import org.oasis.ubl.common.basic.RejectionNoteType;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -33,7 +27,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFact
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.AbstractUBLMapper;
-import org.openvpms.esci.exception.ESCIException;
 
 import javax.annotation.Resource;
 
@@ -50,12 +43,6 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
      * The bean factory.
      */
     private IMObjectBeanFactory factory;
-
-    /**
-     * Order archetype identifier.
-     */
-    private ArchetypeId ORDER_ID = new ArchetypeId("act.supplierOrder");
-
 
     /**
      * Registers the bean factory.
@@ -75,23 +62,23 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
      * @return the corresponding order
      */
     public FinancialAct map(OrderResponseSimpleType response, User user) {
-        String responseId = getResponseId(response);
-        checkUBLVersion(response.getUBLVersionID(), "OrderResponseSimple", responseId);
-        Party supplier = getSupplier(response, responseId);
+        UBLOrderResponseSimple wrapper = new UBLOrderResponseSimple(response, getArchetypeService());
+        checkUBLVersion(wrapper);
+        Party supplier = wrapper.getSupplier();
         checkSupplier(supplier, user, factory);
-        FinancialAct order = getOrder(response, supplier, responseId);
-        AcceptedIndicatorType indicator = getRequired(response.getAcceptedIndicator(), "AcceptedIndicator",
-                                                      "OrderResponseSimple", responseId);
+        FinancialAct order = wrapper.getOrder();
+        checkOrder(order, supplier, wrapper);
+
         Message message;
         String status;
-        if (indicator.isValue()) {
+        if (wrapper.isAccepted()) {
             status = OrderStatus.ACCEPTED;
             message = ESCIAdapterMessages.orderAccepted();
         } else {
             status = OrderStatus.REJECTED;
-            RejectionNoteType note = response.getRejectionNote();
-            if (note != null && !StringUtils.isEmpty(note.getValue())) {
-                message = ESCIAdapterMessages.orderRejected(note.getValue());
+            String note = wrapper.getRejectionNote();
+            if (note != null) {
+                message = ESCIAdapterMessages.orderRejected(note);
             } else {
                 message = ESCIAdapterMessages.orderRejectedNoReason();
             }
@@ -100,61 +87,6 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
         bean.setValue("status", status);
         bean.setValue("supplierResponse", message.getMessage());
         return order;
-    }
-
-    /**
-     * Returns the order referred to in the response.
-     * This only returns orders associated with the specified supplier.
-     *
-     * @param response   the response
-     * @param supplier   the supplier
-     * @param responseId the response identifier
-     * @return the corresponding order
-     * @throws ESCIException if the order was not found or was not created
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *                       for any archetype service error
-     */
-    protected FinancialAct getOrder(OrderResponseSimpleType response, Party supplier, String responseId) {
-        IMObjectReference reference = getOrderReference(response, responseId);
-        return getOrder(reference, supplier, "OrderResponseSimple", responseId);
-    }
-
-    /**
-     * Returns the order response identifier identifier.
-     *
-     * @param response the response
-     * @return the invoice identifier
-     * @throws ESCIException if the identifier isn't set
-     */
-    protected String getResponseId(OrderResponseSimpleType response) {
-        return getId(response.getID(), "ID", "OrderResponseSimple", null);
-    }
-
-    /**
-     * Returns the order reference.
-     *
-     * @param response   the order response
-     * @param responseId the response identifier
-     * @return the order reference
-     * @throws ESCIException if the order reference is not specified or invalid
-     */
-    private IMObjectReference getOrderReference(OrderResponseSimpleType response, String responseId) {
-        OrderReferenceType reference = getRequired(response.getOrderReference(), "OrderReference",
-                                                   "OrderResponseSimple", responseId);
-        return getReference(ORDER_ID, reference.getID(), "OrderReference", "OrderResponseSimple", responseId);
-    }
-
-    /**
-     * Returns the order response supplier.
-     *
-     * @param response   the response
-     * @param responseId the invoice identifier
-     * @return the supplier
-     * @throws ESCIException if the supplier was not found
-     */
-    protected Party getSupplier(OrderResponseSimpleType response, String responseId) {
-        return getSupplier(response.getAccountingSupplierParty(), "AccountingSupplierParty", "OrderResponseSimple",
-                           responseId);
     }
 
 }

@@ -189,7 +189,7 @@ public class ESCIAdapterMessages {
      * @param orderId  the order identifier
      * @return a new message
      */
-    public static Message invalidOrder(String parent, String parentId, long orderId) {
+    public static Message invalidOrder(String parent, String parentId, String orderId) {
         return messages.getMessage(108, parent, parentId, orderId);
     }
 
@@ -203,7 +203,7 @@ public class ESCIAdapterMessages {
     public static Message userNotLinkedToSupplier(User user, Party supplier) {
         return messages.getMessage(109, user.getId(), user.getName(), supplier.getId(), supplier.getName());
     }
-    
+
     /**
      * Creates a new message for when no ESCI user can be determined from the current context.
      *
@@ -221,7 +221,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message noProductSupplierRelationship(Party supplier, Product product) {
-        return messages.getMessage(109, supplier.getId(), supplier.getName(), product.getId(), product.getName());
+        return messages.getMessage(300, supplier.getId(), supplier.getName(), product.getId(), product.getName());
     }
 
     /**
@@ -232,7 +232,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message noSupplierOrderCode(Party supplier, Product product) {
-        return messages.getMessage(300, supplier.getId(), supplier.getName(), product.getId(), product.getName());
+        return messages.getMessage(301, supplier.getId(), supplier.getName(), product.getId(), product.getName());
     }
 
     /**
@@ -355,6 +355,16 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidOrderItem(String invoiceLineId, String orderId) {
         return messages.getMessage(606, invoiceLineId, orderId);
+    }
+
+    /**
+     * Creates a new message for when an invoice contains an allowance. These aren't (yet) supported.
+     *
+     * @param invoiceId the invoice identifier
+     * @return a new message
+     */
+    public static Message invoiceAllowanceNotSupported(String invoiceId) {
+        return messages.getMessage(607, invoiceId);
     }
 
     /**

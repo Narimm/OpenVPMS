@@ -18,33 +18,19 @@
 package org.openvpms.esci.adapter.map;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
-import org.oasis.ubl.common.AmountType;
-import org.oasis.ubl.common.CurrencyCodeContentType;
-import org.oasis.ubl.common.IdentifierType;
-import org.oasis.ubl.common.QuantityType;
-import org.oasis.ubl.common.aggregate.SupplierPartyType;
-import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.exception.ESCIException;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 
 
 /**
@@ -86,240 +72,18 @@ public class AbstractUBLMapper {
     }
 
     /**
-     * Returns the supplier corresponding to a <tt>SupplierPaztyType</tt>.
-     *
-     * @param supplierType the supplierType
-     * @param path         the supplier element path
-     * @param parent       the parent element
-     * @param parentId     the parent element identifier
-     * @return the corresponding supplier
-     * @throws ESCIException if the supplier was not found
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *                       for any archetype service error
-     */
-    protected Party getSupplier(SupplierPartyType supplierType, String path, String parent, String parentId) {
-        checkRequired(supplierType, path, parent, parentId);
-        CustomerAssignedAccountIDType accountId = supplierType.getCustomerAssignedAccountID();
-        long id = getNumericId(accountId, path + "/CustomerAssignedAccountID", parent, parentId);
-        Party supplier = (Party) getObject(id, "party.supplier*");
-        if (supplier == null) {
-            Message message = ESCIAdapterMessages.invalidSupplier(path + "/CustomerAssignedAccountID", parent,
-                                                                  parentId, accountId.getValue());
-            throw new ESCIException(message.toString());
-        }
-        return supplier;
-    }
-
-    /**
-     * Returns an order given its reference.
-     * <p/>
-     * This only returns orders associated with the specified supplier.
-     *
-     * @param orderRef the order reference
-     * @param supplier the supplier
-     * @param parent   the parent UBL document, for error reporting
-     * @param parentId the parent UBL document identifier, for error reporting
-     * @return the corresponding order
-     * @throws ESCIException if the order was not found or was not created
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *                       for any archetype service error
-     */
-    protected FinancialAct getOrder(IMObjectReference orderRef, Party supplier, String parent, String parentId) {
-        FinancialAct order = (FinancialAct) service.get(orderRef);
-        boolean valid = false;
-        if (order != null) {
-            ActBean bean = new ActBean(order, service);
-            if (ObjectUtils.equals(bean.getNodeParticipantRef("supplier"), supplier.getObjectReference())) {
-                valid = true;
-            }
-        }
-        if (!valid) {
-            Message message = ESCIAdapterMessages.invalidOrder(parent, parentId, orderRef.getId());
-            throw new ESCIException(message.toString());
-        }
-        return order;
-    }
-
-    /**
-     * Gets the value from an amount, verifying the practice currency.
-     *
-     * @param amount           the amount
-     * @param practiceCurrency the practice currency. All amounts must be expressed in this
-     * @param path             the path to the element for error reporting
-     * @param parent           the parent element
-     * @param id               the parent element identfier
-     * @return the amount value
-     */
-    protected BigDecimal getAmount(AmountType amount, String practiceCurrency, String path, String parent, String id) {
-        checkRequired(amount, path, parent, id);
-        checkRequired(amount.getValue(), path, parent, id);
-        CurrencyCodeContentType currency = getRequired(amount.getCurrencyID(), path + "@currencyID", parent, id);
-        if (!ObjectUtils.equals(practiceCurrency, currency.value())) {
-            Message message = ESCIAdapterMessages.invalidCurrency(path, parent, id, practiceCurrency, currency.value());
-            throw new ESCIException(message.toString());
-        }
-        BigDecimal result = amount.getValue();
-        if (result.signum() == -1) {
-            Message message = ESCIAdapterMessages.invalidAmount(path, parent, id, result);
-            throw new ESCIException(message.toString());
-        }
-        return amount.getValue();
-    }
-
-    /**
-     * Returns the value for a quantity, verifying thhat it is greater than zero.
-     *
-     * @param quantity the quantity
-     * @param path     the path to the element for error reporting
-     * @param parent   the parent element
-     * @param id       the parent element identfier
-     * @return the quantity value
-     * @throws ESCIException if the quantity doesn't exist or is &lt;= zero
-     */
-    protected BigDecimal getQuantity(QuantityType quantity, String path, String parent, String id) {
-        checkRequired(quantity, path, parent, id);
-        checkRequired(quantity.getValue(), path, parent, id);
-        BigDecimal result = quantity.getValue();
-        if (result.compareTo(BigDecimal.ZERO) <= 0) {
-            Message message = ESCIAdapterMessages.invalidQuantity(path, parent, id, result);
-            throw new ESCIException(message.toString());
-        }
-        return result;
-    }
-
-    /**
      * Verifies that the UBL version matches that expected.
      *
-     * @param identifier the UBL identifier. May be <tt>null</tt>
-     * @param parent     the parent element
-     * @param parentId   the parent element identifier
+     * @param document the UBL document
      * @throws ESCIException if the UBL identifier is <tt>null</tt> or not the expected value
      */
-    protected void checkUBLVersion(IdentifierType identifier, String parent, String parentId) {
-        String value = getId(identifier, "UBLVersionID", parent, parentId);
-        if (!UBL_VERSION.equals(value)) {
-            Message message = ESCIAdapterMessages.ublInvalidValue("UBLVersionID", parent, parentId, UBL_VERSION, value);
+    protected void checkUBLVersion(UBLDocument document) {
+        String version = document.getUBLVersionID();
+        if (!UBL_VERSION.equals(version)) {
+            Message message = ESCIAdapterMessages.ublInvalidValue("UBLVersionID", document.getType(), document.getID(),
+                                                                  UBL_VERSION, version);
             throw new ESCIException(message.toString());
         }
-    }
-
-    /**
-     * Helper to verify that a required element is non-null, raising an exception if it is.
-     *
-     * @param element  the element value. May be <tt>null</tt>
-     * @param path     the element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @return the element
-     * @throws ESCIException if the element is null
-     */
-    protected <T> T getRequired(T element, String path, String parent, String parentId) {
-        checkRequired(element, path, parent, parentId);
-        return element;
-    }
-
-    /**
-     * Verifies that a required element is non-null, raising an exception if it is.
-     *
-     * @param element  the element value. May be <tt>null</tt>
-     * @param path     the element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @throws ESCIException if the element is null
-     */
-    protected <T> void checkRequired(T element, String path, String parent, String parentId) {
-        if (element == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired(path, parent, parentId);
-            throw new ESCIException(message.toString());
-        }
-    }
-
-    /**
-     * Returns an <tt>IMObjectReference</tt> for a given archetype id and <tt>IdentfierType</tt>.
-     *
-     * @param archetypeId the archetype identifier
-     * @param id          the identifier
-     * @param path        the identifier element path
-     * @param parent      the parent element
-     * @param parentId    the parent element identifier
-     * @return the corresponding object, or <tt>null</tt> if it is not found
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if <tt>id</tt> is null or is not a valid identifier
-     */
-    protected IMObject getObject(ArchetypeId archetypeId, IdentifierType id, String path, String parent,
-                                 String parentId) {
-        IMObjectReference ref = getReference(archetypeId, id, path, parent, parentId);
-        return service.get(ref);
-    }
-
-    /**
-     * Returns an <tt>IMObjectReference</tt> for a given archetype id and <tt>IdentfierType</tt>.
-     *
-     * @param archetypeId the archetype identifier
-     * @param id          the identifier
-     * @param path        the identifier element path
-     * @param parent      the parent element
-     * @param parentId    the parent element identifier
-     * @return the corresponding reference
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if <tt>id</tt> is null or is not a valid identifier
-     */
-    protected IMObjectReference getReference(ArchetypeId archetypeId, IdentifierType id, String path, String parent,
-                                             String parentId) {
-        long objectId = getNumericId(id, path, parent, parentId);
-        return new IMObjectReference(archetypeId, objectId);
-    }
-
-    /**
-     * Returns the numeric value of an <tt>IdentifierType</tt>.
-     *
-     * @param id       the identifier
-     * @param path     the identifier element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @return the numeric value of <tt>id</tt>
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if <tt>id</tt> is null or is not a valid identifier
-     */
-    protected long getNumericId(IdentifierType id, String path, String parent, String parentId) {
-        String value = getId(id, path, parent, parentId);
-        long result = NumberUtils.toLong(value, -1);
-        if (result == -1) {
-            Message message = ESCIAdapterMessages.ublInvalidIdentifier(path, parent, parentId, id.getValue());
-            throw new ESCIException(message.toString());
-        }
-        return result;
-    }
-
-    /**
-     * Returns the string value of an <tt>IdentifierType</tt>.
-     *
-     * @param id       the identifier
-     * @param path     the identifier element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @return the value of <tt>id</tt>
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if <tt>id</tt> is null or empty
-     */
-    protected String getId(IdentifierType id, String path, String parent, String parentId) {
-        String result = getId(id);
-        checkRequired(result, path, parent, parentId);
-        return result;
-    }
-
-    /**
-     * Returns the string value of an identifier.
-     *
-     * @param id the identifier. May be <tt>null</tt>
-     * @return the identifier value. May be <tt>null</tt>
-     */
-    protected String getId(IdentifierType id) {
-        String result = null;
-        if (id != null) {
-            result = StringUtils.trimToNull(id.getValue());
-        }
-        return result;
     }
 
     /**
@@ -340,22 +104,21 @@ public class AbstractUBLMapper {
     }
 
     /**
-     * Returns an object given its id.
+     * Verifies that an order has a relationship to the expected supplier.
      *
-     * @param id         the object identifier
-     * @param shortNames the possible archetype short names for the object
-     * @return the corresponding object or <tt>null</tt> if it is not found
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
+     * @param order    the order
+     * @param supplier the suppplier
+     * @param document the invoice
+     * @throws ESCIException             if the order wasn't submitted by the supplier
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    protected IMObject getObject(long id, String... shortNames) {
-        IMObject result = null;
-        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
-        query.add(Constraints.eq("id", id));
-        IPage<IMObject> page = service.get(query);
-        if (page.getResults().size() == 1) {
-            result = page.getResults().get(0);
+    protected void checkOrder(FinancialAct order, Party supplier, UBLDocument document) {
+        ActBean bean = new ActBean(order, service);
+        if (!ObjectUtils.equals(bean.getNodeParticipantRef("supplier"), supplier.getObjectReference())) {
+            Message message = ESCIAdapterMessages.invalidOrder(document.getType(), document.getID(),
+                                                               Long.toString(order.getId()));
+            throw new ESCIException(message.toString());
         }
-        return result;
     }
+
 }

@@ -20,12 +20,8 @@ package org.openvpms.esci.adapter.client.jaxws;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.oasis.ubl.OrderType;
-import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.DelegatingOrderService;
 import org.openvpms.esci.FutureValue;
@@ -161,23 +157,6 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
         locator.setServiceLocatorFactory(new DefaultServiceLocatorFactory());
         locator.setSupplierRules(new SupplierRules());
         return locator;
-    }
-
-    /**
-     * Adds an <em>entityRelationship.supplierStockLocationESCI</em> relationship between the supplier and stock
-     * locatiom.
-     *
-     * @param supplier the supplier
-     * @param location the stock location
-     * @param url      the order service URL
-     */
-    private void addESCIConfiguration(Party supplier, Party location, String url) {
-        EntityBean bean = new EntityBean(supplier);
-        EntityRelationship relationship =
-                bean.addRelationship(SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI, location);
-        IMObjectBean relBean = new IMObjectBean(relationship);
-        relBean.setValue("orderServiceURL", url);
-        save(supplier, location);
     }
 
     /**

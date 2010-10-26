@@ -1,0 +1,318 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+package org.openvpms.esci.adapter.map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.oasis.ubl.common.IdentifierType;
+import org.oasis.ubl.common.aggregate.SupplierPartyType;
+import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
+import org.openvpms.esci.adapter.i18n.Message;
+import org.openvpms.esci.exception.ESCIException;
+
+
+/**
+ * Wrapper around UBL types.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
+public abstract class UBLType {
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+
+    /**
+     * Constructs a new <tt>UBLType</tt>.
+     *
+     * @param service the archetype service
+     */
+    public UBLType(IArchetypeService service) {
+        this.service = service;
+    }
+
+    /**
+     * Returns the type name.
+     *
+     * @return the type name
+     */
+    public abstract String getType();
+
+    /**
+     * Returns the type identifier.
+     *
+     * @return the type identifier
+     * @throws ESCIException if the identifier is mandatory by not set, or the identifier is incorrectly specified
+     */
+    public abstract String getID();
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getArchetypeService() {
+        return service;
+    }
+
+    /**
+     * Helper to verify that a required element is non-null, raising an exception if it is.
+     *
+     * @param element the element value. May be <tt>null</tt>
+     * @param path    the element path
+     * @return the element
+     * @throws ESCIException if the element is null
+     */
+    protected <T> T getRequired(T element, String path) {
+        checkRequired(element, path, getType(), getID());
+        return element;
+    }
+
+    /**
+     * Helper to verify that a required element is non-null, raising an exception if it is.
+     *
+     * @param element  the element value. May be <tt>null</tt>
+     * @param path     the element path
+     * @param parent   the parent element
+     * @param parentId the parent element identifier
+     * @return the element
+     * @throws ESCIException if the element is null
+     */
+    protected <T> T getRequired(T element, String path, String parent, String parentId) {
+        checkRequired(element, path, parent, parentId);
+        return element;
+    }
+
+    /**
+     * Verifies that a required element is non-null, raising an exception if it is.
+     *
+     * @param element the element value. May be <tt>null</tt>
+     * @param path    the element path
+     * @throws ESCIException if the element is null
+     */
+    protected <T> void checkRequired(T element, String path) {
+        checkRequired(element, path, getType(), getID());
+    }
+
+    /**
+     * Verifies that a required element is non-null, raising an exception if it is.
+     *
+     * @param element  the element value. May be <tt>null</tt>
+     * @param path     the element path
+     * @param parent   the parent element
+     * @param parentId the parent element identifier
+     * @throws ESCIException if the element is null
+     */
+    protected <T> void checkRequired(T element, String path, String parent, String parentId) {
+        if (element == null) {
+            Message message = ESCIAdapterMessages.ublElementRequired(path, parent, parentId);
+            throw new ESCIException(message.toString());
+        }
+    }
+
+    /**
+     * Returns the numeric value of an <tt>IdentifierType</tt>.
+     *
+     * @param id   the identifier
+     * @param path the identifier element path
+     * @return the numeric value of <tt>id</tt>
+     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
+     */
+    protected long getNumericId(IdentifierType id, String path) {
+        return getNumericId(id, path, getType(), getID());
+    }
+
+    /**
+     * Returns the numeric value of an <tt>IdentifierType</tt>.
+     *
+     * @param id       the identifier
+     * @param path     the identifier element path
+     * @param parent   the parent element
+     * @param parentId the parent element identifier
+     * @return the numeric value of <tt>id</tt>
+     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
+     */
+    protected long getNumericId(IdentifierType id, String path, String parent, String parentId) {
+        String value = getId(id, path, parent, parentId);
+        long result = NumberUtils.toLong(value, -1);
+        if (result == -1) {
+            Message message = ESCIAdapterMessages.ublInvalidIdentifier(path, parent, parentId, id.getValue());
+            throw new ESCIException(message.toString());
+        }
+        return result;
+    }
+
+    /**
+     * Returns the string value of an <tt>IdentifierType</tt>.
+     *
+     * @param id   the identifier
+     * @param path the identifier element path
+     * @return the value of <tt>id</tt>
+     * @throws ESCIException if <tt>id</tt> is null or empty
+     */
+    protected String getId(IdentifierType id, String path) {
+        return getId(id, path, getType(), getID());
+    }
+
+    /**
+     * Returns the string value of an <tt>IdentifierType</tt>.
+     *
+     * @param id       the identifier
+     * @param path     the identifier element path
+     * @param parent   the parent element
+     * @param parentId the parent element identifier
+     * @return the value of <tt>id</tt>
+     * @throws ESCIException if <tt>id</tt> is null or empty
+     */
+    protected String getId(IdentifierType id, String path, String parent, String parentId) {
+        String result = getId(id);
+        checkRequired(result, path, parent, parentId);
+        return result;
+    }
+
+    /**
+     * Returns the string value of an identifier.
+     *
+     * @param id the identifier. May be <tt>null</tt>
+     * @return the identifier value. May be <tt>null</tt>
+     */
+    protected String getId(IdentifierType id) {
+        String result = null;
+        if (id != null) {
+            result = StringUtils.trimToNull(id.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Returns the supplier corresponding to a <tt>SupplierPaztyType</tt>.
+     *
+     * @param supplierType the supplierType
+     * @param path         the supplier element path
+     * @return the corresponding supplier
+     * @throws ESCIException             if the supplier was not found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected Party getSupplier(SupplierPartyType supplierType, String path) {
+        checkRequired(supplierType, path);
+        CustomerAssignedAccountIDType accountId = supplierType.getCustomerAssignedAccountID();
+        long id = getNumericId(accountId, path + "/CustomerAssignedAccountID");
+        Party supplier = (Party) getObject(id, "party.supplier*");
+        if (supplier == null) {
+            Message message = ESCIAdapterMessages.invalidSupplier(path + "/CustomerAssignedAccountID", getType(),
+                                                                  getID(), accountId.getValue());
+            throw new ESCIException(message.toString());
+        }
+        return supplier;
+    }
+
+    /**
+     * Returns an object given its id.
+     *
+     * @param id         the object identifier
+     * @param shortNames the possible archetype short names for the object
+     * @return the corresponding object or <tt>null</tt> if it is not found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObject getObject(long id, String... shortNames) {
+        IMObject result = null;
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
+        query.add(Constraints.eq("id", id));
+        IPage<IMObject> page = service.get(query);
+        if (page.getResults().size() == 1) {
+            result = page.getResults().get(0);
+        }
+        return result;
+    }
+
+    /**
+     * Returns an <tt>IMObjectReference</tt> for a given archetype id and <tt>IdentfierType</tt>.
+     *
+     * @param archetypeId the archetype identifier
+     * @param id          the identifier
+     * @param path        the identifier element path
+     * @return the corresponding object, or <tt>null</tt> if it is not found
+     * @throws ESCIException             if <tt>id</tt> is null or is not a valid identifier
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObject getObject(ArchetypeId archetypeId, IdentifierType id, String path) {
+        return getObject(archetypeId, id, path, getType(), getID());
+    }
+
+    /**
+     * Returns an <tt>IMObjectReference</tt> for a given archetype id and <tt>IdentfierType</tt>.
+     *
+     * @param archetypeId the archetype identifier
+     * @param id          the identifier
+     * @param path        the identifier element path
+     * @param parent      the parent element
+     * @param parentId    the parent element identifier
+     * @return the corresponding object, or <tt>null</tt> if it is not found
+     * @throws ESCIException             if <tt>id</tt> is null or is not a valid identifier
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObject getObject(ArchetypeId archetypeId, IdentifierType id, String path, String parent,
+                                 String parentId) {
+        IMObjectReference ref = getReference(archetypeId, id, path, parent, parentId);
+        return service.get(ref);
+    }
+
+    /**
+     * Returns an <tt>IMObjectReference</tt> for a given archetype id and <tt>IdentfierType</tt>.
+     *
+     * @param archetypeId the archetype identifier
+     * @param id          the identifier
+     * @param path        the identifier element path
+     * @return the corresponding reference
+     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
+     */
+    protected IMObjectReference getReference(ArchetypeId archetypeId, IdentifierType id, String path) {
+        return getReference(archetypeId, id, path, getType(), getID());
+    }
+
+    /**
+     * Returns an <tt>IMObjectReference</tt> for a given archetype id and <tt>IdentfierType</tt>.
+     *
+     * @param archetypeId the archetype identifier
+     * @param id          the identifier
+     * @param path        the identifier element path
+     * @param parent      the parent element
+     * @param parentId    the parent element identifier
+     * @return the corresponding reference
+     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
+     */
+    protected IMObjectReference getReference(ArchetypeId archetypeId, IdentifierType id, String path, String parent,
+                                             String parentId) {
+        long objectId = getNumericId(id, path, parent, parentId);
+        return new IMObjectReference(archetypeId, objectId);
+    }
+    
+}

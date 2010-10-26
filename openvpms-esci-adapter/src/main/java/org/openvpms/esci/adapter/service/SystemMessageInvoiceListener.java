@@ -27,7 +27,10 @@ import javax.annotation.Resource;
 
 
 /**
- * An {@link InvoiceListener}
+ * An {@link InvoiceListener} that creates a new <em>act.systemMessage</em> with a link to the
+ * <em>act.supplierDelivery</em>, and addressed to the author of the delivery.
+ * <p/>
+ * If the delivery has no author participation, then no message is created.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

@@ -87,7 +87,7 @@ public class OrderResponseMapperTestCase extends AbstractESCITest {
         User user = createESCIUser();
         FinancialAct order = createOrder();
         OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), true);
-        String expectedMessage = "ESCIA-0008: User Foo (" + user.getId()
+        String expectedMessage = "ESCIA-0109: User Foo (" + user.getId()
                                  + ") has no relationship to supplier Xsupplier (" + getSupplier().getId() + ")";
         checkMappingException(response, user, expectedMessage);
     }
@@ -159,7 +159,7 @@ public class OrderResponseMapperTestCase extends AbstractESCITest {
         AcceptedIndicatorType indicator = new AcceptedIndicatorType();
         indicator.setValue(accepted);
         result.setAcceptedIndicator(indicator);
-        result.setAccountingSupplierParty(createSupplier(getSupplier()));
+        result.setSellerSupplierParty(createSupplier(getSupplier()));
         return result;
     }
 

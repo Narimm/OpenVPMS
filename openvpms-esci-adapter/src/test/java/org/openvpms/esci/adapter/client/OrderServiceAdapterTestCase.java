@@ -80,6 +80,13 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
     public void testOrderServiceAdapter() throws Exception {
         applicationContext.getBean("orderService"); // force registation of the order service
 
+        // add a product supplier relationship
+        addProductSupplierRelationship(getProduct(), getSupplier(), "AREORDERCODE", "Some description");
+
+        // add a supplier/stock location relationship for ESCI
+        String wsdl = getWSDL("wsdl/OrderService.wsdl");
+        addESCIConfiguration(getSupplier(), getStockLocation(), wsdl);
+
         InVMSupplierServiceLocator vmLocator = createSupplierServiceLocator();
         OrderServiceAdapterImpl adapter = new OrderServiceAdapterImpl();
         adapter.setFactory(factory);

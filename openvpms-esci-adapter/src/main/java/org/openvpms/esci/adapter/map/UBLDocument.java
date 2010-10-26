@@ -15,29 +15,40 @@
  *
  *  $Id$
  */
-package org.openvpms.esci.adapter.map.order;
+package org.openvpms.esci.adapter.map;
 
-import org.oasis.ubl.OrderType;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.exception.ESCIException;
 
 
 /**
- * Maps an <em>act.supplierOrder</em> act to an UBL order.
+ * Wrapper around UBL documents.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface OrderMapper {
+public interface UBLDocument {
 
     /**
-     * Maps an <em>act.suppplierOrder</em> to an UBL order.
+     * Returns the type name.
      *
-     * @param order the order to map
-     * @return the UBL equivalent of the order
-     * @throws ESCIAdapterException for mapping errors
-     * @throws ArchetypeServiceException for any archetype service error
+     * @return the type name
      */
-    OrderType map(FinancialAct order);
+    String getType();
+
+    /**
+     * Returns the document identifier.
+     *
+     * @return the document identifier
+     * @throws ESCIException if the identifier isn't set
+     */
+    String getID();
+
+    /**
+     * Returns the UBL version identifier.
+     *
+     * @return the UBL version
+     * @throws ESCIException if the identifier isn't set
+     */
+    String getUBLVersionID();
+
 }

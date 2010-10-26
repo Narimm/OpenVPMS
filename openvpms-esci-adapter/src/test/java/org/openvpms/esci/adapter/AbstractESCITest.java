@@ -19,17 +19,24 @@ package org.openvpms.esci.adapter;
 
 import org.oasis.ubl.common.aggregate.SupplierPartyType;
 import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.AbstractSupplierTest;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.springframework.core.io.ClassPathResource;
 
-import java.math.BigDecimal;
 import java.io.IOException;
+import java.math.BigDecimal;
 
 
 /**
@@ -70,13 +77,14 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
     }
 
     /**
-     * Helper to create an order with a single item.
+     * Helper to create a POSTED order with a single item.
      *
      * @return a new order
      */
     protected FinancialAct createOrder() {
         FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
         FinancialAct order = createOrder(orderItem);
+        order.setStatus(ActStatus.POSTED);
         save(order, orderItem);
         return order;
     }
@@ -106,4 +114,41 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
         ClassPathResource wsdl = new ClassPathResource(resourcePath);
         return wsdl.getURL().toString();
     }
+
+    /**
+     * Adds a product/supplier relationship.
+     *
+     * @param product            the product
+     * @param supplier           the supplier
+     * @param reorderCode        the reorder code
+     * @param reorderDescription the reorder description
+     * @return the product/supplier relationship
+     */
+    protected ProductSupplier addProductSupplierRelationship(Product product, Party supplier, String reorderCode,
+                                                             String reorderDescription) {
+        ProductRules productRules = new ProductRules();
+        ProductSupplier productSupplier = productRules.createProductSupplier(product, supplier);
+        productSupplier.setReorderCode(reorderCode);
+        productSupplier.setReorderDescription(reorderDescription);
+        save(product, supplier);
+        return productSupplier;
+    }
+
+    /**
+     * Adds an <em>entityRelationship.supplierStockLocationESCI</em> relationship between the supplier and stock
+     * location.
+     *
+     * @param supplier the supplier
+     * @param location the stock location
+     * @param url      the order service URL
+     */
+    protected void addESCIConfiguration(Party supplier, Party location, String url) {
+        EntityBean bean = new EntityBean(supplier);
+        EntityRelationship relationship =
+                bean.addRelationship(SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI, location);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("orderServiceURL", url);
+        save(supplier, location);
+    }
+
 }

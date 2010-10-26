@@ -74,6 +74,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.UBLHelper;
@@ -222,6 +223,8 @@ public class OrderMapperImpl implements OrderMapper {
      *
      * @param order the <em>act.supplierOrder</em> to map
      * @return the corresponding UBL order
+     * @throws ESCIAdapterException for mapping errors
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public OrderType map(FinancialAct order) {
         OrderType result = new OrderType();
@@ -322,13 +325,9 @@ public class OrderMapperImpl implements OrderMapper {
             throw new ESCIAdapterException(ESCIAdapterMessages.noProductSupplierRelationship(supplier, product));
         }
         String reorderCode = ps.getReorderCode();
-        String barCode = ps.getBarCode();
         String reorderDescription = ps.getReorderDescription();
         if (!StringUtils.isEmpty(reorderCode)) {
             ItemIdentificationType sellersId = getItemIdentification(reorderCode);
-            result.setSellersItemIdentification(sellersId);
-        } else if (!StringUtils.isEmpty("barCode")) {
-            ItemIdentificationType sellersId = getItemIdentification(barCode);
             result.setSellersItemIdentification(sellersId);
         } else {
             throw new ESCIAdapterException(ESCIAdapterMessages.noSupplierOrderCode(supplier, product));
