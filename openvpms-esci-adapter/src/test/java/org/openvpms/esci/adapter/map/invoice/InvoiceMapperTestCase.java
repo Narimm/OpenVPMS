@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.oasis.ubl.InvoiceType;
 import org.oasis.ubl.common.CurrencyCodeContentType;
+import org.oasis.ubl.common.aggregate.AllowanceChargeType;
 import org.oasis.ubl.common.aggregate.CustomerPartyType;
 import org.oasis.ubl.common.aggregate.InvoiceLineType;
 import org.oasis.ubl.common.aggregate.MonetaryTotalType;
@@ -29,6 +30,7 @@ import org.oasis.ubl.common.aggregate.OrderLineReferenceType;
 import org.oasis.ubl.common.aggregate.PriceType;
 import org.oasis.ubl.common.aggregate.SupplierPartyType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
+import org.oasis.ubl.common.basic.ChargeIndicatorType;
 import org.oasis.ubl.common.basic.LineIDType;
 import org.oasis.ubl.common.basic.NoteType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
@@ -473,6 +475,22 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         checkMappingException(invoice, "ESCIA-0103: Expected WS for "
                                        + "PricingReference/AlternativeConditionPrice/PriceTypeCode in InvoiceLine: 1 "
                                        + "but got RS");
+    }
+
+    /**
+     * Verifies that an {@link ESCIException} is raised if an AllowanceCharge has a ChargeIndicator set false
+     * (i.e is an allowance).
+     */
+    @Test
+    public void testAllowanceChargeSpecifiedAsAllowance() {
+        InvoiceType invoice = createInvoice();
+        AllowanceChargeType allowance = new AllowanceChargeType();
+        ChargeIndicatorType charge = new ChargeIndicatorType();
+        charge.setValue(false);
+        allowance.setChargeIndicator(charge);
+        invoice.getAllowanceCharge().add(allowance);
+        checkMappingException(invoice, "ESCIA-0607: Invoice 12345 contains an AllowanceCharge with ChargeIndicator "
+                                       + "set false");
     }
 
     /**

@@ -55,8 +55,9 @@ import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
 import java.util.Date;
 
+
 /**
- * Add description here.
+ * Base class for invoice test cases.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -275,4 +276,5 @@ public class AbstractInvoiceTest extends AbstractESCITest {
     protected IssueTimeType createIssueTime(Date timestamp) {
         return UBLHelper.createIssueTime(timestamp, factory);
     }
+
 }

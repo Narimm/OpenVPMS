@@ -20,12 +20,7 @@ package org.openvpms.esci.adapter.service;
 import static org.openvpms.archetype.rules.supplier.OrderStatus.ACCEPTED;
 import static org.openvpms.archetype.rules.workflow.SystemMessageReason.ORDER_ACCEPTED;
 import static org.openvpms.archetype.rules.workflow.SystemMessageReason.ORDER_REJECTED;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-
-import javax.annotation.Resource;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 
 
 /**
@@ -37,40 +32,17 @@ import javax.annotation.Resource;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SystemMessageOrderResponseListener implements OrderResponseListener {
-
-    /**
-     * The bean factory.
-     */
-    private IMObjectBeanFactory factory;
-
-
-    /**
-     * Registers the bean factory.
-     *
-     * @param factory the bean factory
-     */
-    @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
-    }
+public class SystemMessageOrderResponseListener extends SystemMessageServiceAdapterListener
+        implements OrderResponseListener {
 
     /**
      * Invoked after a response is received for an order.
      *
      * @param order the order
      */
-    public void receivedResponse(Act order) {
-        ActBean bean = factory.createActBean(order);
-        IMObjectReference author = bean.getNodeParticipantRef("author");
-        if (author != null) {
-            ActBean message = factory.createActBean("act.systemMessage");
-            message.addNodeRelationship("item", order);
-            message.addNodeParticipation("to", author);
-            String status = ACCEPTED.equals(order.getStatus()) ? ORDER_ACCEPTED : ORDER_REJECTED;
-            message.setValue("reason", status);
-            message.save();
-        }
+    public void receivedResponse(FinancialAct order) {
+        String reason = ACCEPTED.equals(order.getStatus()) ? ORDER_ACCEPTED : ORDER_REJECTED;
+        createMessage(order, reason);
     }
 
 }

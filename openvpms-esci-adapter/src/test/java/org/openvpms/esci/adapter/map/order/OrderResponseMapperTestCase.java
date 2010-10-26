@@ -21,15 +21,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.oasis.ubl.OrderResponseSimpleType;
-import org.oasis.ubl.common.basic.AcceptedIndicatorType;
 import org.oasis.ubl.common.basic.RejectionNoteType;
-import org.oasis.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.openvpms.esci.exception.ESCIException;
 
@@ -40,7 +36,7 @@ import org.openvpms.esci.exception.ESCIException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OrderResponseMapperTestCase extends AbstractESCITest {
+public class OrderResponseMapperTestCase extends AbstractOrderResponseTest {
 
     /**
      * Verifies that the order is updated with the correct status and message for an 'accepted' order response.
@@ -142,37 +138,6 @@ public class OrderResponseMapperTestCase extends AbstractESCITest {
         } catch (ESCIException expected) {
             assertEquals(expectedMessage, expected.getMessage());
         }
-    }
-
-    /**
-     * Creates a new order response.
-     *
-     * @param orderId  the order identifier to associate the response with
-     * @param accepted if <tt>true</tt> indicates that the order was accepted, otherwise indicates that it was rejected
-     * @return a new order response
-     */
-    private OrderResponseSimpleType createOrderResponseSimple(long orderId, boolean accepted) {
-        OrderResponseSimpleType result = new OrderResponseSimpleType();
-        result.setID(UBLHelper.createID("12345"));
-        result.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
-        result.setOrderReference(UBLHelper.createOrderReference(orderId));
-        AcceptedIndicatorType indicator = new AcceptedIndicatorType();
-        indicator.setValue(accepted);
-        result.setAcceptedIndicator(indicator);
-        result.setSellerSupplierParty(createSupplier(getSupplier()));
-        return result;
-    }
-
-    /**
-     * Returns a new order response mapper.
-     *
-     * @return a new order response mapper
-     */
-    private OrderResponseMapper createOrderResponseMapper() {
-        OrderResponseMapperImpl result = new OrderResponseMapperImpl();
-        result.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
-        result.setArchetypeService(getArchetypeService());
-        return result;
     }
 
 }

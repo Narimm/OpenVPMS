@@ -18,55 +18,27 @@
 package org.openvpms.esci.adapter.service;
 
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-
-import javax.annotation.Resource;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 
 
 /**
  * An {@link InvoiceListener} that creates a new <em>act.systemMessage</em> with a link to the
  * <em>act.supplierDelivery</em>, and addressed to the author of the delivery.
  * <p/>
- * If the delivery has no author participation, then no message is created.
+ * If the delivery has no author participation and there is no default author associated with the
+ * delivery's stock location, then no message is created.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SystemMessageInvoiceListener implements InvoiceListener {
-
-    /**
-     * The bean factory.
-     */
-    private IMObjectBeanFactory factory;
-
-
-    /**
-     * Registers the bean factory.
-     *
-     * @param factory the bean factory
-     */
-    @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
-    }
+public class SystemMessageInvoiceListener extends SystemMessageServiceAdapterListener implements InvoiceListener {
 
     /**
      * Invoked when an invoice has been received and mapped to a delivery.
      *
      * @param delivery the delivery
      */
-    public void receivedInvoice(Act delivery) {
-        ActBean bean = factory.createActBean(delivery);
-        IMObjectReference author = bean.getNodeParticipantRef("author");
-        if (author != null) {
-            ActBean message = factory.createActBean("act.systemMessage");
-            message.addNodeRelationship("item", delivery);
-            message.addNodeParticipation("to", author);
-            message.setValue("reason", SystemMessageReason.ORDER_INVOICED);
-            message.save();
-        }
+    public void receivedInvoice(FinancialAct delivery) {
+        createMessage(delivery, SystemMessageReason.ORDER_INVOICED);
     }
 }

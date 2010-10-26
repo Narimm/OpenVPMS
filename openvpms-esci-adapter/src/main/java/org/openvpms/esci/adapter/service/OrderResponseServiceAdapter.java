@@ -21,7 +21,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.OrderResponseSimpleType;
 import org.oasis.ubl.OrderResponseType;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -134,7 +133,7 @@ public class OrderResponseServiceAdapter extends AbstractUBLServiceAdapter imple
      *
      * @param order the order that the response was received for
      */
-    private void notifyListener(Act order) {
+    private void notifyListener(FinancialAct order) {
         OrderResponseListener l = listener;
         if (l != null) {
             try {

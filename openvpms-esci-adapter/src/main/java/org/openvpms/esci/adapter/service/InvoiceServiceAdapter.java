@@ -20,7 +20,7 @@ package org.openvpms.esci.adapter.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.InvoiceType;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
@@ -121,7 +121,7 @@ public class InvoiceServiceAdapter extends AbstractUBLServiceAdapter implements 
      *
      * @param delivery the delivery that the invoice was mapped to
      */
-    private void notifyListener(Act delivery) {
+    private void notifyListener(FinancialAct delivery) {
         InvoiceListener l = listener;
         if (l != null) {
             try {

@@ -25,15 +25,25 @@ import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.AbstractSupplierTest;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.junit.After;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -46,6 +56,14 @@ import java.math.BigDecimal;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractESCITest extends AbstractSupplierTest {
+
+    /**
+     * Cleans up after a test.
+     */
+    @After
+    public void tearDown() {
+        SecurityContextHolder.getContext().setAuthentication(null);
+    }
 
     /**
      * Creates a new <em>user.esci</em>, linked to a supplier.
@@ -151,4 +169,43 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
         save(supplier, location);
     }
 
+    /**
+     * Initialises the Spring Security context.
+     *
+     * @param user the user
+     */
+    protected void initSecurityContext(User user) {
+        Authentication token = new TestingAuthenticationToken(user.getUsername(), user.getPassword());
+        SecurityContextHolder.getContext().setAuthentication(token);
+    }
+
+    /**
+     * Verifies that an <em>act.systemMessage</em> has been created when an invoice is received.
+     *
+     * @param author   the author associated with the message
+     * @param delivery the delivery associated with the message
+     * @param reason   the expected reason
+     */
+    protected void checkSystemMessage(User author, FinancialAct delivery, String reason) {
+        ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("act.systemMessage"));
+        query.add(Constraints.join("to").add(Constraints.eq("entity", author.getObjectReference())));
+        query.add(Constraints.join("item").add(Constraints.eq("target", delivery.getObjectReference())));
+        IPage<IMObject> page = getArchetypeService().get(query);
+        org.junit.Assert.assertEquals(1, page.getResults().size());
+        Act message = (Act) page.getResults().get(0);
+        org.junit.Assert.assertEquals(reason, message.getReason());
+    }
+
+    /**
+     * Creates and associates an user with the stock location as the default author of invoices.
+     *
+     * @return the user
+     */
+    protected User initDefaultAuthor() {
+        User author = TestHelper.createUser();
+        EntityBean locBean = new EntityBean(getStockLocation());
+        locBean.addNodeRelationship("defaultAuthor", author);
+        locBean.save();
+        return author;
+    }
 }

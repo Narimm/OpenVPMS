@@ -15,21 +15,20 @@
  *
  *  $Id$
  */
-package org.openvpms.esci.adapter;
+package org.openvpms.esci.adapter.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import org.junit.Test;
 import org.oasis.ubl.InvoiceType;
 import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.esci.FutureValue;
 import org.openvpms.esci.adapter.map.invoice.AbstractInvoiceTest;
-import org.openvpms.esci.adapter.service.InvoiceServiceAdapter;
 import org.openvpms.esci.exception.ESCIException;
-import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 
 /**
@@ -41,30 +40,58 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class InvoiceServiceAdapterTestCase extends AbstractInvoiceTest {
 
     /**
+     * Tests submitting an invoice.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testSubmitInvoice() throws Exception {
+        // create an author for invoices, and to receive system messages
+        User author = initDefaultAuthor();
+
+        // set up the ESCI user
+        User user = createESCIUser(getSupplier());
+        initSecurityContext(user);
+
+        InvoiceServiceAdapter service = createInvoiceServiceAdapter();
+
+        // set up the invoice listener
+        final FutureValue<FinancialAct> future = new FutureValue<FinancialAct>();
+        SystemMessageInvoiceListener listener = new SystemMessageInvoiceListener() {
+            public void receivedInvoice(FinancialAct delivery) {
+                super.receivedInvoice(delivery);
+                future.set(delivery);
+            }
+        };
+        listener.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
+        service.setInvoiceListener(listener);
+
+        // submit an invoice
+        InvoiceType invoice = createInvoice();
+        service.submitInvoice(invoice);
+
+        // verify the delivery was created
+        FinancialAct delivery = future.get(1000);
+        assertNotNull(delivery);
+
+        // verify a system message was sent to the author
+        checkSystemMessage(author, delivery, SystemMessageReason.ORDER_INVOICED);
+    }
+
+    /**
      * Verifies that an {@link ESCIException} is raised if there is no ESCI user registered.
      */
     @Test
     public void testInvoiceNoESCIUser() {
         InvoiceType invoice = createInvoice();
         InvoiceServiceAdapter service = createInvoiceServiceAdapter();
-        try {
-            service.submitInvoice(invoice);
-            fail("Expected submitInvoice() to fail");
-        } catch (ESCIException exception) {
-            assertEquals("ESCIA-0200: No ESCI user", exception.getMessage());
-        }
+        String expected = "ESCIA-0200: No ESCI user";
+        checkSubmitException(invoice, service, expected);
 
         User user = TestHelper.createUser(); // not an ESCI user
-        Authentication token = new TestingAuthenticationToken(user.getName(), user.getPassword());
-        SecurityContextHolder.getContext().setAuthentication(token);
+        initSecurityContext(user);
 
-        try {
-            service.submitInvoice(invoice);
-            fail("Expected submitInvoice() to fail");
-        } catch (ESCIException exception) {
-            assertEquals("ESCIA-0200: No ESCI user", exception.getMessage());
-        }
-
+        checkSubmitException(invoice, service, expected);
     }
 
     /**
@@ -84,11 +111,22 @@ public class InvoiceServiceAdapterTestCase extends AbstractInvoiceTest {
         service.setInvoiceMapper(createMapper());
         service.setUserRules(new UserRules());
 
+        checkSubmitException(invoice, service, "ESCIA-0700: Failed to submit Invoice: Foo");
+    }
+
+    /**
+     * Verifies that {@link InvoiceServiceAdapter#submitInvoice} fails with the expected message.
+     *
+     * @param invoice  the invoice
+     * @param service  the service
+     * @param expected the expected message
+     */
+    private void checkSubmitException(InvoiceType invoice, InvoiceServiceAdapter service, String expected) {
         try {
             service.submitInvoice(invoice);
             fail("Expected submitInvoice() to fail");
         } catch (ESCIException exception) {
-            assertEquals("ESCIA-0700: Failed to submit Invoice: Foo", exception.getMessage());
+            assertEquals(expected, exception.getMessage());
         }
     }
 

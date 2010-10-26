@@ -17,7 +17,7 @@
  */
 package org.openvpms.esci.adapter.service;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 
 
 /**
@@ -33,6 +33,6 @@ public interface InvoiceListener {
      *
      * @param delivery the delivery
      */
-    void receivedInvoice(Act delivery);
+    void receivedInvoice(FinancialAct delivery);
 
 }
