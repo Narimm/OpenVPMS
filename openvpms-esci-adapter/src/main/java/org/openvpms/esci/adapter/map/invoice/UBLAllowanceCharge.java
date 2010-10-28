@@ -17,10 +17,13 @@
  */
 package org.openvpms.esci.adapter.map.invoice;
 
+import org.apache.commons.lang.StringUtils;
 import org.oasis.ubl.common.aggregate.AllowanceChargeType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
+import org.oasis.ubl.common.basic.AllowanceChargeReasonType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
+import org.openvpms.esci.exception.ESCIException;
 
 import java.math.BigDecimal;
 
@@ -94,8 +97,7 @@ public class UBLAllowanceCharge extends UBLFinancialType {
      * This corresponds to <em>AllowanceCharge/Amount</em>.
      *
      * @return the amount
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the amount is incorrectly specified
+     * @throws ESCIException if the amount is incorrectly specified
      */
     public BigDecimal getAmount() {
         return getAmount(allowanceCharge.getAmount(), "AllowanceCharge/Amount", "Invoice", invoice.getID());
@@ -105,8 +107,7 @@ public class UBLAllowanceCharge extends UBLFinancialType {
      * Returns the total tax in the allowance/charge.
      *
      * @return the total tax, or <tt>BigDecimal.ZERO</tt> if it wasn't specified
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the tax is incorrectly specified
+     * @throws ESCIException if the tax is incorrectly specified
      */
     public BigDecimal getTaxTotal() {
         BigDecimal result = BigDecimal.ZERO;
@@ -115,6 +116,20 @@ public class UBLAllowanceCharge extends UBLFinancialType {
             result = getAmount(taxTotal.getTaxAmount(), "AllowanceCharge/TaxTotal/TaxAmount", "Invoice",
                                invoice.getID());
         }
+        return result;
+    }
+
+    /**
+     * Returns the allow/charge reason.
+     *
+     * @return the reason
+     * @throws ESCIException if the reason is not specified or is not present
+     */
+    public String getAllowanceChargeReason() {
+        AllowanceChargeReasonType reason = getRequired(allowanceCharge.getAllowanceChargeReason(),
+                                                       "AllowanceCharge/AllowanceChargeReason");
+        String result = StringUtils.trimToNull(reason.getValue());
+        checkRequired(result, "AllowanceCharge/AllowanceChargeReason");
         return result;
     }
 }

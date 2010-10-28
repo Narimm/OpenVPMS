@@ -19,7 +19,9 @@ package org.openvpms.esci.adapter.map.invoice;
 
 import org.junit.Before;
 import org.oasis.ubl.InvoiceType;
+import org.oasis.ubl.common.AmountType;
 import org.oasis.ubl.common.CurrencyCodeContentType;
+import org.oasis.ubl.common.aggregate.AllowanceChargeType;
 import org.oasis.ubl.common.aggregate.CustomerPartyType;
 import org.oasis.ubl.common.aggregate.InvoiceLineType;
 import org.oasis.ubl.common.aggregate.ItemIdentificationType;
@@ -29,6 +31,9 @@ import org.oasis.ubl.common.aggregate.PriceType;
 import org.oasis.ubl.common.aggregate.PricingReferenceType;
 import org.oasis.ubl.common.aggregate.SupplierPartyType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
+import org.oasis.ubl.common.basic.AllowanceChargeReasonType;
+import org.oasis.ubl.common.basic.ChargeIndicatorType;
+import org.oasis.ubl.common.basic.ChargeTotalAmountType;
 import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.oasis.ubl.common.basic.InvoicedQuantityType;
 import org.oasis.ubl.common.basic.IssueDateType;
@@ -119,7 +124,8 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         SupplierPartyType supplierType = createSupplier(supplier);
         CustomerPartyType customerType = createCustomer();
         Product product = TestHelper.createProduct();
-        MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(110), new BigDecimal(100));
+        MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(110), new BigDecimal(100),
+                                                              BigDecimal.ZERO);
 
         invoice.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
         invoice.setID(UBLHelper.createID(12345));
@@ -157,8 +163,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         InvoiceLineType result = new InvoiceLineType();
         result.setID(UBLHelper.createID(id));
         result.setInvoicedQuantity(UBLHelper.initQuantity(new InvoicedQuantityType(), quantity, "BX"));
-        result.setLineExtensionAmount(UBLHelper.initAmount(new LineExtensionAmountType(), lineExtensionAmount,
-                                                           currency));
+        result.setLineExtensionAmount(initAmount(new LineExtensionAmountType(), lineExtensionAmount));
         result.setItem(createItem(product, supplierId, supplierName));
         result.setPrice(createPrice(price));
         PricingReferenceType pricingRef = new PricingReferenceType();
@@ -168,6 +173,27 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         result.setPricingReference(pricingRef);
         result.getTaxTotal().add(createTaxTotal(tax));
         return result;
+    }
+
+    /**
+     * Helper to create a charge.
+     *
+     * @param amount the charge amount
+     * @param tax    the tax in the amount
+     * @param reason the reason for the charge
+     * @return the charge
+     */
+    protected AllowanceChargeType createCharge(BigDecimal amount, BigDecimal tax, String reason) {
+        AllowanceChargeType charge = new AllowanceChargeType();
+        ChargeIndicatorType flag = new ChargeIndicatorType();
+        flag.setValue(true);
+        charge.setChargeIndicator(flag);
+        charge.setAmount(initAmount(new org.oasis.ubl.common.basic.AmountType(), amount));
+        TaxTotalType taxTotal = new TaxTotalType();
+        taxTotal.setTaxAmount(initAmount(new TaxAmountType(), tax));
+        charge.setTaxTotal(taxTotal);
+        charge.setAllowanceChargeReason(UBLHelper.initText(new AllowanceChargeReasonType(), reason));
+        return charge;
     }
 
     /**
@@ -199,7 +225,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      */
     protected PriceType createPrice(BigDecimal price) {
         PriceType result = new PriceType();
-        result.setPriceAmount(UBLHelper.initAmount(new PriceAmountType(), price, currency));
+        result.setPriceAmount(initAmount(new PriceAmountType(), price));
         return result;
     }
 
@@ -211,7 +237,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      */
     protected TaxTotalType createTaxTotal(BigDecimal tax) {
         TaxTotalType result = new TaxTotalType();
-        result.setTaxAmount(UBLHelper.initAmount(new TaxAmountType(), tax, currency));
+        result.setTaxAmount(initAmount(new TaxAmountType(), tax));
         return result;
     }
 
@@ -220,14 +246,27 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      *
      * @param payableAmount       the payable amount
      * @param lineExtensionAmount the line extension amount
+     * @param chargeAmount        the total charge amount
      * @return a new <tt>MonetaryTotalType</tt>
      */
-    protected MonetaryTotalType createMonetaryTotal(BigDecimal payableAmount, BigDecimal lineExtensionAmount) {
+    protected MonetaryTotalType createMonetaryTotal(BigDecimal payableAmount, BigDecimal lineExtensionAmount,
+                                                    BigDecimal chargeAmount) {
         MonetaryTotalType result = new MonetaryTotalType();
-        result.setPayableAmount(UBLHelper.initAmount(new PayableAmountType(), payableAmount, currency));
-        result.setLineExtensionAmount(UBLHelper.initAmount(new LineExtensionAmountType(), lineExtensionAmount,
-                                                           currency));
+        result.setPayableAmount(initAmount(new PayableAmountType(), payableAmount));
+        result.setLineExtensionAmount(initAmount(new LineExtensionAmountType(), lineExtensionAmount));
+        result.setChargeTotalAmount(initAmount(new ChargeTotalAmountType(), chargeAmount));
         return result;
+    }
+
+    /**
+     * Helper to initalise a <tt>AmountType</tt>.
+     *
+     * @param amount the amount
+     * @param value  the amount value
+     * @return the amount
+     */
+    protected <T extends AmountType> T initAmount(T amount, BigDecimal value) {
+        return UBLHelper.initAmount(amount, value, currency);
     }
 
     /**

@@ -368,6 +368,30 @@ public class ESCIAdapterMessages {
     }
 
     /**
+     * Creates a new message for when the charge total doesn't match that calculated.
+     *
+     * @param invoiceId         the invoice identifier
+     * @param chargeTotalAmount the LegalMonetaryTotal/ChargeTotalAmount value
+     * @param calculated        the calculated charge amount
+     * @return a new message
+     */
+    public static Message invoiceInvalidChargeTotal(String invoiceId, BigDecimal chargeTotalAmount,
+                                                    BigDecimal calculated) {
+        return messages.getMessage(608, invoiceId, chargeTotalAmount, calculated);
+    }
+
+    /**
+     * Creates a new message for when a duplicate invoice is received for an order.
+     *
+     * @param invoiceId the invoice identifier
+     * @param orderId   the order identifier
+     * @return a new message
+     */
+    public static Message duplicateInvoice(String invoiceId, long orderId) {
+        return messages.getMessage(609, invoiceId, orderId);
+    }
+
+    /**
      * Creates a new message for when an invoice cannot be submitted to OpenVPMS.
      *
      * @param reason the reason

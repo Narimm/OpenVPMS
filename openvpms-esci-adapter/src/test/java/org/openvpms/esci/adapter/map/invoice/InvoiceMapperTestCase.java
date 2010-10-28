@@ -110,13 +110,19 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         String reorder2 = "product2";
         String reorderDesc2 = "product2 name";
 
-        BigDecimal totalTax = tax1.add(tax2);
-        BigDecimal total = total1.add(total2);
+        BigDecimal chargeAmount = new BigDecimal("11");
+        BigDecimal chargeTax = new BigDecimal("1");
+        String chargeReason = "Freight";
+
+        BigDecimal payableAmount = total1.add(total2).add(chargeAmount);
+
+        BigDecimal totalTax = tax1.add(tax2).add(chargeTax);
+        BigDecimal total = total1.add(total2).add(chargeAmount);
 
         InvoiceType invoice = new InvoiceType();
         SupplierPartyType supplierType = createSupplier(getSupplier());
         CustomerPartyType customerType = createCustomer();
-        MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(154), new BigDecimal(140));
+        MonetaryTotalType monetaryTotal = createMonetaryTotal(payableAmount, new BigDecimal(140), chargeAmount);
 
         invoice.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
         invoice.setID(UBLHelper.createID(12345));
@@ -128,7 +134,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         invoice.setAccountingSupplierParty(supplierType);
         invoice.setAccountingCustomerParty(customerType);
         invoice.setLegalMonetaryTotal(monetaryTotal);
-        invoice.getTaxTotal().add(createTaxTotal(new BigDecimal(14)));
+        invoice.getTaxTotal().add(createTaxTotal(totalTax));
         InvoiceLineType item1 = createInvoiceLine("1", product1, reorder1, reorderDesc1, listPrice1, price1, quantity1,
                                                   lineExtension1, tax1);
         InvoiceLineType item2 = createInvoiceLine("2", product2, reorder2, reorderDesc2, listPrice2, price2, quantity2,
@@ -136,11 +142,13 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         invoice.getInvoiceLine().add(item1);
         invoice.getInvoiceLine().add(item2);
 
+        invoice.getAllowanceCharge().add(createCharge(chargeAmount, chargeTax, chargeReason));
+
         invoice = serialize(invoice);
         InvoiceMapper mapper = createMapper();
         Delivery mapped = mapper.map(invoice, user);
         List<FinancialAct> acts = mapped.getActs();
-        assertEquals(3, acts.size());
+        assertEquals(4, acts.size());
         getArchetypeService().save(acts);
 
         checkDelivery(mapped.getDelivery(), "12345", issueDatetime, "a note\nanother note", total, totalTax);
@@ -148,6 +156,8 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
                           "BOX", reorder1, reorderDesc1, total1, tax1);
         checkDeliveryItem(mapped.getDeliveryItems().get(1), "2", issueDatetime, product2, quantity2, listPrice2, price2,
                           "BOX", reorder2, reorderDesc2, total2, tax2);
+        checkDeliveryItem(mapped.getDeliveryItems().get(2), null, issueDatetime, null, BigDecimal.ONE, BigDecimal.ZERO,
+                          chargeAmount.subtract(chargeTax), null, null, chargeReason, chargeAmount, chargeTax);
     }
 
     /**
@@ -162,7 +172,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         FinancialAct order = createOrder(orderItem);
         save(order, orderItem);
 
-        // create an invoice the references the order
+        // create an invoice that references the order
         InvoiceType invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
 
@@ -386,7 +396,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     public void testInvalidTax() {
         InvoiceType invoice = createInvoice();
         invoice.getTaxTotal().get(0).getTaxAmount().setValue(BigDecimal.ONE);
-        checkMappingException(invoice, "ESCIA-0604: Sum of InvoiceLine/TaxTotal/TaxAmount: 10 for Invoice: 12345 "
+        checkMappingException(invoice, "ESCIA-0604: Sum of InvoiceLine taxes and charge taxes: 10 for Invoice: 12345 "
                                        + "does not match TaxTotal/TaxAmount: 1");
     }
 
@@ -494,6 +504,41 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
+     * Verifies that an {@link ESCIException} is raised if the charge total amount doesn't match the calculated
+     * charge total.
+     */
+    @Test
+    public void testInvalidChargeTotalAmount() {
+        InvoiceType invoice = createInvoice();
+        invoice.getAllowanceCharge().add(createCharge(BigDecimal.ONE, BigDecimal.ZERO, "Foo"));
+        checkMappingException(invoice, "ESCIA-0608: Sum of charge AllowanceCharge/Amount: 1 for Invoice: 12345 "
+                                       + "does not match Invoice/LegalMonetaryTotal/ChargeTotalAmount: 0");
+    }
+
+    /**
+     * Verifies that an {@link ESCIException} is raised if a invoice is raised for an order that already is associated
+     * with a delivery.
+     */
+    @Test
+    public void testDuplicateInvoice() {
+        InvoiceMapper mapper = createMapper();
+
+        // create an order
+        FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        FinancialAct order = createOrder(orderItem);
+        save(order, orderItem);
+
+        // create an invoice that references the order
+        InvoiceType invoice = createInvoice();
+        invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
+
+        Delivery delivery1 = mapper.map(invoice, user);
+        save(delivery1.getActs());
+
+        checkMappingException(invoice, "ESCIA-0609: Duplicate Invoice 12345 received for Order " + order.getId());
+    }
+
+    /**
      * Serializes and deserializes an invoice to ensure its validitity.
      *
      * @param invoice the invoice
@@ -580,7 +625,11 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         ActBean bean = new ActBean(item);
         assertEquals(id, bean.getString("supplierInvoiceLineId"));
         assertEquals(startTime, bean.getDate("startTime"));
-        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        if (product == null) {
+            assertNull(bean.getNodeParticipantRef("product"));
+        } else {
+            assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        }
         checkEquals(quantity, bean.getBigDecimal("quantity"));
         checkEquals(listPrice, bean.getBigDecimal("listPrice"));
         checkEquals(unitPrice, bean.getBigDecimal("unitPrice"));
