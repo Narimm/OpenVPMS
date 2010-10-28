@@ -55,7 +55,8 @@
         <node name="supplierNotes" path="/details/supplierNotes" type="java.lang.String" minCardinality="0"
               maxLength="5000" readOnly="true" defaultValue=""/>
         <node name="items" path="/sourceActRelationships"
-              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*"
+              filter="actRelationship.supplierDeliveryItem">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
@@ -64,6 +65,17 @@
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+      <node name="order" path="/sourceActRelationships"
+            type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
+            filter="actRelationship.supplierDeliveryOrder">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.supplierDeliveryOrder"/>
+                    </propertyMap>
+                </propertyList>
             </assertion>
         </node>
         <node name="author" path="/participations" type="java.util.HashSet"
