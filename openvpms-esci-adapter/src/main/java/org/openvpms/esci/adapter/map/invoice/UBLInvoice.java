@@ -38,8 +38,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
-import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.adapter.map.UBLDocument;
+import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.exception.ESCIException;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -87,7 +87,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * @param supplierRules the supplier rules
      */
     public UBLInvoice(InvoiceType invoice, String currency, IArchetypeService service, SupplierRules supplierRules) {
-        super(currency, service);
+        super(null, currency, service);
         this.invoice = invoice;
         this.supplierRules = supplierRules;
     }
@@ -105,11 +105,21 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the invoice identifier.
      *
      * @return the invoice identifier
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the identifier isn't set
+     * @throws ESCIException if the identifier isn't set
      */
     public String getID() {
-        return getId(invoice.getID(), "ID", getType(), null);
+        return getId(invoice.getID(), "ID");
+    }
+
+    /**
+     * Determines if the {@link #getType type} and {@link #getID identifier} of this should be used for
+     * error reporting. If not, then the parent should be used.
+     *
+     * @return <tt>true</tt>
+     */
+    @Override
+    public boolean useForErrorReporting() {
+        return true;
     }
 
     /**
@@ -192,7 +202,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * @return the stock location
      * @throws ESCIException if the stock location was not found
      * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
+     *                       for any archetype service error
      */
     public Party getStockLocation() {
         CustomerPartyType customerType = getRequired(invoice.getAccountingCustomerParty(), "AccountingCustomerParty");
@@ -213,7 +223,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * @return the order, or <tt>null</tt> if the invoice isn't associated with an order
      * @throws ESCIException if the order was specified, but could not be found
      * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
+     *                       for any archetype service error
      */
     public FinancialAct getOrder() {
         FinancialAct result = null;
@@ -232,7 +242,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the payable amount.
      *
      * @return the payable amount
-     * @throws ESCIException if the payable amount is not set
+     * @throws ESCIException if the payable amount is incorrectly specified
      */
     public BigDecimal getPayableAmount() {
         MonetaryTotalType monetaryTotal = getLegalMonetaryTotal();
@@ -243,6 +253,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the line extension amount.
      *
      * @return the line extension amount
+     * @throws ESCIException if the payable amount is incorrectly specified
      */
     public BigDecimal getLineExtensionAmount() {
         MonetaryTotalType monetaryTotal = getLegalMonetaryTotal();
@@ -268,13 +279,28 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
     }
 
     /**
+     * Returns the tax exclusive amount.
+     * <p/>
+     * This corresponds to <em>Invoice/LegalMonetaryTotal/TaxExclusiveAmount</em>.
+     *
+     * @return the tax exclusive amount
+     * @throws ESCIException if the amount is incorrectly specified
+     */
+    public BigDecimal getTaxExclusiveAmount() {
+        MonetaryTotalType monetaryTotal = getLegalMonetaryTotal();
+        return getAmount(monetaryTotal.getTaxExclusiveAmount(), "LegalMonetaryTotal/TaxExclusiveAmount");
+    }
+
+    /**
      * Returns the total tax for the invoice.
+     * <p/>
+     * This corresponds to <em>Invoice/TaxTotal/TaxAmount</em> (i.e only one TaxTotal is supported).
      *
      * @return the total tax
      * @throws ESCIException if the tax is incorrectly specified
      */
-    public BigDecimal getTaxTotal() {
-        return getTax(invoice.getTaxTotal());
+    public BigDecimal getTaxAmount() {
+        return getTaxAmount(invoice.getTaxTotal());
     }
 
     /**
@@ -285,7 +311,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
     public List<UBLInvoiceLine> getInvoiceLines() {
         List<UBLInvoiceLine> result = new ArrayList<UBLInvoiceLine>(invoice.getInvoiceLine().size());
         for (InvoiceLineType line : invoice.getInvoiceLine()) {
-            result.add(new UBLInvoiceLine(line, getCurrency(), getArchetypeService(), supplierRules));
+            result.add(new UBLInvoiceLine(line, this, getCurrency(), getArchetypeService(), supplierRules));
         }
         return result;
     }

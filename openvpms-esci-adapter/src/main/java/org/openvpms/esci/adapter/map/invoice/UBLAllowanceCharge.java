@@ -19,13 +19,17 @@ package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.StringUtils;
 import org.oasis.ubl.common.aggregate.AllowanceChargeType;
+import org.oasis.ubl.common.aggregate.TaxCategoryType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
 import org.oasis.ubl.common.basic.AllowanceChargeReasonType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
+import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.exception.ESCIException;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 
 /**
@@ -57,7 +61,7 @@ public class UBLAllowanceCharge extends UBLFinancialType {
      */
     public UBLAllowanceCharge(AllowanceChargeType allowanceCharge, UBLInvoice invoice, String currency,
                               IArchetypeService service) {
-        super(currency, service);
+        super(invoice, currency, service);
         this.allowanceCharge = allowanceCharge;
         this.invoice = invoice;
     }
@@ -100,21 +104,22 @@ public class UBLAllowanceCharge extends UBLFinancialType {
      * @throws ESCIException if the amount is incorrectly specified
      */
     public BigDecimal getAmount() {
-        return getAmount(allowanceCharge.getAmount(), "AllowanceCharge/Amount", "Invoice", invoice.getID());
+        return getAmount(allowanceCharge.getAmount(), "Amount");
     }
 
     /**
      * Returns the total tax in the allowance/charge.
+     * <p/>
+     * This corresponds to <em>AllowanceCharge/TaxTotal/TaxAmount</em>
      *
      * @return the total tax, or <tt>BigDecimal.ZERO</tt> if it wasn't specified
      * @throws ESCIException if the tax is incorrectly specified
      */
-    public BigDecimal getTaxTotal() {
+    public BigDecimal getTaxAmount() {
         BigDecimal result = BigDecimal.ZERO;
         TaxTotalType taxTotal = allowanceCharge.getTaxTotal();
         if (taxTotal != null) {
-            result = getAmount(taxTotal.getTaxAmount(), "AllowanceCharge/TaxTotal/TaxAmount", "Invoice",
-                               invoice.getID());
+            result = getAmount(taxTotal.getTaxAmount(), "TaxTotal/TaxAmount");
         }
         return result;
     }
@@ -130,6 +135,26 @@ public class UBLAllowanceCharge extends UBLFinancialType {
                                                        "AllowanceCharge/AllowanceChargeReason");
         String result = StringUtils.trimToNull(reason.getValue());
         checkRequired(result, "AllowanceCharge/AllowanceChargeReason");
+        return result;
+    }
+
+    /**
+     * Returns the tax category.
+     *
+     * @return the tax category, or <tt>null</tt> if none is provided
+     * @throws ESCIException if the tax category is incorrectly specified
+     */
+    public UBLTaxCategory getTaxCategory() {
+        UBLTaxCategory result = null;
+        List<TaxCategoryType> categories = allowanceCharge.getTaxCategory();
+        if (!categories.isEmpty()) {
+            if (categories.size() != 1) {
+                Message message = ESCIAdapterMessages.ublInvalidCardinality("AllowanceCharge/TaxCategory", "Invoice",
+                                                                            invoice.getID(), "1", categories.size());
+                throw new ESCIException(message.toString());
+            }
+            result = new UBLTaxCategory(categories.get(0), this, getCurrency(), getArchetypeService());
+        }
         return result;
     }
 }

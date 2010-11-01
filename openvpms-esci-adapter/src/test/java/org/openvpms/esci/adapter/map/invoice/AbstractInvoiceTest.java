@@ -30,6 +30,9 @@ import org.oasis.ubl.common.aggregate.MonetaryTotalType;
 import org.oasis.ubl.common.aggregate.PriceType;
 import org.oasis.ubl.common.aggregate.PricingReferenceType;
 import org.oasis.ubl.common.aggregate.SupplierPartyType;
+import org.oasis.ubl.common.aggregate.TaxCategoryType;
+import org.oasis.ubl.common.aggregate.TaxSchemeType;
+import org.oasis.ubl.common.aggregate.TaxSubtotalType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
 import org.oasis.ubl.common.basic.AllowanceChargeReasonType;
 import org.oasis.ubl.common.basic.ChargeIndicatorType;
@@ -43,6 +46,7 @@ import org.oasis.ubl.common.basic.PayableAmountType;
 import org.oasis.ubl.common.basic.PriceAmountType;
 import org.oasis.ubl.common.basic.PriceTypeCodeType;
 import org.oasis.ubl.common.basic.TaxAmountType;
+import org.oasis.ubl.common.basic.TaxExclusiveAmountType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.test.TestHelper;
@@ -97,11 +101,18 @@ public class AbstractInvoiceTest extends AbstractESCITest {
             throw new IllegalStateException(error);
         }
 
+        Lookup taxType = TestHelper.getLookup("lookup.taxType", "GST");
+        IMObjectBean taxBean = new IMObjectBean(taxType);
+        taxBean.setValue("taxScheme", "GST");
+        taxBean.setValue("taxCategory", "S");
+        taxBean.setValue("rate", new BigDecimal("10.00"));
+        taxBean.save();
+
         // make sure there is a UN/CEFACT unit code mapping for BOX
-        Lookup lookup = TestHelper.getLookup("lookup.uom", "BOX");
-        IMObjectBean lookupBean = new IMObjectBean(lookup);
-        lookupBean.setValue("unitCode", "BX");
-        save(lookup);
+        Lookup uom = TestHelper.getLookup("lookup.uom", "BOX");
+        IMObjectBean uomBean = new IMObjectBean(uom);
+        uomBean.setValue("unitCode", "BX");
+        uomBean.save();
     }
 
     /**
@@ -124,8 +135,8 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         SupplierPartyType supplierType = createSupplier(supplier);
         CustomerPartyType customerType = createCustomer();
         Product product = TestHelper.createProduct();
-        MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(110), new BigDecimal(100),
-                                                              BigDecimal.ZERO);
+        MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(100), BigDecimal.ZERO,
+                                                              new BigDecimal(100), new BigDecimal(110));
 
         invoice.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
         invoice.setID(UBLHelper.createID(12345));
@@ -135,7 +146,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         invoice.setAccountingSupplierParty(supplierType);
         invoice.setAccountingCustomerParty(customerType);
         invoice.setLegalMonetaryTotal(monetaryTotal);
-        invoice.getTaxTotal().add(createTaxTotal(new BigDecimal(10)));
+        invoice.getTaxTotal().add(createTaxTotal(new BigDecimal(10), false));
         InvoiceLineType item1 = createInvoiceLine("1", product, "aproduct1", "aproduct name", new BigDecimal(105),
                                                   new BigDecimal(100), BigDecimal.ONE, new BigDecimal(100),
                                                   new BigDecimal(10));
@@ -171,20 +182,23 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         priceType.setPriceTypeCode(UBLHelper.initCode(new PriceTypeCodeType(), "WS"));
         pricingRef.getAlternativeConditionPrice().add(priceType);
         result.setPricingReference(pricingRef);
-        result.getTaxTotal().add(createTaxTotal(tax));
+        result.getTaxTotal().add(createTaxTotal(tax, true));
         return result;
     }
 
     /**
      * Helper to create a charge.
      *
-     * @param amount the charge amount
-     * @param tax    the tax in the amount
-     * @param reason the reason for the charge
+     * @param amount  the charge amount
+     * @param tax     the tax in the amount
+     * @param reason  the reason for the charge
+     * @param taxRate the tax rate, as a percentage
      * @return the charge
      */
-    protected AllowanceChargeType createCharge(BigDecimal amount, BigDecimal tax, String reason) {
+    protected AllowanceChargeType createCharge(BigDecimal amount, BigDecimal tax, String reason, BigDecimal taxRate) {
         AllowanceChargeType charge = new AllowanceChargeType();
+        TaxCategoryType category = createTaxCategory(taxRate);
+        charge.getTaxCategory().add(category);
         ChargeIndicatorType flag = new ChargeIndicatorType();
         flag.setValue(true);
         charge.setChargeIndicator(flag);
@@ -230,32 +244,58 @@ public class AbstractInvoiceTest extends AbstractESCITest {
     }
 
     /**
-     * Helper to create a <tt>TaxTotalType</tt>.
-     *
-     * @param tax the tax amount
-     * @return a new <tt>TaxTotalType</tt>
-     */
-    protected TaxTotalType createTaxTotal(BigDecimal tax) {
-        TaxTotalType result = new TaxTotalType();
-        result.setTaxAmount(initAmount(new TaxAmountType(), tax));
-        return result;
-    }
-
-    /**
      * Helper to create a <tt>MonetaryTotalType</tt>
      *
-     * @param payableAmount       the payable amount
      * @param lineExtensionAmount the line extension amount
      * @param chargeAmount        the total charge amount
+     * @param taxExAmount         the tax exclusive amount
+     * @param payableAmount       the payable amount
      * @return a new <tt>MonetaryTotalType</tt>
      */
-    protected MonetaryTotalType createMonetaryTotal(BigDecimal payableAmount, BigDecimal lineExtensionAmount,
-                                                    BigDecimal chargeAmount) {
+    protected MonetaryTotalType createMonetaryTotal(BigDecimal lineExtensionAmount, BigDecimal chargeAmount,
+                                                    BigDecimal taxExAmount, BigDecimal payableAmount) {
         MonetaryTotalType result = new MonetaryTotalType();
         result.setPayableAmount(initAmount(new PayableAmountType(), payableAmount));
         result.setLineExtensionAmount(initAmount(new LineExtensionAmountType(), lineExtensionAmount));
         result.setChargeTotalAmount(initAmount(new ChargeTotalAmountType(), chargeAmount));
+        result.setTaxExclusiveAmount(initAmount(new TaxExclusiveAmountType(), taxExAmount));
         return result;
+    }
+
+    /**
+     * Helper to create a <tt>TaxTotalType</tt>.
+     *
+     * @param tax         the tax amount
+     * @param addSubtotal if <tt>true</tt> add a sub-total
+     * @return a new <tt>TaxTotalType</tt>
+     */
+    protected TaxTotalType createTaxTotal(BigDecimal tax, boolean addSubtotal) {
+        TaxTotalType result = new TaxTotalType();
+        result.setTaxAmount(initAmount(new TaxAmountType(), tax));
+        if (addSubtotal) {
+            TaxSubtotalType subtotal = new TaxSubtotalType();
+            subtotal.setTaxAmount(initAmount(new TaxAmountType(), tax));
+            TaxCategoryType category = createTaxCategory(new BigDecimal("10.00"));
+            subtotal.setTaxCategory(category);
+            result.getTaxSubtotal().add(subtotal);
+        }
+        return result;
+    }
+
+    /**
+     * Helper to create a <tt>TaxCategoryType</tt>.
+     *
+     * @param taxRate the tax rate, as a percentage
+     * @return a new <tt>TaxCategoryType</tt>
+     */
+    protected TaxCategoryType createTaxCategory(BigDecimal taxRate) {
+        TaxCategoryType category = new TaxCategoryType();
+        category.setID(UBLHelper.createID("S"));
+        category.setPercent(UBLHelper.createPercent(taxRate));
+        TaxSchemeType scheme = new TaxSchemeType();
+        scheme.setID(UBLHelper.createID("GST"));
+        category.setTaxScheme(scheme);
+        return category;
     }
 
     /**

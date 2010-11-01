@@ -45,6 +45,11 @@ import org.openvpms.esci.exception.ESCIException;
 public abstract class UBLType {
 
     /**
+     * The parent element. May be <tt>null</tt>.
+     */
+    private final UBLType parent;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -53,9 +58,11 @@ public abstract class UBLType {
     /**
      * Constructs a new <tt>UBLType</tt>.
      *
+     * @param parent  the parent element. May be <tt>null</tt>
      * @param service the archetype service
      */
-    public UBLType(IArchetypeService service) {
+    public UBLType(UBLType parent, IArchetypeService service) {
+        this.parent = parent;
         this.service = service;
     }
 
@@ -75,6 +82,35 @@ public abstract class UBLType {
     public abstract String getID();
 
     /**
+     * Returns the path to the element, relative to its parent.
+     *
+     * @return the path
+     */
+    public String getPath() {
+        return getType();
+    }
+
+    /**
+     * Returns the immediate parent.
+     *
+     * @return the parent, or <tt>null</tt> if there is no parent
+     */
+    public UBLType getParent() {
+        return parent;
+    }
+
+    /**
+     * Determines if the {@link #getType type} and {@link #getID identifier} of this should be used for
+     * error reporting. If not, then the parent should be used.
+     *
+     * @return <tt>true</tt> if the type and ID should be used for error reporting, <tt>false</tt> if the paren should
+     *         be used
+     */
+    public boolean useForErrorReporting() {
+        return false;
+    }
+
+    /**
      * Returns the archetype service.
      *
      * @return the archetype service
@@ -92,22 +128,7 @@ public abstract class UBLType {
      * @throws ESCIException if the element is null
      */
     protected <T> T getRequired(T element, String path) {
-        checkRequired(element, path, getType(), getID());
-        return element;
-    }
-
-    /**
-     * Helper to verify that a required element is non-null, raising an exception if it is.
-     *
-     * @param element  the element value. May be <tt>null</tt>
-     * @param path     the element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @return the element
-     * @throws ESCIException if the element is null
-     */
-    protected <T> T getRequired(T element, String path, String parent, String parentId) {
-        checkRequired(element, path, parent, parentId);
+        checkRequired(element, path);
         return element;
     }
 
@@ -119,21 +140,10 @@ public abstract class UBLType {
      * @throws ESCIException if the element is null
      */
     protected <T> void checkRequired(T element, String path) {
-        checkRequired(element, path, getType(), getID());
-    }
-
-    /**
-     * Verifies that a required element is non-null, raising an exception if it is.
-     *
-     * @param element  the element value. May be <tt>null</tt>
-     * @param path     the element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @throws ESCIException if the element is null
-     */
-    protected <T> void checkRequired(T element, String path, String parent, String parentId) {
         if (element == null) {
-            Message message = ESCIAdapterMessages.ublElementRequired(path, parent, parentId);
+            ErrorContext context = new ErrorContext(this, path);
+            Message message = ESCIAdapterMessages.ublElementRequired(context.getPath(), context.getType(),
+                                                                     context.getID());
             throw new ESCIException(message.toString());
         }
     }
@@ -147,24 +157,12 @@ public abstract class UBLType {
      * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
      */
     protected long getNumericId(IdentifierType id, String path) {
-        return getNumericId(id, path, getType(), getID());
-    }
-
-    /**
-     * Returns the numeric value of an <tt>IdentifierType</tt>.
-     *
-     * @param id       the identifier
-     * @param path     the identifier element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @return the numeric value of <tt>id</tt>
-     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
-     */
-    protected long getNumericId(IdentifierType id, String path, String parent, String parentId) {
-        String value = getId(id, path, parent, parentId);
+        String value = getId(id, path);
         long result = NumberUtils.toLong(value, -1);
         if (result == -1) {
-            Message message = ESCIAdapterMessages.ublInvalidIdentifier(path, parent, parentId, id.getValue());
+            ErrorContext context = new ErrorContext(this, path);
+            Message message = ESCIAdapterMessages.ublInvalidIdentifier(context.getPath(), context.getType(),
+                                                                       context.getID(), id.getValue());
             throw new ESCIException(message.toString());
         }
         return result;
@@ -179,22 +177,8 @@ public abstract class UBLType {
      * @throws ESCIException if <tt>id</tt> is null or empty
      */
     protected String getId(IdentifierType id, String path) {
-        return getId(id, path, getType(), getID());
-    }
-
-    /**
-     * Returns the string value of an <tt>IdentifierType</tt>.
-     *
-     * @param id       the identifier
-     * @param path     the identifier element path
-     * @param parent   the parent element
-     * @param parentId the parent element identifier
-     * @return the value of <tt>id</tt>
-     * @throws ESCIException if <tt>id</tt> is null or empty
-     */
-    protected String getId(IdentifierType id, String path, String parent, String parentId) {
         String result = getId(id);
-        checkRequired(result, path, parent, parentId);
+        checkRequired(result, path);
         return result;
     }
 
@@ -227,8 +211,9 @@ public abstract class UBLType {
         long id = getNumericId(accountId, path + "/CustomerAssignedAccountID");
         Party supplier = (Party) getObject(id, "party.supplier*");
         if (supplier == null) {
-            Message message = ESCIAdapterMessages.invalidSupplier(path + "/CustomerAssignedAccountID", getType(),
-                                                                  getID(), accountId.getValue());
+            ErrorContext context = new ErrorContext(this, path + "/CustomerAssignedAccountID");
+            Message message = ESCIAdapterMessages.invalidSupplier(context.getPath(), context.getType(),
+                                                                  context.getID(), accountId.getValue());
             throw new ESCIException(message.toString());
         }
         return supplier;
@@ -264,24 +249,7 @@ public abstract class UBLType {
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected IMObject getObject(ArchetypeId archetypeId, IdentifierType id, String path) {
-        return getObject(archetypeId, id, path, getType(), getID());
-    }
-
-    /**
-     * Returns an <tt>IMObjectReference</tt> for a given archetype id and <tt>IdentfierType</tt>.
-     *
-     * @param archetypeId the archetype identifier
-     * @param id          the identifier
-     * @param path        the identifier element path
-     * @param parent      the parent element
-     * @param parentId    the parent element identifier
-     * @return the corresponding object, or <tt>null</tt> if it is not found
-     * @throws ESCIException             if <tt>id</tt> is null or is not a valid identifier
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    protected IMObject getObject(ArchetypeId archetypeId, IdentifierType id, String path, String parent,
-                                 String parentId) {
-        IMObjectReference ref = getReference(archetypeId, id, path, parent, parentId);
+        IMObjectReference ref = getReference(archetypeId, id, path);
         return service.get(ref);
     }
 
@@ -295,24 +263,8 @@ public abstract class UBLType {
      * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
      */
     protected IMObjectReference getReference(ArchetypeId archetypeId, IdentifierType id, String path) {
-        return getReference(archetypeId, id, path, getType(), getID());
-    }
-
-    /**
-     * Returns an <tt>IMObjectReference</tt> for a given archetype id and <tt>IdentfierType</tt>.
-     *
-     * @param archetypeId the archetype identifier
-     * @param id          the identifier
-     * @param path        the identifier element path
-     * @param parent      the parent element
-     * @param parentId    the parent element identifier
-     * @return the corresponding reference
-     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
-     */
-    protected IMObjectReference getReference(ArchetypeId archetypeId, IdentifierType id, String path, String parent,
-                                             String parentId) {
-        long objectId = getNumericId(id, path, parent, parentId);
+        long objectId = getNumericId(id, path);
         return new IMObjectReference(archetypeId, objectId);
     }
-    
+
 }

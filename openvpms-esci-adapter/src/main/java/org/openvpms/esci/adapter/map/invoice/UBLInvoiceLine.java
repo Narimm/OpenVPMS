@@ -39,6 +39,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
+import org.openvpms.esci.adapter.map.ErrorContext;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.exception.ESCIException;
 
@@ -75,10 +76,29 @@ public class UBLInvoiceLine extends UBLFinancialType {
      */
     private static final String WHOLESALE = "WS";
 
+    /**
+     * Path to the alternative condidition price.
+     */
+    private static final String ALTERNATIVE_CONDITION_PRICE = "PricingReference/AlternativeConditionPrice";
 
-    public UBLInvoiceLine(InvoiceLineType line, String expectedCurrency, IArchetypeService service,
+    /**
+     * Path to the alternative condidition price type code.
+     */
+    private static final String ALTERNATIVE_CONDITION_PRICE_TYPE_CODE = ALTERNATIVE_CONDITION_PRICE + "/PriceTypeCode";
+
+
+    /**
+     * Constructs an <tt>UBLInvoiceLine</tt>.
+     *
+     * @param line             the invoice line
+     * @param parent           the parent invoice
+     * @param expectedCurrency the expected currency for all amounts
+     * @param service          the archetype service
+     * @param rules            supplier rules
+     */
+    public UBLInvoiceLine(InvoiceLineType line, UBLInvoice parent, String expectedCurrency, IArchetypeService service,
                           SupplierRules rules) {
-        super(expectedCurrency, service);
+        super(parent, expectedCurrency, service);
         this.line = line;
         this.supplierRules = rules;
     }
@@ -100,7 +120,18 @@ public class UBLInvoiceLine extends UBLFinancialType {
      *          if the identifier isn't set
      */
     public String getID() {
-        return getId(line.getID(), "ID", getType(), null);
+        return getId(line.getID(), "ID");
+    }
+
+    /**
+     * Determines if the {@link #getType type} and {@link #getID identifier} of this should be used for
+     * error reporting. If not, then the parent should be used.
+     *
+     * @return true
+     */
+    @Override
+    public boolean useForErrorReporting() {
+        return true;
     }
 
     /**
@@ -174,9 +205,8 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * @throws ESCIException if the unit code doesn't exist or is invalid
      */
     public String getInvoicedQuantityUnitCode() {
-        InvoicedQuantityType quantity = line.getInvoicedQuantity();
-        checkRequired(quantity, "InvoicedQuantity", "InvoiceLine", getID());
-        return getRequired(quantity.getUnitCode(), "InvoicedQuantity@unitCode", "InvoiceLine", getID());
+        InvoicedQuantityType quantity = getRequired(line.getInvoicedQuantity(), "InvoicedQuantity");
+        return getRequired(quantity.getUnitCode(), "InvoicedQuantity@unitCode");
     }
 
     /**
@@ -223,7 +253,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
         ItemType item = getItem();
         ItemIdentificationType id = item.getBuyersItemIdentification();
         if (id != null) {
-            result = getNumericId(id.getID(), "Item/BuyersItemIdentification/ID", "InvoiceLine", getID());
+            result = getNumericId(id.getID(), "Item/BuyersItemIdentification/ID");
         }
         return result;
     }
@@ -241,7 +271,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
         ItemType item = getItem();
         ItemIdentificationType sellerId = item.getSellersItemIdentification();
         if (sellerId != null) {
-            result = getId(sellerId.getID(), "Item/SellersItemIdentification/ID", "InvoiceLine", getID());
+            result = getId(sellerId.getID(), "Item/SellersItemIdentification/ID");
         }
         return result;
     }
@@ -265,8 +295,8 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * @throws ESCIException if the price isn't present or is incorrectly specified
      */
     public BigDecimal getPriceAmount() {
-        PriceType price = getRequired(line.getPrice(), "Price", "InvoiceLine", getID());
-        return getAmount(price.getPriceAmount(), "Price/PriceAmount", "InvoiceLine", getID());
+        PriceType price = getRequired(line.getPrice(), "Price");
+        return getAmount(price.getPriceAmount(), "Price/PriceAmount");
     }
 
     /**
@@ -284,15 +314,12 @@ public class UBLInvoiceLine extends UBLFinancialType {
             List<PriceType> prices = pricing.getAlternativeConditionPrice();
             if (!prices.isEmpty()) {
                 PriceType price = prices.get(0);
-                result = getAmount(price.getPriceAmount(),
-                                   "PricingReference/AlternativeConditionPrice/PriceAmount", "InvoiceLine", getID());
-                PriceTypeCodeType code = getRequired(
-                        price.getPriceTypeCode(), "PricingReference/AlternativeConditionPrice/PriceTypeCode",
-                        "InvoiceLine", getID());
+                result = getAmount(price.getPriceAmount(), ALTERNATIVE_CONDITION_PRICE + "/PriceAmount");
+                PriceTypeCodeType code = getRequired(price.getPriceTypeCode(), ALTERNATIVE_CONDITION_PRICE_TYPE_CODE);
                 if (!WHOLESALE.equals(code.getValue())) {
-                    Message message = ESCIAdapterMessages.ublInvalidValue(
-                            "PricingReference/AlternativeConditionPrice/PriceTypeCode", "InvoiceLine", getID(),
-                            WHOLESALE, code.getValue());
+                    ErrorContext context = new ErrorContext(this, ALTERNATIVE_CONDITION_PRICE_TYPE_CODE);
+                    Message message = ESCIAdapterMessages.ublInvalidValue(context.getPath(), context.getType(),
+                                                                          context.getID(), WHOLESALE, code.getValue());
                     throw new ESCIException(message.toString());
                 }
             }
@@ -306,8 +333,21 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * @return the invoice line tax
      * @throws ESCIException if the tax is incorrectly specified
      */
-    public BigDecimal getTax() {
-        return getTax(line.getTaxTotal(), "InvoiceLine", getID());
+    public BigDecimal getTaxAmount() {
+        return getTaxAmount(line.getTaxTotal());
+    }
+
+    /**
+     * Returns the tax subtotal for the invoice line.
+     * <p/>
+     * This corresponds to <em>TaxTotal/TaxSubtotal</em> (i.e only one TaxTotal with one TaxSubtotal is
+     * supported).
+     *
+     * @return the tax sub total, or <tt>null</tt> if no tax is specified
+     * @throws ESCIException if the tax is incorrectly specified
+     */
+    public UBLTaxSubtotal getTaxSubtotal() {
+        return getTaxSubtotal(line.getTaxTotal());
     }
 
     /**
@@ -355,7 +395,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * @throws ESCIException if the item isn't specified
      */
     protected ItemType getItem() {
-        return getRequired(line.getItem(), "Item", "InvoiceLine", getID());
+        return getRequired(line.getItem(), "Item");
     }
 
 }

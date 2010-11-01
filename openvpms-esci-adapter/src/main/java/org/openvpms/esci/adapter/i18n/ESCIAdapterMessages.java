@@ -205,6 +205,21 @@ public class ESCIAdapterMessages {
     }
 
     /**
+     * Creates a new message for when a tax scheme and category don't correspond to an <em>loookup.taxType</em>.
+     *
+     * @param path       the path to the element, from the parent
+     * @param parent     the parent element path
+     * @param id         the parent element identifier
+     * @param schemeId   the tax scheme identifier
+     * @param categoryId the tax category identifier
+     * @return a new message
+     */
+    public static Message invalidTaxSchemeAndCategory(String path, String parent, String id, String schemeId,
+                                                      String categoryId) {
+        return messages.getMessage(110, path, parent, id, schemeId, categoryId);
+    }
+
+    /**
      * Creates a new message for when no ESCI user can be determined from the current context.
      *
      * @return a new message
@@ -389,6 +404,19 @@ public class ESCIAdapterMessages {
      */
     public static Message duplicateInvoice(String invoiceId, long orderId) {
         return messages.getMessage(609, invoiceId, orderId);
+    }
+
+    /**
+     * Creates a new message for when the tax exclusive amount doesn't match that calculated.
+     *
+     * @param invoiceId          the invoice identifier
+     * @param taxExclusiveAmount the LegalMonetaryTotal/TaxExclusiveAmount value
+     * @param calculated         the calculated tax exclusive amount
+     * @return a new message
+     */
+    public static Message invoiceInvalidTaxExclusiveAmount(String invoiceId, BigDecimal taxExclusiveAmount,
+                                                           BigDecimal calculated) {
+        return messages.getMessage(610, invoiceId, taxExclusiveAmount, calculated);
     }
 
     /**

@@ -29,6 +29,7 @@ import org.oasis.ubl.common.basic.IDType;
 import org.oasis.ubl.common.basic.IssueDateType;
 import org.oasis.ubl.common.basic.IssueTimeType;
 import org.oasis.ubl.common.basic.NameType;
+import org.oasis.ubl.common.basic.PercentType;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -199,6 +200,18 @@ public class UBLHelper {
         quantity.setValue(value);
         quantity.setUnitCode(unitCode);
         return quantity;
+    }
+
+    /**
+     * Creates a new <tt>PercentType</tt>.
+     *
+     * @param value the percentage value
+     * @return a new <tt>PercentType</tt>
+     */
+    public static PercentType createPercent(BigDecimal value) {
+        PercentType result = new PercentType();
+        result.setValue(value);
+        return result;
     }
 
     /**

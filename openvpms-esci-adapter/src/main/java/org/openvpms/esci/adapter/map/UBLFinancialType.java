@@ -21,10 +21,12 @@ import org.apache.commons.lang.ObjectUtils;
 import org.oasis.ubl.common.AmountType;
 import org.oasis.ubl.common.CurrencyCodeContentType;
 import org.oasis.ubl.common.QuantityType;
+import org.oasis.ubl.common.aggregate.TaxSubtotalType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
+import org.openvpms.esci.adapter.map.invoice.UBLTaxSubtotal;
 import org.openvpms.esci.exception.ESCIException;
 
 import java.math.BigDecimal;
@@ -44,14 +46,16 @@ public abstract class UBLFinancialType extends UBLType {
      */
     private final String currency;
 
+
     /**
-     * Constructs an <tt>AbstractUBLFinancialType</tt>.
+     * Constructs an <tt>UBLFinancialType</tt>.
      *
+     * @param parent   the parent element. May be <tt>null</tt>
      * @param currency the expected currency for all amounts
      * @param service  the archetype service
      */
-    public UBLFinancialType(String currency, IArchetypeService service) {
-        super(service);
+    public UBLFinancialType(UBLType parent, String currency, IArchetypeService service) {
+        super(parent, service);
         this.currency = currency;
     }
 
@@ -71,34 +75,74 @@ public abstract class UBLFinancialType extends UBLType {
      * <p/>
      * This implementation expects that the supplied <tt>tax</tt> contains 0..1 elements.
      *
-     * @param tax the tax totals
+     * @param tax    the tax totals
      * @return the tax amount
      * @throws ESCIException if the tax is incorrectly specified
      */
-    protected BigDecimal getTax(List<TaxTotalType> tax) {
-        return getTax(tax, getType(), getID());
+    protected BigDecimal getTaxAmount(List<TaxTotalType> tax) {
+        BigDecimal result = BigDecimal.ZERO;
+        TaxTotalType total = getTaxTotal(tax);
+        if (total != null) {
+            result = getAmount(total.getTaxAmount(), "TaxTotal/TaxAmount");
+        }
+        return result;
     }
 
     /**
-     * Returns the tax amount.
-     * <p/>
-     * This implementation expects that the supplied <tt>tax</tt> contains 0..1 elements.
+     * Returns the tax total type.
      *
-     * @param tax    the tax totals
-     * @param parent the name of the parent element for error reporting
-     * @param id     the parent element identifier
-     * @return the tax amount
-     * @throws ESCIException if the tax is incorrectly specified
+     * @param tax    a list of tax totals. Must contain 0..1 elements
+     * @return the tax total type, or <tt>null</tt> if none is present
+     * @throws ESCIException if too many elements are supplied
      */
-    protected BigDecimal getTax(List<TaxTotalType> tax, String parent, String id) {
-        BigDecimal result = BigDecimal.ZERO;
+    protected TaxTotalType getTaxTotal(List<TaxTotalType> tax) {
+        TaxTotalType result = null;
         if (tax != null && !tax.isEmpty()) {
             if (tax.size() != 1) {
-                Message message = ESCIAdapterMessages.ublInvalidCardinality("TaxTotal", parent, id, "1", tax.size());
+                ErrorContext context = new ErrorContext(this, "TaxTotal");
+                Message message = ESCIAdapterMessages.ublInvalidCardinality(context.getPath(), context.getType(),
+                                                                            context.getID(), "1", tax.size());
                 throw new ESCIException(message.toString());
             }
-            TaxTotalType total = tax.get(0);
-            result = getAmount(total.getTaxAmount(), "TaxTotal/TaxAmount", parent, id);
+            result = tax.get(0);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the tax subtotal type.
+     *
+     * @param tax    a list of tax totals. Must contain 0..1 elements
+     * @return the tax sub total, or <tt>null</tt> if no tax is specified
+     * @throws ESCIException if the tax is incorrectly specified
+     */
+    protected UBLTaxSubtotal getTaxSubtotal(List<TaxTotalType> tax) {
+        UBLTaxSubtotal result = null;
+        TaxTotalType total = getTaxTotal(tax);
+        if (total != null) {
+            result = getTaxSubtotal(total);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the tax subtotal.
+     *
+     * @param tax the tax total. May be <tt>null</tt>
+     * @return the tax subtotal,  or <tt>null</tt> if no tax total is supplied
+     * @throws ESCIException if the tax is incorrectly specified
+     */
+    protected UBLTaxSubtotal getTaxSubtotal(TaxTotalType tax) {
+        UBLTaxSubtotal result = null;
+        if (tax != null) {
+            List<TaxSubtotalType> taxSubtotal = tax.getTaxSubtotal();
+            if (taxSubtotal.size() != 1) {
+                ErrorContext context = new ErrorContext(this, "TaxTotal/TaxSubtotal");
+                Message message = ESCIAdapterMessages.ublInvalidCardinality(context.getPath(), context.getType(),
+                                                                            context.getID(), "1", taxSubtotal.size());
+                throw new ESCIException(message.toString());
+            }
+            result = new UBLTaxSubtotal(taxSubtotal.get(0), this, getCurrency(), getArchetypeService());
         }
         return result;
     }
@@ -112,30 +156,20 @@ public abstract class UBLFinancialType extends UBLType {
      * @throws ESCIException if the amount isn't present, is invalid, or has a currency the doesn't match that expected
      */
     protected BigDecimal getAmount(AmountType amount, String path) {
-        return getAmount(amount, path, getType(), getID());
-    }
-
-    /**
-     * Gets the value from an amount, verifying the currency.
-     *
-     * @param amount the amount
-     * @param path   the path to the element for error reporting
-     * @param parent the parent element
-     * @param id     the parent element identfier
-     * @return the amount value
-     * @throws ESCIException if the amount isn't present, is invalid, or has a currency the doesn't match that expected
-     */
-    protected BigDecimal getAmount(AmountType amount, String path, String parent, String id) {
-        checkRequired(amount, path, parent, id);
-        checkRequired(amount.getValue(), path, parent, id);
-        CurrencyCodeContentType code = getRequired(amount.getCurrencyID(), path + "@currencyID", parent, id);
+        checkRequired(amount, path);
+        checkRequired(amount.getValue(), path);
+        CurrencyCodeContentType code = getRequired(amount.getCurrencyID(), path + "@currencyID");
         if (!ObjectUtils.equals(currency, code.value())) {
-            Message message = ESCIAdapterMessages.invalidCurrency(path, parent, id, currency, code.value());
+            ErrorContext context = new ErrorContext(this, path);
+            Message message = ESCIAdapterMessages.invalidCurrency(context.getPath(), context.getType(), context.getID(),
+                                                                  currency, code.value());
             throw new ESCIException(message.toString());
         }
         BigDecimal result = amount.getValue();
         if (result.signum() == -1) {
-            Message message = ESCIAdapterMessages.invalidAmount(path, parent, id, result);
+            ErrorContext context = new ErrorContext(this, path);
+            Message message = ESCIAdapterMessages.invalidAmount(context.getPath(), context.getType(), context.getID(),
+                                                                result);
             throw new ESCIException(message.toString());
         }
         return amount.getValue();
@@ -150,25 +184,13 @@ public abstract class UBLFinancialType extends UBLType {
      * @throws ESCIException if the quantity doesn't exist or is &lt;= zero
      */
     protected BigDecimal getQuantity(QuantityType quantity, String path) {
-        return getQuantity(quantity, path, getType(), getID());
-    }
-
-    /**
-     * Returns the value for a quantity, verifying thhat it is greater than zero.
-     *
-     * @param quantity the quantity
-     * @param path     the path to the element for error reporting
-     * @param parent   the parent element
-     * @param id       the parent element identfier
-     * @return the quantity value
-     * @throws ESCIException if the quantity doesn't exist or is &lt;= zero
-     */
-    protected BigDecimal getQuantity(QuantityType quantity, String path, String parent, String id) {
-        checkRequired(quantity, path, parent, id);
-        checkRequired(quantity.getValue(), path, parent, id);
+        checkRequired(quantity, path);
+        checkRequired(quantity.getValue(), path);
         BigDecimal result = quantity.getValue();
         if (result.compareTo(BigDecimal.ZERO) <= 0) {
-            Message message = ESCIAdapterMessages.invalidQuantity(path, parent, id, result);
+            ErrorContext context = new ErrorContext(this, path);
+            Message message = ESCIAdapterMessages.invalidQuantity(context.getPath(), context.getType(), context.getID(),
+                                                                  result);
             throw new ESCIException(message.toString());
         }
         return result;

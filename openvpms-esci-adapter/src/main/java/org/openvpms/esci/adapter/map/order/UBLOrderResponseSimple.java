@@ -60,7 +60,7 @@ public class UBLOrderResponseSimple extends UBLType implements UBLDocument {
      * @param service  the archetype service
      */
     public UBLOrderResponseSimple(OrderResponseSimpleType response, IArchetypeService service) {
-        super(service);
+        super(null, service);
         this.response = response;
     }
 
@@ -80,7 +80,7 @@ public class UBLOrderResponseSimple extends UBLType implements UBLDocument {
      * @throws ESCIException if the identifier isn't set
      */
     public String getID() {
-        return getId(response.getID(), "ID", getType(), null);
+        return getId(response.getID(), "ID");
     }
 
     /**
