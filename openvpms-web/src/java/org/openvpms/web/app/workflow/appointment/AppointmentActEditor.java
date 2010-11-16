@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -26,20 +25,14 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.bound.BoundDateTimeField;
+import org.openvpms.web.app.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.component.focus.FocusHelper;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
-import org.openvpms.web.component.im.edit.act.CustomerParticipationEditor;
-import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
-import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.DateTimeFieldFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.Calendar;
@@ -54,28 +47,16 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentActEditor extends AbstractActEditor {
+public class AppointmentActEditor extends AbstractScheduleActEditor {
 
     /**
-     * The start time.
-     */
-    private BoundDateTimeField startTimeField;
-
-    /**
-     * The end time.
-     */
-    private BoundDateTimeField endTimeField;
-
-
-    /**
-     * Constructs a new <tt>AppointmentActEditor</tt>.
+     * Constructs an <tt>AppointmentActEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context
      */
-    public AppointmentActEditor(Act act, IMObject parent,
-                                LayoutContext context) {
+    public AppointmentActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         initParticipant("schedule", context.getContext().getSchedule());
 
@@ -99,12 +80,6 @@ public class AppointmentActEditor extends AbstractActEditor {
             }
         }
 
-        startTimeField = DateTimeFieldFactory.create(getProperty("startTime"));
-        endTimeField = DateTimeFieldFactory.create(getProperty("endTime"));
-        if (startTimeField.getDate() == null) {
-            startTimeField.setDate(startTime); // set the date portion
-        }
-
         getProperty("status").addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onStatusChanged();
@@ -126,27 +101,13 @@ public class AppointmentActEditor extends AbstractActEditor {
     }
 
     /**
-     * Sets the act start time.
-     *
-     * @param time    the start time
-     * @param disable if <tt>true</tt> disable the {@link #onStartTimeChanged} callback
-     */
-    @Override
-    protected void setStartTime(Date time, boolean disable) {
-        if (startTimeField != null) {
-            startTimeField.setDate(time); // set the date portion.
-        }
-        super.setStartTime(time, disable);
-    }
-
-    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy();
+        return new AppointmentLayoutStrategy();
     }
 
     /**
@@ -154,11 +115,7 @@ public class AppointmentActEditor extends AbstractActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        getCustomerEditor().addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onCustomerChanged();
-            }
-        });
+        super.onLayoutCompleted();
 
         Party schedule = (Party) getParticipant("schedule");
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
@@ -198,25 +155,6 @@ public class AppointmentActEditor extends AbstractActEditor {
             if (end.compareTo(start) < 0) {
                 calculateEndTime();
             }
-        }
-    }
-
-    /**
-     * Invoked when the customer changes. Sets the patient to null if no
-     * relationship exists between the two..
-     */
-    private void onCustomerChanged() {
-        try {
-            Party customer = getCustomerEditor().getEntity();
-            Party patient = getPatientEditor().getEntity();
-            PatientRules rules = new PatientRules();
-            if (customer != null && patient != null) {
-                if (!rules.isOwner(customer, patient)) {
-                    getPatientEditor().setEntity(null);
-                }
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
         }
     }
 
@@ -289,35 +227,8 @@ public class AppointmentActEditor extends AbstractActEditor {
         if (start != null && schedule != null && appointmentType != null) {
             AppointmentRules rules = new AppointmentRules();
             Date end = rules.calculateEndTime(start, schedule, appointmentType);
-
-            removeStartEndTimeListeners();
-            endTimeField.setDate(end); // set the date portion
-            addStartEndTimeListeners();
-            setEndTime(end);           // set the time portion
-            // TODO - not ideal. Needs to be this way as the date and time
-            // fields are bound to the same property, which uses
-            // TimePropertyTransformer
+            setEndTime(end);
         }
-    }
-
-    /**
-     * Returns the customer editor.
-     *
-     * @return the customer editor
-     */
-    private CustomerParticipationEditor getCustomerEditor() {
-        return (CustomerParticipationEditor) getEditor("customer");
-    }
-
-    /**
-     * Returns the patient editor.
-     *
-     * @return the patient editor
-     */
-    private PatientParticipationEditor getPatientEditor() {
-        ParticipationCollectionEditor editor = (ParticipationCollectionEditor)
-                getEditor("patient");
-        return (PatientParticipationEditor) editor.getCurrentEditor();
     }
 
     /**
@@ -341,37 +252,7 @@ public class AppointmentActEditor extends AbstractActEditor {
         return new AppointmentRules().getDefaultAppointmentType(schedule);
     }
 
-    private class LayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * Creates a component for a property. This maintains a cache of created
-         * components, in order for the focus to be set on an appropriate
-         * component.
-         *
-         * @param property the property
-         * @param parent   the parent object
-         * @param context  the layout context
-         * @return a component to display <tt>property</tt>
-         */
-        @Override
-        protected ComponentState createComponent(Property property,
-                                                 IMObject parent,
-                                                 LayoutContext context) {
-            ComponentState result;
-            String name = property.getName();
-            if (name.equals("startTime")) {
-                result = new ComponentState(startTimeField.getComponent(),
-                                            startTimeField.getProperty(),
-                                            startTimeField.getFocusGroup());
-            } else if (name.equals("endTime")) {
-                result = new ComponentState(endTimeField.getComponent(),
-                                            endTimeField.getProperty(),
-                                            endTimeField.getFocusGroup());
-            } else {
-                result = super.createComponent(property, parent, context);
-            }
-            return result;
-        }
+    private class AppointmentLayoutStrategy extends LayoutStrategy {
 
         /**
          * Sets focus on the customer component.

@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.Editor;
@@ -36,6 +37,9 @@ import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
 
@@ -58,9 +62,19 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      */
     private final ModifiableListener endTimeListener;
 
+    /**
+     * The start time node name.
+     */
+    protected static final String START_TIME = "startTime";
 
     /**
-     * Constructs a new <tt>AbstractActEditor</tt>.
+     * The end time node name.
+     */
+    protected static final String END_TIME = "endTime";
+
+
+    /**
+     * Constructs an <tt>AbstractActEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <tt>null</tt>
@@ -80,6 +94,24 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         };
 
         initParticipant("author", context.getContext().getUser());
+    }
+
+    /**
+     * Sets the author.
+     *
+     * @param author the author. May be <tt>null</tt>
+     */
+    public void setAuthor(User author) {
+        setParticipant("author", author);
+    }
+
+    /**
+     * Returns the author.
+     *
+     * @return the author, or <tt>null</tt> if there is no author
+     */
+    public User getAuthor() {
+        return (User) getParticipant("author");
     }
 
     /**
@@ -116,6 +148,23 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      */
     public void setEndTime(Date time) {
         setEndTime(time, false);
+    }
+
+    /**
+     * Validates the object.
+     * <p/>
+     * This extends validation by ensuring that the start time is less than the end time, if non-null.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        boolean result = super.validate(validator);
+        if (result) {
+            result = validateStartEndTimes(validator);
+        }
+        return result;
     }
 
     /**
@@ -169,6 +218,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      *
      * @param name   the participation property name
      * @param entity the participant. May be <tt>null</tt>
+     * @throws IllegalArgumentException if the name doesn't correspond to a valid node
      */
     protected void setParticipant(String name, IMObjectReference entity) {
         ParticipationEditor editor = getParticipationEditor(name, false);
@@ -178,6 +228,9 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
             // no editor created yet. Set the participant via the corresponding
             // property
             Property property = getProperty(name);
+            if (property == null) {
+                throw new IllegalArgumentException("Invalid node: " + name);
+            }
             Participation participant
                     = getParticipation((IMObjectProperty) property);
             if (participant != null) {
@@ -294,7 +347,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @param disable if <tt>true</tt> disable the {@link #onStartTimeChanged} callback
      */
     protected void setStartTime(Date time, boolean disable) {
-        Property startTime = getProperty("startTime");
+        Property startTime = getProperty(START_TIME);
         if (disable) {
             removeStartEndTimeListeners();
         }
@@ -311,7 +364,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @param disable if <tt>true</tt> disable the {@link #onEndTimeChanged} callback
      */
     protected void setEndTime(Date time, boolean disable) {
-        Property endTime = getProperty("endTime");
+        Property endTime = getProperty(END_TIME);
         if (disable) {
             removeStartEndTimeListeners();
         }
@@ -328,12 +381,12 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * {@link #onEndTimeChanged()}.
      */
     protected void addStartEndTimeListeners() {
-        Property startTime = getProperty("startTime");
+        Property startTime = getProperty(START_TIME);
         if (startTime != null) {
             startTime.addModifiableListener(startTimeListener);
         }
 
-        Property endTime = getProperty("endTime");
+        Property endTime = getProperty(END_TIME);
         if (endTime != null) {
             endTime.addModifiableListener(endTimeListener);
         }
@@ -343,12 +396,12 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Removes act start/end time modification callbacks.
      */
     protected void removeStartEndTimeListeners() {
-        Property startTime = getProperty("startTime");
+        Property startTime = getProperty(START_TIME);
         if (startTime != null) {
             startTime.removeModifiableListener(startTimeListener);
         }
 
-        Property endTime = getProperty("endTime");
+        Property endTime = getProperty(END_TIME);
         if (endTime != null) {
             endTime.removeModifiableListener(endTimeListener);
         }
@@ -377,9 +430,41 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         Date end = getEndTime();
         if (start != null && end != null) {
             if (end.compareTo(start) < 0) {
-                setEndTime(start,true);
+                setEndTime(start, true);
             }
         }
     }
 
+    /**
+     * Validates that the start and end times are valid.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the start and end times are valid
+     */
+    protected boolean validateStartEndTimes(Validator validator) {
+        boolean result = true;
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null) {
+            if (start.getTime() > end.getTime()) {
+                String startName = getDisplayName(START_TIME);
+                String endName = getDisplayName(END_TIME);
+                String message = Messages.get("act.validation.startGreaterThanEnd", startName, endName);
+                validator.add(this, new ValidatorError(message));
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Helper to return the display name of a property.
+     *
+     * @param name the property name
+     * @return the property's display name, or <tt>name</tt> if the property doesn't exist
+     */
+    private String getDisplayName(String name) {
+        Property property = getProperty(name);
+        return (property != null) ? property.getDisplayName() : name;
+    }
 }

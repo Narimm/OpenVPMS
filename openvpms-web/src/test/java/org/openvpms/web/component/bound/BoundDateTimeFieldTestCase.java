@@ -18,6 +18,8 @@
 package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Component;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 
@@ -48,6 +50,28 @@ public class BoundDateTimeFieldTestCase extends AbstractBoundFieldTest<BoundDate
      */
     public BoundDateTimeFieldTestCase() {
         super(value1, value2);
+    }
+
+    /**
+     * Verifies that the date and time can be updated independently.
+     */
+    @Test
+    public void testSetDateAndTime() {
+        Property property = createProperty();
+        BoundDateTimeField field = createField(property);
+        field.setDate(java.sql.Date.valueOf("2010-12-31"));
+        field.getTimeField().setText("10:30");
+
+        Date expected1 = new Date(Timestamp.valueOf("2010-12-31 10:30:00").getTime());
+        assertEquals(expected1, field.getProperty().getValue());
+
+        field.setDate(java.sql.Date.valueOf("2010-10-11"));
+        Date expected2 = new Date(Timestamp.valueOf("2010-10-11 10:30:00").getTime());
+        assertEquals(expected2, field.getProperty().getValue());
+
+        field.getTimeField().setText("11:30");
+        Date expected3 = new Date(Timestamp.valueOf("2010-10-11 11:30:00").getTime());
+        assertEquals(expected3, field.getProperty().getValue());
     }
 
     /**
