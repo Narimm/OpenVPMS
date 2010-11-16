@@ -19,12 +19,11 @@
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
@@ -185,11 +184,8 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      */
     public boolean isNull() {
         boolean result = false;
-        if (getProperty().getValue() == null) {
-            TextField text = selector.getText();
-            if (text == null || StringUtils.isEmpty(text.getText())) {
-                result = true;
-            }
+        if (getProperty().getValue() == null && StringUtils.isEmpty(selector.getText())) {
+            result = true;
         }
         return result;
     }
@@ -216,11 +212,20 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
      */
     public boolean validate(Validator validator) {
-        return (!selector.inSelect()) && super.validate(validator) && isValidReference(validator);
+        boolean result = false;
+        if (!selector.inSelect()) {
+            // only raise validation errors if a dialog is not displayed
+            if (!selector.isValid()) {
+                String message = Messages.get("imobject.invalidreference", selector.getText());
+                validator.add(this, new ValidatorError(getProperty(), message));
+            } else {
+                result = super.validate(validator) && isValidReference(validator);
+            }
+        }
+        return result;
     }
 
     /**
@@ -380,14 +385,14 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         IMObjectReference reference = (IMObjectReference) getProperty().getValue();
         boolean result = true;
         if (reference != null && !reference.isNew()) {
-                Query<T> query = createQuery(null);
-                if (!query.selects(reference)) {
-                    result = false;
-                    ArchetypeId archetypeId = reference.getArchetypeId();
-                    String displayName = DescriptorHelper.getDisplayName(archetypeId.getShortName());
-                    String message = Messages.get("imobject.invalidreference", displayName);
-                    validator.add(this, new ValidatorError(getProperty(), message));
-                }
+            Query<T> query = createQuery(null);
+            if (!query.selects(reference)) {
+                result = false;
+                ArchetypeId archetypeId = reference.getArchetypeId();
+                String displayName = DescriptorHelper.getDisplayName(archetypeId.getShortName());
+                String message = Messages.get("imobject.invalidreference", displayName);
+                validator.add(this, new ValidatorError(getProperty(), message));
+            }
         }
         return result;
     }
