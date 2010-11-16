@@ -20,9 +20,6 @@ package org.openvpms.web.component.im.select;
 
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.event.DocumentListener;
-import org.openvpms.web.component.event.WindowPaneListener;
 import nextapp.echo2.app.event.DocumentEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.ObjectUtils;
@@ -32,6 +29,9 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.DocumentListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -119,7 +119,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * @param type       display name for the types of objects this may select
      * @param shortNames the archetype short names to query
      */
-    public IMObjectSelector(String type, String ... shortNames) {
+    public IMObjectSelector(String type, String... shortNames) {
         this(type, false, shortNames);
     }
 
@@ -131,7 +131,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * @param shortNames  the archetype short names to query
      */
     public IMObjectSelector(String type, boolean allowCreate,
-                            String ... shortNames) {
+                            String... shortNames) {
         super(ButtonStyle.RIGHT_NO_ACCEL, true);
         setFormat(Format.NAME);
         this.type = type;
@@ -143,7 +143,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
             }
         });
 
-        TextField text = getText();
+        TextField text = getTextField();
         textListener = new DocumentListener() {
             public void onUpdate(DocumentEvent event) {
                 onTextChanged();
@@ -152,11 +152,10 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
 
         text.getDocument().addDocumentListener(textListener);
 
-        // Register an action listener to ensure document update events
-        // are triggered in a timely fashion
+        // Register an action listener for Enter
         text.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
-                // no-op.
+                onTextAction();
             }
         });
     }
@@ -169,7 +168,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     @Override
     public void setObject(T object) {
         this.object = object;
-        TextField text = getText();
+        TextField text = getTextField();
         text.getDocument().removeDocumentListener(textListener);
         super.setObject(object);
         text.getDocument().addDocumentListener(textListener);
@@ -196,14 +195,25 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
 
     /**
      * Determines if the selector is valid.
-     * It is valid if an object has been selected, or no object is present
-     * and no text is input.
+     * It is valid if no dialog is currently displayed and:
+     * <ul>
+     * <li>an object has been selected and the entered text is the same as its name
+     * <li>no object is present and no text is input
+     * </ul>
      *
-     * @return <tt>true</tt> if the selector is valid, otherwise
-     *         <tt>false</tt>
+     * @return <tt>true</tt> if the selector is valid, otherwise <tt>false</tt>
      */
     public boolean isValid() {
-        return (object != null) || StringUtils.isEmpty(getText().getText());
+        boolean valid = !inSelect;
+        if (valid) {
+            String text = getText();
+            if (object != null) {
+                valid = ObjectUtils.equals(object.getName(), text);
+            } else {
+                valid = StringUtils.isEmpty(text);
+            }
+        }
+        return valid;
     }
 
     /**
@@ -245,9 +255,13 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
 
     /**
      * Pops up a dialog to select an object.
+     * <p/>
+     * Only pops up a dialog if one isn't already visible.
      */
     protected void onSelect() {
-        onSelect(createQuery(), false);
+        if (!inSelect) {
+            onSelect(createQuery(), false);
+        }
     }
 
     /**
@@ -324,22 +338,20 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * @return a new query
      */
     protected Query<T> createQuery() {
-        String name = getText().getText();
-        return createQuery(name);
+        String value = getText();
+        return createQuery(value);
     }
 
     /**
      * Creates a query to select objects.
      *
-     * @param name a name to filter on. May be <tt>null</tt>
+     * @param value a value to filter on. May be <tt>null</tt>
      * @return a new query
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    protected Query<T> createQuery(String name) {
-        Query<T> query = QueryFactory.create(
-                shortNames, GlobalContext.getInstance());
-        query.setValue(name);
+    protected Query<T> createQuery(String value) {
+        Query<T> query = QueryFactory.create(shortNames, GlobalContext.getInstance());
+        query.setValue(value);
         return query;
     }
 
@@ -367,15 +379,14 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * Invoked when the text field is updated.
      */
     private void onTextChanged() {
-        TextField text = getText();
-        String name = text.getText();
-        if (!ObjectUtils.equals(name, prevText)) {
-            if (StringUtils.isEmpty(name)) {
+        String text = getText();
+        if (!ObjectUtils.equals(text, prevText)) {
+            if (StringUtils.isEmpty(text)) {
                 setObject(null);
                 notifySelected();
             } else {
                 try {
-                    Query<T> query = createQuery(name);
+                    Query<T> query = createQuery(text);
                     ResultSet<T> set = query.query(null);
                     if (set != null && set.hasNext()) {
                         IPage<T> page = set.next();
@@ -397,6 +408,19 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
                     listener.selected(null);
                 }
             }
+        }
+    }
+
+    /**
+     * Invoked by the action listener associated with the text field.
+     * <p/>
+     * This is provided to handle Enter being pressed in the field when it is empty, to display a search dialog.
+     * <p/>
+     * Note that {@link #onTextChanged} will have been invoked just prior to this method if the text was updated.
+     */
+    private void onTextAction() {
+        if (!isValid() || StringUtils.isEmpty(getText())) {
+            onSelect();
         }
     }
 

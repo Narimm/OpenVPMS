@@ -124,8 +124,7 @@ public abstract class Selector<T extends IMObject> {
         this.editable = editable;
         component = new SelectorRow();
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
-        if (style != ButtonStyle.LEFT_NO_ACCEL
-                && style != ButtonStyle.RIGHT_NO_ACCEL) {
+        if (style != ButtonStyle.LEFT_NO_ACCEL && style != ButtonStyle.RIGHT_NO_ACCEL) {
             listener = new KeyStrokeListener();
             listener.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
@@ -187,9 +186,19 @@ public abstract class Selector<T extends IMObject> {
      * @return the editable text field, or <tt>null</tt> if this is not an
      *         editable selector
      */
-    public TextField getText() {
+    public TextField getTextField() {
         getObjectComponent();
         return objectText;
+    }
+
+    /**
+     * Returns the text from the editable text field.
+     *
+     * @return the text, or <tt>null</tt> if there is no text, or this is not an editable selector.
+     */
+    public String getText() {
+        TextField field = getTextField();
+        return (field != null) ? field.getText() : null;
     }
 
     /**
@@ -291,12 +300,13 @@ public abstract class Selector<T extends IMObject> {
         if (objectText != null) {
             objectText.setText(text);
             focusGroup.add(objectText);
-            if (buttonStyle == ButtonStyle.LEFT
-                    || buttonStyle == ButtonStyle.LEFT_NO_ACCEL) {
+            if (buttonStyle == ButtonStyle.LEFT) {
                 focusGroup.add(0, getSelect());
-            } else if (buttonStyle == ButtonStyle.RIGHT
-                    || buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
+            } else if (buttonStyle == ButtonStyle.RIGHT) {
                 focusGroup.add(getSelect());
+            } else {
+                // no accelerator. For OVPMS-967, don't allow focus traversal
+                getSelect().setFocusTraversalParticipant(false);
             }
         } else {
             objectLabel.setText(text);
