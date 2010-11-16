@@ -20,26 +20,16 @@ package org.openvpms.web.app.workflow.worklist;
 
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
 import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.bound.BoundDateTimeField;
+import org.openvpms.web.app.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
-import org.openvpms.web.component.im.edit.act.CustomerParticipationEditor;
-import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
-import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.DateTimeFieldFactory;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Calendar;
@@ -53,17 +43,16 @@ import java.util.GregorianCalendar;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskActEditor extends AbstractActEditor {
+public class TaskActEditor extends AbstractScheduleActEditor {
 
     /**
-     * Construct a new <code>TaskActEditor</code>.
+     * Construct a new <tt>TaskActEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
+     * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context
      */
-    public TaskActEditor(Act act, IMObject parent,
-                         LayoutContext context) {
+    public TaskActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("patient", context.getContext().getPatient());
@@ -97,9 +86,36 @@ public class TaskActEditor extends AbstractActEditor {
     }
 
     /**
+     * Returns the work list.
+     *
+     * @return the work list. May be <tt>null</tt>
+     */
+    public Party getWorkList() {
+        return (Party) getParticipant("worklist");
+    }
+
+    /**
+     * Sets the task type.
+     *
+     * @param taskType the task type
+     */
+    public void setTaskType(Entity taskType) {
+        getTaskTypeEditor().setEntity(taskType);
+    }
+
+    /**
+     * Returns the task type.
+     *
+     * @return the task type
+     */
+    public Entity getTaskType() {
+        return (Entity) getParticipant("taskType");
+    }
+
+    /**
      * Save any edits.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     @Override
     public boolean save() {
@@ -107,50 +123,15 @@ public class TaskActEditor extends AbstractActEditor {
     }
 
     /**
-     * Creates the layout strategy.
-     *
-     * @return a new layout strategy
-     */
-    @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy();
-    }
-
-    /**
      * Invoked when layout has completed. All editors have been created.
      */
     @Override
     protected void onLayoutCompleted() {
-        getCustomerEditor().addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onCustomerChanged();
-            }
-        });
+        super.onLayoutCompleted();
 
         Party workList = (Party) getParticipant("worklist");
         TaskTypeParticipationEditor editor = getTaskTypeEditor();
         editor.setWorkList(workList);
-    }
-
-
-    /**
-     * Returns the customer editor.
-     *
-     * @return the customer editor
-     */
-    private CustomerParticipationEditor getCustomerEditor() {
-        return (CustomerParticipationEditor) getEditor("customer");
-    }
-
-    /**
-     * Returns the patient editor.
-     *
-     * @return the patient editor
-     */
-    private PatientParticipationEditor getPatientEditor() {
-        ParticipationCollectionEditor editor = (ParticipationCollectionEditor)
-                getEditor("patient");
-        return (PatientParticipationEditor) editor.getCurrentEditor();
     }
 
     /**
@@ -163,27 +144,8 @@ public class TaskActEditor extends AbstractActEditor {
     }
 
     /**
-     * Invoked when the customer changes. Sets the patient to null if no
-     * relationship exists between the two..
-     */
-    private void onCustomerChanged() {
-        try {
-            Party customer = getCustomerEditor().getEntity();
-            Party patient = getPatientEditor().getEntity();
-            PatientRules rules = new PatientRules();
-            if (customer != null && patient != null) {
-                if (!rules.isOwner(customer, patient)) {
-                    getPatientEditor().setEntity(null);
-                }
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
      * Invoked when the status changes. Sets the end time to today if the
-     * status is 'Completed' or 'Cancelled', or <code>null</code> if it is
+     * status is 'Completed' or 'Cancelled', or <tt>null</tt> if it is
      * 'Pending'
      */
     private void onStatusChanged() {
@@ -199,8 +161,8 @@ public class TaskActEditor extends AbstractActEditor {
     /**
      * Determines if there are enough slots available to save the task.
      *
-     * @return <code>true</code> if there are less than maxSlots tasks,
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if there are less than maxSlots tasks,
+     *         otherwise <tt>false</tt>
      */
     private boolean checkMaxSlots() {
         IMObject object = getObject();
@@ -208,10 +170,8 @@ public class TaskActEditor extends AbstractActEditor {
         if (isValid()) {
             Act act = (Act) object;
             if (TaskQueryHelper.tooManyTasks(act)) {
-                String title = Messages.get(
-                        "workflow.worklist.toomanytasks.title");
-                String message = Messages.get(
-                        "workflow.worklist.toomanytasks.message");
+                String title = Messages.get("workflow.worklist.toomanytasks.title");
+                String message = Messages.get("workflow.worklist.toomanytasks.message");
                 ErrorDialog.show(title, message);
                 result = false;
             }
@@ -236,36 +196,6 @@ public class TaskActEditor extends AbstractActEditor {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
-    }
-
-    private class LayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * Creates a component for a property. This maintains a cache of created
-         * components, in order for the focus to be set on an appropriate
-         * component.
-         *
-         * @param property the property
-         * @param parent   the parent object
-         * @param context  the layout context
-         * @return a component to display <code>property</code>
-         */
-        @Override
-        protected ComponentState createComponent(Property property,
-                                                 IMObject parent,
-                                                 LayoutContext context) {
-            ComponentState result;
-            String name = property.getName();
-            if (name.equals("startTime") || name.equals("endTime")) {
-                BoundDateTimeField field = DateTimeFieldFactory.create(
-                        property);
-                result = new ComponentState(field.getComponent(), property,
-                                            field.getFocusGroup());
-            } else {
-                result = super.createComponent(property, parent, context);
-            }
-            return result;
-        }
     }
 
 }

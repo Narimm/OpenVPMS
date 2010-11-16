@@ -18,19 +18,17 @@
 
 package org.openvpms.web.component.bound;
 
-import echopointng.DateChooser;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.property.DateTimePropertyTransformer;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.TimePropertyTransformer;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
-import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -43,11 +41,6 @@ import java.util.GregorianCalendar;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class BoundDateTimeField extends AbstractPropertyEditor {
-
-    /**
-     * The time property transformer, associated with the bound property.
-     */
-    private final TimePropertyTransformer transformer;
 
     /**
      * The date field.
@@ -77,12 +70,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      */
     public BoundDateTimeField(Property property) {
         super(property);
-        transformer = new TimePropertyTransformer(property);
-        Date current = (Date) property.getValue();
-        if (current != null) {
-            transformer.setDate(current);
-        }
-        property.setTransformer(transformer);
+        property.setTransformer(new DateTimePropertyTransformer(property));
 
         date = new DateField(property);
         time = TimeFieldFactory.create(property);
@@ -98,14 +86,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      * @param date the date. May be <tt>null</tt>
      */
     public void setDate(Date date) {
-        transformer.setDate(date);
-        Calendar calendar = null;
-        if (date != null) {
-            calendar = Calendar.getInstance();
-            calendar.setTime(date);
-        }
-        DateChooser chooser = getDateField().getDateChooser();
-        chooser.setSelectedDate(calendar);
+        getProperty().setValue(getDatetime(date));
     }
 
     /**
@@ -139,13 +120,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      */
     public Date getDatetime() {
         Date result = getDate();
-        try {
-            Date timePart = DateHelper.parseTime(time.getText());
-            result = DateHelper.addDateTime(result, timePart);
-        } catch (ParseException ignore) {
-            // no-op
-        }
-        return result;
+        return getDatetime(result);
     }
 
     /**
@@ -184,6 +159,24 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
         return group;
     }
 
+    /**
+     * Adds the time field a date.
+     *
+     * @param date the date
+     * @return the date time
+     */
+    private Date getDatetime(Date date) {
+        Date result = date;
+        try {
+            Date timePart = DateHelper.parseTime(time.getText());
+            result = DateHelper.addDateTime(date, timePart);
+        } catch (Throwable ignore) {
+            // no-op
+        }
+        return result;
+    }
+
+
     private class DateField extends BoundDateField {
 
         public DateField(Property property) {
@@ -209,15 +202,12 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
 
                         Calendar calendar = new GregorianCalendar();
                         calendar.setTime(date);
-                        calendar.set(Calendar.HOUR_OF_DAY,
-                                     current.get(Calendar.HOUR_OF_DAY));
-                        calendar.set(Calendar.MINUTE,
-                                     current.get(Calendar.MINUTE));
-                        calendar.set(Calendar.SECOND,
-                                     current.get(Calendar.SECOND));
+                        calendar.set(Calendar.HOUR_OF_DAY, current.get(Calendar.HOUR_OF_DAY));
+                        calendar.set(Calendar.MINUTE, current.get(Calendar.MINUTE));
+                        calendar.set(Calendar.SECOND, current.get(Calendar.SECOND));
                         date = calendar.getTime();
                     }
-                    transformer.setDate(date);
+                    setDate(date);
                     if (property.setValue(date)) {
                         Object propertyValue = property.getValue();
                         if (!ObjectUtils.equals(date, propertyValue)) {

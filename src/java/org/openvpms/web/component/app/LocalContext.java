@@ -21,8 +21,7 @@ package org.openvpms.web.component.app;
 /**
  * Local context.
  * <p/>
- * By default, this inherits context information from the {@link GlobalContext},
- * but doesn't propagate changes to it.
+ * This can inherit context information from a parent context, but any changes are kept lcoally.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -30,11 +29,10 @@ package org.openvpms.web.component.app;
 public class LocalContext extends DelegatingContext {
 
     /**
-     * Constructs a new <tt>LocalContext</tt>, with the
-     * {@link GlobalContext} as the immediate parent.
+     * Constructs a <tt>LocalContext</tt>, with no inheritance.
      */
     public LocalContext() {
-        this(GlobalContext.getInstance());
+        this(null);
     }
 
     /**

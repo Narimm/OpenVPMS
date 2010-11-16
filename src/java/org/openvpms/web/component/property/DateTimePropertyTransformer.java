@@ -18,66 +18,42 @@
 
 package org.openvpms.web.component.property;
 
-import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.web.component.util.DateHelper;
-
 import java.util.Date;
 
 
 /**
- * Handler for time nodes.
+ * Handler for date/time nodes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-30 04:38:04Z $
  */
-public class TimePropertyTransformer extends AbstractDateTimePropertyTransformer {
+public class DateTimePropertyTransformer extends AbstractDateTimePropertyTransformer {
 
     /**
-     * The date component of the time. May be <tt>null</tt>.
-     */
-    private Date date;
-
-
-    /**
-     * Construct a new <tt>TimePropertyTransformer</tt>.
+     * Constructs a <tt>DateTimePropertyTransformer</tt>.
      *
      * @param property the property
      */
-    public TimePropertyTransformer(Property property) {
+    public DateTimePropertyTransformer(Property property) {
         super(property);
-    }
-
-    /**
-     * Sets the date part of the time.
-     *
-     * @param date the date. May be <tt>null</tt>
-     */
-    public void setDate(Date date) {
-        this.date = (date != null) ? DateRules.getDate(date) : null;
     }
 
     /**
      * Returns the supplied value as a date/time.
      *
-     * @param value the time
-     * @return the date/time
+     * @param value a date, time, or date/time
+     * @return <tt>value</tt>
      */
     protected Date getDateTime(Date value) {
-        Date result;
-        if (date != null) {
-            result = DateHelper.addDateTime(date, value);
-        } else {
-            result = value;
-        }
-        return result;
+        return value;
     }
 
     /**
      * Returns the date.
      *
-     * @return the date. May be <tt>null</tt>
+     * @return the date, or <tt>null</tt> if there is no date
      */
     protected Date getDate() {
-        return date;
+        return (Date) getProperty().getValue();
     }
 }

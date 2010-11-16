@@ -363,7 +363,7 @@ public abstract class AbstractIMObjectEditor
      *         <code>false</code>
      */
     public boolean isValid() {
-        return editors.isValid();
+        return new Validator().validate(this);
     }
 
     /**
