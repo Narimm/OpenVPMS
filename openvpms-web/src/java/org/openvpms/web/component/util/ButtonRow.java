@@ -53,23 +53,23 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
 
 
     /**
-     * Constructs a new <code>ButtonRow</code>.
+     * Constructs a new <tt>ButtonRow</tt>.
      */
     public ButtonRow() {
         this(STYLE, BUTTON_STYLE);
     }
 
     /**
-     * Constructs a new <code>ButtonRow</code>.
+     * Constructs a new <tt>ButtonRow</tt>.
      *
-     * @param rowStyle the row style. May be <code>null</code>
+     * @param rowStyle the row style. May be <tt>null</tt>
      */
     public ButtonRow(String rowStyle) {
         this(rowStyle, BUTTON_STYLE);
     }
 
     /**
-     * Constructs a new <code>ButtonRow</code>.
+     * Constructs a new <tt>ButtonRow</tt>.
      *
      * @param focus the focus group
      */
@@ -78,26 +78,51 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
     }
 
     /**
-     * Constructs a new <code>ButtonRow</code>.
+     * Constructs a new <tt>ButtonRow</tt>.
      *
-     * @param rowStyle    the row style. May be <code>null</code>
-     * @param buttonStyle the button style. May be <code>null</code>
+     * @param rowStyle    the row style. May be <tt>null</tt>
+     * @param buttonStyle the button style. May be <tt>null</tt>
      */
     public ButtonRow(String rowStyle, String buttonStyle) {
         this(null, rowStyle, buttonStyle);
     }
 
     /**
-     * Constructs a new <code>ButtonRow</code>.
+     * Constructs a new <tt>ButtonRow</tt>.
      *
-     * @param focus       the focus set. May be <code>null</code>
-     * @param rowStyle    the row style. May be <code>null</code>
-     * @param buttonStyle the button style. May be <code>null</code>
+     * @param focus       the focus group. May be <tt>null</tt>
+     * @param rowStyle    the row style. May be <tt>null</tt>
+     * @param buttonStyle the button style. May be <tt>null</tt>
      */
     public ButtonRow(FocusGroup focus, String rowStyle, String buttonStyle) {
         setStyleName(rowStyle);
 
         set = new ButtonSet(this, focus, buttonStyle);
+    }
+
+    /**
+     * Constructs a new <tt>ButtonRow</tt>.
+     *
+     * @param shortcutContainer the container to add the keystroke listener to. Specify this to avoid cell spacing
+     *                          issues
+     * @param focus             the focus group. May be <tt>null</tt>
+     */
+    public ButtonRow(Component shortcutContainer, FocusGroup focus) {
+        this(shortcutContainer, focus, STYLE, BUTTON_STYLE);
+    }
+
+    /**
+     * Constructs a new <tt>ButtonRow</tt>.
+     *
+     * @param shortcutContainer the container to add the keystroke listener to. Specify this to avoid cell spacing
+     *                          issues
+     * @param focus             the focus group. May be <tt>null</tt>
+     * @param rowStyle          the row style. May be <tt>null</tt>
+     * @param buttonStyle       the button style. May be <tt>null</tt>
+     */
+    public ButtonRow(Component shortcutContainer, FocusGroup focus, String rowStyle, String buttonStyle) {
+        setStyleName(rowStyle);
+        set = new ButtonSet(this, shortcutContainer, focus, buttonStyle);
     }
 
     /**
@@ -132,7 +157,7 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
      * button, and is returned by {@link ActionEvent#getActionCommand} when
      * triggered.
      *
-     * @param key the resource bundle key. May be <code>null</code>
+     * @param key the resource bundle key. May be <tt>null</tt>
      * @return a new button
      */
     public Button addButton(String key) {
@@ -142,7 +167,7 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
     /**
      * Adds a button, and registers an event listener.
      *
-     * @param key      the resource bundle key. May be <code>null</code>
+     * @param key      the resource bundle key. May be <tt>null</tt>
      * @param listener the listener to add
      * @return the button
      */
@@ -153,9 +178,9 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
     /**
      * Adds a button, and registers an event listener.
      *
-     * @param key             the resource bundle key. May be <code>null</code>
+     * @param key             the resource bundle key. May be <tt>null</tt>
      * @param listener        the listener to add
-     * @param disableShortcut if <code>true</code> disable any keyboard shortcut
+     * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
      * @return the button
      */
     public Button addButton(String key, ActionListener listener,
@@ -173,10 +198,10 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
     }
 
     /**
-     * Removes the specified child <code>Component</code> from this
-     * <code>Component</code>.
+     * Removes the specified child <tt>Component</tt> from this
+     * <tt>Component</tt>.
      *
-     * @param component the child <code>Component</code> to remove
+     * @param component the child <tt>Component</tt> to remove
      */
     @Override
     public void remove(Component component) {

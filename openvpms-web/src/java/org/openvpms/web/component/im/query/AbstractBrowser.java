@@ -62,6 +62,28 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     }
 
     /**
+     * Returns the browser state.
+     * <p/>
+     * This implementation always returns <tt>null</tt>.
+     *
+     * @return <tt>null</tt>
+     */
+    public BrowserState getBrowserState() {
+        return null;
+    }
+
+    /**
+     * Sets the browser state.
+     * <p/>
+     * This implementation is a bo-op.
+     *
+     * @param state the state
+     */
+    public void setBrowserState(BrowserState state) {
+        // do nothing
+    }
+
+    /**
      * Returns the focus group.
      *
      * @return the focus group

@@ -94,6 +94,19 @@ public class ButtonSet implements KeyStrokeHandler {
      * @param style     the button style. May be <tt>null</tt>
      */
     public ButtonSet(Component container, FocusGroup focus, String style) {
+        this(container, container, focus, style);
+    }
+
+    /**
+     * Constructs a <tt>ButtonSet</tt>.
+     *
+     * @param container         the button container
+     * @param shortcutContainer the container to add the keystroke listener to. Specify this to avoid cell spacing
+     *                          issues
+     * @param focus             the focus group. May be <tt>null</tt>
+     * @param style             the button style. May be <tt>null</tt>
+     */
+    public ButtonSet(Component container, Component shortcutContainer, FocusGroup focus, String style) {
         this.container = container;
         if (focus != null) {
             this.focusGroup = new FocusGroup("ButtonSet");
@@ -101,7 +114,7 @@ public class ButtonSet implements KeyStrokeHandler {
         } else {
             this.focusGroup = null;
         }
-        buttons = new ShortcutButtons(container);
+        buttons = new ShortcutButtons(shortcutContainer);
         this.style = (style != null) ? style : BUTTON_STYLE;
     }
 

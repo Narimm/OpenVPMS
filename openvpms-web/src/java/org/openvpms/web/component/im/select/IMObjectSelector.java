@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.select;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.DocumentEvent;
@@ -39,6 +40,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -132,7 +134,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      */
     public IMObjectSelector(String type, boolean allowCreate,
                             String... shortNames) {
-        super(ButtonStyle.RIGHT_NO_ACCEL, true);
+        super(ButtonStyle.RIGHT, true);
         setFormat(Format.NAME);
         this.type = type;
         this.shortNames = shortNames;
@@ -373,6 +375,15 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      */
     protected void setInSelect(boolean select) {
         this.inSelect = select;
+    }
+
+    /**
+     * Creates the select button.
+     *
+     * @return the select button
+     */
+    protected Button createSelectButton() {
+        return ButtonFactory.create(null, "select");
     }
 
     /**

@@ -133,6 +133,29 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     }
 
     /**
+     * Returns the query state.
+     *
+     * @return the query state
+     */
+    public QueryState getQueryState() {
+        return new Memento(this);
+    }
+
+    /**
+     * Sets the query state.
+     *
+     * @param state the query state
+     */
+    public void setQueryState(QueryState state) {
+        Memento memento = (Memento) state;
+        setValue(memento.customer);
+        setPatient(memento.patient);
+        setContact(memento.contact);
+        getIdentitySearch().setSelected(memento.identity);
+        getInactive().setSelected(memento.inactive);
+    }
+
+    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be <tt>null</tt>
@@ -233,5 +256,28 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
             });
         }
         return contact;
+    }
+
+    private static class Memento extends AbstractQueryState {
+
+        public final String customer;
+
+        public final String patient;
+
+        public final String contact;
+
+        public final boolean inactive;
+
+        public final boolean identity;
+
+        public Memento(CustomerObjectSetQuery query) {
+            super(query);
+            customer = query.getValue();
+            patient = query.getPatient().getText();
+            contact = query.getContact().getText();
+            inactive = query.getInactive().isSelected();
+            identity = query.isIdentitySearch();
+        }
+
     }
 }

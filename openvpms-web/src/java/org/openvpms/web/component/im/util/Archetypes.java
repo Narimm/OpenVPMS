@@ -33,14 +33,9 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 public class Archetypes<T extends IMObject> {
 
     /**
-     * The archetype short names. May contain wildcards.
-     */
-    private final String[] shortNames;
-
-    /**
      * The short names with wildcards expanded.
      */
-    private String[] expanded;
+    private String[] shortNames;
 
     /**
      * The type that the short names represent.
@@ -89,14 +84,13 @@ public class Archetypes<T extends IMObject> {
      * @param displayName      the collective noun for the archetypes. If
      */
     public Archetypes(String[] shortNames, Class<T> type, String defaultShortName, String displayName) {
-        expanded = expandShortNames(shortNames);
-        Class actual = IMObjectHelper.getType(expanded);
+        this.shortNames = expandShortNames(shortNames);
+        Class actual = IMObjectHelper.getType(this.shortNames);
         if (!type.isAssignableFrom(actual)) {
             throw new IllegalStateException("Invalid type. Expected "
                                             + type + ", but got " + actual + " for archetypes "
                                             + StringUtils.join(shortNames, ", "));
         }
-        this.shortNames = shortNames;
         this.type = type;
         this.defaultShortName = defaultShortName;
         this.displayName = displayName;
@@ -114,6 +108,8 @@ public class Archetypes<T extends IMObject> {
 
     /**
      * Returns the archetype short names.
+     * <p/>
+     * Any wildcards are expanded.
      *
      * @return the archetype short names
      */
@@ -137,7 +133,7 @@ public class Archetypes<T extends IMObject> {
      * @return <tt>true</tt> if this contains <tt>shortName</tt>
      */
     public boolean contains(String shortName) {
-        for (String s : expanded) {
+        for (String s : shortNames) {
             if (TypeHelper.matches(s, shortName)) {
                 return true;
             }

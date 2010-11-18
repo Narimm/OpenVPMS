@@ -218,6 +218,23 @@ public interface Query<T> extends Iterable<T> {
     void setConstraints(IConstraint constraints);
 
     /**
+     * Returns the query state.
+     * <p/>
+     * This may be used to obtain a lightweight representation of the query's state, in order to restore it later
+     * to this object, or another compatible query.
+     *
+     * @return the query state, or <tt>null</tt> if this query doesn't support externalizing its state
+     */
+    QueryState getQueryState();
+
+    /**
+     * Sets the query state.
+     *
+     * @param state the query state
+     */
+    void setQueryState(QueryState state);
+
+    /**
      * Returns the focus group for the component.
      *
      * @return the focus group

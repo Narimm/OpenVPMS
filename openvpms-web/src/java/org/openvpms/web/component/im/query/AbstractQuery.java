@@ -386,6 +386,25 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
+     * Returns the query state.
+     * <p/>
+     * This implementation returns <tt>null</tt>.
+     *
+     * @return <tt>null</tt>
+     */
+    public QueryState getQueryState() {
+        return null;
+    }
+
+    /**
+     * Sets the query state.
+     *
+     * @param state the query state
+     */
+    public void setQueryState(QueryState state) {
+    }
+
+    /**
      * Returns the archetypes to select from.
      *
      * @return the archetypes to select from

@@ -18,22 +18,18 @@
 
 package org.openvpms.web.component.im.select;
 
-import echopointng.KeyStrokeListener;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.TextField;
-import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.ClassUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.button.KeyStrokeHandler;
-import org.openvpms.web.component.button.ShortcutButton;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
@@ -49,16 +45,20 @@ import org.openvpms.web.resource.util.Messages;
 public abstract class Selector<T extends IMObject> {
 
     /**
-     * Determines the layout of the 'select' button.
+     * Determines the layout of the button(s).
      */
     public enum ButtonStyle {
-        LEFT, RIGHT, HIDE, LEFT_NO_ACCEL, RIGHT_NO_ACCEL}
+
+        LEFT, RIGHT
+    }
 
     /**
      * Determines how the object is displayed.
      */
     public enum Format {
-        NAME, DESCRIPTION, SUMMARY}
+
+        NAME, DESCRIPTION, SUMMARY
+    }
 
     /**
      * The 'select' button.
@@ -76,7 +76,12 @@ public abstract class Selector<T extends IMObject> {
     private TextField objectText;
 
     /**
-     * Determines the layout of the 'select' button.
+     * Determines if the selector should expand to the available width.
+     */
+    private boolean fillWidth;
+
+    /**
+     * Determines the layout of the buttons.
      */
     private final ButtonStyle buttonStyle;
 
@@ -100,14 +105,11 @@ public abstract class Selector<T extends IMObject> {
      */
     private final FocusGroup focusGroup;
 
-    /**
-     * The keystroke listener.
-     */
-    private KeyStrokeListener listener;
-
 
     /**
-     * Construct a new <tt>Selector</tt>.
+     * Constructs a <tt>Selector</tt>.
+     * <p/>
+     * Displays button(s) to the left of the object display.
      */
     public Selector() {
         this(ButtonStyle.LEFT, false);
@@ -116,22 +118,14 @@ public abstract class Selector<T extends IMObject> {
     /**
      * Construct a new <code>Selector</code>.
      *
-     * @param style    determines the layout of the 'select' button
+     * @param style    determines the layout of the button(s)
      * @param editable determines if the selector is editable
      */
     public Selector(ButtonStyle style, boolean editable) {
         buttonStyle = style;
         this.editable = editable;
-        component = new SelectorRow();
+        component = new Row();
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
-        if (style != ButtonStyle.LEFT_NO_ACCEL && style != ButtonStyle.RIGHT_NO_ACCEL) {
-            listener = new KeyStrokeListener();
-            listener.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onSelected(event);
-                }
-            });
-        }
     }
 
     /**
@@ -141,11 +135,7 @@ public abstract class Selector<T extends IMObject> {
      */
     public Component getComponent() {
         if (component.getComponentCount() == 0) {
-            if (listener != null) {
-                component.add(listener);
-            }
-            Component layout = doLayout(null, null);
-            component.add(layout);
+            doLayout(component, null, null);
         }
         return component;
     }
@@ -166,16 +156,7 @@ public abstract class Selector<T extends IMObject> {
      */
     public Button getSelect() {
         if (select == null) {
-            if (buttonStyle == ButtonStyle.LEFT_NO_ACCEL
-                    || buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
-                select = ButtonFactory.create(null, "select");
-            } else {
-                select = ButtonFactory.create("select");
-                if (select instanceof ShortcutButton) {
-                    ShortcutButton button = (ShortcutButton) select;
-                    listener.addKeyCombination(button.getKeyCode());
-                }
-            }
+            select = createSelectButton();
         }
         return select;
     }
@@ -225,6 +206,17 @@ public abstract class Selector<T extends IMObject> {
     }
 
     /**
+     * Determines if the selector should expand to the parent container's width.
+     * <p/>
+     * Default is <tt>false</tt>.
+     *
+     * @param fillWidth if <tt>true</tt> expand to the parent container's width
+     */
+    public void setFillWidth(boolean fillWidth) {
+        this.fillWidth = fillWidth;
+    }
+
+    /**
      * Sets the current object details.
      *
      * @param name        the object name. May be <tt>null</tt>
@@ -234,10 +226,10 @@ public abstract class Selector<T extends IMObject> {
     protected void setObject(String name, String description, boolean active) {
         String text = null;
         String deactivated = null;
-        if (name != null || description != null) {        		
+        if (name != null || description != null) {
             if (format == Format.NAME || description == null) {
                 text = Messages.get("imobject.name", name);
-            } else if (format == Format.DESCRIPTION  || name == null) {
+            } else if (format == Format.DESCRIPTION || name == null) {
                 text = Messages.get("imobject.description", description);
             } else if (format == Format.SUMMARY) {
                 text = Messages.get("imobject.summary", name, description);
@@ -248,39 +240,33 @@ public abstract class Selector<T extends IMObject> {
             }
         }
         component.removeAll();
-        Component layout = doLayout(text, deactivated);
-        if (listener != null) {
-            component.add(listener);
-        }
-        component.add(layout);
+        doLayout(component, text, deactivated);
     }
 
     /**
      * Create the component.
      *
+     * @param parent      the parent component
      * @param text        the object text. May be <code>null</code>
      * @param deactivated the deactivated text. May be <code>null</code>
-     * @return the component
      */
-    protected Component doLayout(String text, String deactivated) {
+    protected void doLayout(Component parent, String text, String deactivated) {
         Component component;
-        if (buttonStyle == ButtonStyle.RIGHT) {
+        if (buttonStyle == ButtonStyle.RIGHT && fillWidth) {
             // button on the right. The 'wrapper' forces the summary+deactivated
             // labels to take up as much space as possible, ensuring that the
             // button is displayed hard on the right.
             // Seems more successful than using alignments
-            Row wrapper = RowFactory.create("CellSpacing",
-                                            getObjectComponent());
+            Row wrapper = RowFactory.create("CellSpacing", getObjectComponent());
             if (deactivated != null) {
                 addDeactivated(wrapper, deactivated);
             }
             RowLayoutData layout = new RowLayoutData();
             layout.setWidth(new Extent(100, Extent.PERCENT));
             wrapper.setLayoutData(layout);
-            Button button = getSelect();
-            component = RowFactory.create(wrapper, button);
-        } else if (buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
-            Row wrapper = RowFactory.create(getObjectComponent(), getSelect());
+            component = RowFactory.create(wrapper, getButtons(parent));
+        } else if (buttonStyle == ButtonStyle.RIGHT && !fillWidth) {
+            Row wrapper = RowFactory.create(getObjectComponent(), getButtons(parent));
             if (deactivated != null) {
                 component = RowFactory.create("CellSpacing", wrapper);
                 addDeactivated(component, deactivated);
@@ -288,30 +274,24 @@ public abstract class Selector<T extends IMObject> {
                 component = wrapper;
             }
         } else {
+            // display button(s) on the left
             component = RowFactory.create("CellSpacing", getObjectComponent());
             if (deactivated != null) {
                 addDeactivated(component, deactivated);
             }
-            if (buttonStyle == ButtonStyle.LEFT
-                    || buttonStyle == ButtonStyle.LEFT_NO_ACCEL) {
-                component.add(getSelect(), 0);
-            }
+            component.add(getButtons(parent), 0);
         }
         if (objectText != null) {
             objectText.setText(text);
-            focusGroup.add(objectText);
-            if (buttonStyle == ButtonStyle.LEFT) {
-                focusGroup.add(0, getSelect());
-            } else if (buttonStyle == ButtonStyle.RIGHT) {
-                focusGroup.add(getSelect());
+            if (buttonStyle == ButtonStyle.RIGHT) {
+                focusGroup.add(0, objectText);
             } else {
-                // no accelerator. For OVPMS-967, don't allow focus traversal
-                getSelect().setFocusTraversalParticipant(false);
+                focusGroup.add(objectText);
             }
         } else {
             objectLabel.setText(text);
         }
-        return component;
+        parent.add(component);
     }
 
     /**
@@ -335,32 +315,31 @@ public abstract class Selector<T extends IMObject> {
         return component;
     }
 
+    /**
+     * Returns the button component.
+     *
+     * @param container the parent container
+     * @return the button(s)
+     */
+    protected ButtonRow getButtons(Component container) {
+        ButtonRow result = new ButtonRow(container, getFocusGroup());
+        result.addButton(getSelect());
+        return result;
+    }
+
+    /**
+     * Creates the select button.
+     *
+     * @return the select button
+     */
+    protected Button createSelectButton() {
+        return ButtonFactory.create("select");
+    }
+
     private void addDeactivated(Component container, String deactivated) {
         Label label = LabelFactory.create(null, "Selector.Deactivated");
         label.setText(deactivated);
         container.add(label);
-    }
-
-
-    private void onSelected(ActionEvent event) {
-        getSelect().fireActionPerformed(event);
-    }
-
-    private class SelectorRow extends Row implements KeyStrokeHandler {
-
-        /**
-         * Re-registers keystroke listeners.
-         */
-        public void reregisterKeyStrokeListeners() {
-            if (listener != null && select instanceof ShortcutButton) {
-                ShortcutButton button = (ShortcutButton) select;
-                int keyCode = button.getKeyCode();
-                if (keyCode != -1) {
-                    listener.removeKeyCombination(keyCode);
-                    listener.addKeyCombination(keyCode);
-                }
-            }
-        }
     }
 
 }

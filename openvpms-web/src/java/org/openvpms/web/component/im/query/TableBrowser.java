@@ -31,6 +31,7 @@ import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.im.table.PagedIMTableModel;
 import org.openvpms.web.component.util.LabelFactory;
 
 import java.beans.PropertyChangeEvent;
@@ -158,6 +159,49 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
             throw new IllegalStateException(exception);
         }
         return null;
+    }
+
+    /**
+     * Returns the browser state.
+     *
+     * @return the browser state, or <tt>null</tt> if this browser doesn't support it
+     */
+    public BrowserState getBrowserState() {
+        Memento<T> result = new Memento<T>(this);
+        return (result.getQueryState() != null) ? result : null;
+    }
+
+    /**
+     * Sets the browser state.
+     *
+     * @param state the state
+     */
+    @SuppressWarnings("unchecked")
+    public void setBrowserState(BrowserState state) {
+        Memento<T> memento = (Memento<T>) state;
+        if (memento.getQueryState() != null) {
+            getQuery().setQueryState(memento.getQueryState());
+        }
+        if (memento.getPage() != -1) {
+            query();
+
+            // TODO - not ideal. Need to query first before any sorting or page setting can take place.
+            // This results in redundant queries.
+            PagedIMTable<T> pagedTable = getTable();
+            PagedIMTableModel<T> model = pagedTable.getModel();
+            int sortColumn = memento.getSortColumn();
+            boolean ascending = memento.isSortedAscending();
+            if (sortColumn != model.getSortColumn() || ascending != model.isSortedAscending()) {
+                model.sort(sortColumn, ascending);
+            }
+
+            if (model.setPage(memento.page)) {
+                int row = memento.getSelectedRow();
+                if (row != -1) {
+                    pagedTable.getTable().getSelectionModel().setSelectedIndex(row, true);
+                }
+            }
+        }
     }
 
     /**
@@ -329,6 +373,121 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
         T selected = getSelected();
         if (selected != null) {
             notifyBrowsed(selected);
+        }
+    }
+
+    protected static class Memento<T> implements BrowserState {
+
+        /**
+         * The query state. May be <tt>null</tt>
+         */
+        private final QueryState queryState;
+
+        /**
+         * The selected row or <tt>-1</tt> if no row is selected
+         */
+        private final int selectedRow;
+
+        /**
+         * The selected page.
+         */
+        private final int page;
+
+        /**
+         * The sort column.
+         */
+        private int sortColumn;
+
+        /**
+         * Determines if the column is sorted ascending or descending.
+         */
+        private boolean sortAscending;
+
+
+        /**
+         * Constructs a <tt>Memento</tt>.
+         *
+         * @param browser the browser
+         */
+        public Memento(TableBrowser<T> browser) {
+            queryState = browser.getQuery().getQueryState();
+            PagedIMTable<T> table = browser.getTable();
+            selectedRow = table.getTable().getSelectionModel().getMinSelectedIndex();
+            sortColumn = table.getModel().getSortColumn();
+            sortAscending = table.getModel().isSortedAscending();
+            ResultSet<T> set = table.getResultSet();
+            if (set != null) {
+                page = set.lastIndex();
+            } else {
+                page = -1;
+            }
+        }
+
+        /**
+         * Returns the query state.
+         *
+         * @return the query state, or <tt>null</tt> if the query doesn't support it
+         */
+        public QueryState getQueryState() {
+            return queryState;
+        }
+
+        /**
+         * Returns the selected page.
+         *
+         * @return the selected page, or <tt>-1</tt> if no page is selected
+         */
+        public int getPage() {
+            return page;
+        }
+
+        /**
+         * Returns the selected row.
+         *
+         * @return the selected row, or <tt>-1</tt> if no row is selected
+         */
+        public int getSelectedRow() {
+            return selectedRow;
+        }
+
+        /**
+         * Returns the sort column.
+         *
+         * @return the sort column, or <code>-1</code> if no column is sorted.
+         */
+        public int getSortColumn() {
+            return sortColumn;
+        }
+
+        /**
+         * Determines if the sort column is sorted ascending or descending.
+         *
+         * @return <tt>true</tt> if the column is sorted ascending;
+         *         <tt>false</tt> if it is sorted descending
+         */
+        public boolean isSortedAscending() {
+            return sortAscending;
+        }
+
+        /**
+         * Determines if this state is supported by the specified browser.
+         *
+         * @param browser the browser
+         * @return <tt>true</tt> if the state is supported by the browser; otherwise <tt>false</tt>
+         */
+        public boolean supports(Browser browser) {
+            return browser instanceof TableBrowser;
+        }
+
+        /**
+         * Determines if this state is supports the specified archetypes and type.
+         *
+         * @param shortNames the archetype short names
+         * @param type       the type returned by the underlying query
+         * @return <tt>true</tt> if the state supports the specified archetypes and type
+         */
+        public boolean supports(String[] shortNames, Class type) {
+            return queryState != null && queryState.supports(type, shortNames);
         }
     }
 

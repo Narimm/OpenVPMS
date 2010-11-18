@@ -20,11 +20,14 @@ package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.im.query.AbstractBrowserState;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserAdapter;
+import org.openvpms.web.component.im.query.BrowserState;
 import org.openvpms.web.component.im.query.CustomerQuery;
 import org.openvpms.web.component.im.query.CustomerResultSet;
+import org.openvpms.web.component.im.query.CustomerResultSetAdapter;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryBrowserAdapter;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.TableBrowser;
 
@@ -35,7 +38,12 @@ import org.openvpms.web.component.im.query.TableBrowser;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerBrowser extends BrowserAdapter<ObjectSet, Party> {
+public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
+
+    /**
+     * The query.
+     */
+    private final CustomerQuery query;
 
     /**
      * Creates a new <tt>CustomerBrowser</tt>.
@@ -43,7 +51,51 @@ public class CustomerBrowser extends BrowserAdapter<ObjectSet, Party> {
      * @param query the query
      */
     public CustomerBrowser(CustomerQuery query) {
+        this.query = query;
         setBrowser(createBrowser(query));
+    }
+
+    /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    public Query<Party> getQuery() {
+        return query;
+    }
+
+    /**
+     * Returns the result set.
+     * <p/>
+     * Note that this is a snapshot of the browser's result set. Iterating over it will not affect the browser.
+     *
+     * @return the result set, or <tt>null</tt> if the query hasn't been executed
+     */
+    public ResultSet<Party> getResultSet() {
+        return new CustomerResultSetAdapter((CustomerResultSet) getBrowser().getResultSet());
+    }
+
+    /**
+     * Returns the browser state.
+     *
+     * @return the browser state
+     */
+    @Override
+    public BrowserState getBrowserState() {
+        return new Memento(this);
+    }
+
+    /**
+     * Sets the browser state.
+     *
+     * @param state the state
+     */
+    @Override
+    public void setBrowserState(BrowserState state) {
+        Memento memento = (Memento) state;
+        if (memento.getBrowserState() != null) {
+            getBrowser().setBrowserState(memento.getBrowserState());
+        }
     }
 
     /**
@@ -82,6 +134,55 @@ public class CustomerBrowser extends BrowserAdapter<ObjectSet, Party> {
                 return result;
             }
         };
+    }
+
+    private static class Memento extends AbstractBrowserState {
+
+        /**
+         * The underlying browser's state.
+         */
+        private final BrowserState browserState;
+
+        /**
+         * Constructs a <tt>Memento</tt>.
+         *
+         * @param browser the customer browser
+         */
+        public Memento(CustomerBrowser browser) {
+            super(browser.getQuery());
+            browserState = browser.getBrowser().getBrowserState();
+        }
+
+        /**
+         * Returns the underlying browser's state.
+         *
+         * @return the underlying browser's state. May be <tt>null</tt>
+         */
+        public BrowserState getBrowserState() {
+            return browserState;
+        }
+
+        /**
+         * Determines if this state is supported by the specified browser.
+         *
+         * @param browser the browser
+         * @return <tt>true</tt> if the state is supported by the browser; otherwise <tt>false</tt>
+         */
+        public boolean supports(Browser browser) {
+            return browser instanceof CustomerBrowser;
+        }
+
+        /**
+         * Determines if this state is supports the specified archetypes and type.
+         *
+         * @param shortNames the archetype short names
+         * @param type       the type returned by the underlying query
+         * @return <tt>true</tt> if the state supports the specified archetypes and type
+         */
+        @Override
+        public boolean supports(String[] shortNames, Class type) {
+            return type.equals(Party.class) && getQueryState().supports(shortNames);
+        }
     }
 
 }

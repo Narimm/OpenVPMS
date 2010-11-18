@@ -304,7 +304,7 @@ public abstract class ResultSetAdapter<A, T> implements ResultSet<T> {
     /**
      * Returns the index of the last returned page.
      *
-     * @return the index of the last returned page, or <tt>-1</tt> if no page has been page
+     * @return the index of the last returned page, or <tt>-1</tt> if no page has been returned
      */
     public int lastIndex() {
         return set.lastIndex();

@@ -82,6 +82,23 @@ public interface Browser<T> {
     void query();
 
     /**
+     * Returns the browser state.
+     * <p/>
+     * This may be used to obtain a lightweight representation of the browser's state, in order to restore it later
+     * to this object, or another compatible browser.
+     *
+     * @return the browser state, or <tt>null</tt> if this browser doesn't support externalizing its state
+     */
+    BrowserState getBrowserState();
+
+    /**
+     * Sets the browser state.
+     *
+     * @param state the state
+     */
+    void setBrowserState(BrowserState state);
+
+    /**
      * Returns the focus group.
      *
      * @return the focus group

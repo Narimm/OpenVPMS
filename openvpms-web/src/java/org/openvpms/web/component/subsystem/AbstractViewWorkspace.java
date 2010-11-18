@@ -25,7 +25,6 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.event.ActionListener;
@@ -33,13 +32,12 @@ import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.query.BrowserStates;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.im.select.BasicSelector;
-import org.openvpms.web.component.im.select.Selector;
+import org.openvpms.web.component.im.select.RepeatSelector;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -63,7 +61,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     /**
      * The selector.
      */
-    private Selector<T> selector;
+    private RepeatSelector<T> selector;
 
     /**
      * The root component.
@@ -118,12 +116,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
         super(subsystemId, workspaceId);
         this.archetypes = archetypes;
         if (showSelector) {
-            selector = new BasicSelector<T>();
-            selector.getSelect().addActionListener(new ActionListener() {
-                public void onAction(ActionEvent actionEvent) {
-                    onSelect();
-                }
-            });
+            selector = createSelector();
         }
     }
 
@@ -136,6 +129,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
         super.setObject(object);
         if (selector != null) {
             selector.setObject(object);
+            updateSelector();
         }
     }
 
@@ -147,6 +141,24 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      */
     public boolean canUpdate(String shortName) {
         return archetypes.contains(shortName);
+    }
+
+    /**
+     * Invoked when the workspace is displayed.
+     */
+    @Override
+    public void show() {
+        super.show();
+        updateSelector();
+    }
+
+    private void updateSelector() {
+        if (selector != null && !selector.isShowSelectAgain()) {
+            BrowserStates states = BrowserStates.getInstance();
+            if (states.exists(getArchetypes().getType(), getArchetypes().getShortNames())) {
+                selector.setShowSelectAgain(true);
+            }
+        }
     }
 
     /**
@@ -246,26 +258,32 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     protected abstract void doLayout(Component container);
 
     /**
-     * Invoked when the 'select' button is pressed. This pops up an {@link
-     * Browser} to select an object.
+     * Invoked when the 'select' button is pressed. This pops up an {@link Browser} to select an object.
      */
     protected void onSelect() {
-        try {
-            Browser<T> browser = createSelectBrowser();
-            final BrowserDialog<T> popup = createBrowserDialog(browser);
+        Browser<T> browser = createSelectBrowser();
+        onSelect(browser);
+    }
 
-            popup.addWindowPaneListener(new WindowPaneListener() {
-                public void onClose(WindowPaneEvent event) {
-                    T object = popup.getSelected();
-                    if (object != null) {
-                        onSelected(object);
-                    }
-                }
-            });
+    /**
+     * Invoked when the 'select again' button is pressed. This pops up an {@link Browser} to select an object.
+     */
+    protected void onSelectAgain() {
+        Browser<T> browser = createSelectBrowser();
+        BrowserStates states = BrowserStates.getInstance();
+        states.setBrowserState(browser);
+        onSelect(browser);
+    }
 
-            popup.show();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+    /**
+     * Invoked when the selection browser is closed.
+     *
+     * @param dialog the browser dialog
+     */
+    protected void onSelectClosed(BrowserDialog<T> dialog) {
+        T object = dialog.getSelected();
+        if (object != null) {
+            onSelected(object);
         }
     }
 
@@ -310,6 +328,44 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     protected Query<T> createSelectQuery() {
         return QueryFactory.create(getArchetypes().getShortNames(),
                                    GlobalContext.getInstance(), getType());
+    }
+
+    /**
+     * Creates a new selector that delegates to {@link #onSelect} and {@link #onSelectAgain()} depending on which
+     * button is pressed.
+     *
+     * @return a new selector
+     */
+    private RepeatSelector<T> createSelector() {
+        RepeatSelector<T> selector = new RepeatSelector<T>();
+        selector.getSelect().addActionListener(new ActionListener() {
+            public void onAction(ActionEvent actionEvent) {
+                onSelect();
+            }
+        });
+        selector.getSelectAgain().addActionListener(new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onSelectAgain();
+            }
+        });
+        return selector;
+    }
+
+    /**
+     * Creates a dialog to display the browser.
+     *
+     * @param browser the browser
+     */
+    private void onSelect(Browser<T> browser) {
+        final BrowserDialog<T> popup = createBrowserDialog(browser);
+
+        popup.addWindowPaneListener(new WindowPaneListener() {
+            public void onClose(WindowPaneEvent event) {
+                onSelectClosed(popup);
+            }
+        });
+
+        popup.show();
     }
 
 }

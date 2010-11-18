@@ -182,6 +182,24 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
     }
 
     /**
+     * Returns the browser state.
+     *
+     * @return the browser state, or <tt>null</tt> if this browser doesn't support it
+     */
+    public BrowserState getBrowserState() {
+        return browser.getBrowserState();
+    }
+
+    /**
+     * Sets the browser state.
+     *
+     * @param state the state
+     */
+    public void setBrowserState(BrowserState state) {
+        browser.setBrowserState(state);
+    }
+
+    /**
      * Sets the underlying browser.
      *
      * @param browser the browser

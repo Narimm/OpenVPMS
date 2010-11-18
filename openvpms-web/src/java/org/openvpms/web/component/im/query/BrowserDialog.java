@@ -211,6 +211,8 @@ public class BrowserDialog<T> extends PopupDialog {
     /**
      * Sets the action and closes the window.
      * <p/>
+     * If the action isn't {@link #CANCEL_ID}, the browser's state will be saved.
+     * <p/>
      * If the action is {@link #CANCEL_ID} any selection will be discarded.
      *
      * @param action the action
@@ -219,6 +221,8 @@ public class BrowserDialog<T> extends PopupDialog {
     protected void close(String action) {
         if (CANCEL_ID.equals(action)) {
             selected = null;
+        } else {
+            BrowserStates.getInstance().add(browser);
         }
         super.close(action);
     }
