@@ -200,6 +200,8 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+    <bean id="browserStates" class="org.openvpms.web.component.im.query.BrowserStates"/>
+    
     <!-- Defines the key stroke combination for accelerator keys.
           If mask not specified, defaults to 'Alt'.
        -->

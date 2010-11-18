@@ -27,6 +27,7 @@ import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
+import org.openvpms.web.component.im.query.BrowserState;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -303,6 +304,28 @@ public class RecordBrowser implements Browser<Act> {
      */
     public void setListener(RecordBrowserListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Returns the browser state.
+     * <p/>
+     * This implementation always returns <tt>null</tt>.
+     *
+     * @return <tt>null</tt>
+     */
+    public BrowserState getBrowserState() {
+        return null;
+    }
+
+    /**
+     * Sets the browser state.
+     * <p/>
+     * This implementation is a bo-op.
+     *
+     * @param state the state
+     */
+    public void setBrowserState(BrowserState state) {
+        // do nothing
     }
 
     /**

@@ -564,6 +564,8 @@
         <constructor-arg index="0" ref="styleSheetCache"/>
     </bean>
 
+    <bean id="browserStates" class="org.openvpms.web.component.im.query.BrowserStates" scope="session"/>
+
     <bean id="messageMonitor" class="org.openvpms.web.app.workflow.messaging.MessageMonitor">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>

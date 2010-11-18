@@ -77,6 +77,26 @@ public class CustomerQuery extends QueryAdapter<ObjectSet, Party> {
     }
 
     /**
+     * Returns the query state.
+     *
+     * @return the query state
+     */
+    public QueryState getQueryState() {
+        return new Memento(this);
+    }
+
+    /**
+     * Sets the query state.
+     *
+     * @param state the query state
+     */
+    @Override
+    public void setQueryState(QueryState state) {
+        Memento memento = (Memento) state;
+        getQuery().setQueryState(memento.state);
+    }
+
+    /**
      * Converts a result set.
      *
      * @param set the set to convert
@@ -84,5 +104,15 @@ public class CustomerQuery extends QueryAdapter<ObjectSet, Party> {
      */
     protected ResultSet<Party> convert(ResultSet<ObjectSet> set) {
         return new ObjectSetResultSetAdapter<Party>(set, "customer", Party.class);
+    }
+
+    private static class Memento extends AbstractQueryState {
+
+        private final QueryState state;
+
+        public Memento(CustomerQuery query) {
+            super(query);
+            state = query.getQuery().getQueryState();
+        }
     }
 }

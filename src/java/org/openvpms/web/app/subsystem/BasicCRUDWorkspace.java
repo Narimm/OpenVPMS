@@ -18,16 +18,12 @@
 
 package org.openvpms.web.app.subsystem;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -102,33 +98,6 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
     }
 
     /**
-     * Invoked when the 'select' button is pressed. This pops up an {@link Browser} to select an object.
-     */
-    @Override
-    protected void onSelect() {
-        try {
-            Browser<T> browser = createSelectBrowser();
-            final BrowserDialog<T> popup = createBrowserDialog(browser);
-            popup.addWindowPaneListener(new WindowPaneListener() {
-                public void onClose(WindowPaneEvent event) {
-                    if (popup.createNew()) {
-                        getCRUDWindow().create();
-                    } else {
-                        T object = popup.getSelected();
-                        if (object != null) {
-                            onSelected(object);
-                        }
-                    }
-                }
-            });
-
-            popup.show();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
      * Creates a new dialog to select an object.
      * <p/>
      * This implementation adds a 'New' button.
@@ -140,6 +109,23 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
     protected BrowserDialog<T> createBrowserDialog(Browser<T> browser) {
         String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
         return new BrowserDialog<T>(title, browser, true);
+    }
+
+    /**
+     * Invoked when the selection browser is closed.
+     *
+     * @param dialog the browser dialog
+     */
+    @Override
+    protected void onSelectClosed(BrowserDialog<T> dialog) {
+        if (dialog.createNew()) {
+            getCRUDWindow().create();
+        } else {
+            T object = dialog.getSelected();
+            if (object != null) {
+                onSelected(object);
+            }
+        }
     }
 
     /**

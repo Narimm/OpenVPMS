@@ -19,8 +19,8 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -294,6 +294,24 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      */
     public void setConstraints(IConstraint constraints) {
         query.setConstraints(constraints);
+    }
+
+    /**
+     * Returns the query state.
+     *
+     * @return the query state
+     */
+    public QueryState getQueryState() {
+        return query.getQueryState();
+    }
+
+    /**
+     * Sets the query state.
+     *
+     * @param state the query state
+     */
+    public void setQueryState(QueryState state) {
+        query.setQueryState(state);
     }
 
     /**

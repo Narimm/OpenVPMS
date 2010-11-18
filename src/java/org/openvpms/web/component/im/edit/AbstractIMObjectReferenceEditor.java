@@ -133,6 +133,9 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
             }
         });
 
+        // For OVPMS-967, don't allow focus traversal
+        selector.getSelect().setFocusTraversalParticipant(false);
+
         this.context = context.getContext();
 
         updateSelector();

@@ -87,7 +87,7 @@ public class PagedIMTable<T> extends Column {
      * @param set the set
      */
     public void setResultSet(ResultSet<T> set) {
-        PagedIMTableModel<T> model = getPagedIMTableModel();
+        PagedIMTableModel<T> model = getModel();
         model.setResultSet(set);
         int pages = set.getEstimatedPages();
         boolean actual = set.isEstimatedActual();
@@ -116,7 +116,7 @@ public class PagedIMTable<T> extends Column {
      * @return the result set, or <tt>null</tt> if none has been set
      */
     public ResultSet<T> getResultSet() {
-        return getPagedIMTableModel().getResultSet();
+        return getModel().getResultSet();
     }
 
     /**
@@ -126,6 +126,16 @@ public class PagedIMTable<T> extends Column {
      */
     public IMTable<T> getTable() {
         return table;
+    }
+
+    /**
+     * Returns the underlying table model.
+     *
+     * @return the underlying model
+     */
+    @SuppressWarnings("unchecked")
+    public PagedIMTableModel<T> getModel() {
+        return (PagedIMTableModel<T>) table.getModel();
     }
 
     /**
@@ -172,13 +182,4 @@ public class PagedIMTable<T> extends Column {
         }
     }
 
-    /**
-     * Returns the underlying table model.
-     *
-     * @return the underlying model
-     */
-    @SuppressWarnings("unchecked")
-    private PagedIMTableModel<T> getPagedIMTableModel() {
-        return (PagedIMTableModel<T>) table.getModel();
-    }
 }

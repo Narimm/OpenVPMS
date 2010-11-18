@@ -145,7 +145,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
     /**
      * Returns the index of the last returned page.
      *
-     * @return the index of the last returned page, or <tt>-1</tt> if no page has been page
+     * @return the index of the last returned page, or <tt>-1</tt> if no page has been returned
      */
     int lastIndex();
 
