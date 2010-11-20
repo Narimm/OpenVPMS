@@ -106,6 +106,11 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String[] SKIP_CANCEL = {SKIP_ID, CANCEL_ID};
 
     /**
+     * Helper to create a button row containing the YES, and NO buttons.
+     */
+    public static final String[] YES_NO = {YES_ID, NO_ID};
+
+    /**
      * Helper to create a button row containing the YES, NO and CANCEL buttons.
      */
     public static final String[] YES_NO_CANCEL = {YES_ID, NO_ID, CANCEL_ID};
@@ -249,21 +254,29 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Invoked when the 'cancel' button is pressed. If a {@link VetoListener}
-     * has been registered, this will be notified, otherwise the action will
-     * be set and the window closed.
+     * has been registered, this will be notified, otherwise {@link #doCancel} will be invoked.
      */
     protected void onCancel() {
         if (cancelListener != null) {
             cancelListener.onVeto(new Vetoable() {
                 public void veto(boolean veto) {
                     if (!veto) {
-                        close(CANCEL_ID);
+                        doCancel();
                     }
                 }
             });
         } else {
-            close(CANCEL_ID);
+            doCancel();
         }
+    }
+
+    /**
+     * Cancels the operation.
+     * <p/>
+     * This implementation closes the dialog, setting the action to {@link #CANCEL_ID}.
+     */
+    protected void doCancel() {
+        close(CANCEL_ID);
     }
 
     /**

@@ -17,20 +17,25 @@
  */
 package org.openvpms.web.component.im.edit;
 
+import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.macro.MacroDialog;
+import org.openvpms.web.component.util.VetoListener;
+import org.openvpms.web.component.util.Vetoable;
+import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import echopointng.KeyStrokes;
 
 
 /**
@@ -55,6 +60,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Edit dialog style name.
      */
     protected static final String STYLE = "EditDialog";
+
+    /**
+     * Determines if saves are disabled.
+     */
+    private boolean savedDisabled;
 
 
     /**
@@ -106,6 +116,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
                 onMacro();
             }
         });
+        setCancelListener(new VetoListener() {
+            public void onVeto(Vetoable action) {
+                onCancel(action);
+            }
+        });
     }
 
     /**
@@ -115,6 +130,21 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     public IMObjectEditor getEditor() {
         return editor;
+    }
+
+    /**
+     * Saves the editor, optionally closing the dialog.
+     * <p/>
+     * If the the save fails, the dialog will remain open.
+     *
+     * @param close if <tt>true</tt> close the dialog
+     */
+    public void save(boolean close) {
+        if (!close) {
+            onApply();
+        } else {
+            onOK();
+        }
     }
 
     /**
@@ -140,7 +170,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Saves the current object, if saving is enabled.
      */
     @Override
-    public void onApply() {
+    protected void onApply() {
         save();
     }
 
@@ -148,7 +178,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Saves the current object, if saving is enabled, and closes the editor.
      */
     @Override
-    public void onOK() {
+    protected void onOK() {
         if (save) {
             if (save()) {
                 close(OK_ID);
@@ -162,11 +192,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Close the editor, discarding any unsaved changes.
      */
     @Override
-    public void onCancel() {
+    protected void doCancel() {
         if (editor != null) {
             editor.cancel();
         }
-        close(CANCEL_ID);
+        super.doCancel();
     }
 
     /**
@@ -207,15 +237,17 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected boolean save() {
         boolean result = false;
-        if (save && editor != null) {
-            Validator validator = new Validator();
-            if (editor.validate(validator)) {
-                result = doSave();
-                if (!result) {
-                    saveFailed();
+        if (!savedDisabled) {
+            if (save && editor != null) {
+                Validator validator = new Validator();
+                if (editor.validate(validator)) {
+                    result = doSave();
+                    if (!result) {
+                        saveFailed();
+                    }
+                } else {
+                    ValidationHelper.showError(validator);
                 }
-            } else {
-                ValidationHelper.showError(validator);
             }
         }
         return result;
@@ -233,11 +265,20 @@ public abstract class AbstractEditDialog extends PopupDialog {
     /**
      * Invoked by {@link #save} when saving fails.
      * <p/>
-     * This implementation delegates to {@link #onCancel()}, discarding any changes and closing the dialog.
+     * This implementation disables saves.
      * TODO - this is a workaround for OVPMS-855
      */
     protected void saveFailed() {
-        onCancel();
+        savedDisabled = true;
+        ButtonSet buttons = getButtons();
+        for (Component component : buttons.getContainer().getComponents()) {
+            if (component instanceof Button) {
+                Button button = (Button) component;
+                if (!CANCEL_ID.equals(button.getId())) {
+                    buttons.setEnabled(button.getId(), false);
+                }
+            }
+        }
     }
 
     /**
@@ -285,4 +326,30 @@ public abstract class AbstractEditDialog extends PopupDialog {
             return OK;
         }
     }
+
+    /**
+     * Invoked to veto/allow a cancel request.
+     *
+     * @param action the vetoable action
+     */
+    private void onCancel(final Vetoable action) {
+        if (editor != null && editor.isModified() && !savedDisabled) {
+            String title = Messages.get("editor.cancel.title");
+            String message = Messages.get("editor.cancel.message", editor.getDisplayName());
+            final ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void onClose(WindowPaneEvent e) {
+                    if (ConfirmationDialog.YES_ID.equals(dialog.getAction())) {
+                        action.veto(false);
+                    } else {
+                        action.veto(true);
+                    }
+                }
+            });
+            dialog.show();
+        } else {
+            action.veto(false);
+        }
+    }
+
 }

@@ -238,7 +238,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             editor.setSchedule(schedule);
             editor.setStartTime(startTime); // will recalc end time
             EditDialog dialog = edit(editor);
-            dialog.onOK(); // checks for overlapping appointments
+            dialog.save(true); // checks for overlapping appointments
         }
     }
 
