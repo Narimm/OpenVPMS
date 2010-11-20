@@ -107,7 +107,7 @@ public class ErrorReportingDialog extends ErrorDialog {
 
             @Override
             public void onCancel() {
-                doCancel();
+                ErrorReportingDialog.this.onCancel();
             }
         });
         dialog.show();
@@ -119,13 +119,6 @@ public class ErrorReportingDialog extends ErrorDialog {
     private void doReport() {
         reporter.report(report);
         onOK();
-    }
-
-    /**
-     * Closes the dialog without sending the report.
-     */
-    private void doCancel() {
-        onCancel();
     }
 
     /**

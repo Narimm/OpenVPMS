@@ -69,7 +69,7 @@ public class AppointmentEditDialog extends EditDialog {
      * Save the current object.
      */
     @Override
-    public void onApply() {
+    protected void onApply() {
         if (canSave()) {
             save();
         } else if (!checkForOverlappingAppointment(false)) {
@@ -83,7 +83,7 @@ public class AppointmentEditDialog extends EditDialog {
      * Save the current object, and close the editor.
      */
     @Override
-    public void onOK() {
+    protected void onOK() {
         if (canSave()) {
             super.onOK();
         } else if (!checkForOverlappingAppointment(true)) {
