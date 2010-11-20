@@ -318,6 +318,7 @@ public class DateHelper {
 
         dateCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
         dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
+        dateCal.set(Calendar.SECOND, timeCal.get(Calendar.SECOND));
         return dateCal.getTime();
     }
 

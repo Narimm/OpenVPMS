@@ -21,14 +21,16 @@ package org.openvpms.web.component.im.relationship;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.IMTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.table.TableNavigator;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -88,7 +90,7 @@ public class RelationshipCollectionEditor
                 = getCollectionPropertyEditor();
         RelationshipState state
                 = editor.getRelationshipState((IMObjectRelationship) object);
-        getTable().getTable().setSelected(state);
+        getTable().setSelected(state);
     }
 
     /**
@@ -97,8 +99,40 @@ public class RelationshipCollectionEditor
      * @return the selected object. May be <tt>null</tt>
      */
     protected IMObject getSelected() {
-        RelationshipState selected = getTable().getTable().getSelected();
+        RelationshipState selected = getTable().getSelected();
         return (selected != null) ? selected.getRelationship() : null;
+    }
+
+    /**
+     * Selects the object prior to the selected object, if one is available.
+     *
+     * @return the prior object. May be <tt>null</tt>
+     */
+    protected IMObject selectPrevious() {
+        IMObject result = null;
+        PagedIMTable<RelationshipState> table = getTable();
+        TableNavigator navigator = table.getNavigator();
+        if (navigator.selectPreviousRow()) {
+            result = table.getSelected().getRelationship();
+            setSelected(result);
+        }
+        return result;
+    }
+
+    /**
+     * Selects the object after the selected object, if one is available.
+     *
+     * @return the next object. May be <tt>null</tt>
+     */
+    protected IMObject selectNext() {
+        IMObject result = null;
+        PagedIMTable<RelationshipState> table = getTable();
+        TableNavigator navigator = table.getNavigator();
+        if (navigator.selectNextRow()) {
+            result = table.getSelected().getRelationship();
+            setSelected(result);
+        }
+        return result;
     }
 
     /**
@@ -143,8 +177,7 @@ public class RelationshipCollectionEditor
      * @return the collection property editor
      */
     @Override
-    protected RelationshipCollectionPropertyEditor
-            getCollectionPropertyEditor() {
+    protected RelationshipCollectionPropertyEditor getCollectionPropertyEditor() {
         return (RelationshipCollectionPropertyEditor)
                 super.getCollectionPropertyEditor();
     }
@@ -156,7 +189,7 @@ public class RelationshipCollectionEditor
         RelationshipCollectionPropertyEditor editor
                 = getCollectionPropertyEditor();
         editor.setExcludeInactive(hideInactive.isSelected());
-        populateTable();
+        refresh();
     }
 
 }

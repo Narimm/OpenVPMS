@@ -41,12 +41,15 @@ import org.openvpms.web.component.im.relationship.MultipleRelationshipCollection
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Validator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -59,9 +62,14 @@ import java.util.Set;
 public class ActRelationshipCollectionEditor
         extends MultipleRelationshipCollectionTargetEditor {
 
-
     /**
-     * Construct a new <tt>ActRelationshipCollectionEditor</tt>.
+     * Determines if a new object has been modified since its editor was created (i.e has been user modified).
+     */
+    private Map<IMObjectReference, Boolean> modified = new HashMap<IMObjectReference, Boolean>();
+
+    
+    /**
+     * Constructs an <tt>ActRelationshipCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param act      the parent act
@@ -98,6 +106,8 @@ public class ActRelationshipCollectionEditor
 
     /**
      * Adds the object being edited to the collection, if it doesn't exist.
+     * <p/>
+     * The object will be selected.
      *
      * @param editor the editor
      * @return <code>true</code> if the object was added, otherwise
@@ -117,13 +127,90 @@ public class ActRelationshipCollectionEditor
                     // template act is replaced with the first product in
                     // the template, so try and select it in the table
                     IMObject object = editor.getObject();
-                    getTable().getTable().setSelected(object);
+                    setSelected(object);
                 }
             }
         } else {
             result = super.addEdited(editor);
         }
         return result;
+    }
+
+    /**
+     * Edits the selected object.
+     */
+    public void editSelected() {
+        onEdit();
+    }
+
+    /**
+     * Validates the object.
+     * This validates the current object being edited, and if valid, the
+     * collection.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendents are valid
+     *         otherwise <tt>false</tt>
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        boolean valid;
+        if (!excludeIncompleteObjectWithDefaultValues()) {
+            // validate both the current editor and the collection
+            valid = super.validate(validator);
+        } else {
+            // validate just the collection
+            valid = getCollectionPropertyEditor().validate(validator);
+        }
+        return valid;
+    }
+
+    /**
+     * Saves any current edits.
+     *
+     * @return <tt>true</tt> if edits were saved successfully, otherwise
+     *         <tt>false</tt>
+     */
+    @Override
+    protected boolean doSave() {
+        boolean saved;
+        if (!excludeIncompleteObjectWithDefaultValues()) {
+            // save the current editor and collection
+            saved = super.doSave();
+        } else {
+            // save the collection, excluding the current editor
+            saved = getCollectionPropertyEditor().save();
+        }
+        return saved;
+    }
+
+    /**
+     * Adds a new editor for an object.
+     *
+     * @param object the object
+     * @param editor the editor for the object
+     */
+    @Override
+    protected void addEditor(IMObject object, IMObjectEditor editor) {
+        super.addEditor(object, editor);
+        if (object.isNew()) {
+            modified.put(object.getObjectReference(), false);
+        }
+    }
+
+    /**
+     * Invoked when the current editor is modified.
+     */
+    @Override
+    protected void onCurrentEditorModified() {
+        super.onCurrentEditorModified();
+        IMObjectEditor editor = getCurrentEditor();
+        if (editor != null) {
+            IMObject object = editor.getObject();
+            if (object.isNew()) {
+                modified.put(object.getObjectReference(), true);
+            }
+        }
     }
 
     /**
@@ -220,6 +307,48 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
+     * Adds/removes the object associated with the current editor to/from the collection.
+     * <p/>
+     * This is so that incomplete objects that contain no user-entered data can be excluded from commits.
+     *
+     * @return <tt>true</tt> if an incomplete object was excluded; otherwise <tt>false</tt>
+     */
+    private boolean excludeIncompleteObjectWithDefaultValues() {
+        IMObjectEditor editor = getCurrentEditor();
+        boolean excluded = false;
+        if (editor != null) {
+            if (hasDefaultValues(editor) && !editor.isValid()) {
+                getCollectionPropertyEditor().remove(editor.getObject());
+                excluded = true;
+            } else {
+                getCollectionPropertyEditor().add(editor.getObject());
+            }
+        }
+        return excluded;
+    }
+
+    /**
+     * Determines if an object associated with an editor contains default values.
+     * <p/>
+     * This only applies to new objects. These are considered as have default values if they haven't been modified
+     * since the editor was created (the editor typically initialises default values within its constructor).
+     *
+     * @param editor the editor
+     * @return <tt>true</tt> if the object has default values
+     */
+    private boolean hasDefaultValues(IMObjectEditor editor) {
+        boolean result = false;
+        IMObject object = editor.getObject();
+        if (object.isNew()) {
+            Boolean changed = modified.get(object.getObjectReference());
+            if (changed != null && !changed) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Helper to determine if an editor has a template product that needs
      * expanding.
      *
@@ -232,7 +361,6 @@ public class ActRelationshipCollectionEditor
     }
 
     private class ActItemCopyHandler extends ActCopyHandler {
-
 
         /**
          * Determines how {@link IMObjectCopier} should treat an object.

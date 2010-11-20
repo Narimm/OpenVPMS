@@ -30,6 +30,14 @@ import nextapp.echo2.app.table.TableModel;
 public interface PageableTableModel extends TableModel {
 
     /**
+     * Determines if a page exists.
+     *
+     * @param page the page
+     * @return <tt>true</tt> if the page exists, otherwise <tt>false</tt>
+     */
+    boolean hasPage(int page);
+
+    /**
      * Attempts to set the current page.
      *
      * @param page the page to set

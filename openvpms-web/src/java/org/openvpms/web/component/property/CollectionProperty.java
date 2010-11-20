@@ -51,6 +51,13 @@ public interface CollectionProperty extends Property {
     Collection getValues();
 
     /**
+     * Returns the no. of elements in the collection
+     *
+     * @return the no. of elements in the collection
+     */
+    int size();
+
+    /**
      * Returns the minimum cardinality.
      *
      * @return the minimum cardinality

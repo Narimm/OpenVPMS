@@ -346,6 +346,16 @@ public class IMObjectProperty extends AbstractProperty
     }
 
     /**
+     * Returns the no. of elements in the collection
+     *
+     * @return the no. of elements in the collection
+     */
+    public int size() {
+        List<IMObject> values = descriptor.getChildren(object);
+        return values != null ? values.size() : 0;
+    }
+
+    /**
      * Add a value.
      *
      * @param value the value to add
@@ -373,9 +383,12 @@ public class IMObjectProperty extends AbstractProperty
     public void remove(Object value) {
         checkModifiable();
         try {
+            int size = size();
             value = getTransformer().apply(value);
             descriptor.removeChildFromCollection(object, value);
-            modified();
+            if (size != size()) {
+                modified();
+            }
         } catch (ValidationException exception) {
             invalidate(exception);
         } catch (DescriptorException exception) {

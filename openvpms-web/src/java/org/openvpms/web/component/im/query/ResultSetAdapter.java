@@ -64,6 +64,16 @@ public abstract class ResultSetAdapter<A, T> implements ResultSet<T> {
     }
 
     /**
+     * Determines if a page exists.
+     *
+     * @param page the page no.
+     * @return <tt>true</tt> if the page exists
+     */
+    public boolean hasPage(int page) {
+        return set.hasPage(page);
+    }
+
+    /**
      * Returns the specified page.
      *
      * @param page the page no.

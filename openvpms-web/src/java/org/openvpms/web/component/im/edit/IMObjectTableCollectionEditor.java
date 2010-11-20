@@ -18,15 +18,19 @@
 
 package org.openvpms.web.component.im.edit;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.table.TableNavigator;
 
 import java.util.List;
 
@@ -88,11 +92,32 @@ public abstract class IMObjectTableCollectionEditor
 
     /**
      * Selects an object in the table.
+     * <p/>
+     * This implementation scans through the result set to find the object.
      *
      * @param object the object to select
      */
     protected void setSelected(IMObject object) {
-        getTable().getTable().setSelected(object);
+        PagedIMTable<IMObject> table = getTable();
+        IMObject current = table.getSelected();
+        if (!ObjectUtils.equals(current, object)) {
+            if (!table.getTable().getObjects().contains(object)) {
+                ResultSet set = table.getResultSet();
+                int index = 0;
+                IPage page;
+                while ((page = set.getPage(index)) != null) {
+                    if (page.getResults().contains(object)) {
+                        break;
+                    }
+                    ++index;
+                }
+                if (page != null) {
+                    table.getModel().setPage(index);
+                }
+            }
+            table.setSelected(object);
+        }
+        enableNavigation(table.getSelected() != null);
     }
 
     /**
@@ -101,7 +126,39 @@ public abstract class IMObjectTableCollectionEditor
      * @return the selected object. May be <tt>null</tt>
      */
     protected IMObject getSelected() {
-        return getTable().getTable().getSelected();
+        return getTable().getSelected();
+    }
+
+    /**
+     * Selects the object prior to the selected object, if one is available.
+     *
+     * @return the prior object. May be <tt>null</tt>
+     */
+    protected IMObject selectPrevious() {
+        IMObject result = null;
+        PagedIMTable<IMObject> table = getTable();
+        TableNavigator navigator = table.getNavigator();
+        if (navigator.selectPreviousRow()) {
+            result = table.getSelected();
+            setSelected(result);
+        }
+        return result;
+    }
+
+    /**
+     * Selects the object after the selected object, if one is available.
+     *
+     * @return the next object. May be <tt>null</tt>
+     */
+    protected IMObject selectNext() {
+        IMObject result = null;
+        PagedIMTable<IMObject> table = getTable();
+        TableNavigator navigator = table.getNavigator();
+        if (navigator.selectNextRow()) {
+            result = table.getSelected();
+            setSelected(result);
+        }
+        return result;
     }
 
     /**

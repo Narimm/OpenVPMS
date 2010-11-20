@@ -68,7 +68,16 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     public void reset() {
         currentPage = null;
         cursor = 0;
-        // currentPage = getPage(cursor);
+    }
+
+    /**
+     * Determines if a page exists.
+     *
+     * @param page the page no.
+     * @return <tt>true</tt> if the page exists
+     */
+    public boolean hasPage(int page) {
+        return get(page) != null;
     }
 
     /**

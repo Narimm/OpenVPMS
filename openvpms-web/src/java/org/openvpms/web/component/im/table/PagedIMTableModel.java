@@ -94,8 +94,7 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
                         getModel().getSortConstraints(column.getModelIndex(),
                                                       set.isSortedAscending());
                 boolean match = true;
-                if (columnConstraint != null
-                        && sorted.length == columnConstraint.length) {
+                if (columnConstraint != null && sorted.length == columnConstraint.length) {
                     for (int i = 0; i < sorted.length; ++i) {
                         if (!sorted[i].equals(columnConstraint[i])) {
                             match = false;
@@ -125,6 +124,16 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      */
     public ResultSet<T> getResultSet() {
         return set;
+    }
+
+    /**
+     * Determines if a page exists.
+     *
+     * @param page the page
+     * @return <tt>true</tt> if the page exists, otherwise <tt>false</tt>
+     */
+    public boolean hasPage(int page) {
+        return set.getPage(page) != null;
     }
 
     /**
