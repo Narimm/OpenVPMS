@@ -27,9 +27,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.act.ActHelper;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -60,6 +62,15 @@ public class CustomerChargeActEditor extends FinancialActEditor {
         super(act, parent, context);
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("location", context.getContext().getLocation());
+    }
+
+    /**
+     * Updates the status.
+     *
+     * @param status the new status
+     */
+    public void setStatus(String status) {
+        getProperty("status").setValue(status);
     }
 
     /**
@@ -96,12 +107,40 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Invoked when layout has completed.
+     * <p/>
+     * This invokes {@link #initItems()}.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        initItems();
+    }
+
+    /**
      * Updates the amount and tax when an act item changes.
      */
     @Override
     protected void onItemsChanged() {
         super.onItemsChanged();
         calculateCosts();
+    }
+
+    /**
+     * Adds a default invoice item if there are no items present.
+     */
+    private void initItems() {
+        ActRelationshipCollectionEditor items = getEditor();
+        CollectionProperty property = items.getCollection();
+        if (property.getValues().size() == 0) {
+            // no invoice items, so add one
+            IMObject item = items.create();
+            if (item != null) {
+                IMObjectEditor editor = items.createEditor(item, getLayoutContext());
+                items.addEdited(editor);
+                items.editSelected();
+            }
+        }
     }
 
     /**

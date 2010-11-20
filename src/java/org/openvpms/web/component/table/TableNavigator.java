@@ -182,6 +182,103 @@ public class TableNavigator extends Row {
     }
 
     /**
+     * Determines if there is a row prior to the selected row.
+     *
+     * @return <tt>true</tt> if there is a row prior to the selected row or <tt>false</tt> if no row is selected, or
+     *         the first row is selected
+     */
+    public boolean hasPreviousRow() {
+        boolean result = false;
+        int index = getSelected();
+        if (index != -1) {
+            if (index > 0) {
+                result = true;
+            } else {
+                int page = getModel().getPage();
+                if (page > 0) {
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Navigates to the row before the selected row, and selects it.
+     * <p/>
+     * If no row is seleced, or there is no previous row, nothing is done.
+     *
+     * @return <tt>true</tt> if the previous row was selected
+     */
+    public boolean selectPreviousRow() {
+        boolean result = false;
+        int index = getSelected();
+        if (index != -1) {
+            if (index > 0) {
+                select(index - 1);
+                result = true;
+            } else if (previous()) {
+                int count = getModel().getRowCount();
+                if (count > 0) {
+                    select(count - 1);
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if there is a row after to the selected row.
+     *
+     * @return <tt>true</tt> if there is a row after the selected row or <tt>false</tt> if no row is selected, or
+     *         there are no more rows
+     */
+    public boolean hasNextRow() {
+        boolean result = false;
+        int index = getSelected();
+        if (index != -1) {
+            PageableTableModel model = getModel();
+            int count = model.getRowCount();
+            if (index + 1 < count) {
+                result = true;
+            } else {
+                int page = getModel().getPage();
+                if (model.hasPage(page + 1)) {
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Navigates to the row after the selected row, and selects it.
+     * <p/>
+     * If no row is seleced, or there is no next row, nothing is done.
+     *
+     * @return <tt>true</tt> if the next row was selected
+     */
+    public boolean selectNextRow() {
+        boolean result = false;
+        int index = getSelected();
+        if (index != -1) {
+            PageableTableModel model = getModel();
+            int count = model.getRowCount();
+            if (index + 1 < count) {
+                select(index + 1);
+                result = true;
+            } else if (next()) {
+                if (model.getRowCount() > 0) {
+                    select(0);
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Lays out the component.
      */
     protected void doLayout() {
@@ -322,6 +419,25 @@ public class TableNavigator extends Row {
     private int getLastPage() {
         int pages = getModel().getPages();
         return (pages > 0) ? pages - 1 : 0;
+    }
+
+    /**
+     * Returns the selected row.
+     *
+     * @return the seleted row, or <tt>-1</tt> if no row is selected
+     */
+    private int getSelected() {
+        return table.getSelectionModel().getMinSelectedIndex();
+    }
+
+
+    /**
+     * Selects the row at the given index.
+     *
+     * @param index the index to select
+     */
+    private void select(int index) {
+        table.getSelectionModel().setSelectedIndex(index, true);
     }
 
 }

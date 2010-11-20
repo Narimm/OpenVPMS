@@ -19,6 +19,7 @@
 package org.openvpms.web.component.bound;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateFieldImpl;
 import org.openvpms.web.component.util.DateHelper;
@@ -98,11 +99,17 @@ public class BoundDateField extends DateFieldImpl {
         return new DateBinder(this, property) {
             @Override
             protected Date getFieldValue() {
-                Date date = super.getFieldValue();
-                if (date != null && includeTimeForToday) {
-                    date = DateHelper.getDatetimeIfToday(date);
+                Date result = super.getFieldValue();
+                if (result != null) {
+                    Date current = (Date) getProperty().getValue();
+                    if (current != null && DateRules.getDate(current).equals(DateRules.getDate(result))) {
+                        // preserve the existing date/time, to avoid spurious modification notifications
+                        result = current;
+                    } else if (includeTimeForToday) {
+                        result = DateHelper.getDatetimeIfToday(result);
+                    }
                 }
-                return date;
+                return result;
             }
         };
     }

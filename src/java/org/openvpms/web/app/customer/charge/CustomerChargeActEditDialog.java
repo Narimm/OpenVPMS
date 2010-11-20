@@ -18,6 +18,7 @@
 package org.openvpms.web.app.customer.charge;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentTemplatePrinter;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -49,19 +50,32 @@ import java.util.List;
 public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
+     * Completed button identifier.
+     */
+    private static final String COMPLETED_ID = "completed";
+
+    /**
+     * In Progress button identifier.
+     */
+    private static final String IN_PROGRESS_ID = "inprogress";
+
+    
+    /**
      * Constructs a <tt>CustomerChargeActEditDialog</tt>.
      *
      * @param editor the editor
      */
     public CustomerChargeActEditDialog(CustomerChargeActEditor editor) {
         super(editor);
+        addButton(COMPLETED_ID, false);
+        addButton(IN_PROGRESS_ID, false);
     }
 
     /**
      * Saves the current object, and prints any interactive documents associated with the charge.
      */
     @Override
-    public void onOK() {
+    protected void onOK() {
         if (save()) {
             List<IMObject> docs = getDocumentsToPrint();
             if (!docs.isEmpty()) {
@@ -76,12 +90,58 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * Saves the current object, and prints any interactive documents associated with the charge.
      */
     @Override
-    public void onApply() {
+    protected void onApply() {
         if (save()) {
             List<IMObject> docs = getDocumentsToPrint();
             if (!docs.isEmpty()) {
                 printDocuments(docs, false);
             }
+        }
+    }
+
+    /**
+     * Invoked when a button is pressed. This delegates to the appropriate
+     * on*() method for the button if it is known, else sets the action to
+     * the button identifier and closes the window.
+     *
+     * @param button the button identifier
+     */
+    @Override
+    protected void onButton(String button) {
+        if (IN_PROGRESS_ID.equals(button)) {
+            onInProgress();
+        } else if (COMPLETED_ID.equals(button)) {
+            onCompleted();
+        } else {
+            super.onButton(button);
+        }
+    }
+
+    /**
+     * Invoked when the 'In Progress' button is pressed.
+     * <p/>
+     * If the act hasn't been POSTED, then this sets the status to IN_PROGRESS, and attempts to save and close the
+     * dialog.
+     */
+    private void onInProgress() {
+        if (!isPosted()) {
+            CustomerChargeActEditor editor = (CustomerChargeActEditor) getEditor();
+            editor.setStatus(ActStatus.IN_PROGRESS);
+            onOK();
+        }
+    }
+
+    /**
+     * Invoked when the 'Completed' button is pressed.
+     * <p/>
+     * If the act hasn't been POSTED, then this sets the status to COMPLETED, and attempts to save and close the
+     * dialog.
+     */
+    private void onCompleted() {
+        if (!isPosted()) {
+            CustomerChargeActEditor editor = (CustomerChargeActEditor) getEditor();
+            editor.setStatus(ActStatus.COMPLETED);
+            onOK();
         }
     }
 

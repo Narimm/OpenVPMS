@@ -80,7 +80,6 @@ public class PagedIMTable<T> extends Column {
         setResultSet(set);
     }
 
-
     /**
      * Sets the result set.
      *
@@ -95,19 +94,33 @@ public class PagedIMTable<T> extends Column {
         // only display the table navigator if:
         // . the no. of pages != 0 and is an estimation
         // . the no. of pages are known and > 1
-        if ((!actual && pages > 0) || pages > 1) {
-            if (navigator == null) {
-                navigator = new TableNavigator(table);
-                navigator.setFocusTraversalParticipant(false);
-            }
-            if (indexOf(navigator) == -1) {
-                add(navigator, 0);
-            }
-        } else {
-            if (navigator != null) {
-                remove(navigator);
-            }
+        if (navigator == null) {
+            navigator = new TableNavigator(table);
+            add(navigator, 0);
         }
+        if ((!actual && pages > 0) || pages > 1) {
+            navigator.setVisible(true);
+        } else {
+            navigator.setVisible(false);
+        }
+    }
+
+    /**
+     * Returns the selected object.
+     *
+     * @return the selected object, or <tt>null</tt> if no object is selected
+     */
+    public T getSelected() {
+        return table.getSelected();
+    }
+
+    /**
+     * Sets the selected object.
+     *
+     * @param object the object to select
+     */
+    public void setSelected(T object) {
+        table.setSelected(object);
     }
 
     /**
@@ -150,6 +163,15 @@ public class PagedIMTable<T> extends Column {
             navigator.setFocusTraversalIndex(newValue);
         }
         table.setFocusTraversalIndex(newValue);
+    }
+
+    /**
+     * Returns the table navigator.
+     *
+     * @return the table navigator, or <tt>null</tt> if there is no result set
+     */
+    public TableNavigator getNavigator() {
+        return navigator;
     }
 
     /**

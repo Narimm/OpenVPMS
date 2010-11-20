@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.edit.act;
 
 import nextapp.echo2.app.Button;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.property.Modifiable;
@@ -35,6 +36,11 @@ import org.openvpms.web.component.property.Property;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ActEditDialog extends EditDialog {
+
+    /**
+     * Determines if the act has been POSTED. If so, it can no longer be saved.
+     */
+    private boolean posted;
 
     /**
      * Constructs a new <tt>ActEditDialog</tt>.
@@ -71,6 +77,31 @@ public class ActEditDialog extends EditDialog {
                          boolean skip) {
         super(editor, save, skip);
         init(editor);
+
+        posted = getPosted();
+    }
+
+    /**
+     * Determines if the act has been saved with POSTED status.
+     *
+     * @return <tt>true</tt> if the act has been saved
+     */
+    protected boolean isPosted() {
+        return posted;
+    }
+
+    /**
+     * Saves the current object.
+     *
+     * @return <tt>true</tt> if the object was saved
+     */
+    @Override
+    protected boolean doSave() {
+        boolean result = super.doSave();
+        if (!posted && result) {
+            posted = getPosted();
+        }
+        return result;
     }
 
     /**
@@ -106,6 +137,17 @@ public class ActEditDialog extends EditDialog {
                 apply.setEnabled(true);
             }
         }
+    }
+
+    /**
+     * Determines if the act is posted.
+     *
+     * @return <tt>true</tt> if the act is posted
+     */
+    private boolean getPosted() {
+        Act act = (Act) getEditor().getObject();
+        String status = act.getStatus();
+        return ActStatus.POSTED.equals(status);
     }
 
 }

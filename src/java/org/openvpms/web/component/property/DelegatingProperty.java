@@ -75,6 +75,15 @@ public abstract class DelegatingProperty implements CollectionProperty {
     }
 
     /**
+     * Returns the no. of elements in the collection
+     *
+     * @return the no. of elements in the collection
+     */
+    public int size() {
+        return ((CollectionProperty) property).size();
+    }
+
+    /**
      * Returns the minimum cardinality.
      *
      * @return the minimum cardinality

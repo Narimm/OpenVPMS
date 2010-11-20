@@ -404,7 +404,7 @@ public abstract class AbstractIMObjectCollectionEditor
             // increase the layout depth for collection items
 
             editor = createEditor(object, context);
-            collection.setEditor(object, editor);
+            addEditor(object, editor);
         }
         return editor;
     }
@@ -423,6 +423,16 @@ public abstract class AbstractIMObjectCollectionEditor
                                                              context);
         editor.addModifiableListener(broadcaster);
         return editor;
+    }
+
+    /**
+     * Adds a new editor for an object.
+     *
+     * @param object the object
+     * @param editor the editor for the object
+     */
+    protected void addEditor(IMObject object, IMObjectEditor editor) {
+        collection.setEditor(object, editor);
     }
 
     /**

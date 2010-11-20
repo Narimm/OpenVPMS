@@ -78,6 +78,7 @@ public class IMObjectSorter {
                 break;
             }
         }
+        comparator.addComparator(IdentityComparator.INSTANCE); // ensure re-runs return the same ordering
         Collections.sort(objects, comparator);
     }
 
@@ -104,6 +105,7 @@ public class IMObjectSorter {
                 break;
             }
         }
+        comparator.addComparator(IdentityComparator.INSTANCE);
         Collections.sort(objects, comparator);
     }
 
@@ -295,6 +297,31 @@ public class IMObjectSorter {
                 return object.getArchetypeId().getShortName();
             }
             return null;
+        }
+    }
+
+    /**
+     * Helper to compare two objects based on their in-memory identity.
+     */
+    private static class IdentityComparator implements Comparator {
+
+        private static Comparator INSTANCE = new IdentityComparator();
+
+        /**
+         * Compares its two arguments for order.  Returns a negative integer,
+         * zero, or a positive integer as the first argument is less than, equal
+         * to, or greater than the second.<p>
+         *
+         * @param o1 the first object to be compared.
+         * @param o2 the second object to be compared.
+         * @return a negative integer, zero, or a positive integer as the
+         *         first argument is less than, equal to, or greater than the
+         *         second.
+         */
+        public int compare(Object o1, Object o2) {
+            int hash1 = System.identityHashCode(o1);
+            int hash2 = System.identityHashCode(o2);
+            return hash1 - hash2;
         }
     }
 

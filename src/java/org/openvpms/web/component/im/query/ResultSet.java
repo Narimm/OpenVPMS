@@ -45,7 +45,17 @@ public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
     void sort(SortConstraint[] sort);
 
     /**
+     * Determines if a page exists.
+     *
+     * @param page the page no.
+     * @return <tt>true</tt> if the page exists
+     */
+    boolean hasPage(int page);
+
+    /**
      * Returns the specified page.
+     * <p/>
+     * This moves the cursor.
      *
      * @param page the page no.
      * @return the page corresponding to <tt>page</tt>. May be <tt>null</tt>
