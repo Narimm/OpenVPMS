@@ -18,16 +18,19 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.app.patient.PatientBrowser;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
@@ -43,7 +46,13 @@ import org.openvpms.web.component.property.Property;
 public class PatientParticipationEditor extends ParticipationEditor<Party> {
 
     /**
-     * Construct a new <tt>PatientParticipationEditor</tt>.
+     * The associated customer participation editor. May be <tt>null</tt>.
+     */
+    private CustomerParticipationEditor customerEditor;
+
+
+    /**
+     * Constructs a <tt>PatientParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
@@ -56,7 +65,7 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
         if (!TypeHelper.isA(participation, "participation.patient")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
-                            + participation.getArchetypeId().getShortName());
+                    + participation.getArchetypeId().getShortName());
         }
         Context context = getLayoutContext().getContext();
         IMObjectReference patientRef = participation.getEntity();
@@ -72,22 +81,49 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
     }
 
     /**
+     * Associates a customer participation editor with this.
+     * <p/>
+     * If non-null, the customer will be updated when a patient is selected in the browser.
+     *
+     * @param editor the editor. May be <tt>null</tt>
+     */
+    public void setCustomerParticipationEditor(CustomerParticipationEditor editor) {
+        customerEditor = editor;
+    }
+
+    /**
      * Creates a new object reference editor.
      *
      * @param property the reference property
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Party> createObjectReferenceEditor(
-            Property property) {
-        return new AbstractIMObjectReferenceEditor<Party>(
-                property, getParent(), getLayoutContext(), true) {
+    protected IMObjectReferenceEditor<Party> createObjectReferenceEditor(Property property) {
+        return new AbstractIMObjectReferenceEditor<Party>(property, getParent(), getLayoutContext(), true) {
 
             @Override
             public void setObject(Party object) {
                 super.setObject(object);
-                ContextHelper.setPatient(getLayoutContext().getContext(),
-                                         object);
+                ContextHelper.setPatient(getLayoutContext().getContext(), object);
+            }
+
+            /**
+             * Invoked when an object is selected from a brwoser.
+             * <p/>
+             * This updates the patient, and if specified, the associated customer participation editor's customer.
+             *
+             * @param object  the selected object. May be <tt>null</tt>
+             * @param browser the browser
+             */
+            @Override
+            protected void onSelected(Party object, Browser<Party> browser) {
+                super.onSelected(object, browser);
+                if (customerEditor != null && browser instanceof PatientBrowser) {
+                    Party customer = ((PatientBrowser) browser).getCustomer();
+                    if (customer != null && !ObjectUtils.equals(customer, customerEditor.getEntity())) {
+                        customerEditor.setEntity(customer);
+                    }
+                }
             }
         };
     }

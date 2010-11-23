@@ -33,6 +33,7 @@ import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
@@ -123,6 +124,15 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                 inListener = true;
                 try {
                     onSelected(object);
+                } finally {
+                    inListener = false;
+                }
+            }
+
+            public void selected(T object, Browser<T> browser) {
+                inListener = true;
+                try {
+                    onSelected(object, browser);
                 } finally {
                     inListener = false;
                 }
@@ -236,10 +246,22 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * <p/>
      * This implementation simply invokes {@link #setObject}.
      *
-     * @param object the selected object. May be <tt>null</tt>
+     * @param object  the selected object. May be <tt>null</tt>
      */
     protected void onSelected(T object) {
         setObject(object);
+    }
+
+    /**
+     * Invoked when an object is selected from a brwoser.
+     * <p/>
+     * This implementation delegates to {@link #onSelected(IMObject)}. 
+     *
+     * @param object  the selected object. May be <tt>null</tt>
+     * @param browser the browser
+     */
+    protected void onSelected(T object, Browser<T> browser) {
+        onSelected(object);
     }
 
     /**

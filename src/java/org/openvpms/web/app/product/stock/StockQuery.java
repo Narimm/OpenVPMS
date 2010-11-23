@@ -29,8 +29,8 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.select.AbstractIMObjectSelectorListener;
 import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -70,14 +70,10 @@ public class StockQuery extends DateRangeActQuery<Act> {
         stockLocation = new IMObjectSelector<Party>(
                 Messages.get("product.stockLocation"),
                 "party.organisationStockLocation");
-        stockLocation.setListener(new IMObjectSelectorListener<Party>() {
+        stockLocation.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 setEntity(object);
                 onQuery();
-            }
-
-            public void create() {
-                // no-op
             }
         });
 

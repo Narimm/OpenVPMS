@@ -23,11 +23,13 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.app.customer.CustomerBrowser;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
@@ -42,7 +44,13 @@ import org.openvpms.web.component.property.Property;
 public class CustomerParticipationEditor extends ParticipationEditor<Party> {
 
     /**
-     * Constructs a new <tt>CustomerParticipationEditor</tt>.
+     * The associated patient participation editor. May be <tt>null</tt>.
+     */
+    private PatientParticipationEditor patientEditor;
+
+
+    /**
+     * Constructs a <tt>CustomerParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
@@ -54,7 +62,7 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
         if (!TypeHelper.isA(participation, "participation.customer")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
-                            + participation.getArchetypeId().getShortName());
+                    + participation.getArchetypeId().getShortName());
         }
         Context context = getLayoutContext().getContext();
         IMObjectReference customerRef = participation.getEntity();
@@ -67,6 +75,24 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
             if (customer != null && customer != context.getCustomer()) {
                 ContextHelper.setCustomer(context, customer);
             }
+        }
+    }
+
+    /**
+     * Associates a patient participation editor with this.
+     * <p/>
+     * If non-null, the patient will be updated if it is selected in the customer browser.
+     * <p/>
+     * The patient participation editor's
+     * {@link PatientParticipationEditor#setCustomerParticipationEditor setCustomerParticipationEditor} method will be
+     * invoked, passing this instance. 
+     *
+     * @param editor the patient participation editor. May be <tt>null</tt>
+     */
+    public void setPatientParticipationEditor(PatientParticipationEditor editor) {
+        patientEditor = editor;
+        if (patientEditor != null) {
+            patientEditor.setCustomerParticipationEditor(this);
         }
     }
 
@@ -85,8 +111,24 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
             @Override
             public void setObject(Party object) {
                 super.setObject(object);
-                ContextHelper.setCustomer(getLayoutContext().getContext(),
-                                          object);
+                ContextHelper.setCustomer(getLayoutContext().getContext(), object);
+            }
+
+            /**
+             * Invoked when an object is selected from a brwoser.
+             *
+             * @param object  the selected object. May be <tt>null</tt>
+             * @param browser the browser
+             */
+            @Override
+            protected void onSelected(Party object, Browser<Party> browser) {
+                super.onSelected(object, browser);
+                if (patientEditor != null && browser instanceof CustomerBrowser) {
+                    Party patient = ((CustomerBrowser) browser).getPatient();
+                    if (patient != null) {
+                        patientEditor.setEntity(patient);
+                    }
+                }
             }
         };
     }

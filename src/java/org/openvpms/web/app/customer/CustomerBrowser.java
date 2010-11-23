@@ -65,6 +65,20 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
     }
 
     /**
+     * Returns the selected patient.
+     *
+     * @return the patient, or <tt>null</tt> if no patient is selected
+     */
+    public Party getPatient() {
+        Party result = null;
+        ObjectSet set = getBrowser().getSelected();
+        if (set != null) {
+            result = (Party) set.get("patient");
+        }
+        return result;
+    }
+
+    /**
      * Returns the result set.
      * <p/>
      * Note that this is a snapshot of the browser's result set. Iterating over it will not affect the browser.

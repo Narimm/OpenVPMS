@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.patient;
 
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.query.Browser;
@@ -44,6 +45,21 @@ public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
      */
     public PatientBrowser(PatientQuery query) {
         setBrowser(createBrowser(query));
+    }
+
+    /**
+     * Returns the customer associated with the selected patient.
+     *
+     * @return the customer, or <tt>null</tt> if no patient is selected or has no current owner
+     */
+    public Party getCustomer() {
+        Party result = null;
+        Party patient = getSelected();
+        if (patient != null) {
+            PatientRules rules = new PatientRules();
+            result = rules.getOwner(patient);
+        }
+        return result;
     }
 
     /**
