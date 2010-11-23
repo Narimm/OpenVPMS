@@ -289,7 +289,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
                     } else {
                         T object = popup.getSelected();
                         if (object != null) {
-                            onSelected(object);
+                            onSelected(object, browser);
                         }
                     }
                 }
@@ -314,14 +314,15 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     }
 
     /**
-     * Invoked when an object is selected.
+     * Invoked when an object is selected via a browser.
      *
      * @param object the selected object
+     * @param browser the browser
      */
-    protected void onSelected(T object) {
+    protected void onSelected(T object, Browser<T> browser) {
         setObject(object);
         if (listener != null) {
-            listener.selected(object);
+            listener.selected(object, browser);
         }
     }
 
@@ -436,7 +437,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     }
 
     /**
-     * Notifies the listener of selection.
+     * Notifies the listener of selection via the text field.
      */
     private void notifySelected() {
         if (listener != null) {

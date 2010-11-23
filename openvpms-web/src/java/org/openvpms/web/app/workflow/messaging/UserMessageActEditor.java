@@ -63,7 +63,10 @@ public class UserMessageActEditor extends ActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        getCustomerEditor().addModifiableListener(new ModifiableListener() {
+        CustomerParticipationEditor customer = getCustomerEditor();
+        PatientParticipationEditor patient = getPatientEditor();
+        customer.setPatientParticipationEditor(patient);
+        customer.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onCustomerChanged();
             }
