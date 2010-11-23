@@ -21,13 +21,13 @@ package org.openvpms.web.app.workflow.appointment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.workflow.scheduling.ScheduleQuery;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -47,6 +47,7 @@ import java.util.List;
 class AppointmentQuery extends ScheduleQuery {
 
     public enum TimeRange {
+
         ALL(0, 24), MORNING(8, 12), AFTERNOON(12, 17), EVENING(17, 24),
         AM(0, 12), PM(12, 24);
 
@@ -64,6 +65,7 @@ class AppointmentQuery extends ScheduleQuery {
         }
 
         private final int startMins;
+
         private final int endMins;
     }
 
@@ -82,7 +84,7 @@ class AppointmentQuery extends ScheduleQuery {
      * Creates a new <tt>AppointmentQuery</tt>.
      */
     public AppointmentQuery() {
-        super(ServiceHelper.getAppointmentService());
+        super(ServiceHelper.getAppointmentService(), "entity.organisationScheduleView");
         rules = new AppointmentRules();
     }
 

@@ -454,7 +454,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         Color result = null;
         if (event != null) {
             switch (highlight) {
-                case EVENT:
+                case EVENT_TYPE:
                     result = getColour(event,
                                        ScheduleEvent.SCHEDULE_TYPE_REFERENCE,
                                        eventColours);

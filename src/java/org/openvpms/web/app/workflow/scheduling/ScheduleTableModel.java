@@ -56,7 +56,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     public enum Highlight {
 
-        EVENT, CLINICIAN, STATUS
+        EVENT_TYPE, CLINICIAN, STATUS
     }
 
     /**
@@ -98,7 +98,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Determines cell colour.
      */
-    private Highlight highlight = Highlight.EVENT;
+    private Highlight highlight = Highlight.EVENT_TYPE;
 
     /**
      * The display expression, from the schedule view. May be <tt>null</tt>
@@ -280,7 +280,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Determines the scheme to colour cells.
      * <p/>
-     * Defaults to {@link Highlight#EVENT}.
+     * Defaults to {@link Highlight#EVENT_TYPE}.
      *
      * @param highlight the highlight
      */
