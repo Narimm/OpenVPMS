@@ -79,7 +79,7 @@ public class TaskQuery extends ScheduleQuery {
      * Creates a new <tt>TaskQuery</tt>.
      */
     public TaskQuery() {
-        super(ServiceHelper.getTaskService());
+        super(ServiceHelper.getTaskService(), "entity.organisationWorkListView");
         statusRangeListener = new ActionListener() {
             public void onAction(ActionEvent event) {
                 onQuery();

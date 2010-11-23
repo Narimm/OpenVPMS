@@ -72,7 +72,7 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
     public Party getPatient() {
         Party result = null;
         ObjectSet set = getBrowser().getSelected();
-        if (set != null) {
+        if (set != null && set.exists("patient")) {
             result = (Party) set.get("patient");
         }
         return result;

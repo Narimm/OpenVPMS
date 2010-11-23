@@ -22,27 +22,30 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.util.PropertySet;
 import static org.openvpms.web.app.workflow.scheduling.ScheduleTableModel.Highlight;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.im.list.LookupListCellRenderer;
+import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.DateSelector;
 import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,14 +115,21 @@ public abstract class ScheduleQuery {
      */
     private FocusGroup focus;
 
+    /**
+     * The archetype short name of the schedule views
+     */
+    private final String viewShortName;
+
 
     /**
-     * Creates a new <tt>ScheduleQuery</tt>.
+     * Constructs a <tt>ScheduleQuery</tt>.
      *
-     * @param service the schedule service
+     * @param service       the schedule service
+     * @param viewShortName the archetype short name of the schedule views
      */
-    public ScheduleQuery(ScheduleService service) {
+    public ScheduleQuery(ScheduleService service, String viewShortName) {
         this.service = service;
+        this.viewShortName = viewShortName;
     }
 
     /**
@@ -189,7 +199,7 @@ public abstract class ScheduleQuery {
             }
         }
         return (schedules != null) ? schedules
-                : Collections.<Entity>emptyList();
+                                   : Collections.<Entity>emptyList();
     }
 
     /**
@@ -228,17 +238,13 @@ public abstract class ScheduleQuery {
      * @return the selected highlight
      */
     public Highlight getHighlight() {
-        Highlight result;
-        int index = highlightSelector.getSelectedIndex();
-        switch (index) {
-            case 0:
-                result = Highlight.EVENT;
-                break;
-            case 1:
-                result = Highlight.CLINICIAN;
-                break;
-            default:
-                result = Highlight.STATUS;
+        Highlight result = null;
+        Object selected = highlightSelector.getSelectedItem();
+        if (selected != null) {
+            result = Highlight.valueOf(selected.toString());
+        }
+        if (result == null) {
+            result = Highlight.EVENT_TYPE;
         }
         return result;
     }
@@ -307,13 +313,10 @@ public abstract class ScheduleQuery {
      * @return a new highlight selector
      */
     protected SelectField createHighlightSelector() {
-        String[] highlightSelectorItems = {
-                Messages.get("workflow.scheduling.highlight.event"),
-                Messages.get("workflow.scheduling.highlight.clinician"),
-                Messages.get("workflow.scheduling.highlight.status")};
-
-        SelectField result = SelectFieldFactory.create(highlightSelectorItems);
-        result.setSelectedItem(highlightSelectorItems[0]);
+        NodeLookupQuery lookups = new NodeLookupQuery(viewShortName, "highlight");
+        LookupListModel model = new LookupListModel(lookups);
+        SelectField result = SelectFieldFactory.create(model);
+        result.setCellRenderer(LookupListCellRenderer.INSTANCE);
         result.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onQuery();
@@ -352,7 +355,7 @@ public abstract class ScheduleQuery {
             }
         });
         highlightSelector = createHighlightSelector();
-
+        updateHighlightField();
 
         component.add(LabelFactory.create("workflow.scheduling.query.date"));
         component.add(date.getComponent());
@@ -497,6 +500,19 @@ public abstract class ScheduleQuery {
     }
 
     /**
+     * Updates the highligh based on the selected schedule view.
+     */
+    private void updateHighlightField() {
+        Entity view = getScheduleView();
+        if (view != null) {
+            EntityBean bean = new EntityBean(view);
+            String code = bean.getString("highlight", Highlight.EVENT_TYPE.toString());
+            highlightSelector.setSelectedItem(code);
+        }
+    }
+
+
+    /**
      * Invoked when the schedule view changes.
      * <p/>
      * Notifies any listener to perform a query.
@@ -504,6 +520,7 @@ public abstract class ScheduleQuery {
     private void onViewChanged() {
         schedules = null;
         updateScheduleField();
+        updateHighlightField();
         onQuery();
     }
 
