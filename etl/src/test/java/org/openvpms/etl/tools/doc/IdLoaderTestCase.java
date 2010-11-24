@@ -53,34 +53,36 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         assertTrue(source.mkdirs());
         assertTrue(target.mkdirs());
 
-        DocumentAct act1 = createPatientDocAct();
-        DocumentAct act2 = createPatientDocAct();
-        DocumentAct act3 = createPatientDocAct();
-        DocumentAct act4 = createPatientDocAct();
+        DocumentAct act1 = createPatientDocAct("file1.gif");
+        DocumentAct act2 = createPatientDocAct("file2.pdf");
+        DocumentAct act3 = createPatientDocAct("file3.html");
+        DocumentAct act4 = createPatientDocAct("file4.png");
+        DocumentAct act5 = createPatientDocAct("file5.hml");
 
-        // create files with varying file names for each act
-        File act1File = createFile(act1, source, null);
-        File act2File = createFile(act2, source, "V");
-        File act3File = createFile(act3, source, null, "-12345");
-        File act4File = createFile(act4, source, "P", "-123456");
+        File act1File = createFile(act1, source, null, null, ".gif");
+        File act2File = createFile(act2, source, "V", null, ".pdf");
+        File act3File = createFile(act3, source, null, "-12345", null, ".html");
+        File act4File = createFile(act4, source, "P", "-123456", null, ".png");
+        File act5File = createFile(act5, source, "P", "-123457", null, ".htm");
 
         LoaderListener listener = load(source, target, false);
-        assertEquals(4, listener.getLoaded());
+        assertEquals(5, listener.getLoaded());
         assertEquals(0, listener.getErrors());
-        assertEquals(4, listener.getProcessed());
+        assertEquals(5, listener.getProcessed());
         assertEquals(0, listener.getMissingAct());
         assertEquals(0, listener.getAlreadyLoaded());
 
         Set<File> files = getFiles(source);
         assertEquals(0, files.size());
 
-        checkFiles(target, act1File, act2File, act3File, act4File);
+        checkFiles(target, act1File, act2File, act3File, act4File, act5File);
 
         // verify the acts have associated documents
         checkAct(act1, act1File.getName());
         checkAct(act2, act2File.getName());
         checkAct(act3, act3File.getName());
         checkAct(act4, act4File.getName());
+        checkAct(act5, act5File.getName());
     }
 
     /**

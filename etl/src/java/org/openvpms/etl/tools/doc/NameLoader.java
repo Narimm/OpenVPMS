@@ -108,7 +108,7 @@ class NameLoader extends AbstractLoader {
         if (act != null) {
             File file = new File(dir, act.getFileName());
             try {
-                Document doc = createDocument(file, act.getMimeType());
+                Document doc = createDocument(file);
                 addDocument(act, doc);
                 notifyLoaded(file);
             } catch (Throwable exception) {
@@ -121,7 +121,7 @@ class NameLoader extends AbstractLoader {
 
 
     /**
-     * Returns all docuent act references for the specified short names.
+     * Returns all document act references for the specified short names.
      *
      * @param shortName the shortName. If <tt>null</tt> indicates to query all
      *                  document acts. May contain wildcards
