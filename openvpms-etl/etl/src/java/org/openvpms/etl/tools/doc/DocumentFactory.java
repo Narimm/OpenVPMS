@@ -36,9 +36,8 @@ interface DocumentFactory {
      * Creates a document from the supplied file.
      *
      * @param file the file
-     * @param mimeType the file's mime type
      * @return a new document
      * @throws DocumentException for any error
      */
-    Document create(File file, String mimeType);
+    Document create(File file);
 }

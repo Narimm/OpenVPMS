@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -124,6 +125,23 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      */
     protected File createFile(DocumentAct act, File dir, String prefix, String suffix, String content)
             throws IOException {
+        return createFile(act, dir, prefix, suffix, content, ".gif");
+    }
+
+    /**
+     * Creates a dummy file for a document act.
+     *
+     * @param act       the act
+     * @param dir       the parent directory
+     * @param prefix    the file name prefix. May be <tt>null</tt>
+     * @param suffix    the file name suffix (pre extension). May be <tt>null</tt>
+     * @param content   the file content. May be <tt>null</tt>
+     * @param extension the file name extension
+     * @return a new file
+     * @throws java.io.IOException for any I/O error
+     */
+    protected File createFile(DocumentAct act, File dir, String prefix, String suffix, String content, String extension)
+            throws IOException {
         StringBuffer buff = new StringBuffer();
         if (prefix != null) {
             buff.append(prefix);
@@ -132,7 +150,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
         if (suffix != null) {
             buff.append(suffix);
         }
-        buff.append(".gif");
+        buff.append(extension);
         return createFile(dir, buff.toString(), content);
     }
 
@@ -241,7 +259,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
     }
 
     /**
-     * Verify an act exists and has a document, and expected file name.
+     * Verify an act exists and has a document, expected file name and mime type.
      *
      * @param act  the act to check
      * @param name the expected file name
@@ -255,7 +273,49 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
         assertNotNull(doc);
         assertEquals(name, act.getFileName());
         assertEquals(name, doc.getName());
+        checkMimeType(act);
         return doc;
+    }
+
+    /**
+     * Verifies that the mime type matches that expected.
+     *
+     * @param act the act to check
+     */
+    protected void checkMimeType(DocumentAct act) {
+        checkMimeType(act.getFileName(), act.getMimeType());
+        IMObjectReference docRef = act.getDocument();
+        if (docRef != null) {
+            Document doc = (Document) service.get(docRef);
+            assertNotNull(doc);
+            checkMimeType(doc.getName(), doc.getMimeType());
+        }
+    }
+
+    /**
+     * Verifies that a document file name corresponds to the mime type.
+     *
+     * @param fileName the file name
+     * @param mimeType the mime type
+     */
+    protected void checkMimeType(String fileName, String mimeType) {
+        if (fileName.endsWith(".gif")) {
+            assertEquals("image/gif", mimeType);
+        } else if (fileName.endsWith(".png")) {
+            assertEquals("image/png", mimeType);
+        } else if (fileName.endsWith(".pdf")) {
+            assertEquals("application/pdf", mimeType);
+        } else if (fileName.endsWith(".html") || fileName.endsWith(".htm")) {
+            assertEquals("text/html", mimeType);
+        } else if (fileName.endsWith(".txt")){
+            assertEquals("text/plain", mimeType);
+        } else if (fileName.endsWith(".doc")){
+            assertEquals("application/msword", mimeType);
+        } else if (fileName.endsWith(".odt")){
+            assertEquals("application/vnd.oasis.opendocument.text", mimeType);
+        } else {
+            fail("Cannot determine if valid mime type for fileName: " + fileName);
+        }
     }
 
     /**
@@ -276,4 +336,5 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
             assertTrue(list.contains(file.getName()));
         }
     }
+
 }

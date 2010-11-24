@@ -40,9 +40,6 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -247,8 +244,7 @@ class IdLoader extends AbstractLoader {
     private boolean load(File file, DocumentAct act) {
         boolean result = false;
         try {
-            String mimeType = getMimeType(file);
-            Document doc = createDocument(file, mimeType);
+            Document doc = createDocument(file);
             DocumentAct duplicate = getDuplicate(act, doc);
             if (duplicate != null && file.getName().equals(duplicate.getFileName())) {
                 // identical content and file name
@@ -359,21 +355,6 @@ class IdLoader extends AbstractLoader {
             }
         }
         return result.toArray(new String[result.size()]);
-    }
-
-    /**
-     * Returns the mime type for a file.
-     *
-     * @param file the file
-     * @return the mime type of the file
-     * @throws IOException           for any I/O error
-     * @throws MalformedURLException for any URL error
-     */
-    private String getMimeType(File file) throws IOException {
-        URLConnection uc = file.toURI().toURL().openConnection();
-        String mimeType = uc.getContentType();
-        uc.getInputStream().close();
-        return mimeType;
     }
 
 }

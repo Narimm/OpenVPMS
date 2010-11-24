@@ -157,7 +157,7 @@ class RowMapper {
             }
             Object value = row.get(mapping.getSource());
             if (!mapping.getExcludeNull()
-                    || (mapping.getExcludeNull() && value != null)) {
+                || (mapping.getExcludeNull() && value != null)) {
                 mapValue(value, mapping, row);
             }
         }
@@ -260,6 +260,7 @@ class RowMapper {
      *
      * @param node the node containing the reference
      * @param row  the row being mapped
+     * @return the object corresponding to the reference
      */
     private IMObject getObject(Node node, ETLRow row) {
         Object value = row.get(node.getField());
@@ -293,7 +294,7 @@ class RowMapper {
             for (NodeDescriptor nodeDesc : nodes.values()) {
                 if (nodeDesc.isCollection()) {
                     IMObject[] children = nodeDesc.getChildren(result).toArray(
-                            new IMObject[0]);
+                            new IMObject[nodeDesc.getChildren(result).size()]);
                     for (IMObject child : children) {
                         nodeDesc.removeChildFromCollection(result, child);
                     }
@@ -305,6 +306,10 @@ class RowMapper {
 
     /**
      * Returns a value based on the corresponding {@link Mapping}.
+     *
+     * @param object  the object
+     * @param mapping the mapping
+     * @return the value
      */
     private Object getValue(Object object, Mapping mapping) {
         Object result;

@@ -90,12 +90,11 @@ abstract class AbstractLoader implements Loader {
     /**
      * Creates a new document.
      *
-     * @param file     the file to create the document from
-     * @param mimeType the file mime type
+     * @param file the file to create the document from
      * @return a new document
      */
-    protected Document createDocument(File file, String mimeType) {
-        return factory.create(file, mimeType);
+    protected Document createDocument(File file) {
+        return factory.create(file);
     }
 
     /**

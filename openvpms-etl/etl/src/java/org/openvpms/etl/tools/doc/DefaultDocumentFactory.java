@@ -18,12 +18,16 @@
 
 package org.openvpms.etl.tools.doc;
 
+import eu.medsea.mimeutil.MimeType;
+import eu.medsea.mimeutil.MimeUtil;
+import eu.medsea.mimeutil.detector.ExtensionMimeDetector;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.document.Document;
 
 import java.io.File;
+import java.util.Collection;
 
 
 /**
@@ -40,6 +44,10 @@ class DefaultDocumentFactory implements DocumentFactory {
     private final DocumentHandlers handlers;
 
 
+    static {
+        MimeUtil.registerMimeDetector(ExtensionMimeDetector.class.getName());
+    }
+
     /**
      * Creates a new <tt>DefaultDocumentFactory</tt>.
      */
@@ -50,13 +58,30 @@ class DefaultDocumentFactory implements DocumentFactory {
     /**
      * Creates a document from the supplied file.
      *
-     * @param file     the file
-     * @param mimeType the file's mime type
+     * @param file the file
      * @return a new document
      * @throws DocumentException for any error
      */
-    public Document create(File file, String mimeType) {
+    public Document create(File file) {
+        String mimeType = getMimeType(file);
         return DocumentHelper.create(file, mimeType, handlers);
+    }
+
+    /**
+     * Returns the mime type for a file.
+     *
+     * @param file the file
+     * @return the mime type of the file
+     * @throws DocumentException if the mime type cannot be determined
+     */
+    protected String getMimeType(File file) {
+        try {
+            Collection types = MimeUtil.getMimeTypes(file);
+            MimeType type = MimeUtil.getMostSpecificMimeType(types);
+            return type.toString();
+        } catch (Exception exception) {
+            throw new DocumentException(DocumentException.ErrorCode.ReadError, exception, file.getName());
+        }
     }
 
 }
