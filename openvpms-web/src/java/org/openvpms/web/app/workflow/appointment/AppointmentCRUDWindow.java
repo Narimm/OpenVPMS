@@ -221,11 +221,21 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     private void onCut() {
         PropertySet selected = browser.getSelected();
-        browser.setCut(selected);
+        Act appointment = browser.getAct(selected);
+        if (appointment != null && AppointmentStatus.PENDING.equals(appointment.getStatus())) {
+            browser.setCut(selected);
+        }
     }
 
     /**
      * Invoked to paste an appointment.
+     * <p/>
+     * For the paste to be successful:
+     * <ul>
+     * <li>the appointment must still exist and be PENDING
+     * <li>a schedule must be selected
+     * <li>a time slot must be selected
+     * </ul>
      */
     private void onPaste() {
         Act appointment = browser.getAct(browser.getCut());
@@ -233,13 +243,13 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         Date startTime = browser.getSelectedTime();
         if (appointment != null && schedule != null && startTime != null
             && AppointmentStatus.PENDING.equals(appointment.getStatus())) {
-            browser.setCut(null);
             AppointmentActEditor editor = new AppointmentActEditor(appointment, null, new DefaultLayoutContext());
             editor.setSchedule(schedule);
             editor.setStartTime(startTime); // will recalc end time
             EditDialog dialog = edit(editor);
             dialog.save(true); // checks for overlapping appointments
         }
+        browser.setCut(null);
     }
 
 }
