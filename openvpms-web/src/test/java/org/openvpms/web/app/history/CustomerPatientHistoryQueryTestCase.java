@@ -106,8 +106,11 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
         Party customer1 = TestHelper.createCustomer("", "XC", true);
         Party customer2 = TestHelper.createCustomer("", "XA", true);
         Party customer3 = TestHelper.createCustomer("", "XB", true);
-        Party patient1 = TestHelper.createPatient(true);
-        Party patient2 = TestHelper.createPatient(true);
+        Party patient1 = TestHelper.createPatient();
+        patient1.setName("XPatient-XB");
+        Party patient2 = TestHelper.createPatient();
+        patient2.setName("XPatient-XA");
+        save(patient1, patient2);
         customers.add(customer1);
         customers.add(customer2);
         customers.add(customer3);
@@ -144,8 +147,11 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
         Party customer1 = TestHelper.createCustomer("", "XC", true);
         Party customer2 = TestHelper.createCustomer("", "XA", true);
         Party customer3 = TestHelper.createCustomer("", "XB", true);
-        Party patient1 = TestHelper.createPatient(true);
-        Party patient2 = TestHelper.createPatient(true);
+        Party patient1 = TestHelper.createPatient();
+        patient1.setName("XPatient-XA");
+        Party patient2 = TestHelper.createPatient();
+        patient2.setName("XPatient-XB");
+        save(patient1, patient2);
         customers.add(customer1);
         customers.add(customer2);
         customers.add(customer3);
