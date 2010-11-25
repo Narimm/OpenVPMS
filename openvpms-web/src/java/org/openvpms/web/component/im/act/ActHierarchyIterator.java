@@ -60,58 +60,72 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      */
     private ActHierarchyFilter<T> filter;
 
+    /**
+     * The maximum depth to iterate to. Use <tt>-1</tt> to not limit the depth.
+     */
+    private int maxDepth;
 
     /**
-     * Creates a new <tt>ActHierarchyIterator</tt>.
+     * Constructs an <tt>ActHierarchyIterator</tt>.
      *
      * @param acts the collection of acts
      */
     public ActHierarchyIterator(Iterable<T> acts) {
-        this(acts, (Predicate) null);
+        this(acts, (Predicate) null, -1);
     }
 
     /**
-     * Creates a new <tt>ActHierarchyIterator</tt>.
+     * Constructs an <tt>ActHierarchyIterator</tt>.
      *
      * @param acts       the collection of acts
      * @param shortNames the child short names to include
      */
     public ActHierarchyIterator(Iterable<T> acts, String[] shortNames) {
-        this(acts, shortNames, true);
+        this(acts, shortNames, true, -1);
     }
 
     /**
-     * Creates a new <tt>ActHeirarchyFlattener</tt>.
+     * Constructs an <tt>ActHierarchyIterator</tt>.
+     *
+     * @param acts       the collection of acts
+     * @param shortNames the child short names to include
+     * @param maxDepth   the maximum depth to iterate to, or <tt>-1</tt> to have unlimited depth
+     */
+    public ActHierarchyIterator(Iterable<T> acts, String[] shortNames, int maxDepth) {
+        this(acts, shortNames, true, maxDepth);
+    }
+
+    /**
+     * Constructs an <tt>ActHeirarchyFlattener</tt>.
      *
      * @param acts       the collection of acts
      * @param shortNames the child short names to include/exclude
-     * @param include    if <tt>true</tt> include the acts, otherwise exclude
-     *                   them
+     * @param include    if <tt>true</tt> include the acts, otherwise exclude them
+     * @param maxDepth   the maximum depth to iterate to, or <tt>-1</tt> to have unlimited depth
      */
-    public ActHierarchyIterator(Iterable<T> acts, String[] shortNames,
-                                boolean include) {
-        this(acts, createIsA(shortNames, include));
+    public ActHierarchyIterator(Iterable<T> acts, String[] shortNames, boolean include, int maxDepth) {
+        this(acts, createIsA(shortNames, include), maxDepth);
     }
 
     /**
-     * Creates a new <tt>ActHeirarchyFlattener</tt>.
+     * Constructs an <tt>ActHeirarchyFlattener</tt>.
      *
      * @param acts      the collection of acts
-     * @param predicate the predicate to select act relationships. If null,
-     *                  indicates to select all child acts
+     * @param predicate the predicate to select act relationships. If <tt>null</tt>, indicates to select all child acts
+     * @param maxDepth  the maximum depth to iterate to, or <tt>-1</tt> to have unlimited depth
      */
-    public ActHierarchyIterator(Iterable<T> acts, Predicate predicate) {
+    public ActHierarchyIterator(Iterable<T> acts, Predicate predicate, int maxDepth) {
         this(acts, new ActHierarchyFilter<T>(predicate));
+        this.maxDepth = maxDepth;
     }
 
     /**
-     * Creates a new <tt>ActHeirarchyFlattener</tt>.
+     * Constructs an <tt>ActHeirarchyFlattener</tt>.
      *
      * @param acts   the collection of acts
      * @param filter the hierarchy flattener
      */
-    public ActHierarchyIterator(Iterable<T> acts,
-                                ActHierarchyFilter<T> filter) {
+    public ActHierarchyIterator(Iterable<T> acts, ActHierarchyFilter<T> filter) {
         this.acts = acts;
         this.filter = filter;
     }
@@ -122,7 +136,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      * @return a new iterator
      */
     public Iterator<T> iterator() {
-        return new ActIterator();
+        return new ActIterator(maxDepth);
     }
 
     /**
@@ -147,14 +161,25 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
          */
         private Stack<Iterator<T>> stack = new Stack<Iterator<T>>();
 
+        /**
+         * The current act.
+         */
         private T current;
+
+        /**
+         * The maximum depth in the heirarchy to descend to.
+         */
+        private int maxDepth;
 
 
         /**
-         * Creates a new <tt>ActIterator</tt>.
+         * Constructs an <tt>ActIterator</tt>.
+         *
+         * @param maxDepth the maximum depth in the heirarchy to descend to, or <tt>-1</tt> if there is no limit
          */
-        public ActIterator() {
+        public ActIterator(int maxDepth) {
             stack.push(acts.iterator());
+            this.maxDepth = maxDepth;
         }
 
         /**
@@ -208,9 +233,11 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
                     T act = iterator.next();
                     if (filter.include(act)) {
                         current = act;
-                        iterator = filter.filter(current).iterator();
-                        if (iterator.hasNext()) {
-                            stack.push(iterator);
+                        if (maxDepth == -1 || stack.size() < maxDepth) {
+                            iterator = filter.filter(current).iterator();
+                            if (iterator.hasNext()) {
+                                stack.push(iterator);
+                            }
                         }
                         return true;
                     }

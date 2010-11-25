@@ -164,8 +164,7 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
     protected void onPrint() {
         if (query != null) {
             try {
-                Iterable<Act> summary = new ActHierarchyIterator<Act>(
-                        query, query.getActItemShortNames());
+                Iterable<Act> summary = new ActHierarchyIterator<Act>(query, query.getActItemShortNames());
                 IMObjectReportPrinter<Act> printer
                         = new IMObjectReportPrinter<Act>(summary, PatientArchetypes.CLINICAL_EVENT);
                 String title = Messages.get("patient.record.summary.print");

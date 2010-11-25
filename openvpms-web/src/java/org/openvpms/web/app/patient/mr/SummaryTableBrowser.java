@@ -75,8 +75,9 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
     @Override
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
         PatientSummaryQuery query = (PatientSummaryQuery) getQuery();
+        // maxDepth = 2 - display the events, and their immediate children 
         pagedModel = new PagedActHierarchyTableModel<Act>(
-                (IMObjectTableModel<Act>) model, query.getActItemShortNames());
+                (IMObjectTableModel<Act>) model, 2, query.getActItemShortNames());
         PagedIMTable<Act> result = super.createTable(pagedModel);
         IMTable<Act> table = result.getTable();
         table.setDefaultRenderer(Object.class, new SummaryTableCellRenderer());
