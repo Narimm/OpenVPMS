@@ -20,14 +20,13 @@ package org.openvpms.report;
 
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
-import static org.openvpms.report.ReportException.ErrorCode.*;
-import org.openvpms.report.jasper.DynamicJasperReport;
+import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
+import static org.openvpms.report.ReportException.ErrorCode.UnsupportedTemplate;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.jasper.TemplatedJasperObjectSetReport;
 import org.openvpms.report.msword.MsWordIMReport;
@@ -103,11 +102,7 @@ public class ReportFactory {
         TemplateHelper helper = new TemplateHelper(service);
         Document doc = helper.getDocumentForArchetype(shortName);
         if (doc == null) {
-            ArchetypeDescriptor archetype = service.getArchetypeDescriptor(shortName);
-            if (archetype == null) {
-                throw new ReportException(InvalidArchetype, shortName);
-            }
-            return new DynamicJasperReport(archetype, service, handlers);
+            throw new ReportException(NoTemplateForArchetype, shortName);
         }
         return createIMObjectReport(doc, service, handlers);
     }
