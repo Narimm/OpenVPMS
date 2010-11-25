@@ -116,8 +116,10 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             protected void filter(FinancialAct act,
                                   List<FinancialAct> results) {
                 List<FinancialAct> acts = filter.filter(act);
-                results.add(act);
-                results.addAll(acts);
+                if (!acts.isEmpty()) {
+                    results.add(act);
+                    results.addAll(acts);
+                }
             }
         };
     }
@@ -130,7 +132,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
      */
     @Override
     protected PagedIMTable<FinancialAct>
-            createTable(IMTableModel<FinancialAct> model) {
+    createTable(IMTableModel<FinancialAct> model) {
         OrderSelectionTableModel orderModel
                 = (OrderSelectionTableModel) model;
         IMObjectTableModel<FinancialAct> pagedModel
@@ -253,8 +255,8 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         protected boolean include(FinancialAct child, FinancialAct parent) {
             DeliveryStatus status = rules.getDeliveryStatus(child);
             return (delivery)
-                    ? status != DeliveryStatus.FULL
-                    : status == DeliveryStatus.FULL;
+                   ? status != DeliveryStatus.FULL
+                   : status == DeliveryStatus.FULL;
         }
     }
 }
