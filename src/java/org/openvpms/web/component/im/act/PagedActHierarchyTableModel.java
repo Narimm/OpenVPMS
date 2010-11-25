@@ -41,17 +41,33 @@ public class PagedActHierarchyTableModel<T extends Act>
      */
     private String[] shortNames;
 
+    /**
+     * The maximum depth in the heirarchy to display. Use <tt>-1</tt> to specify unlimited depth
+     */
+    private int maxDepth;
+
+
+    /**
+      * Constructs a <tt>PagedActHierarchyTableModel</tt>.
+      *
+      * @param model      the underlying table model
+      * @param shortNames the archetype short names of the child acts to display
+      */
+     public PagedActHierarchyTableModel(IMObjectTableModel<T> model, String ... shortNames) {
+         this(model, -1, shortNames);
+     }
 
     /**
      * Construct a new <tt>PagedActHierarchyTableModel</tt>.
      *
      * @param model      the underlying table model
+     * @param maxDepth   the maximum depth in the heirarchy to display. Use <tt>-1</tt> to specify unlimited depth
      * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedActHierarchyTableModel(IMObjectTableModel<T> model,
-                                       String ... shortNames) {
+    public PagedActHierarchyTableModel(IMObjectTableModel<T> model, int maxDepth, String ... shortNames) {
         super(model);
         this.shortNames = shortNames;
+        this.maxDepth = maxDepth;
     }
 
     /**
@@ -83,10 +99,10 @@ public class PagedActHierarchyTableModel<T extends Act>
      *
      * @param objects    the acts
      * @param shortNames the child archetype short names
+     * @return an iterator to flatten the act heirarchy
      */
-    protected ActHierarchyIterator<T> createFlattener(List<T> objects,
-                                                      String[] shortNames) {
-        return new ActHierarchyIterator<T>(objects, shortNames);
+    protected ActHierarchyIterator<T> createFlattener(List<T> objects, String[] shortNames) {
+        return new ActHierarchyIterator<T>(objects, shortNames, maxDepth);
     }
 
 }
