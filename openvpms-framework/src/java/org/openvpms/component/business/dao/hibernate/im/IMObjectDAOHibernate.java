@@ -484,7 +484,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             ArchetypeDescriptor desc = cache.getArchetypeDescriptor(
                     reference.getArchetypeId());
             if (desc != null) {
-                result = get(desc.getClassName(), "id", reference.getId());
+                result = get(desc.getClassName(), reference);
             }
         }
         return result;
@@ -818,15 +818,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     }
 
     /**
-     * Retrieves an object given its class, identity property name and identity
-     * value.
+     * Retrieves an object given its class and reference.
      *
-     * @param clazz the object's class
-     * @param name  the identity property name
-     * @param value the identity property value
+     * @param clazz     the object's class
+     * @param reference the object reference
      * @return the corresponding object, or <tt>null</tt> if none is found
      */
-    private IMObject get(String clazz, final String name, final Object value) {
+    private IMObject get(String clazz, final IMObjectReference reference) {
         clazz = assembler.getDOClassName(clazz);
         if (clazz == null) {
             throw new IMObjectDAOException(ClassNameMustBeSpecified);
@@ -835,16 +833,14 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
         queryString.append("select entity from ");
         queryString.append(clazz);
-        queryString.append(" as entity where entity.");
-        queryString.append(name);
-        queryString.append(" = :");
-        queryString.append(name);
+        queryString.append(" as entity where entity.id = :id and entity.archetypeId.shortName = :shortName");
 
         return (IMObject) execute(new HibernateCallback() {
             public Object doInHibernate(Session session)
                     throws HibernateException {
                 Query query = session.createQuery(queryString.toString());
-                query.setParameter(name, value);
+                query.setParameter("id", reference.getId());
+                query.setParameter("shortName", reference.getArchetypeId().getShortName());
                 List results = query.list();
                 if (results.size() == 0) {
                     return null;
