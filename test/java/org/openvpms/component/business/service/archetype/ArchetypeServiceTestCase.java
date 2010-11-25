@@ -28,9 +28,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.FailedToDe
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.springframework.test.context.ContextConfiguration;
@@ -245,6 +247,30 @@ public class ArchetypeServiceTestCase extends AbstractArchetypeServiceTest {
         Set<Lookup> classifications = party.getClassifications();
         assertEquals(1, classifications.size());
         assertTrue(classifications.contains(lookup));
+    }
+
+    /**
+     * Verifies that both the archetype identifier and object Id are used when retrieving objects by reference.
+     * This tests the fix for OBF-215.
+     */
+    @Test
+    public void testOBF215() {
+        // create a lookup and save it
+        Lookup lookup = (Lookup) create("lookup.staff");
+        lookup.setCode("CODE" + System.nanoTime());
+        lookup.setName(lookup.getCode());
+        lookup.setDescription(lookup.getCode());
+        save(lookup);
+
+        // verify it can be retrieved
+        assertNotNull(get(lookup.getObjectReference()));
+
+        // create a reference using the saved lookup id, but a different lookup archetype identifier.
+        IMObjectReference reference = new IMObjectReference(new ArchetypeId("lookup.country"), lookup.getId());
+
+        // verify the retrieval fails
+        IMObject object = get(reference);
+        assertNull(object);
     }
 
     /**
