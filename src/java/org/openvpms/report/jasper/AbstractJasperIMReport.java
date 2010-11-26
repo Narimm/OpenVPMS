@@ -18,17 +18,16 @@
 
 package org.openvpms.report.jasper;
 
-import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.export.JRCsvExporter;
 import net.sf.jasperreports.engine.export.JRCsvExporterParameter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
@@ -38,6 +37,8 @@ import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.JRXlsExporterParameter;
 import net.sf.jasperreports.engine.export.JRXmlExporter;
 import net.sf.jasperreports.engine.fill.JREvaluator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -49,8 +50,6 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
 import static org.openvpms.report.ReportException.ErrorCode.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.HashPrintServiceAttributeSet;
@@ -156,8 +155,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * Returns the default mime type for report documents.
      *
      * @return the default mime type
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public String getDefaultMimeType() {
         return DocFormats.PDF_TYPE;
@@ -167,8 +166,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * Returns the supported mime types for report documents.
      *
      * @return the supported mime types
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public String[] getMimeTypes() {
         return MIME_TYPES;
@@ -182,8 +181,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param parameters a map of parameter names and their values, to pass to
      *                   the report
      * @return a document containing the report
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Map<String, Object> parameters) {
         return generate(parameters, getDefaultMimeType());
@@ -196,8 +195,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      *                   the report
      * @param mimeType   the output format of the report
      * @return a document containing the report
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Map<String, Object> parameters, String mimeType) {
         Document document;
@@ -205,7 +204,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         if (parameters != null) {
             properties.putAll(parameters);
         }
-        if(mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
+        if (mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
             properties.put(JRParameter.IS_IGNORE_PAGINATION, true);
         }
         try {
@@ -227,8 +226,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param mimeTypes  a list of mime-types, used to select the preferred
      *                   output format of the report
      * @return a document containing the report
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     @Deprecated
     public Document generate(Map<String, Object> parameters,
@@ -243,8 +242,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      *
      * @param objects the objects to report on
      * @return a document containing the report
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Iterator<T> objects) {
         return generate(objects, getDefaultMimeType());
@@ -256,8 +255,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param objects  the objects to report on
      * @param mimeType the output format of the report
      * @return a document containing the report
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Iterator<T> objects, String mimeType) {
         Map<String, Object> empty = Collections.emptyMap();
@@ -273,8 +272,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param parameters a map of parameter names and their values, to pass to
      *                   the report. May be <tt>null</tt>
      * @return a document containing the report
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Iterator<T> objects,
                              Map<String, Object> parameters) {
@@ -289,15 +288,15 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      *                   the report. May be <tt>null</tt>
      * @param mimeType   the output format of the report
      * @return a document containing the report
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Iterator<T> objects,
                              Map<String, Object> parameters, String mimeType) {
         Document document;
         try {
-            if(mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
-                parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);            	
+            if (mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
+                parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
             }
             JasperPrint print = report(objects, parameters);
             document = convert(print, mimeType);
@@ -493,14 +492,14 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
                 data = exportToRTF(report);
                 ext = DocFormats.RTF_EXT;
             } else if (DocFormats.XLS_TYPE.equals(mimeType)) {
-            	data = exportToXLS(report);
-            	ext = DocFormats.XLS_EXT;
+                data = exportToXLS(report);
+                ext = DocFormats.XLS_EXT;
             } else if (DocFormats.CSV_TYPE.equals(mimeType)) {
-            	data = exportToCSV(report);
-            	ext = DocFormats.CSV_EXT;
+                data = exportToCSV(report);
+                ext = DocFormats.CSV_EXT;
             } else if (DocFormats.XML_TYPE.equals(mimeType)) {
-            	data = exportToXML(report);
-            	ext = DocFormats.XML_EXT;
+                data = exportToXML(report);
+                ext = DocFormats.XML_EXT;
             } else {
                 throw new ReportException(UnsupportedMimeType, mimeType);
             }
@@ -517,7 +516,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
                                       exception.getMessage());
         } catch (Exception exception) {
             throw new ReportException(exception, FailedToGenerateReport,
-                    exception.getMessage());
+                                      exception.getMessage());
         }
         return document;
     }
@@ -570,9 +569,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     protected byte[] exportToCSV(JasperPrint report) throws JRException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         JRCsvExporter exporter = new JRCsvExporter();
-        exporter.setParameter(JRCsvExporterParameter.FIELD_DELIMITER,",");
-        exporter.setParameter(JRCsvExporterParameter.RECORD_DELIMITER,"\n");
-        exporter.setParameter(JRCsvExporterParameter.IGNORE_PAGE_MARGINS,Boolean.TRUE);
+        exporter.setParameter(JRCsvExporterParameter.FIELD_DELIMITER, ",");
+        exporter.setParameter(JRCsvExporterParameter.RECORD_DELIMITER, "\n");
+        exporter.setParameter(JRCsvExporterParameter.IGNORE_PAGE_MARGINS, Boolean.TRUE);
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, report);
         exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, stream);
         exporter.exportReport();
@@ -609,7 +608,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         String mimeType = null;
         for (String type : mimeTypes) {
             if (DocFormats.PDF_TYPE.equals(type)
-                    || DocFormats.RTF_TYPE.equals(type)) {
+                || DocFormats.RTF_TYPE.equals(type)) {
                 mimeType = type;
                 break;
             }
@@ -625,10 +624,13 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      *
      * @param print      the object to print
      * @param properties the print properties
-     * @throws JRException for any error
+     * @throws ReportException if <tt>print</tt> contains no pages
+     * @throws JRException     for any error
      */
-    private void print(JasperPrint print, PrintProperties properties)
-            throws JRException {
+    private void print(JasperPrint print, PrintProperties properties) throws JRException {
+        if (print.getPages().isEmpty()) {
+            throw new ReportException(NoPagesToPrint);
+        }
         if (log.isDebugEnabled()) {
             log.debug("PrinterName: " + properties.getPrinterName());
         }
