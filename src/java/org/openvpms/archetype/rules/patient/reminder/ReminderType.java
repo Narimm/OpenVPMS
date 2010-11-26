@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -94,9 +95,9 @@ public class ReminderType {
     public ReminderType(Entity reminderType, IArchetypeService service) {
         EntityBean bean = new EntityBean(reminderType, service);
         defaultInterval = bean.getInt("defaultInterval");
-        defaultUnits = DateUnits.valueOf(bean.getString("defaultUnits"));
+        defaultUnits = getDateUnits(bean, "defaultUnits", DateUnits.YEARS);
         cancelInterval = bean.getInt("cancelInterval");
-        cancelUnits = DateUnits.valueOf(bean.getString("cancelUnits"));
+        cancelUnits = getDateUnits(bean, "cancelUnits", DateUnits.YEARS);
         templates = new ArrayList<Template>();
         for (EntityRelationship template
                 : bean.getValues("templates", EntityRelationship.class)) {
@@ -172,6 +173,24 @@ public class ReminderType {
     }
 
     /**
+     * Returns the default interval's units.
+     *
+     * @return the default interval's units
+     */
+    public DateUnits getDefaultUnits() {
+        return defaultUnits;
+    }
+
+    /**
+     * Returns the cancel interval's units.
+     *
+     * @return the cancel interval's units
+     */
+    public DateUnits getCancelUnits() {
+        return cancelUnits;
+    }
+
+    /**
      * Returns the template relationship for a particular reminder count.
      *
      * @param reminderCount the reminder count
@@ -187,7 +206,7 @@ public class ReminderType {
      *
      * @param dueDate       the due date
      * @param reminderCount the no. of times a reminder has been sent
-     * @return the next due date for the reminder
+     * @return the next due date for the reminder, or <tt>null</tt> if the reminder has no next due date
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Date getNextDueDate(Date dueDate, int reminderCount) {
@@ -201,6 +220,8 @@ public class ReminderType {
 
     /**
      * Determines if a reminder is due in the specified date range.
+     * <p/>
+     * NOTE: any time component of the specified dates is ignored. 
      *
      * @param dueDate       the reminder's due date
      * @param reminderCount the no. of times the reminder has been sent
@@ -216,17 +237,15 @@ public class ReminderType {
         } else {
             nextDue = getNextDueDate(dueDate, reminderCount);
         }
-        if(from != null) {
-        	from = DateRules.getDate(from); //truncate from to date only
+        if (from != null) {
+            from = DateRules.getDate(from); // remove time component
         }
-        if(to != null) {
-        	to = DateRules.getDate(to); // truncate to to date only
-        	to = DateRules.getDate(to,1,DateUnits.DAYS); //add one day for comparison so get all reminders prior to this date
+        if (to != null) {
+            to = DateRules.getDate(to); // remove time component
+            to = DateRules.getDate(to, 1, DateUnits.DAYS); // add one day to get all reminders prior to this date
         }
-        if (nextDue != null) {
-        	nextDue = DateRules.getDate(nextDue);
-        }
-        
+        nextDue = DateRules.getDate(nextDue);
+
         return (from == null || nextDue.getTime() >= from.getTime())
                && (to == null || nextDue.getTime() < to.getTime());
     }
@@ -253,6 +272,19 @@ public class ReminderType {
             }
         }
         return null;
+    }
+
+    /**
+     * Helper to return the date units for a particular node, or default units if none are present.
+     *
+     * @param bean         the bean
+     * @param node         the node name
+     * @param defaultUnits the default units to use if none are specified
+     * @return the date units
+     */
+    private static DateUnits getDateUnits(IMObjectBean bean, String node, DateUnits defaultUnits) {
+        String units = bean.getString(node);
+        return (!StringUtils.isEmpty(units)) ? DateUnits.valueOf(units) : defaultUnits;
     }
 
     /**
@@ -292,7 +324,7 @@ public class ReminderType {
             IMObjectBean templateBean = new IMObjectBean(relationship, service);
             reminderCount = templateBean.getInt("reminderCount");
             interval = templateBean.getInt("interval");
-            units = DateUnits.valueOf(templateBean.getString("units"));
+            units = getDateUnits(templateBean, "units", DateUnits.DAYS);
             this.relationship = relationship;
         }
 

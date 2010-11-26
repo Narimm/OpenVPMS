@@ -560,7 +560,7 @@ public class TestHelper extends Assert {
      * @return the corresponding date-time
      */
     public static Date getDatetime(String value) {
-        return Timestamp.valueOf(value);
+        return new Date(Timestamp.valueOf(value).getTime()); // use Date, for easy comparison
     }
 
     /**
