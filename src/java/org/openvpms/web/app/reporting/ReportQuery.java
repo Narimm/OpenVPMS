@@ -20,13 +20,14 @@ package org.openvpms.web.app.reporting;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.LookupQuery;
@@ -70,6 +71,12 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      */
     private static final String TYPE_ID = "query.type";
 
+    /**
+     * The default sort constraint.
+     */
+    private static final SortConstraint[] DEFAULT_SORT
+            = new SortConstraint[]{new NodeSortConstraint("name", true)};
+
 
     /**
      * Constructs a new <tt>ReportQuery</tt> that queries IMObjects
@@ -80,6 +87,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
     public ReportQuery(Entity user) {
         super(new String[]{"entity.documentTemplate"}, Entity.class);
         this.user = user;
+        setDefaultSortConstraint(DEFAULT_SORT);
     }
 
     /**
@@ -157,7 +165,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
             archetypes = new ShortNameConstraint(type, true, activeOnly);
         }
         templates = new EntityResultSet<Entity>(archetypes, name, false,
-                                                getConstraints(), sort,
+                                                getConstraints(), null,
                                                 getMaxResults(), isDistinct());
 
         // Now filter for Reports, user Level and selected type
@@ -171,13 +179,16 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
                 if (templateArchetype.equalsIgnoreCase(
                         "REPORT") && (templateUserLevel <= userReportLevel)) {
                     if (getReportType() == null || getReportType().equals("") ||
-                            (reportType.equalsIgnoreCase(getReportType())))
+                        (reportType.equalsIgnoreCase(getReportType()))) {
                         result.add(object);
+                    }
                 }
             }
         }
 
-        return new IMObjectListResultSet<Entity>(result, getMaxResults());
+        IMObjectListResultSet<Entity> set = new IMObjectListResultSet<Entity>(result, getMaxResults());
+        set.sort(sort);
+        return set;
     }
 
     /**
