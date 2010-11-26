@@ -97,7 +97,7 @@
 		</node>
 		<node name="products" path="/entityRelationships"
 			type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
-			filter="entityRelationship.productSupplier" >
+			filter="entityRelationship.productSupplier" hidden="true" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">

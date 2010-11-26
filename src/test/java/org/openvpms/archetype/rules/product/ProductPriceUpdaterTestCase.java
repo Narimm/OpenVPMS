@@ -69,35 +69,6 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductPriceUpdater} when invoked via
-     * the <em>archetypeService.save.party.supplierperson.before</em> rule.
-     */
-    @Test
-    public void testUpdateFromSupplierPerson() {
-        Party party = (Party) create(SupplierArchetypes.SUPPLIER_PERSON);
-        IMObjectBean bean = new IMObjectBean(party);
-        bean.setValue("firstName", "Foo");
-        bean.setValue("lastName", "XSupplier" + party.hashCode());
-        bean.setValue("title", "MR");
-        bean.save();
-        checkUpdateFromSupplier(party);
-    }
-
-    /**
-     * Tests the {@link ProductPriceUpdater} when invoked via
-     * the <em>archetypeService.save.party.supplierorganisation.before</em>
-     * rule.
-     */
-    @Test
-    public void testUpdateFromSupplierOrganisation() {
-        Party party = (Party) create(SupplierArchetypes.SUPPLIER_ORGANISATION);
-        IMObjectBean bean = new IMObjectBean(party);
-        bean.setValue("name", "XSupplier" + party.hashCode());
-        bean.save();
-        checkUpdateFromSupplier(party);
-    }
-
-    /**
      * Verifies that a product can be saved with a custom unit price
      * i.e the unit price doesn't get overwritten when the product is saved
      * despite having an auto-update product-supplier relationship.
@@ -294,64 +265,6 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // verify that the price haven't updated
         checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.34"));
-    }
-
-    /**
-     * Verifies that:
-     * <ul>
-     * <li>product prices update when the associated supplier is saved.
-     * <li>product prices aren't updated when the supplier is inactive.
-     * </ul>
-     *
-     * @param supplier the supplier
-     */
-    private void checkUpdateFromSupplier(Party supplier) {
-        Product product = TestHelper.createProduct();
-        BigDecimal initialCost = BigDecimal.ZERO;
-        BigDecimal initialPrice = BigDecimal.ONE;
-
-        // add a new price
-        addUnitPrice(product, initialCost, initialPrice);
-
-        // create a product-supplier relationship.
-        // It should not trigger auto price updates
-        int packageSize = 20;
-        ProductSupplier ps = createProductSupplier(product, supplier);
-        ps.setPackageSize(packageSize);
-        assertFalse(ps.isAutoPriceUpdate());
-        supplier.addEntityRelationship(ps.getRelationship());
-        save(supplier);
-
-        checkPrice(product, initialCost, initialPrice);
-
-        // reload product-supplier relationship and set to auto update prices
-        product = get(product);
-        ps = getProductSupplier(product, supplier, packageSize);
-        assertNotNull(ps);
-        ps.setNettPrice(new BigDecimal("10.00"));
-        ps.setListPrice(new BigDecimal("20.00"));
-        ps.setAutoPriceUpdate(true);
-
-        // now trigger the rule to update prices
-        // NOTE: remove and add as the ps.getRelationship() returns the
-        // relationship from the product
-        supplier.removeEntityRelationship(ps.getRelationship());
-        supplier.addEntityRelationship(ps.getRelationship());
-        save(supplier);
-
-        // verify that the price has updated
-        checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
-
-        // now update the net, list price but disable the supplier. Prices shouldn't update
-        ps.setNettPrice(new BigDecimal("20.00"));
-        ps.setListPrice(new BigDecimal("40.00"));
-
-        supplier = get(supplier);
-        supplier.setActive(false);
-        save(supplier);
-
-        // verify that the price hasn't updated
-        checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
     }
 
     /**
