@@ -20,8 +20,8 @@
             top: 50%;
             left: 50%;
             width: 24em;
-            margin-left: -12em;     /* ~ half the width of the dialog */
-            margin-top : -91px;     /* half the height of the dialog */
+            margin-left: -12em; /* ~ half the width of the dialog */
+            margin-top: -91px; /* half the height of the dialog */
         }
 
         .border-br {
@@ -115,7 +115,7 @@
             background: url(images/error-red.gif) no-repeat;
             padding-left: 32px;
             padding-top: 4px;
-            min-height:24px;
+            min-height: 24px;
         }
 
     </style>
@@ -148,11 +148,10 @@
                                     <div class="header"><%= Messages.get("title.login")%>
                                     </div>
                                     <div class="content">
+                                        <img style="padding:5px" src="images/openvpms.gif" alt="OpenVPMS">
+
                                         <table style="border-collapse: collapse;">
-                                            <tbody>
-                                            <tr>
-                                            	<img src="images/openvpms.gif">
-                                            </tr>
+                                            <tbody>         
                                             <tr>
                                                 <td align="right" style="padding: 5px;">
                                                     <span class="label"><%= Messages.get("label.username") %></span>
@@ -177,7 +176,9 @@
                                             <%
                                                 if ("error".equals(request.getParameter("status"))) {
                                             %>
-                                            <div class="error"><%= Messages.get("login.error")%></div>
+                                            <div class="error">
+                                                <%= Messages.get("login.error")%>
+                                            </div>
                                             <%
                                                 }
                                             %>
