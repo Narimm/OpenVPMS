@@ -158,7 +158,7 @@
             <version>${commons.resources.version}</version>
         </dependency>
         <dependency>
-            <groupId>jasperreports</groupId>
+            <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
             <version>${jasperreports.version}</version>
             <exclusions>
