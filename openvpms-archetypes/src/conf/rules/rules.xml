@@ -41,7 +41,5 @@
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.party.patientPet.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.product.medication.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.product.merchandise.before.drl" />
-  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.party.supplierorganisation.before.drl" />
-  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.party.supplierperson.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.party.organisationPractice.before.drl"/>
 </rules>
