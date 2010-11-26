@@ -18,6 +18,7 @@
 
 package org.openvpms.report.jasper;
 
+import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.JRElement;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -36,6 +37,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.ReportException;
 import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToFindSubReport;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -149,39 +151,38 @@ public class JasperTemplateLoader {
      */
     protected void init(String name, JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
         try {
-            JRElement[] elements = design.getDetail().getElements();
-            for (JRElement element : elements) {
-                if (element instanceof JRDesignSubreport) {
-                    JRDesignSubreport subreport = (JRDesignSubreport) element;
-                    String reportName = getReportName(subreport);
-                    JasperDesign report = JasperReportHelper.getReport(
-                            reportName, service, handlers);
-                    if (report == null) {
-                        throw new ReportException(ReportException.ErrorCode.FailedToFindSubReport, reportName, name);
+            for (JRBand band : design.getDetailSection().getBands()) {
+                for (JRElement element : band.getElements()) {
+                    if (element instanceof JRDesignSubreport) {
+                        JRDesignSubreport subreport = (JRDesignSubreport) element;
+                        String reportName = getReportName(subreport);
+                        JasperDesign report = JasperReportHelper.getReport(
+                                reportName, service, handlers);
+                        if (report == null) {
+                            throw new ReportException(FailedToFindSubReport, reportName, name);
+                        }
+
+                        // replace the original expression with a parameter
+                        JRDesignExpression expression = new JRDesignExpression();
+                        expression.setText("$P{" + reportName + "}");
+                        expression.setValueClass(JasperReport.class);
+                        subreport.setExpression(expression);
+
+                        JasperReport compiled
+                                = JasperCompileManager.compileReport(report);
+                        subreports.add(compiled);
+                        parameters.put(reportName, compiled);
+
+                        JRDesignParameter param = new JRDesignParameter();
+                        param.setName(reportName);
+                        param.setValueClass(JasperReport.class);
+                        design.addParameter(param);
                     }
-
-                    // replace the original expression with a parameter
-                    JRDesignExpression expression = new JRDesignExpression();
-                    expression.setText("$P{" + reportName + "}");
-                    expression.setValueClass(JasperReport.class);
-                    subreport.setExpression(expression);
-
-                    JasperReport compiled
-                            = JasperCompileManager.compileReport(report);
-                    subreports.add(compiled);
-                    parameters.put(reportName, compiled);
-
-                    JRDesignParameter param = new JRDesignParameter();
-                    param.setName(reportName);
-                    param.setValueClass(JasperReport.class);
-                    design.addParameter(param);
                 }
             }
             report = JasperCompileManager.compileReport(design);
         } catch (JRException exception) {
-            throw new ReportException(exception,
-                                      FailedToCreateReport,
-                                      exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
         }
     }
 
