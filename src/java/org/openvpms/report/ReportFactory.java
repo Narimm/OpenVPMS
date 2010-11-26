@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
 import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
 import static org.openvpms.report.ReportException.ErrorCode.UnsupportedTemplate;
@@ -102,7 +103,8 @@ public class ReportFactory {
         TemplateHelper helper = new TemplateHelper(service);
         Document doc = helper.getDocumentForArchetype(shortName);
         if (doc == null) {
-            throw new ReportException(NoTemplateForArchetype, shortName);
+            String displayName = DescriptorHelper.getDisplayName(shortName, service);
+            throw new ReportException(NoTemplateForArchetype, displayName);
         }
         return createIMObjectReport(doc, service, handlers);
     }
@@ -122,7 +124,8 @@ public class ReportFactory {
         TemplateHelper helper = new TemplateHelper(service);
         Document doc = helper.getDocumentForArchetype(shortName);
         if (doc == null) {
-            throw new ReportException(NoTemplateForArchetype, shortName);
+            String displayName = DescriptorHelper.getDisplayName(shortName, service);
+            throw new ReportException(NoTemplateForArchetype, displayName);
         }
         return createObjectSetReport(doc, service, handlers);
     }
