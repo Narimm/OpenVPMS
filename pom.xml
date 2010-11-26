@@ -45,13 +45,6 @@
                     <include>**/*.properties</include>
                 </includes>
             </resource>
-            <resource>
-                <directory>${basedir}/src/reports</directory>
-                <includes>
-                    <include>archetype_template.jrxml</include>
-                    <include>archetype_subreport_template.jrxml</include>
-                </includes>
-            </resource>
         </resources>
         <testResources>
             <testResource>

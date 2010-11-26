@@ -59,6 +59,7 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      * Returns a data source for a collection node.
      *
      * @param name the collection node name
+     * @return the data source
      * @throws JRException for any error
      */
     public JRDataSource getDataSource(String name) throws JRException {
@@ -70,6 +71,7 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      *
      * @param name      the collection node name
      * @param sortNodes the list of nodes to sort on
+     * @return the data source
      * @throws JRException for any error
      */
     public abstract JRDataSource getDataSource(String name, String[] sortNodes)

@@ -32,10 +32,10 @@ import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
-import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
-import org.openvpms.report.jasper.DynamicJasperReport;
+import static org.openvpms.report.ReportException.ErrorCode.*;
 import org.openvpms.report.jasper.JasperIMReport;
 import org.openvpms.report.jasper.JasperReportHelper;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
@@ -76,6 +76,7 @@ public class JasperReportTool extends ReportTool {
      * Generates a report for an object and displays it on-screen.
      *
      * @param object the object
+     * @throws JRException for any jasper reports error
      */
     public void view(IMObject object) throws JRException {
         IMReport<IMObject> report = getReport(object);
@@ -87,7 +88,7 @@ public class JasperReportTool extends ReportTool {
             viewer.setVisible(true);
         } else {
             System.out.println("Can't view reports of type "
-                    + report.getClass().getName());
+                               + report.getClass().getName());
         }
     }
 
@@ -153,38 +154,27 @@ public class JasperReportTool extends ReportTool {
         String shortName = object.getArchetypeId().getShortName();
         TemplateHelper helper = new TemplateHelper(service);
         Document doc = helper.getDocumentForArchetype(shortName);
-        JasperIMReport<IMObject> report = null;
+        if (doc == null) {
+            throw new ReportException(NoTemplateForArchetype, shortName);
+        }
+
+        JasperIMReport<IMObject> report;
         try {
-            if (doc != null) {
-                if (doc.getName().endsWith(".jrxml")) {
-                    JasperDesign design = JasperReportHelper.getReport(
-                            doc, handlers);
-                    report = new TemplatedJasperIMObjectReport(design, service,
-                                                               handlers);
-                } else {
-                    System.err.println("Warning:" + doc.getName()
-                            + " not a recognised jasper extension. "
-                            + "Using dynamic report");
-                }
-            }
-            if (report == null) {
-                report = new DynamicJasperReport(
-                        service.getArchetypeDescriptor(shortName), service,
-                        handlers);
+            if (doc.getName().endsWith(DocFormats.JRXML_EXT)) {
+                JasperDesign design = JasperReportHelper.getReport(doc, handlers);
+                report = new TemplatedJasperIMObjectReport(design, service, handlers);
+            } else {
+                throw new ReportException(UnsupportedTemplate, doc.getName());
             }
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToCreateReport,
-                                      exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
         }
 
         if (showXML) {
             try {
-                JRXmlWriter.writeReport(report.getReport(),
-                                        new PrintStream(System.out), "UTF-8");
+                JRXmlWriter.writeReport(report.getReport(), new PrintStream(System.out), "UTF-8");
                 for (JasperReport subreport : report.getSubreports()) {
-                    JRXmlWriter.writeReport(subreport,
-                                            new PrintStream(System.out),
-                                            "UTF-8");
+                    JRXmlWriter.writeReport(subreport, new PrintStream(System.out), "UTF-8");
                 }
             } catch (JRException exception) {
                 exception.printStackTrace();
@@ -222,6 +212,8 @@ public class JasperReportTool extends ReportTool {
 
     /**
      * Prints usage information.
+     *
+     * @param parser the command line parser
      */
     private static void displayUsage(JSAP parser) {
         System.err.println();
