@@ -48,7 +48,7 @@ public class RepeatSelector<T extends IMObject> extends Selector<T> {
      */
     public Button getSelectAgain() {
         if (selectAgain == null) {
-            selectAgain = ButtonFactory.create("selectAgain");
+            selectAgain = ButtonFactory.create("findAgain");
             selectAgain.setVisible(false);
             selectAgain.setEnabled(false); // disables shortcuts
         }
@@ -82,7 +82,7 @@ public class RepeatSelector<T extends IMObject> extends Selector<T> {
      */
     @Override
     protected Button createSelectButton() {
-        return ButtonFactory.create("select");
+        return ButtonFactory.create("find");
     }
 
 
