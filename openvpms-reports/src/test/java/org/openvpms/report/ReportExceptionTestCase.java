@@ -37,7 +37,7 @@ public class ReportExceptionTestCase {
     @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     11, ReportException.ErrorCode.values().length);
+                     12, ReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
         checkException(FailedToFindSubReport, "There is no sub-report named: foo\nThis is needed by report: bar",
@@ -60,6 +60,7 @@ public class ReportExceptionTestCase {
                        "No document template available for report type: foo", "foo");
         checkException(ReportException.ErrorCode.UnsupportedTemplate,
                        "Unsupported document template: foo", "foo");
+        checkException(ReportException.ErrorCode.NoPagesToPrint, "Report has no pages to print");
     }
 
     /**

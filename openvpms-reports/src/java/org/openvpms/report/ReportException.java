@@ -49,7 +49,8 @@ public class ReportException extends OpenVPMSException {
         FailedToGetParameters,
         InvalidArchetype,
         NoTemplateForArchetype,
-        UnsupportedTemplate
+        UnsupportedTemplate,
+        NoPagesToPrint,
     }
 
     /**
