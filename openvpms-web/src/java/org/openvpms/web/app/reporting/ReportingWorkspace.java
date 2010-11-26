@@ -97,7 +97,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
     protected boolean refreshWorkspace() {
         User user = GlobalContext.getInstance().getUser();
         user = IMObjectHelper.reload(user);
-        return IMObjectHelper.isSame(this.user, user);
+        return !IMObjectHelper.isSame(this.user, user);
     }
 
     /**
