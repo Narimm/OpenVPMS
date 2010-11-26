@@ -20,6 +20,7 @@ package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -45,6 +46,12 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      */
     private static final ActStatuses STATUSES = new ActStatuses(
             "act.customerAccountChargesInvoice", FinancialActStatus.POSTED);
+    /**
+     * The customer archetype short names.
+     */
+    private static final String[] CUSTOMER_SHORT_NAMES = {
+            "party.customer*", "party.organisationOTC"
+    };
 
 
     /**
@@ -52,6 +59,7 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      */
     public ChargeWorkspace() {
         super("customer", "invoice");
+        setArchetypes(Party.class, CUSTOMER_SHORT_NAMES);
         setChildArchetypes(FinancialAct.class, "act.customerAccountCharges*");
     }
 
