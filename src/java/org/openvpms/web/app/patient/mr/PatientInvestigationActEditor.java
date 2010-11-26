@@ -36,9 +36,9 @@ import org.openvpms.web.component.property.Property;
 public class PatientInvestigationActEditor extends PatientDocumentActEditor {
 
     /**
-     * Determines if the button to print the form should be enabled.
+     * Flag to indicate if the Print Form button should be enabled or disabled.
      */
-    private boolean enableButton;
+    Boolean enableButton;
 
     /**
      * Creates a new <tt>PatientInvestigationActEditor</tt>.
@@ -49,7 +49,6 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
      */
     public PatientInvestigationActEditor(DocumentAct act, Act parent, LayoutContext context) {
         super(act, parent, context);
-        enableButton = !act.isNew();
     }
 
     /**
@@ -79,8 +78,8 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
         boolean isNew = getObject().isNew();
         boolean saved = super.save();
         if (saved && isNew) {
-            // only enable printing of the form if the act has been saved
-            enableButton = true;
+            // enable printing of the form if the act has been saved and was previously unsaved
+            enableButton = true; // getObject().isNew() will be true until transaction commits, so need this flag
             onLayout();
         }
         return saved;
@@ -122,8 +121,23 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         PatientInvestigationActLayoutStrategy strategy = new PatientInvestigationActLayoutStrategy(getDocumentEditor(),
                                                                                                    getVersionsEditor());
-        strategy.setEnableButton(enableButton);
+        strategy.setEnableButton(enablePrintForm());
         return strategy;
     }
 
+    /**
+     * Determines if the Print Form button should be displayed.
+     * <p/>
+     * Notes:
+     * <ul>
+     * <li>enableButton cannot be set in the constructor as createLayoutStrategy() is invoked during construction,
+     * by which time it is too late
+     * <li>getObject().isNew() returns true until the transaction commits
+     * </ul>
+     *
+     * @return <tt>true</tt> if it should be displayed, otherwise <tt>false</tt>
+     */
+    private boolean enablePrintForm() {
+        return enableButton != null && enableButton || !getObject().isNew();
+    }
 }
