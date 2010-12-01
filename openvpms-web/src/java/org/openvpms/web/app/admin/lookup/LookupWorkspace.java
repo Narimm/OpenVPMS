@@ -48,7 +48,7 @@ public class LookupWorkspace extends ResultSetCRUDWorkspace<Lookup> {
     @Override
     protected CRUDWindow<Lookup> createCRUDWindow() {
         QueryBrowser<Lookup> browser = getBrowser();
-        return new LookupCRUDWindow(getArchetypes(), browser.getResultSet());
+        return new LookupCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet());
     }
 
 }

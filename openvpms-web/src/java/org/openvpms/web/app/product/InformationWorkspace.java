@@ -74,7 +74,7 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
      */
     protected CRUDWindow<Product> createCRUDWindow() {
         QueryBrowser<Product> browser = getBrowser();
-        return new ProductCRUDWindow(getArchetypes(), browser.getResultSet());
+        return new ProductCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet());
     }
 
 }

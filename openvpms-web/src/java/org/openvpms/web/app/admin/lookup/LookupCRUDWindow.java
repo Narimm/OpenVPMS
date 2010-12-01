@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -37,7 +38,6 @@ import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -65,10 +65,11 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
      * Constructs a <tt>LookupCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
+     * @param query      the query
      * @param lookups    the lookups
      */
-    public LookupCRUDWindow(Archetypes<Lookup> archetypes, ResultSet<Lookup> lookups) {
-        super(archetypes, lookups);
+    public LookupCRUDWindow(Archetypes<Lookup> archetypes, Query<Lookup> query, ResultSet<Lookup> lookups) {
+        super(archetypes, query, lookups);
     }
 
     /**

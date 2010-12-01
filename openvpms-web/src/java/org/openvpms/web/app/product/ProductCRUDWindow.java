@@ -29,6 +29,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
@@ -55,10 +56,11 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      * Constructs a <tt>ProductCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
+     * @param query      the query. May be <tt>null</tt>
      * @param set        the result set. May be <tt>null</tt>
      */
-    public ProductCRUDWindow(Archetypes<Product> archetypes, ResultSet<Product> set) {
-        super(archetypes, set);
+    public ProductCRUDWindow(Archetypes<Product> archetypes, Query<Product> query, ResultSet<Product> set) {
+        super(archetypes, query, set);
     }
 
     /**
