@@ -27,6 +27,8 @@ import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusCommand;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
+import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.ViewResultSetDialog;
@@ -52,16 +54,34 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      */
     private ResultSet<T> set;
 
+    /**
+     * The query.
+     */
+    private Query<T> query;
+
 
     /**
      * Constructs a <tt>ResultSetCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create instances of
+     * @param query      the query. May be <tt>null</tt>
      * @param set        the result set. May be <tt>null</tt>
      */
-    public ResultSetCRUDWindow(Archetypes<T> archetypes, ResultSet<T> set) {
+    public ResultSetCRUDWindow(Archetypes<T> archetypes, Query<T> query, ResultSet<T> set) {
         super(archetypes);
         setResultSet(set);
+        setQuery(query);
+    }
+
+    /**
+     * Sets the query.
+     * <p/>
+     * This should only be used to access the query parameters. The result set will be passed via {@link #setResultSet}.
+     *
+     * @param query the query
+     */
+    public void setQuery(Query<T> query) {
+        this.query = query;
     }
 
     /**
@@ -112,6 +132,25 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
             });
             dialog.show();
         }
+    }
+
+    /**
+     * Invoked when the 'new' button is pressed.
+     * <p/>
+     * This implementation specifies as the default archetype the one selected by the query, if present.
+     *
+     * @param archetypes the archetypes
+     */
+    @Override
+    protected void onCreate(Archetypes<T> archetypes) {
+        if (query != null && query instanceof AbstractArchetypeQuery) {
+            String selected = ((AbstractArchetypeQuery) query).getShortName();
+            if (selected != null) {
+                archetypes = Archetypes.create(archetypes.getShortNames(), archetypes.getType(), selected,
+                                               archetypes.getDisplayName());
+            }
+        }
+        super.onCreate(archetypes);
     }
 
     /**

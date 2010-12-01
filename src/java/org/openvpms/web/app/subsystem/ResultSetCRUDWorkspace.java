@@ -73,7 +73,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     @Override
     protected CRUDWindow<T> createCRUDWindow() {
         QueryBrowser<T> browser = getBrowser();
-        return new ResultSetCRUDWindow<T>(getArchetypes(), browser.getResultSet());
+        return new ResultSetCRUDWindow<T>(getArchetypes(), browser.getQuery(), browser.getResultSet());
     }
 
     /**
@@ -197,7 +197,9 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
      */
     private void updateResultSet() {
         QueryBrowser<T> browser = getBrowser();
-        getCRUDWindow().setResultSet(browser.getResultSet());
+        ResultSetCRUDWindow<T> window = getCRUDWindow();
+        window.setQuery(browser.getQuery());
+        window.setResultSet(browser.getResultSet());
     }
 
 }
