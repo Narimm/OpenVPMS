@@ -16,9 +16,9 @@
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="lookup.alertType.1.0" latest="true"
+    <archetype name="lookup.patientAlertType.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
-               displayName="Alert Type">
+               displayName="Patient Alert Type">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="code" path="/code" type="java.lang.String"
@@ -28,13 +28,21 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="name" type="java.lang.String" path="/name"
-              minCardinality="1"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(/name,lookup:isDefault(/defaultLookup))"/>
-        <node displayName="default" name="defaultLookup"
-              type="java.lang.Boolean" path="/defaultLookup"
+              derivedValue="concat(/name,' ', lookup:isDefault(/defaultLookup))"/>
+        <node name="priority" path="/details/priority" type="java.lang.String" defaultValue="'HIGH'" minCardinality="1">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="HIGH" value="High"/>
+                    <property name="MEDIUM" value="Medium"/>
+                    <property name="LOW" value="Low"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="colour" path="/details/colour" type="java.lang.String" minCardinality="1" maxLength="8"/>
+        <node displayName="default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"
               defaultValue="false()"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
