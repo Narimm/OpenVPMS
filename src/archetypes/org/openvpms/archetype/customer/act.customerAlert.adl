@@ -11,41 +11,39 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="act.patientAlert.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.act.Act" displayName="Patient Alert">
+    <archetype name="act.customerAlert.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Customer Alert">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Alert'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
               derivedValue="concat(openvpms:lookup(., 'alertType'), ' - ', /reason,' End Date: ', date:formatDate(/activityEndTime))"/>
-        <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" hidden="true"/>
-        <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
-              filter="participation.patient" hidden="true"/>
-        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
-              filter="participation.author" hidden="true"/>
+        <node name="customer" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.customer" hidden="true"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0"/>
         <node name="alertType" path="/details/alertType" type="java.lang.String"
               minCardinality="1" maxLength="15">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
-                <property name="source" value="lookup.patientAlertType"/>
-                <errorMessage>An error message</errorMessage>
+                <property name="source" value="lookup.customerAlertType"/>
             </assertion>
         </node>
         <node name="reason" path="/reason" type="java.lang.String" maxLength="100"/>
-        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="1000"/>
-        <node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.author"/>
+        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="2000"/>
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>
                     <property name="COMPLETED" value="Completed"/>
                 </propertyList>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
     </archetype>
