@@ -175,6 +175,17 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="alerts" path="/classifications" parentChild="false"
+              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+              filter="lookup.customerAlertType">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.customerAlertType"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="classifications" displayName="Categories" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
               filter="lookup.customerType">

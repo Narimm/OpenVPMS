@@ -21,7 +21,9 @@ package org.openvpms.archetype.rules.finance.account;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -29,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -43,17 +46,22 @@ public class AccountType {
      * The account fee type.
      */
     public enum FeeType {
+
         FIXED, PERCENTAGE
     }
 
     /**
      * Bean wrapper for the lookup.
      */
-    private IMObjectBean bean;
-
+    private final IMObjectBean bean;
 
     /**
-     * Constructs a new <tt>AccountType</tt>.
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * Constructs an <tt>AccountType</tt>.
      *
      * @param lookup the lookup
      */
@@ -69,6 +77,7 @@ public class AccountType {
      */
     public AccountType(Lookup lookup, IArchetypeService service) {
         bean = new IMObjectBean(lookup, service);
+        this.service = service;
     }
 
     /**
@@ -207,12 +216,20 @@ public class AccountType {
     }
 
     /**
-     * Determines if an alert should be displayed for this account type.
+     * Returns the alert associated with this account type.
      *
-     * @return <tt>true</tt> if an alert should be displayed, otherwise
-     * <tt>false</tt>
+     * @return the alert lookup, or <tt>null</tt> if this account type has no alert
      */
-    public boolean showAlert() {
-        return bean.getBoolean("showAlert");
+    public Lookup getAlert() {
+        Lookup result = null;
+        List<LookupRelationship> relationships = bean.getValues("alert", LookupRelationship.class);
+        if (!relationships.isEmpty()) {
+            IMObjectReference ref = relationships.get(0).getTarget();
+            if (ref != null) {
+                result = (Lookup) service.get(ref);
+            }
+        }
+        return result;
     }
+
 }
