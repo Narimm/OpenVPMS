@@ -279,7 +279,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         }
 
         /**
-         * This resets the iterator but does not do any sorting.
+         * Sorts the set. This resets the iterator.
          *
          * @param sort the sort criteria. May be <tt>null</tt>
          */

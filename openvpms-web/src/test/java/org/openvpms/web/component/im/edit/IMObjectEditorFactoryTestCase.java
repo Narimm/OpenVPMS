@@ -30,6 +30,7 @@ import org.openvpms.web.app.admin.lookup.LookupEditor;
 import org.openvpms.web.app.admin.lookup.SpeciesLookupEditor;
 import org.openvpms.web.app.admin.lookup.SuburbLookupEditor;
 import org.openvpms.web.app.admin.lookup.MacroEditor;
+import org.openvpms.web.app.admin.lookup.AlertTypeEditor;
 import org.openvpms.web.app.admin.template.DocumentTemplatePrinterEditor;
 import org.openvpms.web.app.customer.CustomerEditor;
 import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
@@ -436,14 +437,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreateLookupEditor() {
-        checkCreate("lookup.alertType", LookupEditor.class);
+        checkCreate("lookup.currency", LookupEditor.class);
     }
 
     /**
      * Verifues that a {@link MacroEditor} is created for <em>lookup.macro</em>/
      */
     @Test
-    public void testCreateMacroEdutor() {
+    public void testCreateMacroEditor() {
         checkCreate("lookup.macro", MacroEditor.class);
     }
     
@@ -463,6 +464,16 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
         checkCreate("lookup.suburb", SuburbLookupEditor.class);
     }
 
+    /**
+     * Verifies that a {@link AlertTypeEditor} is created for <em>lookup.customerAlertType</em> and
+     * <em>lookup.patientAlertType</em>.
+     */
+    @Test
+    public void testCreateAlertTypeEditor() {
+        checkCreate("lookup.customerAlertType", AlertTypeEditor.class);
+        checkCreate("lookup.patientAlertType", AlertTypeEditor.class);
+
+    }
     /**
      * Verifies that a {@link PatientClinicalEventActEditor} is created
      * for <em>act.patientClinicalEvent</em>.

@@ -336,6 +336,24 @@ public abstract class ResultSetAdapter<A, T> implements ResultSet<T> {
     }
 
     /**
+     * Sets the underlying result set.
+     *
+     * @param set the result set
+     */
+    protected void setResultSet(ResultSet<A> set) {
+        this.set = set;
+    }
+
+    /**
+     * Returns the underlying result set.
+     *
+     * @return the underlying result set
+     */
+    protected ResultSet<A> getResultSet() {
+        return set;
+    }
+
+    /**
      * Converts a page.
      *
      * @param page the page to convert

@@ -63,7 +63,8 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      */
     @Override
     public Component getSummary() {
-        return CustomerSummary.getSummary(getObject());
+        CustomerSummary summarizer = new CustomerSummary();
+        return summarizer.getSummary(getObject());
     }
 
     /**

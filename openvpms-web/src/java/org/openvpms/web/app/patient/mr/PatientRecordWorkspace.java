@@ -42,6 +42,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.DoubleClickMonitor;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -143,7 +144,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     @Override
     public Component getSummary() {
-        return CustomerPatientSummary.getSummary(getObject());
+        return new CustomerPatientSummary().getSummary(getObject());
     }
 
     /**
@@ -229,8 +230,8 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
                                                   createReminderAlertQuery(),
                                                   createDocumentQuery(),
                                                   createChargesQuery());
-        browser.setListener(new RecordBrowserListener() {
-            public void onViewChanged() {
+        browser.setListener(new TabbedBrowserListener() {
+            public void onBrowserChanged() {
                 changeCRUDWindow();
             }
         });

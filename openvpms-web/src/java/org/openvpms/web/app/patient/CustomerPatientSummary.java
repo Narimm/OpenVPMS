@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.patient;
 
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -35,10 +34,23 @@ import org.openvpms.web.component.util.ColumnFactory;
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- * @see CustomerSummary
+ * @see org.openvpms.web.app.customer.CustomerSummary
  * @see PatientSummary
  */
 public class CustomerPatientSummary {
+
+    /**
+     * The patient rules.
+     */
+    private final PatientRules rules;
+
+
+    /**
+     * Constructs a <tt>CustomerPatientSummary</tt>.
+     */
+    public CustomerPatientSummary() {
+        rules = new PatientRules();
+    }
 
     /**
      * Returns a component displaying customer and patient summary details.
@@ -51,10 +63,9 @@ public class CustomerPatientSummary {
      * @return the component, or <tt>null</tt> if the patient is <tt>null</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static Component getSummary(Party patient) {
+    public Component getSummary(Party patient) {
         Component result = null;
         if (patient != null) {
-            PatientRules rules = new PatientRules();
             Party customer = rules.getOwner(patient);
             result = getSummary(customer, patient);
         }
@@ -72,7 +83,7 @@ public class CustomerPatientSummary {
      * @return a summary component, or <tt>null</codett> if there is no summary
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static Component getSummary(Act act) {
+    public Component getSummary(Act act) {
         Component result = null;
         if (act != null) {
             Party customer;
@@ -94,21 +105,22 @@ public class CustomerPatientSummary {
      *         both <tt>null</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private static Component getSummary(Party customer, Party patient) {
+    private Component getSummary(Party customer, Party patient) {
         Component result = null;
-        Component customerSummary = (customer != null) ?
-                CustomerSummary.getSummary(customer) : null;
+        Component customerSummary = null;
+        if (customer != null) {
+            customerSummary = new CustomerSummary().getSummary(customer);
+        }
         Component patientSummary = (patient != null) ?
-                new PatientSummary().getSummary(patient) : null;
+                                   new PatientSummary().getSummary(patient) : null;
         if (customerSummary != null || patientSummary != null) {
-            Column column = ColumnFactory.create();
+            result = ColumnFactory.create("CellSpacing");
             if (customerSummary != null) {
-                column.add(customerSummary);
+                result.add(customerSummary);
             }
             if (patientSummary != null) {
-                column.add(patientSummary);
+                result.add(patientSummary);
             }
-            result = column;
         }
         return result;
     }

@@ -22,7 +22,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -32,8 +31,10 @@ import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.LookupQuery;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
+import org.openvpms.web.component.im.query.LocalSortResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -42,44 +43,46 @@ import java.util.List;
 
 
 /**
- * Query for <em>act.customerNote</em> acts.
+ * Query for <em>act.customerAlert</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NoteQuery extends DateRangeActQuery<Act> {
+public class CustomerAlertQuery extends DateRangeActQuery<Act> {
 
     /**
-     * The customer note act.
+     * The customer alert act.
      */
-    public static final String CUSTOMER_NOTE = "act.customerNote";
+    public static final String CUSTOMER_ALERT = "act.customerAlert";
 
     /**
-     * The note categories.
+     * The alert types.
      */
-    private final LookupField categories;
+    private final LookupField alertTypes;
 
     /**
-     * The selected note category. If <tt>null</tt>, indicates to display
-     * all notes.
+     * The selected alert type. If <tt>null</tt>, indicates to display all alerts.
      */
-    private String category;
+    private String alertType;
+
+    /**
+     * The statuses to query.
+     */
+    private static final ActStatuses STATUSES = new ActStatuses(CUSTOMER_ALERT);
 
 
     /**
-     * Constructs a new <tt>NoteQuery</tt>.
+     * Constructs an <tt>AlertQuery</tt>.
      *
-     * @param customer the customer to query notes for
+     * @param customer the customer to query alerts for
      */
-    public NoteQuery(Party customer) {
-        super(customer, "customer", "participation.customer", new String[]{CUSTOMER_NOTE}, Act.class);
-
-        LookupQuery source
-                = new ArchetypeLookupQuery("lookup.customerNoteCategory");
-        categories = LookupFieldFactory.create(source, true);
-        categories.addActionListener(new ActionListener() {
+    public CustomerAlertQuery(Party customer) {
+        super(customer, "customer", "participation.customer", new String[]{CUSTOMER_ALERT}, STATUSES, Act.class);
+        LookupQuery source = new ArchetypeLookupQuery("lookup.customerAlertType");
+        alertTypes = LookupFieldFactory.create(source, true);
+        alertTypes.addActionListener(new ActionListener() {
             public void onAction(ActionEvent e) {
-                onCategoryChanged();
+                onAlertTypeChanged();
             }
         });
     }
@@ -89,13 +92,14 @@ public class NoteQuery extends DateRangeActQuery<Act> {
      *
      * @param sort the sort constraint. May be <tt>null</tt>
      * @return the query result set. May be <tt>null</tt>
-     * @throws ArchetypeServiceException if the query fails
+     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
+     *          if the query fails
      */
     @Override
     public ResultSet<Act> query(SortConstraint[] sort) {
         ResultSet<Act> result = super.query(sort);
-        if (category != null) {
-            result = filterOnCategory(result, sort);
+        if (alertType != null) {
+            result = filterOnAlertType(result, sort);
         }
         return result;
     }
@@ -107,28 +111,41 @@ public class NoteQuery extends DateRangeActQuery<Act> {
      */
     @Override
     protected void doLayout(Component container) {
-        container.add(LabelFactory.create("customer.note.category"));
-        container.add(categories);
-        getFocusGroup().add(categories);
+        container.add(LabelFactory.create("customer.alert.type"));
+        container.add(alertTypes);
+        getFocusGroup().add(alertTypes);
         super.doLayout(container);
-        FocusHelper.setFocus(categories);
+        FocusHelper.setFocus(alertTypes);
     }
 
     /**
-     * Filters notes to include only those that have the selected category.
+     * Creates a new result set.
+     *
+     * @param sort the sort constraint. May be <code>null</code>
+     * @return a new result set
+     */
+    @Override
+    protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
+        ResultSet<Act> set = super.createResultSet(null);  // intercept any virtual sort nodes
+        LocalSortResultSet<Act> result = new LocalSortResultSet<Act>(set);
+        result.sort(sort);
+        return result;
+    }
+
+    /**
+     * Filters notes to include only those that have the selected alert type.
      *
      * @param set  the set to filter
      * @param sort the sort constraint. May be <tt>null</tt>
      * @return the filtered set
      */
-    private ResultSet<Act> filterOnCategory(ResultSet<Act> set,
-                                            SortConstraint[] sort) {
+    private ResultSet<Act> filterOnAlertType(ResultSet<Act> set, SortConstraint[] sort) {
         List<Act> matches = new ArrayList<Act>();
         while (set.hasNext()) {
             IPage<Act> page = set.next();
             for (Act act : page.getResults()) {
                 IMObjectBean bean = new IMObjectBean(act);
-                if (category.equals(bean.getValue("category"))) {
+                if (alertType.equals(bean.getValue("alertType"))) {
                     matches.add(act);
                 }
             }
@@ -141,11 +158,12 @@ public class NoteQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Invoked when the category changes.
+     * Invoked when the alert type changes.
      */
-    private void onCategoryChanged() {
-        category = categories.getSelectedCode();
+    private void onAlertTypeChanged() {
+        alertType = alertTypes.getSelectedCode();
         onQuery();
     }
+
 
 }

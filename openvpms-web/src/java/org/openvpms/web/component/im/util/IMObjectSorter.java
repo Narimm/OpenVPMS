@@ -31,10 +31,13 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -48,6 +51,7 @@ import java.util.List;
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @see VirtualNodeSortConstraint
  */
 public class IMObjectSorter {
 
@@ -63,17 +67,18 @@ public class IMObjectSorter {
      * @param objects the objects to sort.
      * @param sort    the sort criteria
      */
-    public static <T extends IMObject> void sort(List<T> objects,
-                                                 SortConstraint[] sort) {
+    @SuppressWarnings("unchecked")
+    public static <T extends IMObject> void sort(List<T> objects, SortConstraint[] sort) {
         ComparatorChain comparator = new ComparatorChain();
         for (SortConstraint constraint : sort) {
-            if (constraint instanceof NodeSortConstraint) {
-                Comparator node
-                        = getComparator((NodeSortConstraint) constraint);
+            if (constraint instanceof VirtualNodeSortConstraint) {
+                Comparator node = getComparator((VirtualNodeSortConstraint) constraint);
+                comparator.addComparator(node);
+            } else if (constraint instanceof NodeSortConstraint) {
+                Comparator node = getComparator((NodeSortConstraint) constraint);
                 comparator.addComparator(node);
             } else if (constraint instanceof ArchetypeSortConstraint) {
-                Comparator type =
-                        getComparator((ArchetypeSortConstraint) constraint);
+                Comparator type = getComparator((ArchetypeSortConstraint) constraint);
                 comparator.addComparator(type);
                 break;
             }
@@ -89,18 +94,18 @@ public class IMObjectSorter {
      * @param sort        the sort criteria
      * @param transformer a transformer to return the underlying IMObject.
      */
-    public static <T> void sort(
-            List<T> objects, SortConstraint[] sort, Transformer transformer) {
+    @SuppressWarnings("unchecked")
+    public static <T> void sort(List<T> objects, SortConstraint[] sort, Transformer transformer) {
         ComparatorChain comparator = new ComparatorChain();
         for (SortConstraint constraint : sort) {
-            if (constraint instanceof NodeSortConstraint) {
-                Comparator node = getComparator(
-                        (NodeSortConstraint) constraint, transformer);
+            if (constraint instanceof VirtualNodeSortConstraint) {
+                Comparator node = getComparator((VirtualNodeSortConstraint) constraint);
+                comparator.addComparator(node);
+            } else if (constraint instanceof NodeSortConstraint) {
+                Comparator node = getComparator((NodeSortConstraint) constraint, transformer);
                 comparator.addComparator(node);
             } else if (constraint instanceof ArchetypeSortConstraint) {
-                Comparator type =
-                        getComparator((ArchetypeSortConstraint) constraint,
-                                      transformer);
+                Comparator type = getComparator((ArchetypeSortConstraint) constraint, transformer);
                 comparator.addComparator(type);
                 break;
             }
@@ -110,10 +115,10 @@ public class IMObjectSorter {
     }
 
     /**
-     * Returns a new comparator.
+     * Returns a new comparator to sort in ascending or descending order.
      *
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-     *                  sort in descending order
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise sort in descending order
+     * @return a new comparator
      */
     public static Comparator getComparator(boolean ascending) {
         Comparator comparator = ComparatorUtils.naturalComparator();
@@ -137,11 +142,28 @@ public class IMObjectSorter {
     }
 
     /**
+     * Returns a new comparator for a virtual node sort constraint.
+     *
+     * @param sort the sort criteria
+     * @return a new comparator
+     */
+    @SuppressWarnings("unchecked")
+    private static Comparator<Object> getComparator(VirtualNodeSortConstraint sort) {
+        Comparator comparator = getComparator(sort.isAscending());
+        Transformer transformer = sort.getTransformer();
+        if (transformer == null) {
+            transformer = getTransformer(sort);
+        }
+        return new TransformingComparator(transformer, comparator);
+    }
+
+    /**
      * Returns a new comparator for a node sort constraint.
      *
      * @param sort the sort criteria
      * @return a new comparator
      */
+    @SuppressWarnings("unchecked")
     private static Comparator<Object> getComparator(NodeSortConstraint sort) {
         Comparator comparator = getComparator(sort.isAscending());
         Transformer transformer = getTransformer(sort);
@@ -155,11 +177,10 @@ public class IMObjectSorter {
      * @param transformer a transformer to apply
      * @return a new comparator
      */
-    private static Comparator<Object> getComparator(NodeSortConstraint sort,
-                                                    Transformer transformer) {
+    @SuppressWarnings("unchecked")
+    private static Comparator<Object> getComparator(NodeSortConstraint sort, Transformer transformer) {
         Comparator comparator = getComparator(sort.isAscending());
-        Transformer transform = ChainedTransformer.getInstance(
-                transformer, getTransformer(sort));
+        Transformer transform = ChainedTransformer.getInstance(transformer, getTransformer(sort));
         return new TransformingComparator(transform, comparator);
     }
 
@@ -168,9 +189,10 @@ public class IMObjectSorter {
      * Returns a new comparator for an archetype property.
      *
      * @param sort the sort criteria
+     * @return a new comparator
      */
-    private static Comparator<Object> getComparator(
-            ArchetypeSortConstraint sort) {
+    @SuppressWarnings("unchecked")
+    private static Comparator<Object> getComparator(ArchetypeSortConstraint sort) {
         Comparator comparator = getComparator(sort.isAscending());
         Transformer transformer = new ArchetypeTransformer();
         return new TransformingComparator(transformer, comparator);
@@ -181,12 +203,12 @@ public class IMObjectSorter {
      *
      * @param sort        the sort criteria
      * @param transformer a transformer to apply
+     * @return a new comparator
      */
-    private static Comparator<Object> getComparator(
-            ArchetypeSortConstraint sort, Transformer transformer) {
+    @SuppressWarnings("unchecked")
+    private static Comparator<Object> getComparator(ArchetypeSortConstraint sort, Transformer transformer) {
         Comparator comparator = getComparator(sort.isAscending());
-        Transformer transform = ChainedTransformer.getInstance(
-                transformer, new ArchetypeTransformer());
+        Transformer transform = ChainedTransformer.getInstance(transformer, new ArchetypeTransformer());
         return new TransformingComparator(transform, comparator);
     }
 
@@ -237,10 +259,15 @@ public class IMObjectSorter {
                 if (descriptor != null) {
                     try {
                         if (descriptor.isCollection()) {
-                            List<IMObject> objects
-                                    = descriptor.getChildren(object);
+                            List<IMObject> objects = descriptor.getChildren(object);
                             if (objects.size() == 1) {
                                 result = objects.get(0);
+                            }
+                        } else if (descriptor.isLookup()) {
+                            Lookup lookup = LookupHelper.getLookup(ServiceHelper.getArchetypeService(), descriptor,
+                                                                   object);
+                            if (lookup != null) {
+                                result = lookup.getName();
                             }
                         } else {
                             result = descriptor.getValue(object);
@@ -267,8 +294,7 @@ public class IMObjectSorter {
         }
 
         private NodeDescriptor getDescriptor(IMObject object) {
-            if (archetype == null
-                    || !archetype.getType().equals(object.getArchetypeId())) {
+            if (archetype == null || !archetype.getType().equals(object.getArchetypeId())) {
                 archetype = DescriptorHelper.getArchetypeDescriptor(object);
                 descriptor = archetype.getNodeDescriptor(node);
             }

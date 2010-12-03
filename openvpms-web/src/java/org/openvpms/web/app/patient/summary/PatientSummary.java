@@ -28,11 +28,12 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.app.alert.AlertSummary;
+import org.openvpms.web.app.alert.Alerts;
+import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -51,7 +52,7 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import java.util.Date;
+import java.util.Collection;
 
 
 /**
@@ -60,7 +61,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PatientSummary {
+public class PatientSummary extends PartySummary {
 
     /**
      * The patient rules.
@@ -74,7 +75,7 @@ public class PatientSummary {
 
 
     /**
-     * Creates a new <tt>PatientSummary</tt>.
+     * Constructs a <tt>PatientSummary</tt>.
      */
     public PatientSummary() {
         rules = new PatientRules();
@@ -82,94 +83,94 @@ public class PatientSummary {
     }
 
     /**
-     * Returns summary information for a patient.
+     * Returns summary information for a party.
+     * <p/>
+     * The summary includes any alerts.
      *
-     * @param patient the patient. May be <code>null</code>
-     * @return a summary component, or <code>null</code> if there is no summary
+     * @param party the party
+     * @return a summary component
      */
-    public Component getSummary(final Party patient) {
-        Component result = null;
-        if (patient != null) {
-            result = ColumnFactory.create();
-            String name = patient.getName();
-            if (rules.isDesexed(patient)) {
-                name += " (" + getPatientSex(patient) + " " + Messages.get("patient.desexed") + ")";
-            } else {
-                name += " (" + getPatientSex(patient) + " " + Messages.get("patient.entire") + ")";
-            }
-            IMObjectReferenceViewer patientName
-                    = new IMObjectReferenceViewer(patient.getObjectReference(),
-                                                  name, true);
-            patientName.setStyleName("hyperlink-bold");
-            result.add(RowFactory.create("Inset.Small",
-                                         patientName.getComponent()));
-            if (rules.isDeceased(patient)) {
-                Label deceased = LabelFactory.create("patient.deceased",
-                                                     "Patient.Deceased");
-                result.add(RowFactory.create("Inset.Small", deceased));
-            }
-            Label species = LabelFactory.create();
-            species.setText(getPatientSpecies(patient));
-            result.add(RowFactory.create("Inset.Small", species));
-
-            Label breed = LabelFactory.create();
-            breed.setText(getPatientBreed(patient));
-            result.add(RowFactory.create("Inset.Small", breed));
-
-            Label alertTitle = LabelFactory.create("patient.alerts");
-            int alerts = reminderRules.countAlerts(patient, new Date());
-            Component alertCount;
-            if (alerts == 0) {
-                alertCount = LabelFactory.create("patient.noreminders");
-            } else {
-                alertCount = ButtonFactory.create(
-                        null, "alert", new ActionListener() {
-                            public void onAction(ActionEvent event) {
-                                onShowAlerts(patient);
-                            }
-                        });
-                alertCount = RowFactory.create(alertCount);
-            }
-
-            Label reminderTitle = LabelFactory.create("patient.reminders");
-            int reminders = reminderRules.countReminders(patient);
-            Component reminderCount;
-            if (reminders == 0) {
-                reminderCount = LabelFactory.create("patient.noreminders");
-            } else {
-                reminderCount = ButtonFactory.create(
-                        null, "reminder", new ActionListener() {
-                            public void onAction(ActionEvent event) {
-                                onShowReminders(patient);
-                            }
-                        });
-                reminderCount = RowFactory.create(reminderCount);
-            }
-            Label ageTitle = LabelFactory.create("patient.age");
-            Label age = LabelFactory.create();
-            age.setText(getPatientAge(patient));
-
-            Label weightTitle = LabelFactory.create("patient.weight");
-            Label weight = LabelFactory.create();
-            weight.setText(getPatientWeight(patient));
-            Grid grid = GridFactory.create(2, alertTitle, alertCount,
-                                           reminderTitle, reminderCount,
-                                           ageTitle, age, weightTitle, weight);
-            result.add(grid);
+    protected Component createSummary(final Party party) {
+        Component column = ColumnFactory.create();
+        String name = party.getName();
+        if (rules.isDesexed(party)) {
+            name += " (" + getPatientSex(party) + " " + Messages.get("patient.desexed") + ")";
+        } else {
+            name += " (" + getPatientSex(party) + " " + Messages.get("patient.entire") + ")";
         }
-        return result;
+        IMObjectReferenceViewer patientName
+                = new IMObjectReferenceViewer(party.getObjectReference(),
+                                              name, true);
+        patientName.setStyleName("hyperlink-bold");
+        column.add(RowFactory.create("Inset.Small", patientName.getComponent()));
+        if (rules.isDeceased(party)) {
+            Label deceased = LabelFactory.create("patient.deceased", "Patient.Deceased");
+            column.add(RowFactory.create("Inset.Small", deceased));
+        }
+        Label species = LabelFactory.create();
+        species.setText(getPatientSpecies(party));
+        column.add(RowFactory.create("Inset.Small", species));
+
+        Label breed = LabelFactory.create();
+        breed.setText(getPatientBreed(party));
+        column.add(RowFactory.create("Inset.Small", breed));
+
+        Label reminderTitle = LabelFactory.create("patient.reminders");
+        int reminders = reminderRules.countReminders(party);
+        Component reminderCount;
+        if (reminders == 0) {
+            reminderCount = LabelFactory.create("patient.noreminders");
+        } else {
+            reminderCount = ButtonFactory.create(
+                    null, "reminder", new ActionListener() {
+                        public void onAction(ActionEvent event) {
+                            onShowReminders(party);
+                        }
+                    });
+            reminderCount = RowFactory.create(reminderCount);
+        }
+        Label ageTitle = LabelFactory.create("patient.age");
+        Label age = LabelFactory.create();
+        age.setText(getPatientAge(party));
+
+        Label weightTitle = LabelFactory.create("patient.weight");
+        Label weight = LabelFactory.create();
+        weight.setText(getPatientWeight(party));
+        Grid grid = GridFactory.create(2, reminderTitle, reminderCount,
+                                       ageTitle, age, weightTitle, weight);
+        column.add(grid);
+
+        AlertSummary alerts = getAlertSummary(party);
+        if (alerts != null) {
+            grid.add(LabelFactory.create("alerts.patient"));
+            column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
+        }
+        return ColumnFactory.create("PartySummary", column);
     }
 
     /**
-     * Invoked to show alerts for a patient in a popup.
+     * Returns the alerts for a party.
      *
-     * @param patient the patient
+     * @param party the party
+     * @return the party's alerts
      */
-    private void onShowAlerts(Party patient) {
-        PagedIMTable<Act> table = new PagedIMTable<Act>(
-                new AlertTableModel(), getAlerts(patient));
-        new ViewerDialog(Messages.get("patient.summary.alerts"),
-                         "PatientSummary.AlertDialog", table);
+    protected Collection<Alerts> getAlerts(Party party) {
+        return queryAlerts(party).values();
+    }
+
+    /**
+     * Returns outstanding alerts for a patient.
+     *
+     * @param patient  the patient
+     * @param pageSize the no. of alerts to return per page
+     * @return the set of outstanding alerts for the patient
+     */
+    protected ActResultSet<Act> createAlertsResultSet(Party patient, int pageSize) {
+        String[] shortNames = {"act.patientAlert"};
+        String[] statuses = {ActStatus.IN_PROGRESS};
+        ShortNameConstraint archetypes = new ShortNameConstraint(shortNames, true, true);
+        ParticipantConstraint[] participants = {new ParticipantConstraint("patient", "participation.patient", patient)};
+        return new ActResultSet<Act>(archetypes, participants, null, statuses, false, null, pageSize, null);
     }
 
     /**
@@ -178,35 +179,9 @@ public class PatientSummary {
      * @param patient the patient
      */
     private void onShowReminders(Party patient) {
-        PagedIMTable<Act> table = new PagedIMTable<Act>(
-                new ReminderTableModel(), getReminders(patient));
-        table.getTable().setDefaultRenderer(Object.class,
-                                            new ReminderTableCellRenderer());
-        new ViewerDialog(Messages.get("patient.summary.reminders"),
-                         "PatientSummary.ReminderDialog", table);
-    }
-
-    /**
-     * Returns outstanding alerts for a patient.
-     *
-     * @param patient the patient
-     * @return the set of outstanding alerts for the patient
-     */
-    private ActResultSet<Act> getAlerts(Party patient) {
-        String[] shortNames = {"act.patientAlert"};
-        String[] statuses = {ActStatus.IN_PROGRESS};
-        ShortNameConstraint archetypes = new ShortNameConstraint(
-                shortNames, true, true);
-        ParticipantConstraint[] participants = {
-                new ParticipantConstraint("patient", "participation.patient",
-                                          patient)
-        };
-        OrConstraint time = Constraints.or(Constraints.gt("endTime", new Date()),
-                                           Constraints.isNull("endTime"));
-        SortConstraint[] sort = {Constraints.sort("endTime")};
-
-        return new ActResultSet<Act>(archetypes, participants, time, statuses,
-                                     false, null, 5, sort);
+        PagedIMTable<Act> table = new PagedIMTable<Act>(new ReminderTableModel(), getReminders(patient));
+        table.getTable().setDefaultRenderer(Object.class, new ReminderTableCellRenderer());
+        new ViewerDialog(Messages.get("patient.summary.reminders"), "PatientSummary.ReminderDialog", table);
     }
 
     /**
@@ -273,8 +248,7 @@ public class PatientSummary {
         ShortNameConstraint archetypes = new ShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint[] participants = {
-                new ParticipantConstraint("patient", "participation.patient",
-                                          patient)
+                new ParticipantConstraint("patient", "participation.patient", patient)
         };
         SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
         return new ActResultSet<Act>(archetypes, participants, null,
@@ -316,27 +290,6 @@ public class PatientSummary {
             getLayout().add(ColumnFactory.create("Inset", table));
             show();
         }
-    }
-
-    private static class AlertTableModel extends AbstractActTableModel {
-
-        /**
-         * Creates a new <code>AlertTableModel</code>.
-         */
-        public AlertTableModel() {
-            super(new String[]{"act.patientAlert"}, createLayoutContext());
-        }
-
-        /**
-         * Returns a list of descriptor names to include in the table.
-         *
-         * @return the list of descriptor names to include in the table
-         */
-        @Override
-        protected String[] getNodeNames() {
-            return new String[]{"alertType", "reason"};
-        }
-
     }
 
     private static class ReminderTableModel extends AbstractActTableModel {
