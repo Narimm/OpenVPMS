@@ -21,10 +21,12 @@ package org.openvpms.web.app.customer.info;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerSummary;
+import org.openvpms.web.app.customer.CustomerBrowser;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.query.BrowserDialog;
 
 
 /**
@@ -100,6 +102,30 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     @Override
     protected CRUDWindow<Party> createCRUDWindow() {
         return new InformationCRUDWindow(getArchetypes());
+    }
+
+       /**
+     * Invoked when the selection browser is closed.
+     *
+     * @param dialog the browser dialog
+     */
+    @Override
+    protected void onSelectClosed(BrowserDialog<Party> dialog) {
+        if (dialog.createNew()) {
+            getCRUDWindow().create();
+        } else {
+            Party customer = dialog.getSelected();
+            if (customer != null) {
+                onSelected(customer);
+                if (dialog.getBrowser() instanceof CustomerBrowser) {
+                    CustomerBrowser browser = (CustomerBrowser) dialog.getBrowser();
+                    Party patient = browser.getPatient();
+                    if (patient != null) {
+                        ContextHelper.setPatient(patient);
+                    }
+                }
+            }
+        }
     }
 
 }

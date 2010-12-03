@@ -25,6 +25,7 @@ import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.query.BrowserDialog;
 
 
 /**
@@ -109,5 +110,23 @@ public abstract class CustomerActWorkspace<T extends Act>
         return getLatest(GlobalContext.getInstance().getCustomer());
     }
 
-
+    /**
+     * Invoked when the selection browser is closed.
+     *
+     * @param dialog the browser dialog
+     */
+    @Override
+    protected void onSelectClosed(BrowserDialog<Party> dialog) {
+        Party customer = dialog.getSelected();
+        if (customer != null) {
+            onSelected(customer);
+            if (dialog.getBrowser() instanceof CustomerBrowser) {
+                CustomerBrowser browser = (CustomerBrowser) dialog.getBrowser();
+                Party patient = browser.getPatient();
+                if (patient != null) {
+                    ContextHelper.setPatient(patient);
+                }
+            }
+        }
+    }
 }
