@@ -88,8 +88,10 @@ public class TaskGrid implements ScheduleEventGrid {
 
             // display up to events + 1 slots
             int events = schedule.getSlots() + 1;
-            if (slots < events && events <= schedule.getMaxSlots()) {
+            if (events <= schedule.getMaxSlots()) {
                 slots = events;
+            } else {
+                slots = schedule.getSlots();
             }
         }
     }
