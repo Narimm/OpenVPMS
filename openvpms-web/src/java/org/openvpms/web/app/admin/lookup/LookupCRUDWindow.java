@@ -109,7 +109,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
     protected void onDelete() {
         Lookup object = IMObjectHelper.reload(getObject());
         if (object == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist"), getArchetypes().getDisplayName());
+            ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
             IMObjectDeletor.delete(object, new LookupDeletorListener());
         }

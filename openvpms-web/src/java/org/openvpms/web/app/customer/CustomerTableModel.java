@@ -55,14 +55,20 @@ public class CustomerTableModel extends AbstractEntityObjectSetTableModel {
     private boolean showIdentity;
 
     /**
-     * The patient index.
+     * The patient name index.
      */
-    private static final int PATIENT_INDEX = NEXT_INDEX;
+    private static final int PATIENT_NAME_INDEX = NEXT_INDEX;
+
+    /**
+     * The patient description index.
+     */
+    private static final int PATIENT_DESC_INDEX = PATIENT_NAME_INDEX + 1;
+
 
     /**
      * The contact index.
      */
-    private static final int CONTACT_INDEX = PATIENT_INDEX + 1;
+    private static final int CONTACT_INDEX = PATIENT_DESC_INDEX + 1;
 
 
     /**
@@ -101,8 +107,11 @@ public class CustomerTableModel extends AbstractEntityObjectSetTableModel {
         Object result;
         int index = column.getModelIndex();
         switch (index) {
-            case PATIENT_INDEX:
+            case PATIENT_NAME_INDEX:
                 result = getPatientName(set);
+                break;
+            case PATIENT_DESC_INDEX:
+                result = getPatientDescription(set);
                 break;
             case CONTACT_INDEX:
                 result = getContact(set);
@@ -122,7 +131,7 @@ public class CustomerTableModel extends AbstractEntityObjectSetTableModel {
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         SortConstraint[] result;
-        if (column == PATIENT_INDEX) {
+        if (column == PATIENT_NAME_INDEX) {
             result = new SortConstraint[]{new NodeSortConstraint("patient", "name", ascending)};
         } else if (column == CONTACT_INDEX) {
             result = new SortConstraint[]{new NodeSortConstraint("contact", "description", ascending)};
@@ -141,6 +150,17 @@ public class CustomerTableModel extends AbstractEntityObjectSetTableModel {
     private String getPatientName(ObjectSet set) {
         Party patient = (Party) set.get("patient");
         return (patient != null) ? patient.getName() : null;
+    }
+
+    /**
+     * Returns the patient description.
+     *
+     * @param set the set
+     * @return the patient description, or <tt>null</tt> if none is found
+     */
+    private String getPatientDescription(ObjectSet set) {
+        Party patient = (Party) set.get("patient");
+        return (patient != null) ? patient.getDescription() : null;
     }
 
     /**
@@ -165,7 +185,8 @@ public class CustomerTableModel extends AbstractEntityObjectSetTableModel {
     protected TableColumnModel createTableColumnModel(boolean showPatient, boolean showContact, boolean showIdentity) {
         DefaultTableColumnModel model = createTableColumnModel(false);
         if (showPatient) {
-            model.addColumn(createTableColumn(PATIENT_INDEX, "customerquery.patient"));
+            model.addColumn(createTableColumn(PATIENT_NAME_INDEX, "customerquery.patient.name"));
+            model.addColumn(createTableColumn(PATIENT_DESC_INDEX, "customerquery.patient.description"));
         }
         if (showContact) {
             model.addColumn(createTableColumn(CONTACT_INDEX, "customerquery.contact"));
