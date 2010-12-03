@@ -80,5 +80,16 @@
         <node name="showAlert" path="/details/showAlert" type="java.lang.Boolean" minCardinality="0" defaultValue="'false'"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="defaultLookup" path="/defaultLookup" type="java.lang.Boolean" defaultValue="'false'"/>
+        <node name="alert" path="/sourceLookupRelationships" type="java.util.HashSet"
+              baseName="sourceLookupRelationship" minCardinality="0" maxCardinality="1"
+              filter="lookupRelationship.customerAccountAlert">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookupRelationship.customerAccountAlert"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>

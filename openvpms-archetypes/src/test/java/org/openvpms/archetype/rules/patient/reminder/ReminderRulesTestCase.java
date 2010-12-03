@@ -18,9 +18,7 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -117,7 +115,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link ReminderRules#calculateReminderDueDate(Date, Entity)}
      * method.
      */
-    @Test public void testCalculateReminderDueDate() {
+    @Test
+    public void testCalculateReminderDueDate() {
         checkCalculateReminderDueDate(1, DateUnits.DAYS, "2007-01-01",
                                       "2007-01-02");
         checkCalculateReminderDueDate(2, DateUnits.WEEKS, "2007-01-01",
@@ -131,7 +130,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ReminderRules#calculateProductReminderDueDate} method.
      */
-    @Test public void testCalculateProductReminderDueDate() {
+    @Test
+    public void testCalculateProductReminderDueDate() {
         checkCalculateProductReminderDueDate(1, DateUnits.DAYS, "2007-01-01", "2007-01-02");
         checkCalculateProductReminderDueDate(2, DateUnits.WEEKS, "2007-01-01", "2007-01-15");
         checkCalculateProductReminderDueDate(2, DateUnits.MONTHS, "2007-01-01", "2007-03-01");
@@ -142,7 +142,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link ReminderRules#countReminders(Party)} method.
      * Requires <em>Reminder.hbm.xml</em>.
      */
-    @Test public void testCountReminders() {
+    @Test
+    public void testCountReminders() {
         Party patient = TestHelper.createPatient();
         assertEquals(0, rules.countReminders(patient));
         int count = 5;
@@ -167,7 +168,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link ReminderRules#countAlerts} method.
      * Requires <em>Reminder.hbm.xml</em>.
      */
-    @Test public void testCountAlerts() {
+    @Test
+    public void testCountAlerts() {
         Party patient = TestHelper.createPatient();
         Date date = new Date();
         assertEquals(0, rules.countAlerts(patient, date));
@@ -192,7 +194,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ReminderRules#isDue(Act, Date, Date)} method.
      */
-    @Test public void testIsDue() {
+    @Test
+    public void testIsDue() {
         Lookup group = ReminderTestHelper.createReminderGroup();
         Party patient = TestHelper.createPatient();
         Entity reminderType = ReminderTestHelper.createReminderType(
@@ -200,7 +203,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Date start = java.sql.Date.valueOf("2007-01-01");
         Date due = rules.calculateReminderDueDate(start, reminderType);
         Act reminder = ReminderTestHelper.createReminderWithDueDate(patient, reminderType,
-                                                         due);
+                                                                    due);
 
         checkDue(reminder, null, null, true);
         checkDue(reminder, null, "2007-01-01", false);
@@ -228,7 +231,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ReminderRules#shouldCancel(Act, Date)} method.
      */
-    @Test public void testShouldCancel() {
+    @Test
+    public void testShouldCancel() {
         Lookup group = ReminderTestHelper.createReminderGroup();
         Party patient = TestHelper.createPatient();
         Entity reminderType = ReminderTestHelper.createReminderType(
@@ -264,7 +268,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ReminderRules#getContact(Set<Contact>)} method.
      */
-    @Test public void testGetContact() {
+    @Test
+    public void testGetContact() {
         // create a patient, and owner. Remove default contacts from owner
         Party owner = TestHelper.createCustomer();
         Contact[] contacts = owner.getContacts().toArray(new Contact[owner.getContacts().size()]);
@@ -493,8 +498,10 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act act = (Act) create("act.patientAlert");
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);
-        Lookup alertType
-                = TestHelper.getLookup("lookup.alertType", "OTHER");
+        Lookup alertType = TestHelper.getLookup("lookup.patientAlertType", "OTHER", false);
+        IMObjectBean lookupBean = new IMObjectBean(alertType);
+        lookupBean.setValue("colour", "0xFFFFFF");
+        lookupBean.save();
         bean.setValue("alertType", alertType.getCode());
         bean.save();
         return act;
