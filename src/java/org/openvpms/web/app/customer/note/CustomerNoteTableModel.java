@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.customer.note;
 
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
@@ -31,14 +31,16 @@ import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 public class CustomerNoteTableModel extends AbstractActTableModel {
 
     /**
-     * Creates a new <tt>AlertTableModel</tt>.
+     * Creates a new <tt>CustomerNoteTableModel</tt>.
      */
     public CustomerNoteTableModel() {
         this(null);
     }
 
     /**
-     * Creates a new <tt>AlertTableModel</tt>.
+     * Creates a new <tt>CustomerNoteTableModel</tt>.
+     *
+     * @param context the layout context
      */
     public CustomerNoteTableModel(LayoutContext context) {
         super(new String[]{"act.customerNote"}, context);

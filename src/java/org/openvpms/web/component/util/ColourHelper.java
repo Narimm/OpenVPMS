@@ -53,7 +53,7 @@ public class ColourHelper {
      * @return the new <tt>Color</tt> object, or <tt>null</tt> if
      *         <tt>value</tt> is <tt>null</tt> or cannot be convered
      */
-    public static Color getColor(String value) throws NumberFormatException {
+    public static Color getColor(String value) {
         if (value != null) {
             try {
                 int rgb = Integer.decode(value);
@@ -63,5 +63,49 @@ public class ColourHelper {
             }
         }
         return null;
+    }
+
+    /**
+     * Detemines if the specified colour is closer to black than white.
+     *
+     * @param colour the colour
+     * @return <tt>true</tt> if the colour is closer to black; <tt>false</tt> if it is closer to white
+     */
+    public static boolean isCloserToBlackThanWhite(Color colour) {
+        int distToBlack = distance(colour, Color.BLACK);
+        int distToWhite = distance(colour, Color.WHITE);
+        return distToBlack < distToWhite;
+    }
+
+    /**
+     * Provides a rough calculation of the distance between two colours.
+     * <p/>
+     * This is based on:
+     * <ul>
+     * <li>the common RGB to grayscale approximation: 0.3*R + 0.59*G + 0.11*B
+     * <li>treating the RGB values as XYZ coordinates and calculating the difference between them
+     * </ul>
+     * A more precise approach would be to calculate:
+     * <pre> sqrt((0.3 x (c1.R - c2.R))**2 + (0.59 x (c1.G - c2.G))**2 + (0.11 x (c1.B - c2.B)**2)</pre>
+     *
+     * @param colour1 the first colour
+     * @param colour2 the second colour
+     * @return the distance between the two colours
+     */
+    private static int distance(Color colour1, Color colour2) {
+        // RGB to grayscale of 30% red + 59% green + 11% blue
+        return square(30 * (colour1.getRed() - colour2.getRed()))
+               + square(59 * (colour1.getGreen() - colour2.getGreen()))
+               + square(11 * (colour1.getBlue() - colour2.getBlue()));
+    }
+
+    /**
+     * Helper to square an integer.
+     *
+     * @param value the value to square
+     * @return the squared value
+     */
+    private static int square(int value) {
+        return value * value;
     }
 }

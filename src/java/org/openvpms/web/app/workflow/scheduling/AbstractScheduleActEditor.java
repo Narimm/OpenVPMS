@@ -78,6 +78,15 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
     }
 
     /**
+     * Returns the patient.
+     *
+     * @return the patient. May be <tt>null</tt>
+     */
+    public Party getPatient() {
+        return (Party) getParticipant("patient");
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy

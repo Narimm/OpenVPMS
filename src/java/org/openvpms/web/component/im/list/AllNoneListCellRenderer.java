@@ -18,15 +18,9 @@
 
 package org.openvpms.web.component.im.list;
 
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Font;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Style;
 import nextapp.echo2.app.list.AbstractListComponent;
 import nextapp.echo2.app.list.ListModel;
-import nextapp.echo2.app.list.StyledListCell;
 
 
 /**
@@ -59,10 +53,7 @@ public abstract class AllNoneListCellRenderer<T>
     protected boolean isAll(Component list, T object, int index) {
         AbstractListComponent component = ((AbstractListComponent) list);
         ListModel model = component.getModel();
-        if (model instanceof AllNoneListModel) {
-            return ((AllNoneListModel) model).isAll(index);
-        }
-        return false;
+        return model instanceof AllNoneListModel && ((AllNoneListModel) model).isAll(index);
     }
 
     /**
@@ -76,87 +67,7 @@ public abstract class AllNoneListCellRenderer<T>
     protected boolean isNone(Component list, T object, int index) {
         AbstractListComponent component = ((AbstractListComponent) list);
         ListModel model = component.getModel();
-        if (model instanceof AllNoneListModel) {
-            return ((AllNoneListModel) model).isNone(index);
-        }
-        return false;
+        return model instanceof AllNoneListModel && ((AllNoneListModel) model).isNone(index);
     }
 
-    /**
-     * Helper to render a cell in a bold font. Uses the "bold" label style.
-     */
-    protected static class BoldListCell implements StyledListCell {
-
-        /**
-         * The cell value.
-         */
-        private final String value;
-
-        /**
-         * The foreground.
-         */
-        private Color background;
-
-        /**
-         * The font.
-         */
-        private Font font;
-
-        /**
-         * The background.
-         */
-        private Color foreground;
-
-        /**
-         * Creates a new <code>BoldListCell</code>.
-         *
-         * @param value the cell value
-         */
-        public BoldListCell(String value) {
-            this.value = value;
-            String styleName = "bold";
-            Style style = ApplicationInstance.getActive().getStyle(Label.class, styleName);
-            if (style != null) {
-                background = (Color) style.getProperty(Component.PROPERTY_BACKGROUND);
-                foreground = (Color) style.getProperty(Component.PROPERTY_FOREGROUND);
-                font = (Font) style.getProperty(Component.PROPERTY_FONT);
-            }
-        }
-
-        /**
-         * Returns the background of the list item.
-         *
-         * @return the background
-         */
-        public Color getBackground() {
-            return background;
-        }
-
-        /**
-         * Returns the font of the list item.
-         *
-         * @return the font
-         */
-        public Font getFont() {
-            return font;
-        }
-
-        /**
-         * Returns the foreground of the list item.
-         *
-         * @return the foreground
-         */
-        public Color getForeground() {
-            return foreground;
-        }
-
-        /**
-         * Returns the cell value.
-         *
-         * @return the cell value
-         */
-        public String toString() {
-            return value;
-        }
-    }
 }

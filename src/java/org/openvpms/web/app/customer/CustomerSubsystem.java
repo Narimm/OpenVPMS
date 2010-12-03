@@ -23,7 +23,7 @@ import org.openvpms.web.app.customer.charge.ChargeWorkspace;
 import org.openvpms.web.app.customer.document.CustomerDocumentWorkspace;
 import org.openvpms.web.app.customer.estimation.EstimationWorkspace;
 import org.openvpms.web.app.customer.info.InformationWorkspace;
-import org.openvpms.web.app.customer.note.NoteWorkspace;
+import org.openvpms.web.app.customer.note.NoteAlertWorkspace;
 import org.openvpms.web.app.customer.payment.PaymentWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
@@ -47,6 +47,6 @@ public class CustomerSubsystem extends AbstractSubsystem {
         addWorkspace(new ChargeWorkspace());
         addWorkspace(new PaymentWorkspace());
         addWorkspace(new AccountWorkspace());
-        addWorkspace(new NoteWorkspace());
+        addWorkspace(new NoteAlertWorkspace());
     }
 }

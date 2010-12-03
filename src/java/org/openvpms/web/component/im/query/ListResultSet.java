@@ -54,7 +54,7 @@ public class ListResultSet<T> extends AbstractListResultSet<T> {
     }
 
     /**
-     * This resets the iterator but does not do any sorting.
+     * This implementation resets the iterator but does not do any sorting.
      *
      * @param sort the sort criteria. May be <tt>null</tt>
      */

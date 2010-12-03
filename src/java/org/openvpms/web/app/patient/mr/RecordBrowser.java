@@ -30,6 +30,7 @@ import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.BrowserState;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabPaneModel;
@@ -44,6 +45,8 @@ import java.util.List;
 
 /**
  * Patient record browser.
+ * <p>
+ * TODO - refactor to use TabbedBrowser.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -93,7 +96,7 @@ public class RecordBrowser implements Browser<Act> {
     /**
      * The event listener.
      */
-    private RecordBrowserListener listener;
+    private TabbedBrowserListener listener;
 
     /**
      * The selected tab.
@@ -167,7 +170,7 @@ public class RecordBrowser implements Browser<Act> {
                     int index = tab.getSelectedIndex();
                     if (index != selected) {
                         selected = index;
-                        listener.onViewChanged();
+                        listener.onBrowserChanged();
                     }
                 }
             });
@@ -302,7 +305,7 @@ public class RecordBrowser implements Browser<Act> {
      *
      * @param listener the listener. May be <code>null</code>
      */
-    public void setListener(RecordBrowserListener listener) {
+    public void setListener(TabbedBrowserListener listener) {
         this.listener = listener;
     }
 

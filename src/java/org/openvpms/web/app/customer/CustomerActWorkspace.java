@@ -94,7 +94,8 @@ public abstract class CustomerActWorkspace<T extends Act>
      */
     @Override
     public Component getSummary() {
-        return CustomerSummary.getSummary(getObject());
+        CustomerSummary summarizer = new CustomerSummary();
+        return summarizer.getSummary(getObject());
     }
 
     /**

@@ -25,21 +25,21 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * Editor for <em>act.customerNote</em> instances.
+ * Editor for <em>act.customerAlert</em> and <em><em>act.customerNote</em> instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerNoteEditor extends AbstractActEditor {
+public class CustomerAlertNoteEditor extends AbstractActEditor {
 
     /**
-     * Constructs a new <tt>CustomerNoteEditor</tt>.
+     * Constructs a new <tt>CustomerAlertNoteEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context. May be <tt>null</tt>
      */
-    public CustomerNoteEditor(Act act, IMObject parent, LayoutContext context) {
+    public CustomerAlertNoteEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("author", context.getContext().getUser());

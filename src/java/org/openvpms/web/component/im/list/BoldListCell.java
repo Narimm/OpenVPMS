@@ -11,27 +11,28 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
-
-package org.openvpms.web.app.patient.mr;
-
-import java.util.EventListener;
+package org.openvpms.web.component.im.list;
 
 
 /**
- * Listener for {@link RecordBrowser} events.
+ * Helper to render a cell in a bold font. Uses the "bold" label style.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface RecordBrowserListener extends EventListener {
+public class BoldListCell extends AbstractStlyedListCell {
 
     /**
-     * Invoked when the view changes.
+     * Constructs a <tt>BoldListCell</tt>.
+     *
+     * @param value the cell value
      */
-    void onViewChanged();
-    
+    public BoldListCell(String value) {
+        super(value, "bold");
+    }
+
 }

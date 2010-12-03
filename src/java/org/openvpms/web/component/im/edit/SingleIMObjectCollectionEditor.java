@@ -142,10 +142,11 @@ public abstract class SingleIMObjectCollectionEditor
     private void mapObject() {
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
+            CollectionPropertyEditor collection = getCollectionPropertyEditor();
             if (isEmpty()) {
-                getCollectionPropertyEditor().remove(editor.getObject());
-            } else {
-                getCollectionPropertyEditor().add(editor.getObject());
+                collection.remove(editor.getObject());
+            } else if (editor.isModified()) {
+                collection.add(editor.getObject());
             }
         }
     }

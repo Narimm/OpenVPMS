@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -25,15 +27,23 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.alert.AlertSummary;
+import org.openvpms.web.app.customer.CustomerSummary;
+import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.component.focus.FocusHelper;
+import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -48,6 +58,17 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class AppointmentActEditor extends AbstractScheduleActEditor {
+
+    /**
+     * The alerts row.
+     */
+    private Row alerts;
+
+    /**
+     * Listener notified when the patient changes.
+     */
+    private ModifiableListener patientListener;
+
 
     /**
      * Constructs an <tt>AppointmentActEditor</tt>.
@@ -86,6 +107,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             }
         });
         addStartEndTimeListeners();
+        updateAlerts();
     }
 
     /**
@@ -125,6 +147,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
                 onAppointmentTypeChanged();
             }
         });
+        getPatientEditor().addModifiableListener(getPatientListener());
 
         if (getEndTime() == null) {
             calculateEndTime();
@@ -156,6 +179,118 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
                 calculateEndTime();
             }
         }
+    }
+
+    /**
+     * Invoked when the customer changes. Sets the patient to null if no
+     * relationship exists between the two.
+     * <p/>
+     * The alerts will be updated.
+     */
+    @Override
+    protected void onCustomerChanged() {
+        PatientParticipationEditor editor = getPatientEditor();
+        editor.removeModifiableListener(patientListener);
+        super.onCustomerChanged();
+        editor.addModifiableListener(patientListener);
+        updateAlerts();
+    }
+
+    /**
+     * Invoked when the patient changes. This updates the alerts.
+     */
+    private void onPatientChanged() {
+        updateAlerts();
+    }
+
+    /**
+     * Updates the alerts associated with the custopmer and patient.
+     */
+    private void updateAlerts() {
+        Component container = getAlertsContainer();
+        container.removeAll();
+        Component alerts = createAlerts();
+        if (alerts != null) {
+            container.add(alerts);
+        }
+    }
+
+    /**
+     * Creates a component representing the customerr and patient alerts.
+     *
+     * @return the alerts component or <tt>null</tt> if neither has alerts
+     */
+    private Component createAlerts() {
+        Component result = null;
+        Component customerSummary = null;
+        Component patientSummary = null;
+        Party customer = getCustomer();
+        Party patient = getPatient();
+        if (customer != null) {
+            customerSummary = getCustomerAlerts(customer);
+        }
+        if (patient != null) {
+            patientSummary = getPatientAlerts(patient);
+        }
+        if (customerSummary != null || patientSummary != null) {
+            result = RowFactory.create("CellSpacing");
+            if (customerSummary != null) {
+                result.add(customerSummary);
+            }
+            if (patientSummary != null) {
+                result.add(patientSummary);
+            }
+            result = RowFactory.create("Inset", result);
+        }
+        return result;
+    }
+
+    /**
+     * Returns any alerts associated with the customer.
+     *
+     * @param customer the customer
+     * @return any alerts associated with the customer, or <tt>null</tt> if the customer has no alerts
+     */
+    private Component getCustomerAlerts(Party customer) {
+        Component result = null;
+        AlertSummary alerts = new CustomerSummary().getAlertSummary(customer);
+        if (alerts != null) {
+            result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", "bold"),
+                                          alerts.getComponent());
+        }
+        return result;
+    }
+
+    /**
+     * Returns any alerts associated with the patient.
+     *
+     * @param patient the patient
+     * @return any alerts associated with the patient, or <tt>null</tt> if the patient has no alerts
+     */
+    private Component getPatientAlerts(Party patient) {
+        Component result = null;
+        AlertSummary alerts = new PatientSummary().getAlertSummary(patient);
+        if (alerts != null) {
+            result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", "bold"),
+                                          alerts.getComponent());
+        }
+        return result;
+    }
+
+    /**
+     * Returns the patient listener.
+     *
+     * @return the patient listener
+     */
+    private ModifiableListener getPatientListener() {
+        if (patientListener == null) {
+            patientListener = new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onPatientChanged();
+                }
+            };
+        }
+        return patientListener;
     }
 
     /**
@@ -252,7 +387,35 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         return new AppointmentRules().getDefaultAppointmentType(schedule);
     }
 
+    /**
+     * Returns the alerts container.
+     *
+     * @return the alerts container
+     */
+    private Component getAlertsContainer() {
+        if (alerts == null) {
+            alerts = new Row();
+        }
+        return alerts;
+    }
+
     private class AppointmentLayoutStrategy extends LayoutStrategy {
+
+        /**
+         * Lay out out the object in the specified container.
+         *
+         * @param object     the object to lay out
+         * @param properties the object's properties
+         * @param parent     the parent object. May be <tt>null</tt>
+         * @param container  the container to use
+         * @param context    the layout context
+         */
+        @Override
+        protected void doLayout(IMObject object, PropertySet properties, IMObject parent, Component container,
+                                LayoutContext context) {
+            super.doLayout(object, properties, parent, container, context);
+            container.add(getAlertsContainer());
+        }
 
         /**
          * Sets focus on the customer component.

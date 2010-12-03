@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app;
 
-import echopointng.GroupBox;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
@@ -69,7 +68,6 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ContentPaneFactory;
-import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -109,9 +107,9 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     private ButtonColumn subMenu;
 
     /**
-     * Workspace summary group box. May be <tt>null</tt>.
+     * Workspace summary component. May be <tt>null</tt>.
      */
-    private GroupBox summary;
+    private Component summary;
 
     /**
      * Listener to refresh the summary.
@@ -366,8 +364,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
                     select(subsystem, workspace);
                 }
             };
-            Button button = subMenu.addButton(workspace.getTitleKey(),
-                                              listener);
+            Button button = subMenu.addButton(workspace.getTitleKey(), listener, true);
             button.setFocusTraversalParticipant(false);
         }
         Workspace current = subsystem.getWorkspace();
@@ -513,16 +510,12 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      */
     private void refreshSummary() {
         leftMenu.remove(summary);
-        Component summary = currentWorkspace.getSummary();
-        if (summary != null) {
-            summary = ColumnFactory.create("MainPane.Left.Menu.Summary",
-                                           summary);
-            this.summary = GroupBoxFactory.create("workspace.summary",
-                                                  "MainPane.Left.Menu.SummaryBox",
-                                                  summary);
-            leftMenu.add(this.summary);
+        Component newSummary = currentWorkspace.getSummary();
+        if (newSummary != null) {
+            summary = ColumnFactory.create("Inset", newSummary);
+            leftMenu.add(summary);
         } else {
-            this.summary = null;
+            summary = null;
         }
     }
 

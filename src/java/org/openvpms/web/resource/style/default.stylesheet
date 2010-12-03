@@ -35,16 +35,7 @@
         </properties>
     </style>
 
-    <style name="MainPane.Left.Menu.SummaryBox"
-           base-name="default"
-           type="echopointng.GroupBox">
-        <properties>
-            <property name="foreground" value="#ffffff"/>
-        </properties>
-    </style>
-
-    <style name="MainPane.Left.Menu.Summary"
-           type="nextapp.echo2.app.Column">
+    <style name="PartySummary" type="nextapp.echo2.app.Column">
         <properties>
             <property name="background" value="#ffffff"/>
             <property name="font">
@@ -120,14 +111,6 @@
     </style>
 
     <style name="PatientSummary.ReminderDialog" base-name="PopupWindow"
-           type="nextapp.echo2.app.WindowPane">
-        <properties>
-            <property name="width" value="${dialog.medium.width}"/>
-            <property name="height" value="${dialog.medium.height}"/>
-        </properties>
-    </style>
-
-    <style name="PatientSummary.AlertDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="${dialog.medium.width}"/>
@@ -310,6 +293,38 @@
         </properties>
     </style>
 
+    <style name="AlertsViewer" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.large.width}"/>
+            <property name="height" value="${dialog.large.height}"/>
+        </properties>
+    </style>
+
+    <!-- ================================================================== -->
+    <!-- customer and patient alert type default colours                    -->
+    <!-- NOTE: only the background is used. Any other properties will be    -->
+     <!-- ignored.                                                          -->
+    <!-- ================================================================== -->
+
+    <style name="AlertType.HIGH" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="background" value="#FF0000"/> <!-- red -->
+        </properties>
+    </style>
+
+    <style name="AlertType.MEDIUM" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="background" value="#FFFF00"/> <!-- yellow -->
+        </properties>
+    </style>
+
+    <style name="AlertType.LOW" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="background" value="#C0C0C0"/> <!-- silver -->
+        </properties>
+    </style>
+
     <style name="SchedulingWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
@@ -331,6 +346,19 @@
         <properties>
             <property name="resizable" value="true"/>
             <property name="separatorPosition" value="${AppointmentBrowser.separatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="AppointmentActEditor.Alerts" base-name="CellSpacing" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.RowLayoutData">
+                    <properties>
+                        <alignment vertical="top"/>
+                        <property name="width" value="${MainPane.separatorPosition}"/>
+                    </properties>
+                </layout-data>
+            </property>
         </properties>
     </style>
 
@@ -1757,6 +1785,16 @@
         </properties>
     </style>
 
+      <style name="small.bold" type="nextapp.echo2.app.Label" base-name="default">
+        <properties>
+            <property name="font">
+                <font size="${font.small.size}" bold="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
     <!-- =================================================================== -->
     <!--  Button defaults                                                    -->
     <!-- =================================================================== -->
@@ -1801,6 +1839,17 @@
                 </fill-image>
             </property-->
             <property name="insets" value="${padding.large} ${padding.smaller}"/>
+        </properties>
+    </style>
+
+    <style name="small" base-name="default" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="font">
+                <font size="${font.small.size}">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+            <property name="insets" value="${padding.tiny}"/>
         </properties>
     </style>
 

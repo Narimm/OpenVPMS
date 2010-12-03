@@ -37,6 +37,7 @@ import org.openvpms.web.component.util.LabelFactory;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.Collections;
 
 
 /**
@@ -118,7 +119,7 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      * @return the objects matcing the query.
      */
     public List<T> getObjects() {
-        return model.getObjects();
+        return (model != null) ? model.getObjects() : Collections.<T>emptyList();
     }
 
     /**

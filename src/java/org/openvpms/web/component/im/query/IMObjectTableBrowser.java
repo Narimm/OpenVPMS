@@ -93,7 +93,7 @@ public abstract class IMObjectTableBrowser<T extends IMObject>
         context.setComponentFactory(factory);
         Query<T> query = getQuery();
         String[] shortNames = query.getShortNames();
-        if (query instanceof AbstractQuery) {
+        if (query instanceof AbstractArchetypeQuery) {
             String shortName = ((AbstractArchetypeQuery<T>) query).getShortName();
             if (shortName != null) {
                 shortNames = new String[]{shortName};
