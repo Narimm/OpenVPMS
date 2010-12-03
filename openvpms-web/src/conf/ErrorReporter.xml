@@ -16,6 +16,8 @@
     <exclude-exception>
         <className>org.openvpms.report.ReportException</className>
         <exclude>FailedToFindSubReport</exclude>
+        <exclude>NoTemplateForArchetype</exclude>
+        <exclude>NoPagesToPrint</exclude>
     </exclude-exception>
     <exclude-exception>
         <className>org.openvpms.archetype.rules.finance.statement.StatementProcessorException</className>
