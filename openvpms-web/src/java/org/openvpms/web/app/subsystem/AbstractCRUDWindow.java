@@ -205,8 +205,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
                 // make sure the latest instance is being used.
                 object = IMObjectHelper.reload(object);
                 if (object == null) {
-                    ErrorDialog.show(Messages.get("imobject.noexist"),
-                                     archetypes.getDisplayName());
+                    ErrorDialog.show(Messages.get("imobject.noexist", archetypes.getDisplayName()));
                 } else {
                     edit(object);
                 }
@@ -392,7 +391,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     protected void onDelete() {
         T object = IMObjectHelper.reload(getObject());
         if (object == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist"), archetypes.getDisplayName());
+            ErrorDialog.show(Messages.get("imobject.noexist", archetypes.getDisplayName()));
         } else {
             IMObjectDeletor.delete(object, new AbstractIMObjectDeletionListener<T>() {
                 public void deleted(T object) {

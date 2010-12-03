@@ -66,8 +66,7 @@ public class ReloadTask extends SynchronousTask {
                     = ArchetypeServiceHelper.getArchetypeService();
             object = service.get(object.getObjectReference());
             if (object == null) {
-                ErrorDialog.show(Messages.get("imobject.noexist"),
-                                 DescriptorHelper.getDisplayName(shortName));
+                ErrorDialog.show(Messages.get("imobject.noexist", DescriptorHelper.getDisplayName(shortName)));
                 notifyCancelled();
             } else {
                 context.setObject(shortName, object);

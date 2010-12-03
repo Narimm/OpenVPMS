@@ -98,7 +98,7 @@ public class EditListBrowserDialog<T extends IMObject> extends BrowserDialog<T> 
         // make sure the latest instance is being used.
         T current = IMObjectHelper.reload(object);
         if (current == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist"), DescriptorHelper.getDisplayName(object));
+            ErrorDialog.show(Messages.get("imobject.noexist", DescriptorHelper.getDisplayName(object)));
         } else {
             final FocusCommand focus = new FocusCommand();
             LayoutContext context = new DefaultLayoutContext(true);
