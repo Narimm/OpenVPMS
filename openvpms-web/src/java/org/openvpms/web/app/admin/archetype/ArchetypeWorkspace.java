@@ -48,7 +48,7 @@ public class ArchetypeWorkspace extends ResultSetCRUDWorkspace<ArchetypeDescript
     @Override
     protected ResultSetCRUDWindow<ArchetypeDescriptor> createCRUDWindow() {
         QueryBrowser<ArchetypeDescriptor> browser = getBrowser();
-        return new ArchetypeCRUDWindow(getArchetypes(), browser.getResultSet());
+        return new ArchetypeCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet());
     }
 
 }

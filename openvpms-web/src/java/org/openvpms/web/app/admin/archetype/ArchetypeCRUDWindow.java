@@ -41,6 +41,7 @@ import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -86,10 +87,12 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
      * Constructs an <tt>ArchetypeCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
-     * @param set        the result set
+     * @param query      the query. May be <tt>null</tt>
+     * @param set        the result set. May be <tt>null</tt>
      */
-    public ArchetypeCRUDWindow(Archetypes<ArchetypeDescriptor> archetypes, ResultSet<ArchetypeDescriptor> set) {
-        super(archetypes, set);
+    public ArchetypeCRUDWindow(Archetypes<ArchetypeDescriptor> archetypes, Query<ArchetypeDescriptor> query,
+                               ResultSet<ArchetypeDescriptor> set) {
+        super(archetypes, query, set);
     }
 
     /**
