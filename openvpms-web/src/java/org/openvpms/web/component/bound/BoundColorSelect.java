@@ -19,9 +19,9 @@
 package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Color;
-import nextapp.echo2.extras.app.ColorSelect;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ColourHelper;
+import org.openvpms.web.component.echo.ColorSelect;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

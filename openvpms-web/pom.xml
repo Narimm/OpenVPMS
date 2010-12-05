@@ -510,8 +510,8 @@
 
     <properties>
         <echo.version>2.1.0.rc5</echo.version>
-        <echo-extras.version>0.9.1</echo-extras.version>
-        <echo-filetransfer.version>20060626</echo-filetransfer.version>
+        <echo-extras.version>2.1.0</echo-extras.version>
+        <echo-filetransfer.version>2.1.0</echo-filetransfer.version>
         <jetty.port>8080</jetty.port>
         <jetty.sslport>8443</jetty.sslport>
     </properties>
