@@ -182,6 +182,10 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                 break;
             case REASON_INDEX:
                 result = set.getString(ScheduleEvent.ACT_REASON_NAME);
+                // fall back to the code
+                if (result == null) {
+                    result = set.getString(ScheduleEvent.ACT_REASON);
+                }
                 break;
             case DESCRIPTION_INDEX:
                 result = set.getString(ScheduleEvent.ACT_DESCRIPTION);
