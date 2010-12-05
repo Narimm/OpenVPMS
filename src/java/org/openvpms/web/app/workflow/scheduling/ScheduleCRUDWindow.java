@@ -121,11 +121,11 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
      */
     @Override
     protected void onRefresh(Act object) {
-        object = IMObjectHelper.reload(object);
-        setObject(object);
+        Act refreshed = IMObjectHelper.reload(object); // may be null
+        setObject(refreshed);
         CRUDWindowListener<Act> listener = getListener();
         if (listener != null) {
-            listener.refresh(object);
+            listener.refresh(object); // won't be null
         }
     }
 
