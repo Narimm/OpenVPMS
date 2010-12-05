@@ -96,6 +96,10 @@ class MultiScheduleTableModel extends AppointmentTableModel {
             String patient = event.getString(ScheduleEvent.PATIENT_NAME);
             String status = getStatus(event);
             String reason = event.getString(ScheduleEvent.ACT_REASON_NAME);
+            if (reason == null) {
+                // fall back to the code
+                reason = event.getString(ScheduleEvent.ACT_REASON);
+            }
 
             if (patient == null) {
                 text = Messages.get(
