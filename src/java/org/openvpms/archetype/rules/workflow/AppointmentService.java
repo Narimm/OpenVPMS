@@ -21,13 +21,20 @@ package org.openvpms.archetype.rules.workflow;
 import net.sf.ehcache.Cache;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -39,13 +46,32 @@ import java.util.Date;
 public class AppointmentService extends AbstractScheduleService {
 
     /**
-     * Creates a new <tt>AppointmentServiceImpl</tt>.
+     * Reason lookup names, keyed on code.
+     */
+    private final Map<String, String> reasonNames = Collections.synchronizedMap(new HashMap<String, String>());
+
+    /**
+     * Constructs an <tt>AppointmentService</tt>.
      *
      * @param service the archetype service
      * @param cache   the cache
      */
     public AppointmentService(IArchetypeService service, Cache cache) {
         super(ScheduleArchetypes.APPOINTMENT, service, cache);
+
+        Map<String, String> map = LookupHelper.getNames(service, ScheduleArchetypes.APPOINTMENT, "reason");
+        reasonNames.putAll(map);
+        service.addListener("lookup.appointmentReason", new AbstractArchetypeServiceListener() {
+            @Override
+            public void saved(IMObject object) {
+                onReasonSaved((Lookup) object);
+            }
+
+            @Override
+            public void removed(IMObject object) {
+                onReasonRemoved((Lookup) object);
+            }
+        });
     }
 
     /**
@@ -58,8 +84,11 @@ public class AppointmentService extends AbstractScheduleService {
     protected void assemble(PropertySet target, ActBean source) {
         super.assemble(target, source);
 
-        IMObjectReference scheduleRef
-                = source.getNodeParticipantRef("schedule");
+        String reason = source.getAct().getReason();
+        target.set(ScheduleEvent.ACT_REASON, reason);
+        target.set(ScheduleEvent.ACT_REASON_NAME, reasonNames.get(reason));
+
+        IMObjectReference scheduleRef = source.getNodeParticipantRef("schedule");
         String scheduleName = getName(scheduleRef);
         target.set(ScheduleEvent.SCHEDULE_REFERENCE, scheduleRef);
         target.set(ScheduleEvent.SCHEDULE_NAME, scheduleName);
@@ -94,8 +123,38 @@ public class AppointmentService extends AbstractScheduleService {
      * @param to       the end time
      * @return a new query
      */
-    protected ScheduleEventQuery createQuery(Entity schedule, Date from,
-                                             Date to) {
+    protected ScheduleEventQuery createQuery(Entity schedule, Date from, Date to) {
         return new AppointmentQuery((Party) schedule, from, to, getService());
     }
+
+    /**
+     * Invoked wheh an appointment reason is saved. Updates the name cache and clears the appointment cache.
+     *
+     * @param reason the reason lookup
+     */
+    private void onReasonSaved(Lookup reason) {
+        boolean exists;
+        synchronized (reasonNames) {
+            exists = reasonNames.containsKey(reason.getCode());
+            reasonNames.put(reason.getCode(), reason.getName());
+        }
+        if (exists) {
+            clearCache();
+        }
+    }
+
+    /**
+     * Invoked when an appointment reason is removed. Updates the name cache.
+     * If the name is cached, then the appointment cache will be cleared.
+     * <p/>
+     * Strictly speaking, no lookup will be removed by the archetype service if it is use.
+     *
+     * @param reason the reason lookup
+     */
+    private void onReasonRemoved(Lookup reason) {
+        if (reasonNames.remove(reason.getCode()) != null) {
+            clearCache();
+        }
+    }
+
 }

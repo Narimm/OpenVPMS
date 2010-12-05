@@ -81,11 +81,6 @@ public abstract class AbstractScheduleService implements ScheduleService {
      */
     private final Map<String, String> statusNames;
 
-    /**
-     * Reason lookup names, keyed on code.
-     */
-    private final Map<String, String> reasonNames;
-
 
     /**
      * Creates a new <tt>AbstractScheduleService</tt>.
@@ -97,9 +92,13 @@ public abstract class AbstractScheduleService implements ScheduleService {
     public AbstractScheduleService(String eventShortName,
                                    IArchetypeService service,
                                    Cache cache) {
+        this.service = service;
+        this.cache = cache;
+
+        statusNames = LookupHelper.getNames(service, eventShortName, "status");
+
         // add a listener to receive notifications from the archetype service
-        service.addListener(
-                eventShortName, new AbstractArchetypeServiceListener() {
+        service.addListener(eventShortName, new AbstractArchetypeServiceListener() {
 
             @Override
             public void save(IMObject object) {
@@ -126,12 +125,6 @@ public abstract class AbstractScheduleService implements ScheduleService {
                 removePending((Act) object);
             }
         });
-
-        this.service = service;
-        this.cache = cache;
-
-        statusNames = LookupHelper.getNames(service, eventShortName, "status");
-        reasonNames = LookupHelper.getNames(service, eventShortName, "reason");
     }
 
     /**
@@ -358,14 +351,11 @@ public abstract class AbstractScheduleService implements ScheduleService {
     protected void assemble(PropertySet target, ActBean source) {
         Act event = source.getAct();
         String status = event.getStatus();
-        String reason = event.getReason();
         target.set(ScheduleEvent.ACT_REFERENCE, event.getObjectReference());
         target.set(ScheduleEvent.ACT_START_TIME, event.getActivityStartTime());
         target.set(ScheduleEvent.ACT_END_TIME, event.getActivityEndTime());
         target.set(ScheduleEvent.ACT_STATUS, status);
         target.set(ScheduleEvent.ACT_STATUS_NAME, statusNames.get(status));
-        target.set(ScheduleEvent.ACT_REASON, event.getReason());
-        target.set(ScheduleEvent.ACT_REASON_NAME, reasonNames.get(reason));
         target.set(ScheduleEvent.ACT_DESCRIPTION, event.getDescription());
 
         IMObjectReference customerRef
@@ -408,6 +398,13 @@ public abstract class AbstractScheduleService implements ScheduleService {
             }
         }
         return null;
+    }
+
+    /**
+     * Clears the cache.
+     */
+    protected void clearCache() {
+        cache.removeAll();
     }
 
     /**
@@ -571,6 +568,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
          *
          * @param from the from date
          * @param to   the to date. May be <tt>null</tt>
+         * @return <tt>true</tt> if the day falls in the date range
          */
         public boolean dayInRange(Date from, Date to) {
             return (DateRules.compareTo(from, day) <= 0

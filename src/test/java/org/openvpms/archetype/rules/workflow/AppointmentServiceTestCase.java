@@ -18,22 +18,28 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
 import java.util.List;
+
+import static junit.framework.Assert.assertNull;
 
 
 /**
@@ -60,9 +66,9 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testAddEvent() {
-        Date date1 = java.sql.Date.valueOf("2008-1-1");
-        Date date2 = java.sql.Date.valueOf("2008-1-2");
-        Date date3 = java.sql.Date.valueOf("2008-1-3");
+        Date date1 = getDate("2008-01-01");
+        Date date2 = getDate("2008-01-02");
+        Date date3 = getDate("2008-01-03");
 
         // retrieve the appointments for date1 and date2 and verify they are
         // empty.
@@ -93,9 +99,9 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testRemoveEvent() {
-        Date date1 = java.sql.Date.valueOf("2008-1-1");
-        Date date2 = java.sql.Date.valueOf("2008-1-2");
-        Date date3 = java.sql.Date.valueOf("2008-1-3");
+        Date date1 = getDate("2008-01-01");
+        Date date2 = getDate("2008-01-02");
+        Date date3 = getDate("2008-01-03");
 
         // retrieve the appointments for date1 and date2 and verify they are
         // empty.
@@ -132,7 +138,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         final int count = 10;
         Party schedule = ScheduleTestHelper.createSchedule();
         Act[] appointments = new Act[count];
-        Date date = java.sql.Date.valueOf("2007-1-1");
+        Date date = getDate("2007-01-01");
         for (int i = 0; i < count; ++i) {
             Date startTime = DateRules.getDate(date, 15 * count,
                                                DateUnits.MINUTES);
@@ -150,8 +156,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
             bean.save();
         }
 
-        ScheduleService service = (ScheduleService) applicationContext.getBean(
-                "appointmentService");
+        ScheduleService service = (ScheduleService) applicationContext.getBean("appointmentService");
         List<PropertySet> results = service.getEvents(schedule, date);
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
@@ -165,8 +170,8 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testChangeEventDate() {
-        Date date1 = java.sql.Date.valueOf("2008-1-1");
-        Date date2 = java.sql.Date.valueOf("2008-3-1");
+        Date date1 = getDate("2008-01-01");
+        Date date2 = getDate("2008-03-01");
 
         service.getEvents(schedule, date1);
         assertEquals(0, service.getEvents(schedule, date1).size());
@@ -190,7 +195,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testChangeEventSchedule() {
-        Date date = java.sql.Date.valueOf("2008-1-1");
+        Date date = getDate("2008-01-01");
 
         service.getEvents(schedule, date);
         assertEquals(0, service.getEvents(schedule, date).size());
@@ -208,6 +213,103 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         assertEquals(1, service.getEvents(schedule2, date).size());
     }
 
+    /**
+     * Verifies that a new to lookup.appointmentReason appears in new appointments.
+     */
+    @Test
+    public void testAddReason() {
+        Date date1 = getDate("2008-01-01");
+        Date date2 = getDate("2008-01-02");
+
+        // create and save appointment for date1
+        Act appointment1 = createAppointment(date1);
+        List<PropertySet> results = service.getEvents(schedule, date1);
+        assertEquals(1, results.size());
+        PropertySet set = results.get(0);
+        checkAppointment(appointment1, set);
+
+        String code = "XREASON" + System.currentTimeMillis();
+        String name = "Added reason";
+        TestHelper.getLookup("lookup.appointmentReason", code, name, true);
+
+        Act appointment2 = createAppointment(date2, schedule, false);
+        appointment2.setReason(code);
+        save(appointment2);
+
+        // verify the reason code and name appears in the new event
+        results = service.getEvents(schedule, date2);
+        assertEquals(1, results.size());
+        set = results.get(0);
+        assertEquals(code, set.getString(ScheduleEvent.ACT_REASON));
+        assertEquals(name, set.getString(ScheduleEvent.ACT_REASON_NAME));
+    }
+
+    /**
+     * Verifies that changes to lookup.appointmentReason get reflected in the cached appointments.
+     */
+    @Test
+    public void testUpdateReason() {
+        Date date = getDate("2008-01-01");
+
+        // create and save appointment for date
+        Act appointment = createAppointment(date);
+        List<PropertySet> results = service.getEvents(schedule, date);
+        assertEquals(1, results.size());
+        PropertySet set = results.get(0);
+        checkAppointment(appointment, set);
+
+        Lookup reason = LookupServiceHelper.getLookupService().getLookup(appointment, "reason");
+        assertNotNull(reason);
+        String name = "New reason: " + System.currentTimeMillis();
+        reason.setName(name);
+        save(reason);
+
+        results = service.getEvents(schedule, date);
+        assertEquals(1, results.size());
+        set = results.get(0);
+        assertEquals(reason.getCode(), set.getString(ScheduleEvent.ACT_REASON));
+        assertEquals(name, set.getString(ScheduleEvent.ACT_REASON_NAME));
+    }
+
+    /**
+     * Verifies that if a lookup.appointmentReason is removed, the cache is updated.
+     * <p/>
+     * Strictly speaking, the application shouldn't remove a lookup in use, but if it occurs,
+     * this implementation will return null for the reason name.
+     */
+    @Test
+    public void testRemoveReason() {
+        Date date = getDate("2008-01-01");
+
+        // create and save appointment for date
+        Act appointment = createAppointment(date, schedule, false);
+        String code = "XREASON" + System.currentTimeMillis();
+        String name = "Reason to remove";
+        Lookup reason = TestHelper.getLookup("lookup.appointmentReason", code, name, true);
+        appointment.setReason(code);
+        save(appointment);
+
+        List<PropertySet> results = service.getEvents(schedule, date);
+        assertEquals(1, results.size());
+        PropertySet set = results.get(0);
+
+        assertEquals(code, set.getString(ScheduleEvent.ACT_REASON));
+        assertEquals(name, set.getString(ScheduleEvent.ACT_REASON_NAME));
+
+        // now remove the appointment and the reason lookup
+        remove(appointment);
+        remove(reason);
+
+        appointment = createAppointment(date, schedule, false);
+        appointment.setReason(code);
+        save(appointment);
+
+        results = service.getEvents(schedule, date);
+        assertEquals(1, results.size());
+        set = results.get(0);
+        assertEquals(code, set.getString(ScheduleEvent.ACT_REASON));
+        assertNull(set.getString(ScheduleEvent.ACT_REASON_NAME));
+    }
 
     /**
      * Sets up the test case.
@@ -272,38 +374,41 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
      * @return a new appointment
      */
     private Act createAppointment(Date date) {
-        return createAppointment(date, schedule);
+        return createAppointment(date, schedule, true);
     }
 
     /**
-     * Creates and saves a new appointment.
+     * Creates a new appointment.
      *
      * @param date     the date to create the appointment on
      * @param schedule the schedule
+     * @param save     if <tt>true</tt> save the appointment
      * @return a new appointment
      */
-    private Act createAppointment(Date date, Party schedule) {
+    private Act createAppointment(Date date, Party schedule, boolean save) {
         Date startTime = DateRules.getDate(date, 15, DateUnits.MINUTES);
         Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
-        return createAppointment(startTime, endTime, schedule);
+        return createAppointment(startTime, endTime, schedule, save);
     }
 
     /**
-     * Creates and saves a new appointment.
+     * Creates a new appointment.
      *
      * @param startTime the start time
      * @param endTime   the end time
      * @param schedule  the schedule
+     * @param save      if <tt>true</tt> save the appointment
      * @return a new appointment
      */
-    private Act createAppointment(Date startTime, Date endTime,
-                                  Party schedule) {
+    private Act createAppointment(Date startTime, Date endTime, Party schedule, boolean save) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         User clinician = TestHelper.createClinician();
         Act appointment = ScheduleTestHelper.createAppointment(
                 startTime, endTime, schedule, customer, patient, clinician);
-        save(appointment);
+        if (save) {
+            save(appointment);
+        }
         return appointment;
     }
 

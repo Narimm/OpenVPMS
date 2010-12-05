@@ -106,6 +106,10 @@ public class TaskService extends AbstractScheduleService {
         String typeName = getName(typeRef);
         target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);
         target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
+
+        String reason = source.getAct().getReason();  // should be null, but populate for consistency
+        target.set(ScheduleEvent.ACT_REASON, reason);
+        target.set(ScheduleEvent.ACT_REASON_NAME, reason);
     }
 
     /**
