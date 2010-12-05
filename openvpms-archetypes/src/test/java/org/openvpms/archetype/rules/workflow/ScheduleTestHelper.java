@@ -191,7 +191,7 @@ public class ScheduleTestHelper extends TestHelper {
                                         Party schedule, Party customer,
                                         Party patient, User clinician) {
         Act act = (Act) create(ScheduleArchetypes.APPOINTMENT);
-        Lookup reason = createLookup("lookup.appointmentReason", "XReason");
+        Lookup reason = TestHelper.getLookup("lookup.appointmentReason", "XREASON", "Reason X", true);
 
         ActBean bean = new ActBean(act);
         bean.setValue("startTime", startTime);
@@ -337,19 +337,6 @@ public class ScheduleTestHelper extends TestHelper {
             bean.setParticipant("participation.clinician", clinician);
         }
         return act;
-    }
-
-    /**
-     * Creates a lookup.
-     *
-     * @param shortName the lookup short name
-     * @param code      the lookup code
-     * @return a new lookup
-     */
-    private static Lookup createLookup(String shortName, String code) {
-        Lookup lookup = (Lookup) create(shortName);
-        lookup.setCode(code);
-        return lookup;
     }
 
 }
