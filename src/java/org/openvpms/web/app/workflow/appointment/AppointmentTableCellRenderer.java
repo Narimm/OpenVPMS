@@ -66,7 +66,7 @@ public class AppointmentTableCellRenderer extends ScheduleTableCellRenderer {
         TableLayoutDataEx layout;
         AppointmentTableModel model = (AppointmentTableModel) table.getModel();
 
-        if (column == AppointmentTableModel.START_TIME_INDEX) {
+        if (model.isStartTimeColumn(column)) {
             Date date = (Date) value;
             String text = DateHelper.formatTime(date, false);
 
@@ -109,9 +109,9 @@ public class AppointmentTableCellRenderer extends ScheduleTableCellRenderer {
      * @return a component representation of the value. May be <tt>null</tt>
      */
     @Override
-    protected Component getComponent(Table table, Object value, int column,
-                                     int row) {
-        if (column == AppointmentTableModel.START_TIME_INDEX) {
+    protected Component getComponent(Table table, Object value, int column, int row) {
+        AppointmentTableModel model = (AppointmentTableModel) table.getModel();
+        if (model.isStartTimeColumn(column)) {
             // use getTableCellRendererContent to render the cell. Bit tedious,
             // but its the only way to get the isSelectionCausingCell() and
             // isActionCausingCell() methods to be invoked
@@ -130,10 +130,8 @@ public class AppointmentTableCellRenderer extends ScheduleTableCellRenderer {
      */
     @Override
     protected boolean canHighlightCell(Table table, int column, int row) {
-        if (column != AppointmentTableModel.START_TIME_INDEX) {
-            return super.canHighlightCell(table, column, row);
-        }
-        return false;
+        AppointmentTableModel model = (AppointmentTableModel) table.getModel();
+        return !model.isStartTimeColumn(column) && super.canHighlightCell(table, column, row);
     }
 
     /**
@@ -145,9 +143,8 @@ public class AppointmentTableCellRenderer extends ScheduleTableCellRenderer {
      * @param model     the event model
      */
     @Override
-    protected void colourCell(Component component, int column, int row,
-                              ScheduleTableModel model) {
-        if (column == AppointmentTableModel.START_TIME_INDEX) {
+    protected void colourCell(Component component, int column, int row, ScheduleTableModel model) {
+        if (((AppointmentTableModel) model).isStartTimeColumn(column)) {
             super.colourCell(component, Availability.FREE, model, row);
         } else {
             super.colourCell(component, column, row, model);

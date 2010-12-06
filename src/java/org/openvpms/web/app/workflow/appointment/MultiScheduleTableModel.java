@@ -42,12 +42,28 @@ import java.util.List;
 class MultiScheduleTableModel extends AppointmentTableModel {
 
     /**
+     * The column index of the right start time column.
+     */
+    private int rightStartTimeIndex;
+
+    /**
      * Creates a new <tt>MultiScheduleTableModel</tt>.
      *
      * @param grid the appointment grid
      */
     public MultiScheduleTableModel(AppointmentGrid grid) {
         super(grid);
+    }
+
+    /**
+     * Determines if the specified column is a 'start time' column.
+     *
+     * @param column the column
+     * @return <tt>true</tt> if the column is a 'start time' column
+     */
+    @Override
+    public boolean isStartTimeColumn(int column) {
+        return super.isStartTimeColumn(column) || column == rightStartTimeIndex;
     }
 
     /**
@@ -59,7 +75,8 @@ class MultiScheduleTableModel extends AppointmentTableModel {
      */
     protected Object getValueAt(Column column, int row) {
         Object result = null;
-        if (column.getModelIndex() == START_TIME_INDEX) {
+        int index = column.getModelIndex();
+        if (index == START_TIME_INDEX || index == rightStartTimeIndex) {
             result = getGrid().getStartTime(row);
         } else {
             PropertySet set = getEvent(column, row);
@@ -127,11 +144,10 @@ class MultiScheduleTableModel extends AppointmentTableModel {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
         List<Schedule> schedules = grid.getSchedules();
         int index = START_TIME_INDEX;
-        String startTime = getDisplayName("act.customerAppointment",
-                                          "startTime");
-        Column startCol = new Column(index, startTime);
-        startCol.setWidth(new Extent(100));
-        result.addColumn(startCol);
+        String startTime = getDisplayName("act.customerAppointment", "startTime");
+        Column leftStartCol = new Column(index, startTime);
+        leftStartCol.setWidth(new Extent(100));
+        result.addColumn(leftStartCol);
         ++index;
         int percent = (!schedules.isEmpty()) ? 100 / schedules.size() : 0;
         for (Schedule schedule : schedules) {
@@ -141,6 +157,10 @@ class MultiScheduleTableModel extends AppointmentTableModel {
             }
             result.addColumn(column);
         }
+        rightStartTimeIndex = index;
+        Column rightStartCol = new Column(rightStartTimeIndex, startTime);
+        rightStartCol.setWidth(new Extent(100));
+        result.addColumn(rightStartCol);
         return result;
     }
 }
