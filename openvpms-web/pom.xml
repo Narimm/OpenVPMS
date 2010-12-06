@@ -328,7 +328,6 @@
             <groupId>com.nextapp</groupId>
             <artifactId>echo-extras-webcontainer</artifactId>
             <version>${echo-extras.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.nextapp</groupId>
