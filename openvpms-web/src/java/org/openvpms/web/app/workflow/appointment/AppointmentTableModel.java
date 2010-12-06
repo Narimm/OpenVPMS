@@ -20,10 +20,10 @@ package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
+import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -43,7 +43,6 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
      */
     protected static final int START_TIME_INDEX = 0;
 
-
     /**
      * Creates a new <tt>AppointmentTableModel</tt>.
      *
@@ -51,6 +50,16 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
      */
     public AppointmentTableModel(AppointmentGrid grid) {
         super(grid);
+    }
+
+    /**
+     * Determines if the specified column is a 'start time' column.
+     *
+     * @param column the column
+     * @return <tt>true</tt> if the column is a 'start time' column
+     */
+    public boolean isStartTimeColumn(int column) {
+        return column == START_TIME_INDEX;
     }
 
     /**
