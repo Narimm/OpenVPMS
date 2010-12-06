@@ -123,11 +123,7 @@ public class AlertSummary {
         Color value = ColourHelper.getColor(bean.getString("colour"));
         if (value != null) {
             result.setBackground(value);
-            if (ColourHelper.isCloserToBlackThanWhite(value)) {
-                result.setForeground(Color.WHITE);
-            } else {
-                result.setForeground(Color.BLACK);
-            }
+            result.setForeground(ColourHelper.getTextColour(value));
         }
 
         result.addActionListener(new ActionListener() {

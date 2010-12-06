@@ -265,11 +265,7 @@ public class AlertsViewer extends PopupDialog {
             if (value != null) {
                 TableLayoutData layout = new TableLayoutData();
                 layout.setBackground(value);
-                if (ColourHelper.isCloserToBlackThanWhite(value)) {
-                    result.setForeground(Color.WHITE);
-                } else {
-                    result.setForeground(Color.BLACK);
-                }
+                result.setForeground(ColourHelper.getTextColour(value));
                 result.setLayoutData(layout);
             }
             return result;
