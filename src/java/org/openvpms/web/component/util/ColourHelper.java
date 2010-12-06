@@ -66,15 +66,19 @@ public class ColourHelper {
     }
 
     /**
-     * Detemines if the specified colour is closer to black than white.
+     * Returns a colour that can be used as the text foreground/background to the supplied colour, so that the text is
+     * readable.
+     * <p/>
+     * This returns <tt>Color.BLACK</tt> if the colour is closest to <tt>Color.WHITE</tt>, or <tt>Color.WHITE</tt>
+     * if the colour is closer to <tt>Color.BLACK</tt>.
      *
      * @param colour the colour
-     * @return <tt>true</tt> if the colour is closer to black; <tt>false</tt> if it is closer to white
+     * @return a colour that may be used to ensure text is readable
      */
-    public static boolean isCloserToBlackThanWhite(Color colour) {
+    public static Color getTextColour(Color colour) {
         int distToBlack = distance(colour, Color.BLACK);
         int distToWhite = distance(colour, Color.WHITE);
-        return distToBlack < distToWhite;
+        return distToBlack < distToWhite ? Color.WHITE : Color.BLACK;
     }
 
     /**

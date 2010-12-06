@@ -166,11 +166,7 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
                 TableLayoutData layout = new TableLayoutData();
                 result.setLayoutData(layout);
                 layout.setBackground(value);
-                if (ColourHelper.isCloserToBlackThanWhite(value)) {
-                    result.setForeground(Color.WHITE);
-                } else {
-                    result.setForeground(Color.BLACK);
-                }
+                result.setForeground(ColourHelper.getTextColour(value));
             }
         }
         return result;
