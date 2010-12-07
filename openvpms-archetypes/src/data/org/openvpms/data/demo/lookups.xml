@@ -130,9 +130,10 @@
 	<data archetype="lookup.personTitle" code="MS" />
 	<data archetype="lookup.personTitle" code="DR" />
 	<data archetype="lookup.personTitle" code="LADY" />
-	<data archetype="lookup.patientAlertType" code="ALLERGY" />
-	<data archetype="lookup.patientAlertType" code="AGGRESSION" />
-	<data archetype="lookup.patientAlertType" code="OTHER" defaultLookup="true"/>
+    <data archetype="lookup.customerAlertType" code="BAD_DEBT" priority="HIGH" colour="0xFF0000"/>
+	<data archetype="lookup.patientAlertType" code="ALLERGY" priority="HIGH" colour="0xFF0000"/>
+	<data archetype="lookup.patientAlertType" code="AGGRESSION" priority="HIGH" colour="0xFF0000"/>
+	<data archetype="lookup.patientAlertType" code="OTHER" defaultLookup="true" priority="MEDIUM" colour="0xFFFF00"/>
 	<data archetype="lookup.reportType" code="CUSTOMER" />
 	<data archetype="lookup.reportType" code="PATIENT" />
 	<data archetype="lookup.reportType" code="SUPPLIER" />
