@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -52,7 +53,7 @@ public class OverdueBalanceQueryTestCase extends AbstractCustomerAccountTest {
         customer.addClassification(createAccountType(30, DateUnits.DAYS));
         save(customer);
 
-        Date startTime = java.sql.Date.valueOf("2007-1-1");
+        Date startTime = getDate("2007-01-01");
 
         // 60 days from saved, amount should be overdue
         Date now = DateRules.getDate(startTime, 60, DateUnits.DAYS);

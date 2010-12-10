@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateUnits;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -56,7 +57,7 @@ public class OutstandingBalanceQueryTestCase extends AbstractCustomerAccountTest
 
         // create and save a new invoice
         final Money amount = new Money(100);
-        Date startTime = java.sql.Date.valueOf("2007-1-1");
+        Date startTime = getDate("2007-01-01");
         List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
@@ -98,7 +99,7 @@ public class OutstandingBalanceQueryTestCase extends AbstractCustomerAccountTest
 
         // create and save a new invoice
         final Money amount = new Money(100);
-        Date startTime = java.sql.Date.valueOf("2007-1-1");
+        Date startTime = getDate("2007-01-01");
         List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 

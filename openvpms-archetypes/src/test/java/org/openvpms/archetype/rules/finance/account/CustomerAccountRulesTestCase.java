@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -358,7 +359,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // create and save a new invoice
         final Money amount = new Money(100);
-        Date startTime = java.sql.Date.valueOf("2007-1-1");
+        Date startTime = getDate("2007-01-01");
         List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
@@ -401,7 +402,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // create and save a new invoice
         final Money amount = new Money(100);
-        Date startTime = java.sql.Date.valueOf("2007-1-1");
+        Date startTime = getDate("2007-01-01");
         List<FinancialAct> invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
@@ -692,15 +693,15 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         Money sixty = new Money(60);
         Money forty = new Money(40);
         Money twenty = new Money(20);
-        Date chargeTime1 = java.sql.Date.valueOf("2007-1-1");
-        Date chargeTime2 = java.sql.Date.valueOf("2007-3-30");
+        Date chargeTime1 = getDate("2007-01-01");
+        Date chargeTime2 = getDate("2007-03-30");
 
         List<FinancialAct> invoice1 = createChargesInvoice(sixty, chargeTime1);
         save(invoice1);
         List<FinancialAct> invoice2 = createChargesInvoice(forty, chargeTime2);
         save(invoice2);
 
-        java.sql.Date payTime1 = java.sql.Date.valueOf("2007-4-1");
+        Date payTime1 = getDate("2007-04-01");
         FinancialAct payment1 = createPayment(forty, payTime1);
         save(payment1);
 
@@ -709,7 +710,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkEquals(forty, reload1.getAllocatedAmount());
         checkEquals(BigDecimal.ZERO, reload2.getAllocatedAmount());
 
-        java.sql.Date payTime2 = java.sql.Date.valueOf("2007-4-2");
+        Date payTime2 = getDate("2007-04-02");
         FinancialAct payment2 = createPayment(twenty, payTime2);
         save(payment2);
 
@@ -718,7 +719,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkEquals(sixty, reload1.getAllocatedAmount());
         checkEquals(BigDecimal.ZERO, reload2.getAllocatedAmount());
 
-        java.sql.Date payTime3 = java.sql.Date.valueOf("2007-4-3");
+        Date payTime3 = getDate("2007-04-03");
         FinancialAct payment3 = createPayment(forty, payTime3);
         save(payment3);
 
