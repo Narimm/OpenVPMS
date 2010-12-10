@@ -354,7 +354,9 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.RowLayoutData">
                     <properties>
-                        <alignment vertical="top"/>
+                        <property name="alignment">
+                            <alignment vertical="top"/>
+                        </property>
                         <property name="width" value="${MainPane.separatorPosition}"/>
                     </properties>
                 </layout-data>

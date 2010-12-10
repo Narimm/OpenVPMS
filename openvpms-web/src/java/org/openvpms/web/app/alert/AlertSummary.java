@@ -52,14 +52,14 @@ public class AlertSummary {
     /**
      * The alerts.
      */
-    private final List<Alerts> alerts;
+    private final List<Alert> alerts;
 
     /**
      * Constructs an <tt>AlertSummary</tt>.
      *
      * @param alerts the alerts
      */
-    public AlertSummary(List<Alerts> alerts) {
+    public AlertSummary(List<Alert> alerts) {
         this.alerts = alerts;
     }
 
@@ -72,7 +72,7 @@ public class AlertSummary {
         Column result = ColumnFactory.create();
         Collections.sort(alerts);
         for (int i = 0; i < alerts.size() && i < 4; ++i) {
-            Alerts element = alerts.get(i);
+            Alert element = alerts.get(i);
             result.add(getButton(element));
         }
         Button viewAll = ButtonFactory.create("alerts.viewall", "small", new ActionListener() {
@@ -112,11 +112,11 @@ public class AlertSummary {
     /**
      * Returns a button to render the alerts.
      *
-     * @param alerts the alerts
+     * @param alert the alerts
      * @return a new button
      */
-    protected Button getButton(final Alerts alerts) {
-        Lookup lookup = alerts.getAlertType();
+    protected Button getButton(final Alert alert) {
+        Lookup lookup = alert.getAlertType();
         Button result = ButtonFactory.create(null, "small");
         result.setText(lookup.getName());
         IMObjectBean bean = new IMObjectBean(lookup);
@@ -128,7 +128,7 @@ public class AlertSummary {
 
         result.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
-                AlertsViewer viewer = new AlertsViewer(alerts);
+                AlertsViewer viewer = new AlertsViewer(alert);
                 viewer.show();
             }
         });

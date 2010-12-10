@@ -17,23 +17,15 @@
  */
 package org.openvpms.web.app.summary;
 
-import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.app.alert.AlertSummary;
-import org.openvpms.web.app.alert.Alerts;
-import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.query.ResultSetIterator;
-import org.openvpms.web.system.ServiceHelper;
+import nextapp.echo2.app.*;
+import org.openvpms.component.business.domain.im.act.*;
+import org.openvpms.component.business.domain.im.lookup.*;
+import org.openvpms.component.business.domain.im.party.*;
+import org.openvpms.web.app.alert.*;
+import org.openvpms.web.component.im.query.*;
+import org.openvpms.web.system.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -79,11 +71,10 @@ public abstract class PartySummary {
      */
     public AlertSummary getAlertSummary(Party party) {
         AlertSummary result = null;
-        Collection<Alerts> alerts = getAlerts(party);
+        List<Alert> alerts = getAlerts(party);
         if (!alerts.isEmpty()) {
-            List<Alerts> sorted = new ArrayList<Alerts>(alerts);
-            Collections.sort(sorted);
-            result = new AlertSummary(sorted);
+            Collections.sort(alerts);
+            result = new AlertSummary(alerts);
         }
         return result;
     }
@@ -94,7 +85,7 @@ public abstract class PartySummary {
      * @param party the party
      * @return the party's alerts
      */
-    protected abstract Collection<Alerts> getAlerts(Party party);
+    protected abstract List<Alert> getAlerts(Party party);
 
     /**
      * Returns the alerts for a party.
@@ -102,27 +93,18 @@ public abstract class PartySummary {
      * @param party the party
      * @return the party's alerts
      */
-    protected Map<String, Alerts> queryAlerts(Party party) {
-        Map<String, Alerts> map = new HashMap<String, Alerts>();
+    protected List<Alert> queryAlerts(Party party) {
+        List<Alert> result = new ArrayList<Alert>();
         ResultSet<Act> set = createAlertsResultSet(party, 20);
         ResultSetIterator<Act> iterator = new ResultSetIterator<Act>(set);
         while (iterator.hasNext()) {
             Act act = iterator.next();
-            IMObjectBean bean = new IMObjectBean(act);
-            String code = bean.getString("alertType");
-            Alerts alerts = map.get(code);
-            if (alerts == null) {
-                Lookup lookup = ServiceHelper.getLookupService().getLookup(act, "alertType");
-                if (lookup != null) {
-                    alerts = new Alerts(lookup);
-                    map.put(code, alerts);
-                }
-            }
-            if (alerts != null) {
-                alerts.addAlert(act);
+            Lookup lookup = ServiceHelper.getLookupService().getLookup(act, "alertType");
+            if (lookup != null) {
+                result.add(new Alert(lookup, act));
             }
         }
-        return map;
+        return result;
     }
 
     /**

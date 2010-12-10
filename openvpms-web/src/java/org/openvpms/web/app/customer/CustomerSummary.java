@@ -22,13 +22,14 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.GridLayoutData;
+import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
-import org.openvpms.web.app.alert.Alerts;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
 import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -39,10 +40,8 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 
 /**
@@ -83,10 +82,10 @@ public class CustomerSummary extends PartySummary {
     protected Component createSummary(Party party) {
         Component column = ColumnFactory.create();
         IMObjectReferenceViewer customerName = new IMObjectReferenceViewer(party.getObjectReference(),
-                                                                           party.getName(), true);
+                party.getName(), true);
         customerName.setStyleName("hyperlink-bold");
         column.add(RowFactory.create("Inset.Small",
-                                     customerName.getComponent()));
+                customerName.getComponent()));
         Label phone = LabelFactory.create();
         phone.setText(partyRules.getHomeTelephone(party));
         column.add(RowFactory.create("Inset.Small", phone));
@@ -112,10 +111,10 @@ public class CustomerSummary extends PartySummary {
         Label unbilledValue = create(unbilled);
 
         Grid grid = GridFactory.create(2, balanceTitle, balanceValue,
-                                       overdueTitle, overdueValue,
-                                       currentTitle, currentValue,
-                                       creditTitle, creditValue,
-                                       unbilledTitle, unbilledValue);
+                overdueTitle, overdueValue,
+                currentTitle, currentValue,
+                creditTitle, creditValue,
+                unbilledTitle, unbilledValue);
         column.add(grid);
         AlertSummary alerts = getAlertSummary(party);
         if (alerts != null) {
@@ -131,17 +130,17 @@ public class CustomerSummary extends PartySummary {
      * @param party the party
      * @return the party's alerts
      */
-    protected Collection<Alerts> getAlerts(Party party) {
-        Map<String, Alerts> result = queryAlerts(party);
-        Set<Lookup> lookups = partyRules.getAlerts(party);
-        for (Lookup lookup : lookups) {
-            Alerts alerts = result.get(lookup.getCode());
-            if (alerts == null) {
-                alerts = new Alerts(lookup);
-                result.put(lookup.getCode(), alerts);
+    protected List<Alert> getAlerts(Party party) {
+        List<Alert> result = queryAlerts(party);
+        Lookup accountTypeLookup = partyRules.getAccountType(party);
+        if (accountTypeLookup != null) {
+            AccountType accountType = new AccountType(accountTypeLookup);
+            Lookup alertLookup = accountType.getAlert();
+            if (alertLookup != null) {
+                result.add(new Alert(alertLookup));
             }
         }
-        return result.values();
+        return result;
     }
 
     /**

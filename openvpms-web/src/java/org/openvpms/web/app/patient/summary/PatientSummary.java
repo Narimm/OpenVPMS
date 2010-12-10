@@ -32,7 +32,7 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.alert.AlertSummary;
-import org.openvpms.web.app.alert.Alerts;
+import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
@@ -52,7 +52,7 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import java.util.Collection;
+import java.util.*;
 
 
 /**
@@ -154,8 +154,8 @@ public class PatientSummary extends PartySummary {
      * @param party the party
      * @return the party's alerts
      */
-    protected Collection<Alerts> getAlerts(Party party) {
-        return queryAlerts(party).values();
+    protected List<Alert> getAlerts(Party party) {
+        return queryAlerts(party);
     }
 
     /**

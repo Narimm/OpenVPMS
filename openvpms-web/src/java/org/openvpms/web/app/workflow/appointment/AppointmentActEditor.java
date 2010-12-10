@@ -239,6 +239,9 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             }
             if (patientSummary != null) {
                 result.add(patientSummary);
+//                RowLayoutData layout = new RowLayoutData();
+//                layout.setAlignment(Alignment.ALIGN_TOP);
+//                patientSummary.setLayoutData(layout);
             }
             result = RowFactory.create("Inset", result);
         }
@@ -256,7 +259,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         AlertSummary alerts = new CustomerSummary().getAlertSummary(customer);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", "bold"),
-                                          alerts.getComponent());
+                    alerts.getComponent());
         }
         return result;
     }
@@ -272,7 +275,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         AlertSummary alerts = new PatientSummary().getAlertSummary(patient);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", "bold"),
-                                          alerts.getComponent());
+                    alerts.getComponent());
         }
         return result;
     }
