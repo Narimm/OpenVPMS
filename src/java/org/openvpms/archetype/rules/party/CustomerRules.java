@@ -18,16 +18,13 @@
 
 package org.openvpms.archetype.rules.party;
 
-import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -65,32 +62,6 @@ public class CustomerRules extends PartyRules {
         if (bean.hasNode("type")) {
             List<Lookup> types = bean.getValues("type", Lookup.class);
             result = (types.isEmpty()) ? null : types.get(0);
-        }
-        return result;
-    }
-
-    /**
-     * Returns the <em>lookup.customerAlertType</em> for a customer.
-     * <p/>
-     * This includes any alert associated with their account.
-     *
-     * @param customer the customer
-     * @return a list of alerts associated with the customer
-     */
-    public Set<Lookup> getAlerts(Party customer) {
-        Set<Lookup> result = new HashSet<Lookup>();
-        Lookup accountTypeLookup = getAccountType(customer);
-        if (accountTypeLookup != null) {
-            AccountType accountType = new AccountType(accountTypeLookup, getArchetypeService());
-            Lookup alert = accountType.getAlert();
-            if (alert != null) {
-                result.add(alert);
-            }
-        }
-        IMObjectBean bean = new IMObjectBean(customer, getArchetypeService());
-        if (bean.hasNode("alerts")) {
-            List<Lookup> alerts = bean.getValues("alerts", Lookup.class);
-            result.addAll(alerts);
         }
         return result;
     }
