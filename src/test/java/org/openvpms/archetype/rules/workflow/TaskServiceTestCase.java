@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -60,9 +61,9 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testAddEvent() {
-        Date date1 = java.sql.Date.valueOf("2008-1-1");
-        Date date2 = java.sql.Date.valueOf("2008-1-2");
-        Date date3 = java.sql.Date.valueOf("2008-1-3");
+        Date date1 = getDate("2008-01-01");
+        Date date2 = getDate("2008-01-02");
+        Date date3 = getDate("2008-01-03");
 
         // retrieve the tasks for date1 and date2 and verify they are empty.
         // This caches the tasks for each date.
@@ -97,9 +98,9 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testRemoveEvent() {
-        Date date1 = java.sql.Date.valueOf("2008-1-1");
-        Date date2 = java.sql.Date.valueOf("2008-1-2");
-        Date date3 = java.sql.Date.valueOf("2008-1-3");
+        Date date1 = getDate("2008-01-01");
+        Date date2 = getDate("2008-01-02");
+        Date date3 = getDate("2008-01-03");
 
         List<PropertySet> results = service.getEvents(workList, date1);
         assertEquals(0, results.size());
@@ -127,8 +128,8 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testChangeEventDate() {
-        Date date1 = java.sql.Date.valueOf("2008-1-1");
-        Date date2 = java.sql.Date.valueOf("2008-3-1");
+        Date date1 = getDate("2008-01-01");
+        Date date2 = getDate("2008-03-01");
 
         service.getEvents(workList, date1);
         assertEquals(0, service.getEvents(workList, date1).size());
@@ -151,7 +152,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testChangeEventWorkList() {
-        Date date = java.sql.Date.valueOf("2008-1-1");
+        Date date = getDate("2008-01-01");
 
         service.getEvents(workList, date);
         assertEquals(0, service.getEvents(workList, date).size());
@@ -177,7 +178,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         final int count = 10;
         Party schedule = ScheduleTestHelper.createWorkList();
         Act[] tasks = new Act[count];
-        Date date = java.sql.Date.valueOf("2007-1-1");
+        Date date = getDate("2007-01-01");
         for (int i = 0; i < count; ++i) {
             Date startTime = DateRules.getDate(date, 15 * count,
                                                DateUnits.MINUTES);
