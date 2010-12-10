@@ -28,8 +28,8 @@ import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -45,7 +45,6 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -62,12 +61,12 @@ public class AlertsViewer extends PopupDialog {
     /**
      * The alerts to display.
      */
-    private final List<Alerts> alerts;
+    private final List<Alert> alerts;
 
     /**
      * The alerts table.
      */
-    private PagedIMTable<Element> table;
+    private PagedIMTable<Alert> table;
 
     /**
      * The column containing the alerts table and optional viewer.
@@ -82,10 +81,15 @@ public class AlertsViewer extends PopupDialog {
     /**
      * Constructs an <tt>AlertsViewer</tt> to display alerts for a single alert type.
      *
-     * @param alerts the alerts
+     * @param alert the alerts
      */
-    public AlertsViewer(Alerts alerts) {
-        this(Arrays.asList(alerts));
+    public AlertsViewer(Alert alert) {
+        this(Arrays.asList(alert));
+        if (alert.getAlert() != null) {
+            setTitle(DescriptorHelper.getDisplayName(alert.getAlert()));
+        } else {
+            setTitle(alert.getAlertType().getName());
+        }
     }
 
     /**
@@ -93,7 +97,7 @@ public class AlertsViewer extends PopupDialog {
      *
      * @param alerts the alerts
      */
-    public AlertsViewer(List<Alerts> alerts) {
+    public AlertsViewer(List<Alert> alerts) {
         super(Messages.get("alerts.title"), "AlertsViewer", CLOSE);
         setModal(true);
         this.alerts = alerts;
@@ -114,41 +118,43 @@ public class AlertsViewer extends PopupDialog {
      * @return the component
      */
     private Component getComponent() {
-        List<Element> elements = new ArrayList<Element>();
-        for (Alerts a : alerts) {
-            Lookup type = a.getAlertType();
-            List<Act> acts = a.getAlerts();
-            if (!acts.isEmpty()) {
-                for (Act act : acts) {
-                    elements.add(new Element(type, act));
-                }
-            } else {
-                elements.add(new Element(type, null));
-            }
-        }
-        ResultSet<Element> set = new ListResultSet<Element>(elements, 20);
+        ResultSet<Alert> set = new ListResultSet<Alert>(alerts, 20);
         Model model = new Model();
-        table = new PagedIMTable<Element>(model, set);
-        table.getTable().addActionListener(new ActionListener() {
-            public void onAction(ActionEvent e) {
-                onSelect();
-            }
-        });
+        table = new PagedIMTable<Alert>(model, set);
         column = ColumnFactory.create("CellSpacing", table);
+
+        if (alerts.size() == 1) {
+            show(alerts.get(0));
+        } else {
+            table.getTable().addActionListener(new ActionListener() {
+                public void onAction(ActionEvent e) {
+                    showSelected();
+                }
+            });
+        }
         return column;
     }
 
     /**
      * Displays the selected alert.
      */
-    private void onSelect() {
-        Element element = table.getSelected();
-        if (element != null) {
+    private void showSelected() {
+        Alert alert = table.getSelected();
+        show(alert);
+    }
+
+    /**
+     * Shows an alert.
+     *
+     * @param alert the alert to show. May be <tt>null</tt>
+     */
+    private void show(Alert alert) {
+        if (alert != null) {
             if (viewer != null) {
                 column.remove(viewer);
             }
-            if (element.act != null) {
-                viewer = new IMObjectViewer(element.act, null).getComponent();
+            if (alert.getAlert() != null) {
+                viewer = new IMObjectViewer(alert.getAlert(), null).getComponent();
             } else {
                 viewer = LabelFactory.create("alert.nodetail", "bold");
                 ColumnLayoutData layout = new ColumnLayoutData();
@@ -159,22 +165,7 @@ public class AlertsViewer extends PopupDialog {
         }
     }
 
-    /**
-     * Helper to wrap an alert type and alert act.
-     */
-    private static class Element {
-
-        final Lookup lookup;
-
-        final Act act;
-
-        public Element(Lookup lookup, Act act) {
-            this.lookup = lookup;
-            this.act = act;
-        }
-    }
-
-    private static class Model extends AbstractIMTableModel<Element> {
+    private static class Model extends AbstractIMTableModel<Alert> {
 
         /**
          * Priority column index.
@@ -228,7 +219,7 @@ public class AlertsViewer extends PopupDialog {
          * @param row    the row
          * @return the value at the given coordinate.
          */
-        protected Object getValue(Element object, TableColumn column, int row) {
+        protected Object getValue(Alert object, TableColumn column, int row) {
             int index = column.getModelIndex();
             Object result = null;
             switch (index) {
@@ -236,10 +227,10 @@ public class AlertsViewer extends PopupDialog {
                     result = getPriority(object);
                     break;
                 case ALERT:
-                    result = object.lookup.getName();
+                    result = object.getAlertType().getName();
                     break;
                 case REASON:
-                    Act act = object.act;
+                    Act act = object.getAlert();
                     if (act != null) {
                         ActBean bean = new ActBean(act);
                         result = bean.getString("reason");
@@ -254,12 +245,12 @@ public class AlertsViewer extends PopupDialog {
         /**
          * Returns a label representing the alert prioity.
          *
-         * @param element the alert element
+         * @param alert the alert
          * @return a label for the priority
          */
-        private Label getPriority(Element element) {
+        private Label getPriority(Alert alert) {
             Label result = LabelFactory.create();
-            IMObjectBean bean = new IMObjectBean(element.lookup);
+            IMObjectBean bean = new IMObjectBean(alert.getAlertType());
             result.setText(getPriorityName(bean.getString("priority")));
             Color value = ColourHelper.getColor(bean.getString("colour"));
             if (value != null) {

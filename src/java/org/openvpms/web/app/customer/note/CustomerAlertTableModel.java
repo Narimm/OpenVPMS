@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.app.alert.Alerts;
+import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.util.LookupNameHelper;
@@ -240,7 +240,7 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
             if (lookup != null) {
                 IMObjectBean bean = new IMObjectBean(lookup);
                 String priority = bean.getString("priority");
-                return priority != null ? Alerts.Priority.valueOf(priority) : null;
+                return priority != null ? Alert.Priority.valueOf(priority) : null;
             }
             return null;
         }

@@ -48,15 +48,18 @@ public class AlertTypeEditor extends LookupEditor {
         super(object, parent, context);
         getProperty("priority").addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                onPriorityChanged();
+                setPriorityDefaultColour();
             }
         });
+        if (object.isNew()) {
+            setPriorityDefaultColour(); // sets the colour to that of the default priority
+        }
     }
 
     /**
-     * Invoked when the priority changes. This defaults the colour to that from the style associated with the priority.
+     * Defaults the colour to that from the style associated with the priority.
      */
-    private void onPriorityChanged() {
+    private void setPriorityDefaultColour() {
         Object code = getProperty("priority").getValue();
         if (code != null) {
             String styleName = "AlertType." + code;

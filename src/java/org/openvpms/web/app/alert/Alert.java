@@ -17,25 +17,21 @@
  */
 package org.openvpms.web.app.alert;
 
-import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.commons.lang.*;
+import org.openvpms.component.business.domain.im.act.*;
+import org.openvpms.component.business.domain.im.lookup.*;
+import org.openvpms.component.business.service.archetype.helper.*;
 
 
 /**
- * Associates an alert type lookup <em>lookup.customerAlertType</em> or <em>lookup.patientAlert</em>) with zero or more
- * alert acts.
+ * Associates an alert type lookup <em>lookup.customerAlertType</em> with an optional alert act.
  * <p/>
  * Implements <tt>Comparable</tt> to order alerts on priority.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class Alerts implements Comparable<Alerts> {
+public class Alert implements Comparable<Alert> {
 
     /**
      * The alert priority. Corresponds to the <em>lookup.customerAlertType</em>/<em>lookup.patientAlertType</em>
@@ -54,27 +50,28 @@ public class Alerts implements Comparable<Alerts> {
     private final Lookup lookup;
 
     /**
-     * The alerts.
+     * The alert. May be <tt>null</tt>.
      */
-    private List<Act> alerts = new ArrayList<Act>();
-
+    private Act alert;
 
     /**
      * Constructs an <tt>Alerts</tt>.
      *
      * @param lookup the alert type
      */
-    public Alerts(Lookup lookup) {
-        this.lookup = lookup;
+    public Alert(Lookup lookup) {
+        this(lookup, null);
     }
 
     /**
-     * Adds a an alert.
+     * Constructs an <tt>Alerts</tt>.
      *
-     * @param alert the alert
+     * @param lookup the alert type
+     * @param alert  the alert act. May be <tt>null</tt>
      */
-    public void addAlert(Act alert) {
-        alerts.add(alert);
+    public Alert(Lookup lookup, Act alert) {
+        this.lookup = lookup;
+        this.alert = alert;
     }
 
     /**
@@ -87,12 +84,12 @@ public class Alerts implements Comparable<Alerts> {
     }
 
     /**
-     * Returns the alerts.
+     * Returns the alert.
      *
-     * @return the alerts
+     * @return the alert. May be <tt>null</tt>
      */
-    public List<Act> getAlerts() {
-        return alerts;
+    public Act getAlert() {
+        return alert;
     }
 
     /**
@@ -106,7 +103,7 @@ public class Alerts implements Comparable<Alerts> {
      * @throws ClassCastException if the specified object's type prevents it
      *                            from being compared to this object.
      */
-    public int compareTo(Alerts object) {
+    public int compareTo(Alert object) {
         int result = 0;
         Lookup alertType1 = getAlertType();
         IMObjectBean bean1 = new IMObjectBean(alertType1);
