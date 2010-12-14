@@ -37,7 +37,7 @@ import java.util.Arrays;
 
 
 /**
- * CRUD Window for patient summary. Only supports the display of the acts.
+ * CRUD Window for patient summary.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -55,8 +55,16 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
      */
     private PatientSummaryQuery query;
 
+
     /**
-     * Creates a new <tt>SummaryCRUDWindow</tt>.
+     * Constructs a <tt>SummaryCRUDWindow</tt>.
+     */
+    public SummaryCRUDWindow() {
+        this(Archetypes.create(PatientArchetypes.CLINICAL_EVENT, Act.class, Messages.get("patient.record.createtype")));
+    }
+
+    /**
+     * Constructs a <tt>SummaryCRUDWindow</tt>.
      *
      * @param archetypes the archetypes
      */
