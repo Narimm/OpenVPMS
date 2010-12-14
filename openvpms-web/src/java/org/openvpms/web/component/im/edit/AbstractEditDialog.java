@@ -21,18 +21,14 @@ import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
-import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -333,6 +329,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param action the vetoable action
      */
     private void onCancel(final Vetoable action) {
+/*
+     TODO - no longer prompt for cancellation due to incorrect isModified() results. See OVPMS-987 for details.
+
         if (editor != null && editor.isModified() && !savedDisabled) {
             String title = Messages.get("editor.cancel.title");
             String message = Messages.get("editor.cancel.message", editor.getDisplayName());
@@ -350,6 +349,8 @@ public abstract class AbstractEditDialog extends PopupDialog {
         } else {
             action.veto(false);
         }
+*/
+        action.veto(false);
     }
 
 }
