@@ -101,7 +101,7 @@ where d.node_desc_id = n.node_desc_id
 delete a, n
 from node_descriptors n, archetype_descriptors a
 where n.archetype_desc_id = a.archetype_desc_id 
-      and a.name = "lookup.alertType.1.0"
+      and a.name = "lookup.alertType.1.0";
 
 
 #
