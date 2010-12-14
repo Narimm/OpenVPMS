@@ -274,10 +274,32 @@ KeyTable.prototype.processClick = function(echoEvent) {
     }
 
     try {
-        // need to move the focus off the current focused field.
-        EchoEventProcessor.removeHandler(this.tableFocus, "focus");
-        this.tableFocus.focus();
-        EchoEventProcessor.addHandler(this.tableFocus, "focus", "KeyTable.processFocus");
+        if (!this.active) {
+            // need to move the focus off the current focused field.
+            // This will move the focus to the focus anchor, and possibly scroll the anchor into view.
+            // To avoid this, need to jump through some hoops to preserve the current scroll positions.
+            // TODO - better way to do this?
+            EchoEventProcessor.removeHandler(this.tableFocus, "focus");
+
+            // get scrollTop for each element going backup the heirarchy
+            var elt = this.tableFocus;
+            var scrollTops = new Array();
+            while (elt != null) {
+                scrollTops.push(elt.scrollTop);
+                elt = (elt.offsetParent) ? elt = elt.offsetParent : null;
+            }
+
+            // move the focus
+            this.tableFocus.focus();
+
+            // restore the original scrollTop values
+            elt = this.tableFocus;
+            for (i = 0; i < scrollTops.length; ++i) {
+                elt.scrollTop = scrollTops[i];
+                elt = elt.offsetParent;
+            }
+            EchoEventProcessor.addHandler(this.tableFocus, "focus", "KeyTable.processFocus");
+        }
     } catch (ex) {
     }
 
