@@ -17,29 +17,29 @@
  */
 package org.openvpms.web.app.workflow;
 
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
+import org.openvpms.web.app.patient.mr.SummaryCRUDWindow;
 import org.openvpms.web.app.patient.mr.SummaryTableBrowser;
-import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.PopupDialogListener;
-import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.EditDialogFactory;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DoubleClickMonitor;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.List;
 
 
 /**
@@ -86,11 +86,11 @@ public class EditClinicalEventTask extends AbstractTask {
      */
     protected void edit(Act event, TaskContext context) {
         ActBean bean = new ActBean(event);
-        User clinician = (User)IMObjectHelper.getObject(bean.getNodeParticipantRef("clinician"));
+        User clinician = (User) IMObjectHelper.getObject(bean.getNodeParticipantRef("clinician"));
         // If clinician is null then populate with current context clinician
         if (clinician == null && context.getClinician() != null) {
-        	bean.addNodeParticipation("clinician", context.getClinician());
-        	bean.save();
+            bean.addNodeParticipation("clinician", context.getClinician());
+            bean.save();
         }
         Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"));
         if (patient != null) {
@@ -131,9 +131,9 @@ public class EditClinicalEventTask extends AbstractTask {
         private DoubleClickMonitor click = new DoubleClickMonitor();
 
         /**
-         * The task context.
+         * The CRUD window for editing events and their items.
          */
-        private final TaskContext context;
+        private CRUDWindow window;
 
         /**
          * Edit button identifier.
@@ -143,7 +143,7 @@ public class EditClinicalEventTask extends AbstractTask {
         /**
          * The dialog buttons.
          */
-        private static final String[] BUTTONS = {EDIT_ID, OK_ID, CANCEL_ID};
+        private static final String[] BUTTONS = {NEW_ID, EDIT_ID, OK_ID, CANCEL_ID};
 
 
         /**
@@ -156,7 +156,21 @@ public class EditClinicalEventTask extends AbstractTask {
         public ClinicalEventBrowserDialog(String title, SummaryTableBrowser browser, TaskContext context) {
             super(title, BUTTONS, browser);
             setCloseOnSelection(false);
-            this.context = context;
+            window = new CRUDWindow(context);
+            window.setQuery((PatientSummaryQuery) browser.getQuery());
+            window.setListener(new CRUDWindowListener<Act>() {
+                public void saved(Act object, boolean isNew) {
+                    refreshBrowser(object);
+                }
+
+                public void deleted(Act object) {
+                    refreshBrowser(null);
+                }
+
+                public void refresh(Act object) {
+                    refreshBrowser(object);
+                }
+            });
         }
 
         /**
@@ -168,35 +182,12 @@ public class EditClinicalEventTask extends AbstractTask {
          */
         @Override
         protected void onButton(String button) {
-            if (EDIT_ID.equals(button)) {
+            if (NEW_ID.equals(button)) {
+                onCreate();
+            } else if (EDIT_ID.equals(button)) {
                 onEdit();
             } else {
                 super.onButton(button);
-            }
-        }
-
-        /**
-         * Selects the current object. If the object is "double clicked", edits it.
-         *
-         * @param object the selected object
-         */
-        @Override
-        protected void onSelected(Act object) {
-            super.onSelected(object);
-            if (object != null && click.isDoubleClick(object.getId())) {
-                edit(object);
-            }
-        }
-
-        /**
-         * Invoked when the edit button is pressed.
-         * <p/>
-         * Edits the selected act.
-         */
-        private void onEdit() {
-            Act selected = getSelected();
-            if (selected != null) {
-                edit(selected);
             }
         }
 
@@ -216,35 +207,99 @@ public class EditClinicalEventTask extends AbstractTask {
         }
 
         /**
-         * Edits an act.
+         * Selects the current object. If the object is "double clicked", edits it.
          *
-         * @param act the act to edit
+         * @param object the selected object
          */
-        private void edit(Act act) {
-            try {
-                LayoutContext layout = new DefaultLayoutContext(true);
-                layout.setContext(context);
-                IMObjectEditor editor = IMObjectEditorFactory.create(act, layout);
-                EditDialog dialog = EditDialogFactory.create(editor);
-                dialog.addWindowPaneListener(new PopupDialogListener() {
-                    @Override
-                    protected void onAction(PopupDialog dialog) {
-                        super.onAction(dialog);
-                        refresh();
-                    }
-                });
-                dialog.show();
-            } catch (Throwable exception) {
-                ErrorHelper.show(exception);
+        @Override
+        protected void onSelected(Act object) {
+            super.onSelected(object);
+            if (object != null && click.isDoubleClick(object.getId())) {
+                onEdit();
             }
         }
 
         /**
-         * Refresh the browser.
+         * Invoked when the 'New' button is pressed.
          */
-        private void refresh() {
-            getBrowser().query();
+        private void onCreate() {
+            Act event = getEvent();
+            window.setEvent(event);
+            window.create();
         }
+
+        /**
+         * Invoked when the 'Edit' button is pressed.
+         * <p/>
+         * Edits the selected act.
+         */
+        private void onEdit() {
+            window.setObject(getSelected());
+            window.setEvent(getEvent());
+            window.edit();
+        }
+
+        /**
+         * Refresh the browser.
+         *
+         * @param object the object to select. May be <tt>null</tt>
+         */
+        private void refreshBrowser(Act object) {
+            Browser<Act> browser = getBrowser();
+            browser.query();
+            browser.setSelected(object);
+        }
+
+        /**
+         * Returns the event associated with the selection.
+         *
+         * @return the event, or <tt>null</tt> if none is found
+         */
+        private Act getEvent() {
+            Act act = getSelected();
+            boolean found = false;
+            if (act != null) {
+                List<Act> acts = getBrowser().getObjects();
+                int index = acts.indexOf(act);
+                while (!(found = TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) && index > 0) {
+                    act = acts.get(--index);
+                }
+            }
+            return (found) ? act : null;
+        }
+    }
+
+    /**
+     * The CRUD window for editing events and their items.
+     */
+    private static class CRUDWindow extends SummaryCRUDWindow {
+
+        /**
+         * The task context.
+         */
+        private TaskContext taskContext;
+
+        /**
+         * Constructs a <tt>CRUDWindow</tt>.
+         *
+         * @param context the task context
+         */
+        public CRUDWindow(TaskContext context) {
+            taskContext = context;
+        }
+
+        /**
+         * Creates a layout context for editing an object.
+         *
+         * @return a new layout context.
+         */
+        @Override
+        protected LayoutContext createLayoutContext() {
+            LayoutContext context = super.createLayoutContext();
+            context.setContext(taskContext);
+            return context;
+        }
+
     }
 
 }
