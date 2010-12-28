@@ -534,9 +534,16 @@ KeyTable.prototype.processFocus = function(echoEvent) {
 //
 KeyTable.prototype.verifyInput = function() {
     var element = this.getElement();
-    // make sure the modal element still exists before checking to see if the table is an ancestor of the modal
-    // element
-    if (EchoModalManager.modalElementId && document.getElementById(EchoModalManager.modalElementId)) {
+    var modalId = EchoServerMessage.messageDocument.documentElement.getAttribute("modal-id");
+    if (modalId) {
+        // server message has an updated modal id which may not have been processed yet
+        var modalElement = document.getElementById(modalId);
+        if (!EchoDomUtil.isAncestorOf(modalElement, element)) {
+            return false;
+        }
+    } else if (EchoModalManager.modalElementId && document.getElementById(EchoModalManager.modalElementId)) {
+        // make sure the modal element still exists before checking to see if the table is an ancestor of the modal
+        // element
         if (!EchoModalManager.isElementInModalContext(element)) {
             return false;
         }
