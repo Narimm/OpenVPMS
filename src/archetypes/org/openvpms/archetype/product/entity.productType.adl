@@ -21,6 +21,8 @@
 		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" displayName="Product Type" type="java.lang.String" path="/name" minCardinality="1" />
 		<node name="description" type="java.lang.String" path="/description" />
+		<node name="sortOrder" displayName="Invoice Sort Order" path="/details/sortOrder" type="java.lang.Integer" minCardinality="0" defaultValue="1"/>
+		<node name="detailInvoice" displayName="Detail on Invoice" path="/details/detailInvoice" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="taxes" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
