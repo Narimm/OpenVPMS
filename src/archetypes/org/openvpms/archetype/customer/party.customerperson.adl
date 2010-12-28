@@ -72,6 +72,7 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
+		<node displayName="Travel" name="travel" path="/details/travel" type="java.lang.String" minCardinality="0" maxLength="20"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="createdDate" path="/details/createdDate" type="java.util.Date"
               minCardinality="0" defaultValue="java.util.Date.new()" hidden="true"/>
