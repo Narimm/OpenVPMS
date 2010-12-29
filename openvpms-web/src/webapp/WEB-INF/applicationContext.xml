@@ -211,6 +211,7 @@
     <!--                           JMX                                      -->
     <!-- ================================================================== -->
 
+    <!--
     <bean id="hibernateStatisticsMBean" class="org.hibernate.jmx.StatisticsService" lazy-init="false">
         <property name="statisticsEnabled" value="true"/>
         <property name="sessionFactory" ref="sessionFactory"/>
@@ -242,6 +243,7 @@
         </property>
         <property name="server" ref="mbeanServer"/>
     </bean>
+    -->
 
     <!-- ================================================================== -->
     <!--                      BUSINESS SERVICE BEANS                        -->
