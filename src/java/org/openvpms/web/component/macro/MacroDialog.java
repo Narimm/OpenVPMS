@@ -71,6 +71,7 @@ public class MacroDialog extends PopupDialog {
             }
         });
         getLayout().add(ColumnFactory.create("Inset", browser.getComponent()));
+        getFocusGroup().add(0, browser.getFocusGroup());
         getButtons().addKeyListener(KeyStrokes.VK_ESCAPE, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onClose();
