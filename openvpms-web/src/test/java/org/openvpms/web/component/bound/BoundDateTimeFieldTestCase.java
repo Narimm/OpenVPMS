@@ -19,6 +19,7 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Component;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -72,6 +73,20 @@ public class BoundDateTimeFieldTestCase extends AbstractBoundFieldTest<BoundDate
         field.getTimeField().setText("11:30");
         Date expected3 = new Date(Timestamp.valueOf("2010-10-11 11:30:00").getTime());
         assertEquals(expected3, field.getProperty().getValue());
+    }
+
+    /**
+     * Verifies that the date text field can be set to null, and that this propagates to the property.
+     */
+    @Test
+    public void testSetNullDateViaText() {
+        Date date = java.sql.Date.valueOf("2010-12-31");
+        Property property = createProperty();
+        BoundDateTimeField field = createField(property);
+        field.setDate(date);
+        assertEquals(date, property.getValue());
+        field.getDateField().getTextField().setText(null);
+        assertNull(property.getValue());
     }
 
     /**

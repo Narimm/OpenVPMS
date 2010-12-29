@@ -196,7 +196,8 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
                 protected void setProperty(Property property) {
                     Date date = getFieldValue();
                     Date currentDate = (Date) property.getValue();
-                    if (currentDate != null) {
+                    if (date != null && currentDate != null) {
+                        // preserve the existing time
                         Calendar current = new GregorianCalendar();
                         current.setTime(currentDate);
 
