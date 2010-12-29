@@ -501,12 +501,17 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             // if the schedules and date haven't changed and there was no
             // previously selected object or the object hasn't changed,
             // reselect the selected cell
+            boolean reselected = false;
             if (lastRow != -1 && lastColumn != -1 && sameSchedules && lastColumn < model.getColumnCount()) {
                 IMObjectReference eventId = getEventReference(lastColumn, lastRow);
                 if (ObjectUtils.equals(selectedDate, query.getDate())
                     && (lastEventId == null || ObjectUtils.equals(lastEventId, eventId))) {
                     model.setSelectedCell(lastColumn, lastRow);
+                    reselected = true;
                 }
+            }
+            if (!reselected) {
+                setSelected(null);
             }
 
             updateCutSelection();
