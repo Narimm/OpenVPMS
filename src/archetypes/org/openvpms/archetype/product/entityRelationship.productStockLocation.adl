@@ -30,6 +30,10 @@
               type="java.util.Date" minCardinality="1"
               hidden="true" defaultValue="java.util.Date.new()"/>
         <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" minCardinality="1" defaultValue="0.0"/>
+        <node name="idealQty" path="/details/idealQty" type="java.math.BigDecimal" minCardinality="0" defaultValue="0.0"/>
+        <node name="criticalQty" path="/details/criticalQty" type="java.math.BigDecimal" minCardinality="0" defaultValue="0.0"/>
+        <node name="alwaysOrder" path="/details/alwaysOrder" type="java.lang.Boolean" minCardinality="0" defaultValue="false()"/>
+        <node name="neverOrder" path="/details/neverOrder" type="java.lang.Boolean" minCardinality="0" defaultValue="false()"/>
         <node name="source" displayName="Product" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
