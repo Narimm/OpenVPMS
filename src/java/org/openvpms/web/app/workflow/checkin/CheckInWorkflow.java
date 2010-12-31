@@ -76,7 +76,7 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param clinician the user. May be <tt>null</tt>
      */
     public CheckInWorkflow(Party customer, Party patient, User clinician) {
-        initialise(null, customer, patient, clinician, null);
+        initialise(null, customer, patient, clinician, null,null);
     }
 
     /**
@@ -90,11 +90,11 @@ public class CheckInWorkflow extends WorkflowImpl {
         Party patient = (Party) bean.getParticipant("participation.patient");
         User clinician = (User) bean.getParticipant("participation.clinician");
 
-        String reason = ArchetypeServiceFunctions.lookup(appointment, "reason", "");
+        String reason = ArchetypeServiceFunctions.lookup(appointment, "reason", "Appointment");
         String notes = bean.getString("description", "");
         String description = Messages.get("workflow.checkin.task.description", reason, notes);
 
-        initialise(appointment, customer, patient, clinician, description);
+        initialise(appointment, customer, patient, clinician, description,reason);
     }
 
     /**
@@ -117,7 +117,7 @@ public class CheckInWorkflow extends WorkflowImpl {
      *                        <tt>null</tt>
      */
     private void initialise(Act appointment, Party customer, Party patient,
-                            User clinician, String taskDescription) {
+                            User clinician, String taskDescription, String reason) {
         final GlobalContext global = GlobalContext.getInstance();
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
@@ -141,12 +141,12 @@ public class CheckInWorkflow extends WorkflowImpl {
         // optionally select a worklist and edit a customer task
         addTask(new CustomerTaskWorkflow(taskDescription));
 
-        // create a new act.patientClinicalEvent. Note that the event
-        // is created prior to printing any forms in order for them to be
+        // Get the act.patientClinicalEvent. Note that the event
+        // is selected prior to printing any forms in order for them to be
         // printed on check out if not printed on check in.
         TaskProperties eventProps = new TaskProperties();
-        eventProps.add("reason", "Appointment");
-        addTask(new GetClinicalEventTask());
+        eventProps.add("reason", reason);
+        addTask(new GetClinicalEventTask(eventProps));
 
         // optionally select and print an act.patientDocumentForm
         addTask(new PrintDocumentFormTask());
