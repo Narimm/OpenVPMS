@@ -639,20 +639,21 @@ public abstract class IMTableCollectionEditor<T>
 
     /**
      * Enable/disables the buttons.
+     * <p/>
+     * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable if <tt>true</tt> enable buttons (subject to criteria), otherwise disable them
      */
     protected void enableNavigation(boolean enable) {
         if (buttons != null) {
             boolean add = enable;
-            boolean delete = enable;
+            boolean delete = getCurrentEditor() != null || getSelected() != null;
             boolean previous = enable;
             boolean next = enable;
             if (enable) {
                 CollectionProperty property = getCollection();
                 int maxSize = property.getMaxCardinality();
                 add = (maxSize == -1 || property.size() < maxSize);
-                delete = getCurrentEditor() != null;
                 TableNavigator navigator = getTable().getNavigator();
                 previous = navigator.hasPreviousRow();
                 next = navigator.hasNextRow();

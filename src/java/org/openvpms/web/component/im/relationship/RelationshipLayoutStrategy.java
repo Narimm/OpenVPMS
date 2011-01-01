@@ -88,17 +88,15 @@ public class RelationshipLayoutStrategy implements IMObjectLayoutStrategy {
                                 IMObject parent, LayoutContext context) {
         ComponentState result;
         IMObjectRelationship relationship = (IMObjectRelationship) object;
-        IMObjectReference ref = getObject(relationship, context);
+        IMObjectReference ref = getObject(relationship, parent);
         if (!displayInine) {
             IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, context.getContextSwitchListener());
             result = new ComponentState(viewer.getComponent());
         } else {
             IMObject entity = IMObjectHelper.getObject(ref);
             if (entity != null) {
-                IMObjectLayoutStrategyFactory factory
-                        = context.getLayoutStrategyFactory();
-                IMObjectLayoutStrategy strategy
-                        = factory.create(entity, object);
+                IMObjectLayoutStrategyFactory factory = context.getLayoutStrategyFactory();
+                IMObjectLayoutStrategy strategy = factory.create(entity, object);
                 result = strategy.apply(entity, new PropertySet(entity, context), object, context);
             } else {
                 result = new ComponentState(LabelFactory.create());
@@ -108,31 +106,26 @@ public class RelationshipLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Helper to returns a reference to the object in a relationship. This
-     * returns the "non-current" or target side of the relationship.
-     * "Non-current" refers the object that is NOT currently being
-     * viewed/edited. If the source and target objects don't refer to the
-     * current object being viewed/edited, then the target object of the
-     * relationship is used.
+     * Returns a reference to the object in a relationship. This returns either:
+     * <ul>
+     * <li>the object that isn't the same as parent, if parent is supplied; or
+     * <li>the target of the relationship
+     * </ul>
      *
      * @param relationship the relationship
-     * @param context      the layout context
-     * @return the "non-current" object of the relationship. May be <tt>null</tt>
+     * @param parent       the parent object. May be <tt>null</tt>
+     * @return the object. May be <tt>null</tt>
      */
-    public static IMObjectReference getObject(IMObjectRelationship relationship,
-                                              LayoutContext context) {
+    protected IMObjectReference getObject(IMObjectRelationship relationship, IMObject parent) {
         IMObjectReference result;
-        IMObject current = context.getContext().getCurrent();
-        if (current == null) {
+        if (parent == null) {
             result = relationship.getTarget();
         } else {
-            IMObjectReference ref = current.getObjectReference();
+            IMObjectReference ref = parent.getObjectReference();
 
-            if (relationship.getSource() != null
-                && ref.equals(relationship.getSource())) {
+            if (relationship.getSource() != null && ref.equals(relationship.getSource())) {
                 result = relationship.getTarget();
-            } else if (relationship.getTarget() != null
-                       && ref.equals(relationship.getTarget())) {
+            } else if (relationship.getTarget() != null && ref.equals(relationship.getTarget())) {
                 result = relationship.getSource();
             } else {
                 result = relationship.getTarget();

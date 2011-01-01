@@ -177,6 +177,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
     private void view(T object) {
         selected = object;
         LayoutContext context = new DefaultLayoutContext();
+        context.getContext().setCurrent(object); // TODO - remove requirement for setCurrent()
         context.setContextSwitchListener(listener);
         IMObjectViewer viewer = new IMObjectViewer(object, null, context);
         SplitPane pane = getLayout();
