@@ -24,9 +24,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.AbstractPropertyEditor;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
@@ -37,7 +37,6 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.GridFactory;
@@ -51,22 +50,21 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-17 01:10:40Z $
  */
-public abstract class AbstractRelationshipEditor
-        extends AbstractIMObjectEditor {
+public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor {
 
     /**
-     * Editor for the source of the relationship.
+     * Editor for the source of the relationship. Null if the source is the parent.
      */
-    private EntityEditor sourceEditor;
+    private PropertyEditor sourceEditor;
 
     /**
-     * Editor for the target of the relationship.
+     * Editor for the target of the relationship. Null if the target is the parent.
      */
-    private EntityEditor targetEditor;
+    private PropertyEditor targetEditor;
 
 
     /**
-     * Construct a new <code>EntityRelationshipEditor</code>.
+     * Constructs an <tt>AbstractRelationshipEditor</tt>.
      *
      * @param relationship  the relationship
      * @param parent        the parent object
@@ -77,23 +75,14 @@ public abstract class AbstractRelationshipEditor
                                       LayoutContext layoutContext) {
         super(relationship, parent, layoutContext);
         Context context = layoutContext.getContext();
-        IMObjectReference sourceRef;
-        IMObjectReference targetRef;
-        IMObject source;
-        IMObject target;
-
         Property sourceProp = getSource();
         Property targetProp = getTarget();
 
-        sourceRef = (IMObjectReference) sourceProp.getValue();
-        targetRef = (IMObjectReference) targetProp.getValue();
+        IMObjectReference sourceRef = (IMObjectReference) sourceProp.getValue();
+        IMObjectReference targetRef = (IMObjectReference) targetProp.getValue();
 
-        source = IMObjectHelper.getObject(sourceRef,
-                                          sourceProp.getArchetypeRange(),
-                                          context);
-        target = IMObjectHelper.getObject(targetRef,
-                                          targetProp.getArchetypeRange(),
-                                          context);
+        IMObject source = getObject(sourceRef, parent, sourceProp.getArchetypeRange(), context);
+        IMObject target = getObject(targetRef, parent, targetProp.getArchetypeRange(), context);
 
         // initialise the properties if null
         if (sourceRef == null && source != null) {
@@ -103,21 +92,13 @@ public abstract class AbstractRelationshipEditor
             targetProp.setValue(target.getObjectReference());
         }
 
-        IMObject edited = layoutContext.getContext().getCurrent();
-        boolean srcReadOnly = true;
-        if (source == null || !source.equals(edited)) {
-            srcReadOnly = false;
+        if (source == null || !source.equals(parent)) {
+            sourceEditor = createReferenceEditor(sourceProp, layoutContext);
         }
 
-        sourceEditor = new EntityEditor(sourceProp, srcReadOnly, layoutContext);
-
-        boolean targetReadOnly = true;
-        if (target == null || !target.equals(edited) || target.equals(source)) {
-            targetReadOnly = false;
+        if (target == null || !target.equals(parent) || target.equals(source)) {
+            targetEditor = createReferenceEditor(targetProp, layoutContext);
         }
-
-        targetEditor = new EntityEditor(targetProp, targetReadOnly,
-                                        layoutContext);
     }
 
     /**
@@ -155,47 +136,22 @@ public abstract class AbstractRelationshipEditor
      * @param context  the layout context
      * @return a new reference editor
      */
-    protected IMObjectReferenceEditor<Entity> createReferenceEditor(
-            Property property, LayoutContext context) {
+    protected IMObjectReferenceEditor<Entity> createReferenceEditor(Property property, LayoutContext context) {
         IMObjectReferenceEditor<Entity> editor
-                = IMObjectReferenceEditorFactory.create(property, getObject(),
-                                                        context);
+                = IMObjectReferenceEditorFactory.create(property, getObject(), context);
         editor.setAllowCreate(true);
         return editor;
     }
 
     /**
-     * Relationship layout strategy. Displays the source and target nodes
-     * before any others.
+     * Relationship layout strategy. Displays the source/target nodes before any others.
      */
     protected class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * Determines if the source should be hidden.
-         */
-        private final boolean hideSource;
-
-        /**
-         * Determines if the target should be hidden.
-         */
-        private final boolean hideTarget;
-
-        /**
-         * Constructs a <tt>LayoutStrategy</tt> that displays both the source and target nodes.
+         * Constructs a <tt>LayoutStrategy</tt>.
          */
         public LayoutStrategy() {
-            this(false, false);
-        }
-
-        /**
-         * Constructs a <tt>LayoutStrategy</tt>.
-         *
-         * @param hideSource if <tt>true</tt> hide the source node
-         * @param hideTarget if <tt>true</tt> hide the target node
-         */
-        public LayoutStrategy(boolean hideSource, boolean hideTarget) {
-            this.hideSource = hideSource;
-            this.hideTarget = hideTarget;
         }
 
         /**
@@ -227,13 +183,13 @@ public abstract class AbstractRelationshipEditor
         protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
                                       PropertySet properties, Component container, LayoutContext context) {
             Grid grid = createGrid(descriptors);
-            if (!hideSource) {
+            if (sourceEditor != null) {
                 add(grid, new ComponentState(sourceEditor.getComponent(), sourceEditor.getProperty(),
-                                             sourceEditor.getFocusGroup()));
+                        sourceEditor.getFocusGroup()));
             }
-            if (!hideTarget) {
+            if (targetEditor != null) {
                 add(grid, new ComponentState(targetEditor.getComponent(), targetEditor.getProperty(),
-                                             targetEditor.getFocusGroup()));
+                        targetEditor.getFocusGroup()));
             }
             doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
@@ -253,70 +209,24 @@ public abstract class AbstractRelationshipEditor
     }
 
     /**
-     * Editor for a source/target entity in a relationship.
+     * Returns the object associated with the reference, defaulting it to the parent if the reference is unset,
+     * and the parent is of the correct archetype.
+     *
+     * @param reference      the reference
+     * @param parent         the parent object
+     * @param archetypeRange the archetypes that the reference may refer to
+     * @param context        the current context
+     * @return the object, or <tt>null</tt> if the reference is set but refers to an invalid object
      */
-    private class EntityEditor extends AbstractPropertyEditor {
-
-        /**
-         * The viewer.
-         */
-        private IMObjectReferenceViewer viewer;
-
-        /**
-         * The editor.
-         */
-        private IMObjectReferenceEditor<Entity> editor;
-
-
-        /**
-         * Constructs a new <code>EntityEditor</code>.
-         *
-         * @param property the reference property
-         * @param readOnly if <code>true<code> don't render the select button
-         * @param context  the layout context
-         */
-        public EntityEditor(Property property, boolean readOnly,
-                            LayoutContext context) {
-            super(property);
-            if (readOnly) {
-                IMObjectReference ref = (IMObjectReference) property.getValue();
-                viewer = new IMObjectReferenceViewer(ref, false);
-            } else {
-                editor = createReferenceEditor(property, context);
+    private IMObject getObject(IMObjectReference reference, IMObject parent, String[] archetypeRange, Context context) {
+        IMObject result = null;
+        if (reference == null) {
+            if (TypeHelper.isA(parent, archetypeRange)) {
+                result = parent;
             }
+        } else {
+            result = IMObjectHelper.getObject(reference, context);
         }
-
-        /**
-         * Sets the value of the reference to the supplied object.
-         *
-         * @param object the object. May  be <code>null</code>
-         */
-        public void setObject(Entity object) {
-            if (editor != null) {
-                editor.setObject(object);
-            }
-        }
-
-        /**
-         * Returns the edit component.
-         *
-         * @return the edit component
-         */
-        public Component getComponent() {
-            return (editor != null) ? editor.getComponent() :
-                   viewer.getComponent();
-        }
-
-        /**
-         * Returns the focus group.
-         *
-         * @return the focus group, or <code>null</code> if the editor hasn't been
-         *         rendered
-         */
-        public FocusGroup getFocusGroup() {
-            return (editor != null) ? editor.getFocusGroup() : null;
-        }
-
+        return result;
     }
-
 }

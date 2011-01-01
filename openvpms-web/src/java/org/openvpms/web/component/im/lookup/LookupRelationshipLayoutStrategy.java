@@ -60,16 +60,15 @@ public class LookupRelationshipLayoutStrategy extends AbstractLayoutStrategy {
         boolean srcLink = false;
         boolean tgtLink = false;
 
-        IMObject current = context.getContext().getCurrent();
-        if (current == null) {
+        if (parent == null) {
             srcLink = true;
             tgtLink = true;
         } else {
-            IMObjectReference currRef = current.getObjectReference();
-            if (srcRef != null && !srcRef.equals(currRef)) {
+            IMObjectReference parentRef = parent.getObjectReference();
+            if (srcRef != null && !srcRef.equals(parentRef)) {
                 srcLink = true;
             }
-            if (tgtRef != null && !tgtRef.equals(currRef)) {
+            if (tgtRef != null && !tgtRef.equals(parentRef)) {
                 tgtLink = true;
             }
         }

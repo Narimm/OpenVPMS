@@ -202,6 +202,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
             ErrorDialog.show(Messages.get("imobject.noexist", DescriptorHelper.getDisplayName(object)));
         } else {
             LayoutContext context = new DefaultLayoutContext(true);
+            context.getContext().setCurrent(object); // TODO - requirement for setCurrent()
             IMObjectEditor editor = IMObjectEditorFactory.create(current, context);
             setEditor(editor);
         }

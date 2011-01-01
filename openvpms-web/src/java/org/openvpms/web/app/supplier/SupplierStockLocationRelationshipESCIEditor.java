@@ -21,11 +21,10 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.stock.StockArchetypes;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -36,11 +35,10 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 
 import java.util.List;
 
@@ -73,9 +71,7 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        boolean hideSource = TypeHelper.isA(getParent(), "party.supplier*");
-        boolean hideTarget = TypeHelper.isA(getParent(), StockArchetypes.STOCK_LOCATION);
-        return new LayoutStrategy(hideSource, hideTarget) {
+        return new LayoutStrategy() {
             @Override
             protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
                 if ("orderServiceURL".equals(property.getName())) {
