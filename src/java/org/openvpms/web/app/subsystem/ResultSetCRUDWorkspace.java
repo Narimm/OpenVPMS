@@ -36,6 +36,9 @@ import org.openvpms.web.component.util.SplitPaneFactory;
  */
 public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends BrowserCRUDWorkspace<T, T> {
 
+    /**
+     * The double click monitor.
+     */
     private DoubleClickMonitor click = new DoubleClickMonitor();
 
 
@@ -99,7 +102,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     /**
      * Invoked when a browser object is selected.
      * <p/>
-     * This implementation sets the object in the CRUD window and pops up a viewer if it has been double clicked.
+     * This implementation sets the object in the CRUD window and pops up an editor if it has been double clicked.
      *
      * @param object the selected object
      */
@@ -108,7 +111,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
         updateResultSet();
         super.onBrowserSelected(object);
         if (click.isDoubleClick(object.getId())) {
-            getCRUDWindow().view();
+            getCRUDWindow().edit();
         }
     }
 
