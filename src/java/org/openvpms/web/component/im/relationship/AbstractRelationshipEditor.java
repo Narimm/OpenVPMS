@@ -18,8 +18,7 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,15 +30,12 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.GridFactory;
 
 import java.util.List;
 
@@ -61,6 +57,16 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * Editor for the target of the relationship. Null if the target is the parent.
      */
     private PropertyEditor targetEditor;
+
+    /**
+     * The source node name.
+     */
+    private static final String SOURCE = "source";
+
+    /**
+     * The target node name.
+     */
+    private static final String TARGET = "target";
 
 
     /**
@@ -107,7 +113,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @return the source property
      */
     protected Property getSource() {
-        return getProperty("source");
+        return getProperty(SOURCE);
     }
 
     /**
@@ -116,7 +122,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @return the target property
      */
     protected Property getTarget() {
-        return getProperty("target");
+        return getProperty(TARGET);
     }
 
     /**
@@ -155,56 +161,52 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
         }
 
         /**
-         * Returns a node filter to filter nodes.
-         * <p/>
-         * This implementation filters the "source" and "target" nodes.
+         * Creates a component for a property.
          *
-         * @param object  the object to filter nodes for
-         * @param context the context
-         * @return a node filter to filter nodes
+         * @param property the property
+         * @param parent   the parent object
+         * @param context  the layout context
+         * @return a component to display <code>property</code>
          */
         @Override
-        protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-            NodeFilter filter = new NamedNodeFilter("source", "target");
-            return getNodeFilter(context, filter);
+        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+            String name = property.getName();
+            if (sourceEditor != null && name.equals(sourceEditor.getProperty().getName())) {
+                return new ComponentState(sourceEditor);
+            } else if (targetEditor != null && name.equals(targetEditor.getProperty().getName())) {
+                return new ComponentState(targetEditor);
+            }
+            return super.createComponent(property, parent, context);
         }
 
         /**
-         * Lays out child components in a grid.
+         * Returns the 'simple' nodes. These will be rendered in a grid.
          *
-         * @param object      the object to lay out
-         * @param parent      the parent object. May be <tt>null</tt>
-         * @param descriptors the property descriptors
-         * @param properties  the properties
-         * @param container   the container to use
-         * @param context     the layout context
+         * @param archetype the archetype
+         * @return the simple nodes
          */
         @Override
-        protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                      PropertySet properties, Component container, LayoutContext context) {
-            Grid grid = createGrid(descriptors);
-            if (sourceEditor != null) {
-                add(grid, new ComponentState(sourceEditor.getComponent(), sourceEditor.getProperty(),
-                        sourceEditor.getFocusGroup()));
-            }
+        protected List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
+            List<NodeDescriptor> result = super.getSimpleNodes(archetype);
             if (targetEditor != null) {
-                add(grid, new ComponentState(targetEditor.getComponent(), targetEditor.getProperty(),
-                        targetEditor.getFocusGroup()));
+                result.add(0, targetEditor.getProperty().getDescriptor());
             }
-            doGridLayout(object, descriptors, properties, grid, context);
-            container.add(grid);
+            if (sourceEditor != null) {
+                result.add(0, sourceEditor.getProperty().getDescriptor());
+            }
+            return result;
         }
 
         /**
-         * Creates a grid with the no. of columns determined by the no. of
-         * node descriptors.
+         * Returns the 'complex' nodes. This filters the 'source' and 'target' nodes which are treated as
+         * 'simple' nodes by {@link #getSimpleNodes}.
          *
-         * @param descriptors the node descriptors
-         * @return a new grid with <tt>4</tt> columns
+         * @param archetype the archetype
+         * @return the 'complex' nodes
          */
         @Override
-        protected Grid createGrid(List<NodeDescriptor> descriptors) {
-            return GridFactory.create(4);
+        protected List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype) {
+            return filter(null, archetype.getComplexNodeDescriptors(), new NamedNodeFilter(SOURCE, TARGET));
         }
     }
 

@@ -19,9 +19,7 @@ package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
@@ -35,12 +33,9 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
-
-import java.util.List;
 
 
 /**
@@ -78,11 +73,6 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
                     return createServiceURLComponent(property, parent, context);
                 }
                 return super.createComponent(property, parent, context);
-            }
-
-            @Override
-            protected Grid createGrid(List<NodeDescriptor> descriptors) {
-                return GridFactory.create(2);
             }
         };
     }

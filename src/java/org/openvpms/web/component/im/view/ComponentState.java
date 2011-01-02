@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.property.Property;
@@ -76,8 +77,7 @@ public class ComponentState {
     }
 
     /**
-     * Constructs a new <tt>ComponentState</tt> not associated with
-     * a focus group.
+     * Constructs a <tt>ComponentState</tt> not associated with a focus group.
      *
      * @param component the component
      * @param property  the property, or <tt>null</tt> if the component
@@ -88,7 +88,7 @@ public class ComponentState {
     }
 
     /**
-     * Constructs a new <tt>ComponentState</tt>.
+     * Constructs a <tt>ComponentState</tt>.
      *
      * @param component  the component
      * @param property   the property, or <tt>null</tt> if the component
@@ -100,6 +100,16 @@ public class ComponentState {
     public ComponentState(Component component, Property property,
                           FocusGroup focusGroup) {
         this(component, property, focusGroup, null);
+    }
+
+    /**
+     * Constructs a <tt>ComponentState</tt> from a property editor.
+     *
+     * @param editor the property editor
+     */
+    public ComponentState(PropertyEditor editor) {
+        this(editor.getComponent(), editor.getProperty(), editor.getFocusGroup(),
+                editor.getProperty().getDisplayName());
     }
 
     /**
