@@ -70,7 +70,7 @@
                 <errorMessage>Invalid Charge Status</errorMessage>
             </assertion>
         </node>
-        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="1" maxLength="300"/>
+        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="reference" displayName="Reference" path="/details/reference" type="java.lang.String" minCardinality="0" maxLength="20"/>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="true()" readOnly="true"/>
