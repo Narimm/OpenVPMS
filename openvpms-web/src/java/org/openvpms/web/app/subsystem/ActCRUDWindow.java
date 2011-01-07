@@ -107,6 +107,19 @@ public abstract class ActCRUDWindow<T extends Act>
     }
 
     /**
+     * Deletes the current object.
+     */
+    @Override
+    public void delete() {
+        Act act = getObject();
+        if (canDelete(act)) {
+            super.delete();
+        } else {
+            showStatusError(act, "act.nodelete.title", "act.nodelete.message");
+        }
+    }
+
+    /**
      * Determines if an act can be edited.
      *
      * @param act the act
@@ -128,19 +141,6 @@ public abstract class ActCRUDWindow<T extends Act>
     protected boolean canDelete(Act act) {
         String status = act.getStatus();
         return !POSTED.equals(status);
-    }
-
-    /**
-     * Invoked when the delete button is pressed.
-     */
-    @Override
-    protected void onDelete() {
-        Act act = getObject();
-        if (canDelete(act)) {
-            super.onDelete();
-        } else {
-            showStatusError(act, "act.nodelete.title", "act.nodelete.message");
-        }
     }
 
     /**

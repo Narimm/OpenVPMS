@@ -141,9 +141,14 @@ public class EditClinicalEventTask extends AbstractTask {
         private static final String EDIT_ID = "edit";
 
         /**
+         * Delete button identifier.
+         */
+        private static final String DELETE_ID = "delete";
+
+        /**
          * The dialog buttons.
          */
-        private static final String[] BUTTONS = {NEW_ID, EDIT_ID, OK_ID, CANCEL_ID};
+        private static final String[] BUTTONS = {NEW_ID, EDIT_ID, DELETE_ID, OK_ID, CANCEL_ID};
 
 
         /**
@@ -171,6 +176,7 @@ public class EditClinicalEventTask extends AbstractTask {
                     refreshBrowser(object);
                 }
             });
+            enableDelete();
         }
 
         /**
@@ -186,6 +192,8 @@ public class EditClinicalEventTask extends AbstractTask {
                 onCreate();
             } else if (EDIT_ID.equals(button)) {
                 onEdit();
+            } else if (DELETE_ID.equals(button)) {
+                onDelete();
             } else {
                 super.onButton(button);
             }
@@ -217,6 +225,7 @@ public class EditClinicalEventTask extends AbstractTask {
             if (object != null && click.isDoubleClick(object.getId())) {
                 onEdit();
             }
+            enableDelete();
         }
 
         /**
@@ -240,6 +249,15 @@ public class EditClinicalEventTask extends AbstractTask {
         }
 
         /**
+         * Invoked when the 'Delete' button is pressed.
+         */
+        private void onDelete() {
+            window.setObject(getSelected());
+            window.setEvent(getEvent());
+            window.delete();
+        }
+
+        /**
          * Refresh the browser.
          *
          * @param object the object to select. May be <tt>null</tt>
@@ -248,6 +266,7 @@ public class EditClinicalEventTask extends AbstractTask {
             Browser<Act> browser = getBrowser();
             browser.query();
             browser.setSelected(object);
+            onSelected(object);
         }
 
         /**
@@ -267,6 +286,18 @@ public class EditClinicalEventTask extends AbstractTask {
             }
             return (found) ? act : null;
         }
+
+        /**
+         * Determines if the delete button should be enabled or disabled.
+         * <p/>
+         * This prevents deletion of visits.
+         */
+        private void enableDelete() {
+            Act object = getSelected();
+            boolean enableDelete = object != null && !TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT);
+            getButtons().setEnabled(DELETE_ID, enableDelete);
+        }
+
     }
 
     /**

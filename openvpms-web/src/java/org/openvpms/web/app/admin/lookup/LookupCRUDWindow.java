@@ -73,6 +73,19 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
     }
 
     /**
+     * Deletes the current object.
+     */
+    @Override
+    public void delete() {
+        Lookup object = IMObjectHelper.reload(getObject());
+        if (object == null) {
+            ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
+        } else {
+            IMObjectDeletor.delete(object, new LookupDeletorListener());
+        }
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -100,19 +113,6 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         buttons.setEnabled(REPLACE_ID, enable);
-    }
-
-    /**
-     * Invoked when the delete button is pressed.
-     */
-    @Override
-    protected void onDelete() {
-        Lookup object = IMObjectHelper.reload(getObject());
-        if (object == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
-        } else {
-            IMObjectDeletor.delete(object, new LookupDeletorListener());
-        }
     }
 
     /**

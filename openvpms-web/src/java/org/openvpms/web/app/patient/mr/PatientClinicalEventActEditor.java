@@ -21,7 +21,7 @@ package org.openvpms.web.app.patient.mr;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -32,11 +32,13 @@ import java.util.Date;
 
 /**
  * Editor for <em>act.patientClinicalEvent</em> acts.
+ * <p/>
+ * This disables editing of "items" nodes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientClinicalEventActEditor extends AbstractActEditor {
+public class PatientClinicalEventActEditor extends ActEditor {
 
     /**
      * Constructs a new <tt>PatientClinicalEventActEditor</tt>.
@@ -47,7 +49,7 @@ public class PatientClinicalEventActEditor extends AbstractActEditor {
      */
     public PatientClinicalEventActEditor(Act act, IMObject parent,
                                          LayoutContext context) {
-        super(act, parent, context);
+        super(act, parent, false, context);
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("patient", context.getContext().getPatient());
         initParticipant("worklist", context.getContext().getWorkList());
@@ -60,26 +62,6 @@ public class PatientClinicalEventActEditor extends AbstractActEditor {
                 onStatusChanged();
             }
         });
-    }
-
-    /**
-     * Save any edits.
-     * <p/>
-     * This uses {@link #saveObject()} to save the object prior to saving
-     * any children with {@link #saveChildren()}.
-     * <p/>
-     * This is necessary to avoid stale object exceptions when related acts
-     * are deleted.
-     *
-     * @return <tt>true</tt> if the save was successful
-     */
-    @Override
-    protected boolean doSave() {
-        boolean saved = saveObject();
-        if (saved) {
-            saved = saveChildren();
-        }
-        return saved;
     }
 
     /**
