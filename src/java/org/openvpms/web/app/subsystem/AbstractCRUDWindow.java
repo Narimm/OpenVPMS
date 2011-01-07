@@ -214,6 +214,27 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     }
 
     /**
+     * Deletes the current object.
+     */
+    @SuppressWarnings("unchecked")
+    public void delete() {
+        T object = IMObjectHelper.reload(getObject());
+        if (object == null) {
+            ErrorDialog.show(Messages.get("imobject.noexist", archetypes.getDisplayName()));
+        } else {
+            IMObjectDeletor.delete(object, new AbstractIMObjectDeletionListener<T>() {
+                public void deleted(T object) {
+                    onDeleted(object);
+                }
+
+                public void deactivated(T object) {
+                    onSaved(object, false);
+                }
+            });
+        }
+    }
+
+    /**
      * Returns the archetypes that this may create.
      *
      * @return the archetypes
@@ -274,14 +295,14 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     }
 
     /**
-     * Helper to create a new button with id {@link #DELETE_ID} linked to {@link #onDelete()}.
+     * Helper to create a new button with id {@link #DELETE_ID} linked to {@link #delete()}.
      *
      * @return a new button
      */
     protected Button createDeleteButton() {
         return ButtonFactory.create(DELETE_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
-                onDelete();
+                delete();
             }
         });
     }
@@ -382,27 +403,6 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
         GlobalContext.getInstance().setCurrent(object);
         dialog.show();
         return dialog;
-    }
-
-    /**
-     * Invoked when the delete button is pressed.
-     */
-    @SuppressWarnings("unchecked")
-    protected void onDelete() {
-        T object = IMObjectHelper.reload(getObject());
-        if (object == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist", archetypes.getDisplayName()));
-        } else {
-            IMObjectDeletor.delete(object, new AbstractIMObjectDeletionListener<T>() {
-                public void deleted(T object) {
-                    onDeleted(object);
-                }
-
-                public void deactivated(T object) {
-                    onSaved(object, false);
-                }
-            });
-        }
     }
 
     /**

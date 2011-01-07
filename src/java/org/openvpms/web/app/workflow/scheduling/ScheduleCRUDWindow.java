@@ -73,6 +73,23 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     }
 
     /**
+     * Deletes the current object.
+     */
+    @Override
+    public void delete() {
+        Act act = getObject();
+        if (!ActStatus.COMPLETED.equals(act.getStatus())) {
+            super.delete();
+        } else {
+            String name = getArchetypeDescriptor().getDisplayName();
+            String status = act.getStatus();
+            String title = Messages.get("act.nodelete.title", name);
+            String message = Messages.get("act.nodelete.message", name, status);
+            ErrorDialog.show(title, message);
+        }
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -93,23 +110,6 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         buttons.setEnabled(PRINT_ID, enable);
-    }
-
-    /**
-     * Invoked when the delete button is pressed.
-     */
-    @Override
-    protected void onDelete() {
-        Act act = getObject();
-        if (!ActStatus.COMPLETED.equals(act.getStatus())) {
-            super.onDelete();
-        } else {
-            String name = getArchetypeDescriptor().getDisplayName();
-            String status = act.getStatus();
-            String title = Messages.get("act.nodelete.title", name);
-            String message = Messages.get("act.nodelete.message", name, status);
-            ErrorDialog.show(title, message);
-        }
     }
 
     /**
