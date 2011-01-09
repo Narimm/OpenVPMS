@@ -159,7 +159,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         createWeight(date1, patient, new BigDecimal("5.0"), "KILOGRAMS");
         assertEquals("5 Kilograms", rules.getPatientWeight(patient));
 
-        Date date2 = getDate("2007-2-25");
+        Date date2 = getDate("2007-02-25");
         createWeight(date2, patient, new BigDecimal("13"), "POUNDS");
         assertEquals("13 Pounds", rules.getPatientWeight(patient));
     }
