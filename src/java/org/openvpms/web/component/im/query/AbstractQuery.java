@@ -250,7 +250,11 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * @throws ArchetypeServiceException if the query fails
      */
     public Iterator<T> iterator(SortConstraint[] sort) {
-        return new ResultSetIterator<T>(query(sort));
+        ResultSet<T> set = query(sort);
+        if (set == null) {
+            set = new EmptyResultSet<T>(10);
+        }
+        return new ResultSetIterator<T>(set);
     }
 
     /**

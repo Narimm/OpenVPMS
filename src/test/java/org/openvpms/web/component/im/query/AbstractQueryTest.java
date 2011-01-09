@@ -17,7 +17,6 @@
  */
 package org.openvpms.web.component.im.query;
 
-import org.apache.commons.collections.CollectionUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
@@ -25,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.test.AbstractAppTest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -93,8 +91,7 @@ public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppT
      * @param value   the value to check
      */
     protected void checkSelects(boolean selects, Query<T> query, T value) {
-        assertEquals(selects, query.selects(value));
-        assertEquals(selects, query.selects(value.getObjectReference()));
+        QueryTestHelper.checkSelects(selects, query, value);
     }
 
     /**
@@ -106,9 +103,7 @@ public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppT
      * @return the list of the references that matched the query
      */
     protected List<IMObjectReference> checkExists(T object, Query<T> query, boolean exists) {
-        List<IMObjectReference> matches = getObjectRefs(query);
-        checkExists(object, query, matches, exists);
-        return matches;
+        return QueryTestHelper.checkExists(object, query, exists);
     }
 
     /**
@@ -120,10 +115,7 @@ public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppT
      * @param exists  determines if the object should exist or not
      */
     protected void checkExists(T object, Query<T> query, List<IMObjectReference> matches, boolean exists) {
-        int cardinality = (exists) ? 1 : 0;
-        assertEquals(cardinality, CollectionUtils.cardinality(object.getObjectReference(), matches));
-        assertEquals(exists, query.selects(object));
-        assertEquals(exists, query.selects(object.getObjectReference()));
+        QueryTestHelper.checkExists(object, query, matches, exists);
     }
 
     /**
@@ -176,10 +168,6 @@ public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppT
      * @return the matching object's references
      */
     protected List<IMObjectReference> getObjectRefs(Query<T> query) {
-        List<IMObjectReference> result = new ArrayList<IMObjectReference>();
-        for (T object : query) {
-            result.add(object.getObjectReference());
-        }
-        return result;
+        return QueryTestHelper.getObjectRefs(query);
     }
 }
