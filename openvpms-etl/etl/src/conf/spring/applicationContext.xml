@@ -153,7 +153,7 @@
                 <entry key="date" value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
                 <entry key="lookup" value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
-                    <bean class="org.openvpms.etl.load.LoaderPartyFunctions"/>
+                    <bean class="org.openvpms.archetype.function.party.PartyFunctions"/>
                 </entry>
             </map>
         </constructor-arg>
