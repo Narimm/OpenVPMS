@@ -329,12 +329,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
             // handle the case of an optional participation
             ParticipationCollectionEditor collectionEditor
                     = ((ParticipationCollectionEditor) editor);
-            if (collectionEditor.getEditor()
-                    instanceof SingleParticipationCollectionEditor) {
-            }
-            IMObjectEditor current = collectionEditor.getCurrentEditor();
-            if (current instanceof ParticipationEditor) {
-                result = (ParticipationEditor<T>) current;
+            if (collectionEditor.getEditor() instanceof SingleParticipationCollectionEditor) {
+                IMObjectEditor current = collectionEditor.getCurrentEditor();
+                if (current instanceof ParticipationEditor) {
+                    result = (ParticipationEditor<T>) current;
+                }
             }
         }
         return result;

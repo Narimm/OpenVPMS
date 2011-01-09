@@ -129,9 +129,24 @@ public abstract class ParticipationEditor<T extends Entity>
     /**
      * Determines if the participation entity is null.
      * This takes into account if a name has been entered but does not match.
+     *
+     * @return <tt>true</tt> if the participation entity is null; otherwise <tt>false</tt>
      */
     public boolean isNull() {
         return editor.isNull();
+    }
+
+    /**
+     * Deletes the object.
+     * <p/>
+     * This implementation always returns <tt>true</tt> if this is the child of an act, as the act manages its deletion.
+     * If the participation is not the child of an act, deletion fails.
+     *
+     * @return <tt>true</tt> if the delete was successful
+     */
+    @Override
+    protected boolean doDelete() {
+        return getParent() != null;
     }
 
     /**
