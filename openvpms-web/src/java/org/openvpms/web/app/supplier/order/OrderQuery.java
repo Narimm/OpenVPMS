@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.supplier.SupplierActQuery;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
@@ -68,9 +69,10 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
      * Constructs a new <tt>OrderQuery</tt>.
      *
      * @param shortNames the act short names to query
+     * @param context    the context. May be <tt>null</tt>
      */
-    public OrderQuery(String[] shortNames) {
-        super(shortNames, STATUSES, FinancialAct.class);
+    public OrderQuery(String[] shortNames, Context context) {
+        super(shortNames, STATUSES, FinancialAct.class, context);
     }
 
     /**
@@ -114,7 +116,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
             }
         }
         return new IMObjectListResultSet<FinancialAct>(matches,
-                                                       getMaxResults());
+                getMaxResults());
     }
 
     /**
@@ -158,7 +160,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
                 "act.supplierOrder", "deliveryStatus");
         label.setText(displayName);
         NodeLookupQuery source = new NodeLookupQuery("act.supplierOrder",
-                                                     "deliveryStatus");
+                "deliveryStatus");
         deliveryStatus = LookupFieldFactory.create(source, true);
         getFocusGroup().add(deliveryStatus);
         container.add(label);
@@ -175,10 +177,10 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
     protected ResultSet<FinancialAct> createResultSet(
             ParticipantConstraint[] participants, SortConstraint[] sort) {
         return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
-                                              participants, getFrom(), getTo(),
-                                              getStatuses(), excludeStatuses(),
-                                              getConstraints(), getMaxResults(),
-                                              sort);
+                participants, getFrom(), getTo(),
+                getStatuses(), excludeStatuses(),
+                getConstraints(), getMaxResults(),
+                sort);
     }
 
 }

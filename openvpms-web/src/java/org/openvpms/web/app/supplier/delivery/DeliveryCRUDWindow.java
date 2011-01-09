@@ -40,6 +40,7 @@ import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -107,7 +108,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     @Override
     protected void onCreated(final FinancialAct act) {
         boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
-        final OrderTableBrowser browser = new OrderTableBrowser(delivery);
+        final OrderTableBrowser browser = new OrderTableBrowser(delivery, GlobalContext.getInstance());
         String displayName = DescriptorHelper.getDisplayName(act);
         String title = Messages.get("supplier.delivery.selectorders.title",
                                     displayName);

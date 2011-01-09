@@ -20,7 +20,7 @@ package org.openvpms.web.app.supplier.delivery;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
-import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -34,11 +34,13 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.app.Context;
 
 import java.util.Date;
 
+
 /**
- * Add description here.
+ * A query for POSTED and ACCEPTED orders, for a given supplier.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -60,10 +62,11 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
      * Constructs a new <tt>PostedOrderQuery</tt>.
      *
      * @param includeDateRange if <tt>true</tt> include the date range
+     * @param context          the context. May be <tt>null</tt>
      */
-    public PostedOrderQuery(boolean includeDateRange) {
-        super(ACTS, null, FinancialAct.class);
-        setStatus(ActStatus.POSTED);
+    public PostedOrderQuery(boolean includeDateRange, Context context) {
+        super(ACTS, null, FinancialAct.class, context);
+        setStatuses(new String[]{OrderStatus.POSTED, OrderStatus.ACCEPTED});
         this.includeDateRange = includeDateRange;
     }
 
@@ -120,10 +123,10 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
     protected ActResultSet<FinancialAct> createResultSet(
             ParticipantConstraint[] participants, SortConstraint[] sort) {
         return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
-                                              participants, null, null,
-                                              getStatuses(), false,
-                                              getConstraints(), getMaxResults(),
-                                              sort);
+                participants, null, null,
+                getStatuses(), false,
+                getConstraints(), getMaxResults(),
+                sort);
     }
 
     /**

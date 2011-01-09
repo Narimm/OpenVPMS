@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
 import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
@@ -62,9 +63,10 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
      *
      * @param delivery if <tt>true</tt> query orders for a delivery, otherwise
      *                 query orders for a return
+     * @param context  the context. May be <tt>null</tt>
      */
-    public OrderTableBrowser(boolean delivery) {
-        super(new PostedOrderQuery(!delivery), new OrderSelectionTableModel());
+    public OrderTableBrowser(boolean delivery, Context context) {
+        super(new PostedOrderQuery(!delivery, context), new OrderSelectionTableModel());
         this.delivery = delivery;
     }
 
@@ -131,8 +133,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
      * @return a new paged table
      */
     @Override
-    protected PagedIMTable<FinancialAct>
-    createTable(IMTableModel<FinancialAct> model) {
+    protected PagedIMTable<FinancialAct> createTable(IMTableModel<FinancialAct> model) {
         OrderSelectionTableModel orderModel
                 = (OrderSelectionTableModel) model;
         IMObjectTableModel<FinancialAct> pagedModel
@@ -255,8 +256,8 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         protected boolean include(FinancialAct child, FinancialAct parent) {
             DeliveryStatus status = rules.getDeliveryStatus(child);
             return (delivery)
-                   ? status != DeliveryStatus.FULL
-                   : status == DeliveryStatus.FULL;
+                    ? status != DeliveryStatus.FULL
+                    : status == DeliveryStatus.FULL;
         }
     }
 }

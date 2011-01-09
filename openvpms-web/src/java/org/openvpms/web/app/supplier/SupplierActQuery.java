@@ -23,7 +23,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
@@ -63,9 +63,9 @@ public abstract class SupplierActQuery<T extends Act>
      * @param shortNames the act short names to query
      * @param statuses   the act statuses. May be <tt>null</tt>
      * @param type       the type that this query returns
+     * @param context    the context. May be <tt>null</tt>
      */
-    public SupplierActQuery(String[] shortNames, ActStatuses statuses,
-                            Class type) {
+    public SupplierActQuery(String[] shortNames, ActStatuses statuses, Class type, Context context) {
         super(shortNames, statuses, type);
 
         supplier = new IMObjectSelector<Party>(
@@ -77,8 +77,7 @@ public abstract class SupplierActQuery<T extends Act>
                     setParticipantConstraint(null, null, null);
                 } else {
                     // limit query to the selected supplier
-                    setParticipantConstraint(object, "supplier",
-                                             "participation.supplier");
+                    setParticipantConstraint(object, "supplier", "participation.supplier");
                 }
                 onQuery();
             }
@@ -93,9 +92,19 @@ public abstract class SupplierActQuery<T extends Act>
             }
         });
 
-        GlobalContext context = GlobalContext.getInstance();
-        supplier.setObject(context.getSupplier());
-        stockLocation.setObject(context.getStockLocation());
+        if (context != null) {
+            setSupplier(context.getSupplier());
+            setStockLocation(context.getStockLocation());
+        }
+    }
+
+    /**
+     * Sets the supplier.
+     *
+     * @param supplier the supplier. May be <tt>null</tt>
+     */
+    public void setSupplier(Party supplier) {
+        this.supplier.setObject(supplier);
     }
 
     /**
@@ -105,6 +114,15 @@ public abstract class SupplierActQuery<T extends Act>
      */
     public Party getSupplier() {
         return supplier.getObject();
+    }
+
+    /**
+     * Sets the stock location.
+     *
+     * @param stockLocation the stock location. May be <tt>null</tt>
+     */
+    public void setStockLocation(Party stockLocation) {
+        this.stockLocation.setObject(stockLocation);
     }
 
     /**

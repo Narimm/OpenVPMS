@@ -23,6 +23,7 @@ import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.supplier.SupplierActQuery;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
@@ -50,9 +51,10 @@ public class DeliveryQuery extends SupplierActQuery<FinancialAct> {
      * Constructs a new <tt>DeliveryQuery</tt>.
      *
      * @param shortNames the act short names to query
+     * @param context    the context. May be <tt>null</tt>
      */
-    public DeliveryQuery(String[] shortNames) {
-        super(shortNames, STATUSES, FinancialAct.class);
+    public DeliveryQuery(String[] shortNames, Context context) {
+        super(shortNames, STATUSES, FinancialAct.class, context);
     }
 
     /**
@@ -84,10 +86,10 @@ public class DeliveryQuery extends SupplierActQuery<FinancialAct> {
     protected ActResultSet<FinancialAct> createResultSet(
             ParticipantConstraint[] participants, SortConstraint[] sort) {
         return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
-                                              participants, getFrom(), getTo(),
-                                              getStatuses(), excludeStatuses(),
-                                              getConstraints(), getMaxResults(),
-                                              sort);
+                participants, getFrom(), getTo(),
+                getStatuses(), excludeStatuses(),
+                getConstraints(), getMaxResults(),
+                sort);
     }
 
 }
