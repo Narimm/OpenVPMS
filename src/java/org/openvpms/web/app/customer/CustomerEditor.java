@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.archetype.rules.party.PartyRules;
 
 
 /**
@@ -42,6 +43,12 @@ public class CustomerEditor extends AbstractIMObjectEditor {
     public CustomerEditor(Party customer, IMObject parent,
                           LayoutContext context) {
         super(customer, parent, context);
+
+        // add default contacts for new customers that don't have any
+        if (customer.isNew() && customer.getContacts().isEmpty()) {
+            PartyRules rules = new PartyRules();
+            customer.setContacts(rules.getDefaultContacts());
+        }
 
         getLayoutContext().getContext().setCustomer(customer);
     }
