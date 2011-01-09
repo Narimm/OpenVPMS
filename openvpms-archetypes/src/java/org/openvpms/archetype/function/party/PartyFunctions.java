@@ -20,6 +20,8 @@ package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -35,6 +37,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Set;
+import java.util.HashSet;
 
 
 /**
@@ -70,6 +73,16 @@ public class PartyFunctions {
      * The customer Account rules.
      */
     private CustomerAccountRules customerAccountRules;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(PartyFunctions.class);
+
+    /**
+     * Determines if getDefaultContacts() warning already been logged.
+     */
+    private boolean defaultContactsWarn =false;
 
     /**
      * Constructs a new <tt>PartyFunctions</tt>.
@@ -114,7 +127,9 @@ public class PartyFunctions {
      *
      * @param context the expression context. Expected to reference a party.
      * @return a set of contacts. May be <tt>null</tt>
+     * @deprecated no replacement
      */
+    @Deprecated
     public Set<Contact> getDefaultContacts(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
         if (pointer == null || !(pointer.getValue() instanceof Party)) {
@@ -129,9 +144,15 @@ public class PartyFunctions {
      *
      * @param party the party
      * @return a list of default contacts
+     * @deprecated no replacement
      */
+    @Deprecated
     public Set<Contact> getDefaultContacts(Party party) {
-        return getPartyRules().getDefaultContacts();
+        if (!defaultContactsWarn) {
+            log.warn("party:getDefaultContacts() is deprecated");
+            defaultContactsWarn = true;
+        }
+        return new HashSet<Contact>();
     }
 
     /**
