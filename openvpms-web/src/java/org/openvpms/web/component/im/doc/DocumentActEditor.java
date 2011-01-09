@@ -19,24 +19,26 @@
 package org.openvpms.web.component.im.doc;
 
 import org.openvpms.archetype.rules.doc.DocumentRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.DOCUMENT;
 import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.VERSIONS;
-import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-
-import java.util.Collection;
 
 
 /**
@@ -75,8 +77,7 @@ public class DocumentActEditor extends AbstractActEditor {
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context. May be <tt>null</tt>.
      */
-    public DocumentActEditor(DocumentAct act, IMObject parent,
-                             LayoutContext context) {
+    public DocumentActEditor(DocumentAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         Property document = getProperty(DOCUMENT);
         if (document != null) {
@@ -94,15 +95,87 @@ public class DocumentActEditor extends AbstractActEditor {
             versionsEditor = new ActRelationshipCollectionEditor((CollectionProperty) versions, act, context);
             getEditors().add(versionsEditor);
         }
-        IMObjectCollectionEditor template = (IMObjectCollectionEditor) getEditor(DOC_TEMPLATE);
+        ParticipationEditor template = getDocumentTemplateEditor();
         if (template != null) {
-            lastTemplate = getTemplate();
+            lastTemplate = getTemplateRef();
             template.addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     onTemplateUpdate();
                 }
             });
         }
+    }
+
+    /**
+     * Sets the document template, an instance of <em>entity.documentTemplate<em>.
+     *
+     * @param template the template. May be <tt>null</tt>
+     */
+    public void setTemplate(Entity template) {
+        setParticipant(DOC_TEMPLATE, template);
+    }
+
+    /**
+     * Returns the document template, an instance of <em>entity.documentTemplate</em>.
+     *
+     * @return the document template. May be <tt>null</tt>
+     */
+    public Entity getTemplate() {
+        return (Entity) getParticipant(DOC_TEMPLATE);
+    }
+
+    /**
+     * Sets a document template via its reference.
+     *
+     * @param template the template reference. May be <tt>null</tt>
+     */
+    public void setTemplateRef(IMObjectReference template) {
+        setParticipant(DOC_TEMPLATE, template);
+    }
+
+    /**
+     * Returns a reference to the current template, an instance of <em>entity.documentTemplate</em>.
+     *
+     * @return a reference to the current template. May be <tt>null</tt>
+     */
+    public IMObjectReference getTemplateRef() {
+        return getParticipantRef(DOC_TEMPLATE);
+    }
+
+    /**
+     * Sets the document.
+     *
+     * @param document the document. May be <tt>null</tt>
+     * @throws IllegalStateException if the archetype doesn't support documents
+     */
+    public void setDocument(Document document) {
+        if (docEditor == null) {
+            throw new IllegalStateException("Documents are not supported by: " + getDisplayName());
+        }
+        docEditor.setDocument(document);
+    }
+
+    /**
+     * Returns the document.
+     *
+     * @return the document. May be <tt>null</tt>
+     * @throws IllegalStateException if the archetype doesn't support documents
+     */
+    public Document getDocument() {
+        return (Document) IMObjectHelper.getObject(getDocumentRef());
+    }
+
+    /**
+     * Returns the document reference.
+     *
+     * @return the document reference. May be <tt>null</tt>
+     * @throws IllegalStateException if the archetype doesn't support documents
+     */
+    public IMObjectReference getDocumentRef() {
+        if (docEditor == null) {
+            throw new IllegalStateException("Documents are not supported by: " + getDisplayName());
+        }
+        return docEditor.getReference();
     }
 
     /**
@@ -129,6 +202,22 @@ public class DocumentActEditor extends AbstractActEditor {
         boolean deleted = deleteObject();
         if (deleted) {
             deleted = deleteChildren();
+        }
+        if (deleted && versionsEditor != null) {
+            // delete the prior versions. Need to jump through some hoops to do this to avoid stale object errors
+            // TODO - ideally this would be done from within a delete rule
+            for (Act act : versionsEditor.getActs()) {
+                if (!act.isNew()) {
+                    act = IMObjectHelper.reload(act);
+                    if (act != null) {
+                        IMObjectEditor editor = versionsEditor.createEditor(act, new DefaultLayoutContext());
+                        deleted = editor.delete();
+                        if (!deleted) {
+                            break;
+                        }
+                    }
+                }
+            }
         }
         return deleted;
     }
@@ -162,6 +251,17 @@ public class DocumentActEditor extends AbstractActEditor {
     }
 
     /**
+     * Returns the document template participation editor.
+     *
+     * @return document template participation editor. May be <tt>null</tt>
+     */
+    protected DocumentTemplateParticipationEditor getDocumentTemplateEditor() {
+        ParticipationEditor editor = getParticipationEditor(DOC_TEMPLATE, true);
+        return (editor instanceof DocumentTemplateParticipationEditor) ?
+                (DocumentTemplateParticipationEditor) editor : null;
+    }
+
+    /**
      * Invoked when the document reference is updated.
      * </p>
      * Updates the fileName and mimeType properties.
@@ -173,18 +273,25 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Invoked when the document template updates.
+     * <p/>
+     * If the template is different to the prior instance, and there is a document node, the template will be used
+     * to generate a new document.
      */
     private void onTemplateUpdate() {
-        IMObjectReference template = getTemplate();
+        IMObjectReference template = getTemplateRef();
         if ((template != null && lastTemplate != null && !template.equals(lastTemplate))
-            || (template != null && lastTemplate == null)) {
+                || (template != null && lastTemplate == null)) {
             lastTemplate = template;
-            generateDoc(template);
+            if (docEditor != null) {
+                generateDoc(template);
+            }
         }
     }
 
     /**
      * Generates the document.
+     * <p/>
+     * If the act supports versioning, any existing saved document will be copied to new version act.
      *
      * @param template the document template
      */
@@ -193,23 +300,10 @@ public class DocumentActEditor extends AbstractActEditor {
         final DocumentGenerator generator = new DocumentGenerator(
                 act, template, false, new DocumentGenerator.Listener() {
                     public void generated(Document document) {
-                        updateDocument(document);
+                        docEditor.setDocument(document);
                     }
                 });
         generator.generate(false);
-    }
-
-    /**
-     * Updates the document.
-     * <p/>
-     * If the act supports versioning, any existing saved document will be copied to new version act.
-     *
-     * @param document the new document
-     */
-    private void updateDocument(Document document) {
-        if (docEditor != null) {
-            docEditor.setDocument(document);
-        }
     }
 
     /**
@@ -230,23 +324,6 @@ public class DocumentActEditor extends AbstractActEditor {
             }
         }
         return versioned;
-    }
-
-
-    /**
-     * Helper to return a reference to the current template, an instance of
-     * <em>entity.documentTemplate</em>.
-     *
-     * @return a reference to the current template. May be <tt>null</tt>
-     */
-    private IMObjectReference getTemplate() {
-        CollectionProperty property = (CollectionProperty) getProperty(DOC_TEMPLATE);
-        Collection values = property.getValues();
-        if (!values.isEmpty()) {
-            Participation p = (Participation) values.toArray()[0];
-            return p.getEntity();
-        }
-        return null;
     }
 
     private class VersioningDocumentEditor extends DocumentEditor {

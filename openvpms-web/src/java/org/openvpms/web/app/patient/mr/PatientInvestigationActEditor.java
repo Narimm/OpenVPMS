@@ -126,6 +126,19 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     }
 
     /**
+     * Invoked when layout has completed. This can be used to perform
+     * processing that requires all editors to be created.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        // need to re-register editors as these are removed when the layout is performed.
+        // TODO - not ideal.
+        getEditors().add(getDocumentEditor());
+        getEditors().add(getVersionsEditor());
+    }
+
+    /**
      * Determines if the Print Form button should be displayed.
      * <p/>
      * Notes:
