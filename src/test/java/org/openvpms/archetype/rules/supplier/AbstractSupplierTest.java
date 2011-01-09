@@ -421,10 +421,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @return a new stock location
      */
     protected Party createStockLocation() {
-        Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
-        stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
-        save(stockLocation);
-        return stockLocation;
+        return SupplierTestHelper.createStockLocation();
     }
 
     /**
