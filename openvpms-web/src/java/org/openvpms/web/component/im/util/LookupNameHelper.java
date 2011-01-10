@@ -23,9 +23,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Map;
 
@@ -96,12 +96,7 @@ public class LookupNameHelper {
      * @return the corresponding lookup name, or <tt>null</tt> if none is found
      */
     public static String getName(IMObject object, String node) {
-        IMObjectBean bean = new IMObjectBean(object);
-        NodeDescriptor descriptor = bean.getDescriptor(node);
-        if (descriptor != null) {
-            return LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(), descriptor, object);
-        }
-        return null;
+        return ServiceHelper.getLookupService().getName(object, node);
     }
 
 }

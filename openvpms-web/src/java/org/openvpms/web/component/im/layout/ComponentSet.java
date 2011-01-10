@@ -92,6 +92,22 @@ public class ComponentSet {
     }
 
     /**
+     * Returns the index of the component associated with the named property.
+     *
+     * @param name the property name
+     * @return the index, or <tt>-1</tt> if there is no component
+     */
+    public int indexOf(String name) {
+        for (int i = 0; i < components.size(); ++i) {
+            ComponentState state = components.get(i);
+            if (state.getProperty() != null && name.equals(state.getProperty().getName())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Returns the components.
      *
      * @return the components
