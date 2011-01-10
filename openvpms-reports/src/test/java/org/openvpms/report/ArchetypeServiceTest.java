@@ -28,7 +28,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -37,7 +36,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import java.util.Arrays;
-import java.util.List;
 
 
 /**
@@ -103,16 +101,7 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
         IMObjectBean bean = createBean("party.customerperson");
         bean.setValue("firstName", firstName);
         bean.setValue("lastName", lastName);
-        IMObject contact = null;
-        List<IMObject> contacts = bean.getValues("contacts");
-        for (IMObject c : contacts) {
-            if (TypeHelper.isA(c, "contact.location")) {
-                contact = c;
-                break;
-            }
-        }
-        assertNotNull(contact);
-        IMObjectBean contactBean = new IMObjectBean(contact);
+        IMObjectBean contactBean = createBean("contact.location");
         contactBean.setValue("address", "1234 Foo St");
         Lookup state = getLookup("lookup.state", "VIC");
         Lookup suburb = getLookup("lookup.suburb", "MELBOURNE",
