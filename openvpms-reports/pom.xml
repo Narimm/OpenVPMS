@@ -245,7 +245,7 @@
     </dependencies>
 
     <properties>
-        <openoffice.version>2.1.0</openoffice.version>
+        <openoffice.version>3.2.1</openoffice.version>
     </properties>
 
 </project>
