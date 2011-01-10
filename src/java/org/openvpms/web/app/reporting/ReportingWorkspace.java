@@ -22,11 +22,12 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -36,7 +37,6 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
 
 import java.util.List;
 
@@ -145,17 +145,32 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
     }
 
     /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
+        super.enableButtons(buttons, enable);
+        buttons.setEnabled(RUN_ID, enable);
+    }
+
+    /**
      * Invoked when the run button is pressed. Runs the selected report.
      */
     protected void onRun() {
-        try {
-            DocumentTemplate template = new DocumentTemplate(getObject(), ServiceHelper.getArchetypeService());
-            SQLReportPrinter printer = new SQLReportPrinter(template);
-            InteractiveSQLReportPrinter iPrinter
-                    = new InteractiveSQLReportPrinter(printer);
-            iPrinter.print();
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
+        Entity entity = getObject();
+        if (entity != null) {
+            try {
+                DocumentTemplate template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+                SQLReportPrinter printer = new SQLReportPrinter(template);
+                InteractiveSQLReportPrinter iPrinter
+                        = new InteractiveSQLReportPrinter(printer);
+                iPrinter.print();
+            } catch (Throwable exception) {
+                ErrorHelper.show(exception);
+            }
         }
     }
 
