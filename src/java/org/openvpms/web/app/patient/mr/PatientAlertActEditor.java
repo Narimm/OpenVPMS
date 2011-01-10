@@ -11,36 +11,36 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.app.customer.note;
+package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.app.alert.AbstractAlertActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * Editor for <em>act.customerNote</em> acts.
+ * Editor for <em>act.patientAlert</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerAlertNoteEditor extends AbstractActEditor {
+public class PatientAlertActEditor extends AbstractAlertActEditor {
 
     /**
-     * Constructs a <tt>CustomerAlertNoteEditor</tt>.
+     * Constructs a <tt>PatientAlertActEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
+     * @param parent  the parent act. May be <tt>null</tt>
      * @param context the layout context
      */
-    public CustomerAlertNoteEditor(Act act, IMObject parent, LayoutContext context) {
-        super(act, parent, context);
-        initParticipant("customer", context.getContext().getCustomer());
+    public PatientAlertActEditor(Act act, Act parent, LayoutContext context) {
+        super(act, parent, context, "lookup.patientAlertType");
+        initParticipant("patient", context.getContext().getPatient());
     }
+
 }

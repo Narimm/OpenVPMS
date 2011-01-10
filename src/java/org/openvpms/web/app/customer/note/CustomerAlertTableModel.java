@@ -31,13 +31,13 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.alert.Alert;
+import org.openvpms.web.app.alert.AlertHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.util.ColourHelper;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -157,11 +157,11 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
      */
     private Label getPriority(Act act) {
         Label result = LabelFactory.create();
-        Lookup lookup = getLookup(act);
+        Lookup lookup = AlertHelper.getAlertType(act);
         if (lookup != null) {
             IMObjectBean bean = new IMObjectBean(lookup);
             result.setText(getPriorityName(bean.getString("priority")));
-            Color value = ColourHelper.getColor(bean.getString("colour"));
+            Color value = AlertHelper.getColour(lookup);
             if (value != null) {
                 TableLayoutData layout = new TableLayoutData();
                 result.setLayoutData(layout);
@@ -180,21 +180,11 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
      */
     private Label getAlert(Act act) {
         Label result = LabelFactory.create();
-        Lookup lookup = getLookup(act);
+        Lookup lookup = AlertHelper.getAlertType(act);
         if (lookup != null) {
             result.setText(lookup.getName());
         }
         return result;
-    }
-
-    /**
-     * Returns the alert type associated with an act.
-     *
-     * @param act the act
-     * @return the alert type, or <tt>null</tt> if none is found
-     */
-    private Lookup getLookup(Act act) {
-        return ServiceHelper.getLookupService().getLookup(act, "alertType");
     }
 
     /**
@@ -205,7 +195,7 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
      */
     private String getPriorityName(String code) {
         if (priorities == null) {
-            priorities = LookupNameHelper.getLookupNames("lookup.patientAlertType", "priority");
+            priorities = LookupNameHelper.getLookupNames("lookup.customerAlertType", "priority");
         }
         String name = priorities.get(code);
         if (name == null) {
@@ -215,7 +205,7 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
     }
 
     /**
-     * Transformer that returns the priority of an <em>lookup.alertType</em> associated with an act.
+     * Transformer that returns the priority of an <em>lookup.customerAlertType</em> associated with an act.
      */
     private static class PriorityTransformer implements Transformer {
 
