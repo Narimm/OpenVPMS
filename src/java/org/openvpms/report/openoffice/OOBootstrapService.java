@@ -360,14 +360,11 @@ public abstract class OOBootstrapService {
             XEnumeration iter = iterAccess.createEnumeration();
             while (iter.hasMoreElements()) {
                 Object object = iter.nextElement();
-                XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(
-                        XCloseable.class, object);
+                XCloseable closeable = UnoRuntime.queryInterface(XCloseable.class, object);
                 if (closeable != null) {
                     closeable.close(true);
                 } else {
-                    XComponent component =
-                            (XComponent) UnoRuntime.queryInterface(
-                                    XComponent.class, object);
+                    XComponent component = UnoRuntime.queryInterface(XComponent.class, object);
                     if (component != null) {
                         component.dispose();
                     }

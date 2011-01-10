@@ -202,7 +202,7 @@ public class AbstractOOConnection
      * @param object the object
      * @return an interface for the object
      */
-    private Object getInterface(Class type, Object object) {
+    private Object getInterface(Class<?> type, Object object) {
         return UnoRuntime.queryInterface(type, object);
     }
 
@@ -211,7 +211,7 @@ public class AbstractOOConnection
      *
      * @throws Exception for any error
      */
-    private void connect() throws com.sun.star.uno.Exception, Exception {
+    private void connect() throws Exception {
 
         XComponentContext localContext
                 = Bootstrap.createInitialComponentContext(null);
