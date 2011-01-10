@@ -214,6 +214,10 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
             if (event != null) {
                 TableLayoutData layout = getEventLayoutData(event, model);
                 if (layout != null) {
+                    Color background = layout.getBackground();
+                    if (background != null) {
+                        component.setForeground(ColourHelper.getTextColour(background));
+                    }
                     TableHelper.mergeStyle(component, layout, true);
                 }
             } else {
