@@ -22,7 +22,7 @@
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="code" path="/code" type="java.lang.String"
-              minCardinality="1" maxLength="3">
+              minCardinality="1" maxLength="50">
             <assertion name="regularExpression">
                 <property name="expression" value="[A-Z]*"/>
                 <errorMessage>errorMessage</errorMessage>
