@@ -21,6 +21,7 @@ package org.openvpms.archetype.test;
 import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -104,6 +105,8 @@ public class TestHelper extends Assert {
     public static Party createCustomer(String firstName, String lastName,
                                        boolean save) {
         Party customer = (Party) create("party.customerperson");
+        PartyRules rules = new PartyRules();
+        customer.setContacts(rules.getDefaultContacts());
         IMObjectBean bean = new IMObjectBean(customer);
         bean.setValue("firstName", firstName);
         bean.setValue("lastName", lastName);

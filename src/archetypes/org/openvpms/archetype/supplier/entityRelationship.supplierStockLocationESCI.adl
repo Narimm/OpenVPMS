@@ -23,7 +23,7 @@
 
         <node name="accountId" displayName="Account ID" path="/details/accountId"
               type="java.lang.String" minCardinality="0"/>
-        <node name="orderServiceURL" displayName="Order Service URL" path="/details/orderServiceURL"
+        <node name="serviceURL" displayName="Service URL" path="/details/serviceURL"
               type="java.lang.String" minCardinality="1"/>
         <node name="username" path="/details/username" type="java.lang.String" minCardinality="0"/>
         <node name="password" path="/details/password" type="java.lang.String" minCardinality="0"/>

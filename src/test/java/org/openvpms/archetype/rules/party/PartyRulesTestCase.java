@@ -91,6 +91,8 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetPreferredContacts() {
         Party party = (Party) create("party.customerperson");
+        assertEquals(0, party.getContacts().size());
+        party.setContacts(rules.getDefaultContacts());
         assertEquals(2, party.getContacts().size());
         Contact location = getContact(party, ContactArchetypes.LOCATION);
         Contact phone = getContact(party, ContactArchetypes.PHONE);
