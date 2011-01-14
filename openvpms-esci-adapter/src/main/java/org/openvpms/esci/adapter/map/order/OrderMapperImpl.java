@@ -417,7 +417,7 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Returns a <tt>CustomerPartyType</tt> corresponding to the passed <em>party.organisationLocation</em>.
+     * Returns a <tt>CustomerPartyType</tt> corresponding to the passed <em>party.organisationStockLocation</em>.
      * <p/>
      * The party details will be either those of the <em>party.organisationLocation</em> or the parent
      * </em>party.organisationPractice</em>. If the location has a <em>contact.location</em>, then the location's

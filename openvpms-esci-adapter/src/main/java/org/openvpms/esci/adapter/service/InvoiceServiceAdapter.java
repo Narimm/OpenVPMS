@@ -28,14 +28,12 @@ import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.invoice.Delivery;
 import org.openvpms.esci.adapter.map.invoice.InvoiceMapper;
 import org.openvpms.esci.exception.ESCIException;
-import org.openvpms.esci.service.InvoiceService;
 
 import javax.annotation.Resource;
 
 
 /**
- * Implementation of the {@link InvoiceService} that maps invoices to <em>act.supplierDelivery</em> acts using
- * {@link InvoiceMapper}.
+ * Maps invoices to <em>act.supplierDelivery</em> acts using {@link InvoiceMapper}.
  * <p/>
  * UBL invoices are mapped to deliveries rather than <em>act.supplierAccountChargesInvoice</em> to reflect the fact
  * that practices may not use suplier invoices. An invoice can be created from the delivery if required.
@@ -43,7 +41,7 @@ import javax.annotation.Resource;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class InvoiceServiceAdapter extends AbstractUBLServiceAdapter implements InvoiceService {
+public class InvoiceServiceAdapter extends AbstractUBLServiceAdapter {
 
     /**
      * The archetype service.

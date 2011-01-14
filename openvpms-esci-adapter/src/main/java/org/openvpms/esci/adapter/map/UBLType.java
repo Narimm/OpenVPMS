@@ -103,7 +103,7 @@ public abstract class UBLType {
      * Determines if the {@link #getType type} and {@link #getID identifier} of this should be used for
      * error reporting. If not, then the parent should be used.
      *
-     * @return <tt>true</tt> if the type and ID should be used for error reporting, <tt>false</tt> if the paren should
+     * @return <tt>true</tt> if the type and ID should be used for error reporting, <tt>false</tt> if the parent should
      *         be used
      */
     public boolean useForErrorReporting() {

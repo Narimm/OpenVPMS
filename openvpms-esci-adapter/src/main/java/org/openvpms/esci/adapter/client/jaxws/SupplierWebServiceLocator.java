@@ -29,6 +29,7 @@ import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.OrderService;
+import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.ServiceLocator;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
 
@@ -112,7 +113,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
         String username = bean.getString("username");
         String password = bean.getString("password");
 
-        String serviceURL = bean.getString("orderServiceURL");
+        String serviceURL = bean.getString("serviceURL");
         if (StringUtils.isEmpty(serviceURL)) {
             throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL));
         }
@@ -141,7 +142,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
     /**
      * Returns a proxy for a supplier's {@link org.openvpms.esci.service.OrderService}.
      *
-     * @param serviceURL      the WSDL document URL of the service
+     * @param serviceURL      the WSDL document URL of the registry service
      * @param endpointAddress the endpoint address. May be <tt>null</tt>
      * @param username        the user name to connect with. May be <tt>null</tt>
      * @param password        the password to connect with. May be <tt>null</tt>
@@ -151,9 +152,9 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
      */
     public OrderService getOrderService(String serviceURL, String endpointAddress, String username, String password) {
         try {
-            ServiceLocator<OrderService> locator = locatorFactory.getServiceLocator(OrderService.class, serviceURL,
-                                                                                    endpointAddress, username,
-                                                                                    password);
+            RegistryService registry = getRegistryService(serviceURL, username, password);
+            ServiceLocator<OrderService> locator = locatorFactory.getServiceLocator(OrderService.class, 
+                    registry.getOrderService(), endpointAddress, username, password);
             return locator.getService();
         } catch (MalformedURLException exception) {
             throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
@@ -173,8 +174,9 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
      */
     protected OrderService getOrderService(Party supplier, String serviceURL, String username, String password)
             throws MalformedURLException {
+        RegistryService registry = getRegistryService(serviceURL, username, password);
         ServiceLocator<OrderService> locator
-                = locatorFactory.getServiceLocator(OrderService.class, serviceURL, username, password);
+                = locatorFactory.getServiceLocator(OrderService.class, registry.getOrderService(), username, password);
         return locator.getService();
     }
 
@@ -187,6 +189,12 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
         return locatorFactory;
     }
 
+    protected RegistryService getRegistryService(String url, String username, String password)
+            throws MalformedURLException {
+        ServiceLocator<RegistryService> locator
+                = locatorFactory.getServiceLocator(RegistryService.class, url, username, password);
+        return locator.getService();
+    }
 
 }
 

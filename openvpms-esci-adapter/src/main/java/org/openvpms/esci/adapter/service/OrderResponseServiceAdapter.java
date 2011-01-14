@@ -20,7 +20,6 @@ package org.openvpms.esci.adapter.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.OrderResponseSimpleType;
-import org.oasis.ubl.OrderResponseType;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -28,7 +27,6 @@ import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.order.OrderResponseMapper;
 import org.openvpms.esci.exception.ESCIException;
-import org.openvpms.esci.service.OrderResponseService;
 
 import javax.annotation.Resource;
 
@@ -40,7 +38,7 @@ import javax.annotation.Resource;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OrderResponseServiceAdapter extends AbstractUBLServiceAdapter implements OrderResponseService {
+public class OrderResponseServiceAdapter extends AbstractUBLServiceAdapter {
 
     /**
      * The order response mapper.
@@ -116,16 +114,6 @@ public class OrderResponseServiceAdapter extends AbstractUBLServiceAdapter imple
             Message message = ESCIAdapterMessages.failedToSubmitOrderResponse(exception.getMessage());
             throw new ESCIException(message.toString(), exception);
         }
-    }
-
-    /**
-     * Submits a response to an order.
-     *
-     * @param response the response
-     * @throws ESCIException if the response is invalid or cannot be processed
-     */
-    public void submitResponse(OrderResponseType response) throws ESCIException {
-        throw new ESCIException("Unsupported operation");
     }
 
     /**
