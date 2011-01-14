@@ -69,7 +69,7 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
         return new LayoutStrategy() {
             @Override
             protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-                if ("orderServiceURL".equals(property.getName())) {
+                if ("serviceURL".equals(property.getName())) {
                     return createServiceURLComponent(property, parent, context);
                 }
                 return super.createComponent(property, parent, context);
@@ -104,7 +104,7 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
      */
     private void onTest() {
         try {
-            String url = (String) getProperty("orderServiceURL").getValue();
+            String url = (String) getProperty("serviceURL").getValue();
             String user = (String) getProperty("username").getValue();
             String password = (String) getProperty("password").getValue();
             SupplierServiceLocator locator = ServiceHelper.getSupplierServiceLocator();
