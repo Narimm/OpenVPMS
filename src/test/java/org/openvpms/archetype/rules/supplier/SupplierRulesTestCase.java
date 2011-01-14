@@ -210,7 +210,7 @@ public class SupplierRulesTestCase extends AbstractSupplierTest {
                                                                        stockLocation);
         IMObjectBean bean = new IMObjectBean(relationship);
         bean.setValue("accountId", "ANACCOUNTID");
-        bean.setValue("orderServiceURL", "http://localhost:8080/esci/OrderService?wsdl");
+        bean.setValue("serviceURL", "http://localhost:8080/esci/RegistryService?wsdl");
         save(supplier, stockLocation);
         return relationship;
     }
