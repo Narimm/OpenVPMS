@@ -8,7 +8,6 @@
                            http://www.springframework.org/schema/security/spring-security-3.0.xsd">
 
     <import resource="openvpms-gui-authentication.xml"/>
-    <import resource="openvpms-esci-authentication.xml"/>
 
     <!-- ================================================================== -->
     <!--                            FILTER CHAIN                            -->
@@ -16,12 +15,6 @@
 
     <bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
         <security:filter-chain-map path-type="ant">
-            <security:filter-chain pattern="/esci/**"
-                                   filters="esciChannelProcessingFilter,
-                                            securityContextPersistenceFilterWithASCFalse,
-                                            esciBasicAuthenticationFilter,
-                                            esciExceptionTranslationFilter,
-                                            esciFilterSecurityInterceptor"/>
             <security:filter-chain pattern="/**"
                                    filters="securityContextPersistenceFilter,
                                             guiExceptionTranslationFilter,

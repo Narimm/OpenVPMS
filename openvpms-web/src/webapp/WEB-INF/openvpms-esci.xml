@@ -12,32 +12,6 @@
           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
 
     <!-- ================================================================== -->
-    <!-- Web service bindings                                               -->
-    <!-- ================================================================== -->
-
-    <wss:binding url="/esci/OrderResponseService">
-        <wss:service>
-            <ws:service bean="#orderResponseService">
-                <ws:handlers>
-                    <ref bean="loggingHandler"/>
-                </ws:handlers>
-            </ws:service>
-        </wss:service>
-    </wss:binding>
-
-    <wss:binding url="/esci/InvoiceService">
-        <wss:service>
-            <ws:service bean="#invoiceService">
-                <ws:handlers>
-                    <ref bean="loggingHandler"/>
-                </ws:handlers>
-            </ws:service>
-        </wss:service>
-    </wss:binding>
-
-    <bean id="loggingHandler" class="org.openvpms.esci.util.LoggingSOAPHandler"/>
-
-    <!-- ================================================================== -->
     <!-- Order service                                                      -->
     <!-- ================================================================== -->
 
@@ -58,12 +32,8 @@
     </bean>
 
     <!-- ================================================================== -->
-    <!-- Order response service                                             -->
+    <!-- Order response processing                                          -->
     <!-- ================================================================== -->
-
-    <bean id="orderResponseService" class="org.openvpms.esci.service.OrderResponseWebService">
-        <property name="orderResponseService" ref="orderResponseServiceAdapter"/>
-    </bean>
 
     <bean id="orderResponseServiceAdapter" class="org.openvpms.esci.adapter.service.OrderResponseServiceAdapter">
         <property name="orderResponseMapper" ref="orderResponseMapper"/>
@@ -82,12 +52,8 @@
     </bean>
 
     <!-- ================================================================== -->
-    <!-- Invoice service                                                    -->
+    <!-- Invoice processing                                                 -->
     <!-- ================================================================== -->
-
-    <bean id="invoiceService" class="org.openvpms.esci.service.InvoiceWebService">
-        <property name="invoiceService" ref="invoiceServiceAdapter"/>
-    </bean>
 
     <bean id="invoiceServiceAdapter" class="org.openvpms.esci.adapter.service.InvoiceServiceAdapter">
         <property name="archetypeService" ref="archetypeRuleService"/>
