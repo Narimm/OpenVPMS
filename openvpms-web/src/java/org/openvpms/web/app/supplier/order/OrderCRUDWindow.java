@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
+import org.openvpms.esci.adapter.dispatcher.ESCIDispatcher;
 import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
@@ -80,10 +81,16 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
                 onCopy();
             }
         });
+        Button poll = ButtonFactory.create("poll", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onPoll();
+            }
+        });
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
         buttons.add(createPreviewButton());
         buttons.add(copy);
+        buttons.add(poll);
     }
 
     /**
@@ -209,6 +216,15 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
             result = true;
         }
         return result;
+    }
+
+    private void onPoll() {
+        try {
+            ESCIDispatcher dispatcher = (ESCIDispatcher) ServiceHelper.getContext().getBean("esciDispatcher");
+            dispatcher.start();
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
 }

@@ -32,18 +32,32 @@
     </bean>
 
     <!-- ================================================================== -->
+    <!-- Dispatcher                                                         -->
+    <!-- ================================================================== -->
+    <bean id="esciDispatcher" class="org.openvpms.esci.adapter.dispatcher.ESCIDispatcher">
+        <property name="archetypeService" ref="archetypeService"/>
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="supplierServiceLocator" ref="supplierServiceLocator"/>
+        <property name="documentProcessors">
+            <list>
+                <ref bean="orderResponseProcessor"/>
+                <ref bean="invoiceProcessor"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- ================================================================== -->
     <!-- Order response processing                                          -->
     <!-- ================================================================== -->
 
-    <bean id="orderResponseServiceAdapter" class="org.openvpms.esci.adapter.service.OrderResponseServiceAdapter">
+    <bean id="orderResponseProcessor" class="org.openvpms.esci.adapter.dispatcher.order.OrderResponseProcessor">
         <property name="orderResponseMapper" ref="orderResponseMapper"/>
         <property name="orderResponseListener">
-            <bean class="org.openvpms.esci.adapter.service.SystemMessageOrderResponseListener">
+            <bean class="org.openvpms.esci.adapter.dispatcher.order.SystemMessageOrderResponseListener">
                 <property name="beanFactory" ref="imObjectBeanFactory"/>
             </bean>
         </property>
         <property name="archetypeService" ref="archetypeRuleService"/>
-        <property name="userRules" ref="userRules"/>
     </bean>
 
     <bean id="orderResponseMapper" class="org.openvpms.esci.adapter.map.order.OrderResponseMapperImpl">
@@ -55,11 +69,10 @@
     <!-- Invoice processing                                                 -->
     <!-- ================================================================== -->
 
-    <bean id="invoiceServiceAdapter" class="org.openvpms.esci.adapter.service.InvoiceServiceAdapter">
+    <bean id="invoiceProcessor" class="org.openvpms.esci.adapter.dispatcher.invoice.InvoiceProcessor">
         <property name="archetypeService" ref="archetypeRuleService"/>
-        <property name="userRules" ref="userRules"/>
         <property name="invoiceListener">
-            <bean class="org.openvpms.esci.adapter.service.SystemMessageInvoiceListener">
+            <bean class="org.openvpms.esci.adapter.dispatcher.invoice.SystemMessageInvoiceListener">
                 <property name="beanFactory" ref="imObjectBeanFactory"/>
             </bean>
         </property>
