@@ -64,11 +64,6 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
                 = TestHelper.getLookup("lookup.userType", "CLINICIAN");
         user.addClassification(clinicianClassification);
         assertTrue(rules.isClinician(user));
-
-        // verify that ESCI users can't be clinicians
-        User esci = (User) create(UserArchetypes.ESCI_USER);
-        esci.addClassification(clinicianClassification);
-        assertFalse(rules.isClinician(esci));
     }
 
     /**
@@ -135,10 +130,5 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
         Lookup adminClassification = TestHelper.getLookup("lookup.userType", "ADMINISTRATOR");
         user.addClassification(adminClassification);
         assertTrue(rules.isAdministrator(user));
-
-        // verify that ESCI users can't be administrators
-        User esci = (User) create(UserArchetypes.ESCI_USER);
-        esci.addClassification(adminClassification);
-        assertFalse(rules.isAdministrator(esci));
     }
 }
