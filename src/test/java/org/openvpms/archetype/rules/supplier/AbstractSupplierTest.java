@@ -156,15 +156,26 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
     /**
      * Creates an order associated with an order item.
      *
+     * @param supplier  the supplier
      * @param orderItem the order item
      * @return a new order
      */
-    protected FinancialAct createOrder(FinancialAct orderItem) {
-        ActBean bean = createAct(SupplierArchetypes.ORDER);
+    protected FinancialAct createOrder(Party supplier, FinancialAct orderItem) {
+        ActBean bean = createAct(SupplierArchetypes.ORDER, supplier);
         bean.addRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, orderItem);
         bean.setValue("amount", orderItem.getTotal());
         save(bean.getAct(), orderItem);
         return (FinancialAct) bean.getAct();
+    }
+
+    /**
+     * Creates an order associated with an order item.
+     *
+     * @param orderItem the order item
+     * @return a new order
+     */
+    protected FinancialAct createOrder(FinancialAct orderItem) {
+        return createOrder(supplier, orderItem);
     }
 
     /**
@@ -360,14 +371,25 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * Creates a new supplier act.
      *
      * @param shortName the act short name
+     * @param supplier  the supplier
      * @return a new act
      */
-    protected ActBean createAct(String shortName) {
+    protected ActBean createAct(String shortName, Party supplier) {
         Act act = (Act) create(shortName);
         ActBean bean = new ActBean(act);
         bean.addParticipation(SupplierArchetypes.SUPPLIER_PARTICIPATION, supplier);
         bean.addParticipation(StockArchetypes.STOCK_LOCATION_PARTICIPATION, stockLocation);
         return bean;
+    }
+
+    /**
+     * Creates a new supplier act.
+     *
+     * @param shortName the act short name
+     * @return a new act
+     */
+    protected ActBean createAct(String shortName) {
+        return createAct(shortName, supplier);
     }
 
     /**
