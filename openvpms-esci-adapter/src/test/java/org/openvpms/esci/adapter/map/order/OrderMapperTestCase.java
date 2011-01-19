@@ -277,7 +277,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
                 SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI, stockLocation);
         IMObjectBean bean = new IMObjectBean(relationship);
         bean.setValue("accountId", SUPPLIER_ACCOUNT_ID);
-        bean.setValue("orderServiceURL", "https://foo.openvpms.org/orderservice");
+        bean.setValue("serviceURL", "https://foo.openvpms.org/orderservice");
 
         save(supplier, stockLocation);
     }

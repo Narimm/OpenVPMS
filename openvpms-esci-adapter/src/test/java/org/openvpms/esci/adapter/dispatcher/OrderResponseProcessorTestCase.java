@@ -15,45 +15,40 @@
  *
  *  $Id$
  */
-package org.openvpms.esci.adapter.service;
+package org.openvpms.esci.adapter.dispatcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import org.oasis.ubl.OrderResponseSimpleType;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
-import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.FutureValue;
+import org.openvpms.esci.adapter.dispatcher.order.OrderResponseProcessor;
+import org.openvpms.esci.adapter.dispatcher.order.SystemMessageOrderResponseListener;
 import org.openvpms.esci.adapter.map.order.AbstractOrderResponseTest;
 import org.openvpms.esci.adapter.map.order.OrderResponseMapper;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 
 /**
- * Tests the {@link OrderResponseServiceAdapter} class.
+ * Tests the {@link OrderResponseProcessor} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OrderResponseServiceAdapterTestCase extends AbstractOrderResponseTest {
+public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
 
     /**
-     * Tests submitting an order response.
+     * Tests processing an order response.
      *
      * @throws Exception for any error
      */
     @Test
-    public void testSubmitOrderResponseSimple() throws Exception {
+    public void testProcess() throws Exception {
         // create a default author to receive system messages
         User author = initDefaultAuthor();
-
-        // set up the ESCI user
-        User user = createESCIUser(getSupplier());
-        initSecurityContext(user);
 
         // set up the listener
         final FutureValue<FinancialAct> future = new FutureValue<FinancialAct>();
@@ -66,14 +61,14 @@ public class OrderResponseServiceAdapterTestCase extends AbstractOrderResponseTe
         };
         listener.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
 
-        // set up the service
-        OrderResponseServiceAdapter service = createService();
-        service.setOrderResponseListener(listener);
+        // set up the processor
+        OrderResponseProcessor processor = createProcessor();
+        processor.setOrderResponseListener(listener);
 
         // create an order and refer to it in the response
         FinancialAct order = createOrder();
-        OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), true);
-        service.submitSimpleResponse(response);
+        Document response = createOrderResponseDocument(order.getId(), true);
+        processor.process(response, getSupplier());
 
         FinancialAct updatedOrder = future.get(1000);
         assertNotNull(updatedOrder);
@@ -84,67 +79,41 @@ public class OrderResponseServiceAdapterTestCase extends AbstractOrderResponseTe
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if there is no ESCI user registered when submitting the order
-     * response.
-     */
-    @Test
-    public void testSubmitWithNoESCIUser() {
-        OrderResponseSimpleType response = createOrderResponseSimple(1234, true);
-        OrderResponseServiceAdapter service = createService();
-        String expected = "ESCIA-0200: No ESCI user";
-
-        try {
-            service.submitSimpleResponse(response);
-        } catch (ESCIException exception) {
-            assertEquals(expected, exception.getMessage());
-        }
-
-        User user = TestHelper.createUser(); // not an ESCI user
-        initSecurityContext(user);
-
-        try {
-            service.submitSimpleResponse(response);
-        } catch (ESCIException exception) {
-            assertEquals(expected, exception.getMessage());
-        }
-    }
-
-    /**
-     * Verifies that an {@link ESCIException} is raised if {@link OrderResponseServiceAdapter#submitSimpleResponse}
+     * Verifies that an {@link ESCIAdapterException} is raised if {@link DocumentProcessor#process}
      * encounters an unexpected exception.
      */
     @Test
-    public void testFailedToSubmitResponse() {
-        OrderResponseSimpleType response = createOrderResponseSimple(1234, true);
-        OrderResponseServiceAdapter service = new OrderResponseServiceAdapter() {
+    public void testFailedToProcess() {
+        // create an order and refer to it in the response
+        FinancialAct order = createOrder();
+        Document response = createOrderResponseDocument(order.getId(), true);
+        OrderResponseProcessor processor = new OrderResponseProcessor() {
             @Override
-            protected User getUser() {
-                throw new IllegalStateException("Foo");
+            protected void notifyListener(FinancialAct order) {
+                throw new RuntimeException("Foo");
             }
         };
-        service.setArchetypeService(getArchetypeService());
-        service.setOrderResponseMapper(createOrderResponseMapper());
-        service.setUserRules(new UserRules());
+        processor.setArchetypeService(getArchetypeService());
+        processor.setOrderResponseMapper(createOrderResponseMapper());
 
-        String expected = "ESCIA-0500: Failed to submit OrderResponseSimple: Foo";
+        String expected = "ESCIA-0500: Failed to process OrderResponseSimple: Foo";
         try {
-            service.submitSimpleResponse(response);
-        } catch (ESCIException exception) {
+            processor.process(response, getSupplier());
+        } catch (ESCIAdapterException exception) {
             assertEquals(expected, exception.getMessage());
         }
     }
 
     /**
-     * Creates a new order response service.
+     * Creates a new order response processor.
      *
-     * @return a new service
+     * @return a new processor
      */
-    private OrderResponseServiceAdapter createService() {
+    private OrderResponseProcessor createProcessor() {
         OrderResponseMapper mapper = createOrderResponseMapper();
-        OrderResponseServiceAdapter service = new OrderResponseServiceAdapter();
+        OrderResponseProcessor service = new OrderResponseProcessor();
         service.setArchetypeService(getArchetypeService());
         service.setOrderResponseMapper(mapper);
-        service.setUserRules(new UserRules());
         return service;
     }
 

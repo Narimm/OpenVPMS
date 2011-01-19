@@ -23,11 +23,12 @@ import org.junit.Test;
 import org.oasis.ubl.OrderResponseSimpleType;
 import org.oasis.ubl.common.basic.RejectionNoteType;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.esci.adapter.map.UBLHelper;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 
 /**
@@ -65,37 +66,38 @@ public class OrderResponseMapperTestCase extends AbstractOrderResponseTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the associated order doesn't exist.
+     * Verifies that an {@link ESCIAdapterException} is raised if the associated order doesn't exist.
      */
     @Test
     public void testMapResponseNoOrder() {
-        User user = createESCIUser(getSupplier());
         OrderResponseSimpleType response = createOrderResponseSimple(934, true);
-        checkMappingException(response, user,
+        checkMappingException(response, getSupplier(),
                               "ESCIA-0108: Invalid Order: 934 referenced by OrderResponseSimple: 12345");
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the associated order doesn't exist.
+     * Verifies that an {@link ESCIAdapterException} is raised if the supplier in the response doesn't match that
+     * which submitted the response.
      */
     @Test
-    public void testMapResponseNoUserSupplierRelationship() {
-        User user = createESCIUser();
+    public void testSupplierMismatch() {
+        Party expected = TestHelper.createSupplier();
+        Party supplier = getSupplier();
         FinancialAct order = createOrder();
         OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), true);
-        String expectedMessage = "ESCIA-0109: User Foo (" + user.getId()
-                                 + ") has no relationship to supplier Xsupplier (" + getSupplier().getId() + ")";
-        checkMappingException(response, user, expectedMessage);
+        checkMappingException(response, expected, "ESCIA-0109: Expected supplier " + expected.getName()
+                                                  + " (" + expected.getId() + ") but got supplier " + supplier.getName()
+                                                  + " (" + supplier.getId() + ")");
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the UBL version doesn't match that expected.
+     * Verifies that an {@link ESCIAdapterException} is raised if the UBL version doesn't match that expected.
      */
     @Test
     public void testInvalidUBLVersion() {
         OrderResponseSimpleType response = createOrderResponseSimple(123, true);
         response.getUBLVersionID().setValue("2.1");
-        checkMappingException(response, createESCIUser(),
+        checkMappingException(response, getSupplier(),
                               "ESCIA-0103: Expected 2.0 for UBLVersionID in OrderResponseSimple: 12345 but got 2.1");
     }
 
@@ -109,11 +111,10 @@ public class OrderResponseMapperTestCase extends AbstractOrderResponseTest {
      */
     private void checkMapping(boolean accepted, String rejectionNote, String status, String message) {
         FinancialAct order = createOrder();
-        User user = createESCIUser(getSupplier());
         OrderResponseMapper mapper = createOrderResponseMapper();
         OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), accepted);
         response.setRejectionNote(UBLHelper.initText(new RejectionNoteType(), rejectionNote));
-        FinancialAct act = mapper.map(response, user);
+        FinancialAct act = mapper.map(response, getSupplier());
         save(act);
 
         assertEquals(order.getObjectReference(), act.getObjectReference());
@@ -127,15 +128,15 @@ public class OrderResponseMapperTestCase extends AbstractOrderResponseTest {
      * Verifies that mapping an invalid response fails with an appropriate exception.
      *
      * @param response        the invalid response
-     * @param user            the ESCI user
+     * @param supplier        the supplier submitting the response
      * @param expectedMessage the expected exception message
      */
-    private void checkMappingException(OrderResponseSimpleType response, User user, String expectedMessage) {
+    private void checkMappingException(OrderResponseSimpleType response, Party supplier, String expectedMessage) {
         OrderResponseMapper mapper = createOrderResponseMapper();
         try {
-            mapper.map(response, user);
+            mapper.map(response, supplier);
             fail("Expected mapping to fail");
-        } catch (ESCIException expected) {
+        } catch (ESCIAdapterException expected) {
             assertEquals(expectedMessage, expected.getMessage());
         }
     }

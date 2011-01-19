@@ -15,18 +15,20 @@
  *
  *  $Id$
  */
-package org.openvpms.esci.adapter.service;
+package org.openvpms.esci.adapter.dispatcher.order;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.OrderResponseSimpleType;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.esci.adapter.dispatcher.Document;
+import org.openvpms.esci.adapter.dispatcher.DocumentProcessor;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.order.OrderResponseMapper;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 import javax.annotation.Resource;
 
@@ -38,7 +40,7 @@ import javax.annotation.Resource;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OrderResponseServiceAdapter extends AbstractUBLServiceAdapter {
+public class OrderResponseProcessor implements DocumentProcessor {
 
     /**
      * The order response mapper.
@@ -58,12 +60,12 @@ public class OrderResponseServiceAdapter extends AbstractUBLServiceAdapter {
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(OrderResponseServiceAdapter.class);
+    private static final Log log = LogFactory.getLog(OrderResponseProcessor.class);
 
     /**
      * Default constructor.
      */
-    public OrderResponseServiceAdapter() {
+    public OrderResponseProcessor() {
     }
 
     /**
@@ -97,22 +99,33 @@ public class OrderResponseServiceAdapter extends AbstractUBLServiceAdapter {
     }
 
     /**
-     * Submits a simple response to an order.
+     * Determines if this processor can handle the supplied document.
      *
-     * @param response the response
-     * @throws ESCIException if the response is invalid or cannot be processed
+     * @param document the document
+     * @return <tt>true</tt> if the processor can handle the document, otherwise <tt>false</tt>
      */
-    public void submitSimpleResponse(OrderResponseSimpleType response) throws ESCIException {
+    public boolean canHandle(Document document) {
+        return document.getContent() instanceof OrderResponseSimpleType;
+    }
+
+    /**
+     * Process the supplied document.
+     *
+     * @param document the document to process  @throws ESCIAdapterException for any error
+     * @param supplier the supplier submitting the document
+     * @throws ESCIAdapterException for any error
+     */
+    public void process(Document document, Party supplier) {
+        OrderResponseSimpleType response = (OrderResponseSimpleType) document.getContent();
         try {
-            User user = getUser();
-            FinancialAct order = mapper.map(response, user);
+            FinancialAct order = mapper.map(response, supplier);
             service.save(order);
             notifyListener(order);
-        } catch (ESCIException exception) {
+        } catch (ESCIAdapterException exception) {
             throw exception;
         } catch (Throwable exception) {
-            Message message = ESCIAdapterMessages.failedToSubmitOrderResponse(exception.getMessage());
-            throw new ESCIException(message.toString(), exception);
+            Message message = ESCIAdapterMessages.failedToProcessOrderResponse(exception.getMessage());
+            throw new ESCIAdapterException(message, exception);
         }
     }
 
@@ -121,7 +134,7 @@ public class OrderResponseServiceAdapter extends AbstractUBLServiceAdapter {
      *
      * @param order the order that the response was received for
      */
-    private void notifyListener(FinancialAct order) {
+    protected void notifyListener(FinancialAct order) {
         OrderResponseListener l = listener;
         if (l != null) {
             try {

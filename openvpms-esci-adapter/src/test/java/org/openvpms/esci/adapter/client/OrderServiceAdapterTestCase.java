@@ -25,11 +25,13 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.DelegatingOrderService;
 import org.openvpms.esci.FutureValue;
+import org.openvpms.esci.DelegatingRegistryService;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.client.impl.OrderServiceAdapterImpl;
 import org.openvpms.esci.adapter.map.order.OrderMapper;
 import org.openvpms.esci.exception.ESCIException;
 import org.openvpms.esci.service.OrderService;
+import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -58,6 +60,12 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
     private IMObjectBeanFactory factory;
 
     /**
+     * The delegating registry service.
+     */
+    @Resource
+    private DelegatingRegistryService delegatingRegistryService;
+    
+    /**
      * The delegating order service.
      */
     @Resource
@@ -78,13 +86,14 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
      */
     @Test
     public void testOrderServiceAdapter() throws Exception {
-        applicationContext.getBean("orderService"); // force registation of the order service
+        applicationContext.getBean("registryService"); // force registation of the registry dispatcher
+        applicationContext.getBean("orderService");    // force registation of the order dispatcher
 
         // add a product supplier relationship
         addProductSupplierRelationship(getProduct(), getSupplier(), "AREORDERCODE", "Some description");
 
         // add a supplier/stock location relationship for ESCI
-        String wsdl = getWSDL("wsdl/OrderService.wsdl");
+        String wsdl = getWSDL("wsdl/RegistryService.wsdl");
         addESCIConfiguration(getSupplier(), getStockLocation(), wsdl);
 
         InVMSupplierServiceLocator vmLocator = createSupplierServiceLocator();
@@ -92,6 +101,16 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
         adapter.setFactory(factory);
         adapter.setOrderMapper(mapper);
         adapter.setSupplierServiceLocator(vmLocator);
+
+        delegatingRegistryService.setRegistry(new RegistryService() {
+            public String getInboxService() {
+                return getWSDL("wsdl/InboxService.wsdl");
+            }
+
+            public String getOrderService() {
+                return getWSDL("wsdl/OrderService.wsdl");
+            }
+        });
 
         final FutureValue<OrderType> future = new FutureValue<OrderType>();
         delegatingOrderService.setOrderService(new OrderService() {
@@ -119,6 +138,5 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
         vmLocator.setServiceLocatorFactory(serviceLocatorFactory);
         return vmLocator;
     }
-
 
 }

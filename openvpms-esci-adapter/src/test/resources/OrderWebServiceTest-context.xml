@@ -11,14 +11,26 @@
 
     <context:annotation-config/>
 
+    <wsl:bindings id="registryService">
+        <wsl:endpoints>
+            <ws:service bean="#registryWebService"/>
+        </wsl:endpoints>
+    </wsl:bindings>
+
     <wsl:bindings id="orderService">
         <wsl:endpoints>
             <ws:service bean="#orderWebService"/>
         </wsl:endpoints>
     </wsl:bindings>
 
-    <bean name="delegatingOrderService" class="org.openvpms.esci.DelegatingOrderService"/>
+    <bean name="delegatingRegistryService" class="org.openvpms.esci.DelegatingRegistryService"/>
 
+    <bean id="registryWebService" class="org.openvpms.esci.service.RegistryWebService">
+        <property name="registry" ref="delegatingRegistryService"/>
+    </bean>
+
+    <bean name="delegatingOrderService" class="org.openvpms.esci.DelegatingOrderService"/>
+    
     <bean id="orderWebService" class="org.openvpms.esci.service.OrderWebService">
         <property name="orderService" ref="delegatingOrderService"/>
     </bean>

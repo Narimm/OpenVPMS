@@ -20,8 +20,10 @@ package org.openvpms.esci.adapter.map.order;
 import org.oasis.ubl.OrderResponseSimpleType;
 import org.oasis.ubl.common.basic.AcceptedIndicatorType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
+import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.adapter.AbstractESCITest;
+import org.openvpms.esci.adapter.dispatcher.Document;
 import org.openvpms.esci.adapter.map.UBLHelper;
 
 /**
@@ -49,6 +51,17 @@ public class AbstractOrderResponseTest extends AbstractESCITest {
         result.setAcceptedIndicator(indicator);
         result.setSellerSupplierParty(createSupplier(getSupplier()));
         return result;
+    }
+
+    /**
+     * Creates a new <tt>OrderResponseSimpleType</tt> wrapped in a document.
+     *
+     * @param orderId  the order identifier to associate the response with
+     * @param accepted if <tt>true</tt> indicates that the order was accepted, otherwise indicates that it was rejected
+     * @return a new order response wrapped in a document
+     */
+    protected Document createOrderResponseDocument(long orderId, boolean accepted) {
+        return new Document(new DocumentReferenceType(), createOrderResponseSimple(orderId, accepted));
     }
 
     /**

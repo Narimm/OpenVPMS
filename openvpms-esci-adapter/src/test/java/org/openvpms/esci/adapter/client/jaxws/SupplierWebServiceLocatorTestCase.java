@@ -19,17 +19,20 @@ package org.openvpms.esci.adapter.client.jaxws;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.junit.Before;
 import org.oasis.ubl.OrderType;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.DelegatingOrderService;
 import org.openvpms.esci.FutureValue;
+import org.openvpms.esci.DelegatingRegistryService;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.client.InVMSupplierServiceLocator;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.OrderService;
+import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.DefaultServiceLocatorFactory;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -46,11 +49,18 @@ import javax.annotation.Resource;
 public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
 
     /**
+     * The delegating registry service.
+     */
+    @Resource
+    private DelegatingRegistryService delegatingRegistryService;
+
+    /**
      * The delegating order service.
      */
     @Resource
     private DelegatingOrderService delegatingOrderService;
 
+    
     /**
      * Verifies that the OrderService can be obtained with
      * {@link SupplierServiceLocator#getOrderService(Party, Party)} and its methods invoked.
@@ -64,7 +74,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
 
         Party supplier = getSupplier();
         Party location = getStockLocation();
-        String wsdl = getWSDL("wsdl/OrderService.wsdl");
+        String wsdl = getWSDL("wsdl/RegistryService.wsdl");
         addESCIConfiguration(supplier, location, wsdl);
 
         SupplierServiceLocator locator = createLocator();
@@ -77,7 +87,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
 
     /**
      * Verifies that the OrderService can be obtained with
-     * {@link SupplierServiceLocator#getOrderService(String, String, String, String)} and its methods invoked.
+     * {@link SupplierServiceLocator#getOrderService(String, String, String)} and its methods invoked.
      *
      * @throws Exception for any error
      */
@@ -87,8 +97,8 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
         registerOrderService(future);
 
         SupplierServiceLocator locator = createLocator();
-        String wsdl = getWSDL("wsdl/OrderService.wsdl");
-        OrderService service = locator.getOrderService(wsdl, "in-vm://orderService/", "foo", "bar");
+        String wsdl = getWSDL("wsdl/RegistryService.wsdl");
+        OrderService service = locator.getOrderService(wsdl, "foo", "bar");
         service.submitOrder(new OrderType());
 
         OrderType received2 = future.get(1000);
@@ -147,6 +157,24 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
     }
 
     /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        applicationContext.getBean("registryService"); // force registation of the registry dispatcher
+        applicationContext.getBean("orderService");    // force registation of the order dispatcher
+        delegatingRegistryService.setRegistry(new RegistryService() {
+            public String getInboxService() {
+                return getWSDL("wsdl/InboxService.wsdl");
+            }
+            public String getOrderService() {
+                return getWSDL("wsdl/OrderService.wsdl");
+            }
+        });
+    }
+
+    /**
      * Creates a new supplier service locator.
      *
      * @return a new supplier service locator
@@ -165,8 +193,6 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
      * @param future the value that will be updated when an order is received
      */
     private void registerOrderService(final FutureValue<OrderType> future) {
-        applicationContext.getBean("orderService"); // force registation of the order service
-
         delegatingOrderService.setOrderService(new OrderService() {
             public void submitOrder(OrderType order) {
                 future.set(order);

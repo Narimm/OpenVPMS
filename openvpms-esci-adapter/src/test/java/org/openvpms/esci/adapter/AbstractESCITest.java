@@ -24,10 +24,9 @@ import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.AbstractSupplierTest;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -40,10 +39,6 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.junit.After;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -58,50 +53,23 @@ import java.math.BigDecimal;
 public abstract class AbstractESCITest extends AbstractSupplierTest {
 
     /**
-     * Cleans up after a test.
-     */
-    @After
-    public void tearDown() {
-        SecurityContextHolder.getContext().setAuthentication(null);
-    }
-
-    /**
-     * Creates a new <em>user.esci</em>, linked to a supplier.
-     *
-     * @param supplier the supplier
-     * @return a new user
-     */
-    protected User createESCIUser(Party supplier) {
-        User user = createESCIUser();
-        EntityBean userBean = new EntityBean(user);
-        userBean.addNodeRelationship("supplier", supplier);
-        save(user, supplier);
-        return user;
-    }
-
-    /**
-     * Creates a new <em>user.esci</em>.
-     *
-     * @return a new user
-     */
-    protected User createESCIUser() {
-        User user = (User) create(UserArchetypes.ESCI_USER);
-        EntityBean userBean = new EntityBean(user);
-        userBean.setValue("username", "z" + System.currentTimeMillis());
-        userBean.setValue("name", "foo");
-        userBean.setValue("password", "bar");
-        save(user);
-        return user;
-    }
-
-    /**
      * Helper to create a POSTED order with a single item.
      *
      * @return a new order
      */
     protected FinancialAct createOrder() {
+        return createOrder(getSupplier());
+    }
+
+    /**
+     * Helper to create a POSTED order with a single item.
+     *
+     * @param supplier the supplier
+     * @return a new order
+     */
+    protected FinancialAct createOrder(Party supplier) {
         FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
-        FinancialAct order = createOrder(orderItem);
+        FinancialAct order = createOrder(supplier, orderItem);
         order.setStatus(ActStatus.POSTED);
         save(order, orderItem);
         return order;
@@ -116,7 +84,7 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
     protected SupplierPartyType createSupplier(Party supplier) {
         SupplierPartyType supplierType = new SupplierPartyType();
         CustomerAssignedAccountIDType supplierId = UBLHelper.initID(new CustomerAssignedAccountIDType(),
-                                                                    supplier.getId());
+                supplier.getId());
         supplierType.setCustomerAssignedAccountID(supplierId);
         return supplierType;
     }
@@ -126,11 +94,15 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
      *
      * @param resourcePath the path to the WSDL resource
      * @return the URL of the WSDL resource
-     * @throws java.io.IOException if the URL is invalid
+     * @throws RuntimeException if the URL is invalid
      */
-    protected String getWSDL(String resourcePath) throws IOException {
+    protected String getWSDL(String resourcePath) {
         ClassPathResource wsdl = new ClassPathResource(resourcePath);
-        return wsdl.getURL().toString();
+        try {
+            return wsdl.getURL().toString();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
     /**
@@ -165,18 +137,8 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
         EntityRelationship relationship =
                 bean.addRelationship(SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI, location);
         IMObjectBean relBean = new IMObjectBean(relationship);
-        relBean.setValue("orderServiceURL", url);
+        relBean.setValue("serviceURL", url);
         save(supplier, location);
-    }
-
-    /**
-     * Initialises the Spring Security context.
-     *
-     * @param user the user
-     */
-    protected void initSecurityContext(User user) {
-        Authentication token = new TestingAuthenticationToken(user.getUsername(), user.getPassword());
-        SecurityContextHolder.getContext().setAuthentication(token);
     }
 
     /**

@@ -15,7 +15,7 @@
  *
  *  $Id$
  */
-package org.openvpms.esci.adapter.service;
+package org.openvpms.esci.adapter.dispatcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,12 +31,12 @@ import javax.annotation.Resource;
 
 
 /**
- * Base class for service adapters listeners that create an <em>act.systemMessage</em> for the events they receive.
+ * Base class for listeners that create an <em>act.systemMessage</em> for the events they receive.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class SystemMessageServiceAdapterListener {
+public abstract class AbstractSystemMessageFactory {
 
     /**
      * The bean factory.
@@ -46,7 +46,7 @@ public abstract class SystemMessageServiceAdapterListener {
     /**
      * The logger.
      */
-    private Log log = LogFactory.getLog(SystemMessageServiceAdapterListener.class);
+    private Log log = LogFactory.getLog(AbstractSystemMessageFactory.class);
 
 
     /**

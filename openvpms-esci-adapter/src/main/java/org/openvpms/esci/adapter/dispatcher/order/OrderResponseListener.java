@@ -15,24 +15,24 @@
  *
  *  $Id$
  */
-package org.openvpms.esci.adapter.service;
+package org.openvpms.esci.adapter.dispatcher.order;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 
 
 /**
- * A listener for invoices received by the {@link org.openvpms.esci.adapter.service.InvoiceServiceAdapter}.
+ * A listener for order responses received by the {@link OrderResponseProcessor}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface InvoiceListener {
+public interface OrderResponseListener {
 
     /**
-     * Invoked when an invoice has been received and mapped to a delivery.
+     * Invoked after a response is received for an order.
      *
-     * @param delivery the delivery
+     * @param order the order
      */
-    void receivedInvoice(Act delivery);
+    void receivedResponse(FinancialAct order);
 
 }

@@ -17,10 +17,13 @@
  */
 package org.openvpms.esci.adapter.i18n;
 
+import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.ubl.io.UBLDocumentContext;
+import org.openvpms.ubl.io.UBLDocumentWriter;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 
 
@@ -194,14 +197,15 @@ public class ESCIAdapterMessages {
     }
 
     /**
-     * Creates a new message for when a user has no relationship to a supplier.
+     * Creates a new message for when a supplier doesn't match that expected.
      *
-     * @param user     the ESCI user
-     * @param supplier the supplier
+     * @param expectedSupplier the expected supplier
+     * @param actualSupplier   the actual supplier
      * @return a new message
      */
-    public static Message userNotLinkedToSupplier(User user, Party supplier) {
-        return messages.getMessage(109, user.getId(), user.getName(), supplier.getId(), supplier.getName());
+    public static Message supplierMismatch(Party expectedSupplier, Party actualSupplier) {
+        return messages.getMessage(109, expectedSupplier.getId(), expectedSupplier.getName(), actualSupplier.getId(),
+                                   actualSupplier.getName());
     }
 
     /**
@@ -217,15 +221,6 @@ public class ESCIAdapterMessages {
     public static Message invalidTaxSchemeAndCategory(String path, String parent, String id, String schemeId,
                                                       String categoryId) {
         return messages.getMessage(110, path, parent, id, schemeId, categoryId);
-    }
-
-    /**
-     * Creates a new message for when no ESCI user can be determined from the current context.
-     *
-     * @return a new message
-     */
-    public static Message noESCIUser() {
-        return messages.getMessage(200);
     }
 
     /**
@@ -279,12 +274,12 @@ public class ESCIAdapterMessages {
     }
 
     /**
-     * Creates a new message for when an order response cannot be submitted to OpenVPMS.
+     * Creates a new message for when an order response cannot be processed.
      *
      * @param reason the reason
      * @return a new message
      */
-    public static Message failedToSubmitOrderResponse(String reason) {
+    public static Message failedToProcessOrderResponse(String reason) {
         return messages.getMessage(500, reason);
     }
 
@@ -420,13 +415,35 @@ public class ESCIAdapterMessages {
     }
 
     /**
-     * Creates a new message for when an invoice cannot be submitted to OpenVPMS.
+     * Creates a new message for when an invoice cannot be processed.
      *
      * @param reason the reason
      * @return a new message
      */
-    public static Message failedToSubmitInvoice(String reason) {
+    public static Message failedToProcessInvoice(String reason) {
         return messages.getMessage(700, reason);
+    }
+
+    /**
+     * Invoked when a document is received that is unsupported.
+     *
+     * @param reference the document reference
+     * @return a new message
+     */
+    public static Message unsupportedDocument(DocumentReferenceType reference) {
+        String content = reference.getID().getValue();
+        try {
+            UBLDocumentContext context = new UBLDocumentContext();
+            UBLDocumentWriter writer = context.createWriter();
+            writer.setFormat(true);
+            writer.setFragment(true);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            writer.write(reference, stream);
+            content = stream.toString();
+        } catch (Throwable exception) {
+            // ignore
+        }
+        return messages.getMessage(800, content, reference.getDocumentType().getValue());
     }
 
 }

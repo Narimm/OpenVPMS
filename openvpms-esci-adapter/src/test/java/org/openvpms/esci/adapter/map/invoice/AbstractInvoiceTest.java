@@ -101,7 +101,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
             throw new IllegalStateException(error);
         }
 
-        Lookup taxType = TestHelper.getLookup("lookup.taxType", "GST");
+        Lookup taxType = TestHelper.getLookup("lookup.taxType", "GST", false);
         IMObjectBean taxBean = new IMObjectBean(taxType);
         taxBean.setValue("taxScheme", "GST");
         taxBean.setValue("taxCategory", "S");
@@ -136,7 +136,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         CustomerPartyType customerType = createCustomer();
         Product product = TestHelper.createProduct();
         MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(100), BigDecimal.ZERO,
-                                                              new BigDecimal(100), new BigDecimal(110));
+                new BigDecimal(100), new BigDecimal(110));
 
         invoice.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
         invoice.setID(UBLHelper.createID(12345));
@@ -148,8 +148,8 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         invoice.setLegalMonetaryTotal(monetaryTotal);
         invoice.getTaxTotal().add(createTaxTotal(new BigDecimal(10), false));
         InvoiceLineType item1 = createInvoiceLine("1", product, "aproduct1", "aproduct name", new BigDecimal(105),
-                                                  new BigDecimal(100), BigDecimal.ONE, new BigDecimal(100),
-                                                  new BigDecimal(10));
+                new BigDecimal(100), BigDecimal.ONE, new BigDecimal(100),
+                new BigDecimal(10));
         invoice.getInvoiceLine().add(item1);
         return invoice;
     }
@@ -317,7 +317,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
     protected CustomerPartyType createCustomer() {
         CustomerPartyType customerType = new CustomerPartyType();
         CustomerAssignedAccountIDType customerId = UBLHelper.initID(new CustomerAssignedAccountIDType(),
-                                                                    getStockLocation().getId());
+                getStockLocation().getId());
         customerType.setCustomerAssignedAccountID(customerId);
         return customerType;
     }

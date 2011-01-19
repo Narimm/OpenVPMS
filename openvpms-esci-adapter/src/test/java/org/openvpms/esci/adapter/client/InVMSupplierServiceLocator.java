@@ -19,15 +19,12 @@ package org.openvpms.esci.adapter.client;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.OrderService;
-import org.openvpms.esci.service.client.ServiceLocator;
-import org.openvpms.esci.service.client.ServiceLocatorFactory;
-
-import java.net.MalformedURLException;
 
 
 /**
- * Helper to look up an OrderService in the current VM..
+ * Helper to look up an OrderService in the current VM.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -35,24 +32,35 @@ import java.net.MalformedURLException;
 public class InVMSupplierServiceLocator extends SupplierWebServiceLocator {
 
     /**
-     * Returns a proxy for a supplier's {@link org.openvpms.esci.service.OrderService}.
+     * Returns a proxy for a supplier's {@link OrderService}.
+     * <p/>
+     * This uses the <em>entityRelationship.supplierStockLocationESCI</em> associated with the supplier and stock
+     * location to lookup the web service.
      *
-     * @param supplier   the supplier
-     * @param serviceURL the order service WSDL URL
-     * @param username   the user name to connect with
-     * @param password   the password to connect with
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
-     * @throws org.openvpms.esci.adapter.util.ESCIAdapterException
-     *                                        if the associated <tt>orderServiceURL</tt> is invalid
-     * @throws java.net.MalformedURLException if <tt>serviceURL</tt> is invalid
+     * @throws ESCIAdapterException if the associated <tt>orderServiceURL</tt> is invalid, or the supplier-stock
+     *                              location relationship is not supported
      */
     @Override
-    protected OrderService getOrderService(Party supplier, String serviceURL, String username, String password)
-            throws MalformedURLException {
-        ServiceLocatorFactory factory = getServiceLocatorFactory();
-        ServiceLocator<OrderService> locator = factory.getServiceLocator(OrderService.class, serviceURL,
-                                                                         "in-vm://orderService", username,
-                                                                         password);
-        return locator.getService();
+    public OrderService getOrderService(Party supplier, Party stockLocation) {
+        SupplierServices services = new SupplierServices(supplier, stockLocation);
+        return services.getOrderService("in-vm://orderService", "in-vm://registryService");
+    }
+
+    /**
+     * Returns a proxy for a supplier's {@link OrderService}.
+     *
+     * @param serviceURL the WSDL document URL of the service
+     * @param username   the username to connect to the service with
+     * @param password   the password to connect  to the service with
+     * @return a proxy for the service provided by the supplier
+     * @throws ESCIAdapterException if <tt>serviceURL</tt> is invalid
+     */
+    @Override
+    public OrderService getOrderService(String serviceURL, String username, String password) {
+        SupplierServices services = new SupplierServices(serviceURL, username, password);
+        return services.getOrderService("in-vm://orderService", "in-vm://registryService");
     }
 }

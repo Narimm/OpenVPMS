@@ -17,8 +17,10 @@
  */
 package org.openvpms.esci.adapter.map.invoice;
 
-import static org.junit.Assert.*;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.oasis.ubl.InvoiceType;
 import org.oasis.ubl.common.CurrencyCodeContentType;
@@ -47,7 +49,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.esci.adapter.map.UBLHelper;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.ubl.io.UBLDocumentContext;
 import org.openvpms.ubl.io.UBLDocumentReader;
 import org.openvpms.ubl.io.UBLDocumentWriter;
@@ -68,23 +70,6 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class InvoiceMapperTestCase extends AbstractInvoiceTest {
-
-    /**
-     * The esci user.
-     */
-    private User user;
-
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        super.setUp();
-
-        // create a new ESCI user, and add a relationship to the supplier
-        user = createESCIUser(getSupplier());
-    }
 
     /**
      * Tests simple mapping.
@@ -150,7 +135,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         invoice = serialize(invoice);
         InvoiceMapper mapper = createMapper();
-        Delivery mapped = mapper.map(invoice, user);
+        Delivery mapped = mapper.map(invoice, getSupplier());
         List<FinancialAct> acts = mapped.getActs();
         assertEquals(4, acts.size());
         getArchetypeService().save(acts);
@@ -187,7 +172,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         line.getOrderLineReference().add(itemRef);
 
         // map the invoice to a delivery
-        Delivery delivery = mapper.map(invoice, user);
+        Delivery delivery = mapper.map(invoice, getSupplier());
         assertEquals(order, delivery.getOrder());
         save(delivery.getActs());
         assertEquals(1, delivery.getDeliveryItems().size());
@@ -208,7 +193,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         // create an invoice that doesn't reference an order.
         // No author should appear on the resulting delivery
         InvoiceType invoice1 = createInvoice();
-        Delivery delivery1 = mapper.map(invoice1, user);
+        Delivery delivery1 = mapper.map(invoice1, getSupplier());
         ActBean bean1 = new ActBean(delivery1.getDelivery());
         assertNull(bean1.getNodeParticipant("author"));
 
@@ -220,7 +205,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         locBean.save();
 
         InvoiceType invoice2 = createInvoice();
-        Delivery delivery2 = mapper.map(invoice2, user);
+        Delivery delivery2 = mapper.map(invoice2, getSupplier());
         ActBean deliveryBean2 = new ActBean(delivery2.getDelivery());
         assertEquals(defaultAuthor, deliveryBean2.getNodeParticipant("author"));
 
@@ -234,7 +219,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         InvoiceType invoice3 = createInvoice();
         invoice3.setOrderReference(UBLHelper.createOrderReference(order3.getId()));
-        Delivery delivery3 = mapper.map(invoice3, user);
+        Delivery delivery3 = mapper.map(invoice3, getSupplier());
         ActBean deliveryBean3 = new ActBean(delivery3.getDelivery());
         assertEquals(author, deliveryBean3.getNodeParticipant("author"));
 
@@ -243,13 +228,13 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         FinancialAct order4 = createOrder();
         InvoiceType invoice4 = createInvoice();
         invoice4.setOrderReference(UBLHelper.createOrderReference(order4.getId()));
-        Delivery delivery4 = mapper.map(invoice4, user);
+        Delivery delivery4 = mapper.map(invoice4, getSupplier());
         ActBean deliveryBean4 = new ActBean(delivery4.getDelivery());
         assertEquals(defaultAuthor, deliveryBean4.getNodeParticipant("author"));
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if a required element is missing.
+     * Verifies that an {@link ESCIAdapterException} is raised if a required element is missing.
      */
     @Test
     public void testRequiredElementMissing() {
@@ -260,7 +245,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if a collection has a different no. of elements to that
+     * Verifies that an {@link ESCIAdapterException} is raised if a collection has a different no. of elements to that
      * expected.
      */
     @Test
@@ -272,7 +257,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an ID element contains an invalid identifier
+     * Verifies that an {@link ESCIAdapterException} is raised if an ID element contains an invalid identifier
      * (i.e one that is non-numeric).
      */
     @Test
@@ -293,7 +278,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the UBL version doesn't match that expected.
+     * Verifies that an {@link ESCIAdapterException} is raised if the UBL version doesn't match that expected.
      */
     @Test
     public void testInvalidUBLVersion() {
@@ -303,7 +288,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an amount is invalid.
+     * Verifies that an {@link ESCIAdapterException} is raised if an amount is invalid.
      */
     @Test
     public void testInvalidAmount() {
@@ -314,7 +299,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an amount's currency doesn't match the practice currency.
+     * Verifies that an {@link ESCIAdapterException} is raised if an amount's currency doesn't match the practice currency.
      */
     @Test
     public void testInvalidCurrency() {
@@ -326,7 +311,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an amount is invalid.
+     * Verifies that an {@link ESCIAdapterException} is raised if an amount is invalid.
      */
     @Test
     public void testInvalidQuantity() {
@@ -337,7 +322,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the
+     * Verifies that an {@link ESCIAdapterException} is raised if the
      * <em>Invoice/AccountingSupplierParty/CustomerAssignedAccountID</em> doesn't correspond to a valid supplier.
      */
     @Test
@@ -349,7 +334,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised a tax scheme is unrecognised.
+     * Verifies that an {@link ESCIAdapterException} is raised a tax scheme is unrecognised.
      */
     @Test
     public void testInvalidTaxScheme() {
@@ -367,7 +352,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the Invoice/AccountingCustomerParty/CustomerAssignedAccountID
+     * Verifies that an {@link ESCIAdapterException} is raised if the Invoice/AccountingCustomerParty/CustomerAssignedAccountID
      * doesn't correspond to a valid stock location.
      */
     @Test
@@ -379,7 +364,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if neither the BuyersItemIdentification nor
+     * Verifies that an {@link ESCIAdapterException} is raised if neither the BuyersItemIdentification nor
      * SellersItemIdentification are provided.
      */
     @Test
@@ -393,7 +378,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the payable amount is incorrect.
+     * Verifies that an {@link ESCIAdapterException} is raised if the payable amount is incorrect.
      */
     @Test
     public void testInvalidPayableAmount() {
@@ -404,7 +389,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the line extension amounts are inconsistent.
+     * Verifies that an {@link ESCIAdapterException} is raised if the line extension amounts are inconsistent.
      */
     @Test
     public void testInvalidLineExtensionAmount() {
@@ -415,7 +400,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the tax totals are inconsistent.
+     * Verifies that an {@link ESCIAdapterException} is raised if the tax totals are inconsistent.
      */
     @Test
     public void testInvalidTax() {
@@ -427,7 +412,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies than an {@link ESCIException} is raised if a line extension amount for an InvoiceLine doesn't match
+     * Verifies than an {@link ESCIAdapterException} is raised if a line extension amount for an InvoiceLine doesn't match
      * that expected.
      */
     @Test
@@ -440,25 +425,25 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an invoice references an order which was not sent to the
+     * Verifies that an {@link ESCIAdapterException} is raised if an invoice references an order which was not sent to the
      * supplier.
      */
     @Test
     public void testInvalidOrder() {
         Party anotherSupplier = TestHelper.createSupplier();
-        User user = createESCIUser(anotherSupplier);
 
         // create an order with a single item
-        Act order = createOrder();
+        Act order = createOrder(anotherSupplier);
 
-        InvoiceType invoice = createInvoice(anotherSupplier);
+        InvoiceType invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
-        checkMappingException(invoice, user, "ESCIA-0108: Invalid Order: " + order.getId()
-                                             + " referenced by Invoice: 12345");
+        checkMappingException(invoice, getSupplier(), "ESCIA-0108: Invalid Order: " + order.getId()
+                                                      + " referenced by Invoice: 12345");
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an invoice references an order item which doesn't exist.
+     * Verifies that an {@link ESCIAdapterException} is raised if an invoice references an order item which doesn't
+     * exist.
      */
     @Test
     public void testInvalidOrderItem() {
@@ -468,13 +453,13 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         InvoiceType invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
         OrderLineReferenceType lineRef = new OrderLineReferenceType();
-        lineRef.setLineID(UBLHelper.initID(new LineIDType(), "114"));
+        lineRef.setLineID(UBLHelper.initID(new LineIDType(), "0"));
         invoice.getInvoiceLine().get(0).getOrderLineReference().add(lineRef);
-        checkMappingException(invoice, "ESCIA-0606: Invalid OrderLine: 114 referenced by InvoiceLine: 1");
+        checkMappingException(invoice, "ESCIA-0606: Invalid OrderLine: 0 referenced by InvoiceLine: 1");
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an order item is referenced by an InvoiceLine, but there
+     * Verifies that an {@link ESCIAdapterException} is raised if an order item is referenced by an InvoiceLine, but there
      * is no document level OrderReference.
      */
     @Test
@@ -488,18 +473,21 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the ESCI user has no relationship to the supplier.
+     * Verifies that an {@link ESCIAdapterException} is raised if the supplier in the invoice is different to that
+     * submitting the invoice.
      */
     @Test
-    public void testNoUserSupplierRelationship() {
+    public void testSupplierMismatch() {
         Party anotherSupplier = TestHelper.createSupplier();
         InvoiceType invoice = createInvoice(anotherSupplier);
-        checkMappingException(invoice, "ESCIA-0109: User Foo (" + user.getId() + ") has no relationship to supplier "
-                                       + anotherSupplier.getName() + " (" + anotherSupplier.getId() + ")");
+        Party expected = getSupplier();
+        checkMappingException(invoice, "ESCIA-0109: Expected supplier " + expected.getName() + " (" + expected.getId()
+                                       + ") but got supplier " + anotherSupplier.getName() + " ("
+                                       + anotherSupplier.getId() + ")");
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an alternative condition price is supplied but doesn't
+     * Verifies that an {@link ESCIAdapterException} is raised if an alternative condition price is supplied but doesn't
      * specify a wholesale PriceTypeCode.
      */
     @Test
@@ -514,7 +502,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if an AllowanceCharge has a ChargeIndicator set false
+     * Verifies that an {@link ESCIAdapterException} is raised if an AllowanceCharge has a ChargeIndicator set false
      * (i.e is an allowance).
      */
     @Test
@@ -530,7 +518,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the charge total amount doesn't match the calculated
+     * Verifies that an {@link ESCIAdapterException} is raised if the charge total amount doesn't match the calculated
      * charge total.
      */
     @Test
@@ -542,7 +530,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if a invoice is raised for an order that already is associated
+     * Verifies that an {@link ESCIAdapterException} is raised if a invoice is raised for an order that already is associated
      * with a delivery.
      */
     @Test
@@ -558,14 +546,14 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         InvoiceType invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
 
-        Delivery delivery1 = mapper.map(invoice, user);
+        Delivery delivery1 = mapper.map(invoice, getSupplier());
         save(delivery1.getActs());
 
         checkMappingException(invoice, "ESCIA-0609: Duplicate Invoice 12345 received for Order " + order.getId());
     }
 
     /**
-     * Verifies that an {@link ESCIException} is raised if the tax exclusive amount is inconsistent with that
+     * Verifies that an {@link ESCIAdapterException} is raised if the tax exclusive amount is inconsistent with that
      * of the item tax ex amounts.
      */
     @Test
@@ -602,22 +590,22 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      * @param expectedMessage the expected error message
      */
     private void checkMappingException(InvoiceType invoice, String expectedMessage) {
-        checkMappingException(invoice, user, expectedMessage);
+        checkMappingException(invoice, getSupplier(), expectedMessage);
     }
 
     /**
      * Maps an invalid invoice and verifies the expected exception is thrown.
      *
      * @param invoice         the invoice to map
-     * @param user            the user
+     * @param supplier        the supplier submitting the invoice
      * @param expectedMessage the expected error message
      */
-    private void checkMappingException(InvoiceType invoice, User user, String expectedMessage) {
+    private void checkMappingException(InvoiceType invoice, Party supplier, String expectedMessage) {
         InvoiceMapper mapper = createMapper();
         try {
-            mapper.map(invoice, user);
+            mapper.map(invoice, supplier);
             fail("Expected mapping to fail");
-        } catch (ESCIException expected) {
+        } catch (ESCIAdapterException expected) {
             assertEquals(expectedMessage, expected.getMessage());
         }
     }
