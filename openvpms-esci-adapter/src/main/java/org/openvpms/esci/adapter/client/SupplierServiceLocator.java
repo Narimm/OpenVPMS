@@ -18,6 +18,7 @@
 package org.openvpms.esci.adapter.client;
 
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.esci.service.InboxService;
 import org.openvpms.esci.service.OrderService;
 
 
@@ -56,15 +57,14 @@ public interface SupplierServiceLocator {
     OrderService getOrderService(String serviceURL, String username, String password);
 
     /**
-     * Returns a proxy for a supplier's {@link OrderService}.
+     * Returns a proxy for the supplier's {@link InboxService}.
+     * <p/>
+     * This uses the <em>entityRelationship.supplierStockLocationESCI</em> associated with the supplier and stock
+     * location to lookup the web service.
      *
-     * @param serviceURL      the WSDL document URL of the service
-     * @param endpointAddress the endpoint address
-     * @param username        the username to connect to the service with
-     * @param password        the password to connect  to the service with
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
-     * @throws org.openvpms.esci.adapter.util.ESCIAdapterException
-     *          if <tt>serviceURL</tt> is invalid
      */
-    OrderService getOrderService(String serviceURL, String endpointAddress, String username, String password);
+    InboxService getInboxService(Party supplier, Party stockLocation);
 }

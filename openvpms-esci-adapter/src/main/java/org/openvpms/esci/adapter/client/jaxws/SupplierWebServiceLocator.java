@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.service.InboxService;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.ServiceLocator;
@@ -99,31 +100,12 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
      * @param supplier      the supplier
      * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
-     * @throws org.openvpms.esci.adapter.util.ESCIAdapterException
-     *          if the associated <tt>orderServiceURL</tt> is invalid, or the supplier-stock
-     *          location relationship is not supported
+     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid, or the supplier-stock
+     *                              location relationship is not supported
      */
     public OrderService getOrderService(Party supplier, Party stockLocation) {
-        EntityRelationship config = rules.getSupplierStockLocation(supplier, stockLocation);
-        if (!TypeHelper.isA(config, SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI)) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.ESCINotConfigured(supplier, stockLocation));
-        }
-
-        IMObjectBean bean = factory.createBean(config);
-        String username = bean.getString("username");
-        String password = bean.getString("password");
-
-        String serviceURL = bean.getString("serviceURL");
-        if (StringUtils.isEmpty(serviceURL)) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL));
-        }
-        OrderService service;
-        try {
-            service = getOrderService(supplier, serviceURL, username, password);
-        } catch (MalformedURLException exception) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL), exception);
-        }
-        return service;
+        SupplierServices services = new SupplierServices(supplier, stockLocation);
+        return services.getOrderService();
     }
 
     /**
@@ -136,48 +118,25 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
      * @throws ESCIAdapterException if <tt>serviceURL</tt> is invalid
      */
     public OrderService getOrderService(String serviceURL, String username, String password) {
-        return getOrderService(serviceURL, null, username, password);
+        SupplierServices services = new SupplierServices(serviceURL, username, password);
+        return services.getOrderService();
     }
 
     /**
-     * Returns a proxy for a supplier's {@link org.openvpms.esci.service.OrderService}.
+     * Returns a proxy for the supplier's {@link InboxService}.
+     * <p/>
+     * This uses the <em>entityRelationship.supplierStockLocationESCI</em> associated with the supplier and stock
+     * location to lookup the web service.
      *
-     * @param serviceURL      the WSDL document URL of the registry service
-     * @param endpointAddress the endpoint address. May be <tt>null</tt>
-     * @param username        the user name to connect with. May be <tt>null</tt>
-     * @param password        the password to connect with. May be <tt>null</tt>
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
-     * @throws org.openvpms.esci.adapter.util.ESCIAdapterException
-     *          if <tt>serviceURL</tt> is invalid
+     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid, or the supplier-stock
+     *                              location relationship is not supported
      */
-    public OrderService getOrderService(String serviceURL, String endpointAddress, String username, String password) {
-        try {
-            RegistryService registry = getRegistryService(serviceURL, username, password);
-            ServiceLocator<OrderService> locator = locatorFactory.getServiceLocator(OrderService.class, 
-                    registry.getOrderService(), endpointAddress, username, password);
-            return locator.getService();
-        } catch (MalformedURLException exception) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
-        }
-    }
-
-    /**
-     * Returns a proxy for a supplier's {@link OrderService}.
-     *
-     * @param supplier   the supplier
-     * @param serviceURL the order service WSDL URL
-     * @param username   the user name to connect with
-     * @param password   the password to connect with
-     * @return a proxy for the service provided by the supplier
-     * @throws ESCIAdapterException  if the associated <tt>orderServiceURL</tt> is invalid
-     * @throws MalformedURLException if <tt>serviceURL</tt> is invalid
-     */
-    protected OrderService getOrderService(Party supplier, String serviceURL, String username, String password)
-            throws MalformedURLException {
-        RegistryService registry = getRegistryService(serviceURL, username, password);
-        ServiceLocator<OrderService> locator
-                = locatorFactory.getServiceLocator(OrderService.class, registry.getOrderService(), username, password);
-        return locator.getService();
+    public InboxService getInboxService(Party supplier, Party stockLocation) {
+        SupplierServices services = new SupplierServices(supplier, stockLocation);
+        return services.getInboxService();
     }
 
     /**
@@ -189,11 +148,167 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
         return locatorFactory;
     }
 
-    protected RegistryService getRegistryService(String url, String username, String password)
-            throws MalformedURLException {
-        ServiceLocator<RegistryService> locator
-                = locatorFactory.getServiceLocator(RegistryService.class, url, username, password);
-        return locator.getService();
+    /**
+     * Helper class to access supplier services.
+     */
+    protected class SupplierServices {
+
+        /**
+         * |
+         * The supplier.
+         */
+        private final Party supplier;
+
+        /**
+         * The registry service URL.
+         */
+        private final String serviceURL;
+
+        /**
+         * The user to connect as.
+         */
+        private final String username;
+
+        /**
+         * The user's password.
+         */
+        private final String password;
+
+
+        /**
+         * Constructs a <tt>SupplierServices</tt> from an <em>entityRelationship.supplierStockLocationESCI</em>
+         * associated with the supplier and stock location.
+         *
+         * @param supplier      the supplier services
+         * @param stockLocation the stock location
+         * @throws ESCIAdapterException if there is no relationship or the URL is invalid
+         */
+        public SupplierServices(Party supplier, Party stockLocation) {
+            this.supplier = supplier;
+            EntityRelationship config = rules.getSupplierStockLocation(supplier, stockLocation);
+            if (!TypeHelper.isA(config, SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI)) {
+                throw new ESCIAdapterException(ESCIAdapterMessages.ESCINotConfigured(supplier, stockLocation));
+            }
+
+            IMObjectBean bean = factory.createBean(config);
+            username = bean.getString("username");
+            password = bean.getString("password");
+
+            serviceURL = bean.getString("serviceURL");
+            if (StringUtils.isEmpty(serviceURL)) {
+                throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL));
+            }
+        }
+
+        /**
+         * Constructs a <tt>SupplierServices</tt>.
+         *
+         * @param serviceURL the registry service URL.
+         * @param username   the user name to connect as
+         * @param password   the user's password
+         */
+        public SupplierServices(String serviceURL, String username, String password) {
+            this.supplier = null;
+            this.serviceURL = serviceURL;
+            this.username = username;
+            this.password = password;
+        }
+
+        /**
+         * Returns the registry service proxy.
+         *
+         * @return the registry service proxy
+         */
+        public RegistryService getRegistryService() {
+            return getRegistryService(null);
+        }
+
+        /**
+         * Returns the registry service proxy.
+         *
+         * @param endpointAddress the endpoint address. May be <tt>null</tt>
+         * @return the registry service proxy
+         * @throws ESCIAdapterException for any error
+         */
+        public RegistryService getRegistryService(String endpointAddress) {
+            ServiceLocator<RegistryService> locator;
+            try {
+                locator = locatorFactory.getServiceLocator(
+                        RegistryService.class, serviceURL, endpointAddress, username, password);
+            } catch (MalformedURLException exception) {
+                if (supplier != null) {
+                    throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL),
+                                                   exception);
+                } else {
+                    throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
+                }
+            }
+            return locator.getService();
+        }
+
+        /**
+         * Returns the order service proxy.
+         *
+         * @return the order service proxy
+         */
+        public OrderService getOrderService() {
+            return getOrderService(null, null);
+        }
+
+        /**
+         * Returns the order service proxy.
+         *
+         * @param orderEndpointAddress    the order endpoint address. May be <tt>null</tt>
+         * @param registryEndpointAddress the registry endpoint address. May be <tt>null</tt>
+         * @return the order service proxy
+         * @throws ESCIAdapterException for any error
+         */
+        public OrderService getOrderService(String orderEndpointAddress, String registryEndpointAddress) {
+            RegistryService registry = getRegistryService(registryEndpointAddress);
+            return getService(OrderService.class, registry.getOrderService(), orderEndpointAddress);
+        }
+
+        /**
+         * Returns the inbox service proxy.
+         *
+         * @return the inbox service proxy
+         * @throws ESCIAdapterException for any error
+         */
+        public InboxService getInboxService() {
+            return getInboxService(null);
+        }
+
+        /**
+         * Returns the inbox service proxy.
+         *
+         * @param endpointAddress the inbox service endpoint address. May be <tt>null</tt>
+         * @return the inbox service proxy
+         * @throws ESCIAdapterException for any error
+         */
+        public InboxService getInboxService(String endpointAddress) {
+            RegistryService registry = getRegistryService();
+            return getService(InboxService.class, registry.getInboxService(), endpointAddress);
+        }
+
+        /**
+         * Reutrns a service proxy.
+         *
+         * @param clazz the proxy class
+         * @param url the service URL
+         * @param endpointAddress the endpoint address. May be <tt>null</tt>
+         * @return the service proxy
+         * @throws ESCIAdapterException for any error
+         */
+        private <T> T getService(Class<T> clazz, String url, String endpointAddress) {
+            ServiceLocator<T> locator;
+            try {
+                locator = locatorFactory.getServiceLocator(clazz, url, endpointAddress, username, password);
+            } catch (MalformedURLException exception) {
+                throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
+            }
+            return locator.getService();
+        }
+
     }
 
 }
