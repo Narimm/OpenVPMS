@@ -20,7 +20,7 @@ package org.openvpms.esci.adapter.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.InvoiceType;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
@@ -28,12 +28,14 @@ import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.invoice.Delivery;
 import org.openvpms.esci.adapter.map.invoice.InvoiceMapper;
 import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.service.InvoiceService;
 
 import javax.annotation.Resource;
 
 
 /**
- * Maps invoices to <em>act.supplierDelivery</em> acts using {@link InvoiceMapper}.
+ * Implementation of the {@link InvoiceService} that maps invoices to <em>act.supplierDelivery</em> acts using
+ * {@link InvoiceMapper}.
  * <p/>
  * UBL invoices are mapped to deliveries rather than <em>act.supplierAccountChargesInvoice</em> to reflect the fact
  * that practices may not use suplier invoices. An invoice can be created from the delivery if required.
@@ -41,7 +43,7 @@ import javax.annotation.Resource;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class InvoiceServiceAdapter extends AbstractUBLServiceAdapter {
+public class InvoiceServiceAdapter extends AbstractUBLServiceAdapter implements InvoiceService {
 
     /**
      * The archetype service.
@@ -119,7 +121,7 @@ public class InvoiceServiceAdapter extends AbstractUBLServiceAdapter {
      *
      * @param delivery the delivery that the invoice was mapped to
      */
-    private void notifyListener(FinancialAct delivery) {
+    private void notifyListener(Act delivery) {
         InvoiceListener l = listener;
         if (l != null) {
             try {
