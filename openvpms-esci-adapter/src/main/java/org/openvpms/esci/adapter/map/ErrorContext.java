@@ -17,7 +17,7 @@
  */
 package org.openvpms.esci.adapter.map;
 
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 
 /**
@@ -70,7 +70,7 @@ public class ErrorContext {
         this.type = root.getType();
         try {
             id = root.getID();
-        } catch (ESCIException ignore) {
+        } catch (ESCIAdapterException ignore) {
             // id is invalid, so can't report it
         }
     }

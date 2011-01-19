@@ -21,7 +21,6 @@ import org.oasis.ubl.OrderResponseSimpleType;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
@@ -58,14 +57,13 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
      * Maps an <tt>OrderResponseSimpleType</tt> to its corresponding order.
      *
      * @param response the reponse
-     * @param user     the ESCI user that submitted the reponse
+     * @param supplier the supplier that submitted the response
      * @return the corresponding order
      */
-    public FinancialAct map(OrderResponseSimpleType response, User user) {
+    public FinancialAct map(OrderResponseSimpleType response, Party supplier) {
         UBLOrderResponseSimple wrapper = new UBLOrderResponseSimple(response, getArchetypeService());
         checkUBLVersion(wrapper);
-        Party supplier = wrapper.getSupplier();
-        checkSupplier(supplier, user, factory);
+        checkSupplier(supplier, wrapper.getSupplier());
         FinancialAct order = wrapper.getOrder();
         checkOrder(order, supplier, wrapper);
 

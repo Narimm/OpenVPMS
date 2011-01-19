@@ -35,12 +35,12 @@ import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
-import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.UBLDocument;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
@@ -105,7 +105,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the invoice identifier.
      *
      * @return the invoice identifier
-     * @throws ESCIException if the identifier isn't set
+     * @throws ESCIAdapterException if the identifier isn't set
      */
     public String getID() {
         return getId(invoice.getID(), "ID");
@@ -126,8 +126,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the UBL version.
      *
      * @return the UBL version
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the identifier isn't set
+     * @throws ESCIAdapterException if the identifier isn't set
      */
     public String getUBLVersionID() {
         return getId(invoice.getUBLVersionID(), "UBLVersionID");
@@ -137,8 +136,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the invoice issue date/time.
      *
      * @return the issue date/time
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the issue date isn't set
+     * @throws ESCIAdapterException if the issue date isn't set
      */
     public Date getIssueDatetime() {
         IssueDateType issueDate = getRequired(invoice.getIssueDate(), "IssueDate");
@@ -187,10 +185,8 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the invoice supplier.
      *
      * @return the supplier
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the supplier was not found
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
+     * @throws ESCIAdapterException      if the supplier was not found
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getSupplier() {
         return getSupplier(invoice.getAccountingSupplierParty(), "AccountingSupplierParty");
@@ -200,9 +196,8 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the invoice stock location.
      *
      * @return the stock location
-     * @throws ESCIException if the stock location was not found
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *                       for any archetype service error
+     * @throws ESCIAdapterException      if the stock location was not found
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getStockLocation() {
         CustomerPartyType customerType = getRequired(invoice.getAccountingCustomerParty(), "AccountingCustomerParty");
@@ -210,9 +205,8 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
         Party location = (Party) getObject(STOCK_LOCATION, accountId,
                                            "AccountingCustomerParty/CustomerAssignedAccountID");
         if (location == null) {
-            Message message = ESCIAdapterMessages.invoiceInvalidStockLocation(
-                    "AccountingCustomerParty/CustomerAssignedAccountID", getID(), accountId.getValue());
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.invoiceInvalidStockLocation(
+                    "AccountingCustomerParty/CustomerAssignedAccountID", getID(), accountId.getValue()));
         }
         return location;
     }
@@ -221,9 +215,8 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the order associated with the invoice.
      *
      * @return the order, or <tt>null</tt> if the invoice isn't associated with an order
-     * @throws ESCIException if the order was specified, but could not be found
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *                       for any archetype service error
+     * @throws ESCIAdapterException      if the order was specified, but could not be found
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct getOrder() {
         FinancialAct result = null;
@@ -231,8 +224,8 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
         if (orderRef != null) {
             result = (FinancialAct) getObject(ORDER, orderRef.getID(), "OrderReference");
             if (result == null) {
-                Message message = ESCIAdapterMessages.invalidOrder("Invoice", getID(), orderRef.getID().getValue());
-                throw new ESCIException(message.toString());
+                throw new ESCIAdapterException(ESCIAdapterMessages.invalidOrder("Invoice", getID(),
+                                                                                orderRef.getID().getValue()));
             }
         }
         return result;
@@ -242,7 +235,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the payable amount.
      *
      * @return the payable amount
-     * @throws ESCIException if the payable amount is incorrectly specified
+     * @throws ESCIAdapterException if the payable amount is incorrectly specified
      */
     public BigDecimal getPayableAmount() {
         MonetaryTotalType monetaryTotal = getLegalMonetaryTotal();
@@ -253,7 +246,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Returns the line extension amount.
      *
      * @return the line extension amount
-     * @throws ESCIException if the payable amount is incorrectly specified
+     * @throws ESCIAdapterException if the payable amount is incorrectly specified
      */
     public BigDecimal getLineExtensionAmount() {
         MonetaryTotalType monetaryTotal = getLegalMonetaryTotal();
@@ -266,7 +259,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * This corresponds to <em>Invoice/LegalMonetaryTotal/ChargeTotalAmount</em>.
      *
      * @return the total charges, or <tt>0.0</tt> if they aren't specified
-     * @throws ESCIException if the total is incorrectly specified
+     * @throws ESCIAdapterException if the total is incorrectly specified
      */
     public BigDecimal getChargeTotal() {
         BigDecimal result = BigDecimal.ZERO;
@@ -284,7 +277,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * This corresponds to <em>Invoice/LegalMonetaryTotal/TaxExclusiveAmount</em>.
      *
      * @return the tax exclusive amount
-     * @throws ESCIException if the amount is incorrectly specified
+     * @throws ESCIAdapterException if the amount is incorrectly specified
      */
     public BigDecimal getTaxExclusiveAmount() {
         MonetaryTotalType monetaryTotal = getLegalMonetaryTotal();
@@ -297,7 +290,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * This corresponds to <em>Invoice/TaxTotal/TaxAmount</em> (i.e only one TaxTotal is supported).
      *
      * @return the total tax
-     * @throws ESCIException if the tax is incorrectly specified
+     * @throws ESCIAdapterException if the tax is incorrectly specified
      */
     public BigDecimal getTaxAmount() {
         return getTaxAmount(invoice.getTaxTotal());
@@ -335,7 +328,7 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * This corresponds to <em>Invoice/LegalMonetaryTotal</em>
      *
      * @return the legal monetary total
-     * @throws ESCIException if it is not present
+     * @throws ESCIAdapterException if it is not present
      */
     protected MonetaryTotalType getLegalMonetaryTotal() {
         return getRequired(invoice.getLegalMonetaryTotal(), "LegalMonetaryTotal");

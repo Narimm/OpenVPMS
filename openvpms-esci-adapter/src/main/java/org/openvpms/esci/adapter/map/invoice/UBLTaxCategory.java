@@ -23,7 +23,7 @@ import org.oasis.ubl.common.basic.PercentType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.adapter.map.UBLType;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 import java.math.BigDecimal;
 
@@ -66,7 +66,8 @@ public class UBLTaxCategory extends UBLFinancialType {
      * Returns the type's identifier.
      *
      * @return the identifier
-     * @throws ESCIException if the identifier is mandatory but not set, or the identifier is incorrectly specified
+     * @throws ESCIAdapterException if the identifier is mandatory but not set, or the identifier is incorrectly
+     *                              specified
      */
     public String getID() {
         return getId(category.getID());
@@ -76,7 +77,7 @@ public class UBLTaxCategory extends UBLFinancialType {
      * Returns the tax rate, expressed as a percentage.
      *
      * @return the tax rate, or <tt>0.0</tt> if none is provided
-     * @throws ESCIException if the tax rate is incorrectly specified
+     * @throws ESCIAdapterException if the tax rate is incorrectly specified
      */
     public BigDecimal getTaxRate() {
         PercentType percent = getRequired(category.getPercent(), "Percent");
@@ -87,8 +88,8 @@ public class UBLTaxCategory extends UBLFinancialType {
      * Returns the tax scheme identifier.
      *
      * @return the tax scheme identifier, or <tt>null</tt> if no tax category is provided
-     * @throws ESCIException if more than one tax category is specified, or the tax category doesn't provide a tax
-     *                       scheme
+     * @throws ESCIAdapterException if more than one tax category is specified, or the tax category doesn't provide a
+     *                              tax scheme
      */
     public String getTaxSchemeID() {
         TaxSchemeType scheme = getRequired(category.getTaxScheme(), "TaxScheme");

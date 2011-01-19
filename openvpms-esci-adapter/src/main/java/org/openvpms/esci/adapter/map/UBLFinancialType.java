@@ -25,9 +25,8 @@ import org.oasis.ubl.common.aggregate.TaxSubtotalType;
 import org.oasis.ubl.common.aggregate.TaxTotalType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
-import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.invoice.UBLTaxSubtotal;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -75,9 +74,9 @@ public abstract class UBLFinancialType extends UBLType {
      * <p/>
      * This implementation expects that the supplied <tt>tax</tt> contains 0..1 elements.
      *
-     * @param tax    the tax totals
+     * @param tax the tax totals
      * @return the tax amount
-     * @throws ESCIException if the tax is incorrectly specified
+     * @throws ESCIAdapterException if the tax is incorrectly specified
      */
     protected BigDecimal getTaxAmount(List<TaxTotalType> tax) {
         BigDecimal result = BigDecimal.ZERO;
@@ -91,18 +90,17 @@ public abstract class UBLFinancialType extends UBLType {
     /**
      * Returns the tax total type.
      *
-     * @param tax    a list of tax totals. Must contain 0..1 elements
+     * @param tax a list of tax totals. Must contain 0..1 elements
      * @return the tax total type, or <tt>null</tt> if none is present
-     * @throws ESCIException if too many elements are supplied
+     * @throws ESCIAdapterException if too many elements are supplied
      */
     protected TaxTotalType getTaxTotal(List<TaxTotalType> tax) {
         TaxTotalType result = null;
         if (tax != null && !tax.isEmpty()) {
             if (tax.size() != 1) {
                 ErrorContext context = new ErrorContext(this, "TaxTotal");
-                Message message = ESCIAdapterMessages.ublInvalidCardinality(context.getPath(), context.getType(),
-                                                                            context.getID(), "1", tax.size());
-                throw new ESCIException(message.toString());
+                throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
+                        context.getPath(), context.getType(), context.getID(), "1", tax.size()));
             }
             result = tax.get(0);
         }
@@ -112,9 +110,9 @@ public abstract class UBLFinancialType extends UBLType {
     /**
      * Returns the tax subtotal type.
      *
-     * @param tax    a list of tax totals. Must contain 0..1 elements
+     * @param tax a list of tax totals. Must contain 0..1 elements
      * @return the tax sub total, or <tt>null</tt> if no tax is specified
-     * @throws ESCIException if the tax is incorrectly specified
+     * @throws ESCIAdapterException if the tax is incorrectly specified
      */
     protected UBLTaxSubtotal getTaxSubtotal(List<TaxTotalType> tax) {
         UBLTaxSubtotal result = null;
@@ -130,7 +128,7 @@ public abstract class UBLFinancialType extends UBLType {
      *
      * @param tax the tax total. May be <tt>null</tt>
      * @return the tax subtotal,  or <tt>null</tt> if no tax total is supplied
-     * @throws ESCIException if the tax is incorrectly specified
+     * @throws ESCIAdapterException if the tax is incorrectly specified
      */
     protected UBLTaxSubtotal getTaxSubtotal(TaxTotalType tax) {
         UBLTaxSubtotal result = null;
@@ -138,9 +136,8 @@ public abstract class UBLFinancialType extends UBLType {
             List<TaxSubtotalType> taxSubtotal = tax.getTaxSubtotal();
             if (taxSubtotal.size() != 1) {
                 ErrorContext context = new ErrorContext(this, "TaxTotal/TaxSubtotal");
-                Message message = ESCIAdapterMessages.ublInvalidCardinality(context.getPath(), context.getType(),
-                                                                            context.getID(), "1", taxSubtotal.size());
-                throw new ESCIException(message.toString());
+                throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
+                        context.getPath(), context.getType(), context.getID(), "1", taxSubtotal.size()));
             }
             result = new UBLTaxSubtotal(taxSubtotal.get(0), this, getCurrency(), getArchetypeService());
         }
@@ -153,7 +150,8 @@ public abstract class UBLFinancialType extends UBLType {
      * @param amount the amount
      * @param path   the path to the element for error reporting
      * @return the amount value
-     * @throws ESCIException if the amount isn't present, is invalid, or has a currency the doesn't match that expected
+     * @throws ESCIAdapterException if the amount isn't present, is invalid, or has a currency the doesn't match that
+     *                              expected
      */
     protected BigDecimal getAmount(AmountType amount, String path) {
         checkRequired(amount, path);
@@ -161,16 +159,14 @@ public abstract class UBLFinancialType extends UBLType {
         CurrencyCodeContentType code = getRequired(amount.getCurrencyID(), path + "@currencyID");
         if (!ObjectUtils.equals(currency, code.value())) {
             ErrorContext context = new ErrorContext(this, path);
-            Message message = ESCIAdapterMessages.invalidCurrency(context.getPath(), context.getType(), context.getID(),
-                                                                  currency, code.value());
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidCurrency(
+                    context.getPath(), context.getType(), context.getID(), currency, code.value()));
         }
         BigDecimal result = amount.getValue();
         if (result.signum() == -1) {
             ErrorContext context = new ErrorContext(this, path);
-            Message message = ESCIAdapterMessages.invalidAmount(context.getPath(), context.getType(), context.getID(),
-                                                                result);
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidAmount(context.getPath(), context.getType(),
+                                                                             context.getID(), result));
         }
         return amount.getValue();
     }
@@ -181,7 +177,7 @@ public abstract class UBLFinancialType extends UBLType {
      * @param quantity the quantity
      * @param path     the path to the element for error reporting
      * @return the quantity value
-     * @throws ESCIException if the quantity doesn't exist or is &lt;= zero
+     * @throws ESCIAdapterException if the quantity doesn't exist or is &lt;= zero
      */
     protected BigDecimal getQuantity(QuantityType quantity, String path) {
         checkRequired(quantity, path);
@@ -189,9 +185,8 @@ public abstract class UBLFinancialType extends UBLType {
         BigDecimal result = quantity.getValue();
         if (result.compareTo(BigDecimal.ZERO) <= 0) {
             ErrorContext context = new ErrorContext(this, path);
-            Message message = ESCIAdapterMessages.invalidQuantity(context.getPath(), context.getType(), context.getID(),
-                                                                  result);
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidQuantity(context.getPath(), context.getType(),
+                                                                               context.getID(), result));
         }
         return result;
     }

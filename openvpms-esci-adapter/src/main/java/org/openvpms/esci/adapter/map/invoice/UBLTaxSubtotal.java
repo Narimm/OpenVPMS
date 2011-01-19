@@ -22,7 +22,7 @@ import org.oasis.ubl.common.aggregate.TaxSubtotalType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.adapter.map.UBLType;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 import java.math.BigDecimal;
 
@@ -86,7 +86,7 @@ public class UBLTaxSubtotal extends UBLFinancialType {
      * Returns the tax amount.
      *
      * @return the tax amount
-     * @throws ESCIException if the tax amount is incorrectly specified
+     * @throws ESCIAdapterException if the tax amount is incorrectly specified
      */
     public BigDecimal getTaxAmount() {
         return getAmount(subtotal.getTaxAmount(), "TaxAmount");
@@ -96,7 +96,7 @@ public class UBLTaxSubtotal extends UBLFinancialType {
      * Returns the tax category.
      *
      * @return the tax category
-     * @throws ESCIException if the tax category is not present
+     * @throws ESCIAdapterException if the tax category is not present
      */
     public UBLTaxCategory getTaxCategory() {
         TaxCategoryType category = getRequired(subtotal.getTaxCategory(), "TaxCategory");

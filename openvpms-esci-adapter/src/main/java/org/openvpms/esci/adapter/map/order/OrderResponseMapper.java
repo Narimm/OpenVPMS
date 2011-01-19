@@ -19,7 +19,7 @@ package org.openvpms.esci.adapter.map.order;
 
 import org.oasis.ubl.OrderResponseSimpleType;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.party.Party;
 
 
 /**
@@ -34,9 +34,9 @@ public interface OrderResponseMapper {
      * Maps an <tt>OrderResponseSimpleType</tt> to its corresponding order.
      *
      * @param response the reponse
-     * @param user     the ESCI user that submitted the reponse
+     * @param supplier the supplier that submitted the response
      * @return the corresponding order
      */
-    FinancialAct map(OrderResponseSimpleType response, User user);
+    FinancialAct map(OrderResponseSimpleType response, Party supplier);
 
 }

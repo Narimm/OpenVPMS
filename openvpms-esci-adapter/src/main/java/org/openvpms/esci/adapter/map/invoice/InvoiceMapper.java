@@ -18,7 +18,9 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.oasis.ubl.InvoiceType;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 /**
  * Maps UBL invoices to <em>act.supplierDelivery</em> acts.
@@ -31,13 +33,11 @@ public interface InvoiceMapper {
     /**
      * Maps an UBL invoice to an <em>act.supplierDelivery</em>.
      *
-     * @param invoice the invoice to map
-     * @param user    the ESCI user that submitted the invoice
+     * @param invoice  the invoice to map
+     * @param supplier the supplier that submitted the invoice
      * @return the results of the mapping
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the invoice cannot be mapped
-     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
-     *          for any OpenVPMS error
+     * @throws ESCIAdapterException if the invoice cannot be mapped
+     * @throws OpenVPMSException for any OpenVPMS error
      */
-    Delivery map(InvoiceType invoice, User user);
+    Delivery map(InvoiceType invoice, Party supplier);
 }

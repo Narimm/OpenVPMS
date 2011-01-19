@@ -17,7 +17,7 @@
  */
 package org.openvpms.esci.adapter.map;
 
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 
 /**
@@ -39,7 +39,7 @@ public interface UBLDocument {
      * Returns the document identifier.
      *
      * @return the document identifier
-     * @throws ESCIException if the identifier isn't set
+     * @throws ESCIAdapterException if the identifier isn't set
      */
     String getID();
 
@@ -47,7 +47,7 @@ public interface UBLDocument {
      * Returns the UBL version identifier.
      *
      * @return the UBL version
-     * @throws ESCIException if the identifier isn't set
+     * @throws ESCIAdapterException if the identifier isn't set
      */
     String getUBLVersionID();
 

@@ -36,12 +36,12 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
-import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.ErrorContext;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -116,8 +116,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * Returns the identifier for an invoice line.
      *
      * @return the identifier
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the identifier isn't set
+     * @throws ESCIAdapterException if the identifier isn't set
      */
     public String getID() {
         return getId(line.getID(), "ID");
@@ -144,9 +143,8 @@ public class UBLInvoiceLine extends UBLFinancialType {
         List<OrderLineReferenceType> list = line.getOrderLineReference();
         if (!list.isEmpty()) {
             if (list.size() != 1) {
-                Message message = ESCIAdapterMessages.ublInvalidCardinality("OrderLineReference", getType(),
-                                                                            getID(), "1", list.size());
-                throw new ESCIException(message.toString());
+                throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
+                        "OrderLineReference", getType(), getID(), "1", list.size()));
             }
             LineIDType id = list.get(0).getLineID();
             result = getReference(ORDER_ITEM, id, "OrderLineReference/LineID");
@@ -158,7 +156,8 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * Returns the associated order item.
      *
      * @return the order item, or <tt>null</tt> if there is no associated order item
-     * @throws ESCIException if the order item is specified incorrectly, or the referenced order item cannot be found
+     * @throws ESCIAdapterException if the order item is specified incorrectly, or the referenced order item cannot be
+     *                              found
      */
     public FinancialAct getOrderItem() {
         FinancialAct result = null;
@@ -166,8 +165,8 @@ public class UBLInvoiceLine extends UBLFinancialType {
         if (ref != null) {
             result = (FinancialAct) getArchetypeService().get(ref);
             if (result == null) {
-                Message message = ESCIAdapterMessages.invoiceInvalidOrderItem(getID(), Long.toString(ref.getId()));
-                throw new ESCIException(message.toString());
+                throw new ESCIAdapterException(ESCIAdapterMessages.invoiceInvalidOrderItem(
+                        getID(), Long.toString(ref.getId())));
             }
         }
         return result;
@@ -177,9 +176,8 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * Returns the line extension amount.
      *
      * @return the line extension amount
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the amount isn't present, is invalid, or has a currency the
-     *          doesn't match that expected
+     * @throws ESCIAdapterException if the amount isn't present, is invalid, or has a currency the doesn't match that
+     *                              expected
      */
     public BigDecimal getLineExtensionAmount() {
         return getAmount(line.getLineExtensionAmount(), "LineExtensionAmount");
@@ -189,8 +187,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * Returns the invoiced quantity.
      *
      * @return the invoiced quantity
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the quantity doesn't exist or is &lt;= zero
+     * @throws ESCIAdapterException if the quantity doesn't exist or is &lt;= zero
      */
     public BigDecimal getInvoicedQuantity() {
         return getQuantity(line.getInvoicedQuantity(), "InvoicedQuantity");
@@ -202,7 +199,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * This corresponds to <em>InvoiceLine/InvoicedQuantity@unitCode</em>
      *
      * @return the invoiced quantity unit code
-     * @throws ESCIException if the unit code doesn't exist or is invalid
+     * @throws ESCIAdapterException if the unit code doesn't exist or is invalid
      */
     public String getInvoicedQuantityUnitCode() {
         InvoicedQuantityType quantity = getRequired(line.getInvoicedQuantity(), "InvoicedQuantity");
@@ -217,18 +214,15 @@ public class UBLInvoiceLine extends UBLFinancialType {
      *
      * @param supplier the supplier
      * @return the corresponding product, or <tt>null</tt> if the reference product is not found
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the product is incorrectly specified
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
+     * @throws ESCIAdapterException      if the product is incorrectly specified
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Product getProduct(Party supplier) {
         Product result = null;
         long productId = getBuyersItemID();
         String sellerId = getSellersItemID();
         if (productId == -1 && sellerId == null) {
-            Message message = ESCIAdapterMessages.invoiceNoProduct(getID());
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.invoiceNoProduct(getID()));
         }
         if (productId != -1) {
             result = getProduct(productId);
@@ -246,7 +240,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * This corresponds to <em>InvoiceLine/Item/BuyersItemIdentification/ID</em>.
      *
      * @return the buyer's item identifier, or <tt>-1</tt> if none was specified
-     * @throws ESCIException if there is no item or the identifier was incorrectly specified
+     * @throws ESCIAdapterException if there is no item or the identifier was incorrectly specified
      */
     public long getBuyersItemID() {
         long result = -1;
@@ -264,7 +258,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * This corresponds to <em>InvoiceLine/Item/SellersItemIdentification/ID</em>.
      *
      * @return the sellers's item identifier, or <tt>null</tt> if none was specified
-     * @throws ESCIException if there is no item or the identifier is incorrectly specified
+     * @throws ESCIAdapterException if there is no item or the identifier is incorrectly specified
      */
     public String getSellersItemID() {
         String result = null;
@@ -292,7 +286,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * This corresponds to <em>InvoiceLine/Price/PriceAmount</em>.
      *
      * @return the price amount
-     * @throws ESCIException if the price isn't present or is incorrectly specified
+     * @throws ESCIAdapterException if the price isn't present or is incorrectly specified
      */
     public BigDecimal getPriceAmount() {
         PriceType price = getRequired(line.getPrice(), "Price");
@@ -318,9 +312,8 @@ public class UBLInvoiceLine extends UBLFinancialType {
                 PriceTypeCodeType code = getRequired(price.getPriceTypeCode(), ALTERNATIVE_CONDITION_PRICE_TYPE_CODE);
                 if (!WHOLESALE.equals(code.getValue())) {
                     ErrorContext context = new ErrorContext(this, ALTERNATIVE_CONDITION_PRICE_TYPE_CODE);
-                    Message message = ESCIAdapterMessages.ublInvalidValue(context.getPath(), context.getType(),
-                                                                          context.getID(), WHOLESALE, code.getValue());
-                    throw new ESCIException(message.toString());
+                    throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
+                            context.getPath(), context.getType(), context.getID(), WHOLESALE, code.getValue()));
                 }
             }
         }
@@ -331,7 +324,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * Returns the tax for the invoice line.
      *
      * @return the invoice line tax
-     * @throws ESCIException if the tax is incorrectly specified
+     * @throws ESCIAdapterException if the tax is incorrectly specified
      */
     public BigDecimal getTaxAmount() {
         return getTaxAmount(line.getTaxTotal());
@@ -344,7 +337,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * supported).
      *
      * @return the tax sub total, or <tt>null</tt> if no tax is specified
-     * @throws ESCIException if the tax is incorrectly specified
+     * @throws ESCIAdapterException if the tax is incorrectly specified
      */
     public UBLTaxSubtotal getTaxSubtotal() {
         return getTaxSubtotal(line.getTaxTotal());
@@ -355,8 +348,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      *
      * @param id the product identifier
      * @return the corresponding product, or <tt>null</tt> if it can't be found
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     protected Product getProduct(long id) {
         return (Product) getObject(id, ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE,
@@ -371,8 +363,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * @param reorderCode the product's reorder code
      * @param supplier    the supplier
      * @return the corresponding product, or <tt>null</tt> if it can't be found
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     protected Product getProduct(String reorderCode, Party supplier) {
         Product result = null;
@@ -392,7 +383,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * Returns the item associated with the invoice line.
      *
      * @return the item
-     * @throws ESCIException if the item isn't specified
+     * @throws ESCIAdapterException if the item isn't specified
      */
     protected ItemType getItem() {
         return getRequired(line.getItem(), "Item");

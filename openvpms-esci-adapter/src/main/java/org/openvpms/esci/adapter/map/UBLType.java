@@ -32,8 +32,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
-import org.openvpms.esci.adapter.i18n.Message;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 
 /**
@@ -77,7 +76,8 @@ public abstract class UBLType {
      * Returns the type identifier.
      *
      * @return the type identifier
-     * @throws ESCIException if the identifier is mandatory by not set, or the identifier is incorrectly specified
+     * @throws ESCIAdapterException if the identifier is mandatory by not set, or the identifier is incorrectly
+     *                              specified
      */
     public abstract String getID();
 
@@ -125,7 +125,7 @@ public abstract class UBLType {
      * @param element the element value. May be <tt>null</tt>
      * @param path    the element path
      * @return the element
-     * @throws ESCIException if the element is null
+     * @throws ESCIAdapterException if the element is null
      */
     protected <T> T getRequired(T element, String path) {
         checkRequired(element, path);
@@ -137,14 +137,13 @@ public abstract class UBLType {
      *
      * @param element the element value. May be <tt>null</tt>
      * @param path    the element path
-     * @throws ESCIException if the element is null
+     * @throws ESCIAdapterException if the element is null
      */
     protected <T> void checkRequired(T element, String path) {
         if (element == null) {
             ErrorContext context = new ErrorContext(this, path);
-            Message message = ESCIAdapterMessages.ublElementRequired(context.getPath(), context.getType(),
-                                                                     context.getID());
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.ublElementRequired(context.getPath(), context.getType(),
+                                                                                  context.getID()));
         }
     }
 
@@ -154,16 +153,15 @@ public abstract class UBLType {
      * @param id   the identifier
      * @param path the identifier element path
      * @return the numeric value of <tt>id</tt>
-     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
+     * @throws ESCIAdapterException if <tt>id</tt> is null or is not a valid identifier
      */
     protected long getNumericId(IdentifierType id, String path) {
         String value = getId(id, path);
         long result = NumberUtils.toLong(value, -1);
         if (result == -1) {
             ErrorContext context = new ErrorContext(this, path);
-            Message message = ESCIAdapterMessages.ublInvalidIdentifier(context.getPath(), context.getType(),
-                                                                       context.getID(), id.getValue());
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidIdentifier(
+                    context.getPath(), context.getType(), context.getID(), id.getValue()));
         }
         return result;
     }
@@ -174,7 +172,7 @@ public abstract class UBLType {
      * @param id   the identifier
      * @param path the identifier element path
      * @return the value of <tt>id</tt>
-     * @throws ESCIException if <tt>id</tt> is null or empty
+     * @throws ESCIAdapterException if <tt>id</tt> is null or empty
      */
     protected String getId(IdentifierType id, String path) {
         String result = getId(id);
@@ -197,12 +195,12 @@ public abstract class UBLType {
     }
 
     /**
-     * Returns the supplier corresponding to a <tt>SupplierPaztyType</tt>.
+     * Returns the supplier corresponding to a <tt>SupplierPartyType</tt>.
      *
      * @param supplierType the supplierType
      * @param path         the supplier element path
      * @return the corresponding supplier
-     * @throws ESCIException             if the supplier was not found
+     * @throws ESCIAdapterException      if the supplier was not found
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Party getSupplier(SupplierPartyType supplierType, String path) {
@@ -212,9 +210,8 @@ public abstract class UBLType {
         Party supplier = (Party) getObject(id, "party.supplier*");
         if (supplier == null) {
             ErrorContext context = new ErrorContext(this, path + "/CustomerAssignedAccountID");
-            Message message = ESCIAdapterMessages.invalidSupplier(context.getPath(), context.getType(),
-                                                                  context.getID(), accountId.getValue());
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplier(context.getPath(), context.getType(),
+                                                                               context.getID(), accountId.getValue()));
         }
         return supplier;
     }
@@ -245,7 +242,7 @@ public abstract class UBLType {
      * @param id          the identifier
      * @param path        the identifier element path
      * @return the corresponding object, or <tt>null</tt> if it is not found
-     * @throws ESCIException             if <tt>id</tt> is null or is not a valid identifier
+     * @throws ESCIAdapterException      if <tt>id</tt> is null or is not a valid identifier
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected IMObject getObject(ArchetypeId archetypeId, IdentifierType id, String path) {
@@ -260,7 +257,7 @@ public abstract class UBLType {
      * @param id          the identifier
      * @param path        the identifier element path
      * @return the corresponding reference
-     * @throws ESCIException if <tt>id</tt> is null or is not a valid identifier
+     * @throws ESCIAdapterException if <tt>id</tt> is null or is not a valid identifier
      */
     protected IMObjectReference getReference(ArchetypeId archetypeId, IdentifierType id, String path) {
         long objectId = getNumericId(id, path);

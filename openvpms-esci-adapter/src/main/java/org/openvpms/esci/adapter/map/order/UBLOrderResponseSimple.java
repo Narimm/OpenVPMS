@@ -28,10 +28,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
-import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.UBLDocument;
 import org.openvpms.esci.adapter.map.UBLType;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 
 /**
@@ -77,7 +76,7 @@ public class UBLOrderResponseSimple extends UBLType implements UBLDocument {
      * Returns the response identifier.
      *
      * @return the response identifier
-     * @throws ESCIException if the identifier isn't set
+     * @throws ESCIAdapterException if the identifier isn't set
      */
     public String getID() {
         return getId(response.getID(), "ID");
@@ -87,7 +86,7 @@ public class UBLOrderResponseSimple extends UBLType implements UBLDocument {
      * Returns the UBL version identifier.
      *
      * @return the UBL version
-     * @throws ESCIException if the identifier isn't set
+     * @throws ESCIAdapterException if the identifier isn't set
      */
     public String getUBLVersionID() {
         return getId(response.getUBLVersionID(), "UBLVersionID");
@@ -122,15 +121,15 @@ public class UBLOrderResponseSimple extends UBLType implements UBLDocument {
      * Returns the order referred to in the response.
      *
      * @return the order
-     * @throws ESCIException             if the order was not found
+     * @throws ESCIAdapterException      if the order was not found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct getOrder() {
         OrderReferenceType reference = getRequired(response.getOrderReference(), "OrderReference");
         FinancialAct result = (FinancialAct) getObject(ORDER_ID, reference.getID(), "OrderReference");
         if (result == null) {
-            Message message = ESCIAdapterMessages.invalidOrder(getType(), getID(), reference.getID().getValue());
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidOrder(
+                    getType(), getID(), reference.getID().getValue()));
         }
         return result;
     }
@@ -139,7 +138,7 @@ public class UBLOrderResponseSimple extends UBLType implements UBLDocument {
      * Returns the supplier.
      *
      * @return the supplier
-     * @throws ESCIException             if the supplier was not found
+     * @throws ESCIAdapterException      if the supplier was not found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getSupplier() {

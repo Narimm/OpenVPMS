@@ -20,15 +20,11 @@ package org.openvpms.esci.adapter.map;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
-import org.openvpms.esci.adapter.i18n.Message;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 import javax.annotation.Resource;
 
@@ -75,31 +71,26 @@ public class AbstractUBLMapper {
      * Verifies that the UBL version matches that expected.
      *
      * @param document the UBL document
-     * @throws ESCIException if the UBL identifier is <tt>null</tt> or not the expected value
+     * @throws ESCIAdapterException if the UBL identifier is <tt>null</tt> or not the expected value
      */
     protected void checkUBLVersion(UBLDocument document) {
         String version = document.getUBLVersionID();
         if (!UBL_VERSION.equals(version)) {
-            Message message = ESCIAdapterMessages.ublInvalidValue("UBLVersionID", document.getType(), document.getID(),
-                                                                  UBL_VERSION, version);
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue("UBLVersionID", document.getType(),
+                    document.getID(), UBL_VERSION, version));
         }
     }
 
     /**
-     * Verifies that an user is linked to a supplier.
+     * Verifies that the expected and actual suppliers in a document exchange match.
      *
-     * @param supplier the supplier
-     * @param user     the ESCI user that submitted the innvoice
-     * @param factory  the bean factory
-     * @throws org.openvpms.esci.exception.ESCIException
-     *          if the user has no relationship to the supplier
+     * @param expectedSupplier the expected supplier
+     * @param actualSupplier   the actual supplier
+     * @throws ESCIAdapterException if the suppliers don't match
      */
-    protected void checkSupplier(Party supplier, User user, IMObjectBeanFactory factory) {
-        EntityBean bean = factory.createEntityBean(user);
-        if (!bean.getNodeTargetEntityRefs("supplier").contains(supplier.getObjectReference())) {
-            Message message = ESCIAdapterMessages.userNotLinkedToSupplier(user, supplier);
-            throw new ESCIException(message.toString());
+    protected void checkSupplier(Party expectedSupplier, Party actualSupplier) {
+        if (!expectedSupplier.equals(actualSupplier)) {
+            throw new ESCIAdapterException(ESCIAdapterMessages.supplierMismatch(expectedSupplier, actualSupplier));
         }
     }
 
@@ -109,15 +100,14 @@ public class AbstractUBLMapper {
      * @param order    the order
      * @param supplier the suppplier
      * @param document the invoice
-     * @throws ESCIException             if the order wasn't submitted by the supplier
+     * @throws ESCIAdapterException      if the order wasn't submitted by the supplier
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected void checkOrder(FinancialAct order, Party supplier, UBLDocument document) {
         ActBean bean = new ActBean(order, service);
         if (!ObjectUtils.equals(bean.getNodeParticipantRef("supplier"), supplier.getObjectReference())) {
-            Message message = ESCIAdapterMessages.invalidOrder(document.getType(), document.getID(),
-                                                               Long.toString(order.getId()));
-            throw new ESCIException(message.toString());
+            throw new ESCIAdapterException(ESCIAdapterMessages.invalidOrder(document.getType(), document.getID(),
+                    Long.toString(order.getId())));
         }
     }
 
