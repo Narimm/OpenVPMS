@@ -18,7 +18,10 @@
 
 package org.openvpms.esci.adapter.dispatcher;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.common.aggregate.DocumentReferenceType;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
@@ -48,6 +51,11 @@ public class InboxDispatcher {
      * The document references.
      */
     private Iterator<DocumentReferenceType> references;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(InboxDispatcher.class);
 
 
     /**
@@ -90,29 +98,40 @@ public class InboxDispatcher {
             Object content = inbox.getDocument(reference);
             if (content != null) {
                 Document document = new Document(reference, content);
-                DocumentProcessor processor = getProcessor(document);
+                DocumentProcessor processor = getProcessor(inbox.getSupplier(), document);
                 processor.process(document, inbox.getSupplier());
                 inbox.acknowledge(reference);
             } else {
-
+                documentNotFound(reference);
             }
         }
     }
 
     /**
+     * Invoked when a document isn't found.
+     *
+     * @param reference the document reference
+     */
+    protected void documentNotFound(DocumentReferenceType reference) {
+        log.warn(ESCIAdapterMessages.documentNotFound(inbox.getSupplier(), reference));
+    }
+
+    /**
      * Returns a processor for the supplied document,
      *
+     * @param supplier the sender of the document
      * @param document the document
      * @return a processor for the document
      * @throws ESCIAdapterException if no processor can be found
      */
-    protected DocumentProcessor getProcessor(Document document) {
+    protected DocumentProcessor getProcessor(Party supplier, Document document) {
         for (DocumentProcessor documentProcessor : processors) {
             if (documentProcessor.canHandle(document)) {
                 return documentProcessor;
             }
         }
-        throw new ESCIAdapterException(ESCIAdapterMessages.unsupportedDocument(document.getDocumentReference()));
+        throw new ESCIAdapterException(ESCIAdapterMessages.unsupportedDocument(supplier,
+                                                                               document.getDocumentReference()));
     }
 
 }

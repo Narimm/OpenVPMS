@@ -20,10 +20,7 @@ package org.openvpms.esci.adapter.i18n;
 import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.ubl.io.UBLDocumentContext;
-import org.openvpms.ubl.io.UBLDocumentWriter;
 
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 
 
@@ -416,23 +413,27 @@ public class ESCIAdapterMessages {
     /**
      * Invoked when a document is received that is unsupported.
      *
+     * @param supplier  the supplier
      * @param reference the document reference
      * @return a new message
      */
-    public static Message unsupportedDocument(DocumentReferenceType reference) {
-        String content = reference.getID().getValue();
-        try {
-            UBLDocumentContext context = new UBLDocumentContext();
-            UBLDocumentWriter writer = context.createWriter();
-            writer.setFormat(true);
-            writer.setFragment(true);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            writer.write(reference, stream);
-            content = stream.toString();
-        } catch (Throwable exception) {
-            // ignore
-        }
-        return messages.getMessage(800, content, reference.getDocumentType().getValue());
+    public static Message unsupportedDocument(Party supplier, DocumentReferenceType reference) {
+        String id = (reference.getID()) != null ? reference.getID().getValue() : null;
+        String docType = (reference.getDocumentType()) != null ? reference.getDocumentType().getValue() : null;
+        return messages.getMessage(800, supplier.getId(), supplier.getName(), id, docType);
+    }
+
+    /**
+     * Invoked when a document cannot be retrieved from an inbox.
+     *
+     * @param supplier  the supplier
+     * @param reference the document reference
+     * @return a new message
+     */
+    public static Message documentNotFound(Party supplier, DocumentReferenceType reference) {
+        String id = (reference.getID()) != null ? reference.getID().getValue() : null;
+        String docType = (reference.getDocumentType()) != null ? reference.getDocumentType().getValue() : null;
+        return messages.getMessage(801, supplier.getId(), supplier.getName(), id, docType);
     }
 
 }
