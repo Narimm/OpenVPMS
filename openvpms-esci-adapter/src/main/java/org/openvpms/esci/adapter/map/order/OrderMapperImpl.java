@@ -59,8 +59,6 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
-import org.openvpms.archetype.rules.product.ProductRules;
-import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -70,11 +68,11 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.UBLHelper;
@@ -85,7 +83,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 
 /**
@@ -115,11 +112,6 @@ public class OrderMapperImpl implements OrderMapper {
      * Party rules.
      */
     private PartyRules partyRules;
-
-    /**
-     * The product rules.
-     */
-    private ProductRules productRules;
 
     /**
      * The supplier rules.
@@ -179,16 +171,6 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Registers the product rules.
-     *
-     * @param rules the product rules
-     */
-    @Resource
-    public void setProductRules(ProductRules rules) {
-        productRules = rules;
-    }
-
-    /**
      * Registers the supplier rules.
      *
      * @param rules the supplier rules
@@ -223,7 +205,7 @@ public class OrderMapperImpl implements OrderMapper {
      *
      * @param order the <em>act.supplierOrder</em> to map
      * @return the corresponding UBL order
-     * @throws ESCIAdapterException for mapping errors
+     * @throws ESCIAdapterException      for mapping errors
      * @throws ArchetypeServiceException for any archetype service error
      */
     public OrderType map(FinancialAct order) {
@@ -250,7 +232,7 @@ public class OrderMapperImpl implements OrderMapper {
             throw new ESCIAdapterException(ESCIAdapterMessages.ESCINotConfigured(supplier, stockLocation));
         }
         String contactName = (author != null) ? author.getName() : null;
-        CustomerPartyType customerParty = getCustomer(contactName, location, supplierStockLocation);
+        CustomerPartyType customerParty = getCustomer(contactName, location, stockLocation, supplierStockLocation);
         SupplierPartyType supplierParty = getSupplier(supplier);
         MonetaryTotalType total = getMonetaryTotal(order.getTotal(), currencyCode);
 
@@ -285,7 +267,7 @@ public class OrderMapperImpl implements OrderMapper {
         OrderLineType orderLine = new OrderLineType();
         LineItemType lineItem = new LineItemType();
 
-        ItemType item = getItem(supplier, product);
+        ItemType item = getItem(bean, supplier, product);
         lineItem.setItem(item);
         orderLine.setLineItem(lineItem);
 
@@ -311,21 +293,18 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Returns a <tt>ItemType</tt> for a supplier and product.
+     * Returns a <tt>ItemType</tt> for a supplier, order item, and product.
      *
+     * @param bean     the order item
      * @param supplier the supplier
      * @param product  the product
      * @return an <tt>ItemType</tt> corresponding to the supplier and product
      */
-    private ItemType getItem(Party supplier, Product product) {
+    private ItemType getItem(ActBean bean, Party supplier, Product product) {
         ItemType result = new ItemType();
         ItemIdentificationType buyersId = getItemIdentification(product.getId());
-        ProductSupplier ps = getProductSupplier(product, supplier);
-        if (ps == null) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.noProductSupplierRelationship(supplier, product));
-        }
-        String reorderCode = ps.getReorderCode();
-        String reorderDescription = ps.getReorderDescription();
+        String reorderCode = bean.getString("reorderCode");
+        String reorderDescription = bean.getString("reorderDescription");
         if (!StringUtils.isEmpty(reorderCode)) {
             ItemIdentificationType sellersId = getItemIdentification(reorderCode);
             result.setSellersItemIdentification(sellersId);
@@ -393,18 +372,6 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Returns the product/supplier relationship for the product, if available.
-     *
-     * @param product  the product
-     * @param supplier the supplier
-     * @return the product/supplier relationship, or <tt>null</tt> if none is found
-     */
-    private ProductSupplier getProductSupplier(Product product, Party supplier) {
-        List<ProductSupplier> results = productRules.getProductSuppliers(product, supplier);
-        return (!results.isEmpty()) ? results.get(0) : null;
-    }
-
-    /**
      * Helper to return the location associated with a stock location.
      *
      * @param stockLocation the stock location
@@ -419,19 +386,22 @@ public class OrderMapperImpl implements OrderMapper {
     /**
      * Returns a <tt>CustomerPartyType</tt> corresponding to the passed <em>party.organisationStockLocation</em>.
      * <p/>
-     * The party details will be either those of the <em>party.organisationLocation</em> or the parent
+     * The contact details will be either those of the <em>party.organisationLocation</em> or the parent
      * </em>party.organisationPractice</em>. If the location has a <em>contact.location</em>, then the location's
      * details will be used, otherwise the practice's details will be used.
      * <p/>
-     * NOTE: the supplied <em>entityRelationship.supplierStockLocation*</em> relationship must have an
+     * The customer identifier will be that of the stock location.
+     * <p/>
+     * NOTE: the supplied <em>entityRelationship.supplierStockLocation*</em> relationship may have an optional
      * <em>accountId</em> node, used to populate the <tt>SupplierAssignedAccountIDType</tt>
      *
      * @param contactName           a contact name to supply with telephone, email and fax details, May be <tt>null</tt>
      * @param location              the practice location
+     * @param stockLocation         the stock location
      * @param supplierStockLocation an <em>entityRelationship.supplierStockLocation*</em> relationship
      * @return the corresponding <tt>CustomerPartyType</tt>
      */
-    private CustomerPartyType getCustomer(String contactName, Party location,
+    private CustomerPartyType getCustomer(String contactName, Party location, Party stockLocation,
                                           EntityRelationship supplierStockLocation) {
         CustomerPartyType result = new CustomerPartyType();
         Party customer;
@@ -456,17 +426,20 @@ public class OrderMapperImpl implements OrderMapper {
         Contact emailContact = partyRules.getContact(customer, ContactArchetypes.EMAIL, "BILLING");
 
         CustomerAssignedAccountIDType customerId
-                = UBLHelper.initID(new CustomerAssignedAccountIDType(), customer.getId());
-
-        IMObjectBean bean = factory.createBean(supplierStockLocation);
-        String accountId = bean.getString("accountId");
-        SupplierAssignedAccountIDType supplierId = UBLHelper.initID(new SupplierAssignedAccountIDType(), accountId);
+                = UBLHelper.initID(new CustomerAssignedAccountIDType(), stockLocation.getId());
 
         PartyType party = getParty(customer, locationContact);
         party.setContact(getContact(contactName, phoneContact, faxContact, emailContact));
 
         result.setCustomerAssignedAccountID(customerId);
-        result.setSupplierAssignedAccountID(supplierId);
+
+        IMObjectBean bean = factory.createBean(supplierStockLocation);
+        String accountId = bean.getString("accountId");
+        if (!StringUtils.isEmpty(accountId)) {
+            SupplierAssignedAccountIDType supplierId = UBLHelper.initID(new SupplierAssignedAccountIDType(), accountId);
+            result.setSupplierAssignedAccountID(supplierId);
+        }
+
         result.setParty(party);
         return result;
     }

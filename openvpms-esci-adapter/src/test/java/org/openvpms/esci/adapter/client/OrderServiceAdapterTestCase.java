@@ -89,9 +89,6 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
         applicationContext.getBean("registryService"); // force registation of the registry dispatcher
         applicationContext.getBean("orderService");    // force registation of the order dispatcher
 
-        // add a product supplier relationship
-        addProductSupplierRelationship(getProduct(), getSupplier(), "AREORDERCODE", "Some description");
-
         // add a supplier/stock location relationship for ESCI
         String wsdl = getWSDL("wsdl/RegistryService.wsdl");
         addESCIConfiguration(getSupplier(), getStockLocation(), wsdl);

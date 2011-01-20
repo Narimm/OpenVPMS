@@ -224,17 +224,6 @@ public class ESCIAdapterMessages {
     }
 
     /**
-     * Creates a new message for when there is no relationship between a supplier and product.
-     *
-     * @param supplier the supplier
-     * @param product  the product
-     * @return a new message
-     */
-    public static Message noProductSupplierRelationship(Party supplier, Product product) {
-        return messages.getMessage(300, supplier.getId(), supplier.getName(), product.getId(), product.getName());
-    }
-
-    /**
      * Creates a new message for when there is no supplier order code associated with a product.
      *
      * @param supplier the supplier
@@ -242,7 +231,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message noSupplierOrderCode(Party supplier, Product product) {
-        return messages.getMessage(301, supplier.getId(), supplier.getName(), product.getId(), product.getName());
+        return messages.getMessage(300, supplier.getId(), supplier.getName(), product.getId(), product.getName());
     }
 
     /**

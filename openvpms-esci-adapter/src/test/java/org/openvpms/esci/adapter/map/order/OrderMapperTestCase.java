@@ -17,7 +17,9 @@
  */
 package org.openvpms.esci.adapter.map.order;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.oasis.ubl.OrderType;
@@ -38,8 +40,6 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
-import org.openvpms.archetype.rules.product.ProductRules;
-import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.test.TestHelper;
@@ -101,11 +101,6 @@ public class OrderMapperTestCase extends AbstractESCITest {
     private Contact supplierContact;
 
     /**
-     * The product supplier relationship.
-     */
-    private ProductSupplier productSupplier;
-
-    /**
      * Order author.
      */
     private User author;
@@ -125,9 +120,15 @@ public class OrderMapperTestCase extends AbstractESCITest {
     public void testMap() throws Exception {
         BigDecimal quantity = new BigDecimal(5);
         BigDecimal unitPrice = new BigDecimal(10);
+        String reorderCode = "ABC123";
+        String reorderDesc = "A reorderDesc";
 
         // create an order with a single item, and post it
         FinancialAct actItem = createOrderItem(quantity, 1, unitPrice);
+        ActBean itemBean = new ActBean(actItem);
+        itemBean.setValue("reorderCode", reorderCode);
+        itemBean.setValue("reorderDescription", reorderDesc);
+
         FinancialAct act = createOrder(actItem);
         act.setStatus(ActStatus.POSTED);
         ActBean bean = new ActBean(act);
@@ -154,7 +155,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
 
         checkDate(order.getIssueDate().getValue(), act.getActivityStartTime());
 
-        checkCustomer(order.getBuyerCustomerParty(), getPractice(), practiceContact);
+        checkCustomer(order.getBuyerCustomerParty(), getPractice().getName(), getStockLocation(), practiceContact);
         checkContact(order.getBuyerCustomerParty().getParty().getContact(), author.getName(), phoneContact, faxContact,
                      emailContact);
         checkSupplier(order.getSellerSupplierParty(), getSupplier(), supplierContact);
@@ -171,7 +172,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
         checkAmount(item1.getTotalTaxAmount(), 0);
         checkAmount(item1.getPrice().getPriceAmount(), 10);
         checkQuantity(item1.getPrice().getBaseQuantity(), "BX", 1);
-        checkItem(item1.getItem(), getProduct());
+        checkItem(item1.getItem(), getProduct(), reorderCode, reorderDesc);
     }
 
     /**
@@ -197,42 +198,24 @@ public class OrderMapperTestCase extends AbstractESCITest {
     }
 
     /**
-     * Verifies that an {@link ESCIAdapterException} is thrown if there is no relationship between a supplier and
-     * product.
-     */
-    @Test
-    public void testNoProductSupplierRelationship() {
-        FinancialAct order = createOrder();
-
-        Product product = getProduct();
-        Party supplier = getSupplier();
-        EntityBean productBean = new EntityBean(product);
-        EntityRelationship relationship = productBean.getRelationship(supplier);
-        assertNotNull(relationship);
-        product.removeEntityRelationship(relationship);
-        supplier.removeEntityRelationship(relationship);
-        save(product, supplier);
-
-        String expected = "ESCIA-0300: Supplier " + supplier.getName() + " (" + supplier.getId()
-                          + ") has no relationship to product " + product.getName() + " (" + product.getId() + ")";
-        checkMappingException(order, expected);
-    }
-
-    /**
      * Verifies that an {@link ESCIAdapterException} is thrown if the product has no supplier order code.
      */
     @Test
     public void testNoSupplierOrderCode() {
-        FinancialAct order = createOrder();
+        // create an order with a single item, and no reorder code, and post it
+        FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        ActBean itemBean = new ActBean(orderItem);
+        itemBean.setValue("reorderCode", null);
+
+        FinancialAct order = createOrder(orderItem);
+        order.setStatus(ActStatus.POSTED);
+        ActBean bean = new ActBean(order);
+        bean.addNodeParticipation("author", author);
+        bean.save();
+
         Product product = getProduct();
         Party supplier = getSupplier();
-        EntityBean productBean = new EntityBean(product);
-        EntityRelationship relationship = productBean.getRelationship(supplier);
-        assertNotNull(relationship);
-        IMObjectBean bean = new IMObjectBean(relationship);
-        bean.setValue("reorderCode", null);
-        save(product, supplier);
-        String expected = "ESCIA-0301: Supplier " + supplier.getName() + " (" + supplier.getId()
+        String expected = "ESCIA-0300: Supplier " + supplier.getName() + " (" + supplier.getId()
                           + ") has no order code for product " + product.getName() + " (" + product.getId() + ")";
         checkMappingException(order, expected);
     }
@@ -243,7 +226,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
     @Before
     public void setUp() {
         super.setUp();
-        Party practice = TestHelper.getPractice();
+        Party practice = getPractice();
         practice.getContacts().clear();
         practiceContact = TestHelper.createLocationContact("1 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC", "3925");
         practice.addContact(practiceContact);
@@ -262,10 +245,6 @@ public class OrderMapperTestCase extends AbstractESCITest {
         supplierContact = TestHelper.createLocationContact("2 Peko Rd", "TENNANT_CREEK", "NT", "0862");
         Party supplier = getSupplier();
         supplier.addContact(supplierContact);
-
-        // add a product supplier relationship
-        productSupplier = addProductSupplierRelationship(getProduct(), supplier, "AREORDERCODE", 
-                                                         "A reorder description");
 
         // create a user for associating with orders
         author = TestHelper.createUser();
@@ -292,7 +271,6 @@ public class OrderMapperTestCase extends AbstractESCITest {
         mapper.setPracticeRules(new PracticeRules());
         mapper.setLocationRules(new LocationRules());
         mapper.setPartyRules(new PartyRules());
-        mapper.setProductRules(new ProductRules());
         mapper.setSupplierRules(new SupplierRules());
         mapper.setLookupService(LookupServiceHelper.getLookupService());
         mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
@@ -319,13 +297,14 @@ public class OrderMapperTestCase extends AbstractESCITest {
      * Verifies a customer matches that expected.
      *
      * @param customer the customer to check
+     * @param name     the expected customer name
      * @param expected the expected customer
      * @param contact  the expected contact
      */
-    private void checkCustomer(CustomerPartyType customer, Party expected, Contact contact) {
+    private void checkCustomer(CustomerPartyType customer, String name, Party expected, Contact contact) {
         checkID(customer.getCustomerAssignedAccountID(), expected.getId());
         assertEquals(SUPPLIER_ACCOUNT_ID, customer.getSupplierAssignedAccountID().getValue());
-        checkParty(customer.getParty(), expected.getName(), contact);
+        checkParty(customer.getParty(), name, contact);
     }
 
     /**
@@ -404,14 +383,16 @@ public class OrderMapperTestCase extends AbstractESCITest {
     /**
      * Checks an item.
      *
-     * @param item    the item to check
-     * @param product the expected product
+     * @param item        the item to check
+     * @param product     the expected product
+     * @param reorderCode the expected reorder code
+     * @param reorderDesc the expected reorder description
      */
-    private void checkItem(ItemType item, Product product) {
+    private void checkItem(ItemType item, Product product, String reorderCode, String reorderDesc) {
         assertEquals(product.getName(), item.getName().getValue());
         checkID(item.getBuyersItemIdentification().getID(), product.getId());
-        assertEquals(productSupplier.getReorderCode(), item.getSellersItemIdentification().getID().getValue());
-        assertEquals(productSupplier.getReorderDescription(), item.getDescription().get(0).getValue());
+        assertEquals(reorderCode, item.getSellersItemIdentification().getID().getValue());
+        assertEquals(reorderDesc, item.getDescription().get(0).getValue());
     }
 
     /**

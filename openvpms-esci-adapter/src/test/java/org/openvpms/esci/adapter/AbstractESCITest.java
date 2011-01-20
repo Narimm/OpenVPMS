@@ -20,8 +20,6 @@ package org.openvpms.esci.adapter;
 import org.oasis.ubl.common.aggregate.SupplierPartyType;
 import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.product.ProductRules;
-import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.AbstractSupplierTest;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
@@ -30,8 +28,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -69,6 +67,9 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
      */
     protected FinancialAct createOrder(Party supplier) {
         FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        ActBean itemBean = new ActBean(orderItem);
+        itemBean.setValue("reorderCode", "AREORDERCODE");
+        itemBean.setValue("reorderDescription", "A reorder description");
         FinancialAct order = createOrder(supplier, orderItem);
         order.setStatus(ActStatus.POSTED);
         save(order, orderItem);
@@ -84,7 +85,7 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
     protected SupplierPartyType createSupplier(Party supplier) {
         SupplierPartyType supplierType = new SupplierPartyType();
         CustomerAssignedAccountIDType supplierId = UBLHelper.initID(new CustomerAssignedAccountIDType(),
-                supplier.getId());
+                                                                    supplier.getId());
         supplierType.setCustomerAssignedAccountID(supplierId);
         return supplierType;
     }
@@ -103,25 +104,6 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
-    }
-
-    /**
-     * Adds a product/supplier relationship.
-     *
-     * @param product            the product
-     * @param supplier           the supplier
-     * @param reorderCode        the reorder code
-     * @param reorderDescription the reorder description
-     * @return the product/supplier relationship
-     */
-    protected ProductSupplier addProductSupplierRelationship(Product product, Party supplier, String reorderCode,
-                                                             String reorderDescription) {
-        ProductRules productRules = new ProductRules();
-        ProductSupplier productSupplier = productRules.createProductSupplier(product, supplier);
-        productSupplier.setReorderCode(reorderCode);
-        productSupplier.setReorderDescription(reorderDescription);
-        save(product, supplier);
-        return productSupplier;
     }
 
     /**
