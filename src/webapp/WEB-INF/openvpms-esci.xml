@@ -27,7 +27,6 @@
         <property name="lookupService" ref="lookupService"/>
         <property name="partyRules" ref="partyRules"/>
         <property name="practiceRules" ref="practiceRules"/>
-        <property name="productRules" ref="productRules"/>
         <property name="supplierRules" ref="supplierRules"/>
     </bean>
 
