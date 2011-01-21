@@ -24,15 +24,15 @@ import org.oasis.ubl.OrderType;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.esci.DelegatingOrderService;
 import org.openvpms.esci.FutureValue;
-import org.openvpms.esci.DelegatingRegistryService;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.client.InVMSupplierServiceLocator;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
+import org.openvpms.esci.service.DelegatingRegistryService;
+import org.openvpms.esci.service.DelegatingOrderService;
 import org.openvpms.esci.service.client.DefaultServiceLocatorFactory;
 import org.springframework.test.context.ContextConfiguration;
 

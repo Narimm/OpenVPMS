@@ -221,6 +221,17 @@ public class ESCIAdapterMessages {
     }
 
     /**
+     * Creates a message for when a supplier reports an order as being duplicate.
+     *
+     * @param id the order identifier
+     * @param supplier the supplier
+     * @return a new message
+     */
+    public static Message duplicateOrder(long id, Party supplier) {
+        return messages.getMessage(200, id, supplier.getId(), supplier.getName());
+    }
+
+    /**
      * Creates a new message for when there is no supplier order code associated with a product.
      *
      * @param supplier the supplier
@@ -436,4 +447,16 @@ public class ESCIAdapterMessages {
         return messages.getMessage(801, supplier.getId(), supplier.getName(), id, docType);
     }
 
+    /**
+     * Invoked when a document cannot be acknowledged.
+     *
+     * @param supplier  the supplier
+     * @param reference the document reference
+     * @return a new message
+     */
+    public static Message failedToAcknowledgeDocument(Party supplier, DocumentReferenceType reference) {
+        String id = (reference.getID()) != null ? reference.getID().getValue() : null;
+        String docType = (reference.getDocumentType()) != null ? reference.getDocumentType().getValue() : null;
+        return messages.getMessage(802, supplier.getId(), supplier.getName(), id, docType);
+    }
 }

@@ -23,13 +23,12 @@ import org.oasis.ubl.OrderType;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.esci.DelegatingOrderService;
 import org.openvpms.esci.FutureValue;
-import org.openvpms.esci.DelegatingRegistryService;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.client.impl.OrderServiceAdapterImpl;
 import org.openvpms.esci.adapter.map.order.OrderMapper;
-import org.openvpms.esci.exception.ESCIException;
+import org.openvpms.esci.service.DelegatingOrderService;
+import org.openvpms.esci.service.DelegatingRegistryService;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
@@ -64,7 +63,7 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
      */
     @Resource
     private DelegatingRegistryService delegatingRegistryService;
-    
+
     /**
      * The delegating order service.
      */
@@ -111,7 +110,7 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
 
         final FutureValue<OrderType> future = new FutureValue<OrderType>();
         delegatingOrderService.setOrderService(new OrderService() {
-            public void submitOrder(OrderType order) throws ESCIException {
+            public void submitOrder(OrderType order) {
                 future.set(order);
             }
         });

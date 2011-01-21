@@ -18,14 +18,14 @@
 
 package org.openvpms.esci.adapter.i18n;
 
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-import org.openvpms.esci.adapter.AbstractESCITest;
-import org.openvpms.esci.adapter.map.UBLHelper;
-import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.junit.Test;
 import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.oasis.ubl.common.basic.DocumentTypeType;
+import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.esci.adapter.AbstractESCITest;
+import org.openvpms.esci.adapter.map.UBLHelper;
 
 
 /**
@@ -35,6 +35,17 @@ import org.oasis.ubl.common.basic.DocumentTypeType;
  * @version $LastChangedDate: $
  */
 public class ESCIAdapterMessagesTestCase extends AbstractESCITest {
+
+    /**
+     * Tests the {@link ESCIAdapterMessages#duplicateOrder}.
+     */
+    @Test
+    public void testDuplicateOrder() {
+        Party supplier = TestHelper.createSupplier(false);
+        String message = "ESCIA-0200: Duplicate order 50 reported by supplier " + supplier.getName() + " ("
+                         + supplier.getId() + ")";
+        check(message, ESCIAdapterMessages.duplicateOrder(50, supplier));
+    }
 
     /**
      * Tests the {@link ESCIAdapterMessages#unsupportedDocument} method.
@@ -69,7 +80,7 @@ public class ESCIAdapterMessagesTestCase extends AbstractESCITest {
      * Verifies a message matches that expected.
      *
      * @param expected the expected message
-     * @param actual the actual message
+     * @param actual   the actual message
      */
     private void check(String expected, Message actual) {
         assertEquals(expected, actual.toString());

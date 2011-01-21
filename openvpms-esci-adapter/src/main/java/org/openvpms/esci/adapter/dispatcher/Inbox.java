@@ -20,6 +20,7 @@ package org.openvpms.esci.adapter.dispatcher;
 
 import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.esci.exception.DocumentNotFoundException;
 import org.openvpms.esci.service.InboxService;
 
 import java.util.List;
@@ -91,8 +92,9 @@ public class Inbox implements InboxService {
      * Once acknowledged, the document will no longer be returned by {@link #getDocuments} nor {@link #getDocument}.
      *
      * @param reference the document reference
+     * @throws DocumentNotFoundException if the reference doesn't refer to a valid document
      */
-    public void acknowledge(DocumentReferenceType reference) {
+    public void acknowledge(DocumentReferenceType reference) throws DocumentNotFoundException {
         inbox.acknowledge(reference);
     }
 

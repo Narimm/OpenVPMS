@@ -24,6 +24,7 @@ import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.exception.DocumentNotFoundException;
 
 import java.util.Iterator;
 import java.util.List;
@@ -100,7 +101,11 @@ public class InboxDispatcher {
                 Document document = new Document(reference, content);
                 DocumentProcessor processor = getProcessor(inbox.getSupplier(), document);
                 processor.process(document, inbox.getSupplier());
-                inbox.acknowledge(reference);
+                try {
+                    inbox.acknowledge(reference);
+                } catch (DocumentNotFoundException exception) {
+                    failedToAcknowledgeDocument(reference, exception);
+                }
             } else {
                 documentNotFound(reference);
             }
@@ -114,6 +119,16 @@ public class InboxDispatcher {
      */
     protected void documentNotFound(DocumentReferenceType reference) {
         log.warn(ESCIAdapterMessages.documentNotFound(inbox.getSupplier(), reference));
+    }
+
+    /**
+     * Invoked when a document is processed, but failed to be acknowledged as it no longer exists.
+     *
+     * @param reference the document reference
+     * @param exception the cause
+     */
+    protected void failedToAcknowledgeDocument(DocumentReferenceType reference, DocumentNotFoundException exception) {
+        log.warn(ESCIAdapterMessages.failedToAcknowledgeDocument(inbox.getSupplier(), reference), exception);
     }
 
     /**

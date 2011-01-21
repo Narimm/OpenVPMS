@@ -23,10 +23,13 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.esci.service.OrderService;
-import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
+import org.openvpms.esci.adapter.client.SupplierServiceLocator;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.order.OrderMapper;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.exception.DuplicateOrderException;
+import org.openvpms.esci.service.OrderService;
 
 import javax.annotation.Resource;
 
@@ -110,7 +113,11 @@ public class OrderServiceAdapterImpl implements OrderServiceAdapter {
         }
         OrderService orderService = locator.getOrderService(supplier, stockLocation);
         OrderType orderType = mapper.map(order);
-        orderService.submitOrder(orderType);
+        try {
+            orderService.submitOrder(orderType);
+        } catch (DuplicateOrderException exception) {
+            throw new ESCIAdapterException(ESCIAdapterMessages.duplicateOrder(order.getId(), supplier), exception);
+        }
     }
 
 }
