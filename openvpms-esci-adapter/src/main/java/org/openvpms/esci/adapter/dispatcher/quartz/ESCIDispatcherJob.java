@@ -18,6 +18,9 @@
 
 package org.openvpms.esci.adapter.dispatcher.quartz;
 
+import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.dispatcher.ESCIDispatcher;
 import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
@@ -25,6 +28,9 @@ import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.StatefulJob;
 import org.quartz.Trigger;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 
 import javax.annotation.Resource;
 
@@ -44,6 +50,16 @@ public class ESCIDispatcherJob implements InterruptableJob, StatefulJob {
      */
     private ESCIDispatcher dispatcher;
 
+    /**
+     * The archetype service.
+     */
+    private IArchetypeService service;
+
+    /**
+     * The user to run the job as.
+     */
+    private String runAs;
+
 
     /**
      * Registers the dispatcher.
@@ -53,6 +69,26 @@ public class ESCIDispatcherJob implements InterruptableJob, StatefulJob {
     @Resource
     public void setESCIDispatcher(ESCIDispatcher dispatcher) {
         this.dispatcher = dispatcher;
+    }
+
+    /**
+     * Registers the archetype service.
+     *
+     * @param service the archetype service
+     */
+    @Resource
+    public void setArchetypeService(IArchetypeService service) {
+        this.service = service;
+    }
+
+    /**
+     * Sets the user login name to run the job under.
+     *
+     * @param login the login name
+     */
+    @Resource
+    public void setRunAs(String login) {
+        this.runAs = login;
     }
 
     /**
@@ -66,10 +102,19 @@ public class ESCIDispatcherJob implements InterruptableJob, StatefulJob {
         if (dispatcher == null) {
             throw new JobExecutionException("ESCIDispatcher has not been registered");
         }
+        if (service == null) {
+            throw new JobExecutionException("ArchetypeService has not been registered");
+        }
+        if (runAs == null) {
+            throw new JobExecutionException("runAs has not been set");
+        }
+        initSecurityContext();
         try {
             dispatcher.dispatch();
         } catch (Throwable exception) {
             throw new JobExecutionException(exception);
+        } finally {
+            SecurityContextHolder.clearContext();
         }
     }
 
@@ -79,4 +124,21 @@ public class ESCIDispatcherJob implements InterruptableJob, StatefulJob {
     public void interrupt() {
         dispatcher.stop();
     }
+
+    /**
+     * Initialises the security context.
+     */
+    private void initSecurityContext() {
+        UserRules rules = new UserRules(service);
+        User user = rules.getUser(runAs);
+        if (user == null) {
+            throw new IllegalArgumentException("User ' + " + runAs + "' does not correspond to a valid user");
+        }
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        UsernamePasswordAuthenticationToken authentication
+                = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+    }
 }
+

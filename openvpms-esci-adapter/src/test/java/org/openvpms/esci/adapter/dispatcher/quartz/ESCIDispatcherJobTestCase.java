@@ -24,6 +24,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.esci.adapter.dispatcher.DocumentProcessor;
 import org.openvpms.esci.adapter.dispatcher.ESCIDispatcher;
+import org.openvpms.esci.adapter.AbstractESCITest;
+import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.security.User;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -31,6 +34,7 @@ import org.quartz.JobListener;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
+import org.quartz.SchedulerContext;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.listeners.JobListenerSupport;
 import org.quartz.simpl.SimpleThreadPool;
@@ -46,7 +50,7 @@ import java.util.Properties;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public class ESCIDispatcherJobTestCase {
+public class ESCIDispatcherJobTestCase extends AbstractESCITest {
 
     /**
      * Verifies that {@link ESCIDispatcher} can be triggered ad-hoc via the <tt>Scheduler.triggerJob</tt> method,
@@ -133,6 +137,7 @@ public class ESCIDispatcherJobTestCase {
      * @throws SchedulerException if the scheduler can't be created
      */
     private Scheduler createScheduler(ESCIDispatcher dispatcher, JobListener listener) throws SchedulerException {
+        User user = TestHelper.createUser();
         StdSchedulerFactory factory = new StdSchedulerFactory();
         Properties properties = new Properties();
         properties.setProperty("org.quartz.threadPool.class", SimpleThreadPool.class.getName());
@@ -142,7 +147,10 @@ public class ESCIDispatcherJobTestCase {
 
         // register the dispatcher in the context. This will be used to populate ESCIDispatcherJob instances by
         // the jobFactory
-        scheduler.getContext().put("ESCIDispatcher", dispatcher);
+        SchedulerContext context = scheduler.getContext();
+        context.put("ESCIDispatcher", dispatcher);
+        context.put("ArchetypeService", getArchetypeService());
+        context.put("runAs", user.getUsername());
 
         // set up a job factory to populate the ESCIDispatcher on the ESCIDispatcherJob
         SpringBeanJobFactory jobFactory = new SpringBeanJobFactory();
