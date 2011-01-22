@@ -75,7 +75,7 @@ public class UserRules {
         ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER_ARCHETYPES, true, true);
         query.add(new NodeConstraint("username", username));
         query.setMaxResults(1);
-        Iterator<User> iterator = new IMObjectQueryIterator<User>(query);
+        Iterator<User> iterator = new IMObjectQueryIterator<User>(service, query);
         if (iterator.hasNext()) {
             return iterator.next();
         }
