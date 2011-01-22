@@ -39,9 +39,9 @@
     <data archetype="lookup.contactPurpose" code="REMINDER" />
     <data archetype="lookup.contactPurpose" code="BILLING" />
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" />
-	<data archetype="lookup.alertType" code="ALLLERGY" />
-	<data archetype="lookup.alertType" code="AGGRESSION" />
-	<data archetype="lookup.alertType" code="OTHER" defaultLookup="true"/>
+	<data archetype="lookup.patientAlertType" code="ALLLERGY" />
+	<data archetype="lookup.patientAlertType" code="AGGRESSION" />
+	<data archetype="lookup.patientAlertType" code="OTHER" defaultLookup="true"/>
 	<data archetype="lookup.reportType" code="CUSTOMER" />
 	<data archetype="lookup.reportType" code="PATIENT" />
 	<data archetype="lookup.reportType" code="SUPPLIER" />
