@@ -38,17 +38,17 @@
 	<data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT2" noSlots="1"/>		
 	<data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT3" noSlots="1"/>		
 	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
-	<data archetype="lookup.uom" code="BOTTLE" />
+    <data archetype="lookup.uom" code="BOTTLE" unitCode="BO"/>
 	<data archetype="lookup.uom" code="SYRINGE" />
-	<data archetype="lookup.uom" code="TABLET" />
-	<data archetype="lookup.uom" code="PACKET" />
-	<data archetype="lookup.uom" code="VIAL" />
-	<data archetype="lookup.uom" code="BOX" />
-	<data archetype="lookup.uom" code="GRAMS" />
-	<data archetype="lookup.uom" code="LITRES" />
-	<data archetype="lookup.uom" code="AMPOULE" />
-	<data archetype="lookup.uom" code="MLS" />
-	<data archetype="lookup.uom" code="TUBE" />
+    <data archetype="lookup.uom" code="TABLET" unitCode="U2"/>
+    <data archetype="lookup.uom" code="PACKET" unitCode="PA"/>
+    <data archetype="lookup.uom" code="VIAL" unitCode="VI"/>
+    <data archetype="lookup.uom" code="BOX" unitCode="BX"/>
+    <data archetype="lookup.uom" code="GRAMS" unitCode="GRM"/>
+    <data archetype="lookup.uom" code="LITRES" unitCode="LTR" />
+    <data archetype="lookup.uom" code="AMPOULE" unitCode="AM"/>
+    <data archetype="lookup.uom" code="MLS" unitCode="MLT"/>
+    <data archetype="lookup.uom" code="TUBE" unitCode="TU"/>
     <data archetype="lookup.customerType" code="SMALL_ANIMAL" />
     <data archetype="lookup.customerType" code="LARGE_ANIMAL" />
     <data archetype="lookup.customerType" code="STUD" />

@@ -154,3 +154,48 @@ delete d
 from lookups l
 join lookup_details d on l.arch_short_name = "lookup.customerAccountType" and d.name = "showAlert";
 
+#
+# Update lookup.uom for ESCI-1
+#
+drop table if exists unit_codes;
+create table unit_codes (
+    lookup_code varchar(10) not null,
+    unit_code varchar(10) not null);
+
+insert into unit_codes values
+  	("BOTTLE", "BO"),
+    ("TABLET", "U2"),
+	("PACKET", "PA"),
+	("VIAL","VI"),
+	("BOX", "BX"),
+	("GRAMS", "GRM"),
+	("LITRES","LTR"),
+	("AMPOULE", "AM"),
+	("MLS", "MLT"),
+	("TUBE","TU"),
+	("KILOGRAM", "KGM"),
+  ("POUNDS", "LBR");
+
+insert into lookup_details (lookup_id, name, type, value)
+select l.lookup_id, "unitCode", "string", u.unit_code
+from lookups l, unit_codes u
+where l.code = u.lookup_code and l.arch_short_name = "lookup.uom"
+      and not exists (select * from lookup_details d where d.lookup_id = l.lookup_id and d.name ="unitCode");
+
+drop table unit_codes;
+
+#
+# Update lookup.taxType for ESCI-1
+#
+insert into lookup_details (lookup_id, name, type, value)
+select l.lookup_id, "taxScheme", "string", "GST"
+from lookups l
+where l.arch_short_name = "lookup.taxType" and l.code= "GST" and not exists
+      (select * from lookup_details d where d.lookup_id = l.lookup_id and d.name = "taxScheme");
+
+insert into lookup_details (lookup_id, name, type, value)
+select l.lookup_id, "taxCategory", "string", "S"
+from lookups l
+where l.arch_short_name = "lookup.taxType" and l.code= "GST" and not exists
+      (select * from lookup_details d where d.lookup_id = l.lookup_id and d.name = "taxCategory");
+ 
