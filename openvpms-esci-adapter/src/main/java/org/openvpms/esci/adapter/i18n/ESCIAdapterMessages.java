@@ -73,6 +73,27 @@ public class ESCIAdapterMessages {
     }
 
     /**
+     * Creates a new message when a web service cannot be contacted.
+     *
+     * @param serviceURL the service URL
+     * @return a new message
+     */
+    public static Message connectionFailed(String serviceURL) {
+        return messages.getMessage(4, serviceURL);
+    }
+
+    /**
+     * Creates a new message when a supplier web service cannot be contacted.
+     *
+     * @param supplier   the supplier
+     * @param serviceURL the service URL
+     * @return a new message
+     */
+    public static Message connectionFailed(Party supplier, String serviceURL) {
+        return messages.getMessage(5, supplier.getId(), supplier.getName(), serviceURL);
+    }
+
+    /**
      * Creates a new message for a missing UBL element.
      *
      * @param path   the path to the element, from the parent
@@ -223,7 +244,7 @@ public class ESCIAdapterMessages {
     /**
      * Creates a message for when a supplier reports an order as being duplicate.
      *
-     * @param id the order identifier
+     * @param id       the order identifier
      * @param supplier the supplier
      * @return a new message
      */
@@ -459,4 +480,5 @@ public class ESCIAdapterMessages {
         String docType = (reference.getDocumentType()) != null ? reference.getDocumentType().getValue() : null;
         return messages.getMessage(802, supplier.getId(), supplier.getName(), id, docType);
     }
+
 }

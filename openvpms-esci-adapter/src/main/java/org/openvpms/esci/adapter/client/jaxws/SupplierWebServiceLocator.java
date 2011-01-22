@@ -35,6 +35,7 @@ import org.openvpms.esci.service.client.ServiceLocator;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
 
 import javax.annotation.Resource;
+import javax.xml.ws.WebServiceException;
 import java.net.MalformedURLException;
 
 
@@ -101,7 +102,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
      * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
      * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid, or the supplier-stock
-     *                              location relationship is not supported
+     *                              location relationship is not supported, or the service prxy can't be created
      */
     public OrderService getOrderService(Party supplier, Party stockLocation) {
         SupplierServices services = new SupplierServices(supplier, stockLocation);
@@ -115,7 +116,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
      * @param username   the username to connect to the service with
      * @param password   the password to connect  to the service with
      * @return a proxy for the service provided by the supplier
-     * @throws ESCIAdapterException if <tt>serviceURL</tt> is invalid
+     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid or the proxy cannot be created
      */
     public OrderService getOrderService(String serviceURL, String username, String password) {
         SupplierServices services = new SupplierServices(serviceURL, username, password);
@@ -131,8 +132,8 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
      * @param supplier      the supplier
      * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
-     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid, or the supplier-stock
-     *                              location relationship is not supported
+     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid, the supplier-stock
+     *                              location relationship is not supported, or the proxy cannot be created
      */
     public InboxService getInboxService(Party supplier, Party stockLocation) {
         SupplierServices services = new SupplierServices(supplier, stockLocation);
@@ -231,19 +232,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
          * @throws ESCIAdapterException for any error
          */
         public RegistryService getRegistryService(String endpointAddress) {
-            ServiceLocator<RegistryService> locator;
-            try {
-                locator = locatorFactory.getServiceLocator(
-                        RegistryService.class, serviceURL, endpointAddress, username, password);
-            } catch (MalformedURLException exception) {
-                if (supplier != null) {
-                    throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL),
-                                                   exception);
-                } else {
-                    throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
-                }
-            }
-            return locator.getService();
+            return getService(RegistryService.class, serviceURL, endpointAddress);
         }
 
         /**
@@ -293,8 +282,8 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
         /**
          * Reutrns a service proxy.
          *
-         * @param clazz the proxy class
-         * @param url the service URL
+         * @param clazz           the proxy class
+         * @param url             the service URL
          * @param endpointAddress the endpoint address. May be <tt>null</tt>
          * @return the service proxy
          * @throws ESCIAdapterException for any error
@@ -304,9 +293,23 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
             try {
                 locator = locatorFactory.getServiceLocator(clazz, url, endpointAddress, username, password);
             } catch (MalformedURLException exception) {
-                throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
+                if (supplier != null) {
+                    throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL),
+                                                   exception);
+                } else {
+                    throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
+                }
             }
-            return locator.getService();
+            try {
+                return locator.getService();
+            } catch (WebServiceException exception) {
+                if (supplier != null) {
+                    throw new ESCIAdapterException(ESCIAdapterMessages.connectionFailed(supplier, serviceURL),
+                                                   exception);
+                } else {
+                    throw new ESCIAdapterException(ESCIAdapterMessages.connectionFailed(serviceURL), exception);
+                }
+            }
         }
 
     }

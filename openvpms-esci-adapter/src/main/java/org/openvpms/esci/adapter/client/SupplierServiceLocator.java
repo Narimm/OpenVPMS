@@ -20,6 +20,7 @@ package org.openvpms.esci.adapter.client;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.service.InboxService;
 import org.openvpms.esci.service.OrderService;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 
 /**
@@ -39,8 +40,7 @@ public interface SupplierServiceLocator {
      * @param supplier      the supplier
      * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
-     * @throws org.openvpms.esci.adapter.util.ESCIAdapterException
-     *          if the associated <tt>serviceURL</tt> is invalid
+     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid or the proxy cannot be created
      */
     OrderService getOrderService(Party supplier, Party stockLocation);
 
@@ -51,8 +51,7 @@ public interface SupplierServiceLocator {
      * @param username   the username to connect to the service with
      * @param password   the password to connect  to the service with
      * @return a proxy for the service provided by the supplier
-     * @throws org.openvpms.esci.adapter.util.ESCIAdapterException
-     *          if <tt>serviceURL</tt> is invalid
+     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid or the proxy cannot be created
      */
     OrderService getOrderService(String serviceURL, String username, String password);
 
@@ -65,6 +64,7 @@ public interface SupplierServiceLocator {
      * @param supplier      the supplier
      * @param stockLocation the stock location
      * @return a proxy for the service provided by the supplier
+     * @throws ESCIAdapterException if the associated <tt>serviceURL</tt> is invalid or the proxy cannot be created
      */
     InboxService getInboxService(Party supplier, Party stockLocation);
 }

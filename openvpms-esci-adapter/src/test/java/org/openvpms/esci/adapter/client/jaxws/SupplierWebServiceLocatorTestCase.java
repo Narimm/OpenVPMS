@@ -17,9 +17,11 @@
  */
 package org.openvpms.esci.adapter.client.jaxws;
 
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import org.junit.Before;
+import org.junit.Test;
 import org.oasis.ubl.OrderType;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -29,10 +31,10 @@ import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.client.InVMSupplierServiceLocator;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.service.DelegatingOrderService;
+import org.openvpms.esci.service.DelegatingRegistryService;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
-import org.openvpms.esci.service.DelegatingRegistryService;
-import org.openvpms.esci.service.DelegatingOrderService;
 import org.openvpms.esci.service.client.DefaultServiceLocatorFactory;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -60,7 +62,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
     @Resource
     private DelegatingOrderService delegatingOrderService;
 
-    
+
     /**
      * Verifies that the OrderService can be obtained with
      * {@link SupplierServiceLocator#getOrderService(Party, Party)} and its methods invoked.
@@ -157,6 +159,40 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
     }
 
     /**
+     * Verifies that an {@link ESCIAdapterException} is thrown if a service cannot be contacted.
+     */
+    @Test
+    public void testConnectionFailed() {
+        try {
+            SupplierServiceLocator locator = createLocator();
+            locator.getOrderService("http://localhost:8888", "foo", "bar");
+            fail("Expected getOrderService() to fail");
+        } catch (ESCIAdapterException exception) {
+            String message = "ESCIA-0004: Failed to connect to web service http://localhost:8888";
+            assertEquals(message, exception.getMessage());
+        }
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is thrown if a supplier service cannot be contacted.
+     */
+    @Test
+    public void testConnectionFailedForSupplierService() {
+        Party supplier = getSupplier();
+        Party location = getStockLocation();
+        addESCIConfiguration(supplier, location, "http://localhost:8888");
+        try {
+            SupplierServiceLocator locator = createLocator();
+            locator.getOrderService(supplier, location);
+            fail("Expected getOrderService() to fail");
+        } catch (ESCIAdapterException exception) {
+            String message = "ESCIA-0005: Failed to connect to web service http://localhost:8888 for supplier "
+                             + supplier.getName() + " (" + supplier.getId() + ")";
+            assertEquals(message, exception.getMessage());
+        }
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -168,6 +204,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
             public String getInboxService() {
                 return getWSDL("wsdl/InboxService.wsdl");
             }
+
             public String getOrderService() {
                 return getWSDL("wsdl/OrderService.wsdl");
             }
