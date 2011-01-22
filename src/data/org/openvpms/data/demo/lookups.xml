@@ -68,19 +68,19 @@
 	<data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true" />
 	<data archetype="lookup.messageReason" code="OTHER" name="Other" />
 	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
-	<data archetype="lookup.uom" code="BOTTLE" />
+	<data archetype="lookup.uom" code="BOTTLE" unitCode="BO"/>
 	<data archetype="lookup.uom" code="SYRINGE" />
-	<data archetype="lookup.uom" code="TABLET" />
-	<data archetype="lookup.uom" code="PACKET" />
-	<data archetype="lookup.uom" code="VIAL" />
-	<data archetype="lookup.uom" code="BOX" />
-	<data archetype="lookup.uom" code="GRAMS" />
-	<data archetype="lookup.uom" code="LITRES" />
-	<data archetype="lookup.uom" code="AMPOULE" />
-	<data archetype="lookup.uom" code="MLS" />
-	<data archetype="lookup.uom" code="TUBE" />
-	<data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" />
-	<data id="Pounds" archetype="lookup.uom" code="POUNDS" />
+	<data archetype="lookup.uom" code="TABLET" unitCode="U2"/>
+	<data archetype="lookup.uom" code="PACKET" unitCode="PA"/>
+	<data archetype="lookup.uom" code="VIAL" unitCode="VI"/>
+	<data archetype="lookup.uom" code="BOX" unitCode="BX"/>
+	<data archetype="lookup.uom" code="GRAMS" unitCode="GRM"/>
+	<data archetype="lookup.uom" code="LITRES" unitCode="LTR" />
+	<data archetype="lookup.uom" code="AMPOULE" unitCode="AM"/>
+	<data archetype="lookup.uom" code="MLS" unitCode="MLT"/>
+	<data archetype="lookup.uom" code="TUBE" unitCode="TU"/>
+	<data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" unitCode="KGM"/>
+	<data id="Pounds" archetype="lookup.uom" code="POUNDS" unitCode="LBR"/>
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
 	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
 	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
@@ -94,7 +94,7 @@
     <data archetype="lookup.customerType" code="LARGE_ANIMAL" />
     <data archetype="lookup.customerType" code="STUD" />
     <data archetype="lookup.customerType" code="FARM" />
-    <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" />
+    <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" taxScheme="GST" taxCategory="S"/>
     <data archetype="lookup.productIncomeType" code="PROFESSIONAL" />
     <data archetype="lookup.productIncomeType" code="MEDICATION" />
     <data archetype="lookup.productIncomeType" code="MERCHANDISE" />
