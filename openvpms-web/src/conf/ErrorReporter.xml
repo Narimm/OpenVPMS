@@ -23,4 +23,7 @@
         <className>org.openvpms.archetype.rules.finance.statement.StatementProcessorException</className>
         <exclude>InvalidConfiguration</exclude>
     </exclude-exception>
+    <exclude-exception>
+        <className>org.openvpms.esci.adapter.util.ESCIAdapterException</className>
+    </exclude-exception>
 </error-reporter-config>
