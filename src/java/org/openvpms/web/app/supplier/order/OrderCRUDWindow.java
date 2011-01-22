@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
 import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
-import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -43,10 +42,6 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.quartz.Scheduler;
-import org.quartz.SimpleTrigger;
-
-import java.util.Date;
 
 
 /**
@@ -55,17 +50,12 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
+public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
 
     /**
      * Copy button identifier.
      */
     private static final String COPY_ID = "copy";
-
-    /**
-     * Check inbox button identifier.
-     */
-    private static final String CHECK_INBOX_ID = "checkInbox";
 
 
     /**
@@ -89,16 +79,11 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
                 onCopy();
             }
         });
-        Button poll = ButtonFactory.create(CHECK_INBOX_ID, new ActionListener() {
-            public void onAction(ActionEvent event) {
-                schedulePoll(false);
-            }
-        });
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
         buttons.add(createPreviewButton());
         buttons.add(copy);
-        buttons.add(poll);
+        buttons.add(createCheckInboxButton());
     }
 
     /**
@@ -211,7 +196,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
             try {
                 OrderServiceAdapter service = ServiceHelper.getOrderService();
                 service.submitOrder(act);
-                schedulePoll(true); // poll in 30 secs to see if there any responses
+                scheduleCheckInbox(true); // poll in 30 secs to see if there any responses
                 result = true;
             } catch (Throwable exception) {
                 // failed to submit the order, so revert to IN_PROGRESS
@@ -225,28 +210,6 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
             result = true;
         }
         return result;
-    }
-
-    /**
-     * Schedule a poll of the suppliers to pick up messages.
-     *
-     * @param delay if <tt>true</tt> add a 30 second delay
-     */
-    private void schedulePoll(boolean delay) {
-        try {
-            String triggerName = "ESCIDispatcherAdhocTrigger";
-            Scheduler scheduler = (Scheduler) ServiceHelper.getContext().getBean("scheduler");
-            scheduler.unscheduleJob(triggerName, null); // remove the existing trigger, if any
-            SimpleTrigger trigger = new SimpleTrigger(triggerName);
-            trigger.setJobName("esciDispatcherJob");
-            if (delay) {
-                Date in30secs = new Date(System.currentTimeMillis() + 30 * 1000);
-                trigger.setStartTime(in30secs);
-            }
-            scheduler.scheduleJob(trigger);
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
     }
 
 }

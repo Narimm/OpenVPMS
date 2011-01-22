@@ -28,7 +28,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
+import org.openvpms.web.app.supplier.order.ESCISupplierCRUDWindow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -40,7 +41,6 @@ import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -50,7 +50,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-04-06 14:41:46Z $
  */
-public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
+public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
 
     /**
      * Invoice button identifier.
@@ -163,6 +163,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
         buttons.add(createPostButton());
         buttons.add(invoice);
         buttons.add(reverse);
+        buttons.add(createCheckInboxButton());
     }
 
     /**

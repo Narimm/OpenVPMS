@@ -238,7 +238,25 @@ public class ErrorHelper {
      * @return the exception message
      */
     public static String getError(Throwable exception, String displayName) {
-        exception = getRootCause(exception);
+        Throwable cause = getRootCause(exception);
+        String result = getFormattedMessage(cause, displayName);
+        if (result == null && exception != cause) {
+            result = getFormattedMessage(exception, displayName);
+        }
+        if (result == null) {
+            result = exception.getLocalizedMessage();
+        }
+        return result;
+    }
+
+    /**
+     * Returns a formatted message for an exception, if one is configured.
+     *
+     * @param exception   the exception
+     * @param displayName the display name
+     * @return the formatted message, or <tt>null</tt> if none is available
+     */
+    private static String getFormattedMessage(Throwable exception, String displayName) {
         String result = null;
         if (displayName != null) {
             String key = exception.getClass().getName() + ".formatted";
@@ -250,8 +268,6 @@ public class ErrorHelper {
         if (result == null) {
             if (exception instanceof ValidationException) {
                 result = getError((ValidationException) exception);
-            } else {
-                result = exception.getLocalizedMessage();
             }
         }
         return result;
