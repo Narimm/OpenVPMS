@@ -18,32 +18,35 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
+import nextapp.echo2.app.layout.RowLayoutData;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.doc.DocumentActLayoutStrategy;
+import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.layout.PrintObjectLayoutHelper;
-import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.component.util.RowFactory;
+
+import java.util.List;
 
 
 /**
@@ -57,9 +60,9 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     private boolean showDateReadOnly;
 
     /**
-     * Print layout strategy to delegate to.
+     * Determines if printing should be enabled.
      */
-    private PrintObjectLayoutHelper printLayout;
+    private boolean enablePrint = true;
 
 
     /**
@@ -78,7 +81,6 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     public PatientInvestigationActLayoutStrategy(DocumentEditor editor,
                                                  ActRelationshipCollectionEditor versionsEditor) {
         super(editor, versionsEditor);
-        printLayout = new PrintObjectLayoutHelper("button.printform");
     }
 
     /**
@@ -96,29 +98,7 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
      * @param enable if <tt>true</tt>, enable the button
      */
     public void setEnableButton(boolean enable) {
-        printLayout.setEnableButton(enable);
-    }
-
-    /**
-     * Lay out out the object in the specified container.
-     *
-     * @param object     the object to lay out
-     * @param properties the object's properties
-     * @param parent     the parent object. May be <tt>null</tt>
-     * @param container  the container to use
-     * @param context    the layout context
-     */
-    @Override
-    protected void doLayout(final IMObject object, PropertySet properties, IMObject parent, Component container,
-                            LayoutContext context) {
-        Button print = printLayout.doLayout(container);
-        print.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent e) {
-                onPrint(object);
-            }
-        });
-        super.doLayout(object, properties, parent, container, context);
-        getFocusGroup().add(print);
+        enablePrint = enable;
     }
 
     /**
@@ -143,42 +123,55 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     }
 
     /**
+     * Lays out child components in a grid.
+     *
+     * @param object      the object to lay out
+     * @param parent      the parent object. May be <tt>null</tt>
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param container   the container to use
+     * @param context     the layout context
+     */
+    @Override
+    protected void doSimpleLayout(final IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
+                                  PropertySet properties, Component container, LayoutContext context) {
+        if (enablePrint) {
+            Button print = ButtonFactory.create("button.printform");
+            print.addActionListener(new ActionListener() {
+                public void onAction(ActionEvent e) {
+                    onPrint(object);
+                }
+            });
+            RowLayoutData rowLayout = new RowLayoutData();
+            Alignment topRight = new Alignment(Alignment.RIGHT, Alignment.TOP);
+            rowLayout.setAlignment(topRight);
+            print.setLayoutData(rowLayout);
+            Grid grid = createGrid(descriptors);
+            doGridLayout(object, descriptors, properties, grid, context);
+            Row row = RowFactory.create("WideCellSpacing", grid);
+            ButtonSet set = new ButtonSet(row);
+            set.add(print);
+            container.add(ColumnFactory.create("Inset.Small", row));
+        } else {
+            super.doSimpleLayout(object, parent, descriptors, properties, container, context);
+        }
+    }
+
+    /**
      * Invoked when the print button is pressed.
      *
      * @param object the object to print
      */
     private void onPrint(IMObject object) {
         try {
-            DocumentTemplate template = getTemplate(object);
-            if (template != null) {
-                IMPrinter<IMObject> printer = new IMObjectReportPrinter<IMObject>(object, template);
-                InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer);
-                iPrinter.print();
-            }
+            IMPrinter<IMObject> printer = IMPrinterFactory.create(object);
+            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer);
+            iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
     }
 
-    /**
-     * Returns the template associated with the act's investigation type.
-     *
-     * @param object the act
-     * @return the associated investigation template, or <tt>null</tt> if none is found
-     */
-    private DocumentTemplate getTemplate(IMObject object) {
-        DocumentTemplate result = null;
-        ActBean act = new ActBean((Act) object);
-        Entity investigationType = act.getParticipant(InvestigationArchetypes.INVESTIGATION_TYPE_PARTICIPATION);
-        if (investigationType != null) {
-            EntityBean bean = new EntityBean(investigationType);
-            Entity entity = bean.getNodeTargetEntity("template");
-            if (entity != null) {
-                result = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
-            }
-        }
-        return result;
-    }
 
     /**
      * Helper to return a read-only component.

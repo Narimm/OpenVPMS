@@ -33,7 +33,6 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -281,7 +280,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
             w.setEvent(event);
             window = (CRUDWindow<Act>) w;
         } else if (view == RecordBrowser.View.DOCUMENTS) {
-            CRUDWindow w = new DocumentCRUDWindow(docArchetypes);
+            CRUDWindow w = new PatientDocumentCRUDWindow(docArchetypes);
             window = (CRUDWindow<Act>) w;  // todo
         } else if (view == RecordBrowser.View.REMINDER_ALERT) {
             window = new ReminderCRUDWindow();
