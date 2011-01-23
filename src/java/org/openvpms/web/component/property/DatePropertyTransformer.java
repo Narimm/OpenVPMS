@@ -22,19 +22,19 @@ import java.util.Date;
 
 
 /**
- * Handler for date/time nodes.
+ * Handler for date nodes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-30 04:38:04Z $
  */
-public class DateTimePropertyTransformer extends AbstractDateTimePropertyTransformer {
+public class DatePropertyTransformer extends AbstractDateTimePropertyTransformer {
 
     /**
      * Constructs a <tt>DateTimePropertyTransformer</tt>.
      *
      * @param property the property
      */
-    public DateTimePropertyTransformer(Property property) {
+    public DatePropertyTransformer(Property property) {
         this(property, null, null);
     }
 
@@ -45,8 +45,8 @@ public class DateTimePropertyTransformer extends AbstractDateTimePropertyTransfo
      * @param min      the minimum value for the date. If <tt>null</tt>, the date has no minimum
      * @param max      the maximum value for the date. If <tt>null</tt>, the date has no maximum
      */
-    public DateTimePropertyTransformer(Property property, Date min, Date max) {
-        super(property, min, max, Format.DATE_TIME);
+    public DatePropertyTransformer(Property property, Date min, Date max) {
+        super(property, min, max, Format.DATE);
     }
 
 }

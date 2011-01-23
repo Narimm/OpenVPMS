@@ -26,7 +26,7 @@ import java.text.ParseException;
 import java.util.Date;
 
 /**
- * Add description here.
+ * {@link PropertyTransformer} for date/time properties.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -34,12 +34,69 @@ import java.util.Date;
 public abstract class AbstractDateTimePropertyTransformer extends AbstractPropertyTransformer {
 
     /**
+     * The format for date range validation errors.
+     */
+    protected enum Format {
+        DATE,
+        DATE_TIME
+    }
+
+    /**
+     * The minimum value for the date. If <tt>null</tt>, the date has no minimum.
+     */
+    private Date minDate;
+
+    /**
+     * The maximum value for the date. If <tt>null</tt>, the date has no maximum.
+     */
+    private Date maxDate;
+
+    /**
+     * The format for date range validation errors.
+     */
+    private Format format;
+
+
+    /**
      * Constructs a <tt>AbstractDateTimePropertyTransformer</tt>.
      *
      * @param property the property
      */
     public AbstractDateTimePropertyTransformer(Property property) {
+        this(property, null, null, Format.DATE_TIME);
+    }
+
+    /**
+     * Constructs a <tt>AbstractDateTimePropertyTransformer</tt>.
+     *
+     * @param property the property
+     * @param min      the minimum value for the date. If <tt>null</tt>, the date has no minimum
+     * @param max      the maximum value for the date. If <tt>null</tt>, the date has no maximum
+     * @param format   the format for date range validation errors
+     */
+    public AbstractDateTimePropertyTransformer(Property property, Date min, Date max, Format format) {
         super(property);
+        minDate = min;
+        maxDate = max;
+        this.format = format;
+    }
+
+    /**
+     * Returns the minimum value for the date.
+     *
+     * @return the minimum value for the date. If <tt>null</tt>, the date has no minimum
+     */
+    public Date getMinDate() {
+        return minDate;
+    }
+
+    /**
+     * Returns the maximum value for the date.
+     *
+     * @return the maximum value for the date. If <tt>null</tt>, the date has no maximum
+     */
+    public Date getMaxDate() {
+        return maxDate;
     }
 
     /**
@@ -79,7 +136,9 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
         } catch (Throwable exception) {
             throw getException(exception);
         }
-
+        if (result instanceof Date) {
+            checkDateRange((Date) result, minDate, maxDate);
+        }
         return result;
     }
 
@@ -104,18 +163,62 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
 
     /**
      * Returns the date.
+     * <p/>
+     * This implementation assumes that the property value is a date, and returns it unchanged.
      *
      * @return the date, or <tt>null</tt> if there is no date
      */
-    protected abstract Date getDate();
+    protected Date getDate() {
+        return (Date) getProperty().getValue();
+    }
 
     /**
      * Returns the supplied value as a date/time.
+     * <p/>
+     * This implementation returns the value unchanged.
      *
      * @param value a date, time, or date/time
      * @return the date/time
      */
-    protected abstract Date getDateTime(Date value);
+    protected Date getDateTime(Date value) {
+        return value;
+    }
+
+    /**
+     * Verifies that the date falls into the acceptable date range.
+     *
+     * @param date the date to check
+     * @param min  the minimum date, or <tt>null</tt> if there is no minimum
+     * @param max  the maximum date, or <tt>null</tt> if there is no maximum
+     */
+    protected void checkDateRange(Date date, Date min, Date max) {
+        if (min != null && date.getTime() < min.getTime()) {
+            String formatDate;
+            String formatMin;
+            if (format == Format.DATE) {
+                formatDate = DateHelper.formatDate(date, false);
+                formatMin = DateHelper.formatDate(min, false);
+            } else {
+                formatDate = DateHelper.formatDateTime(date, false);
+                formatMin = DateHelper.formatDateTime(min, false);
+            }
+            String msg = Messages.get("property.error.minDate", formatDate, formatMin);
+            throw new PropertyException(getProperty(), msg);
+        }
+        if (max != null && date.getTime() > max.getTime()) {
+            String formatDate;
+            String formatMax;
+            if (format == Format.DATE) {
+                formatDate = DateHelper.formatDate(date, false);
+                formatMax = DateHelper.formatDate(max, false);
+            } else {
+                formatDate = DateHelper.formatDateTime(date, false);
+                formatMax = DateHelper.formatDateTime(max, false);
+            }
+            String msg = Messages.get("property.error.maxDate", formatDate, formatMax);
+            throw new PropertyException(getProperty(), msg);
+        }
+    }
 
     /**
      * Helper to create a new property exception.
