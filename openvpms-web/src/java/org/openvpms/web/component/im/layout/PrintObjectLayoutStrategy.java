@@ -17,9 +17,14 @@
  */
 package org.openvpms.web.component.im.layout;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.layout.RowLayoutData;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.event.ActionListener;
@@ -27,7 +32,13 @@ import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.button.ButtonSet;
+
+import java.util.List;
 
 
 /**
@@ -38,19 +49,19 @@ import org.openvpms.web.component.util.ErrorHelper;
  */
 public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
 
-    /**
-     * The layout helper.
-     */
-    private PrintObjectLayoutHelper layout;
+    private String buttonId;
+    private Button button;
+
+    private boolean enableButton = true;
 
 
     /**
      * Constructs a new <tt>PrintObjectLayoutStrategy</tt>.
      *
-     * @param label the button label
+     * @param buttonId the button identifier
      */
-    public PrintObjectLayoutStrategy(String label) {
-        layout = new PrintObjectLayoutHelper(label);
+    public PrintObjectLayoutStrategy(String buttonId) {
+        this.buttonId = buttonId;
     }
 
     /**
@@ -59,7 +70,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      * @param enable if <tt>true</tt>, enable the button
      */
     public void setEnableButton(boolean enable) {
-        layout.setEnableButton(enable);
+        this.enableButton = enable;
     }
 
     /**
@@ -74,14 +85,47 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     protected void doLayout(final IMObject object, PropertySet properties, IMObject parent, Component container,
                             LayoutContext context) {
-        Button button = layout.doLayout(container);
-        button.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onPrint(object);
-            }
-        });
+        if (enableButton) {
+            button = ButtonFactory.create(buttonId);
+            button.addActionListener(new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onPrint(object);
+                }
+            });
+        }
         super.doLayout(object, properties, parent, container, context);
-        getFocusGroup().add(button);
+        if (enableButton) {
+            getFocusGroup().add(button);
+        }
+    }
+
+    /**
+     * Lays out child components in a grid.
+     *
+     * @param object      the object to lay out
+     * @param parent      the parent object. May be <tt>null</tt>
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param container   the container to use
+     * @param context     the layout context
+     */
+    @Override
+    protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
+                                  PropertySet properties, Component container, LayoutContext context) {
+        if (button != null) {
+            RowLayoutData rowLayout = new RowLayoutData();
+            Alignment topRight = new Alignment(Alignment.RIGHT, Alignment.TOP);
+            rowLayout.setAlignment(topRight);
+            button.setLayoutData(rowLayout);
+            Grid grid = createGrid(descriptors);
+            doGridLayout(object, descriptors, properties, grid, context);
+            Row row = RowFactory.create("WideCellSpacing", grid);
+            ButtonSet set = new ButtonSet(row);
+            set.add(button);
+            container.add(ColumnFactory.create("Inset.Small", row));
+        } else {
+            super.doSimpleLayout(object, parent, descriptors, properties, container, context);
+        }
     }
 
     /**
