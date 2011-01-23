@@ -21,10 +21,14 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.property.DateTimePropertyTransformer;
+import org.openvpms.web.component.property.DefaultPropertyTransformer;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TimeFieldFactory;
@@ -62,15 +66,22 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      */
     private final Row component;
 
-
     /**
      * Constructs a new <tt>BoundDateTimeField</tt>.
+     * <p/>
+     * If the property doesn't already have a {@link PropertyTransformer} registered, one will be added that
+     * restricts entered dates to the range <tt>{@link BoundDateField#MIN_DATE}..now + 100 years</tt>.
+     * This a workaround for OVPMS-1006.
      *
      * @param property the property to bind
      */
     public BoundDateTimeField(Property property) {
         super(property);
-        property.setTransformer(new DateTimePropertyTransformer(property));
+        if (property.getTransformer() == null || property.getTransformer() instanceof DefaultPropertyTransformer) {
+            // register a transformer that restricts dates
+            Date maxDate = DateRules.getDate(DateRules.getDate(new Date()), 100, DateUnits.YEARS);
+            property.setTransformer(new DateTimePropertyTransformer(property, BoundDateField.MIN_DATE, maxDate));
+        }
 
         date = new DateField(property);
         time = TimeFieldFactory.create(property);
@@ -87,6 +98,34 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      */
     public void setDate(Date date) {
         getProperty().setValue(getDatetime(date));
+    }
+
+    /**
+     * Returns the minimum date allowed for this field.
+     *
+     * @return the minimum date, or <tt>null</tt> if there is no minimum date
+     */
+    public Date getMinDate() {
+        Date result = null;
+        if (getProperty().getTransformer() instanceof DateTimePropertyTransformer) {
+            DateTimePropertyTransformer transformer = (DateTimePropertyTransformer) getProperty().getTransformer();
+            result = transformer.getMinDate();
+        }
+        return result;
+    }
+
+    /**
+     * Returns the maximum date allowed for this field.
+     *
+     * @return the maximum date, or <tt>null</tt> if there is no maximum date
+     */
+    public Date getMaxDate() {
+        Date result = null;
+        if (getProperty().getTransformer() instanceof DateTimePropertyTransformer) {
+            DateTimePropertyTransformer transformer = (DateTimePropertyTransformer) getProperty().getTransformer();
+            result = transformer.getMaxDate();
+        }
+        return result;
     }
 
     /**

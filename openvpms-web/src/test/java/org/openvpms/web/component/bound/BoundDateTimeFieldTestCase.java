@@ -20,9 +20,14 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.Component;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -87,6 +92,42 @@ public class BoundDateTimeFieldTestCase extends AbstractBoundFieldTest<BoundDate
         assertEquals(date, property.getValue());
         field.getDateField().getTextField().setText(null);
         assertNull(property.getValue());
+    }
+
+    /**
+     * Verifies that date/times a restricted to a range.
+     */
+    @Test
+    public void testDateRange() {
+        Property property = createProperty();
+        BoundDateTimeField field = createField(property);
+
+        Date minDate = field.getMinDate();
+        Date maxDate = field.getMaxDate();
+        assertNotNull(minDate);
+        assertNotNull(maxDate);
+        Date belowMinDate = DateRules.getDate(minDate, -1, DateUnits.DAYS);
+        Date aboveMaxDate = DateRules.getDate(maxDate, 1, DateUnits.DAYS);
+
+        field.setDate(belowMinDate);
+        assertNull(property.getValue());
+        assertFalse(property.isValid());
+
+        field.setDatetime(minDate);
+        assertEquals(minDate, property.getValue());
+        assertTrue(property.isValid());
+
+        field.setDatetime(maxDate);
+        assertEquals(maxDate, property.getValue());
+        assertTrue(property.isValid());
+
+        field.setDate(aboveMaxDate);
+        assertEquals(maxDate, property.getValue()); // will have previous value, but marked invalid
+        assertFalse(property.isValid());
+
+        field.setDate(maxDate);                     // set the value back to a valid date
+        assertEquals(maxDate, property.getValue());
+        assertTrue(property.isValid());
     }
 
     /**

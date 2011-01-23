@@ -143,6 +143,10 @@ public class IMObjectProperty extends AbstractProperty
                 descriptor.setValue(object, value);
                 set = true;
                 modified();
+            } else if (validationErrors != null) {
+                // a previous set triggered an error, and didn't update the value. If a new update occurs
+                // but has the same value, need to clear any errors
+                modified();
             }
         } catch (DescriptorException exception) {
             invalidate(exception);

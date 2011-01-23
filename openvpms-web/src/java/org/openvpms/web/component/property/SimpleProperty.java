@@ -192,6 +192,10 @@ public class SimpleProperty extends AbstractProperty {
                 this.value = value;
                 set = true;
                 modified();
+            } else if (validationErrors != null) {
+                // a previous set triggered an error, and didn't update the value. If a new update occurs
+                // but has the same value, need to clear any errors
+                modified();
             }
         } catch (OpenVPMSException exception) {
             invalidate(exception);
@@ -278,12 +282,12 @@ public class SimpleProperty extends AbstractProperty {
      */
     public boolean isNumeric() {
         return Number.class.isAssignableFrom(type)
-                || byte.class == type
-                || short.class == type
-                || int.class == type
-                || long.class == type
-                || float.class == type
-                || double.class == type;
+               || byte.class == type
+               || short.class == type
+               || int.class == type
+               || long.class == type
+               || float.class == type
+               || double.class == type;
     }
 
     /**
