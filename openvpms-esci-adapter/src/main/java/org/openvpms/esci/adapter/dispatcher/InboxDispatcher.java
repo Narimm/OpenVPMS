@@ -100,7 +100,7 @@ public class InboxDispatcher {
             if (content != null) {
                 Document document = new Document(reference, content);
                 DocumentProcessor processor = getProcessor(inbox.getSupplier(), document);
-                processor.process(document, inbox.getSupplier());
+                processor.process(document, inbox.getSupplier(), inbox.getStockLocation(), inbox.getAccountId());
                 try {
                     inbox.acknowledge(reference);
                 } catch (DocumentNotFoundException exception) {

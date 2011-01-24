@@ -17,6 +17,7 @@
  */
 package org.openvpms.esci.adapter;
 
+import org.oasis.ubl.common.aggregate.CustomerPartyType;
 import org.oasis.ubl.common.aggregate.SupplierPartyType;
 import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -77,17 +78,28 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
     }
 
     /**
+     * Helper to create a <tt>CustomerPartyType</tt>.
+     *
+     * @param stockLocation the stock location
+     * @return a new <tt>CustomerPartyType</tt>
+     */
+    protected CustomerPartyType createCustomer(Party stockLocation) {
+        CustomerPartyType result = new CustomerPartyType();
+        result.setCustomerAssignedAccountID(UBLHelper.initID(new CustomerAssignedAccountIDType(),
+                                                             stockLocation.getId()));
+        return result;
+    }
+
+    /**
      * Helper to create a <tt>SupplierPartyType</tt>.
      *
      * @param supplier the supplier
      * @return a new <tt>SupplierPartyType</tt>
      */
     protected SupplierPartyType createSupplier(Party supplier) {
-        SupplierPartyType supplierType = new SupplierPartyType();
-        CustomerAssignedAccountIDType supplierId = UBLHelper.initID(new CustomerAssignedAccountIDType(),
-                                                                    supplier.getId());
-        supplierType.setCustomerAssignedAccountID(supplierId);
-        return supplierType;
+        SupplierPartyType result = new SupplierPartyType();
+        result.setCustomerAssignedAccountID(UBLHelper.initID(new CustomerAssignedAccountIDType(), supplier.getId()));
+        return result;
     }
 
     /**

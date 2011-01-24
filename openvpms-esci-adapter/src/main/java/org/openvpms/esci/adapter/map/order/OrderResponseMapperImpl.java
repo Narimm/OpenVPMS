@@ -43,6 +43,7 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
      */
     private IMObjectBeanFactory factory;
 
+
     /**
      * Registers the bean factory.
      *
@@ -56,14 +57,17 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
     /**
      * Maps an <tt>OrderResponseSimpleType</tt> to its corresponding order.
      *
-     * @param response the reponse
-     * @param supplier the supplier that submitted the response
+     * @param response      the reponse
+     * @param supplier      the supplier that submitted the response
+     * @param stockLocation the stock location
+     * @param accountId     the supplier assigned account identifier. May be <tt>null</tt>
      * @return the corresponding order
      */
-    public FinancialAct map(OrderResponseSimpleType response, Party supplier) {
+    public FinancialAct map(OrderResponseSimpleType response, Party supplier, Party stockLocation, String accountId) {
         UBLOrderResponseSimple wrapper = new UBLOrderResponseSimple(response, getArchetypeService());
         checkUBLVersion(wrapper);
-        checkSupplier(supplier, wrapper.getSupplier());
+        wrapper.checkSupplier(supplier, accountId);
+        wrapper.checkStockLocation(stockLocation, accountId);
         FinancialAct order = wrapper.getOrder();
         checkOrder(order, supplier, wrapper);
 

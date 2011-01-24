@@ -18,9 +18,10 @@
 package org.openvpms.esci.adapter.map.order;
 
 import org.oasis.ubl.OrderResponseSimpleType;
+import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.oasis.ubl.common.basic.AcceptedIndicatorType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
-import org.oasis.ubl.common.aggregate.DocumentReferenceType;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.dispatcher.Document;
@@ -42,6 +43,21 @@ public class AbstractOrderResponseTest extends AbstractESCITest {
      * @return a new order response
      */
     protected OrderResponseSimpleType createOrderResponseSimple(long orderId, boolean accepted) {
+        return createOrderResponseSimple(orderId, getSupplier(), getStockLocation(), accepted);
+    }
+
+    /**
+     * Creates a new order response.
+     *
+     * @param orderId       the order identifier to associate the response with
+     * @param accepted      if <tt>true</tt> indicates that the order was accepted, otherwise indicates that it was
+     *                      rejected
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @return a new order response
+     */
+    protected OrderResponseSimpleType createOrderResponseSimple(long orderId, Party supplier, Party stockLocation,
+                                                                boolean accepted) {
         OrderResponseSimpleType result = new OrderResponseSimpleType();
         result.setID(UBLHelper.createID("12345"));
         result.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
@@ -49,7 +65,8 @@ public class AbstractOrderResponseTest extends AbstractESCITest {
         AcceptedIndicatorType indicator = new AcceptedIndicatorType();
         indicator.setValue(accepted);
         result.setAcceptedIndicator(indicator);
-        result.setSellerSupplierParty(createSupplier(getSupplier()));
+        result.setBuyerCustomerParty(createCustomer(stockLocation));
+        result.setSellerSupplierParty(createSupplier(supplier));
         return result;
     }
 

@@ -217,13 +217,17 @@ public class ESCIAdapterMessages {
     /**
      * Creates a new message for when a supplier doesn't match that expected.
      *
+     * @param path             the path to the element
+     * @param parent           the parent element
+     * @param parentId         the parent element identifier
      * @param expectedSupplier the expected supplier
      * @param actualSupplier   the actual supplier
      * @return a new message
      */
-    public static Message supplierMismatch(Party expectedSupplier, Party actualSupplier) {
-        return messages.getMessage(109, expectedSupplier.getId(), expectedSupplier.getName(), actualSupplier.getId(),
-                                   actualSupplier.getName());
+    public static Message supplierMismatch(String path, String parent, String parentId, Party expectedSupplier,
+                                           Party actualSupplier) {
+        return messages.getMessage(109, path, parent, parentId, expectedSupplier.getId(), expectedSupplier.getName(),
+                                   actualSupplier.getId(), actualSupplier.getName());
     }
 
     /**
@@ -240,6 +244,63 @@ public class ESCIAdapterMessages {
                                                       String categoryId) {
         return messages.getMessage(110, path, parent, id, schemeId, categoryId);
     }
+
+    /**
+     * Creates a new message for when neither a <tt>CustomerAssignedAccountId</tt> nor <tt>AdditionalAccountID</tt>
+     * is present in an element that requires it.
+     *
+     * @param path   the path to the element, from the parent
+     * @param parent the parent element path
+     * @param id     the parent element identifier
+     * @return a new message
+     */
+    public static Message noCustomerOrAdditionalAccountId(String path, String parent, String id) {
+        return messages.getMessage(111, path, parent, id);
+    }
+
+    /**
+     * Creates a new message for when neither a <tt>CustomerAssignedAccountID</tt> nor
+     * <tt>SupplierAssignedAccountID</tt> is present in an element that requires it.
+     *
+     * @param path   the path to the element, from the parent
+     * @param parent the parent element path
+     * @param id     the parent element identifier
+     * @return a new message
+     */
+    public static Message noCustomerOrSupplierAccountId(String path, String parent, String id) {
+        return messages.getMessage(112, path, parent, id);
+    }
+
+    /**
+     * Creates a new message for an invalid stock location referenced by an invoice.
+     *
+     * @param path            the path to the element, from the parent
+     * @param parent          the parent element path
+     * @param id              the parent element identifier
+     * @param stockLocationId the stock location identifier
+     * @return a new message
+     */
+    public static Message invalidStockLocation(String path, String parent, String id, String stockLocationId) {
+        return messages.getMessage(113, path, parent, id, stockLocationId);
+    }
+
+    /**
+     * Creates a new message for when a stock location doesn't match that expected.
+     *
+     * @param path                  the path to the element
+     * @param parent                the parent element
+     * @param parentId              the parent element identifier
+     * @param expectedStockLocation the expected stock location
+     * @param actualStockLocation   the actual stock location
+     * @return a new message
+     */
+    public static Message stockLocationMismatch(String path, String parent, String parentId,
+                                                Party expectedStockLocation, Party actualStockLocation) {
+        return messages.getMessage(114, path, parent, parentId, expectedStockLocation.getId(),
+                                   expectedStockLocation.getName(), actualStockLocation.getId(),
+                                   actualStockLocation.getName());
+    }
+
 
     /**
      * Creates a message for when a supplier reports an order as being duplicate.
@@ -299,18 +360,6 @@ public class ESCIAdapterMessages {
      */
     public static Message failedToProcessOrderResponse(String reason) {
         return messages.getMessage(500, reason);
-    }
-
-    /**
-     * Creates a new message for an invalid stock location referenced by an invoice.
-     *
-     * @param path            the path to the element
-     * @param invoiceId       the invoice identifier
-     * @param stockLocationId the stock location identifier
-     * @return a new message
-     */
-    public static Message invoiceInvalidStockLocation(String path, String invoiceId, String stockLocationId) {
-        return messages.getMessage(600, path, invoiceId, stockLocationId);
     }
 
     /**

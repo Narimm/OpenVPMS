@@ -254,7 +254,13 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
          */
         public OrderService getOrderService(String orderEndpointAddress, String registryEndpointAddress) {
             RegistryService registry = getRegistryService(registryEndpointAddress);
-            return getService(OrderService.class, registry.getOrderService(), orderEndpointAddress);
+            String order = null;
+            try {
+                order = registry.getOrderService();
+            } catch (Throwable exception) {
+                throwConnectionFailed(exception);
+            }
+            return getService(OrderService.class, order, orderEndpointAddress);
         }
 
         /**
@@ -276,7 +282,13 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
          */
         public InboxService getInboxService(String endpointAddress) {
             RegistryService registry = getRegistryService();
-            return getService(InboxService.class, registry.getInboxService(), endpointAddress);
+            String inbox = null;
+            try {
+                inbox = registry.getInboxService();
+            } catch (Throwable exception) {
+                throwConnectionFailed(exception);
+            }
+            return getService(InboxService.class, inbox, endpointAddress);
         }
 
         /**
@@ -300,15 +312,27 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
                     throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
                 }
             }
+            T service = null;
             try {
-                return locator.getService();
+                service = locator.getService();
             } catch (WebServiceException exception) {
-                if (supplier != null) {
-                    throw new ESCIAdapterException(ESCIAdapterMessages.connectionFailed(supplier, serviceURL),
-                                                   exception);
-                } else {
-                    throw new ESCIAdapterException(ESCIAdapterMessages.connectionFailed(serviceURL), exception);
-                }
+                throwConnectionFailed(exception);
+            }
+            return service;
+        }
+
+        /**
+         * Helper to throw an {@link ESCIAdapterException} for a connection failure.
+         *
+         * @param exception the cause
+         * @throws ESCIAdapterException with appropriate message and the cause
+         */
+        private void throwConnectionFailed(Throwable exception) {
+            if (supplier != null) {
+                throw new ESCIAdapterException(ESCIAdapterMessages.connectionFailed(supplier, serviceURL),
+                                               exception);
+            } else {
+                throw new ESCIAdapterException(ESCIAdapterMessages.connectionFailed(serviceURL), exception);
             }
         }
 

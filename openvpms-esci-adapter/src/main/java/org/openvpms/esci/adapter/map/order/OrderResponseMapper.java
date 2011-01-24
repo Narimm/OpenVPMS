@@ -35,8 +35,10 @@ public interface OrderResponseMapper {
      *
      * @param response the reponse
      * @param supplier the supplier that submitted the response
+     * @param stockLocation the stock location
+     * @param accountId     the supplier assigned account identifier. May be <tt>null</tt>
      * @return the corresponding order
      */
-    FinancialAct map(OrderResponseSimpleType response, Party supplier);
+    FinancialAct map(OrderResponseSimpleType response, Party supplier, Party stockLocation, String accountId);
 
 }

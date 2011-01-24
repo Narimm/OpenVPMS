@@ -77,20 +77,7 @@ public class AbstractUBLMapper {
         String version = document.getUBLVersionID();
         if (!UBL_VERSION.equals(version)) {
             throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue("UBLVersionID", document.getType(),
-                    document.getID(), UBL_VERSION, version));
-        }
-    }
-
-    /**
-     * Verifies that the expected and actual suppliers in a document exchange match.
-     *
-     * @param expectedSupplier the expected supplier
-     * @param actualSupplier   the actual supplier
-     * @throws ESCIAdapterException if the suppliers don't match
-     */
-    protected void checkSupplier(Party expectedSupplier, Party actualSupplier) {
-        if (!expectedSupplier.equals(actualSupplier)) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.supplierMismatch(expectedSupplier, actualSupplier));
+                                                                               document.getID(), UBL_VERSION, version));
         }
     }
 
@@ -107,7 +94,7 @@ public class AbstractUBLMapper {
         ActBean bean = new ActBean(order, service);
         if (!ObjectUtils.equals(bean.getNodeParticipantRef("supplier"), supplier.getObjectReference())) {
             throw new ESCIAdapterException(ESCIAdapterMessages.invalidOrder(document.getType(), document.getID(),
-                    Long.toString(order.getId())));
+                                                                            Long.toString(order.getId())));
         }
     }
 

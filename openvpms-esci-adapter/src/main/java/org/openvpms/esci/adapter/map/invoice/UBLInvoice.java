@@ -20,16 +20,13 @@ package org.openvpms.esci.adapter.map.invoice;
 import org.apache.commons.lang.StringUtils;
 import org.oasis.ubl.InvoiceType;
 import org.oasis.ubl.common.aggregate.AllowanceChargeType;
-import org.oasis.ubl.common.aggregate.CustomerPartyType;
 import org.oasis.ubl.common.aggregate.InvoiceLineType;
 import org.oasis.ubl.common.aggregate.MonetaryTotalType;
 import org.oasis.ubl.common.aggregate.OrderReferenceType;
 import org.oasis.ubl.common.basic.ChargeTotalAmountType;
-import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.oasis.ubl.common.basic.IssueDateType;
 import org.oasis.ubl.common.basic.IssueTimeType;
 import org.oasis.ubl.common.basic.NoteType;
-import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -66,11 +63,6 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
      * Supplier rules.
      */
     private final SupplierRules supplierRules;
-
-    /**
-     * Stock location archetype id.
-     */
-    private static final ArchetypeId STOCK_LOCATION = new ArchetypeId(StockArchetypes.STOCK_LOCATION);
 
     /**
      * Order archetype id.
@@ -182,9 +174,9 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
     }
 
     /**
-     * Returns the invoice supplier.
+     * Returns the supplier, if the <tt>AccountingSupplierParty/CustomerAssignedAccountID</tt> is provided.
      *
-     * @return the supplier
+     * @return the supplier, or <tt>null</tt> if the CustomerAssignedAccountID is not present
      * @throws ESCIAdapterException      if the supplier was not found
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -193,22 +185,59 @@ public class UBLInvoice extends UBLFinancialType implements UBLDocument {
     }
 
     /**
-     * Returns the invoice stock location.
+     * Returns the supplier assigned account id for the supplier, if one is provided.
      *
-     * @return the stock location
+     * @return the supplier assigned account id for the supplier, or <tt>null</tt> if none is specified
+     */
+    public String getSupplierId() {
+        return getSupplierId(invoice.getAccountingSupplierParty(), "AccountingSupplierParty");
+    }
+
+    /**
+     * Verifies that the supplier matches that expected.
+     *
+     * @param expectedSupplier  the expected supplier
+     * @param expectedAccountId the expected account identifier. May be <tt>null</tt>
+     * @throws ESCIAdapterException if the supplier is invalid
+     */
+    public void checkSupplier(Party expectedSupplier, String expectedAccountId) {
+        Party supplier = getSupplier();
+        String accountId = getSupplierId();
+        checkSupplier(expectedSupplier, expectedAccountId, supplier, accountId, "AccountingSupplierParty");
+    }
+
+    /**
+     * Returns the stock location, if the <tt>AccountingCustomerParty/CustomerAssignedAccountID</tt> is provided.
+     *
+     * @return the stock location, or <tt>null</tt> if the CustomerAssignedAccountID is not present
      * @throws ESCIAdapterException      if the stock location was not found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getStockLocation() {
-        CustomerPartyType customerType = getRequired(invoice.getAccountingCustomerParty(), "AccountingCustomerParty");
-        CustomerAssignedAccountIDType accountId = customerType.getCustomerAssignedAccountID();
-        Party location = (Party) getObject(STOCK_LOCATION, accountId,
-                                           "AccountingCustomerParty/CustomerAssignedAccountID");
-        if (location == null) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.invoiceInvalidStockLocation(
-                    "AccountingCustomerParty/CustomerAssignedAccountID", getID(), accountId.getValue()));
-        }
-        return location;
+        return getStockLocation(invoice.getAccountingCustomerParty(), "AccountingCustomerParty");
+    }
+
+    /**
+     * Returns the supplier assigned account id for the stock location, if one is provided.
+     *
+     * @return the supplier assigned account id for the stock location, or <tt>null</tt> if none is specified
+     */
+    public String getStockLocationId() {
+        return getStockLocationId(invoice.getAccountingCustomerParty(), "AccountingCustomerParty");
+    }
+
+    /**
+     * Verifies that the stock location matches that expected.
+     *
+     * @param expectedStockLocation the expected stock location
+     * @param expectedAccountId     the expected account identifier. May be <tt>null</tt>
+     * @throws ESCIAdapterException if the stock location is invalid
+     */
+    public void checkStockLocation(Party expectedStockLocation, String expectedAccountId) {
+        Party stockLocation = getStockLocation();
+        String accountId = getStockLocationId();
+        checkStockLocation(expectedStockLocation, expectedAccountId, stockLocation, accountId,
+                           "AccountingCustomerParty");
     }
 
     /**

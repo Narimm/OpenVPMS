@@ -19,7 +19,6 @@
 package org.openvpms.esci.adapter.dispatcher;
 
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 
 /**
@@ -41,11 +40,12 @@ public interface DocumentProcessor {
     /**
      * Processes a document.
      *
-     * @param document the document to process
-     * @param supplier the supplier submitting the document
-     * @throws ESCIAdapterException for any error
+     * @param document      the document to process
+     * @param supplier      the supplier submitting the document
+     * @param stockLocation the stock location
+     * @param accountId     the supplier account identifier  @throws ESCIAdapterException for any error
      */
-    void process(Document document, Party supplier);
+    void process(Document document, Party supplier, Party stockLocation, String accountId);
 }
 
 

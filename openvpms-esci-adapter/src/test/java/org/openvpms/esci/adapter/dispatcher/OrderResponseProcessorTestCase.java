@@ -68,7 +68,8 @@ public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
         // create an order and refer to it in the response
         FinancialAct order = createOrder();
         Document response = createOrderResponseDocument(order.getId(), true);
-        processor.process(response, getSupplier());
+        String accountId = null;
+        processor.process(response, getSupplier(), getStockLocation(), accountId);
 
         FinancialAct updatedOrder = future.get(1000);
         assertNotNull(updatedOrder);
@@ -98,7 +99,7 @@ public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
 
         String expected = "ESCIA-0500: Failed to process OrderResponseSimple: Foo";
         try {
-            processor.process(response, getSupplier());
+            processor.process(response, getSupplier(), getStockLocation(), null);
         } catch (ESCIAdapterException exception) {
             assertEquals(expected, exception.getMessage());
         }

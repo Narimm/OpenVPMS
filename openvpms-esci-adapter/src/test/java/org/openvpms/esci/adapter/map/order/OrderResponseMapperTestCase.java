@@ -85,9 +85,58 @@ public class OrderResponseMapperTestCase extends AbstractOrderResponseTest {
         Party supplier = getSupplier();
         FinancialAct order = createOrder();
         OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), true);
-        checkMappingException(response, expected, "ESCIA-0109: Expected supplier " + expected.getName()
-                                                  + " (" + expected.getId() + ") but got supplier " + supplier.getName()
-                                                  + " (" + supplier.getId() + ")");
+        checkMappingException(response, expected,
+                              "ESCIA-0109: Expected supplier " + expected.getName() + " (" + expected.getId()
+                              + ") for OrderResponseSimple/SellerSupplierParty/CustomerAssignedAccountID in "
+                              + "OrderResponseSimple: 12345, but got " + supplier.getName()
+                              + " (" + supplier.getId() + ")");
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if no stock location is provided in the invoice.
+     */
+    @Test
+    public void testNoStockLocation() {
+        FinancialAct order = createOrder();
+        OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), true);
+        response.getBuyerCustomerParty().setCustomerAssignedAccountID(null);
+        checkMappingException(response, getSupplier(),
+                              "ESCIA-0112: One of CustomerAssignedAccountID or SupplierAssignedAccountID is required "
+                              + "for OrderResponseSimple/BuyerCustomerParty in OrderResponseSimple: 12345");
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if the
+     * Invoice/AccountingCustomerParty/CustomerAssignedAccountID doesn't correspond to a valid stock location.
+     */
+    @Test
+    public void testInvalidStockLocation() {
+        FinancialAct order = createOrder();
+        OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), true);
+
+        response.getBuyerCustomerParty().getCustomerAssignedAccountID().setValue("0");
+        checkMappingException(response, getSupplier(),
+                              "ESCIA-0113: Invalid stock location: 0 referenced by OrderResponseSimple: 12345, "
+                              + "element OrderResponseSimple/BuyerCustomerParty/CustomerAssignedAccountID");
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if the stock location in the response doesn't match that
+     * expected.
+     */
+    @Test
+    public void testStockLocationMismatch() {
+        Party supplier = getSupplier();
+        Party expected = getStockLocation();
+        FinancialAct order = createOrder();
+        Party stockLocation = createStockLocation();
+        OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), supplier,
+                                                                     stockLocation, true);
+        checkMappingException(response, supplier,
+                              "ESCIA-0114: Expected stock location " + expected.getName() + " (" + expected.getId()
+                              + ") for OrderResponseSimple/BuyerCustomerParty/CustomerAssignedAccountID in "
+                              + "OrderResponseSimple: 12345, but got " + stockLocation.getName()
+                              + " (" + stockLocation.getId() + ")");
     }
 
     /**
@@ -114,7 +163,7 @@ public class OrderResponseMapperTestCase extends AbstractOrderResponseTest {
         OrderResponseMapper mapper = createOrderResponseMapper();
         OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), accepted);
         response.setRejectionNote(UBLHelper.initText(new RejectionNoteType(), rejectionNote));
-        FinancialAct act = mapper.map(response, getSupplier());
+        FinancialAct act = mapper.map(response, getSupplier(), getStockLocation(), null);
         save(act);
 
         assertEquals(order.getObjectReference(), act.getObjectReference());
@@ -134,7 +183,7 @@ public class OrderResponseMapperTestCase extends AbstractOrderResponseTest {
     private void checkMappingException(OrderResponseSimpleType response, Party supplier, String expectedMessage) {
         OrderResponseMapper mapper = createOrderResponseMapper();
         try {
-            mapper.map(response, supplier);
+            mapper.map(response, supplier, getStockLocation(), null);
             fail("Expected mapping to fail");
         } catch (ESCIAdapterException expected) {
             assertEquals(expectedMessage, expected.getMessage());

@@ -214,7 +214,7 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
     }
 
     /**
-     * Returns the inbox for the given supplier and ESCI configuration
+     * Returns the inbox for the given supplier and ESCI configuration.
      *
      * @param supplier         the supplier
      * @param configuration    the ESCI configuration
@@ -227,11 +227,13 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
     private Inbox getInbox(Party supplier, EntityRelationship configuration, boolean terminateOnError) {
         Inbox result = null;
         if (configuration.getTarget() != null) {
+            IMObjectBean bean = factory.createBean(configuration);
+            String accountId = bean.getString("accountId");
             Party stockLocation = (Party) service.get(configuration.getTarget());
             if (stockLocation != null) {
                 try {
                     InboxService service = locator.getInboxService(supplier, stockLocation);
-                    result = new Inbox(supplier, service);
+                    result = new Inbox(supplier, stockLocation, accountId, service);
                 } catch (RuntimeException exception) {
                     if (terminateOnError) {
                         throw exception;

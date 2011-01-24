@@ -111,14 +111,15 @@ public class OrderResponseProcessor implements DocumentProcessor {
     /**
      * Process the supplied document.
      *
-     * @param document the document to process  @throws ESCIAdapterException for any error
-     * @param supplier the supplier submitting the document
-     * @throws ESCIAdapterException for any error
+     * @param document      the document to process  @throws ESCIAdapterException for any error
+     * @param supplier      the supplier submitting the document
+     * @param stockLocation the stock location
+     * @param accountId     the supplier account identifier  @throws ESCIAdapterException for any error
      */
-    public void process(Document document, Party supplier) {
+    public void process(Document document, Party supplier, Party stockLocation, String accountId) {
         OrderResponseSimpleType response = (OrderResponseSimpleType) document.getContent();
         try {
-            FinancialAct order = mapper.map(response, supplier);
+            FinancialAct order = mapper.map(response, supplier, stockLocation, accountId);
             service.save(order);
             notifyListener(order);
         } catch (ESCIAdapterException exception) {

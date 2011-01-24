@@ -131,9 +131,20 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * @return a new <Tt>Invoice</tt>
      */
     protected InvoiceType createInvoice(Party supplier) {
+        return createInvoice(supplier, getStockLocation());
+    }
+
+    /**
+     * Helper to create an <tt>Invoice</tt> with a single line item.
+     *
+     * @param supplier the supplier
+     * @param stockLocation the stock location
+     * @return a new <Tt>Invoice</tt>
+     */
+    protected InvoiceType createInvoice(Party supplier, Party stockLocation) {
         InvoiceType invoice = new InvoiceType();
         SupplierPartyType supplierType = createSupplier(supplier);
-        CustomerPartyType customerType = createCustomer();
+        CustomerPartyType customerType = createCustomer(stockLocation);
         Product product = TestHelper.createProduct();
         MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(100), BigDecimal.ZERO,
                 new BigDecimal(100), new BigDecimal(110));
@@ -312,14 +323,14 @@ public class AbstractInvoiceTest extends AbstractESCITest {
     /**
      * Helper to create a <tt>CustomerPartyType</tt>.
      *
+     * @param stockLocation the stock location
      * @return a new <tt>CustomerPartyType</tt>
      */
-    protected CustomerPartyType createCustomer() {
-        CustomerPartyType customerType = new CustomerPartyType();
-        CustomerAssignedAccountIDType customerId = UBLHelper.initID(new CustomerAssignedAccountIDType(),
-                getStockLocation().getId());
-        customerType.setCustomerAssignedAccountID(customerId);
-        return customerType;
+    protected CustomerPartyType createCustomer(Party stockLocation) {
+        CustomerPartyType result = new CustomerPartyType();
+        result.setCustomerAssignedAccountID(UBLHelper.initID(new CustomerAssignedAccountIDType(),
+                                                             stockLocation.getId()));
+        return result;
     }
 
     /**

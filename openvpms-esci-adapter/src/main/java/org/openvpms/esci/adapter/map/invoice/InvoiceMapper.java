@@ -33,11 +33,13 @@ public interface InvoiceMapper {
     /**
      * Maps an UBL invoice to an <em>act.supplierDelivery</em>.
      *
-     * @param invoice  the invoice to map
-     * @param supplier the supplier that submitted the invoice
+     * @param invoice       the invoice to map
+     * @param supplier      the supplier that submitted the invoice
+     * @param stockLocation the stock location
+     * @param accountId     the supplier assigned account identifier. May be <tt>null</tt>
      * @return the results of the mapping
      * @throws ESCIAdapterException if the invoice cannot be mapped
-     * @throws OpenVPMSException for any OpenVPMS error
+     * @throws OpenVPMSException    for any OpenVPMS error
      */
-    Delivery map(InvoiceType invoice, Party supplier);
+    Delivery map(InvoiceType invoice, Party supplier, Party stockLocation, String accountId);
 }

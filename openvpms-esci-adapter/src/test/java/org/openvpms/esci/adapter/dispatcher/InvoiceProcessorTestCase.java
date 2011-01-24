@@ -66,7 +66,7 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
 
         // submit an invoice
         Document invoice = createInvoiceDocument();
-        processor.process(invoice, getSupplier());
+        processor.process(invoice, getSupplier(), getStockLocation(), null);
 
         // verify the delivery was created
         FinancialAct delivery = future.get(1000);
@@ -104,7 +104,7 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
      */
     private void checkSubmitException(Document invoice, InvoiceProcessor processor, String expected) {
         try {
-            processor.process(invoice, getSupplier());
+            processor.process(invoice, getSupplier(), getStockLocation(), null);
             fail("Expected submitInvoice() to fail");
         } catch (ESCIAdapterException exception) {
             assertEquals(expected, exception.getMessage());

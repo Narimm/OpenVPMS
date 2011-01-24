@@ -123,13 +123,15 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     /**
      * Maps an UBL invoice to an <em>act.supplierDelivery</em>.
      *
-     * @param invoice  the invoice to map
-     * @param supplier the supplier that submitted the invoice
+     * @param invoice       the invoice to map
+     * @param supplier      the supplier that submitted the invoice
+     * @param stockLocation the stock location
+     * @param accountId     the supplier assigned account identifier. May be <tt>null</tt>
      * @return the acts produced in the mapping. The first element is always the <em>act.supplierDelivery</em>
      * @throws ESCIAdapterException if the invoice cannot be mapped
      * @throws OpenVPMSException    for any OpenVPMS error
      */
-    public Delivery map(InvoiceType invoice, Party supplier) {
+    public Delivery map(InvoiceType invoice, Party supplier, Party stockLocation, String accountId) {
         Delivery result = new Delivery();
         String practiceCurrency = UBLHelper.getCurrencyCode(practiceRules, factory);
         TaxRates rates = new TaxRates(lookupService, factory);
@@ -138,9 +140,8 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         checkUBLVersion(wrapper);
         Date issueDatetime = wrapper.getIssueDatetime();
         String notes = wrapper.getNotes();
-        Party invoiceSupplier = wrapper.getSupplier();
-        checkSupplier(supplier, invoiceSupplier);
-        Party stockLocation = wrapper.getStockLocation();
+        wrapper.checkSupplier(supplier, accountId);
+        wrapper.checkStockLocation(stockLocation, accountId);
 
         ActBean orderBean = null;
         FinancialAct order = wrapper.getOrder();

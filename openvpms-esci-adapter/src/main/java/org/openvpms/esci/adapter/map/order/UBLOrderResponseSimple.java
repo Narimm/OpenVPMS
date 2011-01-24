@@ -135,15 +135,69 @@ public class UBLOrderResponseSimple extends UBLType implements UBLDocument {
     }
 
     /**
-     * Returns the supplier.
+     * Returns the supplier, if the <tt>SellerSupplierParty/CustomerAssignedAccountID</tt> is provided.
      *
-     * @return the supplier
-     * @throws ESCIAdapterException      if the supplier was not found
+     * @return the supplier, or <tt>null</tt> if the CustomerAssignedAccountID is not present
+     * @throws ESCIAdapterException      if the supplier was specified but not found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getSupplier() {
         return getSupplier(response.getSellerSupplierParty(), "SellerSupplierParty");
     }
 
+    /**
+     * Returns the supplier assigned account id for the supplier, if one is provided.
+     *
+     * @return the supplier assigned account id for the supplier, or <tt>null</tt> if none is specified
+     */
+    public String getSupplierId() {
+        return getSupplierId(response.getSellerSupplierParty(), "SellerSupplierParty");
+    }
+
+    /**
+     * Verifies that the supplier matches that expected.
+     *
+     * @param expectedSupplier  the expected supplier
+     * @param expectedAccountId the expected account identifier. May be <tt>null</tt>
+     * @throws ESCIAdapterException if the supplier is invalid
+     */
+    public void checkSupplier(Party expectedSupplier, String expectedAccountId) {
+        Party supplier = getSupplier();
+        String accountId = getSupplierId();
+        checkSupplier(expectedSupplier, expectedAccountId, supplier, accountId, "SellerSupplierParty");
+    }
+
+    /**
+     * Returns the stock location, if the <tt>AccountingCustomerParty/CustomerAssignedAccountID</tt> is provided.
+     *
+     * @return the stock location, or <tt>null</tt> if the CustomerAssignedAccountID is not present
+     * @throws ESCIAdapterException      if the stock location was not found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getStockLocation() {
+        return getStockLocation(response.getBuyerCustomerParty(), "BuyerCustomerParty");
+    }
+
+    /**
+     * Returns the supplier assigned account id for the stock location, if one is provided.
+     *
+     * @return the supplier assigned account id for the stock location, or <tt>null</tt> if none is specified
+     */
+    public String getStockLocationId() {
+        return getStockLocationId(response.getBuyerCustomerParty(), "BuyerCustomerParty");
+    }
+
+    /**
+      * Verifies that the stock location matches that expected.
+      *
+      * @param expectedStockLocation the expected stock location
+      * @param expectedAccountId     the expected account identifier. May be <tt>null</tt>
+      * @throws ESCIAdapterException if the supplier is invalid
+      */
+     public void checkStockLocation(Party expectedStockLocation, String expectedAccountId) {
+         Party stockLocation = getStockLocation();
+         String accountId = getStockLocationId();
+         checkStockLocation(expectedStockLocation, expectedAccountId, stockLocation, accountId, "BuyerCustomerParty");
+     }
 
 }

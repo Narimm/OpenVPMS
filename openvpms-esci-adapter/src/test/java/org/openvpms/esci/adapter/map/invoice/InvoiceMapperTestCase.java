@@ -109,7 +109,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         InvoiceType invoice = new InvoiceType();
         SupplierPartyType supplierType = createSupplier(getSupplier());
-        CustomerPartyType customerType = createCustomer();
+        CustomerPartyType customerType = createCustomer(getStockLocation());
         MonetaryTotalType monetaryTotal = createMonetaryTotal(lineExtensionTotal, chargeAmount, taxExAmount,
                                                               payableAmount);
 
@@ -135,7 +135,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         invoice = serialize(invoice);
         InvoiceMapper mapper = createMapper();
-        Delivery mapped = mapper.map(invoice, getSupplier());
+        Delivery mapped = mapper.map(invoice, getSupplier(), getStockLocation(), null);
         List<FinancialAct> acts = mapped.getActs();
         assertEquals(4, acts.size());
         getArchetypeService().save(acts);
@@ -172,7 +172,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         line.getOrderLineReference().add(itemRef);
 
         // map the invoice to a delivery
-        Delivery delivery = mapper.map(invoice, getSupplier());
+        Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
         assertEquals(order, delivery.getOrder());
         save(delivery.getActs());
         assertEquals(1, delivery.getDeliveryItems().size());
@@ -193,7 +193,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         // create an invoice that doesn't reference an order.
         // No author should appear on the resulting delivery
         InvoiceType invoice1 = createInvoice();
-        Delivery delivery1 = mapper.map(invoice1, getSupplier());
+        Delivery delivery1 = mapper.map(invoice1, getSupplier(), getStockLocation(), null);
         ActBean bean1 = new ActBean(delivery1.getDelivery());
         assertNull(bean1.getNodeParticipant("author"));
 
@@ -205,7 +205,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         locBean.save();
 
         InvoiceType invoice2 = createInvoice();
-        Delivery delivery2 = mapper.map(invoice2, getSupplier());
+        Delivery delivery2 = mapper.map(invoice2, getSupplier(), getStockLocation(), null);
         ActBean deliveryBean2 = new ActBean(delivery2.getDelivery());
         assertEquals(defaultAuthor, deliveryBean2.getNodeParticipant("author"));
 
@@ -219,7 +219,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         InvoiceType invoice3 = createInvoice();
         invoice3.setOrderReference(UBLHelper.createOrderReference(order3.getId()));
-        Delivery delivery3 = mapper.map(invoice3, getSupplier());
+        Delivery delivery3 = mapper.map(invoice3, getSupplier(), getStockLocation(), null);
         ActBean deliveryBean3 = new ActBean(delivery3.getDelivery());
         assertEquals(author, deliveryBean3.getNodeParticipant("author"));
 
@@ -228,7 +228,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         FinancialAct order4 = createOrder();
         InvoiceType invoice4 = createInvoice();
         invoice4.setOrderReference(UBLHelper.createOrderReference(order4.getId()));
-        Delivery delivery4 = mapper.map(invoice4, getSupplier());
+        Delivery delivery4 = mapper.map(invoice4, getSupplier(), getStockLocation(), null);
         ActBean deliveryBean4 = new ActBean(delivery4.getDelivery());
         assertEquals(defaultAuthor, deliveryBean4.getNodeParticipant("author"));
     }
@@ -352,18 +352,6 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIAdapterException} is raised if the Invoice/AccountingCustomerParty/CustomerAssignedAccountID
-     * doesn't correspond to a valid stock location.
-     */
-    @Test
-    public void testInvalidStockLocation() {
-        InvoiceType invoice = createInvoice();
-        invoice.getAccountingCustomerParty().getCustomerAssignedAccountID().setValue("0");
-        checkMappingException(invoice, "ESCIA-0600: Invalid stock location: 0 referenced by Invoice: 12345, element "
-                                       + "AccountingCustomerParty/CustomerAssignedAccountID");
-    }
-
-    /**
      * Verifies that an {@link ESCIAdapterException} is raised if neither the BuyersItemIdentification nor
      * SellersItemIdentification are provided.
      */
@@ -473,6 +461,17 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
+     * Verifies that an {@link ESCIAdapterException} is raised if no stock location is provided in the invoice.
+     */
+    @Test
+    public void testNoSupplier() {
+        InvoiceType invoice = createInvoice();
+        invoice.getAccountingSupplierParty().setCustomerAssignedAccountID(null);
+        checkMappingException(invoice, "ESCIA-0111: One of CustomerAssignedAccountID or AdditionalAccountID is "
+                                       + "required for Invoice/AccountingSupplierParty in Invoice: 12345");
+    }
+
+    /**
      * Verifies that an {@link ESCIAdapterException} is raised if the supplier in the invoice is different to that
      * submitting the invoice.
      */
@@ -481,9 +480,49 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         Party anotherSupplier = TestHelper.createSupplier();
         InvoiceType invoice = createInvoice(anotherSupplier);
         Party expected = getSupplier();
-        checkMappingException(invoice, "ESCIA-0109: Expected supplier " + expected.getName() + " (" + expected.getId()
-                                       + ") but got supplier " + anotherSupplier.getName() + " ("
-                                       + anotherSupplier.getId() + ")");
+        checkMappingException(invoice,
+                              "ESCIA-0109: Expected supplier " + expected.getName() + " (" + expected.getId()
+                              + ") for Invoice/AccountingSupplierParty/CustomerAssignedAccountID in Invoice: 12345, "
+                              + "but got " + anotherSupplier.getName() + " (" + anotherSupplier.getId() + ")");
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if no stock location is provided in the invoice.
+     */
+    @Test
+    public void testNoStockLocation() {
+        InvoiceType invoice = createInvoice();
+        invoice.getAccountingCustomerParty().setCustomerAssignedAccountID(null);
+        checkMappingException(invoice, "ESCIA-0112: One of CustomerAssignedAccountID or SupplierAssignedAccountID is "
+                                       + "required for Invoice/AccountingCustomerParty in Invoice: 12345");
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if the
+     * Invoice/AccountingCustomerParty/CustomerAssignedAccountID doesn't correspond to a valid stock location.
+     */
+    @Test
+    public void testInvalidStockLocation() {
+        InvoiceType invoice = createInvoice();
+        invoice.getAccountingCustomerParty().getCustomerAssignedAccountID().setValue("0");
+        checkMappingException(invoice, "ESCIA-0113: Invalid stock location: 0 referenced by Invoice: 12345, element "
+                                       + "Invoice/AccountingCustomerParty/CustomerAssignedAccountID");
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if the stock location in the response doesn't match that
+     * expected.
+     */
+    @Test
+    public void testStockLocationMismatch() {
+        Party supplier = getSupplier();
+        Party expected = getStockLocation();
+        Party stockLocation = createStockLocation();
+        InvoiceType invoice = createInvoice(supplier, stockLocation);
+        checkMappingException(invoice,
+                              "ESCIA-0114: Expected stock location " + expected.getName() + " (" + expected.getId()
+                              + ") for Invoice/AccountingCustomerParty/CustomerAssignedAccountID in Invoice: 12345, "
+                              + "but got " + stockLocation.getName() + " (" + stockLocation.getId() + ")");
     }
 
     /**
@@ -546,7 +585,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         InvoiceType invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
 
-        Delivery delivery1 = mapper.map(invoice, getSupplier());
+        Delivery delivery1 = mapper.map(invoice, getSupplier(), getStockLocation(), null);
         save(delivery1.getActs());
 
         checkMappingException(invoice, "ESCIA-0609: Duplicate Invoice 12345 received for Order " + order.getId());
@@ -603,7 +642,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     private void checkMappingException(InvoiceType invoice, Party supplier, String expectedMessage) {
         InvoiceMapper mapper = createMapper();
         try {
-            mapper.map(invoice, supplier);
+            mapper.map(invoice, supplier, getStockLocation(), null);
             fail("Expected mapping to fail");
         } catch (ESCIAdapterException expected) {
             assertEquals(expectedMessage, expected.getMessage());

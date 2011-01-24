@@ -40,6 +40,16 @@ public class Inbox implements InboxService {
     private final Party supplier;
 
     /**
+     * The stock location.
+     */
+    private final Party stockLocation;
+
+    /**
+     * The supplier account identifier. May be <tt>null</tt>.
+     */
+    private final String accountId;
+
+    /**
      * The inbox service.
      */
     private final InboxService inbox;
@@ -48,11 +58,15 @@ public class Inbox implements InboxService {
     /**
      * Constructs an <tt>Inbox</tt>.
      *
-     * @param supplier the supplier
-     * @param inbox    the inbox service
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @param accountId     the supplier account identifier. May be <tt>null</tt>
+     * @param inbox         the inbox service
      */
-    public Inbox(Party supplier, InboxService inbox) {
+    public Inbox(Party supplier, Party stockLocation, String accountId, InboxService inbox) {
         this.supplier = supplier;
+        this.stockLocation = stockLocation;
+        this.accountId = accountId;
         this.inbox = inbox;
     }
 
@@ -63,6 +77,24 @@ public class Inbox implements InboxService {
      */
     public Party getSupplier() {
         return supplier;
+    }
+
+    /**
+     * Returns the stock location.
+     *
+     * @return the stock location
+     */
+    public Party getStockLocation() {
+        return stockLocation;
+    }
+
+    /**
+     * Returns the supplier account identifier.
+     *
+     * @return the supplier account identifier. May be <tt>null</tt>
+     */
+    public String getAccountId() {
+        return accountId;
     }
 
     /**

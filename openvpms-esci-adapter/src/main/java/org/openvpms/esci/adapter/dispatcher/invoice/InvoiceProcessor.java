@@ -109,13 +109,15 @@ public class InvoiceProcessor implements DocumentProcessor {
     /**
      * Processes an invoice.
      *
-     * @param document the document to process
-     * @param supplier the supplier submitting the invoice
+     * @param document      the document to process
+     * @param supplier      the supplier submitting the invoice
+     * @param stockLocation the stock location
+     * @param accountId     the supplier account identifier
      */
-    public void process(Document document, Party supplier) {
+    public void process(Document document, Party supplier, Party stockLocation, String accountId) {
         InvoiceType invoice = (InvoiceType) document.getContent();
         try {
-            Delivery delivery = mapper.map(invoice, supplier);
+            Delivery delivery = mapper.map(invoice, supplier, stockLocation, accountId);
             service.save(delivery.getActs());
             notifyListener(delivery.getDelivery());
         } catch (ESCIAdapterException exception) {
