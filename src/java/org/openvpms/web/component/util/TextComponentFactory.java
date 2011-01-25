@@ -26,6 +26,7 @@ import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.bound.BoundFormattedField;
+import org.openvpms.web.component.bound.BoundPasswordField;
 import org.openvpms.web.component.bound.BoundRichTextArea;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
@@ -183,4 +184,17 @@ public class TextComponentFactory extends ComponentFactory {
         }
         return text;
     }
+
+    /**
+     * Create a new password field bound to a property.
+     *
+     * @param property the property to bind
+     * @return a new password field
+     */
+    public static TextField createPassword(Property property) {
+        TextField password = new BoundPasswordField(property);
+        setDefaultStyle(password);
+        return password;
+    }
+
 }

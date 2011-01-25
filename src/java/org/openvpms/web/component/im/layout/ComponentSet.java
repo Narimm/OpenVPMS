@@ -21,7 +21,6 @@ package org.openvpms.web.component.im.layout;
 import org.openvpms.web.component.im.view.ComponentState;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,11 +107,22 @@ public class ComponentSet {
     }
 
     /**
+     * Returns the component associated with the named property.
+     *
+     * @param name the property name
+     * @return the component, or <tt>null</tt> if none is found
+     */
+    public ComponentState get(String name) {
+        int index = indexOf(name);
+        return (index != -1) ? components.get(index) : null;
+    }
+
+    /**
      * Returns the components.
      *
      * @return the components
      */
-    public Collection<ComponentState> getComponents() {
+    public List<ComponentState> getComponents() {
         return components;
     }
 

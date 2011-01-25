@@ -18,8 +18,6 @@
 
 package org.openvpms.web.app.admin.user;
 
-import nextapp.echo2.app.TextField;
-import nextapp.echo2.app.event.DocumentEvent;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,10 +29,10 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.TextComponentFactory;
-import org.openvpms.web.component.event.DocumentListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Arrays;
@@ -50,14 +48,9 @@ import java.util.List;
 public class UserEditor extends AbstractIMObjectEditor {
 
     /**
-     * The password field.
+     * The confirm password property.
      */
-    private final TextField password;
-
-    /**
-     * The confirm password field.
-     */
-    private final TextField confirm;
+    private final Property confirm;
 
 
     /**
@@ -70,24 +63,8 @@ public class UserEditor extends AbstractIMObjectEditor {
     public UserEditor(User object, IMObject parent, LayoutContext context) {
         super(object, parent, context);
         Property property = getPassword();
-        int width = property.getMaxLength();
-        if (width > 20) {
-            width = 20;
-        }
         String value = (String) property.getValue();
-        password = TextComponentFactory.createPassword(width);
-        password.setText(value);
-        password.getDocument().addDocumentListener(new DocumentListener() {
-            public void onUpdate(DocumentEvent event) {
-                onPasswordChanged();
-            }
-        });
-        confirm = TextComponentFactory.createPassword(width);
-        confirm.setText(value);
-        confirm.getDocument().addDocumentListener(new DocumentListener() {
-            public void onUpdate(DocumentEvent event) {
-            }
-        });
+        confirm = new SimpleProperty("confirm", value, String.class);
     }
 
     /**
@@ -101,15 +78,15 @@ public class UserEditor extends AbstractIMObjectEditor {
     public boolean validate(Validator validator) {
         boolean valid = false;
         if (super.validate(validator)) {
-            Property property = getPassword();
-            if (ObjectUtils.equals(property.getValue(), confirm.getText())) {
+            Property password = getPassword();
+            if (ObjectUtils.equals(password.getValue(), confirm.getValue())) {
                 valid = true;
             } else {
                 ValidatorError error = new ValidatorError(
                         getObject().getArchetypeId().getShortName(),
-                        property.getName(),
+                        password.getName(),
                         Messages.get("admin.user.password.mismatch"));
-                validator.add(property, Arrays.asList(error));
+                validator.add(password, Arrays.asList(error));
             }
         }
         return valid;
@@ -122,13 +99,6 @@ public class UserEditor extends AbstractIMObjectEditor {
      */
     private Property getPassword() {
         return getProperty("password");
-    }
-
-    /**
-     * Invoked when the password changes.
-     */
-    private void onPasswordChanged() {
-        getPassword().setValue(password.getText());
     }
 
     /**
@@ -146,29 +116,45 @@ public class UserEditor extends AbstractIMObjectEditor {
      */
     private class LayoutStrategy extends UserLayoutStrategy {
 
+        /**
+         * Creates a component for a property.
+         *
+         * @param property the property
+         * @param parent   the parent object
+         * @param context  the layout context
+         * @return a component to display <tt>property</tt>
+         */
         @Override
-        protected ComponentSet createComponentSet(
-                IMObject object, List<NodeDescriptor> descriptors,
-                PropertySet properties, LayoutContext context) {
-            ComponentSet result = new ComponentSet();
-            for (NodeDescriptor descriptor : descriptors) {
-                Property property = properties.get(descriptor);
-                String displayName = descriptor.getDisplayName();
-                if (descriptor.getName().equals("password")) {
-                    ComponentState passwordComp
-                            = new ComponentState(password, getPassword());
-                    result.add(passwordComp, displayName);
-                    ComponentState confirmComp
-                            = new ComponentState(confirm, getPassword());
-                    result.add(confirmComp, Messages.get(
-                            "admin.user.password.confirm", displayName));
-                } else {
-                    ComponentState component = createComponent(property, object,
-                                                               context);
-                    result.add(component, displayName);
-                }
+        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+            if (property.getName().equals("password")) {
+                return new ComponentState(TextComponentFactory.createPassword(property), property);
             }
-            return result;
+            return super.createComponent(property, parent, context);
+        }
+
+        /**
+         * Creates a set of components to be rendered from the supplied descriptors.
+         *
+         * @param object      the parent object
+         * @param descriptors the property descriptors
+         * @param properties  the properties
+         * @param context     the layout context
+         * @return the components
+         */
+        @Override
+        protected ComponentSet createComponentSet(IMObject object, List<NodeDescriptor> descriptors,
+                                                  PropertySet properties, LayoutContext context) {
+            ComponentSet set = super.createComponentSet(object, descriptors, properties, context);
+
+            int index = set.indexOf("password");
+            if (index != -1) {
+                ComponentState passwordField = set.getComponents().get(index);
+                ComponentState confirmField = new ComponentState(TextComponentFactory.createPassword(confirm));
+                String label = Messages.get("admin.user.password.confirm", passwordField.getDisplayName());
+                confirmField.setDisplayName(label);
+                set.add(index + 1, confirmField);
+            }
+            return set;
         }
 
     }
