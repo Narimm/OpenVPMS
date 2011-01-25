@@ -19,6 +19,7 @@ package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -34,6 +35,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -71,6 +73,8 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
             protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
                 if ("serviceURL".equals(property.getName())) {
                     return createServiceURLComponent(property, parent, context);
+                } else if ("password".equals(property.getName())) {
+                    return createPassword(property);
                 }
                 return super.createComponent(property, parent, context);
             }
@@ -97,6 +101,17 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
         focus.add(test);
         Component container = RowFactory.create("CellSpacing", field, test);
         return new ComponentState(container, property, focus);
+    }
+
+    /**
+     * Creates a component for the password property.
+     *
+     * @param property the password property
+     * @return a new component
+     */
+    private ComponentState createPassword(Property property) {
+        TextField password = TextComponentFactory.createPassword(property);
+        return new ComponentState(password, property);
     }
 
     /**
