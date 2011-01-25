@@ -151,6 +151,21 @@ public class OrderResponseMapperTestCase extends AbstractOrderResponseTest {
     }
 
     /**
+     * Verifies that an {@link ESCIAdapterException} is raised if a duplicate response is received.
+     */
+    @Test
+    public void testDuplicateResponse() {
+        FinancialAct order = createOrder();
+        OrderResponseMapper mapper = createOrderResponseMapper();
+        OrderResponseSimpleType response = createOrderResponseSimple(order.getId(), true);
+        FinancialAct act = mapper.map(response, getSupplier(), getStockLocation(), null);
+        save(act);
+
+        checkMappingException(response, getSupplier(),
+                              "ESCIA-0403: Duplicate response: 12345 received for order: " + order.getId());
+    }
+
+    /**
      * Checks mapping of an order response.
      *
      * @param accepted      determines if the order should be accepted or rejected

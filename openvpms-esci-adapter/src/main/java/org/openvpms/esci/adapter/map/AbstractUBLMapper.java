@@ -19,6 +19,7 @@ package org.openvpms.esci.adapter.map;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -82,17 +83,20 @@ public class AbstractUBLMapper {
     }
 
     /**
-     * Verifies that an order has a relationship to the expected supplier.
+     * Verifies that an order has a relationship to the expected supplier and stock location.
      *
-     * @param order    the order
-     * @param supplier the suppplier
-     * @param document the invoice
-     * @throws ESCIAdapterException      if the order wasn't submitted by the supplier
+     * @param order         the order
+     * @param supplier      the suppplier
+     * @param stockLocation the stock location
+     * @param document      the invoice  @throws ESCIAdapterException      if the order wasn't submitted by the supplier
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected void checkOrder(FinancialAct order, Party supplier, UBLDocument document) {
+    protected void checkOrder(FinancialAct order, Party supplier, Party stockLocation, UBLDocument document) {
         ActBean bean = new ActBean(order, service);
-        if (!ObjectUtils.equals(bean.getNodeParticipantRef("supplier"), supplier.getObjectReference())) {
+        IMObjectReference supplierRef = bean.getNodeParticipantRef("supplier");
+        IMObjectReference locationRef = bean.getNodeParticipantRef("stockLocation");
+        if (!ObjectUtils.equals(supplierRef, supplier.getObjectReference())
+            || !ObjectUtils.equals(locationRef, stockLocation.getObjectReference())) {
             throw new ESCIAdapterException(ESCIAdapterMessages.invalidOrder(document.getType(), document.getID(),
                                                                             Long.toString(order.getId())));
         }

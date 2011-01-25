@@ -353,6 +353,17 @@ public class ESCIAdapterMessages {
     }
 
     /**
+     * Creates a new message for when a duplicate order response is received.
+     *
+     * @param orderId the order identifier
+     * @param responseId the response identfiier
+     * @return a new message
+     */
+    public static Message duplicateOrderResponse(long orderId, String responseId) {
+        return messages.getMessage(403, orderId, responseId);
+    }
+
+    /**
      * Creates a new message for when an order response cannot be processed.
      *
      * @param reason the reason
@@ -458,14 +469,25 @@ public class ESCIAdapterMessages {
     }
 
     /**
-     * Creates a new message for when a duplicate invoice is received for an order.
+     * Creates a new message for when a duplicate invoice is received.
      *
      * @param invoiceId the invoice identifier
-     * @param orderId   the order identifier
+     * @param deliveryId the delivery identifier
      * @return a new message
      */
-    public static Message duplicateInvoice(String invoiceId, long orderId) {
-        return messages.getMessage(609, invoiceId, orderId);
+    public static Message duplicateInvoice(String invoiceId, long deliveryId) {
+        return messages.getMessage(609, invoiceId, deliveryId);
+    }
+
+    /**
+     * Creates a new message for when a duplicate invoice for an order is received.
+     *
+     * @param invoiceId the invoice identifier
+     * @param orderId the order identifier
+     * @return a new message
+     */
+    public static Message duplicateInvoiceForOrder(String invoiceId, long orderId) {
+        return messages.getMessage(610, invoiceId, orderId);
     }
 
     /**
@@ -478,7 +500,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidTaxExclusiveAmount(String invoiceId, BigDecimal taxExclusiveAmount,
                                                            BigDecimal calculated) {
-        return messages.getMessage(610, invoiceId, taxExclusiveAmount, calculated);
+        return messages.getMessage(611, invoiceId, taxExclusiveAmount, calculated);
     }
 
     /**

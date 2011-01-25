@@ -18,13 +18,19 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
  * Contains the results of mapping an UBL Invoice to an <em>act.supplierDelivery</em>.
+ * <p/>
+ * A delivery may be associated with multiple orders. Note that this relationship isn't stored directly, but is handled
+ * through delivery item -> order item relationships.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -32,9 +38,14 @@ import java.util.List;
 public class Delivery {
 
     /**
-     * The order that the delivery applies to.
+     * The top-level order that the delivery applies to. If specified, all delivery items must be related to this order.
      */
     private FinancialAct order;
+
+    /**
+     * Orders that this delivery is associated with.
+     */
+    private Map<IMObjectReference, FinancialAct> orders = new LinkedHashMap<IMObjectReference, FinancialAct>();
 
     /**
      * The delivery.
@@ -47,16 +58,23 @@ public class Delivery {
     private List<FinancialAct> deliveryItems = new ArrayList<FinancialAct>();
 
     /**
-     * Sets the order.
+     * Sets the document-level order.
+     * <p/>
+     * If specified, all delivery items must be related to this order.
+     * <p/>
+     * If individual lines refer to different orders, then a document level order must not be specified.
      *
      * @param order the order. May be <tt>null</tt>
      */
     public void setOrder(FinancialAct order) {
         this.order = order;
+        if (order != null) {
+            addOrder(order);
+        }
     }
 
     /**
-     * Returns the order.
+     * Returns the document-level order.
      *
      * @return the order. May be <tt>null</tt>
      */
@@ -80,6 +98,35 @@ public class Delivery {
      */
     public FinancialAct getDelivery() {
         return delivery;
+    }
+
+    /**
+     * Adds an order related to this delivery.
+     *
+     * @param order the order
+     */
+    public void addOrder(FinancialAct order) {
+        orders.put(order.getObjectReference(), order);
+
+    }
+
+    /**
+     * Returns an order given its reference.
+     *
+     * @param reference the order reference
+     * @return the corresponding order, or <tt>null</tt> if none is found
+     */
+    public FinancialAct getOrder(IMObjectReference reference) {
+        return orders.get(reference);
+    }
+
+    /**
+     * Returns all orders associated with this delivery.
+     *
+     * @return the orders.
+     */
+    public List<FinancialAct> getOrders() {
+        return new ArrayList<FinancialAct>(orders.values());
     }
 
     /**

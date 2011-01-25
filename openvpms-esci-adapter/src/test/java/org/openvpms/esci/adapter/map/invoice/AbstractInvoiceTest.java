@@ -152,8 +152,8 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         invoice.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
         invoice.setID(UBLHelper.createID(12345));
         Date issueDatetime = new Date();
-        invoice.setIssueDate(UBLHelper.createIssueDate(issueDatetime, factory));
-        invoice.setIssueTime(UBLHelper.createIssueTime(issueDatetime, factory));
+        invoice.setIssueDate(createIssueDate(issueDatetime));
+        invoice.setIssueTime(createIssueTime(issueDatetime));
         invoice.setAccountingSupplierParty(supplierType);
         invoice.setAccountingCustomerParty(customerType);
         invoice.setLegalMonetaryTotal(monetaryTotal);

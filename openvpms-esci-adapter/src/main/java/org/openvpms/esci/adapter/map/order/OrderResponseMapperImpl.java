@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFact
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.AbstractUBLMapper;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 import javax.annotation.Resource;
 
@@ -66,10 +67,17 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
     public FinancialAct map(OrderResponseSimpleType response, Party supplier, Party stockLocation, String accountId) {
         UBLOrderResponseSimple wrapper = new UBLOrderResponseSimple(response, getArchetypeService());
         checkUBLVersion(wrapper);
+
+        // check that the response is for the expected supplier and stock location
         wrapper.checkSupplier(supplier, accountId);
         wrapper.checkStockLocation(stockLocation, accountId);
         FinancialAct order = wrapper.getOrder();
-        checkOrder(order, supplier, wrapper);
+
+        // check that the associated order is for the expected supplier and stock location
+        checkOrder(order, supplier, stockLocation, wrapper);
+
+        // check that the response isn't a duplicate
+        checkDuplicateResponse(order, response);
 
         Message message;
         String status;
@@ -89,6 +97,20 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
         bean.setValue("status", status);
         bean.setValue("supplierResponse", message.getMessage());
         return order;
+    }
+
+    /**
+     * Checks to see if an order response is a duplicate.
+     *
+     * @param order    the order
+     * @param response the order response
+     * @throws ESCIAdapterException if the response is a duplicate
+     */
+    private void checkDuplicateResponse(FinancialAct order, OrderResponseSimpleType response) {
+        if (order.getStatus().equals(OrderStatus.ACCEPTED) || order.getStatus().equals(OrderStatus.REJECTED)) {
+            throw new ESCIAdapterException(ESCIAdapterMessages.duplicateOrderResponse(order.getId(),
+                                                                                      response.getID().getValue()));
+        }
     }
 
 }

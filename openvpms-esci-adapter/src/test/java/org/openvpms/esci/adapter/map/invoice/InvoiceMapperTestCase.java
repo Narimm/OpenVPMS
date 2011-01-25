@@ -40,6 +40,8 @@ import org.oasis.ubl.common.basic.LineIDType;
 import org.oasis.ubl.common.basic.NoteType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -447,8 +449,28 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIAdapterException} is raised if an order item is referenced by an InvoiceLine, but there
-     * is no document level OrderReference.
+     * Verifies that an {@link ESCIAdapterException} is raised if an invoice references an order item which exists
+     * but is not related to the order.
+     */
+    @Test
+    public void testInvalidOrderItemForOrder() {
+        // create an order with a single item
+        Act order = createOrder();
+        FinancialAct invalid = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        save(invalid);
+
+        InvoiceType invoice = createInvoice();
+        invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
+        OrderLineReferenceType lineRef = new OrderLineReferenceType();
+        lineRef.setLineID(UBLHelper.initID(new LineIDType(), invalid.getId()));
+        invoice.getInvoiceLine().get(0).getOrderLineReference().add(lineRef);
+        checkMappingException(invoice, "ESCIA-0606: Invalid OrderLine: " + invalid.getId()
+                                       + " referenced by InvoiceLine: 1");
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if an order item is referenced by an InvoiceLine, but
+     * there is no document level OrderReference.
      */
     @Test
     public void testOrderItemForNoOrder() {
@@ -569,11 +591,28 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIAdapterException} is raised if a invoice is raised for an order that already is associated
-     * with a delivery.
+     * Verifies that an {@link ESCIAdapterException} is raised if an invoice is processed twice and the invoice
+     * references no orders.
      */
     @Test
-    public void testDuplicateInvoice() {
+    public void testDuplicateInvoiceForNoOrder() {
+        InvoiceMapper mapper = createMapper();
+
+        // create an invoice
+        InvoiceType invoice = createInvoice();
+
+        Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
+        save(delivery.getActs());
+
+        checkMappingException(invoice, "ESCIA-0609: Duplicate Invoice: 12345. Corresponding Delivery is: "
+                                       + delivery.getDelivery().getId());
+    }
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if an invoice is processed twice and the invoice
+     * references an order.
+     */
+    @Test
+    public void testDuplicateInvoiceForOrder() {
         InvoiceMapper mapper = createMapper();
 
         // create an order
@@ -585,10 +624,13 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         InvoiceType invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
 
-        Delivery delivery1 = mapper.map(invoice, getSupplier(), getStockLocation(), null);
-        save(delivery1.getActs());
+        Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
+        save(delivery.getActs());
 
-        checkMappingException(invoice, "ESCIA-0609: Duplicate Invoice 12345 received for Order " + order.getId());
+        // adjust the invoice timestamp so that it is skipped by the simple duplicate check
+        invoice.setIssueDate(createIssueDate(DateRules.getDate(new Date(), 1, DateUnits.MONTHS)));
+
+        checkMappingException(invoice, "ESCIA-0610: Duplicate Invoice: 12345 received for Order: " + order.getId());
     }
 
     /**
@@ -599,10 +641,10 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     public void testInvalidTaxExclusiveAmount() {
         InvoiceType invoice = createInvoice();
         invoice.getLegalMonetaryTotal().getTaxExclusiveAmount().setValue(BigDecimal.ONE);
-        checkMappingException(invoice, "ESCIA-0610: Calculated tax exclusive amount: 100 for Invoice: 12345 does not "
+        checkMappingException(invoice, "ESCIA-0611: Calculated tax exclusive amount: 100 for Invoice: 12345 does not "
                                        + "match Invoice/LegalMonetaryTotal/TaxExcusiveAmount: 1");
     }
-
+   
     /**
      * Serializes and deserializes an invoice to ensure its validitity.
      *

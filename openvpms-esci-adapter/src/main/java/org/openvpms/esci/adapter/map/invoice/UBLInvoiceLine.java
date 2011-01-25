@@ -22,6 +22,7 @@ import org.oasis.ubl.common.aggregate.InvoiceLineType;
 import org.oasis.ubl.common.aggregate.ItemIdentificationType;
 import org.oasis.ubl.common.aggregate.ItemType;
 import org.oasis.ubl.common.aggregate.OrderLineReferenceType;
+import org.oasis.ubl.common.aggregate.OrderReferenceType;
 import org.oasis.ubl.common.aggregate.PriceType;
 import org.oasis.ubl.common.aggregate.PricingReferenceType;
 import org.oasis.ubl.common.basic.InvoicedQuantityType;
@@ -64,6 +65,11 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * Supplier rules.
      */
     private final SupplierRules supplierRules;
+
+    /**
+     * Order archetype id.
+     */
+    private static final ArchetypeId ORDER = new ArchetypeId(SupplierArchetypes.ORDER);
 
     /**
      * Order item archetype id.
@@ -134,20 +140,66 @@ public class UBLInvoiceLine extends UBLFinancialType {
     }
 
     /**
+     * Returns the order reference.
+     *
+     * @return the order reference, or <tt>null</tt> if there is no associated order
+     */
+    public IMObjectReference getOrderReference() {
+        IMObjectReference result = null;
+        OrderLineReferenceType orderLineRef = getOrderLineReference();
+        if (orderLineRef != null) {
+            OrderReferenceType orderRef = orderLineRef.getOrderReference();
+            if (orderRef != null) {
+                result = getReference(ORDER, orderRef.getID(), "OrderLineReference/OrderReference");
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the order item reference.
      *
      * @return the order item reference, or <tt>null</tt> if there is no associated order item
      */
-    public IMObjectReference getOrderItemRef() {
+    public IMObjectReference getOrderItemReference() {
         IMObjectReference result = null;
+        OrderLineReferenceType ref = getOrderLineReference();
+        if (ref != null) {
+            LineIDType id = ref.getLineID();
+            result = getReference(ORDER_ITEM, id, "OrderLineReference/LineID");
+        }
+        return result;
+    }
+
+    public OrderLineReferenceType getOrderLineReference() {
+        OrderLineReferenceType result = null;
         List<OrderLineReferenceType> list = line.getOrderLineReference();
         if (!list.isEmpty()) {
             if (list.size() != 1) {
                 throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
                         "OrderLineReference", getType(), getID(), "1", list.size()));
             }
-            LineIDType id = list.get(0).getLineID();
-            result = getReference(ORDER_ITEM, id, "OrderLineReference/LineID");
+            result = list.get(0);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the associated order, if one is explicitly reference.
+     *
+     * @return the order, or <tt>null</tt> if the invoice line isn't associated with an order
+     * @throws ESCIAdapterException      if the order was specified, but could not be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public FinancialAct getOrder() {
+        FinancialAct result = null;
+        IMObjectReference ref = getOrderReference();
+        if (ref != null) {
+            result = (FinancialAct) getArchetypeService().get(ref);
+            if (result == null) {
+                throw new ESCIAdapterException(ESCIAdapterMessages.invalidOrder(
+                        getType(), getID(), Long.toString(ref.getId())));
+            }
         }
         return result;
     }
@@ -161,7 +213,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      */
     public FinancialAct getOrderItem() {
         FinancialAct result = null;
-        IMObjectReference ref = getOrderItemRef();
+        IMObjectReference ref = getOrderItemReference();
         if (ref != null) {
             result = (FinancialAct) getArchetypeService().get(ref);
             if (result == null) {
