@@ -67,9 +67,9 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-      <node name="order" path="/sourceActRelationships"
-            type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
-            filter="actRelationship.supplierDeliveryOrder">
+      <node name="orders" path="/sourceActRelationships"
+            type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+            filter="actRelationship.supplierDeliveryOrder" hidden="true">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">

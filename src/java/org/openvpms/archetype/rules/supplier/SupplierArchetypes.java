@@ -71,6 +71,11 @@ public class SupplierArchetypes {
             = "actRelationship.supplierDeliveryItem";
 
     /**
+     * Supplier delivery-order relationship short name.
+     */
+    public static final String DELIVERY_ORDER_RELATIONSHIP = "actRelationship.supplierDeliveryOrder";
+
+    /**
      * Supplier delivery-order item relationship short name.
      */
     public static final String DELIVERY_ORDER_ITEM_RELATIONSHIP
