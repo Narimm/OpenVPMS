@@ -18,12 +18,9 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -41,11 +38,6 @@ public class Delivery {
      * The top-level order that the delivery applies to. If specified, all delivery items must be related to this order.
      */
     private FinancialAct order;
-
-    /**
-     * Orders that this delivery is associated with.
-     */
-    private Map<IMObjectReference, FinancialAct> orders = new LinkedHashMap<IMObjectReference, FinancialAct>();
 
     /**
      * The delivery.
@@ -68,9 +60,6 @@ public class Delivery {
      */
     public void setOrder(FinancialAct order) {
         this.order = order;
-        if (order != null) {
-            addOrder(order);
-        }
     }
 
     /**
@@ -98,35 +87,6 @@ public class Delivery {
      */
     public FinancialAct getDelivery() {
         return delivery;
-    }
-
-    /**
-     * Adds an order related to this delivery.
-     *
-     * @param order the order
-     */
-    public void addOrder(FinancialAct order) {
-        orders.put(order.getObjectReference(), order);
-
-    }
-
-    /**
-     * Returns an order given its reference.
-     *
-     * @param reference the order reference
-     * @return the corresponding order, or <tt>null</tt> if none is found
-     */
-    public FinancialAct getOrder(IMObjectReference reference) {
-        return orders.get(reference);
-    }
-
-    /**
-     * Returns all orders associated with this delivery.
-     *
-     * @return the orders.
-     */
-    public List<FinancialAct> getOrders() {
-        return new ArrayList<FinancialAct>(orders.values());
     }
 
     /**
