@@ -137,7 +137,6 @@ class InvoiceItemSaveRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void save() {
-        addReminders();
         addDocuments();
 
         if (!toRemove.isEmpty()) {
@@ -166,49 +165,6 @@ class InvoiceItemSaveRules {
                     itemBean, productBean, service);
             helper.processDemographicUpdates();
         }
-    }
-
-    /**
-     * Add reminders to the invoice item.
-     *
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private void addReminders() {
-        linkActsToProductEntities("reminders", "reminders", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION,
-                                  new ActLinker() {
-                                      public void link(Entity entity, EntityRelationship relationship) {
-                                          addReminder(entity, relationship);
-                                      }
-                                  });
-    }
-
-    /**
-     * Adds an <em>act.patientReminder</em> to the invoice item.
-     *
-     * @param reminderType the reminder type
-     * @param relationship the product reminder relationship
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private void addReminder(Entity reminderType, EntityRelationship relationship) {
-        Act reminder = (Act) service.create(ReminderArchetypes.REMINDER);
-        Date startTime = item.getActivityStartTime();
-        Date endTime = null;
-        if (startTime != null) {
-            ReminderRules rules = new ReminderRules(service);
-            endTime = rules.calculateProductReminderDueDate(startTime, relationship);
-        }
-        reminder.setActivityStartTime(startTime);
-        reminder.setActivityEndTime(endTime);
-
-        ActBean bean = new ActBean(reminder, service);
-        IMObjectReference patient = itemBean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
-        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-        bean.addParticipation(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, reminderType);
-        if (product != null) {
-            bean.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
-        }
-        itemBean.addRelationship("actRelationship.invoiceItemReminder", reminder);
-        toSave.add(reminder);
     }
 
     /**
