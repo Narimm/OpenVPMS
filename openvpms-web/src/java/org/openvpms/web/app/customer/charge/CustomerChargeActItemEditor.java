@@ -30,6 +30,7 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.SERVICE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
 import org.openvpms.archetype.rules.stock.StockRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -138,6 +139,11 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     private StockRules rules;
 
     /**
+     * Reminder rules.
+     */
+    private ReminderRules reminderRules;
+
+    /**
      * Selling units label.
      */
     private Label sellingUnits;
@@ -193,6 +199,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         reminders = createCollectionEditor(REMINDERS, act);
 
         rules = new StockRules();
+        reminderRules = new ReminderRules();
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateMedicationQuantity();
@@ -562,9 +569,15 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                         IMObjectEditor editor = reminders.createEditor(act, getLayoutContext());
                         if (editor instanceof ReminderEditor) {
                             ReminderEditor reminder = (ReminderEditor) editor;
+                            Date startTime = getStartTime();
+                            reminder.setStartTime(startTime);
                             reminder.setReminderType(reminderType);
                             reminder.setPatient(getPatient());
                             reminder.setProduct(product);
+
+                            // override the due date calculated from the reminder type
+                            Date dueDate = reminderRules.calculateProductReminderDueDate(startTime, relationship);
+                            reminder.setEndTime(dueDate);
                         }
                         reminders.addEdited(editor);
 
@@ -633,6 +646,11 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         patientActMgr.queue(editor, new PatientActEditorManager.Listener() {
             public void completed() {
                 --patientActPopups;
+                if (patientActPopups == 0) {
+                    // force the parent collection editor to re-check the validation status of
+                    // this editor, in order for the Add button to be enabled.
+                    getListeners().notifyListeners(CustomerChargeActItemEditor.this);
+                }
             }
         });
     }
@@ -873,7 +891,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Helper to create and register a collection editor for an act relationship node, if the node exists.
+     * Helper to create a collection editor for an act relationship node, if the node exists.
      *
      * @param name the collection node name
      * @param act  the act
@@ -885,7 +903,6 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (collection != null && !collection.isHidden()) {
             editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
                     collection, act, getLayoutContext());
-            getEditors().add(editor);
         }
         return editor;
     }

@@ -38,7 +38,6 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -48,6 +47,7 @@ import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
@@ -62,6 +62,7 @@ import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.ValidationHelper;
@@ -107,9 +108,14 @@ public abstract class AbstractIMObjectEditor
     private IMObjectView viewer;
 
     /**
+     * The listeners.
+     */
+    private ModifiableListeners listeners = new ModifiableListeners();
+
+    /**
      * The child editors.
      */
-    private Editors editors = new Editors();
+    private Editors editors;
 
     /**
      * The object properties.
@@ -173,6 +179,7 @@ public abstract class AbstractIMObjectEditor
                                   LayoutContext layoutContext) {
         this.object = object;
         this.parent = parent;
+        editors = new Editors(listeners);
 
         if (layoutContext == null) {
             context = new DefaultLayoutContext(true);
@@ -307,7 +314,7 @@ public abstract class AbstractIMObjectEditor
     /**
      * Determines if this can be deleted via {@link #delete()}.
      *
-     * @return <tt>true</tt> 
+     * @return <tt>true</tt>
      */
     public boolean canDelete() {
         return true;
@@ -669,7 +676,7 @@ public abstract class AbstractIMObjectEditor
      */
     protected void onLayout() {
         Component oldValue = getComponent();
-        editors.removeAll();
+        editors.removeAll(); // editors will be recreated/re-registered as part of the layout
         if (getView().getLayout() instanceof ExpandableLayoutStrategy) {
             ExpandableLayoutStrategy expandable = (ExpandableLayoutStrategy) getView().getLayout();
             expandable.setShowOptional(!expandable.isShowOptional());
@@ -784,6 +791,15 @@ public abstract class AbstractIMObjectEditor
             getComponent();
         }
         return editors.getEditor(name);
+    }
+
+    /**
+     * Returns the listeners.
+     *
+     * @return the listeners
+     */
+    protected ModifiableListeners getListeners() {
+        return listeners;
     }
 
 
