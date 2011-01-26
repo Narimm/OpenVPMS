@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.act.PatientActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
@@ -35,8 +34,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 
 /**
- * An editor for {@link Act}s which have an archetype of
- * <em>act.patientReminder</em>.
+ * An editor for {@link Act}s which have an archetype of <em>act.patientReminder</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -45,7 +43,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 public class ReminderEditor extends PatientActEditor {
 
     /**
-     * Creates a new <tt>ReminderEditor</tt>.
+     * Constructs a <tt>ReminderEditor</tt>.
      *
      * @param act     the reminder act
      * @param parent  the parent. May be <tt>null</tt>
@@ -57,6 +55,12 @@ public class ReminderEditor extends PatientActEditor {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
+
+        getProperty("reminderType").addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onReminderTypeChanged();
+            }
+        });
     }
 
     /**
@@ -93,24 +97,6 @@ public class ReminderEditor extends PatientActEditor {
      */
     public Product getProduct() {
         return (Product) getParticipant("product");
-    }
-
-    /**
-     * Invoked when layout has completed. All editors have been created.
-     */
-    @Override
-    protected void onLayoutCompleted() {
-        Editor editor = getEditor("reminderType");
-
-        // add a listener to update the due date when the reminder type is modified
-        ModifiableListener listener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onReminderTypeChanged();
-            }
-        };
-        if (editor != null) {
-            editor.addModifiableListener(listener);
-        }
     }
 
     /**
