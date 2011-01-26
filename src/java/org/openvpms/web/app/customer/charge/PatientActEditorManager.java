@@ -24,14 +24,13 @@ import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.LinkedList;
 
 
 /**
- * Helper to queue editing of patient medication and investigation popups, only showing one
+ * Helper to queue editing of patient medication, investigation and reminder popups, only showing one
  * dialog at a time.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -116,10 +115,8 @@ class PatientActEditorManager {
     private String getTitle(IMObjectEditor editor) {
         String title = editor.getTitle();
         if (editor instanceof PatientMedicationActEditor) {
-            PatientMedicationActEditor meditor
-                    = (PatientMedicationActEditor) editor;
-            Party patient = (Party) IMObjectHelper.getObject(
-                    meditor.getPatient());
+            PatientMedicationActEditor meditor = (PatientMedicationActEditor) editor;
+            Party patient = meditor.getPatient();
             if (patient != null) {
                 PatientRules rules = new PatientRules();
                 String name = patient.getName();
@@ -127,8 +124,7 @@ class PatientActEditorManager {
                 if (weight == null) {
                     weight = Messages.get("patient.noweight");
                 }
-                title = Messages.get("patient.medication.dialog.title",
-                                     title, name, weight);
+                title = Messages.get("patient.medication.dialog.title", title, name, weight);
             }
         }
         return title;

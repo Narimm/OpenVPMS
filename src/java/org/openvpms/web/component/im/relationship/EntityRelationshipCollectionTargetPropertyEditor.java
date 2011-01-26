@@ -54,7 +54,7 @@ public class EntityRelationshipCollectionTargetPropertyEditor
      *
      * @param source    the source object
      * @param target    the target object
-     * @param shortName
+     * @param shortName the relationship archetype short name
      * @return the new relationship, or <tt>null</tt> if it couldn't be created
      * @throws ArchetypeServiceException for any error
      */
@@ -72,13 +72,12 @@ public class EntityRelationshipCollectionTargetPropertyEditor
      * @param target       the target object to remove from
      * @param relationship the relationship to remove
      */
-    protected void removeRelationship(IMObject source,
-                                      IMObject target,
-                                      IMObjectRelationship relationship) {
-        Entity sourceEntity = (Entity) source;
+    protected void removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
         Entity targetEntity = (Entity) target;
         EntityRelationship rel = (EntityRelationship) relationship;
-        sourceEntity.removeEntityRelationship(rel);
         targetEntity.removeEntityRelationship(rel);
+
+        // Remove the relationship from the source entity. This will generate events, so invoke last
+        getProperty().remove(relationship);
     }
 }

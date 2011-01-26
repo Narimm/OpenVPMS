@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.edit.act;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -65,6 +66,24 @@ public class PatientActEditor extends AbstractActEditor {
     /**
      * Sets the patient.
      *
+     * @param patient the patient. May be <tt>null</tt>
+     */
+    public void setPatient(Party patient) {
+        setParticipant("patient", patient);
+    }
+
+    /**
+     * Returns the patient.
+     *
+     * @return the patient. May be <tt>null</tt>
+     */
+    public Party getPatient() {
+        return (Party) getParticipant("patient");
+    }
+
+    /**
+     * Sets the patient.
+     *
      * @param patient the patient reference. May be <tt>null</tt>
      */
     public void setPatient(IMObjectReference patient) {
@@ -72,11 +91,11 @@ public class PatientActEditor extends AbstractActEditor {
     }
 
     /**
-     * Returns the patient.
+     * Returns the patient reference.
      *
      * @return the patient reference. May be <tt>null</tt>
      */
-    public IMObjectReference getPatient() {
+    public IMObjectReference getPatientRef() {
         return getParticipantRef("patient");
     }
 

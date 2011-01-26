@@ -21,12 +21,13 @@ package org.openvpms.web.component.im.edit.reminder;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.edit.act.PatientActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -41,7 +42,7 @@ import org.openvpms.web.component.util.ErrorHelper;
  * @version $LastChangedDate$
  */
 
-public class ReminderEditor extends AbstractActEditor {
+public class ReminderEditor extends PatientActEditor {
 
     /**
      * Creates a new <tt>ReminderEditor</tt>.
@@ -50,12 +51,48 @@ public class ReminderEditor extends AbstractActEditor {
      * @param parent  the parent. May be <tt>null</tt>
      * @param context the layout context
      */
-    public ReminderEditor(Act act, IMObject parent, LayoutContext context) {
+    public ReminderEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, ReminderArchetypes.REMINDER)) {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
+    }
+
+    /**
+     * Sets the reminder type.
+     *
+     * @param reminderType the reminder type. May be <tt>null</tt>
+     */
+    public void setReminderType(Entity reminderType) {
+        setParticipant("reminderType", reminderType);
+    }
+
+    /**
+     * Returns the reminder type.
+     *
+     * @return the reminder type
+     */
+    public Entity getReminderType() {
+        return (Entity) getParticipant("reminderType");
+    }
+
+    /**
+     * Sets the product.
+     *
+     * @param product the product. May be <tt>null</tt>
+     */
+    public void setProduct(Product product) {
+        setParticipant("product", product);
+    }
+
+    /**
+     * Returns the product.
+     *
+     * @return the product. May be <tt>null</tt>
+     */
+    public Product getProduct() {
+        return (Product) getParticipant("product");
     }
 
     /**

@@ -142,7 +142,7 @@ public class ErrorHelper {
         }
         log.error(logerror, error);
         if (canDisplay() && !inError()) {
-            ErrorDialog.show(title, message);
+            ErrorReportingDialog.show(title, message, error);
         }
     }
 
@@ -154,11 +154,7 @@ public class ErrorHelper {
      * @param error the error
      */
     public static void show(Throwable error) {
-        String message = getError(error);
-        log.error(message, error);
-        if (canDisplay() && !inError()) {
-            ErrorReportingDialog.show(message, error);
-        }
+        show(error, true);
     }
 
     /**
@@ -176,7 +172,7 @@ public class ErrorHelper {
             ErrorHelper.log.error(message, error);
         }
         if (display && !inError()) {
-            ErrorDialog.show(message);
+            ErrorReportingDialog.show(message, error);
         }
     }
 

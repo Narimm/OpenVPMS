@@ -74,7 +74,7 @@ public class ActRelationshipCollectionPropertyEditor
      *
      * @param source    the source object
      * @param target    the target object
-     * @param shortName
+     * @param shortName the relationship archetype short name
      * @return the new relationship, or <tt>null</tt> if it couldn't be created
      * @throws ArchetypeServiceException for any error
      */
@@ -88,18 +88,17 @@ public class ActRelationshipCollectionPropertyEditor
     /**
      * Removes a relationship.
      *
-     * @param source
-     * @param target
+     * @param source       the source of the relationship.
+     * @param target       the target of the relationship
      * @param relationship the relationship to remove
      */
-    protected void removeRelationship(IMObject source,
-                                      IMObject target,
-                                      IMObjectRelationship relationship) {
-        Act sourceAct = ((Act) source);
+    protected void removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
         Act targetAct = ((Act) target);
         ActRelationship actRel = (ActRelationship) relationship;
-        sourceAct.removeActRelationship(actRel);
         targetAct.removeActRelationship(actRel);
+
+        // Remove the relationship from the source act. This will generate events, so invoke last
+        getProperty().remove(relationship);
     }
 }
 

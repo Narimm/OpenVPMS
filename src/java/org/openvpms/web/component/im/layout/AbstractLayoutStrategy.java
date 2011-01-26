@@ -46,7 +46,9 @@ import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -62,6 +64,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     private final List<ComponentState> components
             = new ArrayList<ComponentState>();
+
+    /**
+     * Pre-created component states, keyed on property name.
+     */
+    private Map<String, ComponentState> states = new HashMap<String, ComponentState>();
 
     /**
      * The focus group of the current component.
@@ -95,6 +102,22 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     public AbstractLayoutStrategy(boolean keepState) {
         this.keepState = keepState;
+    }
+
+    /**
+     * Pre-registers a component for inclusion in the layout.
+     * <p/>
+     * The component must be associated with a property.
+     *
+     * @param state the component state
+     * @throws IllegalStateException if the component isn't associated with a property
+     */
+    public void addComponent(ComponentState state) {
+        Property property = state.getProperty();
+        if (property == null) {
+            throw new IllegalArgumentException("Argument 'state' must be associated with a property");
+        }
+        states.put(property.getName(), state);
     }
 
     /**
@@ -506,16 +529,21 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
      * Creates a component for a property.
+     * <p/>
+     * If there is a pre-existing component, registered via {@link #addComponent}, this will be returned.
      *
      * @param property the property
      * @param parent   the parent object
      * @param context  the layout context
      * @return a component to display <code>property</code>
      */
-    protected ComponentState createComponent(Property property, IMObject parent,
-                                             LayoutContext context) {
-        IMObjectComponentFactory factory = context.getComponentFactory();
-        return factory.create(property, parent);
+    protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+        ComponentState result = states.get(property.getName());
+        if (result == null) {
+            IMObjectComponentFactory factory = context.getComponentFactory();
+            result = factory.create(property, parent);
+        }
+        return result;
     }
 
     /**

@@ -76,10 +76,11 @@ public abstract class AbstractCollectionPropertyEditorTest
     public void testSave() {
         final IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
-        assertTrue("Require collection with min cardinality >= 0",
-                   property.getMinCardinality() >= 0);
+        assertTrue("Require collection with min cardinality >= 0", property.getMinCardinality() >= 0);
         final CollectionPropertyEditor editor = createEditor(property, parent);
 
+        assertFalse(editor.isModified());
+        
         IMObject element = createObject(parent);
         editor.add(element);
         assertEquals(1, editor.getObjects().size());
@@ -148,6 +149,7 @@ public abstract class AbstractCollectionPropertyEditorTest
                 return null;
             }
         });
+        assertFalse(editor.isModified());
 
         // make sure the elements have saved
         assertEquals("Retrieved element1 doesnt match that saved", elt1, get(elt1));
@@ -157,7 +159,9 @@ public abstract class AbstractCollectionPropertyEditorTest
         // now remove elt1, and elt2, save and verify that they are no longer
         // available
         editor.remove(elt1);
+        assertTrue(editor.isModified());
         editor.remove(elt2);
+        assertTrue(editor.isModified());
         assertEquals(1, editor.getObjects().size());
         assertFalse(editor.getObjects().contains(elt1));
         assertFalse(editor.getObjects().contains(elt2));
@@ -172,6 +176,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         });
         assertNull("element1 wasnt deleted", get(elt1));
         assertNull("element2 wasnt deleted", get(elt2));
+        assertFalse(editor.isModified());
 
         // now retrieve parent and verify collection matches the original
         IMObject savedParent = get(parent);

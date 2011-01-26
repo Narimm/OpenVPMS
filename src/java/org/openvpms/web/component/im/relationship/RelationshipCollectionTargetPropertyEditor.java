@@ -156,9 +156,6 @@ public abstract class RelationshipCollectionTargetPropertyEditor
         IMObjectRelationship relationship = getTargets().remove(object);
         if (relationship != null) {
             removeRelationship(parent, object, relationship);
-
-            // will generate events, so invoke last
-            getProperty().remove(relationship);
         }
         return removed;
     }
@@ -188,14 +185,17 @@ public abstract class RelationshipCollectionTargetPropertyEditor
 
     /**
      * Removes a relationship.
+     * <p/>
+     * Note that this should invoke {@link CollectionProperty#remove} method to remove the relationship
+     * but must also perform removal on the target of the relationship.
+     * <p/>
+     * The former is required in order for the {@link #isModified()} state to be correctly determined.
      *
      * @param source       the source object to remove from
      * @param target       the target object to remove from
      * @param relationship the relationship to remove
      */
-    protected abstract void removeRelationship(
-            IMObject source, IMObject target,
-            IMObjectRelationship relationship);
+    protected abstract void removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship);
 
     /**
      * Saves the collection.
@@ -254,8 +254,8 @@ public abstract class RelationshipCollectionTargetPropertyEditor
                     targets.put(target, relationship);
                 } else {
                     log.warn("Target object=" + relationship.getTarget()
-                            + " no longer exists. Referred to by relationship="
-                            + relationship);
+                             + " no longer exists. Referred to by relationship="
+                             + relationship);
                     getProperty().remove(relationship);
                 }
             }
