@@ -77,6 +77,7 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -149,31 +150,30 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             = new MedicationLayoutStrategyFactory();
 
     /**
+     * Dispensing node name.
+     */
+    private static final String DISPENSING = "dispensing";
+
+    /**
+     * Reminders node name.
+     */
+    private static final String REMINDERS = "reminders";
+
+    /**
+     * Investigations node name.
+     */
+    private static final String INVESTIGATIONS = "investigations";
+
+    /**
      * Node filter, used to disable properties when a product template is selected.
      */
     private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-            "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", "dispensing", "investigation",
-            "reminders");
+            "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", DISPENSING, INVESTIGATIONS,
+            REMINDERS);
+
 
     /**
-     * Node filter, used to hide the dispensing node when a non-medication product is selected.
-     */
-    private static final NodeFilter DISPENSING_FILTER = new NamedNodeFilter("dispensing");
-
-    /**
-     * Node filter, used to hide the dispensing and investigations nodes.
-     */
-    private static final NodeFilter DISPENSING_INVESTIGATION_FILTER
-            = new NamedNodeFilter("dispensing", "investigations");
-
-    /**
-     * Node filter, used to hide the dispensing, investigations and reminders nodes.
-     */
-    private static final NodeFilter DISPENSING_INVESTIGATION_REMINDERS_FILTER
-            = new NamedNodeFilter("dispensing", "investigations", "reminders");
-
-    /**
-     * Construct a new <code>CustomerChargeActItemEditor</tt>.
+     * Constructs a <code>CustomerChargeActItemEditor</tt>.
      * <p/>
      * This recalculates the tax amount.
      *
@@ -188,9 +188,9 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                             CustomerAccountArchetypes.COUNTER_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
-        dispensing = createCollectionEditor("dispensing", act);
-        investigations = createCollectionEditor("investigations", act);
-        reminders = createCollectionEditor("reminders", act);
+        dispensing = createCollectionEditor(DISPENSING, act);
+        investigations = createCollectionEditor(INVESTIGATIONS, act);
+        reminders = createCollectionEditor(REMINDERS, act);
 
         rules = new StockRules();
         quantityListener = new ModifiableListener() {
@@ -616,9 +616,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     private List<EntityRelationship> getReminderTypes(Product product) {
         List<EntityRelationship> result = Collections.emptyList();
         EntityBean bean = new EntityBean(product);
-        final String node = "reminders";
-        if (bean.hasNode(node)) {
-            result = bean.getNodeRelationships(node);
+        if (bean.hasNode(REMINDERS)) {
+            result = bean.getNodeRelationships(REMINDERS);
         }
         return result;
     }
@@ -836,27 +835,38 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Returns a node filter for the specified product reference.
      * <p/>
-     * This excludes nodes based on the product archetype.
+     * This excludes:
+     * <ul>
+     * <li>the dispensing node if the product isn't a <em>product.medication</em>
+     * <li>the investigations node if the product isn't a <em>product.medication</em>, <em>product.merchandise</em>,
+     * or <em>product.service</em>
+     * <li>the reminders node is excluded if there are no reminders present.
+     * </ul>
      *
      * @param product a reference to the product. May be <tt>null</tt>
      * @return a node filter for the product. If <tt>null</tt>, no nodes require filtering
      */
     private NodeFilter getFilterForProduct(IMObjectReference product) {
-        NodeFilter result;
+        NodeFilter result = null;
         if (TypeHelper.isA(product, TEMPLATE)) {
             result = TEMPLATE_FILTER;
         } else {
-            boolean needsDispensing = TypeHelper.isA(product, MEDICATION);
-            boolean needsInvestigations = needsDispensing || TypeHelper.isA(product, MERCHANDISE, SERVICE);
-            boolean needsReminders = reminders != null && reminders.getCollection().size() > 0;
-            if (needsDispensing && needsInvestigations && needsReminders) {
-                result = null; // no filter required
-            } else if (needsInvestigations && needsReminders) {
-                result = DISPENSING_FILTER;
-            } else if (needsReminders) {
-                result = DISPENSING_INVESTIGATION_FILTER;
-            } else {
-                result = DISPENSING_INVESTIGATION_REMINDERS_FILTER;
+            List<String> filter = new ArrayList<String>();
+            filter.add(DISPENSING);
+            filter.add(INVESTIGATIONS);
+            filter.add(REMINDERS);
+            boolean medication = TypeHelper.isA(product, MEDICATION);
+            if (medication) {
+                filter.remove(DISPENSING);
+            }
+            if (medication || TypeHelper.isA(product, MERCHANDISE, SERVICE)) {
+                filter.remove(INVESTIGATIONS);
+            }
+            if (reminders != null && reminders.getCollection().size() > 0) {
+                filter.remove(REMINDERS);
+            }
+            if (!filter.isEmpty()) {
+                result = new NamedNodeFilter(filter.toArray(new String[filter.size()]));
             }
         }
         return result;
