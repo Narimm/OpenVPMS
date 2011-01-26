@@ -25,6 +25,7 @@
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="group" path="/details/group" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="interactive" path="/details/interactive" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="defaultInterval" displayName="Reminder Interval" path="/details/interval" type="java.lang.Integer" minCardinality="1"/>
         <node name="defaultUnits" displayName="Interval Units" path="/details/units" type="java.lang.String" minCardinality="1" defaultValue="'YEARS'">
             <assertion name="lookup.local">

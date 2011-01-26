@@ -29,6 +29,7 @@
         <node name="activeStartTime" path="/activeStartTime"
               type="java.util.Date" minCardinality="1"
               hidden="true" defaultValue="java.util.Date.new()"/>
+        <node name="interactive" path="/details/interactive" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="period" displayName="Period" path="/details/period" type="java.lang.Integer" minCardinality="0" defaultValue="'1'"/>
         <node name="periodUom" displayName="Period Units" path="/details/periodUom" type="java.lang.String" minCardinality="0" defaultValue="'YEARS'">
             <assertion name="lookup.local">
