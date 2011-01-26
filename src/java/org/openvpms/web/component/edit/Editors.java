@@ -48,7 +48,7 @@ public class Editors implements Modifiable {
     /**
      * The event listeners.
      */
-    private ModifiableListeners listeners = new ModifiableListeners();
+    private ModifiableListeners listeners;
 
     /**
      * The set of editors.
@@ -63,9 +63,12 @@ public class Editors implements Modifiable {
 
 
     /**
-     * Construct a new <code>Editors</code>.
+     * Constructs an <tt>Editors</tt>.
+     *
+     * @param listeners the listeners
      */
-    public Editors() {
+    public Editors(ModifiableListeners listeners) {
+        this.listeners = listeners;
     }
 
     /**
@@ -121,7 +124,7 @@ public class Editors implements Modifiable {
      * Removes all the editors.
      */
     public void removeAll() {
-        for (Editor editor : editors.toArray(new Editor[0])) {
+        for (Editor editor : editors.toArray(new Editor[editors.size()])) {
             remove(editor);
         }
     }
@@ -135,7 +138,7 @@ public class Editors implements Modifiable {
         List<Saveable> result = new ArrayList<Saveable>();
         for (Modifiable modifiable : editors) {
             if ((modifiable instanceof Saveable)
-                    && modifiable.isModified()) {
+                && modifiable.isModified()) {
                 result.add((Saveable) modifiable);
             }
         }
