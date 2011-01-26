@@ -23,13 +23,17 @@ import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.*;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.SERVICE;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -42,26 +46,27 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.PriceActItemEditor;
+import org.openvpms.web.app.patient.mr.PatientInvestigationActEditor;
 import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.app.patient.mr.PatientMedicationActLayoutStrategy;
-import org.openvpms.web.app.patient.mr.PatientInvestigationActEditor;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Editors;
+import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientActEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
+import org.openvpms.web.component.im.edit.reminder.ReminderEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
-import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -89,6 +94,21 @@ import java.util.Set;
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class CustomerChargeActItemEditor extends PriceActItemEditor {
+
+    /**
+     * Dispensing act editor. May be <tt>null</tt>
+     */
+    private ActRelationshipCollectionEditor dispensing;
+
+    /**
+     * Investigation act editor. May be <tt>null</tt>
+     */
+    private ActRelationshipCollectionEditor investigations;
+
+    /**
+     * Reminders act editor. May be <tt>null</tt>
+     */
+    private ActRelationshipCollectionEditor reminders;
 
     /**
      * The no. of medication dialogs currently popped up. The invoice item
@@ -127,13 +147,13 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private static final IMObjectLayoutStrategyFactory FACTORY
             = new MedicationLayoutStrategyFactory();
-    
+
     /**
-     * Node filter, used to disable properties when a product template is
-     * selected.
+     * Node filter, used to disable properties when a product template is selected.
      */
     private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-            "quantity", "fixedPrice", "unitPrice", "total", "dispensing", "investigation");
+            "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", "dispensing", "investigation",
+            "reminders");
 
     /**
      * Node filter, used to hide the dispensing node when a non-medication product is selected.
@@ -141,28 +161,37 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final NodeFilter DISPENSING_FILTER = new NamedNodeFilter("dispensing");
 
     /**
-     * Node filter, used to hide the dispensing and investigations node.
+     * Node filter, used to hide the dispensing and investigations nodes.
      */
     private static final NodeFilter DISPENSING_INVESTIGATION_FILTER
             = new NamedNodeFilter("dispensing", "investigations");
 
+    /**
+     * Node filter, used to hide the dispensing, investigations and reminders nodes.
+     */
+    private static final NodeFilter DISPENSING_INVESTIGATION_REMINDERS_FILTER
+            = new NamedNodeFilter("dispensing", "investigations", "reminders");
 
     /**
      * Construct a new <code>CustomerChargeActItemEditor</tt>.
+     * <p/>
      * This recalculates the tax amount.
      *
      * @param act     the act to edit
      * @param parent  the parent act
      * @param context the layout context
      */
-    public CustomerChargeActItemEditor(Act act, Act parent,
-                                       LayoutContext context) {
+    public CustomerChargeActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM,
                             CustomerAccountArchetypes.CREDIT_ITEM,
                             CustomerAccountArchetypes.COUNTER_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
+        dispensing = createCollectionEditor("dispensing", act);
+        investigations = createCollectionEditor("investigations", act);
+        reminders = createCollectionEditor("reminders", act);
+
         rules = new StockRules();
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -174,6 +203,9 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateQuantity();
             }
         };
+        if (dispensing != null) {
+            dispensing.addModifiableListener(medicationQuantityListener);
+        }
 
         sellingUnits = LabelFactory.create();
 
@@ -237,36 +269,6 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Save any edits.
-     *
-     * @return <code>true</tt> if the save was successful
-     */
-    @Override
-    protected boolean doSave() {
-        CollectionProperty dispensing = (CollectionProperty) getProperty("dispensing");
-        Act medication = null;
-        if (dispensing != null && !TypeHelper.isA(getProductRef(), MEDICATION)) {
-            // need to remove any redundant dispensing act
-            if (!dispensing.getValues().isEmpty()) {
-                Object[] values = dispensing.getValues().toArray();
-                ActRelationship relationship = (ActRelationship) values[0];
-                Act act = (Act) getObject();
-                act.removeActRelationship(relationship);
-                medication = (Act) IMObjectHelper.getObject(relationship.getTarget());
-            }
-        }
-        boolean saved = super.doSave();
-        if (saved) {
-            if (medication != null) {
-                // need to delete the medication after the parent act is saved
-                // to avoid stale object exceptions
-                saved = SaveHelper.delete(medication, getLayoutContext().getDeletionListener());
-            }
-        }
-        return saved;
-    }
-
-    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -274,6 +276,18 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new PriceItemLayoutStrategy() {
+            {
+                if (dispensing != null) {
+                    addComponent(new ComponentState(dispensing));
+                }
+                if (investigations != null) {
+                    addComponent(new ComponentState(investigations));
+                }
+                if (reminders != null) {
+                    addComponent(new ComponentState(reminders));
+                }
+            }
+
             @Override
             protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
                 ComponentState state = super.createComponent(property, parent, context);
@@ -292,25 +306,32 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     @Override
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
-        // add a listener to update the dispensing and investigation acts when the patient
-        // changes if there is a patient participation.
+
+        // need to re-register editors as these are de-registered when the layout changes
+        Editors editors = getEditors();
+        if (dispensing != null) {
+            editors.add(dispensing);
+        }
+        if (investigations != null) {
+            editors.add(investigations);
+        }
+        if (reminders != null) {
+            editors.add(reminders);
+        }
+
         PatientParticipationEditor patient = getPatientEditor();
         if (patient != null) {
+            // add a listener to update the dispensing, investigation and reminder acts when the patient changes
             patient.addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     updatePatientActsPatient();
                 }
             });
         }
-        final ActRelationshipCollectionEditor editors = getDispensingCollection();
-        if (editors != null) {
-            editors.addModifiableListener(medicationQuantityListener);
-        }
 
-        // add a listener to update the dispensing and investigation acts when the clinician
-        // changes if there is a clinician participation.
         ClinicianParticipationEditor clinician = getClinicianEditor();
         if (clinician != null) {
+            // add a listener to update the dispensing, investigation and reminder acts when the clinician changes
             clinician.addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     updatePatientActsClinician();
@@ -320,8 +341,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Invoked when the product is changed, to update prices
-     * and dispensing acts.
+     * Invoked when the product is changed, to update prices, dispensing and reminder acts.
      *
      * @param product the product. May be <tt>null</tt>
      */
@@ -329,17 +349,15 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     protected void productModified(Product product) {
         super.productModified(product);
 
+        updatePatientMedication(product);
+        updateInvestigations(product);
+        updateReminders(product);
+
         // update the layout if nodes require filtering
         NodeFilter currentFilter = getFilter();
         IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
         NodeFilter expectedFilter = getFilterForProduct(productRef);
         if (currentFilter != expectedFilter) {
-
-            // need to change the layout. Remove any dispensing act first as the editors won't be available afterwards
-            if (!TypeHelper.isA(product, MEDICATION)) {
-                removeDispensingAct();
-            }
-
             changeLayout(expectedFilter);
         }
 
@@ -357,9 +375,6 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             unitCost.setValue(BigDecimal.ZERO);
             updateSellingUnits(null);
         } else {
-            updateMedicationProduct(product);
-            updateInvestigations(product);
-
             Property fixedPrice = getProperty("fixedPrice");
             Property unitPrice = getProperty("unitPrice");
             Property fixedCost = getProperty("fixedCost");
@@ -436,50 +451,87 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
             editor.setStartTime(parent.getActivityStartTime());
         }
-        ActRelationshipCollectionEditor dispensingCollection = getDispensingCollection();
-        if (dispensingCollection != null) {
-            dispensingCollection.refresh();
+        for (ReminderEditor editor : getReminderEditors()) {
+            editor.setStartTime(parent.getActivityStartTime());
         }
-        ActRelationshipCollectionEditor investigationCollection = getInvestigationCollection();
-        if (investigationCollection != null) {
-            investigationCollection.refresh();
+        if (dispensing != null) {
+            dispensing.refresh();
+        }
+        if (investigations != null) {
+            investigations.refresh();
+        }
+        if (reminders != null) {
+            reminders.refresh();
         }
     }
 
     /**
-     * Removes the dispensing act.
+     * Invoked when the product changes to update patient medications.
+     * <p/>
+     * If the new product is a medication and there is:
+     * <ul>
+     * <li>an existing act, the existing act will be updated.
+     * <li>no existing act, a new medication will be created
+     * </ul>
+     * <p/>
+     * If the product is null, any existing act will be removed
+     *
+     * @param product the product. May be <tt>null</tt>
      */
-    private void removeDispensingAct() {
-        ActRelationshipCollectionEditor editors = getDispensingCollection();
-        if (editors != null) {
-            for (Act act : editors.getCurrentActs()) {
-                editors.remove(act);
+    private void updatePatientMedication(Product product) {
+        if (dispensing != null) {
+            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+                Set<PatientMedicationActEditor> medicationEditors = getMedicationActEditors();
+                if (!medicationEditors.isEmpty()) {
+                    // set the product on the existing acts
+                    for (PatientMedicationActEditor editor : medicationEditors) {
+                        editor.setProduct(product);
+                    }
+                    dispensing.refresh();
+                } else {
+                    // add a new medication act
+                    Act act = (Act) dispensing.create();
+                    if (act != null) {
+                        boolean dispensingLabel = hasDispensingLabel(product);
+                        IMObjectEditor editor = createMedicationEditor(act, dispensingLabel);
+                        if (dispensingLabel) {
+                            // queue editing of the act
+                            queuePatientActEditor(editor);
+                        }
+                    }
+                }
+            } else {
+                // product is not a medication or is null. Remove any existing act
+                for (Act act : dispensing.getCurrentActs()) {
+                    dispensing.remove(act);
+                }
             }
         }
     }
 
     /**
-     * Updates any medication acts with the product.
+     * Invoked when the product changes to update investigation acts.
+     * <p/>
+     * This removes any existing investigations, and creates new ones, if required.
      *
-     * @param product the product
+     * @param product the product. May be <tt>null</tt>
      */
-    private void updateMedicationProduct(Product product) {
-        ActRelationshipCollectionEditor editors = getDispensingCollection();
-        if (editors != null) {
-            Set<PatientMedicationActEditor> medicationEditors = getMedicationActEditors();
-            if (!medicationEditors.isEmpty()) {
-                // set the product on the existing acts
-                for (PatientMedicationActEditor editor : medicationEditors) {
-                    editor.setProduct(product);
-                }
-                editors.refresh();
-            } else {
-                // add a new medication act
-                Act act = (Act) editors.create();
-                if (act != null) {
-                    boolean dispensingLabel = hasDispensingLabel(product);
-                    IMObjectEditor editor = createMedicationEditor(act, dispensingLabel);
-                    if (dispensingLabel) {
+    private void updateInvestigations(Product product) {
+        if (investigations != null) {
+            for (Act act : investigations.getCurrentActs()) {
+                investigations.remove(act);
+            }
+            if (product != null) {
+                // add a new investigation act for each investigation type (if any)
+                for (Entity investigationType : getInvestigationTypes(product)) {
+                    Act act = (Act) investigations.create();
+                    if (act != null) {
+                        IMObjectEditor editor = investigations.createEditor(act, getLayoutContext());
+                        if (editor instanceof PatientInvestigationActEditor) {
+                            ((PatientInvestigationActEditor) editor).setInvestigationType(investigationType);
+                        }
+                        investigations.addEdited(editor);
+
                         // queue editing of the act
                         queuePatientActEditor(editor);
                     }
@@ -489,28 +541,38 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Updates any investigation acts with the investigation type.
+     * Invoked when the product changes, to update reminders acts.
+     * <p/>
+     * This removes any existing reminders, and creates new ones, if required.
      *
      * @param product the product
      */
-    private void updateInvestigations(Product product) {
-        ActRelationshipCollectionEditor editors = getInvestigationCollection();
-        if (editors != null) {
-            for (Act act : editors.getCurrentActs()) {
-                editors.remove(act);
+    private void updateReminders(Product product) {
+        if (reminders != null) {
+            for (Act act : reminders.getCurrentActs()) {
+                reminders.remove(act);
             }
-            // add a new investigation act for each investigation type (if any)
-            for (Entity investigationType : getInvestigationTypes(product)) {
-                Act act = (Act) editors.create();
-                if (act != null) {
-                    IMObjectEditor editor = editors.createEditor(act, getLayoutContext());
-                    if (editor instanceof PatientInvestigationActEditor) {
-                        ((PatientInvestigationActEditor) editor).setInvestigationType(investigationType);
-                    }
-                    editors.addEdited(editor);
+            for (EntityRelationship relationship : getReminderTypes(product)) {
+                IMObjectBean bean = new IMObjectBean(relationship);
+                Entity reminderType = (Entity) bean.getObject("target");
+                if (reminderType != null && reminderType.isActive()) {
+                    boolean interactive = bean.getBoolean("interactive");
+                    Act act = (Act) reminders.create();
+                    if (act != null) {
+                        IMObjectEditor editor = reminders.createEditor(act, getLayoutContext());
+                        if (editor instanceof ReminderEditor) {
+                            ReminderEditor reminder = (ReminderEditor) editor;
+                            reminder.setReminderType(reminderType);
+                            reminder.setPatient(getPatient());
+                            reminder.setProduct(product);
+                        }
+                        reminders.addEdited(editor);
 
-                    // queue editing of the act
-                    queuePatientActEditor(editor);
+                        if (interactive) {
+                            // queue editing of the act
+                            queuePatientActEditor(editor);
+                        }
+                    }
                 }
             }
         }
@@ -546,6 +608,22 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Helper to return the reminder type relationships for a product.
+     *
+     * @param product the product
+     * @return a the reminder type relationships
+     */
+    private List<EntityRelationship> getReminderTypes(Product product) {
+        List<EntityRelationship> result = Collections.emptyList();
+        EntityBean bean = new EntityBean(product);
+        final String node = "reminders";
+        if (bean.hasNode(node)) {
+            result = bean.getNodeRelationships(node);
+        }
+        return result;
+    }
+
+    /**
      * Queues an editor for display in a popup dialog.
      * Use this when there may be multiple editors requiring display.
      *
@@ -568,14 +646,13 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return a new editor for the act
      */
     private IMObjectEditor createMedicationEditor(Act act, boolean dispensingLabel) {
-        ActRelationshipCollectionEditor editors = getDispensingCollection();
         LayoutContext context = new DefaultLayoutContext(true);
         context.setContext(getLayoutContext().getContext());
         if (dispensingLabel) {
             context.setLayoutStrategyFactory(FACTORY);
         }
-        IMObjectEditor editor = editors.createEditor(act, context);
-        editors.addEdited(editor);
+        IMObjectEditor editor = dispensing.createEditor(act, context);
+        dispensing.addEdited(editor);
         return editor;
     }
 
@@ -583,16 +660,15 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates the medication quantity from the invoice.
      */
     private void updateMedicationQuantity() {
-        ActRelationshipCollectionEditor editors = getDispensingCollection();
         BigDecimal quantity = (BigDecimal) getProperty("quantity").getValue();
-        if (editors != null && quantity != null) {
-            editors.removeModifiableListener(medicationQuantityListener);
+        if (dispensing != null && quantity != null) {
+            dispensing.removeModifiableListener(medicationQuantityListener);
             try {
-                PatientMedicationActEditor editor = (PatientMedicationActEditor) editors.getCurrentEditor();
+                PatientMedicationActEditor editor = (PatientMedicationActEditor) dispensing.getCurrentEditor();
                 if (editor != null) {
                     editor.setQuantity(quantity);
                 } else {
-                    for (Act act : editors.getActs()) {
+                    for (Act act : dispensing.getActs()) {
                         // should only be 1 dispensing act, but zero out any
                         // additional ones just in case...
                         ActBean bean = new ActBean(act);
@@ -600,9 +676,9 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                         quantity = BigDecimal.ZERO;
                     }
                 }
-                editors.refresh();
+                dispensing.refresh();
             } finally {
-                editors.addModifiableListener(medicationQuantityListener);
+                dispensing.addModifiableListener(medicationQuantityListener);
             }
         }
     }
@@ -614,10 +690,9 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         Property property = getProperty("quantity");
         property.removeModifiableListener(quantityListener);
         try {
-            ActRelationshipCollectionEditor editors = getDispensingCollection();
-            if (editors != null) {
-                Set<Act> acts = new HashSet<Act>(editors.getActs());
-                PatientMedicationActEditor current = (PatientMedicationActEditor) editors.getCurrentEditor();
+            if (dispensing != null) {
+                Set<Act> acts = new HashSet<Act>(dispensing.getActs());
+                PatientMedicationActEditor current = (PatientMedicationActEditor) dispensing.getCurrentEditor();
                 if (current != null) {
                     acts.add((Act) current.getObject());
                 }
@@ -630,7 +705,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                     }
                     property.setValue(total);
                 }
-                editors.refresh();
+                dispensing.refresh();
             }
         } finally {
             property.addModifiableListener(quantityListener);
@@ -646,6 +721,9 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             editor.setPatient(patient);
         }
         for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
+            editor.setPatient(patient);
+        }
+        for (ReminderEditor editor : getReminderEditors()) {
             editor.setPatient(patient);
         }
     }
@@ -669,7 +747,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the editors
      */
     private Set<PatientMedicationActEditor> getMedicationActEditors() {
-        return getActEditors(getDispensingCollection());
+        return getActEditors(dispensing);
     }
 
     /**
@@ -678,7 +756,16 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the editors
      */
     private Set<PatientInvestigationActEditor> getInvestigationActEditors() {
-        return getActEditors(getInvestigationCollection());
+        return getActEditors(investigations);
+    }
+
+    /**
+     * Returns the editors for each of the <em>act.patientReminder</em> acts.
+     *
+     * @return the editors
+     */
+    private Set<ReminderEditor> getReminderEditors() {
+        return getActEditors(investigations);
     }
 
     /**
@@ -708,24 +795,6 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     private boolean hasDispensingLabel(Product product) {
         IMObjectBean bean = new IMObjectBean(product);
         return bean.getBoolean("label");
-    }
-
-    /**
-     * Returns the dispensing items collection editor.
-     *
-     * @return the dispensing items collection editor, or <tt>null</tt> if none is found
-     */
-    private ActRelationshipCollectionEditor getDispensingCollection() {
-        return (ActRelationshipCollectionEditor) getEditor("dispensing");
-    }
-
-    /**
-     * Returns the investigation items collection editor.
-     *
-     * @return the investigation items collection editor, or <tt>null</tt> if none is found
-     */
-    private ActRelationshipCollectionEditor getInvestigationCollection() {
-        return (ActRelationshipCollectionEditor) getEditor("investigations");
     }
 
     /**
@@ -779,15 +848,36 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         } else {
             boolean needsDispensing = TypeHelper.isA(product, MEDICATION);
             boolean needsInvestigations = needsDispensing || TypeHelper.isA(product, MERCHANDISE, SERVICE);
-            if (needsDispensing && needsInvestigations) {
+            boolean needsReminders = reminders != null && reminders.getCollection().size() > 0;
+            if (needsDispensing && needsInvestigations && needsReminders) {
                 result = null; // no filter required
-            } else if (needsInvestigations) {
+            } else if (needsInvestigations && needsReminders) {
                 result = DISPENSING_FILTER;
-            } else {
+            } else if (needsReminders) {
                 result = DISPENSING_INVESTIGATION_FILTER;
+            } else {
+                result = DISPENSING_INVESTIGATION_REMINDERS_FILTER;
             }
         }
         return result;
+    }
+
+    /**
+     * Helper to create and register a collection editor for an act relationship node, if the node exists.
+     *
+     * @param name the collection node name
+     * @param act  the act
+     * @return the collection editor, or <tt>null</tt> if the node doesn't exist
+     */
+    private ActRelationshipCollectionEditor createCollectionEditor(String name, Act act) {
+        ActRelationshipCollectionEditor editor = null;
+        CollectionProperty collection = (CollectionProperty) getProperty(name);
+        if (collection != null && !collection.isHidden()) {
+            editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
+                    collection, act, getLayoutContext());
+            getEditors().add(editor);
+        }
+        return editor;
     }
 
     /**

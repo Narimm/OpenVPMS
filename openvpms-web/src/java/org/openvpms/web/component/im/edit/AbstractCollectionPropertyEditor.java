@@ -332,9 +332,8 @@ public abstract class AbstractCollectionPropertyEditor
             }
 
             // now save objects with no associated editor
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            IMObject[] edited = this.edited.toArray(new IMObject[0]);
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            IMObject[] edited = this.edited.toArray(new IMObject[this.edited.size()]);
             for (IMObject object : edited) {
                 boolean result = SaveHelper.save(object, service);
                 if (result) {

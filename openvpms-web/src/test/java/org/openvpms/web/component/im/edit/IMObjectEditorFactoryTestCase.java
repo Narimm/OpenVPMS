@@ -26,11 +26,11 @@ import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.app.admin.lookup.AlertTypeEditor;
 import org.openvpms.web.app.admin.lookup.LookupEditor;
+import org.openvpms.web.app.admin.lookup.MacroEditor;
 import org.openvpms.web.app.admin.lookup.SpeciesLookupEditor;
 import org.openvpms.web.app.admin.lookup.SuburbLookupEditor;
-import org.openvpms.web.app.admin.lookup.MacroEditor;
-import org.openvpms.web.app.admin.lookup.AlertTypeEditor;
 import org.openvpms.web.app.admin.template.DocumentTemplatePrinterEditor;
 import org.openvpms.web.app.customer.CustomerEditor;
 import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
@@ -66,6 +66,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
+import org.openvpms.web.component.im.product.ProductReminderRelationshipEditor;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
@@ -96,16 +97,17 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
 
     /**
      * Verifies that an {@link EntityRelationshipEditor} is returned for
-     * all <em>entityRelationship.*</em> short names, with the exception
-     * of <em>entityRelationship.patientOwner</em> which should return
-     * an {@link PatientOwnerRelationshipEditor} and
-     * <em>entityRelationship.documentTemplatePrinter</em>
-     * which should return an {@link DocumentTemplatePrinterEditor}.
+     * all <em>entityRelationship.*</em> short names, with the exception of:
+     * <ul>
+     * <li><em>entityRelationship.patientOwner</em> - returns an {@link PatientOwnerRelationshipEditor}
+     * <li><em>entityRelationship.documentTemplatePrinter</em> - returns an {@link DocumentTemplatePrinterEditor}
+     * <li><em>entityRelationship.supplierStockLocationESCI</em> - returns an
+     * {@link SupplierStockLocationRelationshipESCIEditor}
+     * <li><em>entityRelationship.productReminder</em> - returns an {@link ProductReminderRelationshipEditor}
      */
     @Test
     public void testCreateRelationshipEditor() {
-        String[] shortNames
-                = DescriptorHelper.getShortNames("entityRelationship.*");
+        String[] shortNames = DescriptorHelper.getShortNames("entityRelationship.*");
         for (String shortName : shortNames) {
             if (shortName.equals("entityRelationship.patientOwner")) {
                 checkCreate(shortName, PatientOwnerRelationshipEditor.class);
@@ -113,6 +115,8 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                 checkCreate(shortName, DocumentTemplatePrinterEditor.class);
             } else if (shortName.equals("entityRelationship.supplierStockLocationESCI")) {
                 checkCreate(shortName, SupplierStockLocationRelationshipESCIEditor.class);
+            } else if (shortName.equals("entityRelationship.productReminder")){
+                checkCreate(shortName, ProductReminderRelationshipEditor.class);
             } else {
                 checkCreate(shortName, EntityRelationshipEditor.class);
             }
@@ -447,7 +451,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     public void testCreateMacroEditor() {
         checkCreate("lookup.macro", MacroEditor.class);
     }
-    
+
     /**
      * Verifies that a {@link SuburbLookupEditor} is created for <em>lookup.suburb</em>
      */
@@ -474,6 +478,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
         checkCreate("lookup.patientAlertType", AlertTypeEditor.class);
 
     }
+
     /**
      * Verifies that a {@link PatientClinicalEventActEditor} is created
      * for <em>act.patientClinicalEvent</em>.
@@ -505,8 +510,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link LocationEditor} is created for
-     * <em>productPrice.fixedPrice</em> and <em>productPrice.unitPrice</em>.
+     * Verifies that a {@link LocationEditor} is created for <em>contact.location</em>.
      */
     @Test
     public void testLocationEditor() {

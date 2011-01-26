@@ -21,13 +21,13 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -62,13 +62,24 @@ public class ErrorReportingDialog extends ErrorDialog {
 
 
     /**
-     * Construct a new <tt>ErrorReportingDialog</tt>.
+     * Constructs an <tt>ErrorReportingDialog</tt>.
      *
      * @param message   the error message
      * @param exception the exception to display
      */
     public ErrorReportingDialog(String message, Throwable exception) {
-        super(Messages.get("errordialog.title"), message, OK);
+        this(Messages.get("errordialog.title"), message, exception);
+    }
+
+    /**
+     * Constructs an <tt>ErrorReportingDialog</tt>.
+     *
+     * @param title     the dialog title
+     * @param message   the error message
+     * @param exception the exception to display
+     */
+    public ErrorReportingDialog(String title, String message, Throwable exception) {
+        super(title, message, OK);
         ApplicationContext context = ServiceHelper.getContext();
         if (context.containsBean("errorReporter")) {
             reporter = (ErrorReporter) context.getBean("errorReporter");
@@ -81,6 +92,18 @@ public class ErrorReportingDialog extends ErrorDialog {
                 });
             }
         }
+    }
+
+    /**
+     * Helper to show a new error reporting dialog.
+     *
+     * @param title     the dialog title
+     * @param message   dialog message
+     * @param exception the cause
+     */
+    public static void show(String title, String message, Throwable exception) {
+        ErrorDialog dialog = new ErrorReportingDialog(title, message, exception);
+        dialog.show();
     }
 
     /**
