@@ -23,6 +23,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE;
@@ -30,7 +31,6 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.SERVICE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
 import org.openvpms.archetype.rules.stock.StockRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -599,7 +599,11 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void updateSellingUnits(Product product) {
         String units = "";
         if (product != null) {
-            units = LookupNameHelper.getName(product, "sellingUnits");
+            IMObjectBean bean = new IMObjectBean(product);
+            String node = "sellingUnits";
+            if (bean.hasNode(node)) {
+                units = LookupNameHelper.getName(product, node);
+            }
         }
         sellingUnits.setText(units);
     }
