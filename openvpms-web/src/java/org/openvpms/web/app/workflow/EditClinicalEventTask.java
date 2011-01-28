@@ -222,7 +222,8 @@ public class EditClinicalEventTask extends AbstractTask {
         @Override
         protected void onSelected(Act object) {
             super.onSelected(object);
-            if (object != null && click.isDoubleClick(object.getId())) {
+            long id = (object != null) ? object.getId() : 0;
+            if (click.isDoubleClick(id)) {
                 onEdit();
             }
             enableDelete();
