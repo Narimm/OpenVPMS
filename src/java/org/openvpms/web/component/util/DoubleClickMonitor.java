@@ -72,7 +72,8 @@ public class DoubleClickMonitor {
      * Determines if there has been a double click on an object.
      * <p/>
      * It is considered a double click if the method is called twice with the same (i.e using equals()) object,
-     * within the specified interval.
+     * within the specified interval. If a double click is detected, the monitor resets - two more clicks are required
+     * within the interval to be considered another double click.
      *
      * @param object the clicked on object. May be <tt>null</tt>
      * @return true if the object has been clicked twice within the interval
@@ -82,8 +83,13 @@ public class DoubleClickMonitor {
         Date now = new Date();
         result = (lastClick != null && (interval == 0 || (lastClick.getTime() + interval) >= now.getTime()));
         result = result && ObjectUtils.equals(last, object);
-        lastClick = now;
-        last = object;
+        if (result) {
+            lastClick = null;
+            last = null;
+        } else {
+            lastClick = now;
+            last = object;
+        }
         return result;
 
     }
