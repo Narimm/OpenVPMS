@@ -4,67 +4,67 @@
 
     <template name="Invoice"
               archetype="act.customerAccountChargesInvoice"
-              path="invoiceA5.jrxml"
+              path="invoice a5 letterhead.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Invoice Items"
               archetype="SUBREPORT"
-              path="invoiceItemsA5.jrxml"
+              path="invoiceItemsa5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Credit"
               archetype="act.customerAccountChargesCredit"
-              path="creditA5.jrxml"
+              path="credit a5 letterhead.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Credit Items"
               archetype="SUBREPORT"
-              path="creditItemsA5.jrxml"
+              path="creditItemsa5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Counter Sale"
               archetype="act.customerAccountChargesCounter"
-              path="countersaleA5.jrxml"
+              path="countersale a5 letterhead.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Counter Sale Items"
               archetype="SUBREPORT"
-              path="countersaleItemsA5.jrxml"
+              path="countersaleItemsa5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Receipt"
               archetype="act.customerAccountPayment"
-              path="receiptA5.jrxml"
+              path="receipt a5 letterhead.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Receipt Items"
               archetype="SUBREPORT"
-              path="receiptItemsA5.jrxml"
+              path="receiptitemsA5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Estimation"
               archetype="act.customerEstimation"
-              path="estimationA5.jrxml"
+              path="estimation a5 letterhead.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Estimation Items"
               archetype="SUBREPORT"
-              path="estimationItemsA5.jrxml"
+              path="estimationitemsa5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Statement"
               archetype="act.customerAccountOpeningBalance"
-              path="statement A5.jrxml"
+              path="statement a5 letterhead.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
@@ -112,7 +112,7 @@
 
     <template name="Grouped Reminders Report"
               archetype="GROUPED_REMINDERS"
-              path="Grouped Reminders.jrxml"
+              path="grouped reminders a4.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
@@ -135,25 +135,37 @@
               docType="document.other"/>
 
     <template name="Desexing Certificate"
-              path="Desexing Certificate A5.odt"
+              path="desexing certificate a5.odt"
               archetype="act.patientDocumentForm"
               mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"/>
 
-    <template name="Reminder Program Injection Cat"
-              path="Reminder Program Inj Cat.odt"
+    <template name="Reminder Cartrophen First"
+              path="cartrophen first reminder.odt"
               archetype="act.patientDocumentLetter"
               mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"/>
 
-    <template name="Reminder Proheart"
-              path="Reminder Proheart.odt"
+    <template name="Reminder Desexing First"
+              path="desex first reminder.odt"
               archetype="act.patientDocumentLetter"
               mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"/>
 
     <template name="Reminder Vaccination First"
-              path="Reminder Vaccination First.odt"
+              path="vaccination first reminder.odt"
+              archetype="act.patientDocumentLetter"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"/>
+
+    <template name="Reminder Vaccination Second"
+              path="vaccination second reminder.odt"
+              archetype="act.patientDocumentLetter"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"/>
+
+    <template name="Reminder Vaccination Puppy and Kitten First"
+              path="vaccination puppy kitten first reminder.odt"
               archetype="act.patientDocumentLetter"
               mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"/>
@@ -162,6 +174,126 @@
               path="Referral Letter.odt"
               archetype="act.patientDocumentLetter"
               mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"/>
+
+    <template name="Clinician Sales Report"
+              archetype="REPORT"
+              path="Clinician Sales Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Customer Acquisition Report"
+              archetype="REPORT"
+              path="Customer Acquisition Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Customer Balance Report"
+              archetype="REPORT"
+              path="Customer Balance report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Customer List Report"
+              archetype="REPORT"
+              path="Customer List Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Customer Payments Report"
+              archetype="REPORT"
+              path="Customer Payments Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Customer Product Sales Report"
+              archetype="REPORT"
+              path="Customer Product Sales report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Customer Reconciliation Report"
+              archetype="REPORT"
+              path="Customer Reconciliation Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Customer Referral Report"
+              archetype="REPORT"
+              path="Customer Referral Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Customer Sales Report"
+              archetype="REPORT"
+              path="Customer Sales Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Practice Clinician Sales Report"
+              archetype="REPORT"
+              path="Practice Clinician Sales Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Product List Report"
+              archetype="REPORT"
+              path="Product List report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Product Price List Report"
+              archetype="REPORT"
+              path="Product Price List report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Patient Acquisition Report"
+              archetype="REPORT"
+              path="Patient Acquisition Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Patient Deceased Report"
+              archetype="REPORT"
+              path="Patient Deceased Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Patient List Report"
+              archetype="REPORT"
+              path="Patient List Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Patient Sterilisation Report"
+              archetype="REPORT"
+              path="Patient Sterilisation Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Stock Reorder Report"
+              archetype="REPORT"
+              path="stock reorder report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Stock Take List Report"
+              archetype="REPORT"
+              path="Stock Take List.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Stock Valuation Report"
+              archetype="REPORT"
+              path="Stock Valuation Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="StockTake Sheet Report"
+              archetype="REPORT"
+              path="StockTake Sheet.jrxml"
+              mimeType="text/xml"
               docType="document.other"/>
 
 </templates>
