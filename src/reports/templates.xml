@@ -100,7 +100,7 @@
 
     <template name="Patient Clinical Event"
               archetype="act.patientClinicalEvent"
-              path="patientClinicalEvent.jrxml"
+              path="patientClinicalEvent a5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
