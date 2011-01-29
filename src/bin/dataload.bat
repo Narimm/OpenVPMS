@@ -21,5 +21,5 @@ java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicati
 goto end
 
 :doOther
-java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f %*% -b 1000
+java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml %*% -b 1000
 :end
