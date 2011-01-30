@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:wsl="http://jax-ws.dev.java.net/spring/local-transport"
+       xmlns:ws="http://jax-ws.dev.java.net/spring/core"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://jax-ws.dev.java.net/spring/core http://jax-ws.dev.java.net/spring/core.xsd
+                           http://jax-ws.dev.java.net/spring/local-transport http://jax-ws.dev.java.net/spring/local-transport.xsd">
+
+    <context:annotation-config/>
+
+    <wsl:bindings id="registryService">
+        <wsl:endpoints>
+            <ws:service bean="#registryWebService"/>
+        </wsl:endpoints>
+    </wsl:bindings>
+
+    <wsl:bindings id="orderService">
+        <wsl:endpoints>
+            <ws:service bean="#orderWebService"/>
+        </wsl:endpoints>
+    </wsl:bindings>
+
+    <bean name="delegatingRegistryService" class="org.openvpms.esci.service.DelegatingRegistryService"/>
+
+    <bean id="registryWebService" class="org.openvpms.esci.service.RegistryWebService">
+        <property name="registry" ref="delegatingRegistryService"/>
+    </bean>
+
+    <bean name="delegatingOrderService" class="org.openvpms.esci.service.DelegatingOrderService"/>
+    
+    <bean id="orderWebService" class="org.openvpms.esci.service.OrderWebService">
+        <property name="orderService" ref="delegatingOrderService"/>
+    </bean>
+
+    <bean name="orderMapper" class="org.openvpms.esci.adapter.map.order.OrderMapperImpl"/>
+    
+    <!-- ================================================================== -->
+    <!-- Support for accessing supplier services                            -->
+    <!-- ================================================================== -->
+
+    <bean id="serviceAuthenticators" class="org.openvpms.esci.service.client.DefaultServiceAuthenticators"
+          factory-method="getInstance"/>
+
+    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory">
+        <property name="serviceAuthenticators" ref="serviceAuthenticators"/>
+    </bean>
+
+    <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator">
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="serviceLocatorFactory" ref="serviceLocatorFactory"/>
+        <property name="supplierRules" ref="supplierRules"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!-- Business rules                                                     -->
+    <!-- ================================================================== -->
+
+    <bean name="imObjectBeanFactory"
+          class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">
+        <constructor-arg index="0" ref="archetypeService"/>
+    </bean>
+
+    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules"/>
+
+    <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules"/>
+
+    <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules"/>
+
+    <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules"/>
+
+    <bean id="supplierRules" class="org.openvpms.archetype.rules.supplier.SupplierRules"/>
+
+    <bean id="userRules" class="org.openvpms.archetype.rules.user.UserRules"/>
+
+</beans>
