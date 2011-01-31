@@ -52,7 +52,7 @@ public class PrintProperties {
     private MediaTray mediaTray;
 
     /**
-     * The no. of copies
+     * The no. of copies.
      */
     private int copies = 1;
 
@@ -132,7 +132,7 @@ public class PrintProperties {
     /**
      * Sets the no. of copies to print.
      *
-     * @param copies the no. of copies
+     * @param copies the no. of copies. If &lt; 1, the value is ignored
      */
     public void setCopies(int copies) {
         this.copies = copies;
@@ -141,10 +141,10 @@ public class PrintProperties {
     /**
      * Returns the no. of copies to print.
      *
-     * @return the no. of copies
+     * @return the no. of copies. Always &gt;= 1
      */
     public int getCopies() {
-        return copies;
+        return copies >= 1 ? copies : 1;
     }
 
 }
