@@ -51,7 +51,7 @@
                 <errorMessage>Invalid Payment Status</errorMessage>
             </assertion>
         </node>
-        <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="1" maxLength="300"/>
+        <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="reference" displayName="Reference" path="/details/reference" type="java.lang.String" minCardinality="0" maxLength="20"/>
         <node name="till" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
