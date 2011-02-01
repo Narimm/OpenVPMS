@@ -91,8 +91,8 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 return null;
             }
         });
@@ -114,6 +114,15 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertFalse("Collection shouldn't be modified", saved.isModified());
         assertFalse("Collection not saved", saved.isSaved());
         assertTrue("Collection should be valid", saved.isValid());
+
+        // make sure save can be executed a second time
+        execute(new TransactionCallback<Object>() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                return null;
+            }
+        });
     }
 
     /**
@@ -144,8 +153,8 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 return null;
             }
         });
@@ -169,8 +178,8 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 return null;
             }
         });
@@ -189,6 +198,15 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertFalse("Collection shouldn't be modified", saved.isModified());
         assertFalse("Collection not saved", saved.isSaved());
         assertTrue("Collection should be valid", saved.isValid());
+
+        // make sure save can be executed a second time
+        execute(new TransactionCallback<Object>() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                return null;
+            }
+        });
     }
 
     /**
@@ -213,8 +231,8 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 return null;
             }
         });
@@ -232,8 +250,8 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 return null;
             }
         });
@@ -250,6 +268,15 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertFalse("Collection shouldn't be modified", saved.isModified());
         assertFalse("Collection not saved", saved.isSaved());
         assertTrue("Collection should be valid", saved.isValid());
+
+        // make sure save can be executed a second time
+        execute(new TransactionCallback<Object>() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                return null;
+            }
+        });        
     }
 
     /**
@@ -278,8 +305,8 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
                 return null;
             }
         });
@@ -304,8 +331,8 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                assertTrue("Failed to save parent", SaveHelper.save(parent2));
                 assertTrue("Failed to save collection", editor2.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent2));
                 return null;
             }
         });
@@ -322,6 +349,15 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertFalse("Collection shouldn't be modified", saved.isModified());
         assertFalse("Collection not saved", saved.isSaved());
         assertTrue("Collection should be valid", saved.isValid());
+
+        // make sure save can be executed a second time
+        execute(new TransactionCallback<Object>() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save collection", editor2.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent2));
+                return null;
+            }
+        });
     }
 
     /**
