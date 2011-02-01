@@ -25,8 +25,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,8 +38,12 @@ import java.util.Set;
 
 
 /**
- * A {@link CollectionPropertyEditor} for collections of
- * {@link IMObjectRelationship}s.
+ * A {@link CollectionPropertyEditor} for collections of {@link IMObjectRelationship}s.
+ * <p/>
+ * NOTE: this collection editor is dependent on the order of saves - the parent object must be saved after the related
+ * objects. This is because the parent is populated with the relationships, but the related objects are only retrieved
+ * and populated when saving. If the parent is saved first, the related objects end up containing the relationship,
+ * triggering a StaleObjectStateException.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -300,11 +304,10 @@ public abstract class RelationshipCollectionPropertyEditor
      */
     private IMObject getObject(IMObjectRelationship relationship,
                                Map<IMObjectReference, IMObject> cache) {
-        IMObjectReference ref = parentIsSource() ? relationship.getTarget()
-                : relationship.getSource();
-        IMObject object = null;
-        if (!cache.containsKey(ref)) {
-            object = IMObjectHelper.getObject(ref);
+        IMObjectReference ref = parentIsSource() ? relationship.getTarget() : relationship.getSource();
+        IMObject object = cache.get(ref);
+        if (object == null) {
+            object = ServiceHelper.getArchetypeService().get(ref);
             if (object != null) {
                 cache.put(ref, object);
             }
