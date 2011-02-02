@@ -23,6 +23,8 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.TableModelEvent;
+import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -36,8 +38,8 @@ import org.openvpms.web.component.util.LabelFactory;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -93,6 +95,9 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
         super(query, sort);
         this.model = model;
         createModel = (model == null);
+        if (model != null) {
+            registerTableChangeListener(model);
+        }
     }
 
     /**
@@ -276,6 +281,7 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
         if (table == null) {
             if (model == null) {
                 model = createTableModel();
+                registerTableChangeListener(model);
             }
             table = createTable(model);
             table.getTable().addActionListener(new ActionListener() {
@@ -310,6 +316,25 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      */
     protected IMTableModel<T> getTableModel() {
         return model;
+    }
+
+    /**
+     * Registers a listener for when the model updates.
+     * This implementation updates the browser's sort criteria so that it is preserved accross queries.
+     *
+     * @param model the model
+     */
+    protected void registerTableChangeListener(IMTableModel<T> model) {
+        model.addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent event) {
+                if (table != null) {
+                    ResultSet<T> set = table.getResultSet();
+                    if (set != null) {
+                        setSortConstraint(set.getSortConstraints());
+                    }
+                }
+            }
+        });
     }
 
     /**
