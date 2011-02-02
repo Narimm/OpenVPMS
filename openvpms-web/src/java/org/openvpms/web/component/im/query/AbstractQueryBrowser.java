@@ -108,6 +108,15 @@ public abstract class AbstractQueryBrowser<T> extends AbstractBrowser<T> impleme
     }
 
     /**
+     * Sets the sort criteria.
+     *
+     * @param sort  the sort criteria. May be <tt>null</tt>
+     */
+    protected void setSortConstraint(SortConstraint[] sort) {
+        this.sort = sort;
+    }
+
+    /**
      * Lay out this component.
      */
     protected void doLayout() {
