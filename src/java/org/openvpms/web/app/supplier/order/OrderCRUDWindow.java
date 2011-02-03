@@ -35,6 +35,7 @@ import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -171,25 +172,12 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      * Invoked when posting of an act is complete, either by saving the act
      * with <em>POSTED</em> status, or invoking {@link #onPost()}.
      * <p/>
-     * This implementation sends the order to the supplier if they are ESCI-enabled, and prints the act.
+     * This implementation sends the order to the supplier if they are ESCI-enabled; otherwise it just prints the act.
      *
      * @param act the act
      */
     @Override
     protected void onPosted(FinancialAct act) {
-        if (postOrder(act)) {
-            print(act);
-        }
-    }
-
-    /**
-     * Posts an order to the associated supplier, if it has ESCI configured.
-     *
-     * @param act the order
-     * @return <tt>true</tt> if the order was posted
-     */
-    private boolean postOrder(FinancialAct act) {
-        boolean result = false;
         SupplierRules rules = new SupplierRules();
         if (rules.getSupplierStockLocation(act) != null) {
             // ESCI is configured for the supplier, so submit the order
@@ -197,7 +185,8 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
                 OrderServiceAdapter service = ServiceHelper.getOrderService();
                 service.submitOrder(act);
                 scheduleCheckInbox(true); // poll in 30 secs to see if there any responses
-                result = true;
+                InformationDialog.show(Messages.get("supplier.order.sent.title"), 
+                                       Messages.get("supplier.order.sent.message"));
             } catch (Throwable exception) {
                 // failed to submit the order, so revert to IN_PROGRESS
                 act.setStatus(ActStatus.IN_PROGRESS);
@@ -207,9 +196,8 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
                 onRefresh(act);
             }
         } else {
-            result = true;
+            print(act);
         }
-        return result;
     }
 
 }
