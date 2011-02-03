@@ -101,6 +101,16 @@ public abstract class Selector<T extends IMObject> {
     private Component component;
 
     /**
+     * The child component. The deactivated label is added to this if the object is inactive.
+     */
+    private Component child;
+
+    /**
+     * Deactivated label. Null if the object is active.
+     */
+    private Label deactivated;
+
+    /**
      * The focus group.
      */
     private final FocusGroup focusGroup;
@@ -124,7 +134,6 @@ public abstract class Selector<T extends IMObject> {
     public Selector(ButtonStyle style, boolean editable) {
         buttonStyle = style;
         this.editable = editable;
-        component = new Row();
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
     }
 
@@ -134,8 +143,8 @@ public abstract class Selector<T extends IMObject> {
      * @return the selector component
      */
     public Component getComponent() {
-        if (component.getComponentCount() == 0) {
-            doLayout(component, null, null);
+        if (component == null) {
+            doLayout();
         }
         return component;
     }
@@ -225,7 +234,6 @@ public abstract class Selector<T extends IMObject> {
      */
     protected void setObject(String name, String description, boolean active) {
         String text = null;
-        String deactivated = null;
         if (name != null || description != null) {
             if (format == Format.NAME || description == null) {
                 text = Messages.get("imobject.name", name);
@@ -234,64 +242,55 @@ public abstract class Selector<T extends IMObject> {
             } else if (format == Format.SUMMARY) {
                 text = Messages.get("imobject.summary", name, description);
             }
-
-            if (!active) {
-                deactivated = Messages.get("imobject.deactivated");
-            }
         }
-        component.removeAll();
-        doLayout(component, text, deactivated);
+        getComponent();
+        if (objectText != null) {
+            objectText.setText(text);
+        } else {
+            objectLabel.setText(text);
+        }
+
+        if (!active) {
+            if (deactivated == null) {
+                deactivated = LabelFactory.create("imobject.deactivated", "Selector.Deactivated");
+                child.add(deactivated);
+            }
+        } else if (deactivated != null) {
+            child.remove(deactivated);
+            deactivated = null;
+        }
     }
 
     /**
-     * Create the component.
-     *
-     * @param parent      the parent component
-     * @param text        the object text. May be <code>null</code>
-     * @param deactivated the deactivated text. May be <code>null</code>
+     * Lays out the component
      */
-    protected void doLayout(Component parent, String text, String deactivated) {
-        Component component;
+    protected void doLayout() {
+        component = new Row();
         if (buttonStyle == ButtonStyle.RIGHT && fillWidth) {
-            // button on the right. The 'wrapper' forces the summary+deactivated
+            // button on the right. The 'child' forces the summary+deactivated
             // labels to take up as much space as possible, ensuring that the
             // button is displayed hard on the right.
             // Seems more successful than using alignments
-            Row wrapper = RowFactory.create("CellSpacing", getObjectComponent());
-            if (deactivated != null) {
-                addDeactivated(wrapper, deactivated);
-            }
+            child = RowFactory.create("CellSpacing", getObjectComponent());
             RowLayoutData layout = new RowLayoutData();
             layout.setWidth(new Extent(100, Extent.PERCENT));
-            wrapper.setLayoutData(layout);
-            component = RowFactory.create(wrapper, getButtons(parent));
+            child.setLayoutData(layout);
+            child = RowFactory.create(child, getButtons(component));
         } else if (buttonStyle == ButtonStyle.RIGHT && !fillWidth) {
-            Row wrapper = RowFactory.create(getObjectComponent(), getButtons(parent));
-            if (deactivated != null) {
-                component = RowFactory.create("CellSpacing", wrapper);
-                addDeactivated(component, deactivated);
-            } else {
-                component = wrapper;
-            }
+            child = RowFactory.create("CellSpacing", RowFactory.create(getObjectComponent(), getButtons(component)));
         } else {
             // display button(s) on the left
-            component = RowFactory.create("CellSpacing", getObjectComponent());
-            if (deactivated != null) {
-                addDeactivated(component, deactivated);
-            }
-            component.add(getButtons(parent), 0);
+            child = RowFactory.create("CellSpacing", getObjectComponent());
+            child.add(getButtons(component), 0);
         }
         if (objectText != null) {
-            objectText.setText(text);
             if (buttonStyle == ButtonStyle.RIGHT) {
                 focusGroup.add(0, objectText);
             } else {
                 focusGroup.add(objectText);
             }
-        } else {
-            objectLabel.setText(text);
         }
-        parent.add(component);
+        component.add(child);
     }
 
     /**
@@ -334,12 +333,6 @@ public abstract class Selector<T extends IMObject> {
      */
     protected Button createSelectButton() {
         return ButtonFactory.create("select");
-    }
-
-    private void addDeactivated(Component container, String deactivated) {
-        Label label = LabelFactory.create(null, "Selector.Deactivated");
-        label.setText(deactivated);
-        container.add(label);
     }
 
 }
