@@ -31,7 +31,6 @@ import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.workflow.scheduling.AbstractScheduleActEditor;
-import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -259,7 +258,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         AlertSummary alerts = new CustomerSummary().getAlertSummary(customer);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", "bold"),
-                    alerts.getComponent());
+                                          alerts.getComponent());
         }
         return result;
     }
@@ -275,7 +274,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         AlertSummary alerts = new PatientSummary().getAlertSummary(patient);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", "bold"),
-                    alerts.getComponent());
+                                          alerts.getComponent());
         }
         return result;
     }
@@ -421,19 +420,22 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         }
 
         /**
-         * Sets focus on the customer component.
+         * Returns the default focus component.
+         * <p/>
+         * This implementation returns the customer component.
          *
          * @param components the components
+         * @return the customer component, or <tt>null</tt> if none is found
          */
         @Override
-        protected void setFocus(List<ComponentState> components) {
+        protected Component getDefaultFocus(List<ComponentState> components) {
             for (ComponentState state : components) {
                 Property property = state.getProperty();
                 if (property != null && "customer".equals(property.getName())) {
-                    FocusHelper.setFocus(state.getFocusable());
-                    break;
+                    return state.getFocusable();
                 }
             }
+            return null;
         }
     }
 }

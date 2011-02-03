@@ -667,6 +667,8 @@ public abstract class IMTableCollectionEditor<T>
 
     /**
      * Changes the focus group to that belonging to the specified editor.
+     * <p/>
+     * The focus is moved to the default focus component for the editor.
      *
      * @param editor the editor
      */
@@ -679,8 +681,12 @@ public abstract class IMTableCollectionEditor<T>
             if (index == -1) {
                 log.error("Missing focus group for existing editor");
                 index = focusGroup.size();
+            } else {
+                focusGroup.remove(editorFocusGroup);
             }
         }
-        focusGroup.add(index, editor.getFocusGroup());
+        editorFocusGroup = editor.getFocusGroup();
+        focusGroup.add(index, editorFocusGroup);
+        editorFocusGroup.setFocus();
     }
 }

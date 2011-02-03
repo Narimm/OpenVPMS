@@ -52,6 +52,7 @@ import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.app.patient.mr.PatientMedicationActLayoutStrategy;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Editors;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -65,6 +66,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
@@ -364,8 +366,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         NodeFilter currentFilter = getFilter();
         IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
         NodeFilter expectedFilter = getFilterForProduct(productRef);
-        if (currentFilter != expectedFilter) {
+        if (!currentFilter.equals(expectedFilter)) {
             changeLayout(expectedFilter);
+            if (patientActPopups == 0) {
+                // no current popups, so move focus to the product
+                moveFocusToProduct();
+            }
         }
 
         Property discount = getProperty("discount");
@@ -651,6 +657,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             public void completed() {
                 --patientActPopups;
                 if (patientActPopups == 0) {
+                    moveFocusToProduct();
+
                     // force the parent collection editor to re-check the validation status of
                     // this editor, in order for the Add button to be enabled.
                     getListeners().notifyListeners(CustomerChargeActItemEditor.this);
@@ -759,6 +767,19 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
         for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
             editor.setClinician(clinician);
+        }
+    }
+
+    /**
+     * Helper to move the focus to the product editor.
+     */
+    private void moveFocusToProduct() {
+        ProductParticipationEditor productEditor = getProductEditor();
+        if (productEditor != null) {
+            FocusGroup group = productEditor.getFocusGroup();
+            if (group != null) {
+                group.setFocus();
+            }
         }
     }
 
