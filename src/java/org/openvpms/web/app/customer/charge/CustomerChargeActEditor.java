@@ -136,9 +136,11 @@ public class CustomerChargeActEditor extends FinancialActEditor {
             // no invoice items, so add one
             IMObject item = items.create();
             if (item != null) {
-                IMObjectEditor editor = items.createEditor(item, getLayoutContext());
+                IMObjectEditor editor = items.getEditor(item);
                 items.addEdited(editor);
                 items.editSelected();
+                // set the default focus to that of the item editor
+                getFocusGroup().setDefault(editor.getFocusGroup().getDefaultFocus());
             }
         }
     }

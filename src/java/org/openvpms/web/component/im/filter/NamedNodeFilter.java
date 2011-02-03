@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.filter;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
@@ -41,8 +42,31 @@ public class NamedNodeFilter implements NodeFilter {
      *
      * @param exclude the names of the nodes to exclude
      */
-    public NamedNodeFilter(String ... exclude) {
+    public NamedNodeFilter(String... exclude) {
         _exclude = exclude;
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return <tt>true</tt> if this object is the same as the obj argument; <tt>false</tt> otherwise.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof NamedNodeFilter)) {
+            return false;
+        }
+        NamedNodeFilter other = (NamedNodeFilter) obj;
+        if (_exclude.length != other._exclude.length) {
+            return false;
+        }
+        for (String excluded : _exclude) {
+            if (!ArrayUtils.contains(other._exclude, excluded)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -55,8 +79,8 @@ public class NamedNodeFilter implements NodeFilter {
      */
     public boolean include(NodeDescriptor descriptor, IMObject object) {
         boolean result = true;
-        for (int i = 0; i < _exclude.length; ++i) {
-            if (_exclude[i].equals(descriptor.getName())) {
+        for (String excluded : _exclude) {
+            if (excluded.equals(descriptor.getName())) {
                 result = false;
                 break;
             }

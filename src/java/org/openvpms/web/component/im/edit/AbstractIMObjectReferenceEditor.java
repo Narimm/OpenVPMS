@@ -246,7 +246,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * <p/>
      * This implementation simply invokes {@link #setObject}.
      *
-     * @param object  the selected object. May be <tt>null</tt>
+     * @param object the selected object. May be <tt>null</tt>
      */
     protected void onSelected(T object) {
         setObject(object);
@@ -255,7 +255,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Invoked when an object is selected from a brwoser.
      * <p/>
-     * This implementation delegates to {@link #onSelected(IMObject)}. 
+     * This implementation delegates to {@link #onSelected(IMObject)}.
      *
      * @param object  the selected object. May be <tt>null</tt>
      * @param browser the browser
@@ -284,7 +284,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
             }
 
             public void cancelled() {
-                // ignore
+                getFocusGroup().setFocus(); // restore focus
             }
         };
 
@@ -308,6 +308,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         final EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
+                getFocusGroup().setFocus(); // restore focus
                 onEditCompleted(editor);
             }
         });

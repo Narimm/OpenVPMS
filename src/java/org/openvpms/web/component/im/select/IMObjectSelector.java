@@ -42,6 +42,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.focus.FocusCommand;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -277,12 +278,14 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
             query.setAuto(runQuery);
         }
         try {
+            final FocusCommand focus = new FocusCommand();
             final Browser<T> browser = BrowserFactory.create(query);
             final BrowserDialog<T> popup = new BrowserDialog<T>(
                     type, browser, allowCreate);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
+                    focus.restore();
                     setInSelect(false);
                     if (popup.createNew()) {
                         onCreate();
@@ -321,6 +324,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      */
     protected void onSelected(T object, Browser<T> browser) {
         setObject(object);
+        getFocusGroup().setFocus(); // set the focus back to the component
         if (listener != null) {
             listener.selected(object, browser);
         }

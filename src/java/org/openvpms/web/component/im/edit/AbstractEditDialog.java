@@ -29,6 +29,7 @@ import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
+import org.openvpms.web.component.focus.FocusGroup;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -163,6 +164,20 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
+     * Lays out the component prior to display.
+     */
+    @Override
+    protected void doLayout() {
+        super.doLayout();
+        if (editor != null) {
+            FocusGroup group = editor.getFocusGroup();
+            if (group != null) {
+                group.setFocus();
+            }
+        }
+    }
+
+    /**
      * Saves the current object, if saving is enabled.
      */
     @Override
@@ -220,6 +235,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
         if (editor != null) {
             getLayout().add(editor.getComponent());
             getFocusGroup().add(0, editor.getFocusGroup());
+
+            if (getParent() != null) {
+                // focus in the editor
+                editor.getFocusGroup().setFocus();
+            }
         }
     }
 

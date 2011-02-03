@@ -143,7 +143,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             focusGroup = new FocusGroup(DescriptorHelper.getDisplayName(object));
             Column column = ColumnFactory.create("CellSpacing");
             doLayout(object, properties, parent, column, context);
-            setFocus();
+            focusGroup.setDefault(getDefaultFocus());
             state = new ComponentState(column, focusGroup);
             components.clear();
             if (!keepState) {
@@ -559,22 +559,26 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Sets focus on a component.
-     * Delegates to {@link #setFocus(List<ComponentState>)}.
+     * Returns the default focus component.
+     * <p/>
+     * Delegates to {@link #getDefaultFocus(List <ComponentState>)}.
+     *
+     * @return the default focus component, or <tt>null</tt> if none is found
      */
-    protected void setFocus() {
-        setFocus(components);
+    protected Component getDefaultFocus() {
+        return getDefaultFocus(components);
     }
 
     /**
-     * Sets focus on a component.
-     * This implementation sets focus on the first focusable field.
+     * Returns the default focus component.
+     * <p/>
+     * This implementation returns the first focusable component.
      *
      * @param components the components
+     * @return the default focus component, or <tt>null</tt> if none is found
      */
-    protected void setFocus(List<ComponentState> components) {
-        Component focusable = getFocusable(components);
-        FocusHelper.setFocus(focusable);
+    protected Component getDefaultFocus(List<ComponentState> components) {
+        return getFocusable(components);
     }
 
     /**

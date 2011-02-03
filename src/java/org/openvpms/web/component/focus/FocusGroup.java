@@ -65,6 +65,11 @@ public class FocusGroup {
      */
     private int next = -1;
 
+    /**
+     * The default component to focus on.
+     */
+    private Component defaultFocus;
+
 
     /**
      * Construct a new <tt>FocusGroup</tt>.
@@ -112,6 +117,24 @@ public class FocusGroup {
      */
     public FocusGroup getParent() {
         return parent;
+    }
+
+    /**
+     * Sets the default component to focus on.
+     *
+     * @param component the component. May be <tt>null</tt>
+     */
+    public void setDefault(Component component) {
+        defaultFocus = component;
+    }
+
+    /**
+     * Returns the default component to focus on.
+     *
+     * @return the component. May be <tt>null</tt>
+     */
+    public Component getDefaultFocus() {
+        return defaultFocus;
     }
 
     /**
@@ -320,10 +343,14 @@ public class FocusGroup {
     }
 
     /**
-     * Sets the focus on the first component that may have focus set.
+     * Sets the focus.
+     * <p/>
+     * This will set the focus on the {@link #setDefault default} if present; otherwise it will set it on the first
+     * component that may have focus set.
      */
     public void setFocus() {
-        FocusHelper.setFocus(getFocusable());
+        Component focus = (defaultFocus != null) ? defaultFocus : getFocusable();
+        FocusHelper.setFocus(focus);
     }
 
     /**
