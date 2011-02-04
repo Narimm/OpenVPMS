@@ -374,6 +374,8 @@ public class TestHelper extends Assert {
      * If it exists, any tax rates will be removed.
      * <p/>
      * The practice currency is set to <em>AUD</em>.
+     * <p/>
+     * Default contacts are added.
      *
      * @return the practice
      */
@@ -393,14 +395,14 @@ public class TestHelper extends Assert {
                 for (Lookup tax : taxes) {
                     bean.removeValue("taxes", tax);
                 }
-                bean.save();
             }
         } else {
             party = (Party) create(PracticeArchetypes.PRACTICE);
             party.setName("XPractice");
-            Contact contact = (Contact) create(ContactArchetypes.PHONE);
-            party.addContact(contact);
         }
+
+        PartyRules rules = new PartyRules();
+        party.setContacts(rules.getDefaultContacts());
 
         Lookup currency = getCurrency("AUD");
 
