@@ -48,19 +48,15 @@ public class StockRulesTestCase extends AbstractStockTest {
      */
     @Test
     public void testGetStockLocation() {
-        // set up a location with 2 stock locations
+        // set up a location with a stock location
         Party location = TestHelper.createLocation();
-        Party stockLocation1 = createStockLocation();
-        Party stockLocation2 = createStockLocation();
+        Party stockLocation = createStockLocation();
 
         EntityBean locationBean = new EntityBean(location);
         locationBean.addRelationship("entityRelationship.locationStockLocation",
-                                     stockLocation1);
-        locationBean.addRelationship("entityRelationship.locationStockLocation",
-                                     stockLocation2);
+                                     stockLocation);
         save(location);
-        save(stockLocation1);
-        save(stockLocation2);
+        save(stockLocation);
 
         Product product = TestHelper.createProduct();
 
@@ -75,11 +71,11 @@ public class StockRulesTestCase extends AbstractStockTest {
         // should return either stock location
         assertNotNull(rules.getStockLocation(product, location));
 
-        // now create a relationship with stockLocation2
-        rules.updateStock(product, stockLocation2, BigDecimal.ONE);
+        // now create a relationship with stockLocation
+        rules.updateStock(product, stockLocation, BigDecimal.ONE);
 
-        // verify stockLocation2 now returned for the product
-        assertEquals(stockLocation2, rules.getStockLocation(product, location));
+        // verify stockLocation now returned for the product
+        assertEquals(stockLocation, rules.getStockLocation(product, location));
     }
 
     /**
