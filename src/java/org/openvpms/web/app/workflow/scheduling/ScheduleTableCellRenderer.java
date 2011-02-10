@@ -18,17 +18,19 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import echopointng.BalloonHelp;
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.table.TableCellRendererEx;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Font;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -216,7 +218,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
                 if (layout != null) {
                     Color background = layout.getBackground();
                     if (background != null) {
-                        component.setForeground(ColourHelper.getTextColour(background));
+                        setForeground(component, background);
                     }
                     TableHelper.mergeStyle(component, layout, true);
                 }
@@ -523,6 +525,32 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
             }
         }
         return font;
+    }
+
+    /**
+     * Sets the foreground colour of a component.
+     * <p/>
+     * If the component is a <tt>Row</tt>, the request will be propagated to the child components.
+     * <p/>
+     * If the component is a BalloonHelp, or a child of a row is a BalloonHelp, the foreground colour change will
+     * be ignored.
+     * <p/>
+     * NOTE: this is a workaround to ensure that rows containing <tt>BalloonHelp</tt> components are rendered correctly
+     * when the background is black.
+     * <p/>
+     * TODO - don't render components within the model - move all of this out to the renderer(s) 
+     *
+     * @param component  the component
+     * @param background the background colour of the row
+     */
+    private void setForeground(Component component, Color background) {
+        if (component instanceof Row) {
+            for (Component child : component.getComponents()) {
+                setForeground(child, background);
+            }
+        } else if (!(component instanceof BalloonHelp)) {
+            component.setForeground(ColourHelper.getTextColour(background));
+        }
     }
 
 }
