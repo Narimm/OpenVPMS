@@ -231,7 +231,7 @@ public class ESCIAdapterMessages {
     }
 
     /**
-     * Creates a new message for when a tax scheme and category don't correspond to an <em>loookup.taxType</em>.
+     * Creates a new message for when a tax scheme and category don't correspond to an <em>lookup.taxType</em>.
      *
      * @param path       the path to the element, from the parent
      * @param parent     the parent element path

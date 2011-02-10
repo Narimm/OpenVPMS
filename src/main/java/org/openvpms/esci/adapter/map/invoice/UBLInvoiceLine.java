@@ -80,7 +80,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * UN/CEFACT wholesale price type code identifier.
      * See http://www.unece.org/uncefact/codelist/standard/UNECE_PriceTypeCode_D09B.xsd
      */
-    private static final String WHOLESALE = "WS";
+    private static final String WHOLESALE = "WH";
 
     /**
      * Path to the alternative condidition price.
@@ -349,7 +349,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * Returns the wholesale (or list) price.
      * <p/>
      * This looks for a single PricingReference/AlternativeConditionPrice. If present, it must have a PriceTypeCode
-     * of "WS" (wholesale).
+     * of "WH" (wholesale).
      *
      * @return the list price, or <tt>0.0</tt> if no wholesale price is specified
      */
@@ -370,6 +370,11 @@ public class UBLInvoiceLine extends UBLFinancialType {
             }
         }
         return result;
+    }
+
+    public BigDecimal getBaseQuantity() {
+        return getQuantity(line.getPrice().getBaseQuantity(), "InvoicedQuantity");
+
     }
 
     /**
