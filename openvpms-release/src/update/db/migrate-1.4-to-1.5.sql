@@ -163,6 +163,7 @@ create table unit_codes (
     unit_code varchar(10) not null);
 
 insert into unit_codes values
+    ("UNIT", "EA"),
   	("BOTTLE", "BO"),
     ("TABLET", "U2"),
 	("PACKET", "PA"),
