@@ -84,6 +84,7 @@
         <property name="lookupService" ref="lookupService"/>
         <property name="practiceRules" ref="practiceRules"/>
         <property name="supplierRules" ref="supplierRules"/>
+        <property name="productRules" ref="productRules"/>
     </bean>
 
     <!-- ================================================================== -->
