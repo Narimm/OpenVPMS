@@ -17,7 +17,6 @@
  */
 package org.openvpms.esci.adapter.map;
 
-import org.apache.commons.lang.StringUtils;
 import org.oasis.ubl.common.AmountType;
 import org.oasis.ubl.common.CodeType;
 import org.oasis.ubl.common.CurrencyCodeContentType;
@@ -31,17 +30,14 @@ import org.oasis.ubl.common.basic.IssueTimeType;
 import org.oasis.ubl.common.basic.NameType;
 import org.oasis.ubl.common.basic.PercentType;
 import org.openvpms.archetype.rules.practice.PracticeRules;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.business.service.lookup.ILookupService;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -53,26 +49,6 @@ import java.util.GregorianCalendar;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class UBLHelper {
-
-    /**
-     * Returns the <em>lookup.uom</em> code for a given UN/CEFACT unit code.
-     *
-     * @param unitCode the UN/CEFACT unit code
-     * @param service  the lookup service
-     * @param factory  the bean factory
-     * @return the corresponding unit code or <tt>null</tt> if none is found
-     */
-    public static String getUnitOfMeasure(String unitCode, ILookupService service, IMObjectBeanFactory factory) {
-        Collection<Lookup> lookups = service.getLookups("lookup.uom");
-        for (Lookup lookup : lookups) {
-            IMObjectBean lookupBean = factory.createBean(lookup);
-            String code = lookupBean.getString("unitCode");
-            if (StringUtils.equals(unitCode, code)) {
-                return lookup.getCode();
-            }
-        }
-        return null;
-    }
 
     /**
      * Returns the currency code associated with the practice.

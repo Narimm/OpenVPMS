@@ -18,6 +18,8 @@
 package org.openvpms.esci.adapter.map.order;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.oasis.ubl.OrderType;
 import org.oasis.ubl.common.CurrencyCodeContentType;
 import org.oasis.ubl.common.aggregate.AddressLineType;
@@ -33,6 +35,7 @@ import org.oasis.ubl.common.aggregate.PartyNameType;
 import org.oasis.ubl.common.aggregate.PartyType;
 import org.oasis.ubl.common.aggregate.PriceType;
 import org.oasis.ubl.common.aggregate.SupplierPartyType;
+import org.oasis.ubl.common.aggregate.TaxTotalType;
 import org.oasis.ubl.common.basic.BaseQuantityType;
 import org.oasis.ubl.common.basic.CityNameType;
 import org.oasis.ubl.common.basic.CopyIndicatorType;
@@ -51,6 +54,7 @@ import org.oasis.ubl.common.basic.PostalZoneType;
 import org.oasis.ubl.common.basic.PriceAmountType;
 import org.oasis.ubl.common.basic.QuantityType;
 import org.oasis.ubl.common.basic.SupplierAssignedAccountIDType;
+import org.oasis.ubl.common.basic.TaxAmountType;
 import org.oasis.ubl.common.basic.TelefaxType;
 import org.oasis.ubl.common.basic.TelephoneType;
 import org.oasis.ubl.common.basic.TotalTaxAmountType;
@@ -127,6 +131,17 @@ public class OrderMapperImpl implements OrderMapper {
      * XML data type factory.
      */
     private DatatypeFactory datatypeFactory;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(OrderMapperImpl.class);
+
+    /**
+     * Default package unit code, if none is specified. This corresponds to "each" in UNE/ECE rec 20
+     * (http://docs.oasis-open.org/ubl/cs-UBL-2.0/cl/gc/cefact/UnitOfMeasureCode-2.0.gc) 
+     */
+    private static final String DEFAULT_PACKAGE_UNITS = "EA";
 
 
     /**
@@ -234,7 +249,9 @@ public class OrderMapperImpl implements OrderMapper {
         String contactName = (author != null) ? author.getName() : null;
         CustomerPartyType customerParty = getCustomer(contactName, location, stockLocation, supplierStockLocation);
         SupplierPartyType supplierParty = getSupplier(supplier);
-        MonetaryTotalType total = getMonetaryTotal(order.getTotal(), currencyCode);
+
+        TaxTotalType taxTotal = getTaxTotal(order, currencyCode);
+        MonetaryTotalType total = getMonetaryTotal(order, currencyCode);
 
         result.setUBLVersionID(version);
         result.setID(id);
@@ -243,6 +260,7 @@ public class OrderMapperImpl implements OrderMapper {
         result.setIssueTime(issueTime);
         result.setBuyerCustomerParty(customerParty);
         result.setSellerSupplierParty(supplierParty);
+        result.getTaxTotal().add(taxTotal);
         result.setAnticipatedMonetaryTotal(total);
 
         for (Act item : bean.getNodeActs("items")) {
@@ -338,23 +356,43 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Returns a <tt>MonetaryTotalType</tt> for an payable and tax amount.
+     * Returns a <tt>TaxTotalType</tt> for an order.
      *
-     * @param payableAmount the payable amount
-     * @param currencyCode  currency code
-     * @return the corresponding <tt>MonetaryTotalType</tt> for amount
+     * @param order    the order
+     * @param currency the currency code
+     * @return the corresponding <tt>TaxTotalType</tt>
      */
-    private MonetaryTotalType getMonetaryTotal(BigDecimal payableAmount, CurrencyCodeContentType currencyCode) {
+    private TaxTotalType getTaxTotal(FinancialAct order, CurrencyCodeContentType currency) {
+        TaxTotalType result = new TaxTotalType();
+        result.setTaxAmount(UBLHelper.initAmount(new TaxAmountType(), order.getTaxAmount(), currency));
+        return result;
+    }
+
+    /**
+     * Returns a <tt>MonetaryTotalType</tt> for an order.
+     *
+     * @param order    the order
+     * @param currency the currency code
+     * @return the corresponding <tt>MonetaryTotalType</tt>
+     */
+    private MonetaryTotalType getMonetaryTotal(FinancialAct order, CurrencyCodeContentType currency) {
+        BigDecimal payableAmount = order.getTotal();
+        BigDecimal lineExtensionAmount = payableAmount.subtract(order.getTaxAmount());
+
         MonetaryTotalType result = new MonetaryTotalType();
-        result.setPayableAmount(UBLHelper.initAmount(new PayableAmountType(), payableAmount, currencyCode));
+        result.setLineExtensionAmount(UBLHelper.initAmount(new LineExtensionAmountType(), lineExtensionAmount,
+                                                           currency));
+        result.setPayableAmount(UBLHelper.initAmount(new PayableAmountType(), payableAmount, currency));
         return result;
     }
 
     /**
      * Returns the UN/CEFACT unit code for the given package units code from an <em>lookup.uom</em>.
+     * <p/>
+     * If no package is specified, defaults to {@link #DEFAULT_PACKAGE_UNITS}.
      *
      * @param packageUnits the package units code
-     * @return the corresponding unit code or <tt>null</tt> if none is found
+     * @return the corresponding unit code
      */
     private String getUnitCode(String packageUnits) {
         String result = null;
@@ -367,6 +405,12 @@ public class OrderMapperImpl implements OrderMapper {
                     result = unitCode;
                 }
             }
+            if (result == null) {
+                log.warn("No unit code for package units=" + packageUnits + ". Defaulting to " + DEFAULT_PACKAGE_UNITS);
+            }
+        }
+        if (result == null) {
+            result = DEFAULT_PACKAGE_UNITS;
         }
         return result;
     }

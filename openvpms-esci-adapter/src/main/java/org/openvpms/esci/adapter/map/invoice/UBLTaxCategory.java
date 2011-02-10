@@ -20,10 +20,12 @@ package org.openvpms.esci.adapter.map.invoice;
 import org.oasis.ubl.common.aggregate.TaxCategoryType;
 import org.oasis.ubl.common.aggregate.TaxSchemeType;
 import org.oasis.ubl.common.basic.PercentType;
+import org.oasis.ubl.common.basic.TaxTypeCodeType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.adapter.map.UBLType;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 
@@ -85,15 +87,15 @@ public class UBLTaxCategory extends UBLFinancialType {
     }
 
     /**
-     * Returns the tax scheme identifier.
+     * Returns the tax scheme's tax type code.
      *
-     * @return the tax scheme identifier, or <tt>null</tt> if no tax category is provided
-     * @throws ESCIAdapterException if more than one tax category is specified, or the tax category doesn't provide a
-     *                              tax scheme
+     * @return the tax scheme's tax type code
+     * @throws ESCIAdapterException if no tax scheme is provided, or the tax scheme doesn't provide a tax type code
      */
-    public String getTaxSchemeID() {
+    public String getTaxTypeCode() {
         TaxSchemeType scheme = getRequired(category.getTaxScheme(), "TaxScheme");
-        return getId(scheme.getID(), "TaxScheme/ID");
+        TaxTypeCodeType result = getRequired(scheme.getTaxTypeCode(), "TaxScheme/TaxTypeCode");
+        return getRequired(StringUtils.trimToNull(result.getValue()), "TaxScheme/TaxTypeCode");
     }
 
 }

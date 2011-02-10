@@ -48,7 +48,9 @@ import org.oasis.ubl.common.basic.PriceTypeCodeType;
 import org.oasis.ubl.common.basic.TaxAmountType;
 import org.oasis.ubl.common.basic.TaxExclusiveAmountType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
+import org.oasis.ubl.common.basic.TaxTypeCodeType;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -190,7 +192,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         result.setPrice(createPrice(price));
         PricingReferenceType pricingRef = new PricingReferenceType();
         PriceType priceType = createPrice(listPrice);
-        priceType.setPriceTypeCode(UBLHelper.initCode(new PriceTypeCodeType(), "WS"));
+        priceType.setPriceTypeCode(UBLHelper.initCode(new PriceTypeCodeType(), "WH"));
         pricingRef.getAlternativeConditionPrice().add(priceType);
         result.setPricingReference(pricingRef);
         result.getTaxTotal().add(createTaxTotal(tax, true));
@@ -304,7 +306,9 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         category.setID(UBLHelper.createID("S"));
         category.setPercent(UBLHelper.createPercent(taxRate));
         TaxSchemeType scheme = new TaxSchemeType();
-        scheme.setID(UBLHelper.createID("GST"));
+        TaxTypeCodeType taxType = new TaxTypeCodeType();
+        taxType.setValue("GST");
+        scheme.setTaxTypeCode(taxType);
         category.setTaxScheme(scheme);
         return category;
     }
@@ -341,6 +345,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
     protected InvoiceMapperImpl createMapper() {
         InvoiceMapperImpl mapper = new InvoiceMapperImpl();
         mapper.setPracticeRules(new PracticeRules());
+        mapper.setProductRules(new ProductRules(getArchetypeService()));
         mapper.setLookupService(LookupServiceHelper.getLookupService());
         mapper.setArchetypeService(getArchetypeService());
         mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));

@@ -346,11 +346,10 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         TaxSubtotalType subtotal = taxTotal.getTaxSubtotal().get(0);
         TaxCategoryType category = subtotal.getTaxCategory();
         TaxSchemeType scheme = category.getTaxScheme();
-        scheme.setID(UBLHelper.createID("Sales tax"));
-        checkMappingException(invoice, "ESCIA-0110: TaxScheme/ID: Sales tax and TaxCategory/ID: S referenced by "
-                                       +
-                                       "InvoiceLine/TaxTotal/TaxSubtotal/TaxCategory in InvoiceLine: 1 do not correspond to a "
-                                       + "known tax type");
+        scheme.getTaxTypeCode().setValue("Sales tax");
+        checkMappingException(invoice, "ESCIA-0110: TaxScheme/TaxTypeCode: Sales tax and TaxCategory/ID: S referenced "
+                                       + "by InvoiceLine/TaxTotal/TaxSubtotal/TaxCategory in InvoiceLine: 1 do not "
+                                       + "correspond to a known tax type");
     }
 
     /**
@@ -557,7 +556,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         InvoiceLineType line = invoice.getInvoiceLine().get(0);
         PriceType price = line.getPricingReference().getAlternativeConditionPrice().get(0);
         price.getPriceTypeCode().setValue("RS");
-        checkMappingException(invoice, "ESCIA-0103: Expected WS for "
+        checkMappingException(invoice, "ESCIA-0103: Expected WH for "
                                        + "InvoiceLine/PricingReference/AlternativeConditionPrice/PriceTypeCode "
                                        + "in InvoiceLine: 1 but got RS");
     }
@@ -607,6 +606,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         checkMappingException(invoice, "ESCIA-0609: Duplicate Invoice: 12345. Corresponding Delivery is: "
                                        + delivery.getDelivery().getId());
     }
+
     /**
      * Verifies that an {@link ESCIAdapterException} is raised if an invoice is processed twice and the invoice
      * references an order.
@@ -644,7 +644,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         checkMappingException(invoice, "ESCIA-0611: Calculated tax exclusive amount: 100 for Invoice: 12345 does not "
                                        + "match Invoice/LegalMonetaryTotal/TaxExcusiveAmount: 1");
     }
-   
+
     /**
      * Serializes and deserializes an invoice to ensure its validitity.
      *

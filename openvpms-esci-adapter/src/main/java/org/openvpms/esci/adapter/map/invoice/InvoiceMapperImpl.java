@@ -18,9 +18,12 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.InvoiceType;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -78,9 +81,24 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     private SupplierRules supplierRules;
 
     /**
+     * The product rules.
+     */
+    private ProductRules productRules;
+
+    /**
      * The bean factory.
      */
     private IMObjectBeanFactory factory;
+
+    /**
+     * The unit of measure mapper.
+     */
+    private UnitOfMeasureMapper uom;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(InvoiceMapperImpl.class);
 
     /**
      * Default constructor.
@@ -119,6 +137,16 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
+     * Registers the product rules.
+     *
+     * @param rules the product rules
+     */
+    @Resource
+    public void setProductRules(ProductRules rules) {
+        productRules = rules;
+    }
+
+    /**
      * Registers the bean factory.
      *
      * @param factory the bean factory
@@ -142,6 +170,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     public Delivery map(InvoiceType invoice, Party supplier, Party stockLocation, String accountId) {
         Delivery result = new Delivery();
         String practiceCurrency = UBLHelper.getCurrencyCode(practiceRules, factory);
+        uom = new UnitOfMeasureMapper(productRules, lookupService, factory);
         TaxRates rates = new TaxRates(lookupService, factory);
         UBLInvoice wrapper = new UBLInvoice(invoice, practiceCurrency, getArchetypeService(), supplierRules);
         String invoiceId = wrapper.getID();
@@ -346,7 +375,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     protected BigDecimal checkTaxCategory(UBLTaxCategory category, TaxRates rates) {
         String taxCategory = category.getID();
         BigDecimal rate = category.getTaxRate();
-        String taxScheme = category.getTaxSchemeID();
+        String taxScheme = category.getTaxTypeCode();
         BigDecimal expectedRate = rates.getTaxRate(taxScheme, taxCategory);
         if (expectedRate == null) {
             ErrorContext context = new ErrorContext(category);
@@ -440,7 +469,12 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         BigDecimal unitPrice = line.getPriceAmount();
         BigDecimal listPrice = line.getWholesalePrice();
         BigDecimal tax = line.getTaxAmount();
-        String packageUnits = UBLHelper.getUnitOfMeasure(invoicedUnitCode, lookupService, factory);
+        List<String> matchingPackageUnits = uom.getPackageUnits(invoicedUnitCode, product, context.getSupplier());
+        String packageUnits = !matchingPackageUnits.isEmpty() ? matchingPackageUnits.get(0) : null;
+        if (matchingPackageUnits.size() > 1) {
+            log.warn(matchingPackageUnits.size() + " package units match unit code: " + invoicedUnitCode
+                     + ". Defaulting to " + packageUnits);
+        }
         BigDecimal calcLineExtensionAmount = unitPrice.multiply(quantity);
         if (calcLineExtensionAmount.compareTo(lineExtensionAmount) != 0) {
             throw new ESCIAdapterException(ESCIAdapterMessages.invoiceLineInvalidLineExtensionAmount(
