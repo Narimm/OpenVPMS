@@ -37,7 +37,7 @@
 	<data archetype="entityRelationship.worklistTaskType" source="id:OW1" target="id:TT1" noSlots="1"/>		
 	<data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT2" noSlots="1"/>		
 	<data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT3" noSlots="1"/>		
-	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
+	<data archetype="lookup.uom" code="UNIT" unitCode="EA" defaultLookup="true"/>
     <data archetype="lookup.uom" code="BOTTLE" unitCode="BO"/>
 	<data archetype="lookup.uom" code="SYRINGE" />
     <data archetype="lookup.uom" code="TABLET" unitCode="U2"/>
