@@ -67,7 +67,7 @@
 	<data archetype="lookup.appointmentReason" code="OTHER" />
 	<data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true" />
 	<data archetype="lookup.messageReason" code="OTHER" name="Other" />
-	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
+	<data archetype="lookup.uom" code="UNIT" unitCode="EA" defaultLookup="true"/>
 	<data archetype="lookup.uom" code="BOTTLE" unitCode="BO"/>
 	<data archetype="lookup.uom" code="SYRINGE" />
 	<data archetype="lookup.uom" code="TABLET" unitCode="U2"/>
