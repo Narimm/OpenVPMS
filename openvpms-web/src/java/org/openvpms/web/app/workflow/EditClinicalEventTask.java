@@ -173,7 +173,12 @@ public class EditClinicalEventTask extends AbstractTask {
                 }
 
                 public void refresh(Act object) {
-                    refreshBrowser(object);
+                    if (object.isNew()) {
+                        // object not persistent, so don't attempt to reselect after refresh
+                        refreshBrowser(null);
+                    } else {
+                        refreshBrowser(object);
+                    }
                 }
             });
             enableDelete();
