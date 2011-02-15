@@ -227,8 +227,7 @@ public class EditClinicalEventTask extends AbstractTask {
         @Override
         protected void onSelected(Act object) {
             super.onSelected(object);
-            long id = (object != null) ? object.getId() : 0;
-            if (click.isDoubleClick(id)) {
+            if (click.isDoubleClick(object.getId())) {
                 onEdit();
             }
             enableDelete();
@@ -272,7 +271,7 @@ public class EditClinicalEventTask extends AbstractTask {
             Browser<Act> browser = getBrowser();
             browser.query();
             browser.setSelected(object);
-            onSelected(object);
+            setSelected(object);
         }
 
         /**

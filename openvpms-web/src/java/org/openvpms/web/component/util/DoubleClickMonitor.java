@@ -84,14 +84,20 @@ public class DoubleClickMonitor {
         result = (lastClick != null && (interval == 0 || (lastClick.getTime() + interval) >= now.getTime()));
         result = result && ObjectUtils.equals(last, object);
         if (result) {
-            lastClick = null;
-            last = null;
+            reset();
         } else {
             lastClick = now;
             last = object;
         }
         return result;
+    }
 
+    /**
+     * Resets the click state.
+     */
+    public void reset() {
+        lastClick = null;
+        last = null;
     }
 
     /**
