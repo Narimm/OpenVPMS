@@ -255,7 +255,7 @@ public class BrowserDialog<T> extends PopupDialog {
      */
     protected void onNew() {
         createNew = true;
-        close();
+        close(NEW_ID);
     }
 
 }

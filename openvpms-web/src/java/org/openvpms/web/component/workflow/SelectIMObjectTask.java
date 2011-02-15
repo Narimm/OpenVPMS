@@ -136,8 +136,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
     /**
      * Starts the task.
      * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
      */
@@ -146,24 +145,18 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
         if (title == null) {
             title = Messages.get("imobject.select.title", type);
         }
-        String[] buttons = isRequired()
-                           ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
+        String[] buttons = isRequired() ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
         boolean addNew = (createTask != null);
         final BrowserDialog<T> dialog = new BrowserDialog<T>(title, message, buttons, browser, addNew);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
-                if (dialog.createNew()) {
-                    createTask.addTaskListener(getTaskListeners());
-                    createTask.start(context);
+                T selected = dialog.getSelected();
+                if (selected != null) {
+                    context.addObject(selected);
+                    notifyCompleted();
                 } else {
-                    T selected = dialog.getSelected();
-                    if (selected != null) {
-                        context.addObject(selected);
-                        notifyCompleted();
-                    } else {
-                        notifyCancelled(); // shouldn't occur
-                    }
+                    notifyCancelled(); // shouldn't occur
                 }
             }
 
@@ -184,8 +177,21 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
              */
             @Override
             public void onAction(String action) {
-                notifyCancelled();
+                if (dialog.createNew()) {
+                    onNew();
+                } else {
+                    notifyCancelled();
+                }
             }
+
+            /**
+             * Invoked to create a new object.
+             */
+            private void onNew() {
+                createTask.addTaskListener(getTaskListeners());
+                createTask.start(context);
+            }
+
         });
         dialog.show();
     }
