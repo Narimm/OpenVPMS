@@ -18,17 +18,19 @@
 
 package org.openvpms.web.app.workflow.investigation;
 
+import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
-
-import echopointng.GroupBox;
 
 
 /**
@@ -56,8 +58,15 @@ public class InvestigationsWorkspace
     @Override
     protected void doLayout(Component container, FocusGroup group) {
         Query<Act> query = new InvestigationsQuery();
-        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(
-                query, new InvestigationsTableModel());
+
+        // create a layout context, with hyperlinks enabled
+        LayoutContext context = new DefaultLayoutContext();
+        TableComponentFactory factory = new TableComponentFactory(context);
+        context.setComponentFactory(factory);
+        context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+
+        InvestigationsTableModel model = new InvestigationsTableModel(context);
+        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, model);
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());
