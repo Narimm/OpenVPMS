@@ -27,16 +27,21 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -76,7 +81,16 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
      */
     protected void doLayout(Component container, FocusGroup group) {
         query = new PatientReminderQuery();
-        browser = new PatientReminderBrowser(query);
+
+        // create a layout context, with hyperlinks enabled
+        LayoutContext context = new DefaultLayoutContext();
+        TableComponentFactory factory = new TableComponentFactory(context);
+        context.setComponentFactory(factory);
+        context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+
+        PatientReminderTableModel model = new PatientReminderTableModel(context);
+        browser = new DefaultIMObjectTableBrowser<Act>(query, model);
+
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());

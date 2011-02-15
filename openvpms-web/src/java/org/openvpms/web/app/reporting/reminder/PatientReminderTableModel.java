@@ -93,10 +93,12 @@ public class PatientReminderTableModel extends AbstractActTableModel {
 
 
     /**
-     * Creates a new <tt>PatientReminderTableModel</tt>.
+     * Constructs a <tt>PatientReminderTableModel</tt>.
+     *
+     * @param context the layout context
      */
-    public PatientReminderTableModel() {
-        super(new String[]{ReminderArchetypes.REMINDER});
+    public PatientReminderTableModel(LayoutContext context) {
+        super(new String[]{ReminderArchetypes.REMINDER}, context);
         rules = new ReminderRules(ArchetypeServiceHelper.getArchetypeService(),
                                   new ReminderTypeCache());
     }
