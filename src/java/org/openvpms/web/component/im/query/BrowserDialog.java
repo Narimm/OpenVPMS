@@ -220,7 +220,7 @@ public class BrowserDialog<T> extends PopupDialog {
     @Override
     protected void close(String action) {
         if (CANCEL_ID.equals(action)) {
-            selected = null;
+            setSelected(null);
         } else {
             BrowserStates.getInstance().add(browser);
         }
@@ -228,25 +228,34 @@ public class BrowserDialog<T> extends PopupDialog {
     }
 
     /**
-     * Select the current object, and if <tt>closeOnSelection</tt> is <tt>true</tt>, invokes {@link #onOK} to close
-     * the browser.
+     * Sets the selected object.
+     *
+     * @param object the selected object. May be <tt>null</tt>
+     */
+    protected void setSelected(T object) {
+        selected = object;
+    }
+
+    /**
+     * Select the current object using {@link #setSelected}, and if <tt>closeOnSelection</tt> is <tt>true</tt>,
+     * invokes {@link #onOK} to close the browser.
      *
      * @param object the selected object
      */
     protected void onSelected(T object) {
-        selected = object;
+        setSelected(object);
         if (closeOnSelection) {
             onOK();
         }
     }
 
     /**
-     * Updates the current selection, but doesn't close the browser.
+     * Updates the current selection using {@link #setSelected} , but doesn't close the browser.
      *
      * @param object the selected object
      */
     protected void onBrowsed(T object) {
-        selected = object;
+        setSelected(object);
     }
 
     /**
