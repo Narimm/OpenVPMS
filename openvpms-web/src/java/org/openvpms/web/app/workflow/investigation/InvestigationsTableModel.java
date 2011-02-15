@@ -48,11 +48,14 @@ class InvestigationsTableModel extends AbstractActTableModel {
      */
     private int supplierIndex;
 
+    
     /**
      * Creates a new <tt>InvestigationsTableModel</tt>.
+     *
+     * @param context the layout context
      */
-    public InvestigationsTableModel() {
-        super(InvestigationsQuery.SHORT_NAMES);
+    public InvestigationsTableModel(LayoutContext context) {
+        super(InvestigationsQuery.SHORT_NAMES, context);
     }
 
     /**
@@ -103,22 +106,22 @@ class InvestigationsTableModel extends AbstractActTableModel {
     }
 
     /**
-    * Creates a new column for a node.
-    *
-    * @param archetypes the archetypes
-    * @param name Ê Ê Ê the node name
-    * @param index Ê Ê Êthe index to assign the column
-    * @return a new column
-    */
+     * Creates a new column for a node.
+     *
+     * @param archetypes the archetypes
+     * @param name       the node name
+     * @param index      the index to assign the column
+     * @return a new column
+     */
     @Override
-    protected TableColumn createColumn(List<ArchetypeDescriptor> archetypes,String name, int index) {
-    	TableColumn column = super.createColumn(archetypes, name, index);
-    	if ("id".equals(name)) {
-    		column.setHeaderValue(Messages.get("investigationstablemodel.requestId"));
-    	}
-    	return column;
+    protected TableColumn createColumn(List<ArchetypeDescriptor> archetypes, String name, int index) {
+        TableColumn column = super.createColumn(archetypes, name, index);
+        if ("id".equals(name)) {
+            column.setHeaderValue(Messages.get("investigationstablemodel.requestId"));
+        }
+        return column;
     }
-    
+
     /**
      * Returns a component representing the supplier for the specified investigation type associated with the act.
      *
