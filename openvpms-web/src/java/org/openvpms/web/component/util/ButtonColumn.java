@@ -48,35 +48,52 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
 
 
     /**
-     * Constructs a new <code>Buttoncolumn</code>.
+     * Constructs a new <tt>ButtonColumn</tt>.
      */
     public ButtonColumn() {
         this(STYLE, null);
     }
 
     /**
-     * Constructs a new <code>Buttoncolumn</code>.
+     * Constructs a new <tt>ButtonColumn</tt>.
      *
-     * @param columnStyle the column style. May be <code>null</code>
-     * @param buttonStyle the button style. May be <code>null</code>
+     * @param columnStyle the column style. May be <tt>null</tt>
+     * @param buttonStyle the button style. May be <tt>null</tt>
      */
     public ButtonColumn(String columnStyle, String buttonStyle) {
         this(null, columnStyle, buttonStyle);
     }
 
     /**
-     * Constructs a new <code>Buttoncolumn</code>.
+     * Constructs a new <tt>ButtonColumn</tt>.
      *
-     * @param focus       the focus set. May be <code>null</code>
-     * @param columnStyle the column style. May be <code>null</code>
-     * @param buttonStyle the button style. May be <code>null</code>
+     * @param focus the focus group. May be <tt>null</tt>
      */
-    public ButtonColumn(FocusGroup focus, String columnStyle,
-                        String buttonStyle) {
+    public ButtonColumn(FocusGroup focus) {
+        this(focus, STYLE, null);
+    }
+
+    /**
+     * Constructs a new <tt>ButtonColumn</tt>.
+     *
+     * @param focus       the focus set. May be <tt>null</tt>
+     * @param columnStyle the column style. May be <tt>null</tt>
+     * @param buttonStyle the button style. May be <tt>null</tt>
+     */
+    public ButtonColumn(FocusGroup focus, String columnStyle, String buttonStyle) {
         setStyleName(columnStyle);
         set = new ButtonSet(this, focus, buttonStyle);
     }
 
+    /**
+     * Returns the buttons.
+     *
+     * @return the buttons
+     */
+    public ButtonSet getButtons() {
+        return set;
+    }
+    
     /**
      * Adds a button.
      *
@@ -91,7 +108,7 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
      * button, and is returned by {@link ActionEvent#getActionCommand} when
      * triggered.
      *
-     * @param key the resource bundle key. May be <code>null</code>
+     * @param key the resource bundle key. May be <tt>null</tt>
      * @return a new button
      */
     public Button addButton(String key) {
@@ -101,7 +118,7 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
     /**
      * Adds a button, and registers an event listener.
      *
-     * @param key      the resource bundle key. May be <code>null</code>
+     * @param key      the resource bundle key. May be <tt>null</tt>
      * @param listener the listener to add
      * @return the button
      */
@@ -112,7 +129,7 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
     /**
      * Adds a button, and registers an event listener.
      *
-     * @param key             the resource bundle key. May be <code>null</code>
+     * @param key             the resource bundle key. May be <tt>null</tt>
      * @param listener        the listener to add
      * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
      * @return the button
@@ -131,10 +148,10 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
     }
 
     /**
-     * Removes the specified child <code>Component</code> from this
-     * <code>Component</code>.
+     * Removes the specified child <tt>Component</tt> from this
+     * <tt>Component</tt>.
      *
-     * @param component the child <code>Component</code> to remove
+     * @param component the child <tt>Component</tt> to remove
      */
     @Override
     public void remove(Component component) {
