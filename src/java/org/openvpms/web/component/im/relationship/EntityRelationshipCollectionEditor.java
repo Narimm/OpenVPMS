@@ -18,15 +18,13 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -36,8 +34,7 @@ import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.ButtonColumn;
 import org.openvpms.web.component.util.RowFactory;
 
 import java.util.ArrayList;
@@ -67,6 +64,21 @@ public class EntityRelationshipCollectionEditor
      * The relationships being displayed, used when the collection is sequenced.
      */
     private List<RelationshipState> relationships;
+
+    /**
+     * The move up/down buttons.
+     */
+    private ButtonColumn moveButtons;
+
+    /**
+     * 'Move up' button identifier.
+     */
+    private static final String MOVEUP_ID = "moveup";
+
+    /**
+     * 'Move down' button identifier.
+     */
+    private static final String MOVEDOWN_ID = "movedown";
 
 
     /**
@@ -199,6 +211,7 @@ public class EntityRelationshipCollectionEditor
         populateTable();
 
         getTable().getTable().setSelected(r1);
+        enableNavigation(true);
     }
 
     /**
@@ -210,30 +223,59 @@ public class EntityRelationshipCollectionEditor
     private void doSequenceLayout(Component container) {
         FocusGroup focusGroup = getFocusGroup();
         PagedIMTable<RelationshipState> table = getTable();
+        focusGroup.add(table);
+
         if (!isCardinalityReadOnly()) {
             Row row = createControls(focusGroup);
             container.add(row);
         }
-        Button moveUp = ButtonFactory.create("moveup", new ActionListener() {
+        moveButtons = new ButtonColumn(focusGroup);
+        moveButtons.addButton(MOVEUP_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onMoveUp();
             }
         });
-        Button moveDown = ButtonFactory.create(
-                "movedown", new ActionListener() {
+        moveButtons.addButton(MOVEDOWN_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onMoveDown();
             }
         });
-        Column column = ColumnFactory.create("CellSpacing", moveUp, moveDown);
-        Row row = RowFactory.create("CellSpacing", table, column);
+
+        Row row = RowFactory.create("CellSpacing", table, moveButtons);
 
         populateTable();
 
-        focusGroup.add(table);
-        focusGroup.add(moveUp);
-        focusGroup.add(moveDown);
         container.add(row);
+
+        enableNavigation(table.getSelected() != null);
     }
 
+    /**
+     * Enable/disables the buttons.
+     * <p/>
+     * This delegates to the superclass, before enabling/disabling the move up/move down buttons.
+     *
+     * @param enable if <tt>true</tt> enable buttons (subject to criteria), otherwise disable them
+     */
+    @Override
+    protected void enableNavigation(boolean enable) {
+        super.enableNavigation(enable);
+        if (moveButtons != null) {
+            PagedIMTable<RelationshipState> table = getTable();
+            RelationshipState state = table.getSelected();
+            boolean moveUp = false;
+            boolean moveDown = false;
+            if (enable && state != null) {
+                int index = relationships.indexOf(state);
+                if (index > 0) {
+                    moveUp = true;
+                }
+                if (index < relationships.size() - 1) {
+                    moveDown = true;
+                }
+            }
+            moveButtons.getButtons().setEnabled(MOVEUP_ID, moveUp);
+            moveButtons.getButtons().setEnabled(MOVEDOWN_ID, moveDown);
+        }
+    }
 }

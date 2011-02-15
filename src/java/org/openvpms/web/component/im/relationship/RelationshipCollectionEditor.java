@@ -86,11 +86,13 @@ public class RelationshipCollectionEditor
      * @param object the object to select
      */
     protected void setSelected(IMObject object) {
-        RelationshipCollectionPropertyEditor editor
-                = getCollectionPropertyEditor();
-        RelationshipState state
-                = editor.getRelationshipState((IMObjectRelationship) object);
-        getTable().setSelected(state);
+        RelationshipCollectionPropertyEditor editor = getCollectionPropertyEditor();
+        RelationshipState state = editor.getRelationshipState((IMObjectRelationship) object);
+
+        PagedIMTable<RelationshipState> table = getTable();
+        table.setSelected(state);
+        
+        enableNavigation(table.getSelected() != null);
     }
 
     /**
