@@ -21,18 +21,23 @@ package org.openvpms.web.app.reporting.wip;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -69,9 +74,13 @@ public class IncompleteChargesWorkspace
      */
     @Override
     protected void doLayout(Component container, FocusGroup group) {
+        LayoutContext context = new DefaultLayoutContext();
+        IMObjectComponentFactory factory = new TableComponentFactory(context);
+        context.setComponentFactory(factory);
+        context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+
         query = new IncompleteChargesQuery();
-        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(
-                query, new IncompleteChargesTableModel());
+        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, new IncompleteChargesTableModel(context));
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());
@@ -109,8 +118,8 @@ public class IncompleteChargesWorkspace
 
     class IncompleteChargesTableModel extends AbstractActTableModel {
 
-        public IncompleteChargesTableModel() {
-            super(IncompleteChargesQuery.SHORT_NAMES);
+        public IncompleteChargesTableModel(LayoutContext context) {
+            super(IncompleteChargesQuery.SHORT_NAMES, context);
         }
 
         /**
