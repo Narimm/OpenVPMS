@@ -19,6 +19,7 @@
 package org.openvpms.web.app.workflow;
 
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -46,26 +47,21 @@ public class GetClinicalEventTask extends SynchronousTask {
     public static final String EVENT_SHORTNAME = "act.patientClinicalEvent";
 
     /**
-     * Properties to populate the created object with. May be <code>null</code>
+     * Properties to populate the created object with. May be <tt>null</tt>
      */
     private final TaskProperties properties;
 
     /**
-     * Constructs a new <code>GetClinicalEventTask</code>.
-     *
-     * @param properties properties to populate any created event.
-     *                   May be <code>null</code>
+     * Constructs a <tt>GetClinicalEventTask</tt>.
      */
     public GetClinicalEventTask() {
     	this(null);
     }
 
-
     /**
-     * Constructs a new <code>GetClinicalEventTask</code>.
+     * Constructs a <tt>GetClinicalEventTask</tt>.
      *
-     * @param properties properties to populate any created event.
-     *                   May be <code>null</code>
+     * @param properties properties to populate any created event. May be <tt>null</tt>
      */
     public GetClinicalEventTask(TaskProperties properties) {
     	this.properties = properties;
@@ -86,6 +82,7 @@ public class GetClinicalEventTask extends SynchronousTask {
         MedicalRecordRules rules = new MedicalRecordRules();
         Act event = rules.getEventForAddition(patient, new Date(), clinician);
         if (event.isNew()) {
+            event.setStatus(ActStatus.IN_PROGRESS); // otherwise defaults to COMPLETED
         	if (properties != null) {
             	populate(event, properties, context);        		
         	}
