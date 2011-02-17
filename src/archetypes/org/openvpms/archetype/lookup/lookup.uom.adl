@@ -29,15 +29,34 @@
             </assertion>
         </node>
         <node name="name" type="java.lang.String" path="/name"
-              minCardinality="1" />
+              minCardinality="1"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name,' ',lookup:isDefault(/defaultLookup))"/>
         <node name="unitCode" type="java.lang.String" path="/details/unitCode"
-              minCardinality="0" maxLength="3" description="UN/CEFACT Unit Code">
-            <assertion name="uppercase"/>
-            <assertion name="regularExpression">
-                <property name="expression" value="[A-Z0-9]*"/>
+              minCardinality="0" maxLength="3" description="UN/CEFACT Unit Code" defaultValue="'EA'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="AM" value="ampoule"/>
+                    <property name="BG" value="bag"/>
+                    <property name="BO" value="bottle"/>
+                    <property name="BX" value="box"/>
+                    <property name="AV" value="capsule"/>
+                    <property name="CS" value="case"/>
+                    <property name="CT" value="carton"/>
+                    <property name="CR" value="crate"/>
+                    <property name="EA" value="each"/>
+                    <property name="GRM" value="gram"/>
+                    <property name="KGM" value="kilogram"/>
+                    <property name="LTR" value="litre"/>
+                    <property name="MLT" value="millilitre"/>
+                    <property name="PA" value="packet"/>
+                    <property name="LBR" value="pound"/>
+                    <property name="RO" value="roll"/>
+                    <property name="U2" value="tablet"/>
+                    <property name="TU" value="tube"/>
+                    <property name="VI" value="vial"/>
+                </propertyList>
             </assertion>
         </node>
 
