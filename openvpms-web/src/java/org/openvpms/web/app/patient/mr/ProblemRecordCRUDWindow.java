@@ -20,9 +20,12 @@ package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.Retryer;
 import org.openvpms.web.resource.util.Messages;
 
@@ -100,14 +103,18 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
      */
     @Override
     protected void onSaved(final Act act, final boolean isNew) {
-        PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(getEvent(), act);
-        Runnable done = new Runnable() {
-            public void run() {
-                ProblemRecordCRUDWindow.super.onSaved(act, isNew);
-            }
-        };
-        Retryer retryer = new Retryer(linker, done, done);
-        retryer.start();
+        Act event = getEvent(act);
+        if (event != null) {
+            // link the act to the event
+            PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(event, act);
+            Runnable done = new Runnable() {
+                public void run() {
+                    ProblemRecordCRUDWindow.super.onSaved(act, isNew);
+                }
+            };
+            Retryer retryer = new Retryer(linker, done, done);
+            retryer.start();
+        }
     }
 
     /**
@@ -121,6 +128,24 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
     protected boolean canEdit(Act act) {
         // @todo fix when statuses are sorted out
         return true;
+    }
+
+    /**
+     * Returns the event associated with an act.
+     * <p/>
+     * If the act has an associated event, this will be returned, otherwise the {@link #getEvent current event} will
+     * be returned.
+     *
+     * @param act the act
+     * @return the associated event, or <tt>null</tt> if none is found and there is no current event
+     */
+    private Act getEvent(Act act) {
+        for (ActRelationship relationship : act.getTargetActRelationships()) {
+            if (TypeHelper.isA(relationship.getSource(), PatientArchetypes.CLINICAL_EVENT)) {
+                return (Act) IMObjectHelper.getObject(relationship.getSource());
+            }
+        }
+        return getEvent();
     }
 
 }
