@@ -213,7 +213,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      */
     private void updateDispensingUnits(Product product) {
         String units = "";
-        if (product != null) {
+        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             units = LookupNameHelper.getName(product, "dispensingUnits");
         }
         dispensingUnits.setText(units);
@@ -226,11 +226,9 @@ public class PatientMedicationActEditor extends PatientActEditor {
      */
     private void updateUsageNotes(Product product) {
         String notes = "";
-        if (product != null) {
+        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             IMObjectBean bean = new IMObjectBean(product);
-            if (bean.hasNode("usageNotes")) {
-                notes = bean.getString("usageNotes");
-            }
+            notes = bean.getString("usageNotes");
         }
         usageNotes.setText(notes);
         usageNotes.setVisible(!StringUtils.isEmpty(notes));
