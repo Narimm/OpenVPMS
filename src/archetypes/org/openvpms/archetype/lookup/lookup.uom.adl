@@ -47,13 +47,17 @@
                     <property name="CR" value="crate"/>
                     <property name="EA" value="each"/>
                     <property name="GRM" value="gram"/>
+                    <property name="HUR" value="hour"/>
                     <property name="KGM" value="kilogram"/>
                     <property name="LTR" value="litre"/>
                     <property name="MLT" value="millilitre"/>
+                    <property name="MIN" value="minute"/>
+                    <property name="PK" value="package"/>
                     <property name="PA" value="packet"/>
                     <property name="LBR" value="pound"/>
                     <property name="RO" value="roll"/>
                     <property name="U2" value="tablet"/>
+                    <property name="U1" value="treatment"/>
                     <property name="TU" value="tube"/>
                     <property name="VI" value="vial"/>
                 </propertyList>
