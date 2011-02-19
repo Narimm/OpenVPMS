@@ -21,7 +21,9 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.InvoiceType;
+import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
@@ -86,6 +88,11 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     private ProductRules productRules;
 
     /**
+     * The currencies.
+     */
+    private Currencies currencies;
+
+    /**
      * The bean factory.
      */
     private IMObjectBeanFactory factory;
@@ -147,6 +154,16 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
+     * Registers the currencies.
+     *
+     * @param currencies the currencies
+     */
+    @Resource
+    public void setCurrencies(Currencies currencies) {
+        this.currencies = currencies;
+    }
+
+    /**
      * Registers the bean factory.
      *
      * @param factory the bean factory
@@ -169,10 +186,10 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      */
     public Delivery map(InvoiceType invoice, Party supplier, Party stockLocation, String accountId) {
         Delivery result = new Delivery();
-        String practiceCurrency = UBLHelper.getCurrencyCode(practiceRules, factory);
+        Currency practiceCurrency = UBLHelper.getCurrency(practiceRules, currencies, factory);
         uom = new UnitOfMeasureMapper(productRules, lookupService, factory);
         TaxRates rates = new TaxRates(lookupService, factory);
-        UBLInvoice wrapper = new UBLInvoice(invoice, practiceCurrency, getArchetypeService(), supplierRules);
+        UBLInvoice wrapper = new UBLInvoice(invoice, practiceCurrency.getCode(), getArchetypeService(), supplierRules);
         String invoiceId = wrapper.getID();
         checkUBLVersion(wrapper);
         Date issueDatetime = wrapper.getIssueDatetime();

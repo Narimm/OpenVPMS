@@ -20,7 +20,6 @@ package org.openvpms.esci.adapter.map.invoice;
 import org.junit.Before;
 import org.oasis.ubl.InvoiceType;
 import org.oasis.ubl.common.AmountType;
-import org.oasis.ubl.common.CurrencyCodeContentType;
 import org.oasis.ubl.common.aggregate.AllowanceChargeType;
 import org.oasis.ubl.common.aggregate.CustomerPartyType;
 import org.oasis.ubl.common.aggregate.InvoiceLineType;
@@ -47,8 +46,10 @@ import org.oasis.ubl.common.basic.PriceAmountType;
 import org.oasis.ubl.common.basic.PriceTypeCodeType;
 import org.oasis.ubl.common.basic.TaxAmountType;
 import org.oasis.ubl.common.basic.TaxExclusiveAmountType;
-import org.oasis.ubl.common.basic.UBLVersionIDType;
 import org.oasis.ubl.common.basic.TaxTypeCodeType;
+import org.oasis.ubl.common.basic.UBLVersionIDType;
+import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.test.TestHelper;
@@ -83,7 +84,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
     /**
      * The practice-wide currency.
      */
-    private CurrencyCodeContentType currency;
+    private Currency currency;
 
     /**
      * Sets up the test case.
@@ -95,7 +96,8 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         // get the practice currency
         Party practice = getPractice();
         IMObjectBean bean = new IMObjectBean(practice);
-        currency = CurrencyCodeContentType.fromValue(bean.getString("currency"));
+        Currencies currencies = new Currencies();
+        currency = currencies.getCurrency(bean.getString("currency"));
 
         try {
             factory = DatatypeFactory.newInstance();
@@ -139,7 +141,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
     /**
      * Helper to create an <tt>Invoice</tt> with a single line item.
      *
-     * @param supplier the supplier
+     * @param supplier      the supplier
      * @param stockLocation the stock location
      * @return a new <Tt>Invoice</tt>
      */
@@ -149,7 +151,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         CustomerPartyType customerType = createCustomer(stockLocation);
         Product product = TestHelper.createProduct();
         MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(100), BigDecimal.ZERO,
-                new BigDecimal(100), new BigDecimal(110));
+                                                              new BigDecimal(100), new BigDecimal(110));
 
         invoice.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
         invoice.setID(UBLHelper.createID(12345));
@@ -161,8 +163,8 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         invoice.setLegalMonetaryTotal(monetaryTotal);
         invoice.getTaxTotal().add(createTaxTotal(new BigDecimal(10), false));
         InvoiceLineType item1 = createInvoiceLine("1", product, "aproduct1", "aproduct name", new BigDecimal(105),
-                new BigDecimal(100), BigDecimal.ONE, new BigDecimal(100),
-                new BigDecimal(10));
+                                                  new BigDecimal(100), BigDecimal.ONE, new BigDecimal(100),
+                                                  new BigDecimal(10));
         invoice.getInvoiceLine().add(item1);
         return invoice;
     }
@@ -347,6 +349,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         mapper.setPracticeRules(new PracticeRules());
         mapper.setProductRules(new ProductRules(getArchetypeService()));
         mapper.setLookupService(LookupServiceHelper.getLookupService());
+        mapper.setCurrencies(new Currencies());
         mapper.setArchetypeService(getArchetypeService());
         mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
         return mapper;

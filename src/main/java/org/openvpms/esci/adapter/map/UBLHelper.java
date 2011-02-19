@@ -29,10 +29,15 @@ import org.oasis.ubl.common.basic.IssueDateType;
 import org.oasis.ubl.common.basic.IssueTimeType;
 import org.oasis.ubl.common.basic.NameType;
 import org.oasis.ubl.common.basic.PercentType;
+import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.Currency;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
@@ -51,19 +56,21 @@ import java.util.GregorianCalendar;
 public class UBLHelper {
 
     /**
-     * Returns the currency code associated with the practice.
+     * Returns the currency associated with the practice.
      *
-     * @param rules   the practice rules
-     * @param factory the bean factory
-     * @return the currency code
+     * @param rules      the practice rules
+     * @param currencies the currencies
+     * @param factory    the bean factory
+     * @return the currency
      */
-    public static String getCurrencyCode(PracticeRules rules, IMObjectBeanFactory factory) {
+    public static Currency getCurrency(PracticeRules rules, Currencies currencies, IMObjectBeanFactory factory) {
         Party practice = rules.getPractice();
         if (practice == null) {
             throw new IllegalStateException("No party.organisationPractice defined");
         }
         IMObjectBean bean = factory.createBean(practice);
-        return bean.getString("currency");
+        String code = bean.getString("currency");
+        return currencies.getCurrency(code);
     }
 
     /**
@@ -150,30 +157,42 @@ public class UBLHelper {
 
     /**
      * Helper to initialise an <tt>AmountType</tt>.
+     * <p/>
+     * This ensures that the value is expressed to the correct no. of decimal places.
      *
-     * @param amount       the amount to initialise
-     * @param value        the value
-     * @param currencyCode the currency code
+     * @param amount   the amount to initialise
+     * @param value    the value
+     * @param currency the currency
      * @return the amount
      */
-    public static <T extends AmountType> T initAmount(T amount, BigDecimal value,
-                                                      CurrencyCodeContentType currencyCode) {
-        amount.setCurrencyID(currencyCode);
-        amount.setValue(value);
+    public static <T extends AmountType> T initAmount(T amount, BigDecimal value, Currency currency) {
+        CurrencyCodeContentType code = CurrencyCodeContentType.valueOf(currency.getCode());
+        BigDecimal rounded = currency.round(value);
+        if (rounded.compareTo(value) != 0) {
+            throw new ESCIAdapterException(ESCIAdapterMessages.amountTooManyDecimalPlaces(value));
+        }
+        amount.setCurrencyID(code);
+        amount.setValue(rounded);
         return amount;
     }
 
     /**
      * Helper to initialise a <tt>QuantityType</tt>.
+     * <p/>
+     * This ensures that quantities are restricted to 2 decimal places.
      *
      * @param quantity the quantity to initialise
      * @param value    the value
      * @param unitCode the quantity unit code. May be <tt>null</tt>
      * @return the quantity
+     * @throws ESCIAdapterException if the value loses precision when rounded
      */
-    public static <T extends QuantityType> T initQuantity(T quantity, BigDecimal value,
-                                                          String unitCode) {
-        quantity.setValue(value);
+    public static <T extends QuantityType> T initQuantity(T quantity, BigDecimal value, String unitCode) {
+        BigDecimal rounded = MathRules.round(value, 2);
+        if (rounded.compareTo(value) != 0) {
+            throw new ESCIAdapterException(ESCIAdapterMessages.quantityTooManyDecimalPlaces(value));
+        }
+        quantity.setValue(rounded);
         quantity.setUnitCode(unitCode);
         return quantity;
     }
