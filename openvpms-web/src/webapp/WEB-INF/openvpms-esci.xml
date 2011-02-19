@@ -28,6 +28,7 @@
         <property name="partyRules" ref="partyRules"/>
         <property name="practiceRules" ref="practiceRules"/>
         <property name="supplierRules" ref="supplierRules"/>
+        <property name="currencies" ref="currencies"/>
     </bean>
 
     <!-- ================================================================== -->
@@ -85,6 +86,7 @@
         <property name="practiceRules" ref="practiceRules"/>
         <property name="supplierRules" ref="supplierRules"/>
         <property name="productRules" ref="productRules"/>
+        <property name="currencies" ref="currencies"/>        
     </bean>
 
     <!-- ================================================================== -->
