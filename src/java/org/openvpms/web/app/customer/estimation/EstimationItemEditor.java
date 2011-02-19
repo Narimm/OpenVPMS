@@ -25,14 +25,15 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.customer.PriceActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.util.LookupNameHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -222,7 +223,11 @@ public class EstimationItemEditor extends PriceActItemEditor {
     private void updateSellingUnits(Product product) {
         String units = "";
         if (product != null) {
-            units = LookupNameHelper.getName(product, "sellingUnits");
+            IMObjectBean bean = new IMObjectBean(product);
+            String node = "sellingUnits";
+            if (bean.hasNode(node)) {
+                units = LookupNameHelper.getName(product, node);
+            }
         }
         lowQtySellingUnits.setText(units);
         highQtySellingUnits.setText(units);
