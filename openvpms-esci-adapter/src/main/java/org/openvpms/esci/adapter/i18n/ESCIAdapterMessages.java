@@ -301,6 +301,25 @@ public class ESCIAdapterMessages {
                                    actualStockLocation.getName());
     }
 
+    /**
+     * Creates a new message for when an amount has too many decimal places.
+     *
+     * @param amount the amount
+     * @return a new message
+     */
+    public static Message amountTooManyDecimalPlaces(BigDecimal amount) {
+        return messages.getMessage(115, amount);
+    }
+
+    /**
+     * Creates a new message for when a quantity has too many decimal places.
+     *
+     * @param quantity the quantity
+     * @return a new message
+     */
+    public static Message quantityTooManyDecimalPlaces(BigDecimal quantity) {
+        return messages.getMessage(116, quantity);
+    }
 
     /**
      * Creates a message for when a supplier reports an order as being duplicate.
@@ -355,7 +374,7 @@ public class ESCIAdapterMessages {
     /**
      * Creates a new message for when a duplicate order response is received.
      *
-     * @param orderId the order identifier
+     * @param orderId    the order identifier
      * @param responseId the response identfiier
      * @return a new message
      */
@@ -471,7 +490,7 @@ public class ESCIAdapterMessages {
     /**
      * Creates a new message for when a duplicate invoice is received.
      *
-     * @param invoiceId the invoice identifier
+     * @param invoiceId  the invoice identifier
      * @param deliveryId the delivery identifier
      * @return a new message
      */
@@ -483,7 +502,7 @@ public class ESCIAdapterMessages {
      * Creates a new message for when a duplicate invoice for an order is received.
      *
      * @param invoiceId the invoice identifier
-     * @param orderId the order identifier
+     * @param orderId   the order identifier
      * @return a new message
      */
     public static Message duplicateInvoiceForOrder(String invoiceId, long orderId) {

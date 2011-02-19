@@ -42,6 +42,7 @@ import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
+import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -221,6 +222,38 @@ public class OrderMapperTestCase extends AbstractESCITest {
     }
 
     /**
+     * Verifies that an {@link ESCIAdapterException} is thrown if an amount exceeds the allowed no. of decimal places.
+     */
+    @Test
+    public void testLossOfAmountPrecision() {
+        FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, new BigDecimal("1.625"));
+        FinancialAct order = createOrder(orderItem);
+        order.setStatus(ActStatus.POSTED);
+        ActBean bean = new ActBean(order);
+        bean.save();
+        String expected  = "ESCIA-0115: Too many decimal places in amount: 1.625";
+        checkMappingException(order, expected);
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is thrown if a quantity exceeds the allowed no. of decimal places.
+     */
+    @Test
+    public void testLossOfQuantityPrecision() {
+        BigDecimal quantity = new BigDecimal("0.625");
+        BigDecimal unitPrice = BigDecimal.valueOf(2);
+        FinancialAct orderItem = createOrderItem(quantity, 1, unitPrice);
+        FinancialAct order = createOrder(orderItem);
+        order.setStatus(ActStatus.POSTED);
+        ActBean bean = new ActBean(orderItem);
+        bean.setValue("reorderCode", "AREORDERCODE");
+        save(orderItem, order);
+
+        String expected  = "ESCIA-0116: Too many decimal places in quantity: 0.625";
+        checkMappingException(order, expected);
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -273,6 +306,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
         mapper.setPartyRules(new PartyRules());
         mapper.setSupplierRules(new SupplierRules());
         mapper.setLookupService(LookupServiceHelper.getLookupService());
+        mapper.setCurrencies(new Currencies());
         mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
         return mapper;
     }

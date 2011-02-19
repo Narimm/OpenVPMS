@@ -18,10 +18,9 @@
 package org.openvpms.esci.adapter.map.order;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.oasis.ubl.OrderType;
-import org.oasis.ubl.common.CurrencyCodeContentType;
 import org.oasis.ubl.common.aggregate.AddressLineType;
 import org.oasis.ubl.common.aggregate.AddressType;
 import org.oasis.ubl.common.aggregate.ContactType;
@@ -59,6 +58,8 @@ import org.oasis.ubl.common.basic.TelefaxType;
 import org.oasis.ubl.common.basic.TelephoneType;
 import org.oasis.ubl.common.basic.TotalTaxAmountType;
 import org.oasis.ubl.common.basic.UBLVersionIDType;
+import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
@@ -123,6 +124,11 @@ public class OrderMapperImpl implements OrderMapper {
     private SupplierRules supplierRules;
 
     /**
+     * The currencies.
+     */
+    private Currencies currencies;
+
+    /**
      * The bean factory.
      */
     private IMObjectBeanFactory factory;
@@ -139,7 +145,7 @@ public class OrderMapperImpl implements OrderMapper {
 
     /**
      * Default package unit code, if none is specified. This corresponds to "each" in UNE/ECE rec 20
-     * (http://docs.oasis-open.org/ubl/cs-UBL-2.0/cl/gc/cefact/UnitOfMeasureCode-2.0.gc) 
+     * (http://docs.oasis-open.org/ubl/cs-UBL-2.0/cl/gc/cefact/UnitOfMeasureCode-2.0.gc)
      */
     private static final String DEFAULT_PACKAGE_UNITS = "EA";
 
@@ -206,6 +212,16 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
+     * Registers the currencies.
+     *
+     * @param currencies the currencies
+     */
+    @Resource
+    public void setCurrencies(Currencies currencies) {
+        this.currencies = currencies;
+    }
+
+    /**
      * Registers the bean factory.
      *
      * @param factory the bean factory
@@ -225,7 +241,7 @@ public class OrderMapperImpl implements OrderMapper {
      */
     public OrderType map(FinancialAct order) {
         OrderType result = new OrderType();
-        CurrencyCodeContentType currencyCode = getCurrencyCode();
+        Currency currency = getCurrency();
 
         UBLVersionIDType version = UBLHelper.initID(new UBLVersionIDType(), "2.0");
         IDType id = UBLHelper.createID(order.getId());
@@ -250,8 +266,8 @@ public class OrderMapperImpl implements OrderMapper {
         CustomerPartyType customerParty = getCustomer(contactName, location, stockLocation, supplierStockLocation);
         SupplierPartyType supplierParty = getSupplier(supplier);
 
-        TaxTotalType taxTotal = getTaxTotal(order, currencyCode);
-        MonetaryTotalType total = getMonetaryTotal(order, currencyCode);
+        TaxTotalType taxTotal = getTaxTotal(order, currency);
+        MonetaryTotalType total = getMonetaryTotal(order, currency);
 
         result.setUBLVersionID(version);
         result.setID(id);
@@ -264,7 +280,7 @@ public class OrderMapperImpl implements OrderMapper {
         result.setAnticipatedMonetaryTotal(total);
 
         for (Act item : bean.getNodeActs("items")) {
-            OrderLineType line = getOrderLine(item, supplier, currencyCode);
+            OrderLineType line = getOrderLine(item, supplier, currency);
             result.getOrderLine().add(line);
         }
         return result;
@@ -273,12 +289,12 @@ public class OrderMapperImpl implements OrderMapper {
     /**
      * Returns an <tt>OrderLineType</tt> for an <em>act.supplierOrderItem</em>.
      *
-     * @param act          the order item to map
-     * @param supplier     the supplier
-     * @param currencyCode the currency code
+     * @param act      the order item to map
+     * @param supplier the supplier
+     * @param currency the currency that amounts are expressed in
      * @return a new <tt>OrderLineType</tt> corresponding to the act
      */
-    private OrderLineType getOrderLine(Act act, Party supplier, CurrencyCodeContentType currencyCode) {
+    private OrderLineType getOrderLine(Act act, Party supplier, Currency currency) {
         ActBean bean = factory.createActBean(act);
         Product product = (Product) bean.getNodeParticipant("product");
 
@@ -294,12 +310,11 @@ public class OrderMapperImpl implements OrderMapper {
 
         IDType id = UBLHelper.createID(act.getId());
         QuantityType quantity = UBLHelper.initQuantity(new QuantityType(), bean.getBigDecimal("quantity"), unitCode);
-        LineExtensionAmountType lineAmount =
-                UBLHelper.initAmount(new LineExtensionAmountType(), bean.getBigDecimal("total"),
-                                     currencyCode);
-        TotalTaxAmountType taxAmount =
-                UBLHelper.initAmount(new TotalTaxAmountType(), bean.getBigDecimal("tax"), currencyCode);
-        PriceType price = getPrice(bean.getBigDecimal("unitPrice"), unitCode, currencyCode);
+        LineExtensionAmountType lineAmount
+                = UBLHelper.initAmount(new LineExtensionAmountType(), bean.getBigDecimal("total"), currency);
+        TotalTaxAmountType taxAmount
+                = UBLHelper.initAmount(new TotalTaxAmountType(), bean.getBigDecimal("tax"), currency);
+        PriceType price = getPrice(bean.getBigDecimal("unitPrice"), unitCode, currency);
 
         lineItem.setID(id);
         lineItem.setQuantity(quantity);
@@ -342,14 +357,14 @@ public class OrderMapperImpl implements OrderMapper {
     /**
      * Returns a <tt>PriceType</tt> for the specified price and unit code.
      *
-     * @param price        the price
-     * @param unitCode     the quantity unit code (UN/CEFACT). May be <tt>null</tt>
-     * @param currencyCode the currency code
+     * @param price    the price
+     * @param unitCode the quantity unit code (UN/CEFACT). May be <tt>null</tt>
+     * @param currency the currency
      * @return the corresponding <tt>PriceType</tt> for price and unitCode
      */
-    private PriceType getPrice(BigDecimal price, String unitCode, CurrencyCodeContentType currencyCode) {
+    private PriceType getPrice(BigDecimal price, String unitCode, Currency currency) {
         PriceType result = new PriceType();
-        PriceAmountType priceAmount = UBLHelper.initAmount(new PriceAmountType(), price, currencyCode);
+        PriceAmountType priceAmount = UBLHelper.initAmount(new PriceAmountType(), price, currency);
         result.setPriceAmount(priceAmount);
         result.setBaseQuantity(UBLHelper.initQuantity(new BaseQuantityType(), BigDecimal.ONE, unitCode));
         return result;
@@ -359,10 +374,10 @@ public class OrderMapperImpl implements OrderMapper {
      * Returns a <tt>TaxTotalType</tt> for an order.
      *
      * @param order    the order
-     * @param currency the currency code
+     * @param currency the currency
      * @return the corresponding <tt>TaxTotalType</tt>
      */
-    private TaxTotalType getTaxTotal(FinancialAct order, CurrencyCodeContentType currency) {
+    private TaxTotalType getTaxTotal(FinancialAct order, Currency currency) {
         TaxTotalType result = new TaxTotalType();
         result.setTaxAmount(UBLHelper.initAmount(new TaxAmountType(), order.getTaxAmount(), currency));
         return result;
@@ -372,10 +387,10 @@ public class OrderMapperImpl implements OrderMapper {
      * Returns a <tt>MonetaryTotalType</tt> for an order.
      *
      * @param order    the order
-     * @param currency the currency code
+     * @param currency the currency
      * @return the corresponding <tt>MonetaryTotalType</tt>
      */
-    private MonetaryTotalType getMonetaryTotal(FinancialAct order, CurrencyCodeContentType currency) {
+    private MonetaryTotalType getMonetaryTotal(FinancialAct order, Currency currency) {
         BigDecimal payableAmount = order.getTotal();
         BigDecimal lineExtensionAmount = payableAmount.subtract(order.getTaxAmount());
 
@@ -673,13 +688,12 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Returns the currency code associated with the practice.
+     * Returns the currency associated with the practice.
      *
      * @return the currency code
      */
-    private CurrencyCodeContentType getCurrencyCode() {
-        String code = UBLHelper.getCurrencyCode(practiceRules, factory);
-        return CurrencyCodeContentType.valueOf(code);
+    private Currency getCurrency() {
+        return UBLHelper.getCurrency(practiceRules, currencies, factory);
     }
 
 }
