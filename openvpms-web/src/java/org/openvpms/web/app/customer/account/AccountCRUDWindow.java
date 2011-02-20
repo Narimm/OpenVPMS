@@ -62,11 +62,6 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     private static final String REVERSE_ID = "reverse";
 
     /**
-     * Statement button identifier.
-     */
-    private static final String STATEMENT_ID = "statement";
-
-    /**
      * Adjust button identifier.
      */
     private static final String ADJUST_ID = "adjust";
@@ -110,11 +105,6 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                 onReverse();
             }
         });
-        Button statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onStatement();
-            }
-        });
         Button adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onAdjust();
@@ -133,7 +123,6 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         buttons.add(adjust);
         buttons.add(reverse);
         buttons.add(createPrintButton());
-        buttons.add(statement);
 
         if (check != null) {
             buttons.add(check);
@@ -152,7 +141,6 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.setEnabled(REVERSE_ID, enable);
         buttons.setEnabled(PRINT_ID, enable);
-        buttons.setEnabled(STATEMENT_ID, enable);
         buttons.setEnabled(CHECK_ID, enable);
     }
 
@@ -180,12 +168,6 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
             showStatusError(act, "customer.account.noreverse.title",
                             "customer.account.noreverse.message");
         }
-    }
-
-    /**
-     * Invoked when the 'statement' button is pressed.
-     */
-    protected void onStatement() {
     }
 
     /**
