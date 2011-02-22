@@ -199,4 +199,12 @@ select l.lookup_id, "taxCategory", "string", "S"
 from lookups l
 where l.arch_short_name = "lookup.taxType" and l.code= "GST" and not exists
       (select * from lookup_details d where d.lookup_id = l.lookup_id and d.name = "taxCategory");
- 
+
+#
+# Update of entity.documentTemplate for OVPMS-900
+#
+insert into entity_details (entity_id, name, type, value)
+select e.entity_id, "printMode", "string", "CHECK_OUT"
+from entities e
+where e.arch_short_name = "entity.documentTemplate"
+      and not exists (select * from entity_details d where d.entity_id = e.entity_id and d.name ="printMode");
