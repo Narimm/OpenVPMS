@@ -18,11 +18,14 @@
 
 package org.openvpms.web.app.customer.charge;
 
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -31,12 +34,18 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -104,6 +113,51 @@ public class CustomerChargeActEditor extends FinancialActEditor {
                 }
             }
         }
+    }
+
+    /**
+     * Returns any unprinted documents that are flagged for immediate printing.
+     *
+     * @return the list of unprinted documents
+     */
+    public List<Act> getUnprintedDocuments() {
+        return getUnprintedDocuments(Collections.<Act>emptyList());
+    }
+
+    /**
+     * Returns any unprinted documents that are flagged for immediate printing.
+     *
+     * @param exclude a list of documents to ignore
+     * @return the list of unprinted documents
+     */
+    public List<Act> getUnprintedDocuments(List<Act> exclude) {
+        List<Act> result = new ArrayList<Act>();
+        ActRelationshipCollectionEditor items = getEditor();
+        Set<IMObjectReference> excludeRefs = new HashSet<IMObjectReference>();
+        for (Act excluded : exclude) {
+            excludeRefs.add(excluded.getObjectReference());
+        }
+        for (Act item : items.getActs()) {
+            ActBean bean = new ActBean(item);
+            for (ActRelationship rel : bean.getValues("documents", ActRelationship.class)) {
+                IMObjectReference target = rel.getTarget();
+                if (target != null && !excludeRefs.contains(target)) {
+                    Act document = (Act) IMObjectHelper.getObject(target);
+                    ActBean documentBean = new ActBean(document);
+                    if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
+                        Entity entity = documentBean.getNodeParticipant("documentTemplate");
+                        if (entity != null) {
+                            DocumentTemplate template = new DocumentTemplate(entity,
+                                                                             ServiceHelper.getArchetypeService());
+                            if (template.getPrintMode() == DocumentTemplate.PrintMode.IMMEDIATE) {
+                                result.add(document);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     /**

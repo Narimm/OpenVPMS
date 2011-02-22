@@ -31,29 +31,27 @@ import java.util.List;
 
 /**
  * Prints a batch of objects.
- * <p/>
- * Printing occurs interactively due to limitations in downloading multiple pdf files to the client browser.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class BatchPrinter implements PrinterListener {
+public abstract class BatchPrinter<T extends IMObject> implements PrinterListener {
 
     /**
      * Iterator over the objects to  print.
      */
-    private Iterator<IMObject> iterator;
+    private Iterator<T> iterator;
 
     /**
      * The object being printed.
      */
-    private IMObject object;
+    private T object;
 
     /**
      * Constructs a <tt>BatchPrinter</tt>.
      */
     public BatchPrinter() {
-        this(Collections.<IMObject>emptyList());
+        this(Collections.<T>emptyList());
     }
 
     /**
@@ -61,7 +59,7 @@ public abstract class BatchPrinter implements PrinterListener {
      *
      * @param objects the objects to print
      */
-    public BatchPrinter(List<IMObject> objects) {
+    public BatchPrinter(List<T> objects) {
         setObjects(objects);
     }
 
@@ -70,7 +68,7 @@ public abstract class BatchPrinter implements PrinterListener {
      *
      * @param objects the objects to print
      */
-    public void setObjects(List<IMObject> objects) {
+    public void setObjects(List<T> objects) {
         iterator = objects.iterator();
     }
 
@@ -81,10 +79,8 @@ public abstract class BatchPrinter implements PrinterListener {
         if (iterator.hasNext()) {
             object = iterator.next();
             try {
-                IMPrinter<IMObject> printer = IMPrinterFactory.create(object);
-                InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer);
-                iPrinter.setInteractive(false);
-                iPrinter.setListener(this);
+                IMPrinter<T> printer = IMPrinterFactory.create(object);
+                InteractiveIMPrinter<T> iPrinter = createInteractivePrinter(printer);
                 iPrinter.print();
             } catch (OpenVPMSException exception) {
                 failed(exception);
@@ -92,6 +88,24 @@ public abstract class BatchPrinter implements PrinterListener {
         } else {
             completed();
         }
+    }
+
+    /**
+     * Creates a new interactive printer.
+     * <p/>
+     * When printing interactively (i.e for those templates that specify interactive=<tt>true</tt>),
+     * objects may be skipped.
+     * <p/>
+     * 'This' is registered as a listener.
+     *
+     *
+     * @param printer the printer to delegate to
+     * @return a new interactive printer
+     */
+    protected InteractiveIMPrinter<T> createInteractivePrinter(IMPrinter<T> printer) {
+        InteractiveIMPrinter<T> result = new InteractiveIMPrinter<T>(printer, true);
+        result.setListener(this);
+        return result;
     }
 
     /**
@@ -117,6 +131,24 @@ public abstract class BatchPrinter implements PrinterListener {
         if (next) {
             print(); // print the next available object
         }
+    }
+
+    /**
+     * Notifies that the print was cancelled.
+     * <p/>
+     * This implementation delegates to {@link #completed}.
+     */
+    public void cancelled() {
+        completed();
+    }
+
+    /**
+     * Notifies that the print was skipped.
+     * <p/>
+     * This implementation prints the next object using {@link #print}.
+     */
+    public void skipped() {
+        print();
     }
 
     /**
