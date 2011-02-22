@@ -19,22 +19,12 @@ package org.openvpms.web.app.customer.charge;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.doc.DocumentTemplatePrinter;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
-import org.openvpms.web.component.print.BatchPrintDialog;
 import org.openvpms.web.component.print.BatchPrinter;
-import org.openvpms.web.component.print.PrintHelper;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -59,7 +49,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     private static final String IN_PROGRESS_ID = "inprogress";
 
-    
+
     /**
      * Constructs a <tt>CustomerChargeActEditDialog</tt>.
      *
@@ -72,12 +62,15 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     }
 
     /**
-     * Saves the current object, and prints any interactive documents associated with the charge.
+     * Saves the current object.
+     * <p/>
+     * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     @Override
     protected void onOK() {
+        List<Act> existing = getUnprintedDocuments();
         if (save()) {
-            List<IMObject> docs = getDocumentsToPrint();
+            List<Act> docs = getUnprintedDocuments(existing);
             if (!docs.isEmpty()) {
                 printDocuments(docs, true);
             } else {
@@ -87,12 +80,15 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     }
 
     /**
-     * Saves the current object, and prints any interactive documents associated with the charge.
+     * Saves the current object.
+     * <p/>
+     * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     @Override
     protected void onApply() {
+        List<Act> existing = getUnprintedDocuments();
         if (save()) {
-            List<IMObject> docs = getDocumentsToPrint();
+            List<Act> docs = getUnprintedDocuments(existing);  // only select documents added during save
             if (!docs.isEmpty()) {
                 printDocuments(docs, false);
             }
@@ -146,79 +142,34 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     }
 
     /**
+     * Returns any unprinted documents flagged for IMMEDIATE printing.
+     *
+     * @return a list of unprinted documents
+     */
+    private List<Act> getUnprintedDocuments() {
+        CustomerChargeActEditor editor = (CustomerChargeActEditor) getEditor();
+        return editor.getUnprintedDocuments();
+    }
+
+    /**
+     * Returns any unprinted documents flagged for IMMEDIATE printing.
+     *
+     * @param exclude acts to ignore when determining the unprinted documents
+     * @return a list of unprinted documents
+     */
+    private List<Act> getUnprintedDocuments(List<Act> exclude) {
+        CustomerChargeActEditor editor = (CustomerChargeActEditor) getEditor();
+        return editor.getUnprintedDocuments(exclude);
+    }
+
+    /**
      * Prints any unprinted documents flagged as <em>interactive</em>, associated with the charge.
      *
      * @param documents the documents to print
      * @param close     if <tt>true</tt>, close the edit dialog on completion
      */
-    private void printDocuments(List<IMObject> documents, final boolean close) {
-        String title = Messages.get("workflow.checkout.print.title");
-        final BatchPrintDialog dialog = new BatchPrintDialog(title, documents);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void onClose(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                if (BatchPrintDialog.OK_ID.equals(action)) {
-                    List<IMObject> docs = dialog.getSelected();
-                    if (!docs.isEmpty()) {
-                        printSelected(docs, close);
-                    } else if (close) {
-                        close(OK_ID);
-                    }
-                } else if (close) {
-                    close(OK_ID);
-                }
-            }
-        });
-        dialog.show();
-    }
-
-    /**
-     * Returns a list of documents to print. These are all acts associated with the <em>documents</em> node that are:
-     * <ul>
-     * <li>unprinted; and
-     * <li>have a document template that is flagged <em>interactive</em>
-     * </ul>
-     *
-     * @return a list of documents to print
-     */
-    private List<IMObject> getDocumentsToPrint() {
-        List<IMObject> acts = new ArrayList<IMObject>();
-        Act act = (Act) getEditor().getObject();
-        ActBean bean = new ActBean(act);
-        Context context = GlobalContext.getInstance();
-        for (Act item : bean.getNodeActs("items")) {
-            ActBean itemBean = new ActBean(item);
-            for (Act document : itemBean.getNodeActs("documents")) {
-                ActBean documentBean = new ActBean(document);
-                if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
-                    Entity template = documentBean.getNodeParticipant("documentTemplate");
-                    if (template != null) {
-                        DocumentTemplatePrinter rel = PrintHelper.getDocumentTemplatePrinter(template, context);
-                        if (rel != null && rel.getInteractive()) {
-                            acts.add(document);
-                        }
-                    }
-                }
-            }
-        }
-        return acts;
-    }
-
-    /**
-     * Prints selected documents.
-     *
-     * @param documents the documents to print
-     * @param close     if <tt>true</tt>, closes the dialog on completion
-     */
-    private void printSelected(List<IMObject> documents, final boolean close) {
-        BatchPrinter printer = new BatchPrinter(documents) {
-            public void cancelled() {
-                completed();
-            }
-
-            public void skipped() {
-                print(); // print the next document
-            }
+    private void printDocuments(List<Act> documents, final boolean close) {
+        BatchPrinter printer = new BatchPrinter<Act>(documents) {
 
             public void failed(Throwable cause) {
                 ErrorHelper.show(cause, new WindowPaneListener() {

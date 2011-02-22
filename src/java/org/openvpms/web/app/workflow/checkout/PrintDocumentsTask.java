@@ -19,7 +19,7 @@
 package org.openvpms.web.app.workflow.checkout;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.archetype.rules.doc.DocumentTemplatePrinter;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -32,17 +32,18 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.BatchPrintDialog;
 import org.openvpms.web.component.print.BatchPrinter;
-import org.openvpms.web.component.print.PrintHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -140,7 +141,7 @@ class PrintDocumentsTask extends AbstractTask {
         Party customer = context.getCustomer();
         String node = "customer";
         String participation = "participation.customer";
-        return getUnprintedActs(CHARGES, customer, node, participation, context);
+        return getUnprintedActs(CHARGES, customer, node, participation);
     }
 
     /**
@@ -153,24 +154,23 @@ class PrintDocumentsTask extends AbstractTask {
         Party patient = context.getPatient();
         String node = "patient";
         String participation = "participation.patient";
-        return getUnprintedActs(DOCUMENTS, patient, node, participation, context);
+        return getUnprintedActs(DOCUMENTS, patient, node, participation);
     }
 
     /**
      * Returns a map of unprinted acts for a party.
      * <p/>
      * The corresponding boolean flag if <tt>true</tt> indicates if the act should be selected for printing.
-     * If <tt>false</tt>, it indicates that t5he act should be displayed, but not selected.
+     * If <tt>false</tt>, it indicates that the act should be displayed, but not selected.
      *
      * @param shortNames    the act short names to query. May include wildcards
      * @param party         the party to query
      * @param node          the participation node to query
      * @param participation the participation short name to query
-     * @param context       the context
      * @return the unprinted acts
      */
     private Map<IMObject, Boolean> getUnprintedActs(String[] shortNames, Party party, String node,
-                                                    String participation, Context context) {
+                                                    String participation) {
         Map<IMObject, Boolean> result = new LinkedHashMap<IMObject, Boolean>();
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true);
         query.setFirstResult(0);
@@ -187,29 +187,27 @@ class PrintDocumentsTask extends AbstractTask {
 
         IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         for (IMObject object : service.get(query).getResults()) {
-            boolean select = selectForPrinting((Act) object, context);
+            DocumentTemplate.PrintMode mode = getPrintMode((Act) object);
+            boolean select = (mode == DocumentTemplate.PrintMode.CHECK_OUT);
             result.put(object, select);
         }
         return result;
     }
 
     /**
-     * Determines if an act should be selected for printing.
+     * Returns the print mode of the supplied act.
      *
-     * @param act     the act
-     * @param context the context
-     * @return <tt>true</tt> if the act should be selected, <tt>false</tt> if it should be displayed but not selected
+     * @param act the act
+     * @return the print mode. May be <tt>null</tt>
      */
-    private boolean selectForPrinting(Act act, Context context) {
+    private DocumentTemplate.PrintMode getPrintMode(Act act) {
+        DocumentTemplate.PrintMode result = null;
         ActBean bean = new ActBean(act);
-        boolean result = true;
         if (bean.hasNode("documentTemplate")) {
-            Entity template = bean.getNodeParticipant("documentTemplate");
-            if (template != null) {
-                DocumentTemplatePrinter rel = PrintHelper.getDocumentTemplatePrinter(template, context);
-                if (rel != null && !rel.getPrintAtCheckout()) {
-                    result = false;
-                }
+            Entity entity = bean.getNodeParticipant("documentTemplate");
+            if (entity != null) {
+                DocumentTemplate template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+                result = template.getPrintMode();
             }
         }
         return result;
@@ -218,7 +216,7 @@ class PrintDocumentsTask extends AbstractTask {
     /**
      * Batch printer.
      */
-    class Printer extends BatchPrinter {
+    class Printer extends BatchPrinter<IMObject> {
 
         /**
          * The task context.
@@ -270,6 +268,22 @@ class PrintDocumentsTask extends AbstractTask {
         @Override
         protected void completed() {
             notifyCompleted();
+        }
+
+        /**
+         * Creates a new interactive printer.
+         * <p/>
+         * This implementation disables the default interactive behaviour - a dialog will only be popped up if
+         * there is no physical printer specified.
+         *
+         * @param printer the printer to delegate to
+         * @return a new interactive printer
+         */
+        @Override
+        protected InteractiveIMPrinter<IMObject> createInteractivePrinter(IMPrinter<IMObject> printer) {
+            InteractiveIMPrinter<IMObject> result = super.createInteractivePrinter(printer);
+            result.setInteractive(false);
+            return result;
         }
     }
 }

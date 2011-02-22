@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.print;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -65,13 +66,20 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      * @return a display name for the objects being printed
      */
     public String getDisplayName() {
-        if (templateNames == null) {
-            templateNames = LookupNameHelper.getLookupNames(DocumentArchetypes.DOCUMENT_TEMPLATE, "archetype");
+        String result = null;
+        DocumentTemplate template = getReporter().getTemplate();
+        if (template != null) {
+            result = template.getName();
         }
-        String shortName = getReporter().getShortName();
-        String result = templateNames.get(shortName);
-        if (result == null) {
-            result = DescriptorHelper.getDisplayName(shortName);
+        if (StringUtils.isEmpty(result)) {
+            if (templateNames == null) {
+                templateNames = LookupNameHelper.getLookupNames(DocumentArchetypes.DOCUMENT_TEMPLATE, "archetype");
+            }
+            String shortName = getReporter().getShortName();
+            result = templateNames.get(shortName);
+            if (result == null) {
+                result = DescriptorHelper.getDisplayName(shortName);
+            }
         }
         return result;
     }
