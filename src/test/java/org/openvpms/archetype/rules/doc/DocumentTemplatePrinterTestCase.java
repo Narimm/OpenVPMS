@@ -47,7 +47,6 @@ public class DocumentTemplatePrinterTestCase extends ArchetypeServiceTest {
         assertNull(printer.getPrinterName());
         assertNull(printer.getPaperTray());
         assertTrue(printer.getInteractive());
-        assertFalse(printer.getPrintAtCheckout());
         assertNull(printer.getMediaTray());
         assertNull(printer.getTemplate());
         assertNull(printer.getTemplateRef());
@@ -69,7 +68,6 @@ public class DocumentTemplatePrinterTestCase extends ArchetypeServiceTest {
         printer.setPrinterName("name");
         printer.setPaperTray("TOP");
         printer.setInteractive(false);
-        printer.setPrintAtCheckout(true);
         save(entity, location);
 
         // reload the relationship
@@ -78,7 +76,6 @@ public class DocumentTemplatePrinterTestCase extends ArchetypeServiceTest {
         assertEquals("name", printer.getPrinterName());
         assertEquals("TOP", printer.getPaperTray());
         assertFalse(printer.getInteractive());
-        assertTrue(printer.getPrintAtCheckout());
         assertEquals(MediaTray.TOP, printer.getMediaTray());
         assertEquals(entity, printer.getTemplate());
         assertEquals(entity.getObjectReference(), printer.getTemplateRef());

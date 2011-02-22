@@ -19,7 +19,9 @@ package org.openvpms.archetype.rules.doc;
 
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.*;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidOrientation;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidPaperSize;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -44,6 +46,12 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DocumentTemplate {
+
+    public enum PrintMode {
+        IMMEDIATE,
+        MANUAL,
+        CHECK_OUT
+    }
 
     /**
      * A4 paper size.
@@ -220,6 +228,25 @@ public class DocumentTemplate {
      */
     public void setReportType(String type) {
         bean.setValue("reportType", type);
+    }
+
+    /**
+     * Returns the print mode.
+     *
+     * @return the print mode. May be <tt>null</tt>
+     */
+    public PrintMode getPrintMode() {
+        String mode = bean.getString("printMode");
+        return (mode != null) ? PrintMode.valueOf(mode) : null;
+    }
+
+    /**
+     * Sets the print mode.
+     *
+     * @param mode the print mode. May be <tt>null</tt>
+     */
+    public void setPrintMode(PrintMode mode) {
+        bean.setValue("printMode", mode != null ? mode.name() : null);
     }
 
     /**

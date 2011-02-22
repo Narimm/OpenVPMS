@@ -118,24 +118,6 @@ public class DocumentTemplatePrinter {
     }
 
     /**
-     * Determines if the template should be printed at checkout.
-     *
-     * @return <tt>true</tt> if the template should be printed at checkout
-     */
-    public boolean getPrintAtCheckout() {
-        return bean.getBoolean("printAtCheckout");
-    }
-
-    /**
-     * Determines if the template should be printed at checkout.
-     *
-     * @param print if <tt>true</tt>, the template should be printed at checkout
-     */
-    public void setPrintAtCheckout(boolean print) {
-        bean.setValue("printAtCheckout", print);
-    }
-
-    /**
      * Returns the media tray.
      *
      * @return the media tray, or <tt>null</tt> if none is defined

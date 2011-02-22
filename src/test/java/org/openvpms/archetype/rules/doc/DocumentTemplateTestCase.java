@@ -56,6 +56,7 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         assertNull(template.getArchetype());
         assertEquals("0", template.getUserLevel());
         assertEquals(reportType.getCode(), template.getReportType());
+        assertEquals(DocumentTemplate.PrintMode.CHECK_OUT, template.getPrintMode());
         assertNull(template.getPaperSize());
         assertEquals(DocumentTemplate.PORTRAIT, template.getOrientation());
         assertEquals(1, template.getCopies());
@@ -89,6 +90,7 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         template.setArchetype("REPORT");
         template.setUserLevel("1");
         template.setReportType(reportType.getCode());
+        template.setPrintMode(DocumentTemplate.PrintMode.IMMEDIATE);
         template.setPaperSize(DocumentTemplate.A5);
         template.setOrientation(DocumentTemplate.LANDSCAPE);
         template.setCopies(5);
@@ -106,6 +108,7 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         assertEquals("REPORT", template.getArchetype());
         assertEquals("1", template.getUserLevel());
         assertEquals(reportType.getCode(), template.getReportType());
+        assertEquals(DocumentTemplate.PrintMode.IMMEDIATE, template.getPrintMode());
         assertEquals(DocumentTemplate.A5, template.getPaperSize());
         assertEquals(DocumentTemplate.LANDSCAPE, template.getOrientation());
         assertEquals(5, template.getCopies());
