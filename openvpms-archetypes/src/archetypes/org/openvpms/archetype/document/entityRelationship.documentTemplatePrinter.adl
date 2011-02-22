@@ -48,8 +48,6 @@
         </node>
         <node name="interactive" path="/details/interactive"
               type="java.lang.Boolean" minCardinality="1" defaultValue="true()"/>
-        <node name="printAtCheckout" path="/details/printAtCheckout"
-              type="java.lang.Boolean" minCardinality="1" defaultValue="false()"/>
         <node name="source" displayName="Document Template" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">

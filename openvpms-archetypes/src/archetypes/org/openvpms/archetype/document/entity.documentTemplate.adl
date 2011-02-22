@@ -84,6 +84,16 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
+        <node name="printMode" displayName="Preferred Print Mode" path="/details/printMode" type="java.lang.String" minCardinality="0"
+                defaultValue="'CHECK_OUT'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="IMMEDIATE" value="Immediate"/>
+                    <property name="MANUAL" value="Manual"/>
+                    <property name="CHECK_OUT" value="Check-Out"/>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="paperSize" displayName="Paper Size" path="/details/paperSize" type="java.lang.String" minCardinality="0">
             <assertion name="lookup.local">
                 <propertyList name="entries">
