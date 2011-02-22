@@ -440,12 +440,13 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
             PagedIMTable<T> table = browser.getTable();
             selectedRow = table.getTable().getSelectionModel().getMinSelectedIndex();
             sortColumn = table.getModel().getSortColumn();
-            sortAscending = table.getModel().isSortedAscending();
             ResultSet<T> set = table.getResultSet();
             if (set != null) {
                 page = set.lastIndex();
+                sortAscending = table.getModel().isSortedAscending();
             } else {
                 page = -1;
+                sortAscending = true;
             }
         }
 
