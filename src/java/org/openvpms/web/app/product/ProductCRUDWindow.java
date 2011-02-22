@@ -20,6 +20,7 @@ package org.openvpms.web.app.product;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -29,6 +30,8 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -106,12 +109,14 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     protected void onCopy() {
         final Product product = getObject();
         if (product != null) {
-            String name = getArchetypeDescriptor().getDisplayName();
-            String title = Messages.get("product.information.copy.title", name);
-            String message = Messages.get("product.information.copy.message",
-                                          name);
-            final ConfirmationDialog dialog
-                    = new ConfirmationDialog(title, message);
+            String displayName = getArchetypeDescriptor().getDisplayName();
+            String name = product.getName();
+            if (StringUtils.isEmpty(name)) {
+                name = displayName;
+            }
+            String title = Messages.get("product.information.copy.title", displayName);
+            String message = Messages.get("product.information.copy.message", name);
+            final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -123,23 +128,25 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     }
 
     /**
-     * Copy the product.
+     * Copy the product, and edit it.
      *
      * @param product the product to copy
      */
     private void copy(Product product) {
-        Product copy = null;
         try {
             ProductRules rules = new ProductRules();
             String name = Messages.get("product.copy.name", product.getName());
-            copy = rules.copy(product, name);
+            Product copy = rules.copy(product, name);
+
+            // NOTE: can't use the parent edit(IMObject) method as it relies on the object being edited
+            // being in the current result set.
+            LayoutContext context = createLayoutContext();
+            IMObjectEditor editor = createEditor(copy, context);
+            edit(editor);
         } catch (OpenVPMSException exception) {
-            String title = Messages.get(
-                    "product.information.copy.failed",
-                    getArchetypeDescriptor().getDisplayName());
+            String title = Messages.get("product.information.copy.failed", getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
-        onRefresh(copy);
     }
 
 }
