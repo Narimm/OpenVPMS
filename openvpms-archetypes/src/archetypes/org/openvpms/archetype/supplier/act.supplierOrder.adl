@@ -18,7 +18,7 @@
 <archetypes>
     <archetype name="act.supplierOrder.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Order">
-        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true"/>
 		<node name="description" type="java.lang.String" path="/description"
               hidden="true"/>
