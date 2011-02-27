@@ -138,11 +138,6 @@ public abstract class AbstractIMObjectEditor
     private ActionListener layoutChangeListener;
 
     /**
-     * The original state of the active flag.
-     */
-    private boolean active;
-
-    /**
      * Indicates if the object has been saved.
      */
     private boolean saved = false;
@@ -206,8 +201,6 @@ public abstract class AbstractIMObjectEditor
             }
         };
         editors.addModifiableListener(derivedFieldRefresher);
-
-        active = object.isActive();
     }
 
     /**
@@ -330,20 +323,12 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Marks the current object inactive.
-     */
-    public void deactivate() {
-        object.setActive(false);
-    }
-
-    /**
      * Determines if the object has been changed.
      *
      * @return <code>true</code> if the object has been changed
      */
     public boolean isModified() {
-        return editors.isModified() || properties.isModified()
-               || getObject().isNew() || (active != object.isActive());
+        return editors.isModified() || properties.isModified() || getObject().isNew();
     }
 
     /**
