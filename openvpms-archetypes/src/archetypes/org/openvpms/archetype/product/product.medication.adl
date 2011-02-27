@@ -73,7 +73,7 @@
             </assertion>
         </node>
         <node name="label" displayName="Dispensing Label" path="/details/label" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="dispInstructions" displayName="Dispensing Instructions" type="java.lang.String" path="/details/dispInstructions"
+        <node name="dispInstructions" displayName="Label Instructions" type="java.lang.String" path="/details/dispInstructions"
               minCardinality="0" maxLength="300"/>
         <node name="usageNotes" displayName="Dispensing Notes" type="java.lang.String" path="/details/usageNotes"
               minCardinality="0" maxLength="3000"/>
