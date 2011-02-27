@@ -86,11 +86,6 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable,
     boolean isDeleted();
 
     /**
-     * Marks the current object inactive.
-     */
-    void deactivate();
-
-    /**
      * Cancel any edits. Once complete, query methods may be invoked, but the
      * behaviour of other methods is undefined.
      */
