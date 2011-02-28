@@ -116,9 +116,10 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @param product the product. May be <tt>null</tt>
      */
     public void setProduct(Product product) {
-        setParticipant("product", product);
-        if (getProductEditor() == null) {
-            productModified(product);
+        if (setParticipant("product", product)) {
+            if (getProductEditor() == null) {
+                productModified(product); // only invoke if the product participation changed
+            }
         }
     }
 
