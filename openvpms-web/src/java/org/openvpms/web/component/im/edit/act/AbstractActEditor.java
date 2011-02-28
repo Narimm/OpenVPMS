@@ -206,11 +206,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      *
      * @param name   the participation property name
      * @param entity the participant. May be <tt>null</tt>
+     * @return <tt>true</tt> if the participant was modified, otherwise <tt>false</tt>
      */
-    protected void setParticipant(String name, IMObject entity) {
-        IMObjectReference ref
-                = (entity != null) ? entity.getObjectReference() : null;
-        setParticipant(name, ref);
+    protected boolean setParticipant(String name, IMObject entity) {
+        IMObjectReference ref = (entity != null) ? entity.getObjectReference() : null;
+        return setParticipant(name, ref);
     }
 
     /**
@@ -218,12 +218,17 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      *
      * @param name   the participation property name
      * @param entity the participant. May be <tt>null</tt>
+     * @return <tt>true</tt> if the participant was modified, otherwise <tt>false</tt>
      * @throws IllegalArgumentException if the name doesn't correspond to a valid node
      */
-    protected void setParticipant(String name, IMObjectReference entity) {
+    protected boolean setParticipant(String name, IMObjectReference entity) {
+        boolean modified = false;
         ParticipationEditor editor = getParticipationEditor(name, false);
         if (editor != null) {
-            editor.setEntityRef(entity);
+            if (!ObjectUtils.equals(editor.getEntityRef(), entity)) {
+                editor.setEntityRef(entity);
+                modified = true;
+            }
         } else {
             // no editor created yet. Set the participant via the corresponding
             // property
@@ -231,10 +236,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
             if (property == null) {
                 throw new IllegalArgumentException("Invalid node: " + name);
             }
-            Participation participant
-                    = getParticipation((IMObjectProperty) property);
+            Participation participant = getParticipation((IMObjectProperty) property);
             if (participant != null) {
-                boolean modified = false;
                 if (participant.getAct() == null) {
                     participant.setAct(getObject().getObjectReference());
                     modified = true;
@@ -248,6 +251,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
                 }
             }
         }
+        return modified;
     }
 
     /**
