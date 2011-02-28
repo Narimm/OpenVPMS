@@ -99,6 +99,7 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         initial.setTill(global.getTill());
         initial.setLocation(global.getLocation());
         initial.setPractice(global.getPractice());
+        initial.setUser(global.getUser());
 
         EditIMObjectTask sale = new EditIMObjectTask(CHARGES_COUNTER, true);
         sale.setDeleteOnCancelOrSkip(true);
