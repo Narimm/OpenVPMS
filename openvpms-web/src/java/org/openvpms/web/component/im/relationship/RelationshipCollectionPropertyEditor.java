@@ -304,12 +304,15 @@ public abstract class RelationshipCollectionPropertyEditor
      */
     private IMObject getObject(IMObjectRelationship relationship,
                                Map<IMObjectReference, IMObject> cache) {
+        IMObject object = null;
         IMObjectReference ref = parentIsSource() ? relationship.getTarget() : relationship.getSource();
-        IMObject object = cache.get(ref);
-        if (object == null) {
-            object = ServiceHelper.getArchetypeService().get(ref);
-            if (object != null) {
-                cache.put(ref, object);
+        if (ref != null) {
+            object = cache.get(ref);
+            if (object == null) {
+                object = ServiceHelper.getArchetypeService().get(ref);
+                if (object != null) {
+                    cache.put(ref, object);
+                }
             }
         }
         return object;
