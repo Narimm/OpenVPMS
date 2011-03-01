@@ -159,8 +159,22 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
             Retryer retryer = new Retryer(recordAction, done, done);
             retryer.start();
         } else {
+            setEvent(act);
             SummaryCRUDWindow.super.onSaved(act, isNew);
         }
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(Act object) {
+        if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
+            setEvent(null);
+        }
+        super.onDeleted(object);
     }
 
     /**
