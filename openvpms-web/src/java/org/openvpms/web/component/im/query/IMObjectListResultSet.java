@@ -38,7 +38,7 @@ public class IMObjectListResultSet<T extends IMObject>
     /**
      * The sort criteria.
      */
-    private SortConstraint[] sort = new SortConstraint[0];
+    private SortConstraint[] sort = EMPTY;
 
     /**
      * Determines if the set is sorted ascending or descending.
@@ -50,9 +50,14 @@ public class IMObjectListResultSet<T extends IMObject>
      */
     private final Transformer transformer;
 
+    /**
+     * Empty sort constraint.
+     */
+    private static final SortConstraint[] EMPTY = new SortConstraint[0];
+
 
     /**
-     * Construct a new <tt>IMObjectListResultSet</tt>.
+     * Constructs an <tt>IMObjectListResultSet</tt>.
      *
      * @param objects  the objects
      * @param pageSize the maximum no. of results per page
@@ -81,15 +86,15 @@ public class IMObjectListResultSet<T extends IMObject>
      * @param sort the sort criteria. May be <tt>null</tt>
      */
     public void sort(SortConstraint[] sort) {
-        if (sort != null && !getObjects().isEmpty()) {
+        if (sort != null && sort.length > 0 && !getObjects().isEmpty()) {
             if (transformer != null) {
                 IMObjectSorter.sort(getObjects(), sort, transformer);
             } else {
                 IMObjectSorter.sort(getObjects(), sort);
             }
             sortAscending = sort[0].isAscending();
-            this.sort = sort;
         }
+        this.sort = sort;
         reset();
     }
 
@@ -110,7 +115,7 @@ public class IMObjectListResultSet<T extends IMObject>
      * @return the sort criteria. Never null
      */
     public SortConstraint[] getSortConstraints() {
-        return sort;
+        return sort != null ? sort : EMPTY;
     }
 
 }
