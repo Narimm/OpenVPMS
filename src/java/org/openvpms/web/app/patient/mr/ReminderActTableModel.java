@@ -19,8 +19,10 @@
 package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.table.TableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 
@@ -34,12 +36,41 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 public class ReminderActTableModel extends PatientRecordActTableModel {
 
     /**
-     * Creates a new <tt>ReminderActTableModel</tt>.
+     * The reminder type model index.
+     */
+    private int reminderTypeIndex;
+
+    /**
+     * The product model index.
+     */
+    private int productIndex;
+
+
+    /**
+     * Constructs a <tt>ReminderActTableModel</tt>.
      *
      * @param shortNames the act archetype short names
      */
     public ReminderActTableModel(String[] shortNames) {
         super(shortNames);
+    }
+
+    /**
+     * Returns the sort criteria.
+     *
+     * @param column    the primary sort column
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise sort in <tt>descending</tt> order
+     * @return the sort criteria, or <tt>null</tt> if the column isn't sortable
+     */
+    @Override
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        TableColumn col = getColumn(column);
+        int index = col.getModelIndex();
+        if (index == reminderTypeIndex || index == productIndex) {
+            // can't sort on these as they aren't applicable to patient alerts
+            return null;
+        }
+        return super.getSortConstraints(column, ascending);
     }
 
     /**
@@ -64,7 +95,7 @@ public class ReminderActTableModel extends PatientRecordActTableModel {
 
     /**
      * Creates a column model for a set of archetypes.
-     * This implementation adds the act.patientReminder product node.
+     * This implementation adds the act.patientReminder reminderType and product nodes.
      *
      * @param shortNames the archetype short names
      * @param context    the layout context
@@ -78,8 +109,11 @@ public class ReminderActTableModel extends PatientRecordActTableModel {
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
                 shortName);
         if (archetype != null) {
-        	addColumn(archetype,"reminderType", model);
-            addColumn(archetype, "product", model);
+            TableColumn reminderType = addColumn(archetype, "reminderType", model);
+            reminderTypeIndex = reminderType.getModelIndex();
+
+            TableColumn product = addColumn(archetype, "product", model);
+            productIndex = product.getModelIndex();
         }
         return model;
     }
