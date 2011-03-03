@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.component.system.common.query.JoinConstraint;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -108,10 +109,11 @@ public abstract class AbstractEntityResultSet<T> extends AbstractIMObjectResultS
             query = super.createQuery();
         } else {
             query = new ArchetypeQuery(getArchetypes());
+            JoinConstraint identities = Constraints.leftJoin("identities", Constraints.shortName(
+                    "identity", identityShortNames, true));
+            query.add(identities);
             String value = getValue();
             if (!StringUtils.isEmpty(getValue())) {
-                query.add(Constraints.leftJoin("identities",
-                                               Constraints.shortName("identity", identityShortNames, true)));
                 IConstraint identName = Constraints.eq("identity.name", value);
                 Long id = getId(value);
                 if (id != null) {
