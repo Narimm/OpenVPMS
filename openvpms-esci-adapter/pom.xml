@@ -54,7 +54,7 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-esci-core</artifactId>
+            <artifactId>openvpms-esci-service</artifactId>
             <version>${esci.version}</version>
         </dependency>
         <dependency>
