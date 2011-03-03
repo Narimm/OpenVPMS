@@ -18,15 +18,15 @@
 package org.openvpms.esci.adapter.map;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.oasis.ubl.common.AmountType;
-import org.oasis.ubl.common.CurrencyCodeContentType;
-import org.oasis.ubl.common.QuantityType;
-import org.oasis.ubl.common.aggregate.TaxSubtotalType;
-import org.oasis.ubl.common.aggregate.TaxTotalType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.invoice.UBLTaxSubtotal;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.common.AmountType;
+import org.openvpms.esci.ubl.common.CurrencyCodeContentType;
+import org.openvpms.esci.ubl.common.QuantityType;
+import org.openvpms.esci.ubl.common.aggregate.TaxSubtotalType;
+import org.openvpms.esci.ubl.common.aggregate.TaxTotalType;
 
 import java.math.BigDecimal;
 import java.util.List;

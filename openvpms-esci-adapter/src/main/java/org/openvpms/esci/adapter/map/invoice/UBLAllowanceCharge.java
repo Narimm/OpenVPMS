@@ -18,14 +18,14 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.StringUtils;
-import org.oasis.ubl.common.aggregate.AllowanceChargeType;
-import org.oasis.ubl.common.aggregate.TaxCategoryType;
-import org.oasis.ubl.common.aggregate.TaxTotalType;
-import org.oasis.ubl.common.basic.AllowanceChargeReasonType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.common.aggregate.AllowanceChargeType;
+import org.openvpms.esci.ubl.common.aggregate.TaxCategoryType;
+import org.openvpms.esci.ubl.common.aggregate.TaxTotalType;
+import org.openvpms.esci.ubl.common.basic.AllowanceChargeReasonType;
 
 import java.math.BigDecimal;
 import java.util.List;

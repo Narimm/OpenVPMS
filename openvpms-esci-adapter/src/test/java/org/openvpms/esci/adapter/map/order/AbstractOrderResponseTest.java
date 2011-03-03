@@ -17,15 +17,15 @@
  */
 package org.openvpms.esci.adapter.map.order;
 
-import org.oasis.ubl.OrderResponseSimpleType;
-import org.oasis.ubl.common.aggregate.DocumentReferenceType;
-import org.oasis.ubl.common.basic.AcceptedIndicatorType;
-import org.oasis.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.dispatcher.Document;
 import org.openvpms.esci.adapter.map.UBLHelper;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
+import org.openvpms.esci.ubl.common.basic.AcceptedIndicatorType;
+import org.openvpms.esci.ubl.common.basic.UBLVersionIDType;
+import org.openvpms.esci.ubl.order.OrderResponseSimpleType;
 
 /**
  * Base class for order response test cases.

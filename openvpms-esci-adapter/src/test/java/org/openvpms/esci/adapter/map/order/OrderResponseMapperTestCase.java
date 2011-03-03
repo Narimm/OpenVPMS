@@ -20,8 +20,6 @@ package org.openvpms.esci.adapter.map.order;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Test;
-import org.oasis.ubl.OrderResponseSimpleType;
-import org.oasis.ubl.common.basic.RejectionNoteType;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -29,6 +27,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.order.OrderResponseSimpleType;
+import org.openvpms.esci.ubl.common.basic.RejectionNoteType;
 
 
 /**

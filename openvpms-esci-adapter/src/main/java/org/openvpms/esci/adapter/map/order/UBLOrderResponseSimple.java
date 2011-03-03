@@ -18,10 +18,6 @@
 package org.openvpms.esci.adapter.map.order;
 
 import org.apache.commons.lang.StringUtils;
-import org.oasis.ubl.OrderResponseSimpleType;
-import org.oasis.ubl.common.aggregate.OrderReferenceType;
-import org.oasis.ubl.common.basic.AcceptedIndicatorType;
-import org.oasis.ubl.common.basic.RejectionNoteType;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -31,6 +27,10 @@ import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.UBLDocument;
 import org.openvpms.esci.adapter.map.UBLType;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.common.aggregate.OrderReferenceType;
+import org.openvpms.esci.ubl.common.basic.AcceptedIndicatorType;
+import org.openvpms.esci.ubl.common.basic.RejectionNoteType;
+import org.openvpms.esci.ubl.order.OrderResponseSimpleType;
 
 
 /**
@@ -188,16 +188,16 @@ public class UBLOrderResponseSimple extends UBLType implements UBLDocument {
     }
 
     /**
-      * Verifies that the stock location matches that expected.
-      *
-      * @param expectedStockLocation the expected stock location
-      * @param expectedAccountId     the expected account identifier. May be <tt>null</tt>
-      * @throws ESCIAdapterException if the supplier is invalid
-      */
-     public void checkStockLocation(Party expectedStockLocation, String expectedAccountId) {
-         Party stockLocation = getStockLocation();
-         String accountId = getStockLocationId();
-         checkStockLocation(expectedStockLocation, expectedAccountId, stockLocation, accountId, "BuyerCustomerParty");
-     }
+     * Verifies that the stock location matches that expected.
+     *
+     * @param expectedStockLocation the expected stock location
+     * @param expectedAccountId     the expected account identifier. May be <tt>null</tt>
+     * @throws ESCIAdapterException if the supplier is invalid
+     */
+    public void checkStockLocation(Party expectedStockLocation, String expectedAccountId) {
+        Party stockLocation = getStockLocation();
+        String accountId = getStockLocationId();
+        checkStockLocation(expectedStockLocation, expectedAccountId, stockLocation, accountId, "BuyerCustomerParty");
+    }
 
 }

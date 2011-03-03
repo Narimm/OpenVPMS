@@ -17,9 +17,6 @@
  */
 package org.openvpms.esci.adapter;
 
-import org.oasis.ubl.common.aggregate.CustomerPartyType;
-import org.oasis.ubl.common.aggregate.SupplierPartyType;
-import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.AbstractSupplierTest;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
@@ -37,6 +34,9 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.esci.adapter.map.UBLHelper;
+import org.openvpms.esci.ubl.common.aggregate.CustomerPartyType;
+import org.openvpms.esci.ubl.common.aggregate.SupplierPartyType;
+import org.openvpms.esci.ubl.common.basic.CustomerAssignedAccountIDType;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;

@@ -20,8 +20,8 @@ package org.openvpms.esci.adapter.i18n;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import org.oasis.ubl.common.aggregate.DocumentReferenceType;
-import org.oasis.ubl.common.basic.DocumentTypeType;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
+import org.openvpms.esci.ubl.common.basic.DocumentTypeType;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.adapter.AbstractESCITest;

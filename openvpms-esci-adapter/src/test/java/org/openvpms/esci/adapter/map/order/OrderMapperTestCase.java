@@ -22,27 +22,14 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
-import org.oasis.ubl.OrderType;
-import org.oasis.ubl.common.AmountType;
-import org.oasis.ubl.common.IdentifierType;
-import org.oasis.ubl.common.QuantityType;
-import org.oasis.ubl.common.aggregate.AddressType;
-import org.oasis.ubl.common.aggregate.ContactType;
-import org.oasis.ubl.common.aggregate.CustomerPartyType;
-import org.oasis.ubl.common.aggregate.ItemType;
-import org.oasis.ubl.common.aggregate.LineItemType;
-import org.oasis.ubl.common.aggregate.OrderLineType;
-import org.oasis.ubl.common.aggregate.PartyType;
-import org.oasis.ubl.common.aggregate.SupplierPartyType;
-import org.oasis.ubl.common.basic.PayableAmountType;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
-import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -58,8 +45,21 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFact
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
-import org.openvpms.ubl.io.UBLDocumentContext;
-import org.openvpms.ubl.io.UBLDocumentWriter;
+import org.openvpms.esci.ubl.common.AmountType;
+import org.openvpms.esci.ubl.common.IdentifierType;
+import org.openvpms.esci.ubl.common.QuantityType;
+import org.openvpms.esci.ubl.common.aggregate.AddressType;
+import org.openvpms.esci.ubl.common.aggregate.ContactType;
+import org.openvpms.esci.ubl.common.aggregate.CustomerPartyType;
+import org.openvpms.esci.ubl.common.aggregate.ItemType;
+import org.openvpms.esci.ubl.common.aggregate.LineItemType;
+import org.openvpms.esci.ubl.common.aggregate.OrderLineType;
+import org.openvpms.esci.ubl.common.aggregate.PartyType;
+import org.openvpms.esci.ubl.common.aggregate.SupplierPartyType;
+import org.openvpms.esci.ubl.common.basic.PayableAmountType;
+import org.openvpms.esci.ubl.io.UBLDocumentContext;
+import org.openvpms.esci.ubl.io.UBLDocumentWriter;
+import org.openvpms.esci.ubl.order.OrderType;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.ByteArrayInputStream;
@@ -231,7 +231,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
         order.setStatus(ActStatus.POSTED);
         ActBean bean = new ActBean(order);
         bean.save();
-        String expected  = "ESCIA-0115: Too many decimal places in amount: 1.625";
+        String expected = "ESCIA-0115: Too many decimal places in amount: 1.625";
         checkMappingException(order, expected);
     }
 
@@ -249,7 +249,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
         bean.setValue("reorderCode", "AREORDERCODE");
         save(orderItem, order);
 
-        String expected  = "ESCIA-0116: Too many decimal places in quantity: 0.625";
+        String expected = "ESCIA-0116: Too many decimal places in quantity: 0.625";
         checkMappingException(order, expected);
     }
 

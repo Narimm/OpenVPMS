@@ -17,10 +17,10 @@
  */
 package org.openvpms.esci.adapter.map.order;
 
-import org.oasis.ubl.OrderType;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.order.OrderType;
 
 
 /**
@@ -36,7 +36,7 @@ public interface OrderMapper {
      *
      * @param order the order to map
      * @return the UBL equivalent of the order
-     * @throws ESCIAdapterException for mapping errors
+     * @throws ESCIAdapterException      for mapping errors
      * @throws ArchetypeServiceException for any archetype service error
      */
     OrderType map(FinancialAct order);

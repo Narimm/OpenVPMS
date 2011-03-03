@@ -17,7 +17,6 @@
  */
 package org.openvpms.esci.adapter.client.impl;
 
-import org.oasis.ubl.OrderType;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -30,6 +29,7 @@ import org.openvpms.esci.adapter.map.order.OrderMapper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.exception.DuplicateOrderException;
 import org.openvpms.esci.service.OrderService;
+import org.openvpms.esci.ubl.order.OrderType;
 
 import javax.annotation.Resource;
 

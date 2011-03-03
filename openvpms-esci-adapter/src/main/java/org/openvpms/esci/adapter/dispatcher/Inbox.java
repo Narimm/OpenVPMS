@@ -18,10 +18,10 @@
 
 package org.openvpms.esci.adapter.dispatcher;
 
-import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.exception.DocumentNotFoundException;
 import org.openvpms.esci.service.InboxService;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
 import java.util.List;
 
