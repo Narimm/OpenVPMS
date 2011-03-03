@@ -23,7 +23,6 @@ import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
@@ -61,16 +60,9 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      */
     private final ProductPriceRules rules;
 
-    /**
-     * Flag to indicate that the price has been modified and therefore the
-     * markup needs to be recalculated on save. This is a workaround for
-     * an echo2 bug. See OVPMS-701
-     */
-    private boolean recalcMarkup;
-
 
     /**
-     * Constructs a new <tt>ProductPriceEditor</tt>.
+     * Constructs a <tt>ProductPriceEditor</tt>.
      *
      * @param object        the object to edit
      * @param parent        the parent product. May be <tt>null</tt>
@@ -95,8 +87,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
 
         priceListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                // updateMarkup();
-                recalcMarkup = true;
+                updateMarkup();
             }
         };
         getProperty("price").addModifiableListener(priceListener);
@@ -104,25 +95,9 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Save any edits.
-     *
-     * @return <code>true</code> if the save was successful
-     */
-    @Override
-    protected boolean doSave() {
-        if (recalcMarkup) {
-            IMObjectBean bean = new IMObjectBean(getObject());
-            bean.setValue("markup", calculateMarkup());
-            recalcMarkup = false;
-        }
-        return super.doSave();
-    }
-
-    /**
      * Updates the price.
      */
     private void updatePrice() {
-        recalcMarkup = false;
         try {
             Property property = getProperty("price");
             property.removeModifiableListener(priceListener);
@@ -135,7 +110,6 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
 
     /**
      * Recalculates the markup when the price is updated.
-     * Not currently used due to echo2 bug. See OVPMS-701
      */
     private void updateMarkup() {
         try {
