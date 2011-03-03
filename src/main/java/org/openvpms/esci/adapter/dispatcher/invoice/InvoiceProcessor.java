@@ -19,7 +19,6 @@ package org.openvpms.esci.adapter.dispatcher.invoice;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.oasis.ubl.InvoiceType;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -30,6 +29,7 @@ import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.invoice.Delivery;
 import org.openvpms.esci.adapter.map.invoice.InvoiceMapper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.invoice.InvoiceType;
 
 import javax.annotation.Resource;
 

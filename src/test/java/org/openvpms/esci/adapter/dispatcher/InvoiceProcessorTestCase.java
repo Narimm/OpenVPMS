@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.junit.Test;
-import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.security.User;
@@ -31,6 +30,7 @@ import org.openvpms.esci.adapter.dispatcher.invoice.InvoiceProcessor;
 import org.openvpms.esci.adapter.dispatcher.invoice.SystemMessageInvoiceListener;
 import org.openvpms.esci.adapter.map.invoice.AbstractInvoiceTest;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
 
 /**

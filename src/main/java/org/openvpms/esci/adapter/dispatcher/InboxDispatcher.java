@@ -20,11 +20,11 @@ package org.openvpms.esci.adapter.dispatcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.oasis.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.exception.DocumentNotFoundException;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
 import java.util.Iterator;
 import java.util.List;

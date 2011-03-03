@@ -18,15 +18,6 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.StringUtils;
-import org.oasis.ubl.InvoiceType;
-import org.oasis.ubl.common.aggregate.AllowanceChargeType;
-import org.oasis.ubl.common.aggregate.InvoiceLineType;
-import org.oasis.ubl.common.aggregate.MonetaryTotalType;
-import org.oasis.ubl.common.aggregate.OrderReferenceType;
-import org.oasis.ubl.common.basic.ChargeTotalAmountType;
-import org.oasis.ubl.common.basic.IssueDateType;
-import org.oasis.ubl.common.basic.IssueTimeType;
-import org.oasis.ubl.common.basic.NoteType;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -38,6 +29,15 @@ import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.UBLDocument;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.common.aggregate.AllowanceChargeType;
+import org.openvpms.esci.ubl.common.aggregate.InvoiceLineType;
+import org.openvpms.esci.ubl.common.aggregate.MonetaryTotalType;
+import org.openvpms.esci.ubl.common.aggregate.OrderReferenceType;
+import org.openvpms.esci.ubl.common.basic.ChargeTotalAmountType;
+import org.openvpms.esci.ubl.common.basic.IssueDateType;
+import org.openvpms.esci.ubl.common.basic.IssueTimeType;
+import org.openvpms.esci.ubl.common.basic.NoteType;
+import org.openvpms.esci.ubl.invoice.InvoiceType;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;

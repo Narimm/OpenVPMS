@@ -49,7 +49,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-ubl</artifactId>
+            <artifactId>openvpms-esci-ubl</artifactId>
             <version>${esci.version}</version>
         </dependency>
         <dependency>

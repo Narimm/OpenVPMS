@@ -17,18 +17,6 @@
  */
 package org.openvpms.esci.adapter.map;
 
-import org.oasis.ubl.common.AmountType;
-import org.oasis.ubl.common.CodeType;
-import org.oasis.ubl.common.CurrencyCodeContentType;
-import org.oasis.ubl.common.IdentifierType;
-import org.oasis.ubl.common.QuantityType;
-import org.oasis.ubl.common.TextType;
-import org.oasis.ubl.common.aggregate.OrderReferenceType;
-import org.oasis.ubl.common.basic.IDType;
-import org.oasis.ubl.common.basic.IssueDateType;
-import org.oasis.ubl.common.basic.IssueTimeType;
-import org.oasis.ubl.common.basic.NameType;
-import org.oasis.ubl.common.basic.PercentType;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
@@ -36,8 +24,20 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.common.AmountType;
+import org.openvpms.esci.ubl.common.CodeType;
+import org.openvpms.esci.ubl.common.CurrencyCodeContentType;
+import org.openvpms.esci.ubl.common.IdentifierType;
+import org.openvpms.esci.ubl.common.QuantityType;
+import org.openvpms.esci.ubl.common.TextType;
+import org.openvpms.esci.ubl.common.aggregate.OrderReferenceType;
+import org.openvpms.esci.ubl.common.basic.IDType;
+import org.openvpms.esci.ubl.common.basic.IssueDateType;
+import org.openvpms.esci.ubl.common.basic.IssueTimeType;
+import org.openvpms.esci.ubl.common.basic.NameType;
+import org.openvpms.esci.ubl.common.basic.PercentType;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
@@ -150,7 +150,7 @@ public class UBLHelper {
      * @param value the value
      * @return the name
      */
-    public static <T extends org.oasis.ubl.common.NameType> T initName(T name, String value) {
+    public static <T extends org.openvpms.esci.ubl.common.NameType> T initName(T name, String value) {
         name.setValue(value);
         return name;
     }

@@ -17,7 +17,7 @@
  */
 package org.openvpms.esci.adapter.i18n;
 
-import org.oasis.ubl.common.aggregate.DocumentReferenceType;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 

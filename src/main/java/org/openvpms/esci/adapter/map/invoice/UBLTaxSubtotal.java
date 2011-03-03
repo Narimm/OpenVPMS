@@ -17,12 +17,12 @@
  */
 package org.openvpms.esci.adapter.map.invoice;
 
-import org.oasis.ubl.common.aggregate.TaxCategoryType;
-import org.oasis.ubl.common.aggregate.TaxSubtotalType;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.adapter.map.UBLType;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.common.aggregate.TaxCategoryType;
+import org.openvpms.esci.ubl.common.aggregate.TaxSubtotalType;
 
 import java.math.BigDecimal;
 

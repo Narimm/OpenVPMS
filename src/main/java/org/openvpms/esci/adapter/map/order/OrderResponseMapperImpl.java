@@ -17,7 +17,6 @@
  */
 package org.openvpms.esci.adapter.map.order;
 
-import org.oasis.ubl.OrderResponseSimpleType;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -27,6 +26,7 @@ import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.AbstractUBLMapper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.order.OrderResponseSimpleType;
 
 import javax.annotation.Resource;
 

@@ -18,16 +18,6 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.StringUtils;
-import org.oasis.ubl.common.aggregate.InvoiceLineType;
-import org.oasis.ubl.common.aggregate.ItemIdentificationType;
-import org.oasis.ubl.common.aggregate.ItemType;
-import org.oasis.ubl.common.aggregate.OrderLineReferenceType;
-import org.oasis.ubl.common.aggregate.OrderReferenceType;
-import org.oasis.ubl.common.aggregate.PriceType;
-import org.oasis.ubl.common.aggregate.PricingReferenceType;
-import org.oasis.ubl.common.basic.InvoicedQuantityType;
-import org.oasis.ubl.common.basic.LineIDType;
-import org.oasis.ubl.common.basic.PriceTypeCodeType;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
@@ -43,6 +33,16 @@ import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.ErrorContext;
 import org.openvpms.esci.adapter.map.UBLFinancialType;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.common.aggregate.InvoiceLineType;
+import org.openvpms.esci.ubl.common.aggregate.ItemIdentificationType;
+import org.openvpms.esci.ubl.common.aggregate.ItemType;
+import org.openvpms.esci.ubl.common.aggregate.OrderLineReferenceType;
+import org.openvpms.esci.ubl.common.aggregate.OrderReferenceType;
+import org.openvpms.esci.ubl.common.aggregate.PriceType;
+import org.openvpms.esci.ubl.common.aggregate.PricingReferenceType;
+import org.openvpms.esci.ubl.common.basic.InvoicedQuantityType;
+import org.openvpms.esci.ubl.common.basic.LineIDType;
+import org.openvpms.esci.ubl.common.basic.PriceTypeCodeType;
 
 import java.math.BigDecimal;
 import java.util.List;

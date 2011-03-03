@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
-import org.oasis.ubl.OrderType;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
@@ -36,6 +35,7 @@ import org.openvpms.esci.service.DelegatingRegistryService;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.DefaultServiceLocatorFactory;
+import org.openvpms.esci.ubl.order.OrderType;
 import org.springframework.test.context.ContextConfiguration;
 
 import javax.annotation.Resource;

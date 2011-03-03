@@ -18,7 +18,7 @@
 
 package org.openvpms.esci.adapter.dispatcher;
 
-import org.oasis.ubl.common.aggregate.DocumentReferenceType;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
 /**
  * Encapsulates a document obtained from the <tt>InboxService</tt>.

@@ -19,12 +19,6 @@ package org.openvpms.esci.adapter.map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.oasis.ubl.common.IdentifierType;
-import org.oasis.ubl.common.aggregate.CustomerPartyType;
-import org.oasis.ubl.common.aggregate.SupplierPartyType;
-import org.oasis.ubl.common.basic.AdditionalAccountIDType;
-import org.oasis.ubl.common.basic.CustomerAssignedAccountIDType;
-import org.oasis.ubl.common.basic.SupplierAssignedAccountIDType;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,6 +31,12 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.common.IdentifierType;
+import org.openvpms.esci.ubl.common.aggregate.CustomerPartyType;
+import org.openvpms.esci.ubl.common.aggregate.SupplierPartyType;
+import org.openvpms.esci.ubl.common.basic.AdditionalAccountIDType;
+import org.openvpms.esci.ubl.common.basic.CustomerAssignedAccountIDType;
+import org.openvpms.esci.ubl.common.basic.SupplierAssignedAccountIDType;
 
 import java.util.List;
 

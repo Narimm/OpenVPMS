@@ -17,10 +17,10 @@
  */
 package org.openvpms.esci.adapter.map.invoice;
 
-import org.oasis.ubl.InvoiceType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.ubl.invoice.InvoiceType;
 
 /**
  * Maps UBL invoices to <em>act.supplierDelivery</em> acts.
