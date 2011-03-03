@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
-import org.openvpms.esci.exception.DocumentNotFoundException;
+import org.openvpms.esci.service.exception.DocumentNotFoundException;
 import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
 import java.util.Iterator;
