@@ -27,8 +27,8 @@ import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.order.OrderMapper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
-import org.openvpms.esci.exception.DuplicateOrderException;
 import org.openvpms.esci.service.OrderService;
+import org.openvpms.esci.service.exception.DuplicateOrderException;
 import org.openvpms.esci.ubl.order.OrderType;
 
 import javax.annotation.Resource;
