@@ -19,8 +19,8 @@
 package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.TextField;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.TextDocument;
 

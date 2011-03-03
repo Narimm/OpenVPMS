@@ -23,13 +23,13 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.PasswordField;
 import nextapp.echo2.app.TextArea;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.bound.BoundFormattedField;
 import org.openvpms.web.component.bound.BoundPasswordField;
 import org.openvpms.web.component.bound.BoundRichTextArea;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
+import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.property.Property;
 
 import java.text.Format;
@@ -162,8 +162,8 @@ public class TextComponentFactory extends ComponentFactory {
      *
      * @return a new password field
      */
-    public static TextField createPassword() {
-        TextField password = new PasswordField();
+    public static PasswordField createPassword() {
+        PasswordField password = new PasswordField();
         password.setDocument(new TextDocument());
         setDefaultStyle(password);
         return password;
@@ -175,8 +175,8 @@ public class TextComponentFactory extends ComponentFactory {
      * @param columns the no. of columns to display
      * @return a new password field
      */
-    public static TextField createPassword(int columns) {
-        TextField text = createPassword();
+    public static PasswordField createPassword(int columns) {
+        PasswordField text = createPassword();
         if (columns <= 10) {
             text.setWidth(new Extent(columns, Extent.EM));
         } else {
@@ -191,8 +191,8 @@ public class TextComponentFactory extends ComponentFactory {
      * @param property the property to bind
      * @return a new password field
      */
-    public static TextField createPassword(Property property) {
-        TextField password = new BoundPasswordField(property);
+    public static PasswordField createPassword(Property property) {
+        PasswordField password = new BoundPasswordField(property);
         setDefaultStyle(password);
         return password;
     }
