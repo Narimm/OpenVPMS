@@ -18,10 +18,14 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -270,6 +274,63 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     }
 
     /**
+     * Tests the {@link StatementProcessor#process(Party)} method a
+     * statement date where end-of-period has not yet been run for an OTC customer.
+     * The statement should be a preview and include COMPLETED charges and
+     * POSTED acts.
+     */
+    @Test
+    public void testProcessPreviewForOTCCustomer() {
+        Party customer = (Party) create(CustomerArchetypes.OTC);
+        customer.setName("Z OTC customer");
+        save(customer);
+        setCustomer(customer);
+
+        List<FinancialAct> invoices1 = createChargesInvoice(new Money(100));
+        FinancialAct invoice1 = invoices1.get(0);
+        invoice1.setActivityStartTime(getDatetime("2007-01-01 10:00:00"));
+        save(invoices1);
+
+        List<FinancialAct> invoices2 = createChargesInvoice(new Money(100));
+        FinancialAct invoice2 = invoices2.get(0);
+        invoice2.setActivityStartTime(getDatetime("2007-01-01 10:30:00"));
+        invoice2.setStatus(ActStatus.COMPLETED);
+        save(invoices2);
+
+        List<FinancialAct> invoices3 = createChargesInvoice(new Money(10));
+        FinancialAct invoice3 = invoices3.get(0);
+        invoice3.setActivityStartTime(getDatetime("2007-01-01 11:00:00"));
+        invoice3.setStatus(ActStatus.IN_PROGRESS);
+        save(invoices3);
+
+        List<FinancialAct> invoices4 = createChargesInvoice(new Money(10));
+        FinancialAct invoice4 = invoices4.get(0);
+        invoice4.setActivityStartTime(getDatetime("2007-01-03 11:00:00"));
+        invoice4.setStatus(ActStatus.POSTED);
+        save(invoices4);
+
+        Date statementDate = getDate("2007-01-02");
+
+        // process the OTC customer's statement. Should just return the POSTED
+        // and COMPLETED invoice acts. The invoice4 invoice won't be included
+        List<Act> acts = processStatement(statementDate, customer);
+        assertEquals(2, acts.size());
+        checkAct(acts.get(0), invoice1, ActStatus.POSTED);
+        checkAct(acts.get(1), invoice2, ActStatus.COMPLETED);
+
+        // process the customer's statement for 5/2. Amounts are overdue, but as it is an OTC customer,
+        // no fees are generated.
+        statementDate = getDate("2007-02-05");
+        acts = processStatement(statementDate, customer);
+        assertEquals(3, acts.size());
+
+        // check the 3 invoices.
+        checkAct(acts.get(0), invoice1, ActStatus.POSTED);
+        checkAct(acts.get(1), invoice2, ActStatus.COMPLETED);
+        checkAct(acts.get(2), invoice4, ActStatus.POSTED);
+    }
+
+    /**
      * Helper to process a statement for a customer.
      *
      * @param statementDate the statement date
@@ -328,6 +389,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         public void process(Statement statement) {
             statements.add(statement);
         }
+
     }
 
     private List<Act> getActs(Statement event) {

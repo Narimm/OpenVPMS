@@ -70,6 +70,8 @@ public class StatementRules {
 
     /**
      * Creates a new <tt>StatementRules</tt>.
+     *
+     * @param practice the practice
      */
     public StatementRules(Party practice) {
         this(practice, ArchetypeServiceHelper.getArchetypeService(),
@@ -79,7 +81,9 @@ public class StatementRules {
     /**
      * Creates a new <tt>StatementRules</tt>.
      *
-     * @param service the archetype service
+     * @param practice the practice
+     * @param service  the archetype service
+     * @param lookups  the lookup service
      */
     public StatementRules(Party practice, IArchetypeService service,
                           ILookupService lookups) {
@@ -93,7 +97,8 @@ public class StatementRules {
      * Determines if a customer has had end-of-period run on or after a
      * particular date.
      *
-     * @param date the date
+     * @param customer the customer
+     * @param date     the date
      * @return <tt>true</tt> if end-of-period has been run on or after the date
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -104,6 +109,7 @@ public class StatementRules {
     /**
      * Marks a statement as being printed.
      *
+     * @param customer      the customer
      * @param statementDate the statement date
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -152,7 +158,7 @@ public class StatementRules {
                     customer, statementDate, feeDate);
             BigDecimal feeBalance = accountType.getAccountFeeBalance();
             if (overdue.compareTo(BigDecimal.ZERO) != 0
-                    && overdue.compareTo(feeBalance) >= 0) {
+                && overdue.compareTo(feeBalance) >= 0) {
                 BigDecimal fee = accountType.getAccountFee(overdue);
                 if (fee.compareTo(accountType.getAccountFeeMinimum()) >= 0) {
                     result = fee;
@@ -169,6 +175,7 @@ public class StatementRules {
      * @param customer  the customer
      * @param fee       the accounting fee
      * @param startTime the act start time
+     * @return the adjustment act
      */
     public FinancialAct createAccountingFeeAdjustment(Party customer,
                                                       BigDecimal fee,
@@ -194,9 +201,11 @@ public class StatementRules {
      */
     private AccountType getAccountType(Party customer) {
         IMObjectBean bean = new IMObjectBean(customer, service);
-        List<Lookup> accountTypes = bean.getValues("type", Lookup.class);
-        if (!accountTypes.isEmpty()) {
-            return new AccountType(accountTypes.get(0), service);
+        if (bean.hasNode("type")) {
+            List<Lookup> accountTypes = bean.getValues("type", Lookup.class);
+            if (!accountTypes.isEmpty()) {
+                return new AccountType(accountTypes.get(0), service);
+            }
         }
         return null;
     }
