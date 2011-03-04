@@ -77,6 +77,15 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     }
 
     /**
+     * Sets the customer.
+     *
+     * @param customer the customer
+     */
+    protected void setCustomer(Party customer) {
+        this.customer = customer;
+    }
+
+    /**
      * Returns the patient.
      *
      * @return the patient
@@ -274,6 +283,9 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     /**
      * Helper to create an <em>act.customerAccountPayment</em> containing an
      * <em>act.customerAccountPaymentCash</em>.
+     *
+     * @param amount the amount
+     * @return a new payment
      */
     protected FinancialAct createPaymentCash(Money amount) {
         return FinancialTestHelper.createPaymentCash(amount, getCustomer(),
@@ -283,6 +295,9 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     /**
      * Helper to create an <em>act.customerAccountPayment</em> containing an
      * <em>act.customerAccountPaymentCheque</em>.
+     *
+     * @param amount the amount
+     * @return a new payment
      */
     protected FinancialAct createPaymentCheque(Money amount) {
         return FinancialTestHelper.createPaymentCheque(amount, getCustomer(),
@@ -292,6 +307,9 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     /**
      * Helper to create an <em>act.customerAccountPayment</em> containing an
      * <em>act.customerAccountPaymentCredit</em>.
+     *
+     * @param amount the amount
+     * @return a new payment
      */
     protected FinancialAct createPaymentCredit(Money amount) {
         return FinancialTestHelper.createPaymentCredit(amount, getCustomer(),
@@ -301,6 +319,9 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     /**
      * Helper to create an <em>act.customerAccountPayment</em> containing an
      * <em>act.customerAccountPaymentDiscount</em>.
+     *
+     * @param amount the amount
+     * @return a new payment
      */
     protected FinancialAct createPaymentDiscount(Money amount) {
         return FinancialTestHelper.createPaymentDiscount(amount, getCustomer(),
@@ -310,6 +331,9 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     /**
      * Helper to create an <em>act.customerAccountPayment</em> containing an
      * <em>act.customerAccountPaymentEFT</em>.
+     *
+     * @param amount the amount
+     * @return a new payment
      */
     protected FinancialAct createPaymentEFT(Money amount) {
         return FinancialTestHelper.createPaymentEFT(amount, getCustomer(),
@@ -320,7 +344,7 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * Helper to create an <em>act.customerAccountRefund</em>.
      *
      * @param amount the act total
-     * @return a new payment
+     * @return a new refund
      */
     protected FinancialAct createRefund(Money amount) {
         return FinancialTestHelper.createRefund(amount, getCustomer(),
