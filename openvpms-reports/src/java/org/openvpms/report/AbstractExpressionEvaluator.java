@@ -19,6 +19,8 @@
 package org.openvpms.report;
 
 import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -64,9 +66,14 @@ public abstract class AbstractExpressionEvaluator<T>
      */
     private JXPathContext context;
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(AbstractExpressionEvaluator.class);
+
 
     /**
-     * Constructs a new <code>AbstractExpressionEvaluator</code>.
+     * Constructs an <tt>AbstractExpressionEvaluator</tt>.
      *
      * @param object  the object
      * @param service the archetype service
@@ -93,9 +100,9 @@ public abstract class AbstractExpressionEvaluator<T>
             } else {
                 return getNodeValue(expression);
             }
-        }
-        catch (Exception exception) {
-            // TODO Modified to return standard String rather than large exception error.
+        } catch (Exception exception) {
+            log.warn("Failed to evaluate: " + expression, exception);
+            // TODO localise
             return "Expression Error";
         }
     }
@@ -238,7 +245,7 @@ public abstract class AbstractExpressionEvaluator<T>
             }
             if (value != null) {
                 if (state.getLeafNode() != null
-                        && state.getLeafNode().isCollection()) {
+                    && state.getLeafNode().isCollection()) {
                     if (value instanceof Collection) {
                         Collection<IMObject> values
                                 = (Collection<IMObject>) value;
