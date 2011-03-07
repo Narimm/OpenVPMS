@@ -247,8 +247,10 @@ public abstract class IMTableCollectionEditor<T>
      * Refreshes the collection display.
      */
     public void refresh() {
-        populateTable();
-        enableNavigation(true);
+        if (table != null) {
+            populateTable();
+            enableNavigation(true);
+        }
     }
 
     /**
