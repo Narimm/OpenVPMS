@@ -22,7 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.esci.adapter.dispatcher.Document;
+import org.openvpms.esci.adapter.dispatcher.InboxDocument;
 import org.openvpms.esci.adapter.dispatcher.DocumentProcessor;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
@@ -104,7 +104,7 @@ public class OrderResponseProcessor implements DocumentProcessor {
      * @param document the document
      * @return <tt>true</tt> if the processor can handle the document, otherwise <tt>false</tt>
      */
-    public boolean canHandle(Document document) {
+    public boolean canHandle(InboxDocument document) {
         return document.getContent() instanceof OrderResponseSimpleType;
     }
 
@@ -116,7 +116,7 @@ public class OrderResponseProcessor implements DocumentProcessor {
      * @param stockLocation the stock location
      * @param accountId     the supplier account identifier  @throws ESCIAdapterException for any error
      */
-    public void process(Document document, Party supplier, Party stockLocation, String accountId) {
+    public void process(InboxDocument document, Party supplier, Party stockLocation, String accountId) {
         OrderResponseSimpleType response = (OrderResponseSimpleType) document.getContent();
         try {
             FinancialAct order = mapper.map(response, supplier, stockLocation, accountId);

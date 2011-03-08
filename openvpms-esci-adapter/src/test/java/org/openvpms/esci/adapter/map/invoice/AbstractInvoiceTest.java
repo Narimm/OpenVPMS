@@ -60,7 +60,7 @@ import org.openvpms.esci.ubl.common.basic.TaxAmountType;
 import org.openvpms.esci.ubl.common.basic.TaxExclusiveAmountType;
 import org.openvpms.esci.ubl.common.basic.TaxTypeCodeType;
 import org.openvpms.esci.ubl.common.basic.UBLVersionIDType;
-import org.openvpms.esci.ubl.invoice.InvoiceType;
+import org.openvpms.esci.ubl.invoice.Invoice;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -124,7 +124,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      *
      * @return a new <Tt>Invoice</tt>
      */
-    protected InvoiceType createInvoice() {
+    protected Invoice createInvoice() {
         return createInvoice(getSupplier());
     }
 
@@ -134,7 +134,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * @param supplier the supplier
      * @return a new <Tt>Invoice</tt>
      */
-    protected InvoiceType createInvoice(Party supplier) {
+    protected Invoice createInvoice(Party supplier) {
         return createInvoice(supplier, getStockLocation());
     }
 
@@ -145,8 +145,8 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * @param stockLocation the stock location
      * @return a new <Tt>Invoice</tt>
      */
-    protected InvoiceType createInvoice(Party supplier, Party stockLocation) {
-        InvoiceType invoice = new InvoiceType();
+    protected Invoice createInvoice(Party supplier, Party stockLocation) {
+        Invoice invoice = new Invoice();
         SupplierPartyType supplierType = createSupplier(supplier);
         CustomerPartyType customerType = createCustomer(stockLocation);
         Product product = TestHelper.createProduct();

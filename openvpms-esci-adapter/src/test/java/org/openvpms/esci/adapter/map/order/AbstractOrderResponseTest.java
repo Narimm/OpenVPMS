@@ -20,7 +20,7 @@ package org.openvpms.esci.adapter.map.order;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.adapter.AbstractESCITest;
-import org.openvpms.esci.adapter.dispatcher.Document;
+import org.openvpms.esci.adapter.dispatcher.InboxDocument;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.esci.ubl.common.basic.AcceptedIndicatorType;
@@ -77,8 +77,8 @@ public class AbstractOrderResponseTest extends AbstractESCITest {
      * @param accepted if <tt>true</tt> indicates that the order was accepted, otherwise indicates that it was rejected
      * @return a new order response wrapped in a document
      */
-    protected Document createOrderResponseDocument(long orderId, boolean accepted) {
-        return new Document(new DocumentReferenceType(), createOrderResponseSimple(orderId, accepted));
+    protected InboxDocument createOrderResponseDocument(long orderId, boolean accepted) {
+        return new InboxDocument(new DocumentReferenceType(), createOrderResponseSimple(orderId, accepted));
     }
 
     /**

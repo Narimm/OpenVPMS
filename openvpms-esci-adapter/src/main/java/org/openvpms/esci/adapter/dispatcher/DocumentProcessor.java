@@ -35,7 +35,7 @@ public interface DocumentProcessor {
      * @param document the document
      * @return <tt>true</tt> if the processor can handle the document, otherwise <tt>false</tt>
      */
-    boolean canHandle(Document document);
+    boolean canHandle(InboxDocument document);
 
     /**
      * Processes a document.
@@ -45,7 +45,7 @@ public interface DocumentProcessor {
      * @param stockLocation the stock location
      * @param accountId     the supplier account identifier  @throws ESCIAdapterException for any error
      */
-    void process(Document document, Party supplier, Party stockLocation, String accountId);
+    void process(InboxDocument document, Party supplier, Party stockLocation, String accountId);
 }
 
 

@@ -81,7 +81,7 @@ import org.openvpms.esci.ubl.common.basic.TelefaxType;
 import org.openvpms.esci.ubl.common.basic.TelephoneType;
 import org.openvpms.esci.ubl.common.basic.TotalTaxAmountType;
 import org.openvpms.esci.ubl.common.basic.UBLVersionIDType;
-import org.openvpms.esci.ubl.order.OrderType;
+import org.openvpms.esci.ubl.order.Order;
 
 import javax.annotation.Resource;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -239,8 +239,8 @@ public class OrderMapperImpl implements OrderMapper {
      * @throws ESCIAdapterException      for mapping errors
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public OrderType map(FinancialAct order) {
-        OrderType result = new OrderType();
+    public Order map(FinancialAct order) {
+        Order result = new Order();
         Currency currency = getCurrency();
 
         UBLVersionIDType version = UBLHelper.initID(new UBLVersionIDType(), "2.0");

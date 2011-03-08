@@ -98,7 +98,7 @@ public class InboxDispatcher {
             DocumentReferenceType reference = references.next();
             Object content = inbox.getDocument(reference);
             if (content != null) {
-                Document document = new Document(reference, content);
+                InboxDocument document = new InboxDocument(reference, content);
                 DocumentProcessor processor = getProcessor(inbox.getSupplier(), document);
                 processor.process(document, inbox.getSupplier(), inbox.getStockLocation(), inbox.getAccountId());
                 try {
@@ -139,7 +139,7 @@ public class InboxDispatcher {
      * @return a processor for the document
      * @throws ESCIAdapterException if no processor can be found
      */
-    protected DocumentProcessor getProcessor(Party supplier, Document document) {
+    protected DocumentProcessor getProcessor(Party supplier, InboxDocument document) {
         for (DocumentProcessor documentProcessor : processors) {
             if (documentProcessor.canHandle(document)) {
                 return documentProcessor;

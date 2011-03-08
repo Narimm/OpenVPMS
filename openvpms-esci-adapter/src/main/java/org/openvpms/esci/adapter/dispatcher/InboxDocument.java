@@ -26,7 +26,7 @@ import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public class Document {
+public class InboxDocument {
 
     /**
      * The document reference.
@@ -44,7 +44,7 @@ public class Document {
      * @param reference a reference to the document
      * @param content   the document content
      */
-    public Document(DocumentReferenceType reference, Object content) {
+    public InboxDocument(DocumentReferenceType reference, Object content) {
         this.reference = reference;
         this.content = content;
     }

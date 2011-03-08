@@ -32,6 +32,7 @@ import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
 import org.openvpms.esci.ubl.order.OrderType;
+import org.openvpms.esci.ubl.order.Order;
 import org.springframework.test.context.ContextConfiguration;
 
 import javax.annotation.Resource;
@@ -110,7 +111,7 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
 
         final FutureValue<OrderType> future = new FutureValue<OrderType>();
         delegatingOrderService.setOrderService(new OrderService() {
-            public void submitOrder(OrderType order) {
+            public void submitOrder(Order order) {
                 future.set(order);
             }
         });

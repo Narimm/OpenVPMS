@@ -51,7 +51,7 @@ import org.openvpms.esci.ubl.common.basic.ChargeIndicatorType;
 import org.openvpms.esci.ubl.common.basic.LineIDType;
 import org.openvpms.esci.ubl.common.basic.NoteType;
 import org.openvpms.esci.ubl.common.basic.UBLVersionIDType;
-import org.openvpms.esci.ubl.invoice.InvoiceType;
+import org.openvpms.esci.ubl.invoice.Invoice;
 import org.openvpms.esci.ubl.io.UBLDocumentContext;
 import org.openvpms.esci.ubl.io.UBLDocumentReader;
 import org.openvpms.esci.ubl.io.UBLDocumentWriter;
@@ -109,7 +109,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         BigDecimal totalTax = tax1.add(tax2).add(chargeTax);
         BigDecimal payableAmount = taxExAmount.add(totalTax);
 
-        InvoiceType invoice = new InvoiceType();
+        Invoice invoice = new Invoice();
         SupplierPartyType supplierType = createSupplier(getSupplier());
         CustomerPartyType customerType = createCustomer(getStockLocation());
         MonetaryTotalType monetaryTotal = createMonetaryTotal(lineExtensionTotal, chargeAmount, taxExAmount,
@@ -164,7 +164,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         save(order, orderItem);
 
         // create an invoice that references the order
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
 
         // reference the order item in the invoice line
@@ -194,7 +194,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         // create an invoice that doesn't reference an order.
         // No author should appear on the resulting delivery
-        InvoiceType invoice1 = createInvoice();
+        Invoice invoice1 = createInvoice();
         Delivery delivery1 = mapper.map(invoice1, getSupplier(), getStockLocation(), null);
         ActBean bean1 = new ActBean(delivery1.getDelivery());
         assertNull(bean1.getNodeParticipant("author"));
@@ -206,7 +206,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         locBean.addNodeRelationship("defaultAuthor", defaultAuthor);
         locBean.save();
 
-        InvoiceType invoice2 = createInvoice();
+        Invoice invoice2 = createInvoice();
         Delivery delivery2 = mapper.map(invoice2, getSupplier(), getStockLocation(), null);
         ActBean deliveryBean2 = new ActBean(delivery2.getDelivery());
         assertEquals(defaultAuthor, deliveryBean2.getNodeParticipant("author"));
@@ -219,7 +219,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         orderBean.addNodeParticipation("author", author);
         orderBean.save();
 
-        InvoiceType invoice3 = createInvoice();
+        Invoice invoice3 = createInvoice();
         invoice3.setOrderReference(UBLHelper.createOrderReference(order3.getId()));
         Delivery delivery3 = mapper.map(invoice3, getSupplier(), getStockLocation(), null);
         ActBean deliveryBean3 = new ActBean(delivery3.getDelivery());
@@ -228,7 +228,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         // create an invoice that references an order, with no author.
         // The stock location default author should be used
         FinancialAct order4 = createOrder();
-        InvoiceType invoice4 = createInvoice();
+        Invoice invoice4 = createInvoice();
         invoice4.setOrderReference(UBLHelper.createOrderReference(order4.getId()));
         Delivery delivery4 = mapper.map(invoice4, getSupplier(), getStockLocation(), null);
         ActBean deliveryBean4 = new ActBean(delivery4.getDelivery());
@@ -240,7 +240,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testRequiredElementMissing() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getLegalMonetaryTotal().setPayableAmount(null);
         checkMappingException(invoice, "ESCIA-0100: Required element: Invoice/LegalMonetaryTotal/PayableAmount missing "
                                        + "in Invoice: 12345");
@@ -252,7 +252,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidCardinality() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getTaxTotal().add(new TaxTotalType());
         checkMappingException(invoice, "ESCIA-0101: Invalid cardinality for Invoice/TaxTotal in Invoice: 12345. "
                                        + "Expected 1 but got 2");
@@ -265,14 +265,14 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     @Test
     public void testInvalidIdentifier() {
         // check invalid identifier for Invoice
-        InvoiceType invoice1 = createInvoice();
+        Invoice invoice1 = createInvoice();
         invoice1.getAccountingCustomerParty().getCustomerAssignedAccountID().setValue("abc");
         checkMappingException(invoice1, "ESCIA-0102: Invalid identifier: abc for "
                                         + "Invoice/AccountingCustomerParty/CustomerAssignedAccountID in Invoice: "
                                         + "12345");
 
         // check invalid identifier for InvoiceLine
-        InvoiceType invoice2 = createInvoice();
+        Invoice invoice2 = createInvoice();
         InvoiceLineType item = invoice2.getInvoiceLine().get(0);
         item.getItem().getBuyersItemIdentification().getID().setValue("cde");
         checkMappingException(invoice2, "ESCIA-0102: Invalid identifier: cde for "
@@ -284,7 +284,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidUBLVersion() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getUBLVersionID().setValue("2.1");
         checkMappingException(invoice, "ESCIA-0103: Expected 2.0 for UBLVersionID in Invoice: 12345 but got 2.1");
     }
@@ -294,7 +294,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidAmount() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getInvoiceLine().get(0).getPrice().getPriceAmount().setValue(new BigDecimal(-1));
         checkMappingException(invoice, "ESCIA-0104: Invalid amount: -1 for InvoiceLine/Price/PriceAmount in "
                                        + "InvoiceLine: 1");
@@ -305,7 +305,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidCurrency() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         InvoiceLineType item = invoice.getInvoiceLine().get(0);
         item.getLineExtensionAmount().setCurrencyID(CurrencyCodeContentType.USD);
         checkMappingException(invoice, "ESCIA-0105: Invalid currencyID for InvoiceLine/LineExtensionAmount in "
@@ -317,7 +317,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidQuantity() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getInvoiceLine().get(0).getInvoicedQuantity().setValue(new BigDecimal(-2));
         checkMappingException(invoice, "ESCIA-0106: Invalid quantity: -2 for InvoiceLine/InvoicedQuantity in "
                                        + "InvoiceLine: 1");
@@ -329,7 +329,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidSupplier() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getAccountingSupplierParty().getCustomerAssignedAccountID().setValue("0");
         checkMappingException(invoice, "ESCIA-0107: Invalid supplier: 0 referenced by Invoice: 12345, "
                                        + "element Invoice/AccountingSupplierParty/CustomerAssignedAccountID");
@@ -340,7 +340,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidTaxScheme() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         InvoiceLineType line = invoice.getInvoiceLine().get(0);
         TaxTotalType taxTotal = line.getTaxTotal().get(0);
         TaxSubtotalType subtotal = taxTotal.getTaxSubtotal().get(0);
@@ -358,7 +358,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testNoProduct() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         InvoiceLineType item = invoice.getInvoiceLine().get(0);
         item.getItem().setBuyersItemIdentification(null);
         item.getItem().setSellersItemIdentification(null);
@@ -371,7 +371,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidPayableAmount() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getLegalMonetaryTotal().getPayableAmount().setValue(BigDecimal.ONE);
         checkMappingException(invoice, "ESCIA-0602: Calculated payable amount: 110 for Invoice: 12345 does not match "
                                        + "LegalMonetaryTotal/PayableAmount: 1");
@@ -382,7 +382,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidLineExtensionAmount() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getLegalMonetaryTotal().getLineExtensionAmount().setValue(BigDecimal.ONE);
         checkMappingException(invoice, "ESCIA-0603: Sum of InvoiceLine/LineExtensionAmount: 100 for Invoice: 12345 "
                                        + "does not match Invoice/LegalMonetaryTotal/LineExtensionAmount: 1");
@@ -393,7 +393,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidTax() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         TaxTotalType total = invoice.getTaxTotal().get(0);
         total.getTaxAmount().setValue(BigDecimal.ONE);
         checkMappingException(invoice, "ESCIA-0604: Sum of InvoiceLine taxes and charge taxes: 10 for Invoice: 12345 "
@@ -406,7 +406,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidItemLineExtensionAmount() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         InvoiceLineType item = invoice.getInvoiceLine().get(0);
         item.getLineExtensionAmount().setValue(BigDecimal.ONE);
         checkMappingException(invoice, "ESCIA-0605: Calculated line extension amount: 100 for InvoiceLine: 1 "
@@ -424,7 +424,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         // create an order with a single item
         Act order = createOrder(anotherSupplier);
 
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
         checkMappingException(invoice, getSupplier(), "ESCIA-0108: Invalid Order: " + order.getId()
                                                       + " referenced by Invoice: 12345");
@@ -439,7 +439,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         // create an order with a single item
         Act order = createOrder();
 
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
         OrderLineReferenceType lineRef = new OrderLineReferenceType();
         lineRef.setLineID(UBLHelper.initID(new LineIDType(), "0"));
@@ -458,7 +458,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         FinancialAct invalid = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
         save(invalid);
 
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
         OrderLineReferenceType lineRef = new OrderLineReferenceType();
         lineRef.setLineID(UBLHelper.initID(new LineIDType(), invalid.getId()));
@@ -473,7 +473,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testOrderItemForNoOrder() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         OrderLineReferenceType lineRef = new OrderLineReferenceType();
         lineRef.setLineID(UBLHelper.initID(new LineIDType(), "151"));
         invoice.getInvoiceLine().get(0).getOrderLineReference().add(lineRef);
@@ -486,7 +486,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testNoSupplier() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getAccountingSupplierParty().setCustomerAssignedAccountID(null);
         checkMappingException(invoice, "ESCIA-0111: One of CustomerAssignedAccountID or AdditionalAccountID is "
                                        + "required for Invoice/AccountingSupplierParty in Invoice: 12345");
@@ -499,7 +499,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     @Test
     public void testSupplierMismatch() {
         Party anotherSupplier = TestHelper.createSupplier();
-        InvoiceType invoice = createInvoice(anotherSupplier);
+        Invoice invoice = createInvoice(anotherSupplier);
         Party expected = getSupplier();
         checkMappingException(invoice,
                               "ESCIA-0109: Expected supplier " + expected.getName() + " (" + expected.getId()
@@ -512,7 +512,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testNoStockLocation() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getAccountingCustomerParty().setCustomerAssignedAccountID(null);
         checkMappingException(invoice, "ESCIA-0112: One of CustomerAssignedAccountID or SupplierAssignedAccountID is "
                                        + "required for Invoice/AccountingCustomerParty in Invoice: 12345");
@@ -524,7 +524,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidStockLocation() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getAccountingCustomerParty().getCustomerAssignedAccountID().setValue("0");
         checkMappingException(invoice, "ESCIA-0113: Invalid stock location: 0 referenced by Invoice: 12345, element "
                                        + "Invoice/AccountingCustomerParty/CustomerAssignedAccountID");
@@ -539,7 +539,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         Party supplier = getSupplier();
         Party expected = getStockLocation();
         Party stockLocation = createStockLocation();
-        InvoiceType invoice = createInvoice(supplier, stockLocation);
+        Invoice invoice = createInvoice(supplier, stockLocation);
         checkMappingException(invoice,
                               "ESCIA-0114: Expected stock location " + expected.getName() + " (" + expected.getId()
                               + ") for Invoice/AccountingCustomerParty/CustomerAssignedAccountID in Invoice: 12345, "
@@ -552,7 +552,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testIncorrectWholesalePrice() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         InvoiceLineType line = invoice.getInvoiceLine().get(0);
         PriceType price = line.getPricingReference().getAlternativeConditionPrice().get(0);
         price.getPriceTypeCode().setValue("RS");
@@ -567,7 +567,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testAllowanceChargeSpecifiedAsAllowance() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         AllowanceChargeType allowance = new AllowanceChargeType();
         ChargeIndicatorType charge = new ChargeIndicatorType();
         charge.setValue(false);
@@ -583,7 +583,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidChargeTotalAmount() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getAllowanceCharge().add(createCharge(BigDecimal.ONE, BigDecimal.ZERO, "Foo", new BigDecimal("10.00")));
         checkMappingException(invoice, "ESCIA-0608: Sum of charge AllowanceCharge/Amount: 1 for Invoice: 12345 "
                                        + "does not match Invoice/LegalMonetaryTotal/ChargeTotalAmount: 0");
@@ -598,7 +598,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         InvoiceMapper mapper = createMapper();
 
         // create an invoice
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
 
         Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
         save(delivery.getActs());
@@ -621,7 +621,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         save(order, orderItem);
 
         // create an invoice that references the order
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
 
         Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
@@ -639,7 +639,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testInvalidTaxExclusiveAmount() {
-        InvoiceType invoice = createInvoice();
+        Invoice invoice = createInvoice();
         invoice.getLegalMonetaryTotal().getTaxExclusiveAmount().setValue(BigDecimal.ONE);
         checkMappingException(invoice, "ESCIA-0611: Calculated tax exclusive amount: 100 for Invoice: 12345 does not "
                                        + "match Invoice/LegalMonetaryTotal/TaxExcusiveAmount: 1");
@@ -653,7 +653,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      * @throws JAXBException for any JAXB exception
      * @throws SAXException  for any SAX exception
      */
-    private InvoiceType serialize(InvoiceType invoice) throws JAXBException, SAXException {
+    private Invoice serialize(Invoice invoice) throws JAXBException, SAXException {
         UBLDocumentContext context = new UBLDocumentContext();
         UBLDocumentWriter writer = context.createWriter();
         ByteArrayOutputStream o = new ByteArrayOutputStream();
@@ -661,7 +661,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         writer.write(invoice, o);
         writer.write(invoice, System.out);
         UBLDocumentReader reader = context.createReader();
-        return (InvoiceType) reader.read(new ByteArrayInputStream(o.toByteArray()));
+        return (Invoice) reader.read(new ByteArrayInputStream(o.toByteArray()));
     }
 
     /**
@@ -670,7 +670,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      * @param invoice         the invoice to map
      * @param expectedMessage the expected error message
      */
-    private void checkMappingException(InvoiceType invoice, String expectedMessage) {
+    private void checkMappingException(Invoice invoice, String expectedMessage) {
         checkMappingException(invoice, getSupplier(), expectedMessage);
     }
 
@@ -681,7 +681,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      * @param supplier        the supplier submitting the invoice
      * @param expectedMessage the expected error message
      */
-    private void checkMappingException(InvoiceType invoice, Party supplier, String expectedMessage) {
+    private void checkMappingException(Invoice invoice, Party supplier, String expectedMessage) {
         InvoiceMapper mapper = createMapper();
         try {
             mapper.map(invoice, supplier, getStockLocation(), null);

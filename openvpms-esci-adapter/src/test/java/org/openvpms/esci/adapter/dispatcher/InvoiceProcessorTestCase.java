@@ -65,7 +65,7 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
         processor.setInvoiceListener(listener);
 
         // submit an invoice
-        Document invoice = createInvoiceDocument();
+        InboxDocument invoice = createInvoiceDocument();
         processor.process(invoice, getSupplier(), getStockLocation(), null);
 
         // verify the delivery was created
@@ -82,7 +82,7 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testFailedToProcessInvoice() {
-        Document invoice = createInvoiceDocument();
+        InboxDocument invoice = createInvoiceDocument();
         InvoiceProcessor processor = new InvoiceProcessor() {
             @Override
             protected void notifyListener(FinancialAct delivery) {
@@ -102,7 +102,7 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
      * @param processor the processor
      * @param expected  the expected message
      */
-    private void checkSubmitException(Document invoice, InvoiceProcessor processor, String expected) {
+    private void checkSubmitException(InboxDocument invoice, InvoiceProcessor processor, String expected) {
         try {
             processor.process(invoice, getSupplier(), getStockLocation(), null);
             fail("Expected submitInvoice() to fail");
@@ -123,8 +123,8 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
         return processor;
     }
 
-    private Document createInvoiceDocument() {
-        return new Document(new DocumentReferenceType(), createInvoice());
+    private InboxDocument createInvoiceDocument() {
+        return new InboxDocument(new DocumentReferenceType(), createInvoice());
     }
 
 }
