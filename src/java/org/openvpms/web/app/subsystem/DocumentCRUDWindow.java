@@ -110,7 +110,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
                 refresh(true, false);
             } else {
                 ActBean bean = new ActBean(act);
-                if (bean.hasNode("documentTemplate")) {
+                if (bean.hasNode("documentTemplate") || bean.hasNode("investigationType")) {
                     // document is generated on the fly
                     super.onPrint();
                 }
