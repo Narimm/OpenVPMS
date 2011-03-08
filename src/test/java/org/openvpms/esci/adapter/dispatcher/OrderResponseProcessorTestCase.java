@@ -67,7 +67,7 @@ public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
 
         // create an order and refer to it in the response
         FinancialAct order = createOrder();
-        Document response = createOrderResponseDocument(order.getId(), true);
+        InboxDocument response = createOrderResponseDocument(order.getId(), true);
         String accountId = null;
         processor.process(response, getSupplier(), getStockLocation(), accountId);
 
@@ -87,7 +87,7 @@ public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
     public void testFailedToProcess() {
         // create an order and refer to it in the response
         FinancialAct order = createOrder();
-        Document response = createOrderResponseDocument(order.getId(), true);
+        InboxDocument response = createOrderResponseDocument(order.getId(), true);
         OrderResponseProcessor processor = new OrderResponseProcessor() {
             @Override
             protected void notifyListener(FinancialAct order) {

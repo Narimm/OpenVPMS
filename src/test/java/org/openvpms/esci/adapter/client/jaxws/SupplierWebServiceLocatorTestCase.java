@@ -35,6 +35,7 @@ import org.openvpms.esci.service.DelegatingRegistryService;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.DefaultServiceLocatorFactory;
+import org.openvpms.esci.ubl.order.Order;
 import org.openvpms.esci.ubl.order.OrderType;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -81,7 +82,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
 
         SupplierServiceLocator locator = createLocator();
         OrderService service = locator.getOrderService(supplier, location);
-        service.submitOrder(new OrderType());
+        service.submitOrder(new Order());
 
         OrderType received = future.get(1000);
         assertNotNull(received);
@@ -101,7 +102,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
         SupplierServiceLocator locator = createLocator();
         String wsdl = getWSDL("wsdl/RegistryService.wsdl");
         OrderService service = locator.getOrderService(wsdl, "foo", "bar");
-        service.submitOrder(new OrderType());
+        service.submitOrder(new Order());
 
         OrderType received2 = future.get(1000);
         assertNotNull(received2);
@@ -231,7 +232,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
      */
     private void registerOrderService(final FutureValue<OrderType> future) {
         delegatingOrderService.setOrderService(new OrderService() {
-            public void submitOrder(OrderType order) {
+            public void submitOrder(Order order) {
                 future.set(order);
             }
         });

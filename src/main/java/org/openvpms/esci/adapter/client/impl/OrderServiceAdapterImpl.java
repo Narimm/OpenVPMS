@@ -29,7 +29,7 @@ import org.openvpms.esci.adapter.map.order.OrderMapper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.exception.DuplicateOrderException;
-import org.openvpms.esci.ubl.order.OrderType;
+import org.openvpms.esci.ubl.order.Order;
 
 import javax.annotation.Resource;
 
@@ -112,9 +112,9 @@ public class OrderServiceAdapterImpl implements OrderServiceAdapter {
             throw new IllegalStateException("Argument 'order' has no stock location participant");
         }
         OrderService orderService = locator.getOrderService(supplier, stockLocation);
-        OrderType orderType = mapper.map(order);
+        Order mapped = mapper.map(order);
         try {
-            orderService.submitOrder(orderType);
+            orderService.submitOrder(mapped);
         } catch (DuplicateOrderException exception) {
             throw new ESCIAdapterException(ESCIAdapterMessages.duplicateOrder(order.getId(), supplier), exception);
         }

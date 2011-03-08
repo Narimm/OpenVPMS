@@ -20,7 +20,7 @@ package org.openvpms.esci.adapter.map.order;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
-import org.openvpms.esci.ubl.order.OrderType;
+import org.openvpms.esci.ubl.order.Order;
 
 
 /**
@@ -39,5 +39,5 @@ public interface OrderMapper {
      * @throws ESCIAdapterException      for mapping errors
      * @throws ArchetypeServiceException for any archetype service error
      */
-    OrderType map(FinancialAct order);
+    Order map(FinancialAct order);
 }

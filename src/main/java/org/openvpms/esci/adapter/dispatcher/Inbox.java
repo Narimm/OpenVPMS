@@ -21,6 +21,7 @@ package org.openvpms.esci.adapter.dispatcher;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.service.InboxService;
 import org.openvpms.esci.service.exception.DocumentNotFoundException;
+import org.openvpms.esci.ubl.common.Document;
 import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
 import java.util.List;
@@ -114,7 +115,7 @@ public class Inbox implements InboxService {
      * @param reference the document reference
      * @return the corresponding document, or <tt>null</tt> if the document is not found
      */
-    public Object getDocument(DocumentReferenceType reference) {
+    public Document getDocument(DocumentReferenceType reference) {
         return inbox.getDocument(reference);
     }
 
