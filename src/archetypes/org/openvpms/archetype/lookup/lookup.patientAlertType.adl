@@ -41,7 +41,7 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="colour" path="/details/colour" type="java.lang.String" minCardinality="1" maxLength="8"/>
+        <node name="colour" path="/details/colour" type="java.lang.String" minCardinality="0" maxLength="8"/>
         <node displayName="Default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"
               defaultValue="false()"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
