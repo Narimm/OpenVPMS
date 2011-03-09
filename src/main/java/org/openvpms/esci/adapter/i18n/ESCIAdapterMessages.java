@@ -344,6 +344,16 @@ public class ESCIAdapterMessages {
     }
 
     /**
+     * Creates a new message for when there is no practice location asssociated with a stock location.
+     *
+     * @param stockLocation the stock location
+     * @return a new message
+     */
+    public static Message noPracticeLocationForStockLocation(Party stockLocation) {
+        return messages.getMessage(301, stockLocation.getId(), stockLocation.getName());
+    }
+
+    /**
      * Creates a new message for when an order is accepted.
      *
      * @return a new message
