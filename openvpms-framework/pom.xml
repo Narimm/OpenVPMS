@@ -1,14 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.5-SNAPSHOT</version>
+        <version>1.5-beta-1</version>
         <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
@@ -168,17 +165,14 @@
                 <version>1.2</version>
                 <configuration>
                     <tasks unless="maven.test.skip">
-                        <java classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
-                              failonerror="true"
-                              fork="true">
+                        <java classname="org.openvpms.tools.archetype.loader.ArchetypeLoader" failonerror="true" fork="true">
                             <classpath>
-                                <path refid="maven.test.classpath"/>
-                                <pathelement path="${maven.build.dest}"/>
-                                <pathelement path="${maven.test.dest}"/>
-                                <pathelement
-                                        path="${maven.build.dir}/hibernate"/>
+                                <path refid="maven.test.classpath" />
+                                <pathelement path="${maven.build.dest}" />
+                                <pathelement path="${maven.test.dest}" />
+                                <pathelement path="${maven.build.dir}/hibernate" />
                             </classpath>
-                            <arg line="-v -s -c --context org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml -o -m test/archetypes/org/openvpms/archetype/assertionTypes.xml -d test/archetypes/org/openvpms/archetype"/>
+                            <arg line="-v -s -c --context org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml -o -m test/archetypes/org/openvpms/archetype/assertionTypes.xml -d test/archetypes/org/openvpms/archetype" />
                         </java>
                     </tasks>
                 </configuration>
