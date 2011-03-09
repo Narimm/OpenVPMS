@@ -1,13 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.5-SNAPSHOT</version>
+        <version>1.5-beta-1</version>
         <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
@@ -246,12 +244,11 @@
                 <version>1.2</version>
                 <configuration>
                     <tasks>
-                        <echo message="Dumping database"/>
+                        <echo message="Dumping database" />
                         <!-- todo - need alternative dump for other databases -->
-                        <mkdir dir="target/db"/>
-                        <exec executable="mysqldump" output="target/db/db.sql"
-                              failOnError="true" logError="true">
-                            <arg line="${jdbc.admin.db} -u ${jdbc.admin.username} --password=${jdbc.admin.password}"/>
+                        <mkdir dir="target/db" />
+                        <exec executable="mysqldump" output="target/db/db.sql" failOnError="true" logError="true">
+                            <arg line="${jdbc.admin.db} -u ${jdbc.admin.username} --password=${jdbc.admin.password}" />
                         </exec>
                     </tasks>
                 </configuration>
