@@ -25,6 +25,7 @@ import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.exception.DocumentNotFoundException;
 import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
+import org.openvpms.esci.ubl.common.Document;
 
 import java.util.Iterator;
 import java.util.List;
@@ -96,11 +97,11 @@ public class InboxDispatcher {
     public void dispatch() {
         if (hasNext()) {
             DocumentReferenceType reference = references.next();
-            Object content = inbox.getDocument(reference);
-            if (content != null) {
-                InboxDocument document = new InboxDocument(reference, content);
-                DocumentProcessor processor = getProcessor(inbox.getSupplier(), document);
-                processor.process(document, inbox.getSupplier(), inbox.getStockLocation(), inbox.getAccountId());
+            Document doc = inbox.getDocument(reference);
+            if (doc != null) {
+                InboxDocument wrapper = new InboxDocument(reference, doc.getAny());
+                DocumentProcessor processor = getProcessor(inbox.getSupplier(), wrapper);
+                processor.process(wrapper, inbox.getSupplier(), inbox.getStockLocation(), inbox.getAccountId());
                 try {
                     inbox.acknowledge(reference);
                 } catch (DocumentNotFoundException exception) {
