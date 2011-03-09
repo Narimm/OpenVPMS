@@ -434,12 +434,17 @@ public class OrderMapperImpl implements OrderMapper {
      * Helper to return the location associated with a stock location.
      *
      * @param stockLocation the stock location
-     * @return the corresponding location, or <tt>null</tt> if none is found
+     * @return the corresponding location
+     * @throws ESCIAdapterException if the stock location isn't associated with a practice location
      */
-    private Party getLocation(Entity stockLocation) {
+    private Party getLocation(Party stockLocation) {
         EntityBean bean = factory.createEntityBean(stockLocation);
         // TODO - there could be more than one location which refers to different party.organisationLocation 
-        return (Party) bean.getNodeSourceEntity("locations");
+        Party result = (Party) bean.getNodeSourceEntity("locations");
+        if (result == null) {
+            throw new ESCIAdapterException(ESCIAdapterMessages.noPracticeLocationForStockLocation(stockLocation));
+        }
+        return result;
     }
 
     /**

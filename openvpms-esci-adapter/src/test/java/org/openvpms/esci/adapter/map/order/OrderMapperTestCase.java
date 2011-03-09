@@ -222,6 +222,28 @@ public class OrderMapperTestCase extends AbstractESCITest {
     }
 
     /**
+     * Verifies that an {@link ESCIAdapterException} is thrown if the stock location is not linked to a practice
+     * location.
+     */
+    @Test
+    public void testNoPracticeLocationForStockLocation() {
+        FinancialAct order = createOrder();
+
+        Party stockLocation = getStockLocation();
+        Party practiceLocation = getPracticeLocation();
+
+        EntityBean bean = new EntityBean(practiceLocation);
+        EntityRelationship relationship = bean.getRelationship(stockLocation);
+        stockLocation.removeEntityRelationship(relationship);
+        practiceLocation.removeEntityRelationship(relationship);
+        save(stockLocation, practiceLocation);
+
+        String expected = "ESCIA-0301: Stock location " + stockLocation.getName() + " (" + stockLocation.getId()
+                          + ") is not associated with any practice location";
+        checkMappingException(order, expected);
+    }
+
+    /**
      * Verifies that an {@link ESCIAdapterException} is thrown if an amount exceeds the allowed no. of decimal places.
      */
     @Test
