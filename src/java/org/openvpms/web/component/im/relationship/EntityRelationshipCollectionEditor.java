@@ -43,7 +43,7 @@ import java.util.List;
 
 /**
  * Editor for collections of {@link EntityRelationship}s.
- * * <p/>
+ * <p/>
  * If the relationships have a <em>sequence</em> node, the collection will
  * be ordered on it, and controls displayed to move relationships up or down
  * within the collection.
@@ -247,7 +247,7 @@ public class EntityRelationshipCollectionEditor
 
         container.add(row);
 
-        enableNavigation(table.getSelected() != null);
+        enableNavigation(true);
     }
 
     /**
