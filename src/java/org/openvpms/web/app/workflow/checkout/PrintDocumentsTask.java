@@ -188,7 +188,8 @@ class PrintDocumentsTask extends AbstractTask {
         IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         for (IMObject object : service.get(query).getResults()) {
             DocumentTemplate.PrintMode mode = getPrintMode((Act) object);
-            boolean select = (mode == DocumentTemplate.PrintMode.CHECK_OUT);
+            // select all acts with CHECK_OUT print mode, or with no print mode specified
+            boolean select = (mode == null || mode == DocumentTemplate.PrintMode.CHECK_OUT);
             result.put(object, select);
         }
         return result;
