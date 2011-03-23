@@ -236,6 +236,61 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
+     * Verifies that multiple invoices can be generated for the one order.
+     */
+    public void testOrderWithMultipleInvoices() {
+        InvoiceMapper mapper = createMapper();
+
+        // create an order with two items
+        FinancialAct item1 = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        FinancialAct item2 = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        FinancialAct order = createOrder(item1, item2);
+
+        // create an invoice that references the order
+        Invoice invoice1 = createInvoice();
+        invoice1.getID().setValue("1");
+        invoice1.setOrderReference(UBLHelper.createOrderReference(order.getId()));
+
+        // reference item1 in the invoice line
+        InvoiceLineType line1 = invoice1.getInvoiceLine().get(0);
+        OrderLineReferenceType itemRef1 = new OrderLineReferenceType();
+        itemRef1.setLineID(UBLHelper.initID(new LineIDType(), item1.getId()));
+        line1.getOrderLineReference().add(itemRef1);
+
+        // map the invoice to a delivery
+        Delivery delivery1 = mapper.map(invoice1, getSupplier(), getStockLocation(), null);
+        assertEquals(order, delivery1.getOrder());
+        save(delivery1.getActs());
+        assertEquals(1, delivery1.getDeliveryItems().size());
+        FinancialAct deliveryItem1 = delivery1.getDeliveryItems().get(0);
+        ActBean itemBean1 = new ActBean(deliveryItem1);
+
+        // verify there is a relationship between the delivery item and the order item
+        assertTrue(itemBean1.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, item1));
+
+        // create another invoice that references item2
+        Invoice invoice2 = createInvoice();
+        invoice2.getID().setValue("2");
+        invoice2.setOrderReference(UBLHelper.createOrderReference(order.getId()));
+
+        InvoiceLineType line2 = invoice2.getInvoiceLine().get(0);
+        OrderLineReferenceType itemRef2 = new OrderLineReferenceType();
+        itemRef2.setLineID(UBLHelper.initID(new LineIDType(), item2.getId()));
+        line2.getOrderLineReference().add(itemRef2);
+
+        // map the invoice to a delivery
+        Delivery delivery2 = mapper.map(invoice2, getSupplier(), getStockLocation(), null);
+        assertEquals(order, delivery2.getOrder());
+        save(delivery2.getActs());
+        assertEquals(1, delivery2.getDeliveryItems().size());
+        FinancialAct deliveryItem2 = delivery2.getDeliveryItems().get(0);
+        ActBean itemBean2 = new ActBean(deliveryItem2);
+
+        // verify there is a relationship between the delivery item and the order item
+        assertTrue(itemBean2.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, item2));
+    }
+
+    /**
      * Verifies that an {@link ESCIAdapterException} is raised if a required element is missing.
      */
     @Test
