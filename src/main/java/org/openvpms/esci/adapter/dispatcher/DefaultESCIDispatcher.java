@@ -20,27 +20,20 @@ package org.openvpms.esci.adapter.dispatcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.InboxService;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 
 /**
@@ -152,12 +145,18 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
      */
     public synchronized void dispatch(boolean terminateOnError) {
         // NOTE: synchronized as individual inboxes need to be processed synchronously
-        List<Party> suppliers = getSuppliers();
-        Iterator<Party> iter = suppliers.iterator();
-        while (!stop && iter.hasNext()) {
-            dispatch(iter.next(), terminateOnError);
+        try {
+            ESCISuppliers helper = new ESCISuppliers(service);
+            List<Party> suppliers = helper.getSuppliers();
+            Iterator<Party> iter = suppliers.iterator();
+            while (!stop && iter.hasNext()) {
+                Party supplier = iter.next();
+                Collection<EntityRelationship> relationships = helper.getESCIRelationships(supplier);
+                dispatch(supplier, relationships, terminateOnError);
+            }
+        } finally {
+            stop = false;
         }
-        stop = false;
     }
 
     /**
@@ -173,12 +172,12 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
      * Dispatch documents from the supplier.
      *
      * @param supplier         the supplier
+     * @param relationships    the <em>entityRelationship.supplierStockLocationESCI</em> relationships
      * @param terminateOnError if <tt>true</tt> terminate on the first error
      * @throws ESCIAdapterException      for any ESCI adapter error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected void dispatch(Party supplier, boolean terminateOnError) {
-        Collection<EntityRelationship> relationships = getESCIRelationships(supplier);
+    protected void dispatch(Party supplier, Collection<EntityRelationship> relationships, boolean terminateOnError) {
         Iterator<EntityRelationship> iter = relationships.iterator();
         while (!stop && iter.hasNext()) {
             EntityRelationship rel = iter.next();
@@ -244,47 +243,6 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
             }
         }
         return result;
-    }
-
-    /**
-     * Returns all suppliers that have ESCI configurations.
-     *
-     * @return a list of suppliers with ESCI configurations
-     */
-    protected List<Party> getSuppliers() {
-        List<Party> result = new ArrayList<Party>();
-        ArchetypeQuery query = new ArchetypeQuery("party.supplier*");
-        IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<Party>(service, query);
-        while (iter.hasNext()) {
-            Party supplier = iter.next();
-            Collection<EntityRelationship> relationships = getESCIRelationships(supplier);
-            if (!relationships.isEmpty()) {
-                result.add(supplier);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns any <em>entityRelationship.supplierStockLocationESCI</em> relationships that a supplier may have,
-     * filtering duplicate services.
-     *
-     * @param supplier the supplier
-     * @return <em>entityRelationship.supplierStockLocationESCI</em>
-     */
-    private Collection<EntityRelationship> getESCIRelationships(Party supplier) {
-        EntityBean bean = factory.createEntityBean(supplier);
-        List<EntityRelationship> relationships = bean.getRelationships(
-                SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI);
-        Map<String, EntityRelationship> filtered = new TreeMap<String, EntityRelationship>();
-        for (EntityRelationship relationship : relationships) {
-            IMObjectBean relBean = factory.createBean(relationship);
-            String key = relBean.getString("serviceURL") + ":" + relBean.getString("accountId") + ":"
-                         + relBean.getString("username") + ":" + relBean.getString("password");
-            filtered.put(key, relationship);
-        }
-
-        return filtered.values();
     }
 
 }

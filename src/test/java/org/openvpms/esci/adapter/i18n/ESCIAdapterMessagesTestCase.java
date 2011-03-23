@@ -58,8 +58,8 @@ public class ESCIAdapterMessagesTestCase extends AbstractESCITest {
         ref.setDocumentType(UBLHelper.initText(new DocumentTypeType(), "Foo"));
         String message = "ESCIA-0800: Unsupported document received from supplier " + supplier.getName() + " ("
                          + supplier.getId() + "): ID=" + ref.getID().getValue() + ", DocumentType="
-                         + ref.getDocumentType().getValue();
-        check(message, ESCIAdapterMessages.unsupportedDocument(supplier, ref));
+                         + ref.getDocumentType().getValue() + ", class=java.lang.String";
+        check(message, ESCIAdapterMessages.unsupportedDocument(supplier, ref, ""));
     }
 
     /**

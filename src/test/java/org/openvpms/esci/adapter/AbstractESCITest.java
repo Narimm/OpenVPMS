@@ -125,14 +125,16 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
      * @param supplier the supplier
      * @param location the stock location
      * @param url      the order service URL
+     * @return the relationship
      */
-    protected void addESCIConfiguration(Party supplier, Party location, String url) {
+    protected EntityRelationship addESCIConfiguration(Party supplier, Party location, String url) {
         EntityBean bean = new EntityBean(supplier);
         EntityRelationship relationship =
                 bean.addRelationship(SupplierArchetypes.SUPPLIER_STOCK_LOCATION_RELATIONSHIP_ESCI, location);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("serviceURL", url);
         save(supplier, location);
+        return relationship;
     }
 
     /**
