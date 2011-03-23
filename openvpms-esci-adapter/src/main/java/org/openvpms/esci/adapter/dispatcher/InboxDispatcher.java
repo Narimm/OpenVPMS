@@ -147,7 +147,8 @@ public class InboxDispatcher {
             }
         }
         throw new ESCIAdapterException(ESCIAdapterMessages.unsupportedDocument(supplier,
-                                                                               document.getDocumentReference()));
+                                                                               document.getDocumentReference(),
+                                                                               document.getContent()));
     }
 
 }

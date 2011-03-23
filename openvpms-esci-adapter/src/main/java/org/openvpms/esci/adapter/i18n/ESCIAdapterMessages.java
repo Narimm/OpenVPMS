@@ -547,12 +547,15 @@ public class ESCIAdapterMessages {
      *
      * @param supplier  the supplier
      * @param reference the document reference
+     * @param content the document content
      * @return a new message
      */
-    public static Message unsupportedDocument(Party supplier, DocumentReferenceType reference) {
+    public static Message unsupportedDocument(Party supplier, DocumentReferenceType reference,
+                                              Object content) {
         String id = (reference.getID()) != null ? reference.getID().getValue() : null;
         String docType = (reference.getDocumentType()) != null ? reference.getDocumentType().getValue() : null;
-        return messages.getMessage(800, supplier.getId(), supplier.getName(), id, docType);
+        String clazz = (content != null) ? content.getClass().getName() : null;
+        return messages.getMessage(800, supplier.getId(), supplier.getName(), id, docType, clazz);
     }
 
     /**
