@@ -56,7 +56,7 @@ public class SaveHelper {
         try {
             TransactionTemplate template = new TransactionTemplate(
                     ServiceHelper.getTransactionManager());
-            result = template.execute(new TransactionCallback() {
+            result = template.execute(new TransactionCallback<Object>() {
                 public Object doInTransaction(TransactionStatus status) {
                     return editor.save();
                 }
@@ -199,7 +199,7 @@ public class SaveHelper {
         try {
             TransactionTemplate template = new TransactionTemplate(
                     ServiceHelper.getTransactionManager());
-            result = template.execute(new TransactionCallback() {
+            result = template.execute(new TransactionCallback<Object>() {
                 public Object doInTransaction(TransactionStatus status) {
                     IArchetypeService service
                             = ServiceHelper.getArchetypeService();
