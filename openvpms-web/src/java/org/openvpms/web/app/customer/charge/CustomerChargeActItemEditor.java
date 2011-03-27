@@ -652,19 +652,21 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @param editor the editor to queue
      */
     private void queuePatientActEditor(IMObjectEditor editor) {
-        ++patientActPopups;
-        patientActMgr.queue(editor, new PatientActEditorManager.Listener() {
-            public void completed() {
-                --patientActPopups;
-                if (patientActPopups == 0) {
-                    moveFocusToProduct();
+        if (patientActMgr != null) {
+            ++patientActPopups;
+            patientActMgr.queue(editor, new PatientActEditorManager.Listener() {
+                public void completed() {
+                    --patientActPopups;
+                    if (patientActPopups == 0) {
+                        moveFocusToProduct();
 
-                    // force the parent collection editor to re-check the validation status of
-                    // this editor, in order for the Add button to be enabled.
-                    getListeners().notifyListeners(CustomerChargeActItemEditor.this);
+                        // force the parent collection editor to re-check the validation status of
+                        // this editor, in order for the Add button to be enabled.
+                        getListeners().notifyListeners(CustomerChargeActItemEditor.this);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**

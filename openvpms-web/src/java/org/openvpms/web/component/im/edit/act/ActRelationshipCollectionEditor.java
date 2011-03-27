@@ -19,7 +19,9 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.archetype.rules.act.ActCopyHandler;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER_ITEM;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT_ITEM;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE_ITEM;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.PRODUCT_PARTICIPATION;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -34,6 +36,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -67,7 +70,7 @@ public class ActRelationshipCollectionEditor
      */
     private Map<IMObjectReference, Boolean> modified = new HashMap<IMObjectReference, Boolean>();
 
-    
+
     /**
      * Constructs an <tt>ActRelationshipCollectionEditor</tt>.
      *
@@ -155,7 +158,7 @@ public class ActRelationshipCollectionEditor
     @Override
     public boolean validate(Validator validator) {
         boolean valid;
-        if (!excludeIncompleteObjectWithDefaultValues()) {
+        if (!excludeObjectWithDefaultValues()) {
             // validate both the current editor and the collection
             valid = super.validate(validator);
         } else {
@@ -174,7 +177,7 @@ public class ActRelationshipCollectionEditor
     @Override
     protected boolean doSave() {
         boolean saved;
-        if (!excludeIncompleteObjectWithDefaultValues()) {
+        if (!excludeObjectWithDefaultValues()) {
             // save the current editor and collection
             saved = super.doSave();
         } else {
@@ -290,8 +293,7 @@ public class ActRelationshipCollectionEditor
 
                 IMObjectBean relationshipBean = new IMObjectBean(relationship);
                 if (relationshipBean.hasNode("includeQty")) {
-                    BigDecimal quantity = relationshipBean.getBigDecimal(
-                            "includeQty");
+                    BigDecimal quantity = relationshipBean.getBigDecimal("includeQty");
                     if (quantity != null) {
                         editor.setQuantity(quantity);
                     }
@@ -307,21 +309,43 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
-     * Adds/removes the object associated with the current editor to/from the collection.
+     * Excludes the current object being edited from the collection if:
+     * <ul>
+     * <li>it has default values; and
+     * <li>excluding the object won't invalidate the collection's minimum cardinality
+     * </ul>
      * <p/>
      * This is so that incomplete objects that contain no user-entered data can be excluded from commits.
      *
      * @return <tt>true</tt> if an incomplete object was excluded; otherwise <tt>false</tt>
      */
-    private boolean excludeIncompleteObjectWithDefaultValues() {
+    private boolean excludeObjectWithDefaultValues() {
         IMObjectEditor editor = getCurrentEditor();
         boolean excluded = false;
         if (editor != null) {
-            if (hasDefaultValues(editor) && !editor.isValid()) {
-                getCollectionPropertyEditor().remove(editor.getObject());
-                excluded = true;
+            CollectionPropertyEditor collection = getCollectionPropertyEditor();
+            IMObject object = editor.getObject();
+            List<IMObject> list = collection.getObjects();
+            if (hasDefaultValues(editor)) {
+                // NOTE: object not in the collection until added, but its editor will still be registered
+                boolean inList = list.contains(object);
+                int inListSize = inList ? list.size() : list.size() + 1;  // size of the collection with the obj present
+                // only exclude if excluding it doesn't invalidate cardinality constraints
+                if (inListSize - 1 >= collection.getMinCardinality()) {
+                    collection.remove(object);
+                    excluded = true;
+                } else if (inListSize - 1 < collection.getMinCardinality()) {
+                    if (!inList) {
+                        // add it if its required to get closer to min cardinality
+                        collection.add(object);
+                    }
+                } else {
+                    // can exclude
+                    excluded = true;
+                }
             } else {
-                getCollectionPropertyEditor().add(editor.getObject());
+                // user has changed the object, so ensure it is added
+                collection.add(object);
             }
         }
         return excluded;

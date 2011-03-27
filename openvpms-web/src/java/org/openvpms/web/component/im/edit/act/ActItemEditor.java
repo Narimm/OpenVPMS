@@ -119,7 +119,16 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Sets the product.
      *
-     * @param product a reference to the product.
+     * @param product the product. May be <tt>null</tt>
+     */
+    public void setProduct(Product product) {
+        setProductRef(product != null ? product.getObjectReference() : null);
+    }
+
+    /**
+     * Sets the product.
+     *
+     * @param product a reference to the product. May be <tt>null</tt>
      */
     public void setProductRef(IMObjectReference product) {
         setParticipant("product", product);
@@ -143,6 +152,15 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     public IMObjectReference getPatientRef() {
         return getParticipantRef("patient");
+    }
+
+    /**
+     * Sets the patient.
+     *
+     * @param patient the patient. May be <tt>null</tt>
+     */
+    public void setPatient(Party patient) {
+        setParticipant("patient", patient);
     }
 
     /**
