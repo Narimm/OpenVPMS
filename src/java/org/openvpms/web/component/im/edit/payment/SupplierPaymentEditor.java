@@ -71,10 +71,10 @@ public class SupplierPaymentEditor extends PaymentEditor {
             if (supplier != null) {
                 FinancialAct parent = (FinancialAct) getObject();
                 BigDecimal diff = ActHelper.sum(parent, "amount");
-                BigDecimal current = ActHelper.getSupplierAccountBalance(
-                        supplier);
+                BigDecimal current = ActHelper.getSupplierAccountBalance(supplier);
                 BigDecimal balance = current.subtract(diff);
                 act.setTotal(new Money(balance));
+                getEditor().setModified(act, true);
             }
         }
     }

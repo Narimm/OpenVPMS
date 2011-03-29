@@ -197,22 +197,19 @@ public class CustomerPaymentEditor extends PaymentEditor {
             BigDecimal runningTotal = getRunningTotal();
             BigDecimal balance;
             if (expectedAmount == null) {
-                // default the amount to the outstanding balance +/- the running
-                // total.
-                boolean payment = TypeHelper.isA(act,
-                                                 "act.customerAccountPayment*");
+                // default the amount to the outstanding balance +/- the running total.
+                boolean payment = TypeHelper.isA(act, "act.customerAccountPayment*");
                 CustomerAccountRules rules = new CustomerAccountRules();
-                balance = rules.getBalance(customer, runningTotal,
-                                           payment);
+                balance = rules.getBalance(customer, runningTotal, payment);
                 act.setTotal(new Money(balance));
             } else {
-                // default the amount to the expected amount - the running
-                // total.
+                // default the amount to the expected amount - the running total.
                 balance = expectedAmount.subtract(runningTotal);
                 if (balance.signum() >= 0) {
                     act.setTotal(new Money(balance));
                 }
             }
+            getEditor().setModified(act, true);
         }
     }
 

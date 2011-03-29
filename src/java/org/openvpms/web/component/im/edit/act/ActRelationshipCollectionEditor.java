@@ -169,6 +169,27 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
+     * Determines if an act has been modified.
+     *
+     * @param act the act
+     * @return <tt>true</tt> if the act has been modified
+     */
+    public boolean isModified(Act act) {
+        Boolean result = modified.get(act.getObjectReference());
+        return result != null && result;
+    }
+
+    /**
+     * Sets the modified state of an act.
+     *
+     * @param act      the act
+     * @param modified determines if the act has been modified
+     */
+    public void setModified(Act act, boolean modified) {
+        this.modified.put(act.getObjectReference(), modified);
+    }
+
+    /**
      * Saves any current edits.
      *
      * @return <tt>true</tt> if edits were saved successfully, otherwise
@@ -189,6 +210,8 @@ public class ActRelationshipCollectionEditor
 
     /**
      * Adds a new editor for an object.
+     * <p/>
+     * This flags the object as unmodified, if no modified flag already exists.
      *
      * @param object the object
      * @param editor the editor for the object
@@ -196,8 +219,9 @@ public class ActRelationshipCollectionEditor
     @Override
     protected void addEditor(IMObject object, IMObjectEditor editor) {
         super.addEditor(object, editor);
-        if (object.isNew()) {
-            modified.put(object.getObjectReference(), false);
+        if (modified.get(object.getObjectReference()) == null) {
+            // default to unmodified
+            setModified((Act) object, false);
         }
     }
 
@@ -209,10 +233,8 @@ public class ActRelationshipCollectionEditor
         super.onCurrentEditorModified();
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
-            IMObject object = editor.getObject();
-            if (object.isNew()) {
-                modified.put(object.getObjectReference(), true);
-            }
+            Act object = (Act) editor.getObject();
+            setModified(object, true);
         }
     }
 

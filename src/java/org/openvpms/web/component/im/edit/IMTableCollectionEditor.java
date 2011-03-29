@@ -446,6 +446,7 @@ public abstract class IMTableCollectionEditor<T>
             IMObject object = create();
             if (object != null) {
                 edit(object);
+                addCurrentEdits(new Validator()); // add the object to the table if it is valid
             }
         }
     }
