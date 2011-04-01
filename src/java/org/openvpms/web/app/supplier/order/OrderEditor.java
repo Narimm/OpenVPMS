@@ -19,9 +19,9 @@
 package org.openvpms.web.app.supplier.order;
 
 import nextapp.echo2.app.text.TextComponent;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
+import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -85,7 +85,7 @@ public class OrderEditor extends FinancialActEditor {
             throw new IllegalArgumentException(
                     "Invalid act type: " + act.getArchetypeId().getShortName());
         }
-        posted = ActStatus.POSTED.equals(act.getStatus());
+        posted = OrderStatus.POSTED.equals(act.getStatus()) || OrderStatus.ACCEPTED.equals(act.getStatus());
         rules = new OrderRules();
     }
 
@@ -125,8 +125,7 @@ public class OrderEditor extends FinancialActEditor {
                 newStatus = status;
             } else if (status == DeliveryStatus.PART) {
                 newStatus = status;
-            } else if (status == DeliveryStatus.PENDING
-                    && newStatus != DeliveryStatus.PART) {
+            } else if (status == DeliveryStatus.PENDING && newStatus != DeliveryStatus.PART) {
                 newStatus = status;
             }
         }
