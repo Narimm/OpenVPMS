@@ -129,6 +129,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
         ActBean itemBean = new ActBean(actItem);
         itemBean.setValue("reorderCode", reorderCode);
         itemBean.setValue("reorderDescription", reorderDesc);
+        itemBean.setValue("packageSize", 25);
 
         FinancialAct act = createOrder(actItem);
         act.setStatus(ActStatus.POSTED);
@@ -169,6 +170,8 @@ public class OrderMapperTestCase extends AbstractESCITest {
         LineItemType item1 = line1.getLineItem();
         checkID(item1.getID(), actItem.getId());
         checkQuantity(item1.getQuantity(), "BX", 5);
+        checkQuantity(item1.getItem().getPackQuantity(), "BX", 1);
+        assertTrue(new BigDecimal("25").compareTo(item1.getItem().getPackSizeNumeric().getValue()) == 0);
         checkAmount(item1.getLineExtensionAmount(), 50);
         checkAmount(item1.getTotalTaxAmount(), 0);
         checkAmount(item1.getPrice().getPriceAmount(), 10);
