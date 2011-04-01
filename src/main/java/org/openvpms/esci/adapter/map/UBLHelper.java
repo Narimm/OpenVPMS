@@ -37,6 +37,7 @@ import org.openvpms.esci.ubl.common.basic.IDType;
 import org.openvpms.esci.ubl.common.basic.IssueDateType;
 import org.openvpms.esci.ubl.common.basic.IssueTimeType;
 import org.openvpms.esci.ubl.common.basic.NameType;
+import org.openvpms.esci.ubl.common.basic.PackSizeNumericType;
 import org.openvpms.esci.ubl.common.basic.PercentType;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -205,6 +206,18 @@ public class UBLHelper {
      */
     public static PercentType createPercent(BigDecimal value) {
         PercentType result = new PercentType();
+        result.setValue(value);
+        return result;
+    }
+
+    /**
+     * Creates a new <tt>PackSizeNumericType</tt>.
+     *
+     * @param value the pack size
+     * @return a new <tt>PackSizeNumericType</tt>
+     */
+    public static PackSizeNumericType createPackSizeNumeric(BigDecimal value) {
+        PackSizeNumericType result = new PackSizeNumericType();
         result.setValue(value);
         return result;
     }

@@ -71,6 +71,8 @@ import org.openvpms.esci.ubl.common.basic.IssueTimeType;
 import org.openvpms.esci.ubl.common.basic.LineExtensionAmountType;
 import org.openvpms.esci.ubl.common.basic.LineType;
 import org.openvpms.esci.ubl.common.basic.NameType;
+import org.openvpms.esci.ubl.common.basic.PackQuantityType;
+import org.openvpms.esci.ubl.common.basic.PackSizeNumericType;
 import org.openvpms.esci.ubl.common.basic.PayableAmountType;
 import org.openvpms.esci.ubl.common.basic.PostalZoneType;
 import org.openvpms.esci.ubl.common.basic.PriceAmountType;
@@ -301,12 +303,12 @@ public class OrderMapperImpl implements OrderMapper {
         OrderLineType orderLine = new OrderLineType();
         LineItemType lineItem = new LineItemType();
 
-        ItemType item = getItem(bean, supplier, product);
-        lineItem.setItem(item);
-        orderLine.setLineItem(lineItem);
-
         String packageUnits = bean.getString("packageUnits");
         String unitCode = getUnitCode(packageUnits);
+
+        ItemType item = getItem(bean, supplier, product, unitCode);
+        lineItem.setItem(item);
+        orderLine.setLineItem(lineItem);
 
         IDType id = UBLHelper.createID(act.getId());
         QuantityType quantity = UBLHelper.initQuantity(new QuantityType(), bean.getBigDecimal("quantity"), unitCode);
@@ -328,12 +330,13 @@ public class OrderMapperImpl implements OrderMapper {
     /**
      * Returns a <tt>ItemType</tt> for a supplier, order item, and product.
      *
-     * @param bean     the order item
-     * @param supplier the supplier
-     * @param product  the product
+     * @param bean         the order item
+     * @param supplier     the supplier
+     * @param product      the product
+     * @param packageUnits the package size unit code. May be <tt>null</tt>
      * @return an <tt>ItemType</tt> corresponding to the supplier and product
      */
-    private ItemType getItem(ActBean bean, Party supplier, Product product) {
+    private ItemType getItem(ActBean bean, Party supplier, Product product, String packageUnits) {
         ItemType result = new ItemType();
         ItemIdentificationType buyersId = getItemIdentification(product.getId());
         String reorderCode = bean.getString("reorderCode");
@@ -349,8 +352,18 @@ public class OrderMapperImpl implements OrderMapper {
             result.getDescription().add(description);
         }
         NameType name = UBLHelper.initName(new NameType(), product.getName());
+
         result.setBuyersItemIdentification(buyersId);
         result.setName(name);
+
+        BigDecimal packageSize = bean.getBigDecimal("packageSize");
+        if (packageSize != null && packageUnits != null) {
+            PackQuantityType quantity = UBLHelper.initQuantity(new PackQuantityType(), BigDecimal.ONE, packageUnits);
+            PackSizeNumericType size = UBLHelper.createPackSizeNumeric(packageSize);
+            result.setPackQuantity(quantity);
+            result.setPackSizeNumeric(size);
+        }
+
         return result;
     }
 
