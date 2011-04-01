@@ -18,6 +18,7 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.math.Currencies;
@@ -478,6 +479,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         ActBean deliveryItem = factory.createActBean(SupplierArchetypes.DELIVERY_ITEM);
         BigDecimal quantity = line.getInvoicedQuantity();
         String invoicedUnitCode = line.getInvoicedQuantityUnitCode();
+        checkBaseQuantity(line, invoicedUnitCode);
 
         Product product = line.getProduct(context.getSupplier());
         BigDecimal lineExtensionAmount = line.getLineExtensionAmount();
@@ -519,6 +521,29 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
 
         getArchetypeService().deriveValues(deliveryItem.getObject());
         return (FinancialAct) deliveryItem.getAct();
+    }
+
+    /**
+     * Verifies that the invoice line's <em>BaseQuantity</em> is specified correctly, if present.
+     *
+     * @param line     the invoice line
+     * @param unitCode the expected unit code
+     */
+    private void checkBaseQuantity(UBLInvoiceLine line, String unitCode) {
+        BigDecimal quantity = line.getBaseQuantity();
+        if (quantity != null) {
+            if (quantity.compareTo(BigDecimal.ONE) != 0) {
+                ErrorContext context = new ErrorContext(line, "BaseQuantity");
+                throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
+                        context.getPath(), context.getType(), context.getID(), "1", quantity.toString()));
+            }
+            String baseQuantityUnitCode = line.getBaseQuantityUnitCode();
+            if (!StringUtils.equals(unitCode, baseQuantityUnitCode)) {
+                ErrorContext context = new ErrorContext(line, "BaseQuantity@unitCode");
+                throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
+                        context.getPath(), context.getType(), context.getID(), unitCode, baseQuantityUnitCode));
+            }
+        }
     }
 
     /**
