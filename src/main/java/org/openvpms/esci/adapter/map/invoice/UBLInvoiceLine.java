@@ -40,6 +40,7 @@ import org.openvpms.esci.ubl.common.aggregate.OrderLineReferenceType;
 import org.openvpms.esci.ubl.common.aggregate.OrderReferenceType;
 import org.openvpms.esci.ubl.common.aggregate.PriceType;
 import org.openvpms.esci.ubl.common.aggregate.PricingReferenceType;
+import org.openvpms.esci.ubl.common.basic.BaseQuantityType;
 import org.openvpms.esci.ubl.common.basic.InvoicedQuantityType;
 import org.openvpms.esci.ubl.common.basic.LineIDType;
 import org.openvpms.esci.ubl.common.basic.PriceTypeCodeType;
@@ -372,9 +373,24 @@ public class UBLInvoiceLine extends UBLFinancialType {
         return result;
     }
 
+    /**
+     * Returns the base quantity.
+     *
+     * @return the base quantity. May be <tt>null</tt>
+     */
     public BigDecimal getBaseQuantity() {
-        return getQuantity(line.getPrice().getBaseQuantity(), "InvoicedQuantity");
+        BaseQuantityType quantity = line.getPrice().getBaseQuantity();
+        return (quantity != null) ? quantity.getValue() : null;
+    }
 
+    /**
+     * Returns the base quantity unit code.
+     *
+     * @return the base quantity unit code. May be <tt>null</tt>
+     */
+    public String getBaseQuantityUnitCode() {
+        BaseQuantityType quantity = line.getPrice().getBaseQuantity();
+        return (quantity != null) ? quantity.getUnitCode() : null;
     }
 
     /**
