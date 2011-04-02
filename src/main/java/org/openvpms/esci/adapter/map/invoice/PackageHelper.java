@@ -21,15 +21,16 @@ package org.openvpms.esci.adapter.map.invoice;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-class UnitOfMeasureMapper {
+class PackageHelper {
 
     /**
      * Cache of lookup.uom codes to unit codes.
@@ -65,7 +66,6 @@ class UnitOfMeasureMapper {
      */
     private final IMObjectBeanFactory factory;
 
-
     /**
      * Constructs a <tt>UnitOfMeasureMapper</tt>.
      *
@@ -73,38 +73,37 @@ class UnitOfMeasureMapper {
      * @param service the lookup service
      * @param factory the bean factory
      */
-    public UnitOfMeasureMapper(ProductRules rules, ILookupService service, IMObjectBeanFactory factory) {
+    public PackageHelper(ProductRules rules, ILookupService service, IMObjectBeanFactory factory) {
         this.rules = rules;
         this.service = service;
         this.factory = factory;
     }
 
     /**
-     * Returns package units matching the supplier unit of measure code.
-     * <p/>
-     * This takes into account any existing product/supplier relationship with a matching unit code and package size,
-     * where multiple matches exist.
-     * <p/>
-     * If there is more than one match, the resulting list will be sorted on package unit code.
+     * Tries to determine the package information give the order, product and supplier.
      *
-     * @param unitCode    the unit of measure code
-     * @param product     the product. May be <tt>null</tt>
-     * @param supplier    the supplier
-     * @return matching package units
+     * @param orderItem the order item. May be <tt>null</tt>
+     * @param product   the product. May be <tt>null</tt>
+     * @param supplier  the supplier
+     * @return the package information, or <tt>null</tt> if none is available
      */
-    public List<String> getPackageUnits(String unitCode, Product product, Party supplier) {
-        List<String> result;
-        List<String> matches = getPackageUnits(unitCode);
-        if (!matches.isEmpty() && product != null) {
-            List<ProductSupplier> productSuppliers = rules.getProductSuppliers(product, supplier);
-            if (!productSuppliers.isEmpty()) {
-                result = getPackageUnits(productSuppliers, matches);
-            } else {
-                // no product supplier relationship
-                result = matches;
+    public Package getPackage(FinancialAct orderItem, Product product, Party supplier) {
+        Package result = null;
+        int packageSize = 0;
+        String packageUnits = null;
+        if (orderItem != null) {
+            ActBean bean = factory.createActBean(orderItem);
+            packageSize = bean.getInt("packageSize");
+            packageUnits = bean.getString("packageUnits");
+        }
+        if (packageSize != 0 && !StringUtils.isEmpty(packageUnits)) {
+            result = new Package(packageSize, packageUnits);
+        } else if (product != null) {
+            List<ProductSupplier> list = rules.getProductSuppliers(product, supplier);
+            if (list.size() == 1) {
+                ProductSupplier ps = list.get(0);
+                result = new Package(ps.getPackageSize(), ps.getPackageUnits());
             }
-        } else {
-            result = matches;
         }
         return result;
     }
@@ -134,25 +133,6 @@ class UnitOfMeasureMapper {
     }
 
     /**
-     * Tries to find a package unit matching the supplied packageUnits, in a list of product/supplier
-     * relationships.
-     *
-     * @param productSuppliers the product/supplier relationships
-     * @param packageUnits     the package units
-     * @return a list containing the single match, or <tt>packageUnits</tt> if there are no matches
-     */
-    private List<String> getPackageUnits(List<ProductSupplier> productSuppliers, List<String> packageUnits) {
-        for (ProductSupplier ps : productSuppliers) {
-            for (String units : packageUnits) {
-                if (StringUtils.equals(ps.getPackageUnits(), units)) {
-                    return Arrays.asList(units);
-                }
-            }
-        }
-        return packageUnits;
-    }
-
-    /**
      * Returns a map of package unit codes to their corresponding UN/ECE codes.
      *
      * @return the map
@@ -169,5 +149,6 @@ class UnitOfMeasureMapper {
         }
         return result;
     }
+
 
 }

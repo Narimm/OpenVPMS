@@ -21,24 +21,30 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.ubl.common.CurrencyCodeContentType;
 import org.openvpms.esci.ubl.common.aggregate.AllowanceChargeType;
 import org.openvpms.esci.ubl.common.aggregate.CustomerPartyType;
 import org.openvpms.esci.ubl.common.aggregate.InvoiceLineType;
+import org.openvpms.esci.ubl.common.aggregate.ItemType;
 import org.openvpms.esci.ubl.common.aggregate.MonetaryTotalType;
 import org.openvpms.esci.ubl.common.aggregate.OrderLineReferenceType;
 import org.openvpms.esci.ubl.common.aggregate.PriceType;
@@ -50,6 +56,7 @@ import org.openvpms.esci.ubl.common.aggregate.TaxTotalType;
 import org.openvpms.esci.ubl.common.basic.ChargeIndicatorType;
 import org.openvpms.esci.ubl.common.basic.LineIDType;
 import org.openvpms.esci.ubl.common.basic.NoteType;
+import org.openvpms.esci.ubl.common.basic.PackQuantityType;
 import org.openvpms.esci.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.esci.ubl.invoice.Invoice;
 import org.openvpms.esci.ubl.io.UBLDocumentContext;
@@ -72,6 +79,26 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class InvoiceMapperTestCase extends AbstractInvoiceTest {
+
+    /**
+     * 'Each' unit of measure code.
+     */
+    private static final String EACH_UNITS = "EACH";
+
+    /**
+     * 'Each' unit code.
+     */
+    private static final String EACH_UNIT_CODE = "EA";
+
+    /**
+     * 'Case' unit of measure code.
+     */
+    private static final String CASE_UNITS = "CASE";
+
+    /**
+     * 'Case' unit code.
+     */
+    private static final String CASE_UNIT_CODE = "CS";
 
     /**
      * Tests simple mapping.
@@ -127,9 +154,9 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         invoice.setLegalMonetaryTotal(monetaryTotal);
         invoice.getTaxTotal().add(createTaxTotal(totalTax, false));
         InvoiceLineType item1 = createInvoiceLine("1", product1, reorder1, reorderDesc1, listPrice1, price1, quantity1,
-                                                  lineExtension1, tax1);
+                                                  PACKAGE_UNIT_CODE, lineExtension1, tax1);
         InvoiceLineType item2 = createInvoiceLine("2", product2, reorder2, reorderDesc2, listPrice2, price2, quantity2,
-                                                  lineExtension2, tax2);
+                                                  PACKAGE_UNIT_CODE, lineExtension2, tax2);
         invoice.getInvoiceLine().add(item1);
         invoice.getInvoiceLine().add(item2);
 
@@ -156,27 +183,16 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testMapWithOrder() {
-        InvoiceMapper mapper = createMapper();
-
         // create an order
         FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
         FinancialAct order = createOrder(orderItem);
         save(order, orderItem);
 
         // create an invoice that references the order
-        Invoice invoice = createInvoice();
-        invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
-
-        // reference the order item in the invoice line
-        InvoiceLineType line = invoice.getInvoiceLine().get(0);
-        OrderLineReferenceType itemRef = new OrderLineReferenceType();
-        itemRef.setLineID(UBLHelper.initID(new LineIDType(), orderItem.getId()));
-        line.getOrderLineReference().add(itemRef);
+        Invoice invoice = createInvoice(order, orderItem, PACKAGE_UNIT_CODE);
 
         // map the invoice to a delivery
-        Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
-        assertEquals(order, delivery.getOrder());
-        save(delivery.getActs());
+        Delivery delivery = map(invoice, order);
         assertEquals(1, delivery.getDeliveryItems().size());
         FinancialAct deliveryItem = delivery.getDeliveryItems().get(0);
         ActBean itemBean = new ActBean(deliveryItem);
@@ -184,6 +200,104 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         // verify there is a relationship between the delivery item and the order item
         assertTrue(itemBean.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, orderItem));
     }
+
+    /**
+     * Verifies that the package units and size in the delivery is populated from the original order.
+     */
+    @Test
+    public void testPackageInfoDefaultsFromOrder() {
+        // set up default product/supplier package units - these should not be used
+        addProductSupplierRelationship(getProduct(), getSupplier(), 3, PACKAGE_UNITS);
+
+        // create an order
+        FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        ActBean bean = new ActBean(orderItem);
+        int packageSize = 25;
+        bean.setValue("packageSize", packageSize);
+        bean.setValue("packageUnits", EACH_UNITS);
+        FinancialAct order = createOrder(orderItem);
+        save(order, orderItem);
+
+        // create an invoice and set the package units - these also should not be used
+        Invoice invoice = createInvoice(order, orderItem, CASE_UNIT_CODE);
+        ItemType item = invoice.getInvoiceLine().get(0).getItem();
+        item.setPackQuantity(UBLHelper.initQuantity(new PackQuantityType(), new BigDecimal("1"), CASE_UNIT_CODE));
+        item.setPackSizeNumeric(UBLHelper.createPackSizeNumeric(new BigDecimal(4)));
+
+        // check that the package size and units in the mapped delivery come from the order
+        checkMapPackageUnits(packageSize, EACH_UNITS, invoice, order, orderItem);
+    }
+
+    /**
+     * Verifies that the package units and size in the delivery is populated from the invoice, if they
+     * are not specified in the original order, nor the invoice.
+     */
+    @Test
+    public void testPackageInfoDefaultsFromProductSupplier() {
+        int packageSize = 48;
+
+        // set up a product/supplier relationship for the package info that should appear in the delivery
+        addProductSupplierRelationship(getProduct(), getSupplier(), packageSize, EACH_UNITS);
+
+        // create an order
+        FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        FinancialAct order = createOrder(orderItem);
+        ActBean bean = new ActBean(orderItem);
+        bean.setValue("packageSize", 0);   // package size and units not populated
+        bean.setValue("packageUnits", null);
+        save(order, orderItem);
+
+        // create an invoice and set the package units - these also should not be used
+        Invoice invoice = createInvoice(order, orderItem, CASE_UNIT_CODE);
+        ItemType item = invoice.getInvoiceLine().get(0).getItem();
+        item.setPackQuantity(UBLHelper.initQuantity(new PackQuantityType(), new BigDecimal("1"), CASE_UNIT_CODE));
+        item.setPackSizeNumeric(UBLHelper.createPackSizeNumeric(new BigDecimal(4)));
+
+        // check that the package size and units in the mapped delivery come from the product/supplier relationship
+        checkMapPackageUnits(packageSize, EACH_UNITS, invoice, order, orderItem);
+    }
+
+    /**
+     * Verifies that the package units and size are populated from the invoice, if they were not specified in the
+     * order, and no product/supplier relationship exists.
+     */
+    @Test
+    public void testPackageInfoDefaultsFromInvoice() {
+        // create an order
+        FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        FinancialAct order = createOrder(orderItem);
+        ActBean bean = new ActBean(orderItem);
+        bean.setValue("packageSize", 0);   // package size and units not populated
+        bean.setValue("packageUnits", null);
+        save(order, orderItem);
+
+        // create an invoice and set the expected package units
+        Invoice invoice = createInvoice(order, orderItem, PACKAGE_UNIT_CODE);
+        ItemType item = invoice.getInvoiceLine().get(0).getItem();
+        item.setPackQuantity(UBLHelper.initQuantity(new PackQuantityType(), new BigDecimal("1"), PACKAGE_UNIT_CODE));
+        item.setPackSizeNumeric(UBLHelper.createPackSizeNumeric(new BigDecimal(4)));
+
+        // check that the package size and units in the mapped delivery come from the invoice
+        checkMapPackageUnits(4, PACKAGE_UNITS, invoice, order, orderItem);
+    }
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        Lookup each = TestHelper.getLookup("lookup.uom", EACH_UNITS);
+        IMObjectBean eachBean = new IMObjectBean(each);
+        eachBean.setValue("unitCode", EACH_UNIT_CODE);
+        eachBean.save();
+
+        Lookup caseUnits = TestHelper.getLookup("lookup.uom", CASE_UNITS);
+        IMObjectBean caseBean = new IMObjectBean(caseUnits);
+        caseBean.setValue("unitCode", CASE_UNIT_CODE);
+        caseBean.save();
+    }
+
 
     /**
      * Verifies that the author node of <em>act.supplierDelivery is populated correctly.
@@ -594,7 +708,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         Party supplier = getSupplier();
         Party expected = getStockLocation();
         Party stockLocation = createStockLocation();
-        Invoice invoice = createInvoice(supplier, stockLocation);
+        Invoice invoice = createInvoice(supplier, stockLocation, PACKAGE_UNIT_CODE);
         checkMappingException(invoice,
                               "ESCIA-0114: Expected stock location " + expected.getName() + " (" + expected.getId()
                               + ") for Invoice/AccountingCustomerParty/CustomerAssignedAccountID in Invoice: 12345, "
@@ -698,6 +812,80 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         invoice.getLegalMonetaryTotal().getTaxExclusiveAmount().setValue(BigDecimal.ONE);
         checkMappingException(invoice, "ESCIA-0611: Calculated tax exclusive amount: 100 for Invoice: 12345 does not "
                                        + "match Invoice/LegalMonetaryTotal/TaxExcusiveAmount: 1");
+    }
+
+    /**
+     * Verifies that the package size and units in a delivery match that expected.
+     *
+     * @param packageSize  the expected package size
+     * @param packageUnits the expected package units
+     * @param invoice      the invoice
+     * @param order        the order
+     * @param orderItem    the order item
+     */
+    private void checkMapPackageUnits(int packageSize, String packageUnits, Invoice invoice, FinancialAct order,
+                                      FinancialAct orderItem) {
+        // map the invoice to a delivery
+        Delivery delivery = map(invoice, order);
+        assertEquals(1, delivery.getDeliveryItems().size());
+        FinancialAct deliveryItem = delivery.getDeliveryItems().get(0);
+        ActBean itemBean = new ActBean(deliveryItem);
+
+        // verify there is a relationship between the delivery item and the order item
+        assertTrue(itemBean.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, orderItem));
+        assertEquals(packageSize, itemBean.getValue("packageSize"));
+        assertEquals(packageUnits, itemBean.getValue("packageUnits"));
+    }
+
+    /**
+     * Adds a product/supplier relatiobship.
+     *
+     * @param product      the product
+     * @param supplier     the supplier
+     * @param packageSize  the package size
+     * @param packageUnits the package units
+     */
+    private void addProductSupplierRelationship(Product product, Party supplier, int packageSize, String packageUnits) {
+        ProductRules rules = new ProductRules();
+        ProductSupplier ps = rules.createProductSupplier(product, supplier);
+        ps.setPackageSize(packageSize);
+        ps.setPackageUnits(packageUnits);
+        save(product, supplier);
+    }
+
+    /**
+     * Helper to map an invoice.
+     *
+     * @param invoice the invoice
+     * @param order   the order expected to be referenced by the delivery
+     * @return the delivery
+     */
+    private Delivery map(Invoice invoice, FinancialAct order) {
+        InvoiceMapper mapper = createMapper();
+        Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
+        assertEquals(order, delivery.getOrder());
+        save(delivery.getActs());
+        return delivery;
+    }
+
+    /**
+     * Creates a single invoice linked to an order and item.
+     *
+     * @param order     the order
+     * @param orderItem the order item
+     * @param unitCode  the invoiced quantity unit code
+     * @return a new invoice
+     */
+    private Invoice createInvoice(FinancialAct order, FinancialAct orderItem, String unitCode) {
+        Invoice invoice = createInvoice(getSupplier(), getStockLocation(), unitCode);
+        invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
+
+        // reference the order item in the invoice line
+        InvoiceLineType line = invoice.getInvoiceLine().get(0);
+        OrderLineReferenceType itemRef = new OrderLineReferenceType();
+        itemRef.setLineID(UBLHelper.initID(new LineIDType(), orderItem.getId()));
+        line.getOrderLineReference().add(itemRef);
+        return invoice;
     }
 
     /**

@@ -99,9 +99,9 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     private IMObjectBeanFactory factory;
 
     /**
-     * The unit of measure mapper.
+     * The package helper.
      */
-    private UnitOfMeasureMapper uom;
+    private PackageHelper packageHelper;
 
     /**
      * The logger.
@@ -188,7 +188,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     public Delivery map(InvoiceType invoice, Party supplier, Party stockLocation, String accountId) {
         Delivery result = new Delivery();
         Currency practiceCurrency = UBLHelper.getCurrency(practiceRules, currencies, factory);
-        uom = new UnitOfMeasureMapper(productRules, lookupService, factory);
+        packageHelper = new PackageHelper(productRules, lookupService, factory);
         TaxRates rates = new TaxRates(lookupService, factory);
         UBLInvoice wrapper = new UBLInvoice(invoice, practiceCurrency.getCode(), getArchetypeService(), supplierRules);
         String invoiceId = wrapper.getID();
@@ -476,24 +476,28 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected FinancialAct mapInvoiceLine(UBLInvoiceLine line, Date startTime, TaxRates rates, Context context) {
+        FinancialAct orderItem = mapOrderItem(line, context);
         ActBean deliveryItem = factory.createActBean(SupplierArchetypes.DELIVERY_ITEM);
+
         BigDecimal quantity = line.getInvoicedQuantity();
         String invoicedUnitCode = line.getInvoicedQuantityUnitCode();
+        checkPackQuantity(line, invoicedUnitCode);
         checkBaseQuantity(line, invoicedUnitCode);
 
-        Product product = line.getProduct(context.getSupplier());
+        Party supplier = context.getSupplier();
+        Product product = line.getProduct(supplier);
         BigDecimal lineExtensionAmount = line.getLineExtensionAmount();
         String reorderCode = line.getSellersItemID();
         String reorderDescription = line.getItemName();
+
         BigDecimal unitPrice = line.getPriceAmount();
         BigDecimal listPrice = line.getWholesalePrice();
         BigDecimal tax = line.getTaxAmount();
-        List<String> matchingPackageUnits = uom.getPackageUnits(invoicedUnitCode, product, context.getSupplier());
-        String packageUnits = !matchingPackageUnits.isEmpty() ? matchingPackageUnits.get(0) : null;
-        if (matchingPackageUnits.size() > 1) {
-            log.warn(matchingPackageUnits.size() + " package units match unit code: " + invoicedUnitCode
-                     + ". Defaulting to " + packageUnits);
-        }
+
+        Package pkg = packageHelper.getPackage(orderItem, product, supplier);
+        String packageUnits = getPackageUnits(invoicedUnitCode, pkg);
+        int packageSize = getPackageSize(line, pkg);
+
         BigDecimal calcLineExtensionAmount = unitPrice.multiply(quantity);
         if (calcLineExtensionAmount.compareTo(lineExtensionAmount) != 0) {
             throw new ESCIAdapterException(ESCIAdapterMessages.invoiceLineInvalidLineExtensionAmount(
@@ -508,19 +512,102 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         deliveryItem.setValue("listPrice", listPrice);
         deliveryItem.setValue("tax", tax);
         deliveryItem.setValue("packageUnits", packageUnits);
+        deliveryItem.setValue("packageSize", packageSize);
         if (product != null) {
             deliveryItem.addNodeParticipation("product", product);
         }
         deliveryItem.setValue("reorderCode", reorderCode);
         deliveryItem.setValue("reorderDescription", reorderDescription);
 
-        FinancialAct orderItem = mapOrderItem(line, context);
         if (orderItem != null) {
             deliveryItem.addNodeRelationship("order", orderItem);
         }
 
         getArchetypeService().deriveValues(deliveryItem.getObject());
         return (FinancialAct) deliveryItem.getAct();
+    }
+
+    /**
+     * Returns the package units.
+     *
+     * @param invoicedUnitCode the invoiced quantity unit code
+     * @param pkg              the package information. May be <tt>null</tt>
+     * @return the package units, or <tt>null</tt> if they are not known
+     */
+    private String getPackageUnits(String invoicedUnitCode, Package pkg) {
+        String result = null;
+        String expected = (pkg != null) ? pkg.getPackageUnits() : null;
+
+        List<String> matches = packageHelper.getPackageUnits(invoicedUnitCode);
+        if (expected != null) {
+            if (!matches.contains(expected)) {
+                log.warn("Invoice package units (" + StringUtils.join(matches.iterator(), ", ")
+                         + ") don't match that expected: " + expected);
+            }
+            result = expected;
+        } else if (matches.size() == 1) {
+            result = matches.get(0);
+        } else if (matches.size() > 1) {
+            log.warn("Cannot determine package units. " + matches.size()
+                     + " package units match unit code: " + invoicedUnitCode);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the package size.
+     *
+     * @param line the invoice line
+     * @param pkg  the expected package, or <tt>null</tt> if it is not known
+     * @return the package size, or <tt>0</tt> if it is not known
+     * @throws ESCIAdapterException if the package size is incorrectly specified
+     */
+    private int getPackageSize(UBLInvoiceLine line, Package pkg) {
+        int result;
+        BigDecimal packageSize = line.getPackSizeNumeric();
+        int expectedSize = (pkg != null) ? pkg.getPackageSize() : 0;
+        int invoiceSize;
+        try {
+            invoiceSize = packageSize.intValueExact();
+        } catch (ArithmeticException exception) {
+            ErrorContext context = new ErrorContext(line, "PackSizeNumeric");
+            String intValue = Integer.toString(packageSize.intValue());
+            throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
+                    context.getPath(), context.getType(), context.getID(), intValue, packageSize.toString()));
+        }
+        if (expectedSize != 0) {
+            if (invoiceSize != 0 && invoiceSize != expectedSize) {
+                log.warn("Different package size received for invoice. Expected package size=" + expectedSize
+                         + ", invoiced package size=" + invoiceSize);
+            }
+            result = expectedSize;
+        } else {
+            result = invoiceSize;
+        }
+        return result;
+    }
+
+    /**
+     * Verifies that the invoice line item's <em>PackQuantity</em> is specified correctly, if present.
+     *
+     * @param line     the invoice line
+     * @param unitCode the expected unit code
+     */
+    private void checkPackQuantity(UBLInvoiceLine line, String unitCode) {
+        BigDecimal quantity = line.getPackQuantity();
+        if (quantity != null) {
+            if (quantity.compareTo(BigDecimal.ONE) != 0) {
+                ErrorContext context = new ErrorContext(line, "PackQuantity");
+                throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
+                        context.getPath(), context.getType(), context.getID(), "1", quantity.toString()));
+            }
+            String packageUnits = line.getPackQuantityUnitCode();
+            if (packageUnits != null && !ObjectUtils.equals(unitCode, packageUnits)) {
+                ErrorContext context = new ErrorContext(line, "PackQuantity@unitCode");
+                throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
+                        context.getPath(), context.getType(), context.getID(), unitCode, packageUnits));
+            }
+        }
     }
 
     /**
