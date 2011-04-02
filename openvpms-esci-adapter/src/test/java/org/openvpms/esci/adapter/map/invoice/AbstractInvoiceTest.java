@@ -135,7 +135,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * @return a new <Tt>Invoice</tt>
      */
     protected Invoice createInvoice(Party supplier) {
-        return createInvoice(supplier, getStockLocation());
+        return createInvoice(supplier, getStockLocation(), PACKAGE_UNIT_CODE);
     }
 
     /**
@@ -146,10 +146,22 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * @return a new <Tt>Invoice</tt>
      */
     protected Invoice createInvoice(Party supplier, Party stockLocation) {
+        return createInvoice(supplier, stockLocation, PACKAGE_UNIT_CODE);
+    }
+
+    /**
+     * Helper to create an <tt>Invoice</tt> with a single line item.
+     *
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @param unitCode      the invoice quantity unit code
+     * @return a new <Tt>Invoice</tt>
+     */
+    protected Invoice createInvoice(Party supplier, Party stockLocation, String unitCode) {
         Invoice invoice = new Invoice();
         SupplierPartyType supplierType = createSupplier(supplier);
         CustomerPartyType customerType = createCustomer(stockLocation);
-        Product product = TestHelper.createProduct();
+        Product product = getProduct();
         MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(100), BigDecimal.ZERO,
                                                               new BigDecimal(100), new BigDecimal(110));
 
@@ -163,7 +175,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         invoice.setLegalMonetaryTotal(monetaryTotal);
         invoice.getTaxTotal().add(createTaxTotal(new BigDecimal(10), false));
         InvoiceLineType item1 = createInvoiceLine("1", product, "aproduct1", "aproduct name", new BigDecimal(105),
-                                                  new BigDecimal(100), BigDecimal.ONE, new BigDecimal(100),
+                                                  new BigDecimal(100), BigDecimal.ONE, unitCode, new BigDecimal(100),
                                                   new BigDecimal(10));
         invoice.getInvoiceLine().add(item1);
         return invoice;
@@ -179,16 +191,17 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * @param listPrice           the list (or wholesale) price
      * @param price               the price
      * @param quantity            the quantity
+     * @param unitCode            the invoiced quantity unit code
      * @param lineExtensionAmount the line extension amount
      * @param tax                 the tax
      * @return a new <tt>InvoiceLineType</tt>
      */
     protected InvoiceLineType createInvoiceLine(String id, Product product, String supplierId, String supplierName,
                                                 BigDecimal listPrice, BigDecimal price, BigDecimal quantity,
-                                                BigDecimal lineExtensionAmount, BigDecimal tax) {
+                                                String unitCode, BigDecimal lineExtensionAmount, BigDecimal tax) {
         InvoiceLineType result = new InvoiceLineType();
         result.setID(UBLHelper.createID(id));
-        result.setInvoicedQuantity(UBLHelper.initQuantity(new InvoicedQuantityType(), quantity, "BX"));
+        result.setInvoicedQuantity(UBLHelper.initQuantity(new InvoicedQuantityType(), quantity, unitCode));
         result.setLineExtensionAmount(initAmount(new LineExtensionAmountType(), lineExtensionAmount));
         result.setItem(createItem(product, supplierId, supplierName));
         result.setPrice(createPrice(price));

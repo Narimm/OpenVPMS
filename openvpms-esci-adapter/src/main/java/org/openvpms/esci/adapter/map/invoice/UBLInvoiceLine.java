@@ -43,6 +43,8 @@ import org.openvpms.esci.ubl.common.aggregate.PricingReferenceType;
 import org.openvpms.esci.ubl.common.basic.BaseQuantityType;
 import org.openvpms.esci.ubl.common.basic.InvoicedQuantityType;
 import org.openvpms.esci.ubl.common.basic.LineIDType;
+import org.openvpms.esci.ubl.common.basic.PackQuantityType;
+import org.openvpms.esci.ubl.common.basic.PackSizeNumericType;
 import org.openvpms.esci.ubl.common.basic.PriceTypeCodeType;
 
 import java.math.BigDecimal;
@@ -331,6 +333,37 @@ public class UBLInvoiceLine extends UBLFinancialType {
     public String getItemName() {
         ItemType item = getItem();
         return (item.getName() != null) ? StringUtils.trimToNull(item.getName().getValue()) : null;
+    }
+
+    /**
+     * Returns the package size.
+     *
+     * @return the package size, or <tt>0.0</tt> if none was specified
+     */
+    public BigDecimal getPackSizeNumeric() {
+        PackSizeNumericType packSize = getItem().getPackSizeNumeric();
+        return (packSize != null) ? packSize.getValue() : BigDecimal.ZERO;
+    }
+
+    /**
+     * Returns the package quantity.
+     *
+     * @return the package quantity, or <tt>null</tt> if none was specified
+     */
+    public BigDecimal getPackQuantity() {
+        PackQuantityType quantity = getItem().getPackQuantity();
+        return (quantity != null) ? quantity.getValue() : null;
+    }
+
+    /**
+     * Returns the package quantity unit code.
+     *
+     * @return the package quantity unit code, or <tt>null</tt> if none was specified
+     * @throws ESCIAdapterException if the PackQuantity is specified without the unitCode
+     */
+    public String getPackQuantityUnitCode() {
+        PackQuantityType quantity = getItem().getPackQuantity();
+        return (quantity != null) ? getRequired(quantity.getUnitCode(), "PackQuantity@unitCode") : null;
     }
 
     /**
