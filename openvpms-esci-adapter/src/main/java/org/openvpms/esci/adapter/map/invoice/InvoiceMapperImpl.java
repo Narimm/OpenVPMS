@@ -421,11 +421,12 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * <ul>
      *
      * @param line    the invoice line
+     * @param product the invoiced product, or <tt>null</tt> if it is not known
      * @param context the mapping context
      * @return the corresponding order item, or <tt>null</tt> if none is present
      * @throws ESCIAdapterException if the order reference was inccrrectly specified
      */
-    protected FinancialAct mapOrderItem(UBLInvoiceLine line, Context context) {
+    protected FinancialAct mapOrderItem(UBLInvoiceLine line, Product product, Context context) {
         FinancialAct result = null;
         FinancialAct docOrder = context.getDocumentOrder();
         FinancialAct order;
@@ -447,12 +448,23 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
                 order = docOrder;
             }
             result = line.getOrderItem();
-
-            // make sure there is a relationship between the order and the order item
-            ActBean bean = factory.createActBean(order);
-            if (!bean.hasRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, result)) {
-                throw new ESCIAdapterException(ESCIAdapterMessages.invoiceInvalidOrderItem(
-                        line.getID(), Long.toString(result.getId())));
+            if (product != null) {
+                // verify that the invoice item has the same product as ordered. If not, don't want to refer
+                // to the order item in the delivery item.
+                ActBean itemBean = factory.createActBean(result);
+                IMObjectReference orderedProduct = itemBean.getNodeParticipantRef("product");
+                if (orderedProduct != null && !orderedProduct.equals(product.getObjectReference())) {
+                    result = null;
+                }
+                // TODO - need to log a warning about substituted products
+            }
+            if (result != null) {
+                // make sure there is a relationship between the order and the order item
+                ActBean bean = factory.createActBean(order);
+                if (!bean.hasRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, result)) {
+                    throw new ESCIAdapterException(ESCIAdapterMessages.invoiceInvalidOrderItem(
+                            line.getID(), Long.toString(result.getId())));
+                }
             }
         } else if (orderRef != null) {
             // referencing an order but no order item specified.
@@ -476,7 +488,6 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected FinancialAct mapInvoiceLine(UBLInvoiceLine line, Date startTime, TaxRates rates, Context context) {
-        FinancialAct orderItem = mapOrderItem(line, context);
         ActBean deliveryItem = factory.createActBean(SupplierArchetypes.DELIVERY_ITEM);
 
         BigDecimal quantity = line.getInvoicedQuantity();
@@ -493,6 +504,8 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         BigDecimal unitPrice = line.getPriceAmount();
         BigDecimal listPrice = line.getWholesalePrice();
         BigDecimal tax = line.getTaxAmount();
+
+        FinancialAct orderItem = mapOrderItem(line, product, context);
 
         Package pkg = packageHelper.getPackage(orderItem, product, supplier);
         String packageUnits = getPackageUnits(invoicedUnitCode, pkg);

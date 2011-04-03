@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductRules;
@@ -402,6 +403,32 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         // verify there is a relationship between the delivery item and the order item
         assertTrue(itemBean2.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, item2));
+    }
+
+    /**
+     * Verifies that any order item relationship is ignored where a different product is referenced to that ordered.
+     */
+    @Test
+    public void testNoOrderItemRelationshipForSubstitutedProduct() {
+        // create an order
+        FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        FinancialAct order = createOrder(orderItem);
+        save(order, orderItem);
+
+        // create an invoice for a different product
+        Product substitute = TestHelper.createProduct();
+        Invoice invoice = createInvoice(order, orderItem, CASE_UNIT_CODE);
+        ItemType item = invoice.getInvoiceLine().get(0).getItem();
+        item.getBuyersItemIdentification().setID(UBLHelper.createID(substitute.getId()));
+
+        // perform the mapping
+        Delivery delivery = map(invoice, order);
+        assertEquals(1, delivery.getDeliveryItems().size());
+        FinancialAct deliveryItem = delivery.getDeliveryItems().get(0);
+        ActBean itemBean = new ActBean(deliveryItem);
+
+        // verify there is no relationship between the delivery item and the order item
+        assertFalse(itemBean.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, orderItem));
     }
 
     /**
