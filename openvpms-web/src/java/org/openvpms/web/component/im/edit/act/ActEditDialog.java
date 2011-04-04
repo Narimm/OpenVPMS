@@ -122,8 +122,7 @@ public class ActEditDialog extends EditDialog {
     }
 
     /**
-     * Disables the apply button if the act status is <em>POSTED</em>,
-     * otherwise enables it.
+     * Disables the apply button if the act status is <em>POSTED</em>, otherwise enables it.
      *
      * @param status the act status property
      */
@@ -133,7 +132,7 @@ public class ActEditDialog extends EditDialog {
         if (apply != null) {
             if (ActStatus.POSTED.equals(value)) {
                 apply.setEnabled(false);
-            } else {
+            } else if (!isSaveDisabled()) {
                 apply.setEnabled(true);
             }
         }

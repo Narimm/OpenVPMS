@@ -24,12 +24,12 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
-import org.openvpms.web.component.focus.FocusGroup;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -313,6 +313,15 @@ public abstract class AbstractEditDialog extends PopupDialog {
     protected void onMacro() {
         MacroDialog dialog = new MacroDialog();
         dialog.show();
+    }
+
+    /**
+     * Determines if saving has been disabled.
+     *
+     * @return <tt>true</tt> if saves are disabled
+     */
+    protected boolean isSaveDisabled() {
+        return savedDisabled;
     }
 
     /**

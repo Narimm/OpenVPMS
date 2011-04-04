@@ -59,6 +59,25 @@ public class DeliveryEditor extends FinancialActEditor {
     }
 
     /**
+     * Save any edits.
+     * <p/>
+     * This uses {@link #saveChildren()} to save the children prior to invoking {@link #saveObject()}.
+     * <p/>
+     * This order is necessary to ensure that the <em>archetypeService.save.act.supplierDelivery.before</em> rule
+     * has the most recent list of items when triggered.
+     *
+     * @return <tt>true</tt> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        boolean saved = saveChildren();
+        if (saved) {
+            saved = saveObject();
+        }
+        return saved;
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy

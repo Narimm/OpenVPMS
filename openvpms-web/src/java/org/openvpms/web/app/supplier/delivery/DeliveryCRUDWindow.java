@@ -39,6 +39,8 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -201,6 +203,29 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
         return new ActEditDialog(editor);
+    }
+
+    /**
+     * Posts an act. This changes the act's status to POSTED, and saves it.
+     *
+     * @param act the act to post
+     * @return <tt>true</tt> if the act was saved
+     */
+    @Override
+    protected boolean post(Act act) {
+        boolean result = false;
+        act.setStatus(ActStatus.POSTED);
+        // use the editor to ensure that the validation rules are invoked
+        DeliveryEditor editor = new DeliveryEditor((FinancialAct) act, null, createLayoutContext());
+        Validator validator = new Validator();
+        if (!editor.validate(validator)) {
+            // pop up an editor for the delivery and display the errors
+            edit(editor);
+            ValidationHelper.showError(validator);
+        } else {
+            result = editor.save();
+        }
+        return result;
     }
 
     /**
