@@ -35,7 +35,11 @@
         <node name="reorderCode" path="/details/reorderCode" type="java.lang.String" minCardinality="0"/>
         <node name="reorderDescription" path="/details/reorderDescription" type="java.lang.String" minCardinality="0"/>
         <node name="barCode" displayName="Reorder Bar Code" path="/details/barCode" type="java.lang.String" minCardinality="0"/>
-        <node name="packageSize" path="/details/packageSize" type="java.lang.Integer" minCardinality="0"/>
+        <node name="packageSize" path="/details/packageSize" type="java.lang.Integer" minCardinality="0">
+            <assertion name="nonNegative">
+                <errorMessage>Package Size must be >= 0</errorMessage>
+            </assertion>
+        </node>
         <node name="packageUnits" path="/details/packageUnits" type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
@@ -57,8 +61,16 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="listPrice" path="/details/listPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
-        <node name="nettPrice" path="/details/nettPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
+        <node name="listPrice" path="/details/listPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0">
+            <assertion name="nonNegative">
+                <errorMessage>List Price must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="nettPrice" path="/details/nettPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0">
+            <assertion name="nonNegative">
+                <errorMessage>Nett Price must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="autoPriceUpdate" path="/details/autoPriceUpdate" type="java.lang.Boolean" defaultValue="false()" minCardinality="0"/>
         <node name="source" displayName="Product" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">

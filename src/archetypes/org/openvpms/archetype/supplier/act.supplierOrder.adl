@@ -34,10 +34,16 @@
         <node name="amount" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Amount must be >= 0.0</errorMessage>
+            </assertion>
         </node>
         <node name="tax" path="/taxAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Tax must be >= 0.0</errorMessage>
+            </assertion>
         </node>
         <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" minCardinality="1"/>
         <node name="status" path="/status" type="java.lang.String"

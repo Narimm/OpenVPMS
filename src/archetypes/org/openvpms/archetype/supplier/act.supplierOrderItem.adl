@@ -35,7 +35,11 @@
         <node name="reorderDescription" path="/details/reorderDescription" type="java.lang.String"
               minCardinality="0"/>
         <node name="packageSize" path="/details/packageSize"
-              type="java.lang.Integer" minCardinality="0"/>
+              type="java.lang.Integer" minCardinality="0">
+            <assertion name="nonNegative">
+                <errorMessage>Package Size must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="packageUnits" path="/details/packageUnits"
               type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
@@ -45,26 +49,53 @@
             </assertion>
         </node>
         <node name="quantity" path="/quantity" type="java.math.BigDecimal"
-              defaultValue="1.0"/>
+              defaultValue="1.0">
+            <assertion name="positive">
+                <errorMessage>Quantity must be > 0</errorMessage>
+            </assertion>
+        </node>
         <node name="receivedQuantity" path="/details/receivedQuantity"
               type="java.math.BigDecimal"
-              defaultValue="0.0" minCardinality="1" readOnly="true"/>
+              defaultValue="0.0" minCardinality="1" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Received Quantity must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="cancelledQuantity" path="/details/cancelledQuantity"
               type="java.math.BigDecimal"
-              defaultValue="0.0" minCardinality="1"/>
+              defaultValue="0.0" minCardinality="1">
+            <assertion name="nonNegative">
+                <errorMessage>Cancelled Quantity must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="unitPrice" displayName="Nett Price" path="/unitAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              defaultValue="0.0"/>
+              defaultValue="0.0">
+            <assertion name="nonNegative">
+                <errorMessage>Nett Price must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="listPrice" path="/details/listPrice"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              defaultValue="0.0" minCardinality="0"/>
+              defaultValue="0.0" minCardinality="0">
+            <assertion name="nonNegative">
+                <errorMessage>List Price must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="tax" path="/taxAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Tax must be >= 0.0</errorMessage>
+            </assertion>
         </node>
         <node name="total" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              derived="true" derivedValue="/quantity * /unitAmount + /taxAmount"/>
+              derived="true" derivedValue="/quantity * /unitAmount + /taxAmount">
+            <assertion name="nonNegative">
+                <errorMessage>Total must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="deliveries" path="/targetActRelationships"
               type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.supplierDeliveryOrderItem" readOnly="true" hidden="true">

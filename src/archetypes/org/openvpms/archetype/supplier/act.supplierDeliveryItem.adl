@@ -21,7 +21,8 @@
                displayName="Delivery Item">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
-        <node name="supplierInvoiceLineId" path="/details/supplierInvoiceLineId" type="java.lang.String" minCardinality="0" readOnly="true"/>
+        <node name="supplierInvoiceLineId" path="/details/supplierInvoiceLineId" type="java.lang.String"
+              minCardinality="0" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
               derivedValue="' '"/>
@@ -39,29 +40,52 @@
         <node name="reorderDescription" path="/details/reorderDescription" type="java.lang.String"
               minCardinality="0"/>
         <node name="packageSize" path="/details/packageSize"
-              type="java.lang.Integer" minCardinality="1" defaultValue="1"/>
-        <node name="packageUnits" path="/details/packageUnits"
-              type="java.lang.String" minCardinality="0">
+              type="java.lang.Integer" minCardinality="1" defaultValue="1">
+            <assertion name="nonNegative">
+                <errorMessage>Package Size must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="packageUnits" path="/details/packageUnits" type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
-                <property name="type" value="lookup"/> <property name="source" value="lookup.uom"/>
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.uom"/>
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node name="quantity" path="/quantity" type="java.math.BigDecimal"
-              defaultValue="1.0"/>
+              defaultValue="1.0">
+            <assertion name="positive">
+                <errorMessage>Quantity must be > 0</errorMessage>
+            </assertion>
+        </node>
         <node name="unitPrice" displayName="Nett Price" path="/unitAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              defaultValue="0.0"/>
+              defaultValue="0.0">
+            <assertion name="nonNegative">
+                <errorMessage>Nett Price must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="listPrice" path="/details/listPrice"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              defaultValue="0.0" minCardinality="0"/>
+              defaultValue="0.0" minCardinality="0">
+            <assertion name="nonNegative">
+                <errorMessage>List Price must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="tax" path="/taxAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Tax must be >= 0.0</errorMessage>
+            </assertion>
         </node>
         <node name="total" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              derived="true" derivedValue="/quantity * /unitAmount + /taxAmount"/>
+              derived="true" derivedValue="/quantity * /unitAmount + /taxAmount">
+            <assertion name="nonNegative">
+                <errorMessage>Total must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               minCardinality="1" defaultValue="false()" readOnly="true" hidden="true"/>
         <node name="order" path="/sourceActRelationships"
