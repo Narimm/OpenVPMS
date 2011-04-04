@@ -35,6 +35,8 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -154,28 +156,35 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Creates an order associated with an order item.
+     * Creates an order associated with order items.
      *
-     * @param supplier  the supplier
-     * @param orderItem the order item
+     * @param supplier   the supplier
+     * @param orderItems the order item
      * @return a new order
      */
-    protected FinancialAct createOrder(Party supplier, FinancialAct orderItem) {
+    protected FinancialAct createOrder(Party supplier, FinancialAct... orderItems) {
+        List<Act> toSave = new ArrayList<Act>();
         ActBean bean = createAct(SupplierArchetypes.ORDER, supplier);
-        bean.addRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, orderItem);
-        bean.setValue("amount", orderItem.getTotal());
-        save(bean.getAct(), orderItem);
+        BigDecimal total = BigDecimal.ZERO;
+        for (FinancialAct item : orderItems) {
+            bean.addRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, item);
+            total = total.add(item.getTotal());
+            toSave.add(item);
+        }
+        bean.setValue("amount", total);
+        toSave.add(bean.getAct());
+        save(toSave);
         return (FinancialAct) bean.getAct();
     }
 
     /**
-     * Creates an order associated with an order item.
+     * Creates an order associated with order items.
      *
-     * @param orderItem the order item
+     * @param orderItems the order items
      * @return a new order
      */
-    protected FinancialAct createOrder(FinancialAct orderItem) {
-        return createOrder(supplier, orderItem);
+    protected FinancialAct createOrder(FinancialAct... orderItems) {
+        return createOrder(supplier, orderItems);
     }
 
     /**
@@ -187,11 +196,24 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @return a new order item
      */
     protected FinancialAct createOrderItem(BigDecimal quantity, int packageSize, BigDecimal unitPrice) {
-        return createItem(SupplierArchetypes.ORDER_ITEM, quantity, packageSize, unitPrice, BigDecimal.ZERO);
+        return createOrderItem(product, quantity, packageSize, unitPrice);
     }
 
     /**
-     * Creates and saves a delivery.
+     * Creates an order item.
+     *
+     * @param product     the product
+     * @param quantity    the quantity
+     * @param packageSize the package size
+     * @param unitPrice   the unit price
+     * @return a new order item
+     */
+    protected FinancialAct createOrderItem(Product product, BigDecimal quantity, int packageSize, BigDecimal unitPrice) {
+        return createItem(SupplierArchetypes.ORDER_ITEM, product, quantity, packageSize, unitPrice, BigDecimal.ZERO);
+    }
+
+    /**
+     * Creates and saveacs a delivery.
      *
      * @param quantity    the delivery quantity
      * @param packageSize the package size
@@ -422,9 +444,24 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param listPrice   the list price
      * @return a new act
      */
-    protected FinancialAct createItem(String shortName, BigDecimal quantity,
-                                      int packageSize, BigDecimal unitPrice,
+    protected FinancialAct createItem(String shortName, BigDecimal quantity, int packageSize, BigDecimal unitPrice,
                                       BigDecimal listPrice) {
+        return createItem(shortName, product, quantity, packageSize, unitPrice, listPrice);
+    }
+
+    /**
+     * Creates a new supplier act item.
+     *
+     * @param shortName   the act short name
+     * @param product     the product
+     * @param quantity    the quantity
+     * @param packageSize the package size
+     * @param unitPrice   the unit price
+     * @param listPrice   the list price
+     * @return a new act
+     */
+    protected FinancialAct createItem(String shortName, Product product, BigDecimal quantity, int packageSize,
+                                      BigDecimal unitPrice, BigDecimal listPrice) {
         FinancialAct item = (FinancialAct) create(shortName);
         ActBean bean = new ActBean(item);
         bean.addParticipation(StockArchetypes.STOCK_PARTICIPATION, product);
