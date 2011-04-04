@@ -350,7 +350,7 @@ public abstract class ActCRUDWindow<T extends Act>
      * @param act the act to post
      * @return <tt>true</tt> if the act was saved
      */
-    private boolean post(Act act) {
+    protected boolean post(Act act) {
         if (canPost(act)) {
             act.setStatus(POSTED);
             // todo - workaround for OVPMS-734

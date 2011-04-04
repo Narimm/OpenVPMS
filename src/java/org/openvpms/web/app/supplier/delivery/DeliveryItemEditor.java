@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.supplier.delivery;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.supplier.SupplierStockItemEditor;
@@ -26,6 +27,10 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -66,6 +71,86 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
      */
     public void setOrderItem(FinancialAct order) {
         orderEditor.add(order);
+    }
+
+    /**
+     * Validates the object.
+     * <p/>
+     * This extends validation by ensuring that the product, packageSize and packageUnits are set when the parent is
+     * POSTED.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        boolean result = super.validate(validator);
+        if (result) {
+            Act parent = (Act) getParent();
+            if (parent != null && ActStatus.POSTED.equals(parent.getStatus())) {
+                result = validateProduct(validator);
+                if (result) {
+                    result = validatePackageSize(validator);
+                    if (result) {
+                        result = validatePackageUnits(validator);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Validates that the product is set when the parent is POSTED.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the property is valid, otherwise <tt>false</tt>
+     */
+    private boolean validateProduct(Validator validator) {
+        boolean result = true;
+        Property property = getProperty("product");
+        if (getProductRef() == null) {
+            String message = Messages.get("property.error.required", property.getDisplayName());
+            validator.add(property, new ValidatorError(property, message));
+            result = false;
+        }
+        return result;
+    }
+
+    /**
+     * Validates the packageSize when the parent is POSTED.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the property is valid, otherwise <tt>false</tt>
+     */
+    private boolean validatePackageSize(Validator validator) {
+        boolean result = true;
+        Property property = getProperty("packageSize");
+        Number size = (Number) property.getValue();
+        if (size.intValue() <= 0) {
+            String message = Messages.get("property.error.required", property.getDisplayName());
+            validator.add(property, new ValidatorError(property, message));
+            result = false;
+        }
+        return result;
+    }
+
+    /**
+     * Validates the packageUnits node when the parent is POSTED.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the property is valid, otherwise <tt>false</tt>
+     */
+    private boolean validatePackageUnits(Validator validator) {
+        boolean result = true;
+        Property property = getProperty("packageUnits");
+        String units = (String) property.getValue();
+        if (units == null) {
+            String message = Messages.get("property.error.required", property.getDisplayName());
+            validator.add(property, new ValidatorError(property, message));
+            result = false;
+        }
+        return result;
     }
 
     /**
