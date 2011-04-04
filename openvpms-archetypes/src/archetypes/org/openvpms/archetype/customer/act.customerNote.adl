@@ -33,7 +33,7 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author"/>
         <node name="note" path="/details/note" type="java.lang.String" maxLength="2000"/>
         <node name="status" path="/status" type="java.lang.String"
