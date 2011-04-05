@@ -32,10 +32,12 @@ import org.openvpms.esci.ubl.common.CurrencyCodeContentType;
 import org.openvpms.esci.ubl.common.IdentifierType;
 import org.openvpms.esci.ubl.common.QuantityType;
 import org.openvpms.esci.ubl.common.TextType;
+import org.openvpms.esci.ubl.common.aggregate.OrderLineReferenceType;
 import org.openvpms.esci.ubl.common.aggregate.OrderReferenceType;
 import org.openvpms.esci.ubl.common.basic.IDType;
 import org.openvpms.esci.ubl.common.basic.IssueDateType;
 import org.openvpms.esci.ubl.common.basic.IssueTimeType;
+import org.openvpms.esci.ubl.common.basic.LineIDType;
 import org.openvpms.esci.ubl.common.basic.NameType;
 import org.openvpms.esci.ubl.common.basic.PackSizeNumericType;
 import org.openvpms.esci.ubl.common.basic.PercentType;
@@ -283,6 +285,30 @@ public class UBLHelper {
     public static OrderReferenceType createOrderReference(long id) {
         OrderReferenceType result = new OrderReferenceType();
         result.setID(createID(id));
+        return result;
+    }
+
+    /**
+     * Creates a new <tt>OrderLineReferenceType</tt>.
+     *
+     * @param id the line identifier
+     * @return a new <tt>OrderLineReferenceType</tt>
+     */
+    public static OrderLineReferenceType createOrderLineReference(long id) {
+        return createOrderLineReference(id, null);
+    }
+
+    /**
+     * Creates a new <tt>OrderLineReferenceType</tt>.
+     *
+     * @param id    the line identifier
+     * @param order the order reference. May be <tt>null</tt>
+     * @return a new <tt>OrderLineReferenceType</tt>
+     */
+    public static OrderLineReferenceType createOrderLineReference(long id, OrderReferenceType order) {
+        OrderLineReferenceType result = new OrderLineReferenceType();
+        result.setLineID(initID(new LineIDType(), id));
+        result.setOrderReference(order);
         return result;
     }
 
