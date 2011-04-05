@@ -158,12 +158,26 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * @return a new <Tt>Invoice</tt>
      */
     protected Invoice createInvoice(Party supplier, Party stockLocation, String unitCode) {
+        Product product = getProduct();
+        InvoiceLineType item1 = createInvoiceLine("1", product, "aproduct1", "aproduct name", new BigDecimal(105),
+                                                  new BigDecimal(100), BigDecimal.ONE, unitCode, new BigDecimal(100),
+                                                  new BigDecimal(10));
+
+        return createInvoice(supplier, stockLocation, item1);
+    }
+
+    /**
+     * Helper to create an <tt>Invoice</tt> with multiple line items.
+     *
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @param lines         the invoice lines
+     * @return a new <Tt>Invoice</tt>
+     */
+    protected Invoice createInvoice(Party supplier, Party stockLocation, InvoiceLineType... lines) {
         Invoice invoice = new Invoice();
         SupplierPartyType supplierType = createSupplier(supplier);
         CustomerPartyType customerType = createCustomer(stockLocation);
-        Product product = getProduct();
-        MonetaryTotalType monetaryTotal = createMonetaryTotal(new BigDecimal(100), BigDecimal.ZERO,
-                                                              new BigDecimal(100), new BigDecimal(110));
 
         invoice.setUBLVersionID(UBLHelper.initID(new UBLVersionIDType(), "2.0"));
         invoice.setID(UBLHelper.createID(12345));
@@ -172,13 +186,46 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         invoice.setIssueTime(createIssueTime(issueDatetime));
         invoice.setAccountingSupplierParty(supplierType);
         invoice.setAccountingCustomerParty(customerType);
+        BigDecimal lineExtensionAmount = BigDecimal.ZERO;
+        BigDecimal taxAmount = BigDecimal.ZERO;
+
+        for (InvoiceLineType line : lines) {
+            lineExtensionAmount = lineExtensionAmount.add(line.getLineExtensionAmount().getValue());
+            for (TaxTotalType tax : line.getTaxTotal()) {
+                taxAmount = taxAmount.add(tax.getTaxAmount().getValue());
+            }
+            invoice.getInvoiceLine().add(line);
+        }
+
+        BigDecimal taxExAmount = lineExtensionAmount;
+        BigDecimal payableAmount = lineExtensionAmount.add(taxAmount);
+        MonetaryTotalType monetaryTotal = createMonetaryTotal(lineExtensionAmount, BigDecimal.ZERO, taxExAmount,
+                                                              payableAmount);
         invoice.setLegalMonetaryTotal(monetaryTotal);
-        invoice.getTaxTotal().add(createTaxTotal(new BigDecimal(10), false));
-        InvoiceLineType item1 = createInvoiceLine("1", product, "aproduct1", "aproduct name", new BigDecimal(105),
-                                                  new BigDecimal(100), BigDecimal.ONE, unitCode, new BigDecimal(100),
-                                                  new BigDecimal(10));
-        invoice.getInvoiceLine().add(item1);
+        invoice.getTaxTotal().add(createTaxTotal(taxAmount, false));
         return invoice;
+    }
+
+    /**
+     * Helper to create an <tt>InvoiceLineType</tt>.
+     *
+     * @param id           the invoice line identifier
+     * @param product      the product
+     * @param supplierId   the supplier's identifier for the product
+     * @param supplierName the supplier's name for the product
+     * @param listPrice    the list (or wholesale) price
+     * @param price        the price
+     * @param quantity     the quantity
+     * @param unitCode     the invoiced quantity unit code
+     * @return a new <tt>InvoiceLineType</tt>
+     */
+    protected InvoiceLineType createInvoiceLine(String id, Product product, String supplierId, String supplierName,
+                                                BigDecimal listPrice, BigDecimal price, BigDecimal quantity,
+                                                String unitCode) {
+        BigDecimal lineExtensionAmount = price.multiply(quantity);
+        BigDecimal tax = lineExtensionAmount.multiply(new BigDecimal("0.1"));
+        return createInvoiceLine(id, product, supplierId, supplierName, listPrice, price, quantity, unitCode,
+                                 lineExtensionAmount, tax);
     }
 
     /**

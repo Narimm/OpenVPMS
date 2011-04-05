@@ -173,6 +173,25 @@ class MappingContext {
     }
 
     /**
+     * Returns an order item given its reference.
+     *
+     * @param order   the order
+     * @param itemRef the order item reference
+     * @return the order item, or <tt>null</tt> if none can be found
+     */
+    public FinancialAct getOrderItem(FinancialAct order, IMObjectReference itemRef) {
+        List<FinancialAct> list = items.get(order);
+        if (list != null) {
+            for (FinancialAct item : list) {
+                if (item.getId() == itemRef.getId()) {
+                    return item;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Registers the invoice lines.
      *
      * @param lines the invoice lines

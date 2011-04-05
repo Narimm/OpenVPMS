@@ -161,6 +161,9 @@ public class UBLInvoiceLine extends UBLFinancialType {
 
     /**
      * Returns the order item reference.
+     * <p/>
+     * <em>NOTE:</em> an item reference with a id of <tt>-1</tt> indicates that only the order is known, and that
+     * the item must be matched on product and quantity.
      *
      * @return the order item reference, or <tt>null</tt> if there is no associated order item
      */
@@ -174,6 +177,12 @@ public class UBLInvoiceLine extends UBLFinancialType {
         return result;
     }
 
+    /**
+     * Returns the order line reference.
+     *
+     * @return the order line reference, or <tt>null</tt> none is present
+     * @throws ESCIAdapterException if the reference is incorrectly specified
+     */
     public OrderLineReferenceType getOrderLineReference() {
         OrderLineReferenceType result = null;
         List<OrderLineReferenceType> list = line.getOrderLineReference();
@@ -217,7 +226,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     public FinancialAct getOrderItem() {
         FinancialAct result = null;
         IMObjectReference ref = getOrderItemReference();
-        if (ref != null) {
+        if (ref != null && ref.getId() != -1) {
             result = (FinancialAct) getArchetypeService().get(ref);
             if (result == null) {
                 throw new ESCIAdapterException(ESCIAdapterMessages.invoiceInvalidOrderItem(

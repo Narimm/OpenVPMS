@@ -19,7 +19,6 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -153,19 +152,20 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
                 }
                 order = docOrder;
             }
-            item = line.getOrderItem();
-            if (item != null) {
-                // make sure there is a relationship between the order and the order item
-                ActBean bean = factory.createActBean(order);
-                if (!bean.hasRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, item)) {
+            // NOTE: an id of -1 is the special case where a supplier doesn't provide order line identifiers, but
+            // does provide the order identifier. This is used in the (fugly) multiple order per invoice scenario.
+            if (orderItemRef.getId() != -1) {
+                item = context.getOrderItem(order, orderItemRef);
+                if (item == null) {
+                    // no relationship between the order and the order item
                     throw new ESCIAdapterException(ESCIAdapterMessages.invoiceInvalidOrderItem(
-                            line.getID(), Long.toString(item.getId())));
+                            line.getID(), Long.toString(orderItemRef.getId())));
                 }
             }
         } else if (orderRef != null) {
             // referencing an order but no order item specified.
             throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
-                    "OrderLineReference/OrderReference", "InvoiceLine", line.getID(), "0", 1));
+                    "OrderLineReference/LineID", "InvoiceLine", line.getID(), "0", 1));
         } else {
             order = docOrder;
         }
