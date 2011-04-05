@@ -53,11 +53,8 @@ import org.openvpms.esci.ubl.invoice.InvoiceType;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -199,14 +196,11 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         wrapper.checkStockLocation(stockLocation, accountId);
 
         checkDuplicateInvoice(supplier, invoiceId, issueDatetime);
-        FinancialAct order = wrapper.getOrder();
 
-        Context context = new Context(wrapper, supplier, stockLocation, order);
+        InvoiceOrderMatcher matcher = new InvoiceOrderMatcher(getArchetypeService(), factory);
+        MappingContext context = matcher.match(wrapper, supplier, stockLocation);
 
-        if (order != null) {
-            checkOrder(order, context);
-            result.setOrder(order);
-        }
+        result.setOrder(context.getDocumentOrder());
 
         BigDecimal payableAmount = wrapper.getPayableAmount();
         BigDecimal invoiceLineExtensionAmount = wrapper.getLineExtensionAmount();
@@ -223,7 +217,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         delivery.addNodeParticipation("supplier", supplier);
         delivery.addNodeParticipation("stockLocation", stockLocation);
         result.setDelivery((FinancialAct) delivery.getAct());
-        List<UBLInvoiceLine> lines = wrapper.getInvoiceLines();
+        List<InvoiceLineState> lines = context.getInvoiceLines();
         if (lines.isEmpty()) {
             throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
                     "InvoiceLine", "Invoice", invoiceId, "1..*", 0));
@@ -234,9 +228,10 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         BigDecimal itemLineExtensionAmount = BigDecimal.ZERO;
         BigDecimal itemCharge = BigDecimal.ZERO;
 
-        for (UBLInvoiceLine line : lines) {
+        for (InvoiceLineState state : lines) {
+            UBLInvoiceLine line = state.getLine();
             BigDecimal amount = line.getLineExtensionAmount();
-            FinancialAct item = mapInvoiceLine(line, issueDatetime, rates, context);
+            FinancialAct item = mapInvoiceLine(state, issueDatetime, rates, context);
             getArchetypeService().deriveValues(item);
             delivery.addNodeRelationship("items", item);
             result.addDeliveryItem(item);
@@ -416,70 +411,32 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * <li>a document-level order reference, then all order lines must reference this order
      * <li>no document level order reference, order references must be fully qualified i.e must specify both
      * the order line and order
-     * <li>a document-level order reference, but no order line reference, the first order matching the invoice item
+     * <li>a document-level order reference, but no order line reference, the first order item matching the invoice item
      * will be returned
      * <ul>
      *
      * @param line    the invoice line
-     * @param product the invoiced product, or <tt>null</tt> if it is not known
-     * @param context the mapping context
      * @return the corresponding order item, or <tt>null</tt> if none is present
-     * @throws ESCIAdapterException if the order reference was inccrrectly specified
      */
-    protected FinancialAct mapOrderItem(UBLInvoiceLine line, Product product, Context context) {
-        FinancialAct result = null;
-        FinancialAct docOrder = context.getDocumentOrder();
-        FinancialAct order;
-        IMObjectReference orderRef = line.getOrderReference();
-        IMObjectReference orderItemRef = line.getOrderItemReference();
-        if (orderItemRef != null) {
-            // invoice line is referring to an order line
-            if (orderRef != null) {
-                // referencing an order. Make sure it can be retrieved
-                order = getReferencedOrder(orderRef, line, context);
-            } else {
-                // no order reference specified, so must be working with the document level order
-                if (docOrder == null) {
-                    // no order was specified in the invoice line, and no document level order specified
-                    // Expected 0 cardinality
-                    throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
-                            "OrderLineReference", "InvoiceLine", line.getID(), "0", 1));
-                }
-                order = docOrder;
+    protected FinancialAct mapOrderItem(InvoiceLineState line) {
+        FinancialAct item = line.getOrderItem();
+        Product invoiced = line.getProduct();
+        if (item != null && invoiced != null) {
+            // verify that the invoice item has the same product as ordered. If not, don't want to refer
+            // to the order item in the delivery item.
+            ActBean itemBean = factory.createActBean(item);
+            IMObjectReference orderedProduct = itemBean.getNodeParticipantRef("product");
+            if (!ObjectUtils.equals(orderedProduct, invoiced.getObjectReference())) {
+                item = null;
             }
-            result = line.getOrderItem();
-            if (product != null) {
-                // verify that the invoice item has the same product as ordered. If not, don't want to refer
-                // to the order item in the delivery item.
-                ActBean itemBean = factory.createActBean(result);
-                IMObjectReference orderedProduct = itemBean.getNodeParticipantRef("product");
-                if (orderedProduct != null && !orderedProduct.equals(product.getObjectReference())) {
-                    result = null;
-                }
-                // TODO - need to log a warning about substituted products
-            }
-            if (result != null) {
-                // make sure there is a relationship between the order and the order item
-                ActBean bean = factory.createActBean(order);
-                if (!bean.hasRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, result)) {
-                    throw new ESCIAdapterException(ESCIAdapterMessages.invoiceInvalidOrderItem(
-                            line.getID(), Long.toString(result.getId())));
-                }
-            }
-        } else if (orderRef != null) {
-            // referencing an order but no order item specified.
-            throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
-                    "OrderLineReference/OrderReference", "InvoiceLine", line.getID(), "0", 1));
-        } else {
-            // no order information
         }
-        return result;
+        return item;
     }
 
     /**
      * Maps an <tt>InvoiceLineType</tt> to an <em>act.supplierDeliveryItem</em>.
      *
-     * @param line      the invoice line
+     * @param lineState the invoice line state
      * @param startTime the invoice start time
      * @param rates     the tax rates
      * @param context   the mapping context
@@ -487,16 +444,18 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * @throws ESCIAdapterException      if the order wasn't submitted by the supplier
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected FinancialAct mapInvoiceLine(UBLInvoiceLine line, Date startTime, TaxRates rates, Context context) {
+    protected FinancialAct mapInvoiceLine(InvoiceLineState lineState, Date startTime, TaxRates rates,
+                                          MappingContext context) {
         ActBean deliveryItem = factory.createActBean(SupplierArchetypes.DELIVERY_ITEM);
 
+        UBLInvoiceLine line = lineState.getLine();
         BigDecimal quantity = line.getInvoicedQuantity();
         String invoicedUnitCode = line.getInvoicedQuantityUnitCode();
         checkPackQuantity(line, invoicedUnitCode);
         checkBaseQuantity(line, invoicedUnitCode);
 
         Party supplier = context.getSupplier();
-        Product product = line.getProduct(supplier);
+        Product product = lineState.getProduct();
         BigDecimal lineExtensionAmount = line.getLineExtensionAmount();
         String reorderCode = line.getSellersItemID();
         String reorderDescription = line.getItemName();
@@ -505,7 +464,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         BigDecimal listPrice = line.getWholesalePrice();
         BigDecimal tax = line.getTaxAmount();
 
-        FinancialAct orderItem = mapOrderItem(line, product, context);
+        FinancialAct orderItem = mapOrderItem(lineState);
 
         Package pkg = packageHelper.getPackage(orderItem, product, supplier);
         String packageUnits = getPackageUnits(invoicedUnitCode, pkg);
@@ -697,55 +656,6 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
-     * Verifies that an order has a relationship to the expected supplier and stock location and is not
-     * already associated with the invoice.
-     *
-     * @param order   the order
-     * @param context the mapping context
-     * @throws ESCIAdapterException      if the order wasn't submitted by the supplier or the invoice is a duplicate
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    protected void checkOrder(FinancialAct order, Context context) {
-        checkOrder(order, context.getSupplier(), context.getStockLocation(), context.getInvoice());
-        String invoiceId = context.getInvoice().getID();
-        ActBean orderBean = factory.createActBean(order);
-        List<FinancialAct> deliveries = orderBean.getNodeActs("deliveries", FinancialAct.class);
-        for (FinancialAct delivery : deliveries) {
-            ActBean deliveryBean = factory.createActBean(delivery);
-            String supplierInvoiceId = deliveryBean.getString("supplierInvoiceId");
-            if (ObjectUtils.equals(invoiceId, supplierInvoiceId)) {
-                throw new ESCIAdapterException(ESCIAdapterMessages.duplicateInvoiceForOrder(invoiceId, order.getId()));
-            }
-        }
-    }
-
-    /**
-     * Retrieves an order referenced by an invoice line.
-     *
-     * @param orderRef the order reference
-     * @param line     the invoice line
-     * @param context  the mapping context
-     * @return the corresponding order
-     */
-    private FinancialAct getReferencedOrder(IMObjectReference orderRef, UBLInvoiceLine line, Context context) {
-        FinancialAct childOrder = context.getOrder(orderRef);
-        if (childOrder == null) {
-            // get the order and ensure it was submitted to the supplier from the same stock location
-            childOrder = line.getOrder();
-            checkOrder(childOrder, context);
-            context.addOrder(childOrder);
-        }
-        FinancialAct docOrder = context.getDocumentOrder();
-        if (docOrder != null && !ObjectUtils.equals(docOrder.getObjectReference(), childOrder.getObjectReference())) {
-            // top-level order specified, but the child order is different.
-            UBLInvoice invoice = context.getInvoice();
-            throw new ESCIAdapterException(ESCIAdapterMessages.invalidOrder(invoice.getType(), invoice.getID(),
-                                                                            Long.toString(childOrder.getId())));
-        }
-        return childOrder;
-    }
-
-    /**
      * Returns an author to associate with the delivery.
      * <p/>
      * This returns the author of the original order, if present. If not, it returns that from the stock location.
@@ -753,7 +663,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * @param context the mapping context
      * @return the author reference, or <tt>null</tt> if none is available
      */
-    private Entity getAuthor(Context context) {
+    private Entity getAuthor(MappingContext context) {
         Entity result = null;
         FinancialAct order = context.getDocumentOrder();
         if (order == null) {
@@ -775,120 +685,4 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         return result;
     }
 
-    /**
-     * Helper to contain the mapping context.
-     */
-    private class Context {
-
-        /**
-         * The invoice.
-         */
-        private final UBLInvoice invoice;
-
-        /**
-         * The supplier.
-         */
-        private final Party supplier;
-
-        /**
-         * The stock location.
-         */
-        private final Party stockLocation;
-
-        /**
-         * The document-level order.  May be <tt>null</tt>
-         */
-        private FinancialAct docOrder;
-
-        /**
-         * The orders associated with the invoice.
-         */
-        private Map<IMObjectReference, FinancialAct> orders = new HashMap<IMObjectReference, FinancialAct>();
-
-
-        /**
-         * Constructs a <tt>Context</tt>.
-         *
-         * @param invoice       the invoice
-         * @param supplier      the supplier
-         * @param stockLocation the stock location
-         * @param docOrder      the document-level order. May be <tt>null</tt>
-         */
-        public Context(UBLInvoice invoice, Party supplier, Party stockLocation, FinancialAct docOrder) {
-            this.invoice = invoice;
-            this.supplier = supplier;
-            this.stockLocation = stockLocation;
-            this.docOrder = docOrder;
-            if (docOrder != null) {
-                addOrder(docOrder);
-            }
-        }
-
-        /**
-         * Returns the invoice.
-         *
-         * @return the invoice
-         */
-        public UBLInvoice getInvoice() {
-            return invoice;
-        }
-
-        /**
-         * Returns the supplier.
-         *
-         * @return the supplier
-         */
-        public Party getSupplier() {
-            return supplier;
-        }
-
-        /**
-         * Returns the stock location.
-         *
-         * @return the stock location
-         */
-        public Party getStockLocation() {
-            return stockLocation;
-        }
-
-        /**
-         * Returns the document-level order.
-         *
-         * @return the document level order, or <tt>null</tt> if none was specified
-         */
-        public FinancialAct getDocumentOrder() {
-            return docOrder;
-        }
-
-        /**
-         * Returns an order given its reference.
-         * <p/>
-         * The order must have been added previously via {@link #addOrder}, or be the document order.
-         *
-         * @param reference the order reference
-         * @return the corresponding order, or <tt>null</tt> if it is not found
-         */
-        public FinancialAct getOrder(IMObjectReference reference) {
-            return orders.get(reference);
-        }
-
-        /**
-         * Returns all orders associated with the invoice.
-         *
-         * @return the orders
-         */
-        public List<FinancialAct> getOrders() {
-            return new ArrayList<FinancialAct>(orders.values());
-        }
-
-        /**
-         * Adds an order associated with the invoice.
-         *
-         * @param order the order
-         */
-        public void addOrder(FinancialAct order) {
-            orders.put(order.getObjectReference(), order);
-        }
-
-    }
 }
