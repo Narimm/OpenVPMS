@@ -23,11 +23,14 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.map.UBLHelper;
@@ -61,6 +64,7 @@ import org.openvpms.esci.ubl.common.basic.TaxExclusiveAmountType;
 import org.openvpms.esci.ubl.common.basic.TaxTypeCodeType;
 import org.openvpms.esci.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.esci.ubl.invoice.Invoice;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -85,6 +89,12 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * The practice-wide currency.
      */
     private Currency currency;
+
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    private ILookupService lookupService;
 
     /**
      * Sets up the test case.
@@ -117,6 +127,24 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         IMObjectBean uomBean = new IMObjectBean(uom);
         uomBean.setValue("unitCode", "BX");
         uomBean.save();
+    }
+
+    /**
+     * Creates an order item.
+     *
+     * @param product     the product
+     * @param quantity    the quantity
+     * @param packageSize the package size
+     * @param unitPrice   the unit price
+     * @param reorderCode the supplier reorder code
+     * @return a new order item
+     */
+    protected FinancialAct createOrderItem(Product product, BigDecimal quantity, int packageSize, BigDecimal unitPrice,
+                                           String reorderCode) {
+        FinancialAct result = createOrderItem(product, quantity, packageSize, unitPrice);
+        ActBean bean = new ActBean(result);
+        bean.setValue("reorderCode", reorderCode);
+        return result;
     }
 
     /**
@@ -204,6 +232,45 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         invoice.setLegalMonetaryTotal(monetaryTotal);
         invoice.getTaxTotal().add(createTaxTotal(taxAmount, false));
         return invoice;
+    }
+
+    /**
+     * Helper to create an <tt>InvoiceLineType</tt>, that corresponds to an order item.
+     *
+     * @param id   the invoice line identifier
+     * @param item the order item
+     * @return a new <tt>InvoiceLineType</tt>
+     */
+    protected InvoiceLineType createInvoiceLine(String id, FinancialAct item) {
+        ActBean bean = new ActBean(item);
+        BigDecimal quantity = bean.getBigDecimal("quantity");
+        return createInvoiceLine(id, quantity, item);
+    }
+
+    /**
+     * Helper to create an <tt>InvoiceLineType</tt>, that corresponds to an order item with the exception of the
+     * quantity.
+     *
+     * @param id       the invoice line identifier
+     * @param quantity the quantity
+     * @param item     the order item
+     * @return a new <tt>InvoiceLineType</tt>
+     */
+    protected InvoiceLineType createInvoiceLine(String id, BigDecimal quantity, FinancialAct item) {
+        ActBean bean = new ActBean(item);
+        Product product = (Product) bean.getNodeParticipant("product");
+        String supplierId = bean.getString("reorderCode");
+        String supplierName = bean.getString("reorderDescription");
+        BigDecimal listPrice = bean.getBigDecimal("listPrice");
+        BigDecimal unitPrice = bean.getBigDecimal("unitPrice");
+        String packageUnits = bean.getString("packageUnits");
+        Lookup lookup = lookupService.getLookup("lookup.uom", packageUnits);
+        String unitCode = null;
+        if (lookup != null) {
+            IMObjectBean uom = new IMObjectBean(lookup);
+            unitCode = uom.getString("unitCode");
+        }
+        return createInvoiceLine(id, product, supplierId, supplierName, listPrice, unitPrice, quantity, unitCode);
     }
 
     /**

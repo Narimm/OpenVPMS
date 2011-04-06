@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
 
 /**
@@ -102,7 +103,8 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
             }
 
             // third pass - link invoice lines to unlinked order items, where a partial match exists
-            for (InvoiceLineState line : tracker.getPartialMatches()) {
+            Set<InvoiceLineState> partial = new HashSet<InvoiceLineState>(tracker.getPartialMatches());
+            for (InvoiceLineState line : partial) {
                 partialMatch(line, tracker);
             }
         }
