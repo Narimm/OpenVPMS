@@ -168,8 +168,8 @@ public abstract class UBLType {
      */
     protected long getNumericId(IdentifierType id, String path) {
         String value = getId(id, path);
-        long result = NumberUtils.toLong(value, -1);
-        if (result == -1) {
+        long result = NumberUtils.toLong(value, -2); // -1 is a valid identifier...
+        if (result == -2) {
             ErrorContext context = new ErrorContext(this, path);
             throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidIdentifier(
                     context.getPath(), context.getType(), context.getID(), id.getValue()));

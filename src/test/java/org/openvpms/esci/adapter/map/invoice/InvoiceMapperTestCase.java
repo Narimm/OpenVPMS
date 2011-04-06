@@ -18,10 +18,10 @@
 package org.openvpms.esci.adapter.map.invoice;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertFalse;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductRules;
@@ -48,6 +48,7 @@ import org.openvpms.esci.ubl.common.aggregate.InvoiceLineType;
 import org.openvpms.esci.ubl.common.aggregate.ItemType;
 import org.openvpms.esci.ubl.common.aggregate.MonetaryTotalType;
 import org.openvpms.esci.ubl.common.aggregate.OrderLineReferenceType;
+import org.openvpms.esci.ubl.common.aggregate.OrderReferenceType;
 import org.openvpms.esci.ubl.common.aggregate.PriceType;
 import org.openvpms.esci.ubl.common.aggregate.SupplierPartyType;
 import org.openvpms.esci.ubl.common.aggregate.TaxCategoryType;
@@ -100,6 +101,23 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      * 'Case' unit code.
      */
     private static final String CASE_UNIT_CODE = "CS";
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        Lookup each = TestHelper.getLookup("lookup.uom", EACH_UNITS);
+        IMObjectBean eachBean = new IMObjectBean(each);
+        eachBean.setValue("unitCode", EACH_UNIT_CODE);
+        eachBean.save();
+
+        Lookup caseUnits = TestHelper.getLookup("lookup.uom", CASE_UNITS);
+        IMObjectBean caseBean = new IMObjectBean(caseUnits);
+        caseBean.setValue("unitCode", CASE_UNIT_CODE);
+        caseBean.save();
+    }
 
     /**
      * Tests simple mapping.
@@ -196,10 +214,10 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         Delivery delivery = map(invoice, order);
         assertEquals(1, delivery.getDeliveryItems().size());
         FinancialAct deliveryItem = delivery.getDeliveryItems().get(0);
-        ActBean itemBean = new ActBean(deliveryItem);
 
-        // verify there is a relationship between the delivery item and the order item
-        assertTrue(itemBean.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, orderItem));
+        // verify there is a relationship between the delivery and the order, and the delivery item and the order item
+        checkDeliveryOrderRelationship(delivery.getDelivery(), order);
+        checkDeliveryOrderItemRelationship(deliveryItem, orderItem);
     }
 
     /**
@@ -283,24 +301,6 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        super.setUp();
-        Lookup each = TestHelper.getLookup("lookup.uom", EACH_UNITS);
-        IMObjectBean eachBean = new IMObjectBean(each);
-        eachBean.setValue("unitCode", EACH_UNIT_CODE);
-        eachBean.save();
-
-        Lookup caseUnits = TestHelper.getLookup("lookup.uom", CASE_UNITS);
-        IMObjectBean caseBean = new IMObjectBean(caseUnits);
-        caseBean.setValue("unitCode", CASE_UNIT_CODE);
-        caseBean.save();
-    }
-
-
-    /**
      * Verifies that the author node of <em>act.supplierDelivery is populated correctly.
      */
     @Test
@@ -353,24 +353,23 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     /**
      * Verifies that multiple invoices can be generated for the one order.
      */
+    @Test
     public void testOrderWithMultipleInvoices() {
         InvoiceMapper mapper = createMapper();
+        Product product = getProduct();
 
         // create an order with two items
-        FinancialAct item1 = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
-        FinancialAct item2 = createOrderItem(BigDecimal.ONE, 1, BigDecimal.ONE);
+        FinancialAct item1 = createOrderItem(product, BigDecimal.ONE, 1, BigDecimal.ONE, "PRODUCTA");
+        FinancialAct item2 = createOrderItem(product, BigDecimal.ONE, 1, BigDecimal.ONE, "PRODUCTA");
         FinancialAct order = createOrder(item1, item2);
 
         // create an invoice that references the order
-        Invoice invoice1 = createInvoice();
+        InvoiceLineType line1 = createInvoiceLine("1", item1);
+        line1.getOrderLineReference().add(createOrderLineReference(item1));
+
+        Invoice invoice1 = createInvoice(getSupplier(), getStockLocation(), line1);
         invoice1.getID().setValue("1");
         invoice1.setOrderReference(UBLHelper.createOrderReference(order.getId()));
-
-        // reference item1 in the invoice line
-        InvoiceLineType line1 = invoice1.getInvoiceLine().get(0);
-        OrderLineReferenceType itemRef1 = new OrderLineReferenceType();
-        itemRef1.setLineID(UBLHelper.initID(new LineIDType(), item1.getId()));
-        line1.getOrderLineReference().add(itemRef1);
 
         // map the invoice to a delivery
         Delivery delivery1 = mapper.map(invoice1, getSupplier(), getStockLocation(), null);
@@ -380,18 +379,18 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         FinancialAct deliveryItem1 = delivery1.getDeliveryItems().get(0);
         ActBean itemBean1 = new ActBean(deliveryItem1);
 
-        // verify there is a relationship between the delivery item and the order item
+        // verify there is a relationship between the delivery the order, and the delivery item and the order item
+        checkDeliveryOrderRelationship(delivery1.getDelivery(), order);
+        checkDeliveryOrderItemRelationship(deliveryItem1, item1);
         assertTrue(itemBean1.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, item1));
 
         // create another invoice that references item2
-        Invoice invoice2 = createInvoice();
-        invoice2.getID().setValue("2");
-        invoice2.setOrderReference(UBLHelper.createOrderReference(order.getId()));
+        InvoiceLineType line2 = createInvoiceLine("2", item2);
+        line2.getOrderLineReference().add(createOrderLineReference(item2));
 
-        InvoiceLineType line2 = invoice2.getInvoiceLine().get(0);
-        OrderLineReferenceType itemRef2 = new OrderLineReferenceType();
-        itemRef2.setLineID(UBLHelper.initID(new LineIDType(), item2.getId()));
-        line2.getOrderLineReference().add(itemRef2);
+        Invoice invoice2 = createInvoice(getSupplier(), getStockLocation(), line2);
+        invoice2.getID().setValue("2");
+        invoice2.setOrderReference(createOrderReference(order));
 
         // map the invoice to a delivery
         Delivery delivery2 = mapper.map(invoice2, getSupplier(), getStockLocation(), null);
@@ -399,10 +398,136 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         save(delivery2.getActs());
         assertEquals(1, delivery2.getDeliveryItems().size());
         FinancialAct deliveryItem2 = delivery2.getDeliveryItems().get(0);
-        ActBean itemBean2 = new ActBean(deliveryItem2);
 
-        // verify there is a relationship between the delivery item and the order item
-        assertTrue(itemBean2.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, item2));
+        // verify there is a relationship between the delivery and the order, and the delivery item and the order item
+        checkDeliveryOrderRelationship(delivery2.getDelivery(), order);
+        checkDeliveryOrderItemRelationship(deliveryItem2, item2);
+    }
+
+    /**
+     * Verifies that an invoice can reference multiple orders.
+     */
+    @Test
+    public void testInvoiceWithMultipleOrders() {
+        InvoiceMapper mapper = createMapper();
+        Product product = getProduct();
+
+        // create two orders, each with one item.
+        FinancialAct item1 = createOrderItem(product, BigDecimal.ONE, 1, BigDecimal.ONE, "product1");
+        FinancialAct order1 = createOrder(item1);
+
+        FinancialAct item2 = createOrderItem(product, BigDecimal.ONE, 1, BigDecimal.ONE, "product1");
+        FinancialAct order2 = createOrder(item2);
+
+        // create an invoice that references the orders
+        InvoiceLineType line1 = createInvoiceLine("1", item1);
+        line1.getOrderLineReference().add(createOrderLineReference(item1, order1));
+
+        InvoiceLineType line2 = createInvoiceLine("2", item2);
+        line2.getOrderLineReference().add(createOrderLineReference(item2, order2));
+
+        Invoice invoice1 = createInvoice(getSupplier(), getStockLocation(), line1, line2);
+
+        // map the invoice to a delivery
+        Delivery delivery = mapper.map(invoice1, getSupplier(), getStockLocation(), null);
+        assertNull(delivery.getOrder()); // won't have a document level order
+        save(delivery.getActs());
+        assertEquals(2, delivery.getDeliveryItems().size());
+        FinancialAct deliveryItem1 = delivery.getDeliveryItems().get(0);
+        FinancialAct deliveryItem2 = delivery.getDeliveryItems().get(1);
+
+        // verify there is a relationship between the delivery and the orders, and the delivery items and order items
+        checkDeliveryOrderRelationship(delivery.getDelivery(), order1);
+        checkDeliveryOrderRelationship(delivery.getDelivery(), order2);
+        checkDeliveryOrderItemRelationship(deliveryItem1, item1);
+        checkDeliveryOrderItemRelationship(deliveryItem2, item2);
+    }
+
+    /**
+     * Verifies that invoices may reference an order without referencing specific OrderLines.
+     * <p/>
+     * Product matching should occur to link delivery items with order items.
+     */
+    @Test
+    public void testMatchingForInvoiceWithNoOrderLineReferences() {
+        InvoiceMapper mapper = createMapper();
+        Product product1 = getProduct();
+        Product product2 = TestHelper.createProduct();
+        Product product3 = TestHelper.createProduct();
+
+        // create an order with 3 items
+        FinancialAct item1 = createOrderItem(product1, BigDecimal.TEN, 1, BigDecimal.ONE, "product1");
+        FinancialAct item2 = createOrderItem(product2, BigDecimal.TEN, 1, BigDecimal.ONE, "product2");
+        FinancialAct item3 = createOrderItem(product3, BigDecimal.TEN, 1, BigDecimal.ONE, "product3");
+        FinancialAct order = createOrder(item1, item2, item3);
+
+        // create an invoice that references the order, but not the order items.
+        // Different quantities are invoiced for product2 and product3 - the corresponding delivery items should
+        // still be linked to the order items 
+        InvoiceLineType line1 = createInvoiceLine("1", item1);
+        InvoiceLineType line2 = createInvoiceLine("2", BigDecimal.ONE, item2); // invoicing 1, instead of 10
+        InvoiceLineType line3 = createInvoiceLine("3", new BigDecimal("15"), item3); // invoicing 15, instead of 10
+        Invoice invoice = createInvoice(getSupplier(), getStockLocation(), line1, line2, line3);
+        invoice.setOrderReference(createOrderReference(order));
+
+        // map the invoice to a delivery
+        Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
+        assertEquals(order, delivery.getOrder()); 
+        save(delivery.getActs());
+        assertEquals(3, delivery.getDeliveryItems().size());
+        FinancialAct deliveryItem1 = delivery.getDeliveryItems().get(0);
+        FinancialAct deliveryItem2 = delivery.getDeliveryItems().get(1);
+        FinancialAct deliveryItem3 = delivery.getDeliveryItems().get(2);
+
+        // verify there is a relationship between the delivery and the order, and the delivery items and order items
+        checkDeliveryOrderRelationship(delivery.getDelivery(), order);
+        checkDeliveryOrderItemRelationship(deliveryItem1, item1);
+        checkDeliveryOrderItemRelationship(deliveryItem2, item2);
+        checkDeliveryOrderItemRelationship(deliveryItem3, item3);
+    }
+
+    /**
+     * Verifies that invoices may references multiple orders, without referencing specific OrderLines.
+     * <p/>
+     * This is done by specifying -1 for the OrderLineReference LineID.
+     * <p/>
+     * Product matching should occur to link delivery items with order items.
+     */
+    @Test
+    public void testMatchingForInvoiceWithMultipleOrdersAndNoOrderLineReferences() {
+        InvoiceMapper mapper = createMapper();
+        Product product1 = getProduct();
+        Product product2 = TestHelper.createProduct();
+
+        // create two orders, each with one item.
+        FinancialAct item1 = createOrderItem(product1, BigDecimal.ONE, 1, BigDecimal.ONE, "product1");
+        FinancialAct order1 = createOrder(item1);
+
+        FinancialAct item2 = createOrderItem(product2, BigDecimal.ONE, 1, BigDecimal.ONE, "product2");
+        FinancialAct order2 = createOrder(item2);
+
+        // create an invoice that references the orders, but specifies -1 (unknown) for the LineIDs
+        InvoiceLineType line1 = createInvoiceLine("1", item1);
+        line1.getOrderLineReference().add(createOrderLineReference(-1, order1));
+
+        InvoiceLineType line2 = createInvoiceLine("2", item2);
+        line2.getOrderLineReference().add(createOrderLineReference(-1, order2));
+
+        Invoice invoice1 = createInvoice(getSupplier(), getStockLocation(), line1, line2);
+
+        // map the invoice to a delivery
+        Delivery delivery = mapper.map(invoice1, getSupplier(), getStockLocation(), null);
+        assertNull(delivery.getOrder()); // won't have a document level order
+        save(delivery.getActs());
+        assertEquals(2, delivery.getDeliveryItems().size());
+        FinancialAct deliveryItem1 = delivery.getDeliveryItems().get(0);
+        FinancialAct deliveryItem2 = delivery.getDeliveryItems().get(1);
+
+        // verify there is a relationship between the delivery and the orders, and the delivery items and order items
+        checkDeliveryOrderRelationship(delivery.getDelivery(), order1);
+        checkDeliveryOrderRelationship(delivery.getDelivery(), order2);
+        checkDeliveryOrderItemRelationship(deliveryItem1, item1);
+        checkDeliveryOrderItemRelationship(deliveryItem2, item2);
     }
 
     /**
@@ -597,8 +722,8 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies than an {@link ESCIAdapterException} is raised if a line extension amount for an InvoiceLine doesn't match
-     * that expected.
+     * Verifies than an {@link ESCIAdapterException} is raised if a line extension amount for an InvoiceLine doesn't
+     * match that expected.
      */
     @Test
     public void testInvalidItemLineExtensionAmount() {
@@ -610,8 +735,8 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an {@link ESCIAdapterException} is raised if an invoice references an order which was not sent to the
-     * supplier.
+     * Verifies that an {@link ESCIAdapterException} is raised if an invoice references an order which was not sent to
+     * the supplier.
      */
     @Test
     public void testInvalidOrder() {
@@ -656,8 +781,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         Invoice invoice = createInvoice();
         invoice.setOrderReference(UBLHelper.createOrderReference(order.getId()));
-        OrderLineReferenceType lineRef = new OrderLineReferenceType();
-        lineRef.setLineID(UBLHelper.initID(new LineIDType(), invalid.getId()));
+        OrderLineReferenceType lineRef = createOrderLineReference(invalid);
         invoice.getInvoiceLine().get(0).getOrderLineReference().add(lineRef);
         checkMappingException(invoice, "ESCIA-0606: Invalid OrderLine: " + invalid.getId()
                                        + " referenced by InvoiceLine: 1");
@@ -842,6 +966,28 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
+     * Verifies a relationship exists between a delivery and an order.
+     *
+     * @param delivery the delivery item
+     * @param order    the order item
+     */
+    private void checkDeliveryOrderRelationship(FinancialAct delivery, FinancialAct order) {
+        ActBean bean = new ActBean(delivery);
+        assertTrue(bean.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_RELATIONSHIP, order));
+    }
+
+    /**
+     * Verifies a relationship exists between a delivery item and an order item.
+     *
+     * @param deliveryItem the delivery item
+     * @param orderItem    the order item
+     */
+    private void checkDeliveryOrderItemRelationship(FinancialAct deliveryItem, FinancialAct orderItem) {
+        ActBean bean = new ActBean(deliveryItem);
+        assertTrue(bean.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, orderItem));
+    }
+
+    /**
      * Verifies that the package size and units in a delivery match that expected.
      *
      * @param packageSize  the expected package size
@@ -909,10 +1055,56 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         // reference the order item in the invoice line
         InvoiceLineType line = invoice.getInvoiceLine().get(0);
-        OrderLineReferenceType itemRef = new OrderLineReferenceType();
-        itemRef.setLineID(UBLHelper.initID(new LineIDType(), orderItem.getId()));
+        OrderLineReferenceType itemRef = createOrderLineReference(orderItem);
         line.getOrderLineReference().add(itemRef);
         return invoice;
+    }
+
+    /**
+     * Creates an order reference.
+     *
+     * @param order the order
+     * @return a new <tt>OrderReferenceType</tt>
+     */
+    private OrderReferenceType createOrderReference(FinancialAct order) {
+        return UBLHelper.createOrderReference(order.getId());
+    }
+
+    /**
+     * Creates an order line reference.
+     *
+     * @param orderItem the order item
+     * @return a new <tt>OrderLineReferenceType</tt>
+     */
+    private OrderLineReferenceType createOrderLineReference(FinancialAct orderItem) {
+        return createOrderLineReference(orderItem, null);
+    }
+
+    /**
+     * Creates an order line reference that optionally references the order.
+     *
+     * @param orderItem the order item
+     * @param order     the order. May be <tt>null</tt>
+     * @return a new <tt>OrderLineReferenceType</tt>
+     */
+    private OrderLineReferenceType createOrderLineReference(FinancialAct orderItem, FinancialAct order) {
+        return createOrderLineReference(orderItem.getId(), order);
+    }
+
+    /**
+     * Creates an order line reference that optionally references the order.
+     *
+     * @param lineId the order line identifier, or <tt>-1</tt> if it is not known
+     * @param order  the order. May be <tt>null</tt>
+     * @return a new <tt>OrderLineReferenceType</tt>
+     */
+    private OrderLineReferenceType createOrderLineReference(long lineId, FinancialAct order) {
+        OrderLineReferenceType result = new OrderLineReferenceType();
+        result.setLineID(UBLHelper.initID(new LineIDType(), lineId));
+        if (order != null) {
+            result.setOrderReference(createOrderReference(order));
+        }
+        return result;
     }
 
     /**

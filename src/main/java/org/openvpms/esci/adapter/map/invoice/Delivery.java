@@ -100,6 +100,8 @@ public class Delivery {
 
     /**
      * Returns the delivery items.
+     * <p/>
+     * Each delivery item corresponds to an invoice line, and must appear in the same order as the invoice lines.
      *
      * @return the delivery items
      */
