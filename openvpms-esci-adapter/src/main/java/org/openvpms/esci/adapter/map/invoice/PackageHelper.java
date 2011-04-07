@@ -102,7 +102,7 @@ class PackageHelper {
             List<ProductSupplier> list = rules.getProductSuppliers(product, supplier);
             if (list.size() == 1) {
                 ProductSupplier ps = list.get(0);
-                result = new Package(ps.getPackageSize(), ps.getPackageUnits());
+                result = new Package(ps);
             }
         }
         return result;

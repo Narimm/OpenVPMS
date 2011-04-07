@@ -394,10 +394,10 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * This looks for a single PricingReference/AlternativeConditionPrice. If present, it must have a PriceTypeCode
      * of "WH" (wholesale).
      *
-     * @return the list price, or <tt>0.0</tt> if no wholesale price is specified
+     * @return the list price, <tt>null</tt> if no list price is specified
      */
     public BigDecimal getWholesalePrice() {
-        BigDecimal result = BigDecimal.ZERO;
+        BigDecimal result = null;
         PricingReferenceType pricing = line.getPricingReference();
         if (pricing != null) {
             List<PriceType> prices = pricing.getAlternativeConditionPrice();
