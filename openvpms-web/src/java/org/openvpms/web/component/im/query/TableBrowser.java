@@ -320,7 +320,7 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
 
     /**
      * Registers a listener for when the model updates.
-     * This implementation updates the browser's sort criteria so that it is preserved accross queries.
+     * This implementation updates the browser's sort criteria so that it is preserved across queries.
      *
      * @param model the model
      */
