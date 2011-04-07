@@ -472,7 +472,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         // map the invoice to a delivery
         Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
-        assertEquals(order, delivery.getOrder()); 
+        assertEquals(order, delivery.getOrder());
         save(delivery.getActs());
         assertEquals(3, delivery.getDeliveryItems().size());
         FinancialAct deliveryItem1 = delivery.getDeliveryItems().get(0);
@@ -554,6 +554,84 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
         // verify there is no relationship between the delivery item and the order item
         assertFalse(itemBean.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, orderItem));
+    }
+
+    /**
+     * Verifies that the list price in delivery items is set to:
+     * <ol>
+     * <li>the wholesale price from the invoice line, if present; or
+     * <li>the list price from product/supplier relationship; or
+     * <li>the unit price, if neither of the above is present or are zero
+     * </ol>
+     */
+    @Test
+    public void testListPrice() {
+        Product product1 = getProduct();
+        Product product2 = TestHelper.createProduct();
+        Product product3 = TestHelper.createProduct();
+
+        BigDecimal listPrice1 = new BigDecimal("1.5");
+        BigDecimal listPrice2 = BigDecimal.ZERO;
+        BigDecimal listPrice3 = null;
+        addProductSupplierRelationship(product1, getSupplier(), 1, PACKAGE_UNITS, new BigDecimal("1.4"));
+        addProductSupplierRelationship(product2, getSupplier(), 1, PACKAGE_UNITS, new BigDecimal("1.1"));
+        addProductSupplierRelationship(product3, getSupplier(), 1, PACKAGE_UNITS, null);
+
+        InvoiceLineType line1 = createInvoiceLine("1", product1, "PRODUCT1", null, listPrice1, BigDecimal.ONE,
+                                                  BigDecimal.ONE, PACKAGE_UNIT_CODE);
+        InvoiceLineType line2 = createInvoiceLine("2", product2, "PRODUCT2", null, listPrice2, BigDecimal.ONE,
+                                                  BigDecimal.ONE, PACKAGE_UNIT_CODE);
+        InvoiceLineType line3 = createInvoiceLine("3", product3, "PRODUCT3", null, listPrice3, BigDecimal.ONE,
+                                                  BigDecimal.ONE, PACKAGE_UNIT_CODE);
+
+        Invoice invoice = createInvoice(getSupplier(), getStockLocation(), line1, line2, line3);
+
+        // perform the mapping
+        InvoiceMapper mapper = createMapper();
+        Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
+
+        assertEquals(3, delivery.getDeliveryItems().size());
+
+        // verify product1 list price is that from line1
+        FinancialAct deliveryItem1 = delivery.getDeliveryItems().get(0);
+        ActBean itemBean1 = new ActBean(deliveryItem1);
+        assertTrue(itemBean1.getBigDecimal("listPrice").compareTo(listPrice1) == 0);
+
+        // verify product2 list price is that from the product/supplier relationship
+        FinancialAct deliveryItem2 = delivery.getDeliveryItems().get(1);
+        ActBean itemBean2 = new ActBean(deliveryItem2);
+        assertTrue(itemBean2.getBigDecimal("listPrice").compareTo(new BigDecimal("1.1")) == 0);
+
+        // verify product3 list price is the same as the unit prioe
+        FinancialAct deliveryItem3 = delivery.getDeliveryItems().get(2);
+        ActBean itemBean3 = new ActBean(deliveryItem3);
+        assertTrue(itemBean3.getBigDecimal("listPrice").compareTo(BigDecimal.ONE) == 0);
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if a document-level order reference is specified but
+     * the invoice lines reference different orders.
+     */
+    @Test
+    public void testMultipleOrdersWithDocLevelOrderReference() {
+        // create two orders, each with one item.
+        FinancialAct item1 = createOrderItem(getProduct(), BigDecimal.ONE, 1, BigDecimal.ONE, "PRODUCTA");
+        FinancialAct order1 = createOrder(item1);
+
+        FinancialAct item2 = createOrderItem(getProduct(), BigDecimal.ONE, 1, BigDecimal.ONE, "PRODUCTA");
+        FinancialAct order2 = createOrder(item2);
+
+        // create an invoice that references the orders,
+        InvoiceLineType line1 = createInvoiceLine("1", item1);
+        line1.getOrderLineReference().add(createOrderLineReference(item1, order1));
+
+        InvoiceLineType line2 = createInvoiceLine("2", item2);
+        line2.getOrderLineReference().add(createOrderLineReference(item2, order2));
+
+        Invoice invoice = createInvoice(getSupplier(), getStockLocation(), line1, line2);
+        invoice.setOrderReference(createOrderReference(order1));
+        checkMappingException(invoice, "ESCIA-0108: Invalid Order: " + order2.getId()
+                                       + " referenced by Invoice: 12345");
     }
 
     /**
@@ -1019,10 +1097,25 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      * @param packageUnits the package units
      */
     private void addProductSupplierRelationship(Product product, Party supplier, int packageSize, String packageUnits) {
+        addProductSupplierRelationship(product, supplier, packageSize, packageUnits, null);
+    }
+
+    /**
+     * Adds a product/supplier relatiobship.
+     *
+     * @param product      the product
+     * @param supplier     the supplier
+     * @param packageSize  the package size
+     * @param packageUnits the package units
+     * @param listPrice    the list price. May be <tt>null</tt>
+     */
+    private void addProductSupplierRelationship(Product product, Party supplier, int packageSize, String packageUnits,
+                                                BigDecimal listPrice) {
         ProductRules rules = new ProductRules();
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageSize(packageSize);
         ps.setPackageUnits(packageUnits);
+        ps.setListPrice(listPrice);
         save(product, supplier);
     }
 

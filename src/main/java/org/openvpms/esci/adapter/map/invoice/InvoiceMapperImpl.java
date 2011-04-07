@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -415,7 +416,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * will be returned
      * <ul>
      *
-     * @param line    the invoice line
+     * @param line the invoice line
      * @return the corresponding order item, or <tt>null</tt> if none is present
      */
     protected FinancialAct mapOrderItem(InvoiceLineState line) {
@@ -427,6 +428,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
             ActBean itemBean = factory.createActBean(item);
             IMObjectReference orderedProduct = itemBean.getNodeParticipantRef("product");
             if (!ObjectUtils.equals(orderedProduct, invoiced.getObjectReference())) {
+                log.warn("Invoiced product doesn't refer to that ordered"); // TODO - log context
                 item = null;
             }
         }
@@ -460,15 +462,17 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         String reorderCode = line.getSellersItemID();
         String reorderDescription = line.getItemName();
 
-        BigDecimal unitPrice = line.getPriceAmount();
-        BigDecimal listPrice = line.getWholesalePrice();
         BigDecimal tax = line.getTaxAmount();
 
         FinancialAct orderItem = mapOrderItem(lineState);
 
         Package pkg = packageHelper.getPackage(orderItem, product, supplier);
+        ProductSupplier ps = (pkg != null) ? pkg.getProductSupplier() : null;
+
+        BigDecimal unitPrice = line.getPriceAmount();
         String packageUnits = getPackageUnits(invoicedUnitCode, pkg);
         int packageSize = getPackageSize(line, pkg);
+        BigDecimal listPrice = getListPrice(line, product, ps, packageSize, packageUnits, context);
 
         BigDecimal calcLineExtensionAmount = unitPrice.multiply(quantity);
         if (calcLineExtensionAmount.compareTo(lineExtensionAmount) != 0) {
@@ -500,6 +504,50 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
+     * Returns the list price.
+     * <p/>
+     * This is available as the wholesale price in the invoice line.
+     * <p/>
+     * If it is not present:
+     * <ol>
+     * <li>it will be defaulted to that from <tt>ps</tt>, if available
+     * <li>if ps is not present or the value is 0, it will be defaulted to the unit price from the invoice line.
+     * </ol>
+     *
+     * @param line         the invoice line
+     * @param product      the product. May be <tt>null</tt>
+     * @param ps           the product/supplier relationship. May be <tt>null</tt>
+     * @param packageSize  the package size
+     * @param packageUnits the package units
+     * @param context      the mapping context
+     * @return the list price
+     */
+    private BigDecimal getListPrice(UBLInvoiceLine line, Product product, ProductSupplier ps,
+                                    int packageSize, String packageUnits, MappingContext context) {
+        BigDecimal listPrice = line.getWholesalePrice();
+        if (listPrice != null && listPrice.compareTo(BigDecimal.ZERO) == 0) {
+            log.warn("Received 0.0 list price from supplier.");
+            listPrice = null;
+        }
+        if (listPrice == null) {
+            if (ps == null && product != null) {
+                ps = productRules.getProductSupplier(product, context.getSupplier(), packageSize, packageUnits);
+            }
+            if (ps != null) {
+                listPrice = ps.getListPrice();
+            }
+            if (listPrice == null || listPrice.compareTo(BigDecimal.ZERO) == 0) {
+                log.warn("Product/supplier list price is 0.0");
+            }
+        }
+        if (listPrice == null || listPrice.compareTo(BigDecimal.ZERO) == 0) {
+            // no list price in the invoice line, nor from a product/supplier. Default to the unit price
+            listPrice = line.getPriceAmount();
+        }
+        return listPrice;
+    }
+
+    /**
      * Returns the package units.
      *
      * @param invoicedUnitCode the invoiced quantity unit code
@@ -513,14 +561,14 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         List<String> matches = packageHelper.getPackageUnits(invoicedUnitCode);
         if (expected != null) {
             if (!matches.contains(expected)) {
-                log.warn("Invoice package units (" + StringUtils.join(matches.iterator(), ", ")
+                log.warn("Invoice package units (" + StringUtils.join(matches.iterator(), ", ") // TODO - log context
                          + ") don't match that expected: " + expected);
             }
             result = expected;
         } else if (matches.size() == 1) {
             result = matches.get(0);
         } else if (matches.size() > 1) {
-            log.warn("Cannot determine package units. " + matches.size()
+            log.warn("Cannot determine package units. " + matches.size()       // TODO - log context
                      + " package units match unit code: " + invoicedUnitCode);
         }
         return result;
@@ -550,7 +598,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         if (expectedSize != 0) {
             if (invoiceSize != 0 && invoiceSize != expectedSize) {
                 log.warn("Different package size received for invoice. Expected package size=" + expectedSize
-                         + ", invoiced package size=" + invoiceSize);
+                         + ", invoiced package size=" + invoiceSize); // TODO - log context
             }
             result = expectedSize;
         } else {

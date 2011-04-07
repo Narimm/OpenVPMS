@@ -44,7 +44,11 @@ import java.util.HashSet;
 
 /**
  * Helper to match invoice lines to their corresponding order items.
- * Where an invoice line doesn't explicitly refer to an order line, an corresponding
+ * Where an invoice line doesn't explicitly refer to an order line, attempts will be made to match it to:
+ * <ol>
+ * <li>an unreferenced order line with the same product and quantity, or if none is found
+ * <li>an unreferenced order line with the same product
+ * </ol>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
@@ -122,9 +126,9 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
      * <li>a document-level order reference, then all order lines must reference this order
      * <li>no document level order reference, order references must be fully qualified i.e must specify both
      * the order line and order
-     * <li>a document-level order reference, but no order line reference, the first order item matching the invoice item
-     * will be returned
      * <ul>
+     * If the OrderLineReference/LineID is <tt>-1</tt>, no order item will be populated. This must be handled by
+     * matching on product and quantity.
      *
      * @param line    the invoice line
      * @param context the mapping context

@@ -18,6 +18,8 @@
 
 package org.openvpms.esci.adapter.map.invoice;
 
+import org.openvpms.archetype.rules.product.ProductSupplier;
+
 /**
  * Package information.
  *
@@ -37,14 +39,41 @@ class Package {
     private final String units;
 
     /**
+     * The product/supplier relationship where that the size and units came from. May be <tt>null</tt>.
+     */
+    private final ProductSupplier ps;
+
+
+    /**
      * Constructs a <tt>Package</tt>.
      *
      * @param size  the package size
      * @param units the package units
      */
     public Package(int size, String units) {
+        this(size, units, null);
+    }
+
+    /**
+     * Constructs a <tt>Package</tt>.
+     *
+     * @param ps the product/supplier relationship
+     */
+    public Package(ProductSupplier ps) {
+        this(ps.getPackageSize(), ps.getPackageUnits(), ps);
+    }
+
+    /**
+     * Constructs a <tt>Package</tt>.
+     *
+     * @param size  the package size
+     * @param units the package units
+     * @param ps    the product/supplier relationship that the size and units came from. May be <tt>null</tt>
+     */
+    private Package(int size, String units, ProductSupplier ps) {
         this.size = size;
         this.units = units;
+        this.ps = ps;
     }
 
     /**
@@ -63,6 +92,15 @@ class Package {
      */
     public String getPackageUnits() {
         return units;
+    }
+
+    /**
+     * Returns the product/supplier relationship where the package information came from.
+     *
+     * @return the product/supplier relationship. May be <tt>null</tt>
+     */
+    public ProductSupplier getProductSupplier() {
+        return ps;
     }
 
 }

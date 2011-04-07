@@ -302,7 +302,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * @param product             the product
      * @param supplierId          the supplier's identifier for the product
      * @param supplierName        the supplier's name for the product
-     * @param listPrice           the list (or wholesale) price
+     * @param listPrice           the list (or wholesale) price. May be <tt>null</tt>
      * @param price               the price
      * @param quantity            the quantity
      * @param unitCode            the invoiced quantity unit code
@@ -319,11 +319,13 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         result.setLineExtensionAmount(initAmount(new LineExtensionAmountType(), lineExtensionAmount));
         result.setItem(createItem(product, supplierId, supplierName));
         result.setPrice(createPrice(price));
-        PricingReferenceType pricingRef = new PricingReferenceType();
-        PriceType priceType = createPrice(listPrice);
-        priceType.setPriceTypeCode(UBLHelper.initCode(new PriceTypeCodeType(), "WH"));
-        pricingRef.getAlternativeConditionPrice().add(priceType);
-        result.setPricingReference(pricingRef);
+        if (listPrice != null) {
+            PricingReferenceType pricingRef = new PricingReferenceType();
+            PriceType priceType = createPrice(listPrice);
+            priceType.setPriceTypeCode(UBLHelper.initCode(new PriceTypeCodeType(), "WH"));
+            pricingRef.getAlternativeConditionPrice().add(priceType);
+            result.setPricingReference(pricingRef);
+        }
         result.getTaxTotal().add(createTaxTotal(tax, true));
         return result;
     }
