@@ -102,9 +102,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
      * @param deliveryStatus the status to match on
      * @return the filtered result set
      */
-    private ResultSet<FinancialAct> filterOnDeliveryStatus(
-            ResultSet<FinancialAct> set,
-            String deliveryStatus) {
+    private ResultSet<FinancialAct> filterOnDeliveryStatus(ResultSet<FinancialAct> set, String deliveryStatus) {
         List<FinancialAct> matches = new ArrayList<FinancialAct>();
         while (set.hasNext()) {
             IPage<FinancialAct> page = set.next();
@@ -115,8 +113,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
                 }
             }
         }
-        return new IMObjectListResultSet<FinancialAct>(matches,
-                getMaxResults());
+        return new IMObjectListResultSet<FinancialAct>(matches, getMaxResults(), set.getSortConstraints(), null);
     }
 
     /**

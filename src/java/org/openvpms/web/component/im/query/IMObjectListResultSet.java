@@ -76,7 +76,27 @@ public class IMObjectListResultSet<T extends IMObject>
      */
     public IMObjectListResultSet(List<T> objects, int pageSize,
                                  Transformer transformer) {
+        this(objects, pageSize, null, transformer);
+    }
+
+    /**
+     * Constructs a new <tt>IMObjectListResultSet</tt>.
+     *
+     * @param objects     the objects
+     * @param pageSize    the maximum no. of results per page
+     * @param transformer a transformer to apply to objects when sorting.
+     *                    May be <tt>null</tt>
+     * @param sort        the sort criteria. If specified, the objects must have been sorted on this.
+     *                    May be <tt>null</tt>
+     */
+    public IMObjectListResultSet(List<T> objects, int pageSize, SortConstraint[] sort, Transformer transformer) {
         super(objects, pageSize);
+        if (sort != null) {
+            this.sort = sort;
+            if (sort.length > 0) {
+                sortAscending = sort[0].isAscending();
+            }
+        }
         this.transformer = transformer;
     }
 
