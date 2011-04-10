@@ -289,7 +289,7 @@ public class ProductPriceUpdater {
      * <ul>
      * <li>autoPriceUpdate is <tt>true</tt>; and</li>
      * <li>listPrice &lt;&gt; 0; and</li>
-     * <li>pageSize &lt;&gt; 0; and</li>
+     * <li>packageSize &lt;&gt; 0; and</li>
      * <li>the supplier is active</li>
      * </ul>
      *
