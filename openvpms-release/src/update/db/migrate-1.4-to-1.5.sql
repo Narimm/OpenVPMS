@@ -208,3 +208,13 @@ select e.entity_id, "printMode", "string", "CHECK_OUT"
 from entities e
 where e.arch_short_name = "entity.documentTemplate"
       and not exists (select * from entity_details d where d.entity_id = e.entity_id and d.name ="printMode");
+
+#
+# Update lookup.customerAccountType accountFeeAmount percentages for OVPMS-1028
+#
+update lookups l, lookup_details t, lookup_details p
+set p.value = p.value * 100
+where l.lookup_id = t.lookup_id and t.name ="accountFee" and t.value = "PERCENTAGE"
+      and l.lookup_id = p.lookup_id and p.name = "accountFeeAmount" and p.value < 1
+      and l.arch_short_name = "lookup.customerAccountType";
+
