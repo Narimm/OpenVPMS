@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -231,10 +232,10 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     }
 
     /**
-     * Tests end of period with account fees.
+     * Tests end of period with fixed account fees.
      */
     @Test
-    public void testEndOfPeriodWithAccountFees() {
+    public void testEndOfPeriodWithFixedAccountFees() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
 
@@ -279,6 +280,63 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         acts = getActs(customer, statementDate);
         assertEquals(3, acts.size());
 
+        BigDecimal closingBalance = amount.add(feeAmount);
+        checkOpeningBalance(acts.get(0), amount);
+        checkAct(acts.get(1), DEBIT_ADJUST, feeAmount);
+        checkClosingBalance(acts.get(2), closingBalance, amount);
+
+        // verify the fee has been added to the balance
+        CustomerAccountRules rules = new CustomerAccountRules();
+        checkEquals(closingBalance, rules.getBalance(customer));
+    }
+
+    /**
+     * Tests end of period with percentage account fees.
+     */
+    @Test
+    public void testEndOfPeriodWithPercentageAccountFees() {
+        Party customer = getCustomer();
+        BigDecimal feePercent = new BigDecimal("1.25");
+
+        // 30 days account fee days i.e 30 days before overdue fees are
+        // generated, charging 1.25% on overdue fees
+        Lookup accountType = FinancialTestHelper.createAccountType(
+                30, DateUnits.DAYS, feePercent, AccountType.FeeType.PERCENTAGE, 30, BigDecimal.ZERO);
+        customer.addClassification(accountType);
+        save(customer);
+
+        final Money amount = new Money(50);
+        Date datetime = getDatetime("2007-01-01 10:00:00");
+        List<FinancialAct> invoice = createChargesInvoice(amount, customer, datetime);
+        save(invoice);
+
+        // run end of period 29 days from when the invoice was posted
+        Date statementDate = DateRules.getDate(datetime, 29, DateUnits.DAYS);
+
+        EndOfPeriodProcessor processor = new EndOfPeriodProcessor(statementDate, true, getPractice());
+        processor.process(customer);
+
+        // verify there are 2 acts: the original invoice and closing balance
+        List<Act> acts = getActs(customer, statementDate);
+        assertEquals(2, acts.size());
+
+        assertEquals(invoice.get(0), acts.get(0));
+        FinancialAct closing = (FinancialAct) acts.get(1);
+        checkClosingBalance(closing, amount, BigDecimal.ZERO);
+        assertTrue(closing.isCredit());
+
+        // run end of period 30 days from when the invoice was posted
+        statementDate = DateRules.getDate(statementDate, 30, DateUnits.DAYS);
+
+        processor = new EndOfPeriodProcessor(statementDate, true, getPractice());
+        processor.process(customer);
+
+        // verify there are 3 acts: an opening balance, an overdue fee,
+        // and a closing balance
+        acts = getActs(customer, statementDate);
+        assertEquals(3, acts.size());
+
+        BigDecimal feeAmount = new BigDecimal("0.63");   // ((50 * 1.25) / 100) rounded to 2 places
         BigDecimal closingBalance = amount.add(feeAmount);
         checkOpeningBalance(acts.get(0), amount);
         checkAct(acts.get(1), DEBIT_ADJUST, feeAmount);
@@ -590,7 +648,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // create account type where 30 days must elapse before overdue fees are
         // generated for amounts >= $10
         Lookup accountType = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, feeAmount, 30, feeBalance);
+                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 30, feeBalance);
         customer.addClassification(accountType);
         save(customer);
 
@@ -665,7 +723,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // create account type where 30 days must elapse before overdue fees are
         // generated for amounts >= $10
         Lookup accountType = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, feeAmount, 30, feeBalance);
+                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 30, feeBalance);
         customer.addClassification(accountType);
         save(customer);
 
@@ -746,7 +804,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // create account type where 60 days must elapse before fees are
         // generated for amounts >= $10. Amounts are overdue after 30 days
         Lookup accountType = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, feeAmount, 60, feeBalance);
+                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 60, feeBalance);
         customer.addClassification(accountType);
         save(customer);
 

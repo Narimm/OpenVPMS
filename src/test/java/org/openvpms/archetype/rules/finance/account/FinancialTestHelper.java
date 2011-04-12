@@ -404,7 +404,7 @@ public class FinancialTestHelper extends TestHelper {
                                            BigDecimal accountFeeAmount,
                                            int accountFeeDays) {
         return createAccountType(paymentTerms, paymentUom, accountFeeAmount,
-                                 accountFeeDays, BigDecimal.ZERO);
+                                 AccountType.FeeType.FIXED, accountFeeDays, BigDecimal.ZERO);
     }
 
     /**
@@ -414,6 +414,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param paymentTerms     the payment terms
      * @param paymentUom       the payment units
      * @param accountFeeAmount the account fee
+     * @param accountFeeType   the account fee type
      * @param accountFeeDays   the account fee days
      * @param feeBalance       the minumum balance when an account fee applies
      * @return a new classification
@@ -421,6 +422,7 @@ public class FinancialTestHelper extends TestHelper {
     public static Lookup createAccountType(int paymentTerms,
                                            DateUnits paymentUom,
                                            BigDecimal accountFeeAmount,
+                                           AccountType.FeeType accountFeeType,
                                            int accountFeeDays,
                                            BigDecimal feeBalance) {
         Lookup lookup = (Lookup) create("lookup.customerAccountType");
@@ -429,6 +431,7 @@ public class FinancialTestHelper extends TestHelper {
                               + Math.abs(new Random().nextInt()));
         bean.setValue("paymentTerms", paymentTerms);
         bean.setValue("paymentUom", paymentUom.toString());
+        bean.setValue("accountFee", accountFeeType.toString());
         bean.setValue("accountFeeAmount", accountFeeAmount);
         bean.setValue("accountFeeDays", accountFeeDays);
         bean.setValue("accountFeeBalance", feeBalance);
