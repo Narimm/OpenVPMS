@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -59,6 +60,12 @@ public class AccountType {
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * Helper for % divisions.
+     */
+    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
+
 
     /**
      * Constructs an <tt>AccountType</tt>.
@@ -202,7 +209,7 @@ public class AccountType {
      * {@link #getAccountFeeAmount()}.
      * <br/>
      * If the fee type is <tt>PERCENTAGE</tt>, returns
-     * {@link #getAccountFeeAmount()} * <tt>overdue</tt>
+     * ({@link #getAccountFeeAmount()} * <tt>overdue</tt>)/100
      *
      * @param overdue the overdue amount
      * @return the account fee
@@ -212,7 +219,7 @@ public class AccountType {
         if (getFeeType() == FeeType.FIXED) {
             return amount;
         }
-        return amount.multiply(overdue);
+        return MathRules.divide(amount.multiply(overdue), HUNDRED, 2); // TODO - should use currency scale
     }
 
     /**

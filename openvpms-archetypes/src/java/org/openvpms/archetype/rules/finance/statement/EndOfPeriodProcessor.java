@@ -124,6 +124,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @param postCompletedCharges if <tt>true</tt>, post completed charges
      * @param practice             the practice
      * @param service              the archetype service
+     * @param lookups              the lookup service
      * @throws StatementProcessorException if the statement date is invalid
      */
     public EndOfPeriodProcessor(Date statementDate,
@@ -251,7 +252,8 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * Posts a completed charge act. This sets the status to <tt>POSTED<tt>,
      * and the startTime to 1 second less than the statement timestamp.
      *
-     * @param act the act to post
+     * @param act    the act to post
+     * @param period the statement period
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void post(Act act, StatementPeriod period) {
