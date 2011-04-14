@@ -39,6 +39,7 @@ import com.sun.star.uno.UnoRuntime;
 import com.sun.star.util.CloseVetoException;
 import com.sun.star.util.XCloseable;
 import com.sun.star.util.XRefreshable;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -50,7 +51,12 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.*;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToCreateDoc;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToExportDoc;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetField;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetInputFields;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetUserFields;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToSetField;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -107,14 +113,15 @@ public class OpenOfficeDocument {
      *
      * @param document   the source document
      * @param connection the connection to the OpenOffice service
+     * @param handlers   the document handlers
      * @throws OpenOfficeException for any error
      */
-    public OpenOfficeDocument(Document document, OOConnection connection,
-                              DocumentHandlers handlers) {
+    public OpenOfficeDocument(Document document, OOConnection connection, DocumentHandlers handlers) {
         XComponentLoader loader = connection.getComponentLoader();
 
         InputStream input;
         byte[] content;
+        String name = document.getName();
         try {
             DocumentHandler handler = handlers.get(document);
             input = handler.getContent(document);
@@ -124,34 +131,38 @@ public class OpenOfficeDocument {
             content = output.toByteArray();
             IOUtils.closeQuietly(output);
         } catch (DocumentException exception) {
-            throw new OpenOfficeException(exception, FailedToCreateDoc,
-                                          document.getName());
+            throw new OpenOfficeException(exception, FailedToCreateDoc, name);
         } catch (java.io.IOException exception) {
-            throw new OpenOfficeException(exception, FailedToCreateDoc,
-                                          document.getName());
+            throw new OpenOfficeException(exception, FailedToCreateDoc, name);
         }
         XInputStream xstream = new ByteArrayToXInputStreamAdapter(content);
-        // XInputStream xstream = new InputStreamToXInputStreamAdapter(stream);
-        PropertyValue[] properties = new PropertyValue[]{
-                property("ReadOnly", Boolean.TRUE),
-                property("Hidden", Boolean.TRUE),
-                property("AsTemplate", true),
-                property("InputStream", xstream)
-        };
-        // AsTemplate tells office to create a new document from the given
-        // stream
+
+        PropertyValue[] properties;
+        PropertyValue readOnly = property("ReadOnly", Boolean.TRUE);
+        PropertyValue hidden = property("Hidden", Boolean.TRUE);
+        PropertyValue asTemplate = property("AsTemplate", true);
+        // AsTemplate tells office to create a new document from the given stream
+        PropertyValue inputStream = property("InputStream", xstream);
+
+        String extension = FilenameUtils.getExtension(name);
+        if (DocFormats.RTF_EXT.equalsIgnoreCase(extension)) {
+            // need to specify FilterName to avoid awful performance loading RTF. See REP-17
+            PropertyValue filter = property("FilterName", "Rich Text Format");
+            properties = new PropertyValue[]{filter, readOnly, hidden, asTemplate, inputStream};
+        } else {
+            properties = new PropertyValue[]{readOnly, hidden, asTemplate, inputStream};
+        }
+        //
 
         XComponent component;
         try {
             component = loader.loadComponentFromURL("private:stream", "_blank",
                                                     0, properties);
         } catch (Exception exception) {
-            throw new OpenOfficeException(exception, FailedToCreateDoc,
-                                          document.getName());
+            throw new OpenOfficeException(exception, FailedToCreateDoc, name);
         }
         if (component == null) {
-            throw new OpenOfficeException(FailedToCreateDoc,
-                                          document.getName());
+            throw new OpenOfficeException(FailedToCreateDoc, name);
         }
         this.document = component;
         this.handlers = handlers;
@@ -232,6 +243,7 @@ public class OpenOfficeDocument {
      * Returns the value of an input field.
      *
      * @param name the input field name
+     * @return the input field value. May be <tt>null</tt>
      */
     public String getInputField(String name) {
         Field field = inputFields.get(name);
@@ -243,6 +255,9 @@ public class OpenOfficeDocument {
 
     /**
      * Sets the value of an input field.
+     *
+     * @param name the input field name
+     * @value the input field value. May be <tt>null</tt>
      */
     public void setInputField(String name, String value) {
         Field field = inputFields.get(name);
@@ -412,7 +427,7 @@ public class OpenOfficeDocument {
      * Sets the content of a field.
      *
      * @param field the field
-     * @param value the new value
+     * @param value the new value. May be <tt>null</tt>
      * @throws OpenOfficeException if the field cannot be updated
      */
     protected void setContent(Field field, String value) {
@@ -429,7 +444,7 @@ public class OpenOfficeDocument {
      * Returns the content of a field.
      *
      * @param field the field
-     * @return the field content
+     * @return the field content. May be <tt>null</tt>
      * @throws OpenOfficeException if the field cannot be accessed
      */
     protected String getContent(Field field) {
