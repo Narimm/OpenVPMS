@@ -1214,6 +1214,14 @@
         </properties>
     </style>
 
+    <style name="download.rtf" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference resource="/org/openvpms/web/resource/image/buttons/doc.gif"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="download.fla" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
