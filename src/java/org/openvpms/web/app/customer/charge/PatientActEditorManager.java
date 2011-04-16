@@ -89,18 +89,20 @@ class PatientActEditorManager {
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
-                editing = false;
-                listener.completed();
-                editNext();
+                doNext();
             }
 
             @Override
             public void onSkip() {
-                editing = false;
-                listener.completed();
-                cancel();
+                doNext();
             }
 
+            private void doNext() {
+                editing = false;
+                listener.completed();
+                editNext();
+            }
+            
         });
         editing = true;
         dialog.show();
@@ -128,16 +130,6 @@ class PatientActEditorManager {
             }
         }
         return title;
-    }
-
-    /**
-     * Cancel all remaining edits, notifying the listeners.
-     */
-    private void cancel() {
-        for (Pair pair : queue) {
-            pair.listener.completed();
-        }
-        queue.clear();
     }
 
     /**
