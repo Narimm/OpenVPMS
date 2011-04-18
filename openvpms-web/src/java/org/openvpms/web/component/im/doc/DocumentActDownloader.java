@@ -66,7 +66,13 @@ public class DocumentActDownloader extends Downloader {
     private DocumentTemplate template;
 
     /**
-     * Creates a new <tt>DocumentActDownloader</tt>.
+     * PDF button style name.
+     */
+    private static final String PDF_STYLE_NAME = "download.pdf";
+
+    
+    /**
+     * Constructs a <tt>DocumentActDownloader</tt>.
      *
      * @param act the act
      */
@@ -86,20 +92,26 @@ public class DocumentActDownloader extends Downloader {
                 onDownload();
             }
         });
-        String styleName;
-        String fileName = act.getFileName();
-        if (fileName == null) {
+        boolean generated = false;
+        String name = act.getFileName();
+        if (act.getDocument() == null) {
             DocumentTemplate template = getTemplate();
             if (template != null) {
-                fileName = template.getName();
+                name = template.getName();
+                generated = true;
             }
         }
-        boolean convert = Converter.canConvert(
-                fileName, act.getMimeType(), DocFormats.PDF_TYPE);
-        if (fileName != null) {
-            String ext = FilenameUtils.getExtension(fileName).toLowerCase();
+        String styleName;
+        if (generated) {
+            // if the document is generated, then its going to be a PDF, at least for the forseeable future.
+            // Fairly expensive to determine the mime type otherwise. TODO
+            styleName = PDF_STYLE_NAME;
+            button.setText(name);
+        } else if (name != null) {
+            // name may be a file name.
+            String ext = FilenameUtils.getExtension(name).toLowerCase();
             styleName = "download." + ext;
-            button.setText(fileName);
+            button.setText(name);
         } else {
             styleName = DEFAULT_BUTTON_STYLE;
         }
@@ -109,15 +121,14 @@ public class DocumentActDownloader extends Downloader {
         }
         button.setStyleName(styleName);
 
-        if (convert) {
+        if (!generated && Converter.canConvert(name, act.getMimeType(), DocFormats.PDF_TYPE)) {
             Button asPDF = ButtonFactory.create(new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onDownloadAsPDF();
                 }
             });
-            asPDF.setStyleName("download.pdf");
-            asPDF.setProperty(Button.PROPERTY_TOOL_TIP_TEXT,
-                              Messages.get("file.download.asPDF.tooltip"));
+            asPDF.setStyleName(PDF_STYLE_NAME);
+            asPDF.setProperty(Button.PROPERTY_TOOL_TIP_TEXT, Messages.get("file.download.asPDF.tooltip"));
             component = RowFactory.create("CellSpacing", button, asPDF);
         } else {
             component = RowFactory.create("CellSpacing", button);
@@ -161,11 +172,9 @@ public class DocumentActDownloader extends Downloader {
                 DownloadServlet.startDownload(source);
             } else {
                 DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-                connection
-                        = OpenOfficeHelper.getConnectionPool().getConnection();
+                connection = OpenOfficeHelper.getConnectionPool().getConnection();
                 Converter converter = new Converter(connection, handlers);
-                Document target = converter.convert(source,
-                                                    DocFormats.PDF_TYPE);
+                Document target = converter.convert(source, DocFormats.PDF_TYPE);
                 DownloadServlet.startDownload(target);
             }
         } catch (OpenVPMSException exception) {
@@ -187,7 +196,6 @@ public class DocumentActDownloader extends Downloader {
                 Entity participant = bean.getNodeParticipant("documentTemplate");
                 if (participant != null) {
                     template = new DocumentTemplate(participant, ServiceHelper.getArchetypeService());
-
                 }
             }
         }
