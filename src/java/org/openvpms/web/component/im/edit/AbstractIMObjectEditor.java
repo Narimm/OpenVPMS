@@ -174,7 +174,6 @@ public abstract class AbstractIMObjectEditor
                                   LayoutContext layoutContext) {
         this.object = object;
         this.parent = parent;
-        editors = new Editors(listeners);
 
         if (layoutContext == null) {
             context = new DefaultLayoutContext(true);
@@ -183,15 +182,16 @@ public abstract class AbstractIMObjectEditor
             // don't increase the layout depth.
             context.setLayoutDepth(layoutContext.getLayoutDepth());
         }
-        IMObjectLayoutStrategyFactory strategyFactory
-                = context.getLayoutStrategyFactory();
-        if (strategyFactory == null
-            || strategyFactory instanceof ViewLayoutStrategyFactory) {
-            context.setLayoutStrategyFactory(new EditLayoutStrategyFactory());
-        }
 
         archetype = context.getArchetypeDescriptor(object);
         properties = new PropertySet(object, archetype);
+        editors = new Editors(properties,  listeners);
+
+        IMObjectLayoutStrategyFactory strategyFactory = context.getLayoutStrategyFactory();
+        if (strategyFactory == null || strategyFactory instanceof ViewLayoutStrategyFactory) {
+            context.setLayoutStrategyFactory(new EditLayoutStrategyFactory());
+        }
+
         IMObjectComponentFactory factory = new ComponentFactory(context);
         context.setComponentFactory(factory);
 
@@ -328,7 +328,7 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the object has been changed
      */
     public boolean isModified() {
-        return editors.isModified() || properties.isModified() || getObject().isNew();
+        return object.isNew() || editors.isModified();
     }
 
     /**
@@ -336,7 +336,6 @@ public abstract class AbstractIMObjectEditor
      */
     public void clearModified() {
         editors.clearModified();
-        properties.clearModified();
     }
 
     /**
@@ -376,18 +375,6 @@ public abstract class AbstractIMObjectEditor
      */
     public boolean validate(Validator validator) {
         boolean valid = validator.validate(editors);
-        if (valid) {
-            // validate each property not associated with an editor
-            for (Property property : properties.getProperties()) {
-                String name = property.getName();
-                if (editors.getEditor(name) == null) {
-                    if (!validator.validate(property)) {
-                        valid = false;
-                        break;
-                    }
-                }
-            }
-        }
         if (valid) {
             // run it by the archetype service to pick up validation issues
             // not detected by the app e.g expression assertions
