@@ -30,6 +30,7 @@ import org.openvpms.web.component.im.util.ObjectHelper;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -42,7 +43,7 @@ import java.util.Map;
 public class PropertySet {
 
     /**
-     * The object that the properties belong to.
+     * The object that the properties belong to. May be <tt>null</tt>
      */
     private final IMObject object;
 
@@ -75,23 +76,23 @@ public class PropertySet {
      */
     public PropertySet(IMObject object, ArchetypeDescriptor archetype) {
         this.object = object;
-        for (NodeDescriptor descriptor : archetype.getAllNodeDescriptors()) {
-            Property property = new IMObjectProperty(object, descriptor);
-            properties.put(descriptor.getName(), property);
-            if (property.isDerived()) {
-                derived.put(property, property.getValue());
-            }
+
+        List<NodeDescriptor> descriptors = archetype.getAllNodeDescriptors();
+        Property[] list = new Property[descriptors.size()];
+        for (int i = 0; i < descriptors.size(); ++i) {
+            list[i] = new IMObjectProperty(object, descriptors.get(i));
         }
-        if (!derived.isEmpty()) {
-            ModifiableListener listener = new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    updateDerivedProperties();
-                }
-            };
-            for (Property property : properties.values()) {
-                property.addModifiableListener(listener);
-            }
-        }
+        setProperties(list);
+    }
+
+    /**
+     * Constructs a <tt>PropertySet</tt> from a list of properties.
+     *
+     * @param properties the properties
+     */
+    public PropertySet(Property... properties) {
+        object = null;
+        setProperties(properties);
     }
 
     /**
@@ -155,16 +156,41 @@ public class PropertySet {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void updateDerivedProperties() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        service.deriveValues(object);
+        if (object != null) {
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            service.deriveValues(object);
 
-        for (Property property : derived.keySet()) {
-            Object old = derived.get(property);
-            Object now = property.getValue();
-            if (!ObjectHelper.equals(old, now)) {
-                derived.put(property, now);
-                property.refresh();
+            for (Property property : derived.keySet()) {
+                Object old = derived.get(property);
+                Object now = property.getValue();
+                if (!ObjectHelper.equals(old, now)) {
+                    derived.put(property, now);
+                    property.refresh();
+                }
+            }
+        }
+    }
+
+    /**
+     * Initialises this with the set of properties.
+     *
+     * @param properties the properties
+     */
+    private void setProperties(Property[] properties) {
+        for (Property property : properties) {
+            this.properties.put(property.getName(), property);
+            if (property.isDerived()) {
+                derived.put(property, property.getValue());
+            }
+        }
+        if (object != null && !derived.isEmpty()) {
+            ModifiableListener listener = new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    updateDerivedProperties();
+                }
+            };
+            for (Property property : properties) {
+                property.addModifiableListener(listener);
             }
         }
     }

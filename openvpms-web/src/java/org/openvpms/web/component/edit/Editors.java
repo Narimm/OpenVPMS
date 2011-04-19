@@ -22,6 +22,7 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.Validator;
 
 import java.util.ArrayList;
@@ -51,6 +52,16 @@ public class Editors implements Modifiable {
     private ModifiableListeners listeners;
 
     /**
+     * The listener for property and editor modifications.
+     */
+    private ModifiableListener listener;
+
+    /**
+     * The properties.
+     */
+    private final PropertySet properties;
+
+    /**
      * The set of editors.
      */
     private final Set<Editor> editors = new HashSet<Editor>();
@@ -58,17 +69,29 @@ public class Editors implements Modifiable {
     /**
      * The set of editors associated with properties, keyed on property name.
      */
-    private final Map<String, Editor> propertyEditors
-            = new HashMap<String, Editor>();
+    private final Map<String, Editor> propertyEditors = new HashMap<String, Editor>();
 
 
     /**
      * Constructs an <tt>Editors</tt>.
      *
-     * @param listeners the listeners
+     * @param properties the properties being edited
+     * @param listeners  the listeners
      */
-    public Editors(ModifiableListeners listeners) {
+    public Editors(PropertySet properties, ModifiableListeners listeners) {
+        this.properties = properties;
         this.listeners = listeners;
+        listener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onModified(modifiable);
+            }
+        };
+
+        for (Property property : properties.getProperties()) {
+            // initially register the listener with each property. If an editor for a property is registered,
+            // the listener will be moved to the editor, to avoid redundant notifications.
+            property.addModifiableListener(listener);
+        }
     }
 
     /**
@@ -113,9 +136,16 @@ public class Editors implements Modifiable {
      * @param editor the editor to remove
      */
     public void remove(Editor editor) {
+        editor.removeModifiableListener(listener);
         if (editor instanceof PropertyEditor) {
             PropertyEditor p = (PropertyEditor) editor;
-            propertyEditors.remove(p.getProperty().getName());
+            String name = p.getProperty().getName();
+            Property property = properties.get(name);
+            if (property != null) {
+                // if the property is registered, move the listener to property
+                property.addModifiableListener(listener);
+            }
+            propertyEditors.remove(name);
         }
         editors.remove(editor);
     }
@@ -188,6 +218,7 @@ public class Editors implements Modifiable {
                     return modified;
                 }
             }
+            modified = properties.isModified();
         }
         return modified;
     }
@@ -200,6 +231,7 @@ public class Editors implements Modifiable {
         for (Modifiable modifiable : editors) {
             modifiable.clearModified();
         }
+        properties.clearModified();
     }
 
     /**
@@ -243,17 +275,19 @@ public class Editors implements Modifiable {
                 valid = false;
             }
         }
+        if (valid) {
+            // validate each property not associated with an editor
+            for (Property property : properties.getProperties()) {
+                String name = property.getName();
+                if (getEditor(name) == null) {
+                    if (!validator.validate(property)) {
+                        valid = false;
+                        break;
+                    }
+                }
+            }
+        }
         return valid;
-    }
-
-    /**
-     * Returns <code>true</code> if no editors are registered.
-     *
-     * @return <code>true</code> if no editors are registered, otherwise
-     *         <code>false</code>
-     */
-    public boolean isEmpty() {
-        return editors.isEmpty();
     }
 
     /**
@@ -262,7 +296,7 @@ public class Editors implements Modifiable {
      *
      * @param modified the changed instance
      */
-    protected void notifyListeners(Modifiable modified) {
+    protected void onModified(Modifiable modified) {
         listeners.notifyListeners(modified);
     }
 
@@ -272,12 +306,17 @@ public class Editors implements Modifiable {
      * @param editor the editor to add
      */
     private void addEditor(Editor editor) {
-        editors.add(editor);
-        editor.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                notifyListeners(modifiable);
+        if (editor instanceof PropertyEditor) {
+            PropertyEditor p = (PropertyEditor) editor;
+            String name = p.getProperty().getName();
+            Property property = properties.get(name);
+            if (property != null) {
+                // if the property is registered, remove the listener from the property
+                property.removeModifiableListener(listener);
             }
-        });
+        }
+        editors.add(editor);
+        editor.addModifiableListener(listener);
     }
 
 }
