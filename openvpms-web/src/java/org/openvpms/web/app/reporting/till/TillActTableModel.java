@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
 
 import java.util.Date;
 
@@ -50,7 +51,7 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
 
 
     /**
-     * Constructs a new <code>TillActTableModel</code>.
+     * Constructs a <tt>TillActTableModel</tt>.
      */
     public TillActTableModel() {
         super(true, false, true, true);
@@ -78,8 +79,8 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
             if (bean.hasNode("customer")) {
                 NodeDescriptor descriptor = bean.getDescriptor("customer");
                 LayoutContext context = new DefaultLayoutContext();
-                TableComponentFactory factory = new TableComponentFactory(
-                        context);
+                context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+                TableComponentFactory factory = new TableComponentFactory(context);
                 context.setComponentFactory(factory);
                 Property property = new IMObjectProperty(act, descriptor);
                 result = factory.create(property, act).getComponent();
