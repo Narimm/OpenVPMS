@@ -18,6 +18,9 @@
 
 package org.openvpms.web.component.im.edit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.ObjectNotFoundException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -44,6 +47,12 @@ import java.util.Collection;
  * @version $LastChangedDate$
  */
 public class SaveHelper {
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(SaveHelper.class);
+
 
     /**
      * Saves an editor in a transaction.
@@ -97,7 +106,7 @@ public class SaveHelper {
         try {
             service.save(object);
             saved = true;
-        } catch (OpenVPMSException exception) {
+        } catch (Throwable exception) {
             error(object, exception);
         }
         return saved;
@@ -137,7 +146,7 @@ public class SaveHelper {
         try {
             service.save(objects);
             saved = true;
-        } catch (OpenVPMSException exception) {
+        } catch (Throwable exception) {
             // use the first object's display name when displaying the exception
             IMObject object = objects.toArray(new IMObject[objects.size()])[0];
             error(object, exception);
@@ -180,7 +189,7 @@ public class SaveHelper {
         try {
             service.remove(object);
             removed = true;
-        } catch (OpenVPMSException exception) {
+        } catch (Throwable exception) {
             listener.failed(object, exception);
         }
         return removed;
@@ -195,14 +204,12 @@ public class SaveHelper {
      */
     public static boolean replace(final IMObject delete,
                                   final IMObject insert) {
-        Object result = null;
+        Boolean result = null;
         try {
-            TransactionTemplate template = new TransactionTemplate(
-                    ServiceHelper.getTransactionManager());
-            result = template.execute(new TransactionCallback<Object>() {
-                public Object doInTransaction(TransactionStatus status) {
-                    IArchetypeService service
-                            = ServiceHelper.getArchetypeService();
+            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
+            result = template.execute(new TransactionCallback<Boolean>() {
+                public Boolean doInTransaction(TransactionStatus status) {
+                    IArchetypeService service = ServiceHelper.getArchetypeService();
                     service.remove(delete);
                     service.save(insert);
                     return true;
@@ -212,7 +219,7 @@ public class SaveHelper {
             String title = Messages.get("imobject.replace.failed.title");
             ErrorHelper.show(title, exception);
         }
-        return (result != null) && (Boolean) result;
+        return (result != null) && result;
     }
 
     /**
@@ -223,8 +230,7 @@ public class SaveHelper {
      */
     private static void error(IMObject object, Throwable exception) {
         String displayName = DescriptorHelper.getDisplayName(object);
-        String context = Messages.get("imobject.save.failed",
-                                      object.getObjectReference());
+        String context = Messages.get("imobject.save.failed", object.getObjectReference());
         error(displayName, context, exception);
     }
 
@@ -235,10 +241,18 @@ public class SaveHelper {
      * @param context     the context message. May be <tt>null</tt>
      * @param exception   the cause
      */
-    private static void error(String displayName, String context,
-                              Throwable exception) {
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+    private static void error(String displayName, String context, Throwable exception) {
+        Throwable cause = ErrorHelper.getRootCause(exception);
         String title = Messages.get("imobject.save.failed", displayName);
-        ErrorHelper.show(title, displayName, context, exception);
+        if (cause instanceof ObjectNotFoundException) {
+            // Don't propagate the exception
+            String message = Messages.get("imobject.notfound", displayName);
+            log.error(message, exception);
+            ErrorHelper.show(title, message);
+        } else {
+            ErrorHelper.show(title, displayName, context, exception);
+        }
     }
 
 }
