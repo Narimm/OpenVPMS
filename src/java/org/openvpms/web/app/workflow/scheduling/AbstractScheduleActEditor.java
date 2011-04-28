@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.DateTimePropertyTransformer;
 import org.openvpms.web.component.util.DateTimeFieldFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 
@@ -170,6 +171,9 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
             String name = property.getName();
             if (name.equals(START_TIME) || name.equals(END_TIME)) {
                 BoundDateTimeField field = DateTimeFieldFactory.create(property);
+                DateTimePropertyTransformer transformer = (DateTimePropertyTransformer) property.getTransformer();
+                transformer.setKeepSeconds(false);
+                // remove seconds as these screw up appointment slot comparisons, and they aren't needed for tasks 
                 result = new ComponentState(field.getComponent(), property, field.getFocusGroup());
             } else {
                 result = super.createComponent(property, parent, context);

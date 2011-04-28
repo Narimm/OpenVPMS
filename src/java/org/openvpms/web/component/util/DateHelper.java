@@ -127,7 +127,7 @@ public class DateHelper {
      */
     public static DateFormat getDateFormat(boolean edit) {
         DateFormat format;
-        Locale locale = ApplicationInstance.getActive().getLocale();
+        Locale locale = getLocale();
         String pattern = (edit) ? DATE_EDIT_PATTERN : DATE_VIEW_PATTERN;
         if (pattern == null) {
             if (edit) {
@@ -152,7 +152,7 @@ public class DateHelper {
      * @return the full date format
      */
     public static DateFormat getFullDateFormat() {
-        Locale locale = ApplicationInstance.getActive().getLocale();
+        Locale locale = getLocale();
         if (FULL_DATE_PATTERN != null) {
             return new SimpleDateFormat(FULL_DATE_PATTERN, locale);
         }
@@ -189,7 +189,7 @@ public class DateHelper {
      */
     public static DateFormat getTimeFormat(boolean edit) {
         DateFormat format;
-        Locale locale = ApplicationInstance.getActive().getLocale();
+        Locale locale = getLocale();
         String pattern = (edit) ? TIME_EDIT_PATTERN : TIME_VIEW_PATTERN;
         if (pattern == null) {
             if (edit) {
@@ -214,7 +214,7 @@ public class DateHelper {
      */
     public static DateFormat getDateTimeFormat(boolean edit) {
         DateFormat format;
-        Locale locale = ApplicationInstance.getActive().getLocale();
+        Locale locale = getLocale();
         if (edit) {
             // specify SHORT style for dates when parsing, so that 2 digit years
             // are handled correctly
@@ -378,6 +378,16 @@ public class DateHelper {
         calendar.set(Calendar.HOUR_OF_DAY, hours);
         calendar.set(Calendar.MINUTE, mins);
         return calendar.getTime();
+    }
+
+    /**
+     * Returns the current locale.
+     *
+     * @return the locale
+     */
+    private static Locale getLocale() {
+        ApplicationInstance instance = ApplicationInstance.getActive();
+        return (instance != null) ? instance.getLocale() : Locale.getDefault();
     }
 
     static {

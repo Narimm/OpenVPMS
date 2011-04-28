@@ -18,11 +18,15 @@
 
 package org.openvpms.web.component.property;
 
+import java.text.ParseException;
 import java.util.Date;
 
 
 /**
  * Handler for date/time nodes.
+ * <p/>
+ * This assumes that all date changes will be as {@link java.util.Date}, and all time inputs will be as
+ * strings.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-30 04:38:04Z $
@@ -49,4 +53,18 @@ public class DateTimePropertyTransformer extends AbstractDateTimePropertyTransfo
         super(property, min, max, Format.DATE_TIME);
     }
 
+
+    /**
+     * Converts the supplied value to a date/time.
+     * <p/>
+     * This implemetation expects the value to be a time, which is added to the current date, using
+     * {@link #addTime}.
+     *
+     * @param value the time string
+     * @return the date/time
+     * @throws ParseException if the value can't be parsed as a date/time
+     */
+    protected Date getDateTime(String value) throws ParseException {
+        return addTime(value);
+    }
 }

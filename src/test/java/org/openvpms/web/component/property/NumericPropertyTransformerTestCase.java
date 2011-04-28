@@ -18,15 +18,14 @@
 
 package org.openvpms.web.component.property;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
 
@@ -37,28 +36,17 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2007-06-21 04:16:11Z $
  */
-public class NumericPropertyTransformerTestCase
-        extends AbstractAppTest {
+public class NumericPropertyTransformerTestCase {
 
     /**
      * Tests {@link NumericPropertyTransformer#apply} for an integer node.
      */
     @Test
     public void testIntegerApply() {
+        SimpleProperty property = new SimpleProperty("int", Integer.class);
+        NumericPropertyTransformer handler = new NumericPropertyTransformer(property);
+
         final Integer one = 1;
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        String shortName = "party.organisationSchedule";
-
-
-        NodeDescriptor intNode = getDescriptor(shortName, "slotSize");
-        assertEquals(Integer.class, intNode.getClazz());
-
-        IMObject parent = service.create(shortName);
-        IMObjectProperty property = new IMObjectProperty(parent, intNode);
-
-        NumericPropertyTransformer handler
-                = new NumericPropertyTransformer(property);
 
         // test string conversions
         try {
@@ -92,18 +80,9 @@ public class NumericPropertyTransformerTestCase
     public void testDecimalApply() {
         final BigDecimal one = new BigDecimal("1.0");
         final BigDecimal half = new BigDecimal("0.5");
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        String shortName = "act.patientWeight";
 
-        NodeDescriptor decNode = getDescriptor(shortName, "weight");
-        assertEquals(BigDecimal.class, decNode.getClazz());
-
-        IMObject parent = service.create(shortName);
-
-        IMObjectProperty property = new IMObjectProperty(parent, decNode);
-        NumericPropertyTransformer handler
-                = new NumericPropertyTransformer(property);
+        SimpleProperty property = new SimpleProperty("dec", BigDecimal.class);
+        NumericPropertyTransformer handler = new NumericPropertyTransformer(property);
 
         // test string conversions
         try {
