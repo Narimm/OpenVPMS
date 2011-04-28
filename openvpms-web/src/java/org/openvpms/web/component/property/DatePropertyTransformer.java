@@ -18,7 +18,10 @@
 
 package org.openvpms.web.component.property;
 
+import org.openvpms.web.component.util.DateHelper;
+
 import java.util.Date;
+import java.text.ParseException;
 
 
 /**
@@ -49,4 +52,14 @@ public class DatePropertyTransformer extends AbstractDateTimePropertyTransformer
         super(property, min, max, Format.DATE);
     }
 
+    /**
+     * Converts the supplied value to a date.
+     *
+     * @param value the date/time string
+     * @return the date
+     * @throws ParseException if the value can't be parsed as a date
+     */
+    protected Date getDateTime(String value) throws ParseException {
+        return DateHelper.getDateFormat(true).parse(value);
+    }
 }

@@ -56,6 +56,11 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
      */
     private Format format;
 
+    /**
+     * Determines if seconds should be kept.
+     */
+    private boolean keepSeconds = true;
+
 
     /**
      * Constructs a <tt>AbstractDateTimePropertyTransformer</tt>.
@@ -137,29 +142,31 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
             throw getException(exception);
         }
         if (result instanceof Date) {
+            if (!keepSeconds) {
+                result = removeSeconds((Date) result);
+            }
             checkDateRange((Date) result, minDate, maxDate);
         }
         return result;
     }
 
     /**
-     * Adds the supplied time to the date.
+     * Determines if seconds should be kept.
      *
-     * @param value the time string
-     * @return the date/time
-     * @throws ParseException if the value can't be parsed as a time
+     * @param keep if <true</tt> keep seconds, otherwise zero them out (along with milliseconds)
      */
-    protected Date getDateTime(String value) throws ParseException {
-        Date result;
-        Date time = DateHelper.parseTime(value);
-        Date date = getDate();
-        if (date != null) {
-            result = DateHelper.addDateTime(date, time);
-        } else {
-            result = time;
-        }
-        return result;
+    public void setKeepSeconds(boolean keep) {
+        keepSeconds = keep;        
     }
+
+    /**
+     * Converts the supplied value to a date/time.
+     *
+     * @param value the date/time string
+     * @return the date/time
+     * @throws ParseException if the value can't be parsed as a date/time
+     */
+    protected abstract Date getDateTime(String value) throws ParseException;
 
     /**
      * Returns the date.
@@ -182,6 +189,27 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
      */
     protected Date getDateTime(Date value) {
         return value;
+    }
+
+    /**
+     * Helper to parse a time string, and add it to the current date, if one is present.
+     * <p/>
+     * NOTE: This does not modify the current date/time.
+     *
+     * @param value the time string
+     * @return the date/time
+     * @throws ParseException if the value can't be parsed as a time
+     */
+    protected Date addTime(String value) throws ParseException {
+        Date result;
+        Date time = DateHelper.parseTime(value);
+        Date date = getDate();
+        if (date != null) {
+            result = DateHelper.addDateTime(date, time);
+        } else {
+            result = time;
+        }
+        return result;
     }
 
     /**
@@ -229,5 +257,21 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
     protected PropertyException getException(Throwable cause) {
         String message = Messages.get("property.error.invalidtime", getProperty().getDisplayName());
         return new PropertyException(getProperty(), message, cause);
+    }
+
+
+    /**
+     * Zeroes any seconds (and milliseconds) from the date.
+     *
+     * @param date the date
+     * @return the modified date
+     */
+    private Date removeSeconds(Date date) {
+        long ms = date.getTime();
+        long seconds = ms % (60 * 1000);
+        if (seconds != 0) {
+            date.setTime(ms - seconds);
+        }
+        return date;
     }
 }
