@@ -18,9 +18,6 @@
 
 package org.openvpms.web.component.util;
 
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Window;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,8 +26,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.error.ErrorReportingDialog;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -51,55 +46,29 @@ public class ErrorHelper {
 
 
     /**
-     * Display and log an error. If an error dialog is already displayed,
-     * this method will not pop up a new one, to avoid multiple dialogs
-     * related to the same error.
+     * Display an error.
      *
      * @param error the error
      */
     public static void show(String error) {
-        show(error, true);
+        show(null, error);
     }
 
     /**
-     * Display and optionally log an error. If an error dialog is already
-     * displayed, this method will not pop up a new one, to avoid
-     * multiple dialogs related to the same error.
+     * Display an error.
      *
-     * @param error the error
-     * @param log   if <tt>true</tt> log the error
-     */
-    public static void show(String error, boolean log) {
-        boolean display = canDisplay();
-        if (log || !display) {
-            ErrorHelper.log.error(error);
-        }
-        if (display && !inError()) {
-            ErrorDialog.show(error);
-        }
-    }
-
-    /**
-     * Display and log an error. If an error dialog is already displayed,
-     * this method will not pop up a new one, to avoid multiple dialogs
-     * related to the same error.
-     *
-     * @param title the title
+     * @param title the title. May be <tt>null</tt>
      * @param error the error
      */
     public static void show(String title, String error) {
         log.error(error);
-        if (canDisplay() && !inError()) {
-            ErrorDialog.show(title, error);
-        }
+        ErrorHandler.getInstance().error(title, error, null, null);
     }
 
     /**
-     * Display and log an error. If an error dialog is already displayed,
-     * this method will not pop up a new one, to avoid multiple dialogs
-     * related to the same error.
+     * Display an error.
      *
-     * @param title the title
+     * @param title the title. May be <tt>null</tt>
      * @param error the error
      */
     public static void show(String title, Throwable error) {
@@ -107,13 +76,10 @@ public class ErrorHelper {
     }
 
     /**
-     * Display and log an error. If an error dialog is already displayed,
-     * this method will not pop up a new one, to avoid multiple dialogs
-     * related to the same error.
+     * Display an error.
      *
-     * @param title       the title
-     * @param displayName the display name to include in the error message.
-     *                    May be <tt>null</tt>
+     * @param title       the title. Maty be <tt>null</tt>
+     * @param displayName the display name to include in the error message. May be <tt>null</tt>
      * @param error       the error
      */
     public static void show(String title, String displayName, Throwable error) {
@@ -121,29 +87,21 @@ public class ErrorHelper {
     }
 
     /**
-     * Display and log an error. If an error dialog is already displayed,
-     * this method will not pop up a new one, to avoid multiple dialogs
-     * related to the same error.
+     * Display an error.
      *
-     * @param title       the title
-     * @param displayName the display name to include in the error message.
-     *                    May be <tt>null</tt>
-     * @param context     a context message, for logging purposes.
-     *                    May be <tt>null</tt>
+     * @param title       the title. May be <tt>null</tt>
+     * @param displayName the display name to include in the error message. May be <tt>null</tt>
+     * @param context     a context message, for logging purposes. May be <tt>null</tt>
      * @param error       the error
      */
-    public static void show(String title, String displayName, String context,
-                            Throwable error) {
+    public static void show(String title, String displayName, String context, Throwable error) {
         String message = getError(error, displayName);
         String logerror = message;
         if (context != null) {
-            logerror = Messages.get("logging.error.messageandcontext", message,
-                                    context);
+            logerror = Messages.get("logging.error.messageandcontext", message, context);
         }
         log.error(logerror, error);
-        if (canDisplay() && !inError()) {
-            ErrorReportingDialog.show(title, message, error);
-        }
+        ErrorHandler.getInstance().error(title, message, error, null);
     }
 
     /**
@@ -166,14 +124,11 @@ public class ErrorHelper {
      * @param log   if <tt>true</tt> log the error
      */
     public static void show(Throwable error, boolean log) {
-        boolean display = canDisplay();
         String message = getError(error);
-        if (log || !display) {
+        if (!log) {
             ErrorHelper.log.error(message, error);
         }
-        if (display && !inError()) {
-            ErrorReportingDialog.show(message, error);
-        }
+        ErrorHandler.getInstance().error(null, message, error, null);
     }
 
     /**
@@ -185,11 +140,7 @@ public class ErrorHelper {
     public static void show(Throwable error, WindowPaneListener listener) {
         String message = getError(error);
         log.error(message, error);
-        if (canDisplay()) {
-            ErrorDialog dialog = new ErrorReportingDialog(message, error);
-            dialog.addWindowPaneListener(listener);
-            dialog.show();
-        }
+        ErrorHandler.getInstance().error(null, message, error, listener);
     }
 
     /**
@@ -223,6 +174,20 @@ public class ErrorHelper {
      */
     public static String getError(Throwable exception) {
         return getError(exception, null);
+    }
+
+    /**
+     * Returns the root cause of an exception.
+     *
+     * @param exception the exception
+     * @return the root cause of the exception, or <tt>exception</tt> if it
+     *         is the root
+     */
+    public static Throwable getRootCause(Throwable exception) {
+        if (exception.getCause() != null) {
+            return getRootCause(exception.getCause());
+        }
+        return exception;
     }
 
     /**
@@ -285,42 +250,5 @@ public class ErrorHelper {
         return exception.getLocalizedMessage();
     }
 
-    /**
-     * Returns the root cause of an exception.
-     *
-     * @param exception the exception
-     * @return the root cause of the exception, or <tt>exception</tt> if it
-     *         is the root
-     */
-    private static Throwable getRootCause(Throwable exception) {
-        if (exception.getCause() != null) {
-            return getRootCause(exception.getCause());
-        }
-        return exception;
-    }
 
-    /**
-     * Determines if the error can be displayed in the browser.
-     *
-     * @return <tt>true</tt> if the error can be displayed in the browser
-     */
-    private static boolean canDisplay() {
-        ApplicationInstance instance = ApplicationInstance.getActive();
-        return instance != null && instance.getDefaultWindow() != null;
-    }
-
-    /**
-     * Determines if an error dialog is already being displayed.
-     *
-     * @return <tt>true</tt> if an error dialog is already being displayed
-     */
-    private static boolean inError() {
-        Window root = ApplicationInstance.getActive().getDefaultWindow();
-        for (Component component : root.getContent().getComponents()) {
-            if (component instanceof ErrorDialog) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
