@@ -20,11 +20,10 @@ package org.openvpms.web.app.supplier.delivery;
 import nextapp.echo2.app.Component;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -32,14 +31,14 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.TitledTextArea;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.TitledTextArea;
 
 import java.util.List;
 
 
 /**
- * Layout strategy for <em>act.supplierDelivery</em> acts.
+ * Layout strategy for <em>act.supplierDelivery</em> and <em>act.supplierReturn</em> acts.
  * <p/>
  * Displays the <tt>supplierNotes</tt> below the simple items, if non-null.
  */
@@ -74,10 +73,12 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
     protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
                                   PropertySet properties, Component container, LayoutContext context) {
         super.doSimpleLayout(object, parent, descriptors, properties, container, context);
-        ActBean bean = new ActBean((Act) object);
-        String notes = bean.getString("supplierNotes");
-        if (!StringUtils.isEmpty(notes)) {
-            container.add(ColumnFactory.create("InsetX", getSupplierNotes(notes)));
+        IMObjectBean bean = new IMObjectBean(object);
+        if (bean.hasNode("supplierNotes")) {
+            String notes = bean.getString("supplierNotes");
+            if (!StringUtils.isEmpty(notes)) {
+                container.add(ColumnFactory.create("InsetX", getSupplierNotes(notes)));
+            }
         }
     }
 
