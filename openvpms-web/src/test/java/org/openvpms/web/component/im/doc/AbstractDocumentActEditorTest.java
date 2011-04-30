@@ -24,17 +24,9 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.TransactionStatus;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.InputStream;
 
 
 /**
@@ -102,13 +94,7 @@ public abstract class AbstractDocumentActEditorTest extends AbstractAppTest {
      * @return a new document
      */
     protected Document createDocument(String path) {
-        DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-        DocumentHandler handler = handlers.get(path, null);
-        assertNotNull(handler);
-
-        InputStream stream = getClass().getResourceAsStream(path);
-        assertNotNull(stream);
-        return handler.create(path, stream, null, -1);
+        return DocumentTestHelper.createDocument(path);
     }
 
     /**
@@ -118,21 +104,7 @@ public abstract class AbstractDocumentActEditorTest extends AbstractAppTest {
      * @return a new template
      */
     protected Entity createDocumentTemplate(String archetype) {
-        Document document = createDocument("/blank.jrxml");
-        Entity entity = (Entity) create("entity.documentTemplate");
-        IMObjectBean template = new IMObjectBean(entity);
-        template.setValue("name", document.getName());
-        template.setValue("archetype", archetype);
-
-        DocumentAct act = (DocumentAct) create("act.documentTemplate");
-        act.setDocument(document.getObjectReference());
-        act.setFileName(document.getName());
-        act.setMimeType(document.getMimeType());
-        act.setDescription(DescriptorHelper.getDisplayName(document));
-        ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("template", entity);
-        save(act, entity, document);
-        return entity;
+        return DocumentTestHelper.createDocumentTemplate(archetype);
     }
 
 }
