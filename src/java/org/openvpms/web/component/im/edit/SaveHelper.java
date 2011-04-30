@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
@@ -171,7 +170,7 @@ public class SaveHelper {
      * @param listener the listener to notify
      * @return <tt>true</tt> if the object was removed; otherwise <tt>false</tt>
      */
-    public static boolean delete(IMObject object, IMObjectDeletionListener<IMObject> listener) {
+    public static <T extends IMObject> boolean delete(T object, IMObjectDeletionListener<T> listener) {
         return delete(object, listener, ServiceHelper.getArchetypeService());
     }
 
@@ -183,8 +182,8 @@ public class SaveHelper {
      * @param service  the archetype service
      * @return <tt>true</tt> if the object was removed; otherwise <tt>false</tt>
      */
-    public static boolean delete(IMObject object, IMObjectDeletionListener<IMObject> listener,
-                                 IArchetypeService service) {
+    public static <T extends IMObject> boolean delete(T object, IMObjectDeletionListener<T> listener,
+                                                      IArchetypeService service) {
         boolean removed = false;
         try {
             service.remove(object);

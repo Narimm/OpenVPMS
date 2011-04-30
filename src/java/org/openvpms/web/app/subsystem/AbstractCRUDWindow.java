@@ -42,6 +42,7 @@ import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.util.DefaultIMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
@@ -222,7 +223,8 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
         if (object == null) {
             ErrorDialog.show(Messages.get("imobject.noexist", archetypes.getDisplayName()));
         } else {
-            IMObjectDeletor.delete(object, new AbstractIMObjectDeletionListener<T>() {
+            IMObjectDeletor deletor = new DefaultIMObjectDeletor();
+            deletor.delete(object, new AbstractIMObjectDeletionListener<T>() {
                 public void deleted(T object) {
                     onDeleted(object);
                 }

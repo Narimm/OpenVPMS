@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -25,17 +26,13 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -43,18 +40,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 
 /**
- * {@link IMObject} deletor.
+ * Handles deletion of {@link IMObject}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @version $LastChangedDate: $
  */
-public final class IMObjectDeletor {
-
-    /**
-     * Prevent construction.
-     */
-    private IMObjectDeletor() {
-    }
+public abstract class IMObjectDeletor {
 
     /**
      * Attempts to delete an object.
@@ -62,32 +53,29 @@ public final class IMObjectDeletor {
      * @param object   the object to delete
      * @param listener the listener to notify
      */
-    @SuppressWarnings("unchecked")
-    public static <T extends IMObject> void delete(
-            T object, IMObjectDeletionListener<T> listener) {
+    public <T extends IMObject> void delete(T object, IMObjectDeletionListener<T> listener) {
         try {
             if (object instanceof Entity) {
                 Entity entity = (Entity) object;
-                if (hasParticipations(
-                        entity) && !entity.getArchetypeId().getShortName().equals(
-                        "entity.documentTemplate")) {
+                String participations;
+                if (TypeHelper.isA(entity, DocumentArchetypes.DOCUMENT_TEMPLATE)) {
+                    participations = "participation.documentTemplate";
+                } else {
+                    participations = "participation.*";
+                }
+                if (hasParticipations(entity, participations)) {
                     if (object.isActive()) {
-                        confirmDeactivate(object, listener);
+                        deactivate(object, listener);
                     } else {
-                        String message = Messages.get(
-                                "imobject.delete.deactivated",
-                                DescriptorHelper.getDisplayName(object),
-                                entity.getName());
-                        ErrorDialog.show(message);
+                        deactivated(object);
                     }
                 } else if (hasRelationships(entity)) {
-                    confirmDelete(object, listener,
-                                  "imobject.delete.withrelationships.message");
+                    removeWithRelationships(object, listener);
                 } else {
-                    confirmDelete(object, listener, "imobject.delete.message");
+                    remove(object, listener);
                 }
             } else {
-                confirmDelete(object, listener, "imobject.delete.message");
+                remove(object, listener);
             }
         } catch (Throwable exception) {
             listener.failed(object, exception);
@@ -95,67 +83,37 @@ public final class IMObjectDeletor {
     }
 
     /**
-     * Determines if an entity has any participations.
+     * Invoked to remove an object.
      *
-     * @param entity the entity
-     * @return <code>true</code> if the entity has participations, otherwise
-     *         <code>false</code>
-     * @throws ArchetypeServiceException for any error
+     * @param object   the object to remove
+     * @param listener the listener to notify
      */
-    private static boolean hasParticipations(Entity entity) {
-        ArchetypeQuery query
-                = new ArchetypeQuery("participation.*", false, false);
-        query.add(new ObjectRefNodeConstraint("entity",
-                                              entity.getObjectReference()));
-        query.setMaxResults(1);
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        return !service.get(query).getResults().isEmpty();
-    }
+    protected abstract <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener);
 
     /**
-     * Determines if an entity has any relationships where it is the source
+     * Invoked to remove anobject that has {@link EntityRelationship}s to other objects.
      *
-     * @param entity the entity
-     * @return <code>true</code> if the entity has relationships where it is
-     *         the source, ortherwise <code>false</code>
+     * @param object   the object to remove
+     * @param listener the listener to notify
      */
-    private static boolean hasRelationships(Entity entity) {
-        IMObjectReference ref = entity.getObjectReference();
-        for (EntityRelationship r : entity.getEntityRelationships()) {
-            if (r.getSource() != null && r.getSource().equals(ref)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    protected abstract <T extends IMObject> void removeWithRelationships(T object,
+                                                                         IMObjectDeletionListener<T> listener);
 
     /**
-     * Pops up a dialog prompting if deletion of an object should proceed,
-     * deleting it if OK is selected.
+     * Invoked to deactivate an object.
      *
-     * @param object     the object to delete
-     * @param listener   the listener to notify
-     * @param messageKey the message resource bundle key
+     * @param object   the object to deactivate
+     * @param listener the listener
      */
-    @SuppressWarnings("unchecked")
-    private static <T extends IMObject> void confirmDelete(
-            final T object,
-            final IMObjectDeletionListener<T> listener, String messageKey) {
-        String type = DescriptorHelper.getDisplayName(object);
-        String title = Messages.get("imobject.delete.title", type);
-        String name = (object.getName() != null) ? object.getName() : type;
-        String message = Messages.get(messageKey, name);
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message, true);
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                doDelete(object, listener);
-            }
-        });
-        dialog.show();
-    }
+    protected abstract <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener);
+
+    /**
+     * Invoked when an object cannot be de deleted, and has already been deactivated.
+     *
+     * @param object the object
+     */
+    protected abstract <T extends IMObject> void deactivated(T object);
+
 
     /**
      * Performs the deletion in a transaction context.
@@ -164,55 +122,80 @@ public final class IMObjectDeletor {
      * @param listener the listener to notify
      * @return <tt>true</tt> if the object was deleted successfully
      */
-    private static <T extends IMObject> boolean doDelete(final T object,
-                                                         final IMObjectDeletionListener<T> listener) {
-        boolean deleted = false;
+    protected <T extends IMObject> boolean doRemove(final T object, final IMObjectDeletionListener<T> listener) {
+        boolean removed = false;
         try {
             DefaultLayoutContext context = new DefaultLayoutContext(true);
             context.setDeletionListener(new DeletionListenerAdapter<T>(object, listener));
             final IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
             TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-            Object result = template.execute(new TransactionCallback() {
-                public Object doInTransaction(TransactionStatus status) {
+            Boolean result = template.execute(new TransactionCallback<Boolean>() {
+                public Boolean doInTransaction(TransactionStatus status) {
                     return editor.delete();
                 }
             });
-            deleted = (result != null) && (Boolean) result;
-            if (deleted) {
+            removed = (result != null) && result;
+            if (removed) {
                 listener.deleted(object);
             }
         } catch (Throwable exception) {
             listener.failed(object, exception);
         }
-        return deleted;
+        return removed;
     }
 
     /**
-     * Pops up a dialog prompting if deactivation of an object should proceed,
-     * deactivating it if OK is selected.
+     * Performs deactivation.
      *
      * @param object   the object to deactivate
      * @param listener the listener to notify
+     * @return <tt>true</tt> if the object was deactivated successfully
      */
-    @SuppressWarnings("unchecked")
-    private static <T extends IMObject> void confirmDeactivate(
-            final T object, final IMObjectDeletionListener<T> listener) {
-        String type = DescriptorHelper.getDisplayName(object);
-        String title = Messages.get("imobject.deactivate.title", type);
-        String message = Messages.get("imobject.deactivate.message",
-                                      object.getName());
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message, true);
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                object.setActive(false);
-                if (SaveHelper.save(object)) {
-                    listener.deactivated(object);
-                }
+    protected <T extends IMObject> boolean doDeactivate(T object, IMObjectDeletionListener<T> listener) {
+        boolean deactivated = false;
+        try {
+            object.setActive(false);
+            deactivated = SaveHelper.save(object);
+            if (deactivated) {
+                listener.deactivated(object);
             }
-        });
-        dialog.show();
+        } catch (Throwable exception) {
+            listener.failed(object, exception);
+        }
+        return deactivated;
+    }
+
+
+    /**
+     * Determines if an entity has participations of a particular archetype.
+     *
+     * @param entity    the entity
+     * @param shortName the participation archetype short name.
+     * @return <tt>true</tt> if the entity has participations, otherwise <tt>false</tt>
+     * @throws ArchetypeServiceException for any error
+     */
+    protected boolean hasParticipations(Entity entity, String shortName) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
+        query.add(new ObjectRefNodeConstraint("entity", entity.getObjectReference()));
+        query.setMaxResults(1);
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        return !service.get(query).getResults().isEmpty();
+    }
+
+    /**
+     * Determines if an entity has any relationships where it is the source
+     *
+     * @param entity the entity
+     * @return <tt>true</tt> if the entity has relationships where it is the source, ortherwise <tt>false</tt>
+     */
+    protected boolean hasRelationships(Entity entity) {
+        IMObjectReference ref = entity.getObjectReference();
+        for (EntityRelationship r : entity.getEntityRelationships()) {
+            if (r.getSource() != null && r.getSource().equals(ref)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
