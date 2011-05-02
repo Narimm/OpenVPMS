@@ -59,10 +59,10 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
         Object text1 = macros.evaluate("macro1", person);
         assertEquals("macro 1 text", text1);
 
-        Object text2 = macros.evaluate("macro2", person);
+        Object text2 = macros.evaluate("@macro2", person);
         assertEquals("onetwothree", text2);
 
-        Object text3 = macros.evaluate("test macro1 macro2 endtest",
+        Object text3 = macros.evaluate("test macro1 @macro2 endtest",
                                        person);
         assertEquals("test macro 1 text onetwothree endtest", text3);
 
@@ -145,13 +145,13 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     @Test
     public void testDeleteMacro() {
         Party person = TestHelper.createCustomer();
-        Object text2 = macros.evaluate("macro2", person);
+        Object text2 = macros.evaluate("@macro2", person);
         assertEquals("onetwothree", text2);
 
         remove(macro2);
 
-        text2 = macros.evaluate("macro2", person);
-        assertEquals("macro2", text2);
+        text2 = macros.evaluate("@macro2", person);
+        assertEquals("@macro2", text2);
     }
 
     /**
@@ -160,7 +160,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         macro1 = MacroTestHelper.createMacro("macro1", "'macro 1 text'");
-        macro2 = MacroTestHelper.createMacro("macro2", "concat('one', 'two', 'three')");
+        macro2 = MacroTestHelper.createMacro("@macro2", "concat('one', 'two', 'three')");
         MacroTestHelper.createMacro("displayName", "openvpms:get(., 'displayName')");
         MacroTestHelper.createMacro("exceptionMacro", "openvpms:get(., 'invalidnode')");
         MacroTestHelper.createMacro("nested", "concat('nested test: ', $macro1)");
