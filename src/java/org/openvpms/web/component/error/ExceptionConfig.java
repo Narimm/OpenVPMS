@@ -18,9 +18,10 @@
 package org.openvpms.web.component.error;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -39,7 +40,14 @@ public class ExceptionConfig {
     /**
      * The set of error codes to exclude from reporting.
      */
-    private List<String> excludes;
+    private List<String> codes;
+
+    /**
+     * The set of error messages to exclude from reporting.
+     */
+    private List<String> messages;
+
+    private List<ExceptionConfig> causes;
 
     /**
      * Default constructor.
@@ -76,48 +84,106 @@ public class ExceptionConfig {
 
     /**
      * Sets the error codes to exclude from reporting.
-     * <p/>
-     * If there are no error codes, then all instances of the exception are excluded.
      *
-     * @param excludes the error codes to exclude from reporting. May be <tt>null</tt>
+     * @param codes the error codes to exclude from reporting. May be <tt>null</tt>
      */
-    public void setExcludes(List<String> excludes) {
-        this.excludes = excludes;
+    public void setCodes(List<String> codes) {
+        this.codes = codes;
     }
 
     /**
      * Returns the error codes to exclude from reporting.
-     * <p/>
-     * If there are no error codes, then all instances of the exception are excluded.
      *
      * @return the error codes to exclude from reporting
      */
-    public List<String> getExcludes() {
-        return excludes != null ? excludes : Collections.<String>emptyList();
+    public List<String> getCodes() {
+        return codes != null ? codes : Collections.<String>emptyList();
+    }
+
+    /**
+     * Sets the exception messages to exclude from reporting.
+     * Note: These should only be used were error messages are not localised.
+     *
+     * @param messages the messages. May be <tt>null</tt>
+     */
+    public void setMessages(List<String> messages) {
+        this.messages = messages;
+    }
+
+    /**
+     * Returns the exception messages to exclude from reporting.
+     *
+     * @return the exception messages to exclude from reporting
+     */
+    public List<String> getMessages() {
+        return messages != null ? messages : Collections.<String>emptyList();
+    }
+
+    /**
+     * Sets the root causes to exclude from reporting.
+     *
+     * @param causes the causes. May be <tt>null</tt>
+     */
+    public void setCauses(List<ExceptionConfig> causes) {
+        this.causes = causes;
+    }
+
+    /**
+     * Returns the root causes to exclude from reporting.
+     *
+     * @return the causes to exclude from reporting
+     */
+    public List<ExceptionConfig> getCauses() {
+        return causes;
     }
 
     /**
      * Determines if an exception is excluded from reporting.
      * <p/>
-     * By default an exception is excluded, unless the configuration specifies error codes as specific exclusions
-     * via {@link #getExcludes()}.
+     * By default, all exceptions are excluded, unless the configuration specifies error codes, messages, or causes
+     * as specific exclusions.
+     * <p/>
+     * Where a cause is configured, it is evaluated against the root cause of the exception.
      *
      * @param exception the exception to check
      * @return <tt>true</tt> if the exception is excluded from reporting
      */
     public boolean isExcluded(Throwable exception) {
-        boolean result = true;
-        if (excludes != null && !excludes.isEmpty()) {
+        boolean eval = false;
+        if (codes != null && !codes.isEmpty()) {
+            eval = true;
             try {
                 // TODO - bit of a hack. All OpenVPMSException subclasses currently define a getErrorCode() method that
                 // returns an enum.
                 String s = BeanUtils.getProperty(exception, "errorCode");
-                result = excludes.contains(s);
+                if (codes.contains(s)) {
+                    return true;
+                }
             } catch (Throwable ignore) {
                 // do nothing
             }
         }
-        return result;
+        if (messages != null && !messages.isEmpty()) {
+            eval = true;
+            String message = exception.getMessage();
+            if (message != null) {
+                if (messages.contains(message)) {
+                    return true;
+                }
+            }
+        }
+        if (causes != null && !causes.isEmpty()) {
+            eval = true;
+            Throwable root = ExceptionUtils.getRootCause(exception);
+            if (root != null) {
+                for (ExceptionConfig cause : causes) {
+                    if (cause.isExcluded(root)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return !eval;
     }
 
 }
