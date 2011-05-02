@@ -150,7 +150,9 @@ public class ErrorReporterConfig {
         XStream xs = new XStream();
         xs.alias("error-reporter-config", ErrorReporterConfig.class);
         xs.addImplicitCollection(ErrorReporterConfig.class, "excludes", "exclude-exception", ExceptionConfig.class);
-        xs.addImplicitCollection(ExceptionConfig.class, "excludes", "exclude", String.class);
+        xs.addImplicitCollection(ExceptionConfig.class, "codes", "code", String.class);
+        xs.addImplicitCollection(ExceptionConfig.class, "messages", "message", String.class);
+        xs.addImplicitCollection(ExceptionConfig.class, "causes", "cause", ExceptionConfig.class);
         return xs;
     }
 

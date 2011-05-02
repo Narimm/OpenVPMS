@@ -17,7 +17,10 @@
  */
 package org.openvpms.web.component.error;
 
-import static org.junit.Assert.*;
+import net.sf.jasperreports.engine.JRException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -27,6 +30,7 @@ import org.openvpms.component.business.service.security.OpenVPMSAccessDeniedExce
 import org.openvpms.report.ReportException;
 import org.openvpms.web.component.im.query.QueryException;
 
+import java.awt.print.PrinterException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -44,11 +48,11 @@ import java.util.List;
 public class ErrorReporterConfigTestCase {
 
     /**
-     * Tests the {@link ErrorReporterConfig#isExcluded(Throwable)} method.
+     * Tests the {@link ErrorReporterConfig#isExcluded(Throwable)} method for exceptions with particular codes.
      */
     @Test
     @SuppressWarnings({"ThrowableInstanceNeverThrown"})
-    public void testIsExcluded() {
+    public void testIsExcludedByCode() {
         ErrorReporterConfig config = new ErrorReporterConfig();
 
         // create some exceptions
@@ -70,10 +74,16 @@ public class ErrorReporterConfigTestCase {
         // . ArchetypeServiceException with errors FailedToSaveObject and FailedToExcecuteQuery
         // . all ValidationExceptions
         ExceptionConfig exception1Cfg = new ExceptionConfig(ArchetypeServiceException.class.getName());
-        exception1Cfg.setExcludes(Arrays.asList(ArchetypeServiceException.ErrorCode.FailedToSaveObject.toString(),
-                                                ArchetypeServiceException.ErrorCode.FailedToExecuteQuery.toString()));
+        exception1Cfg.setCodes(Arrays.asList(ArchetypeServiceException.ErrorCode.FailedToSaveObject.toString(),
+                                             ArchetypeServiceException.ErrorCode.FailedToExecuteQuery.toString()));
+
+        ExceptionConfig exception3Cfg = new ExceptionConfig(ReportException.class.getName());
+        ExceptionConfig cause = new ExceptionConfig(PrinterException.class.getName());
+        exception3Cfg.setCauses(Arrays.asList(cause));
+
         ExceptionConfig exception2Cfg = new ExceptionConfig(ValidationException.class.getName());
         config.setExcludes(Arrays.asList(exception1Cfg, exception2Cfg));
+
 
         // verify the correct exceptions are excluded
         assertFalse(config.isExcluded(a));
@@ -81,6 +91,99 @@ public class ErrorReporterConfigTestCase {
         assertTrue(config.isExcluded(c));
         assertTrue(config.isExcluded(d));
         assertFalse(config.isExcluded(e));
+    }
+
+    /**
+     * Tests the {@link ErrorReporterConfig#isExcluded(Throwable)} method for exceptions with particular messages.
+     */
+    @Test
+    @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+    public void testIsExcludedByMessage() {
+        ErrorReporterConfig config = new ErrorReporterConfig();
+
+        // create some exceptions
+        Throwable a = new PrinterException("Printer is not accepting job.");
+        Throwable b = new PrinterException("Printer not found.");
+
+        // verify that no exception is excluded from reporting
+        assertFalse(config.isExcluded(a));
+        assertFalse(config.isExcluded(b));
+
+        // now exclude the "Printer is not accepting job." exception
+        ExceptionConfig exception = new ExceptionConfig(PrinterException.class.getName());
+
+        exception.setMessages(Arrays.asList("Printer is not accepting job."));
+
+        config.setExcludes(Arrays.asList(exception));
+
+        // verify the correct exceptions are excluded
+        assertTrue(config.isExcluded(a));
+        assertFalse(config.isExcluded(b));
+    }
+
+    /**
+     * Tests the {@link ErrorReporterConfig#isExcluded(Throwable)} method for exceptions with particular root causes.
+     */
+    @Test
+    @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+    public void testIsExcludedByCause() {
+        ErrorReporterConfig config = new ErrorReporterConfig();
+
+        // create some exceptions
+        Throwable a = new ReportException(ReportException.ErrorCode.FailedToGenerateReport);
+        Throwable b = new ReportException(new JRException(new PrinterException("Printer is not accepting job.")),
+                                          ReportException.ErrorCode.FailedToGenerateReport);
+
+        // verify that no exception is excluded from reporting
+        assertFalse(config.isExcluded(a));
+        assertFalse(config.isExcluded(b));
+
+        // now exclude the "Printer is not accepting job." exception when it is a root cause for ReportException
+        ExceptionConfig cause = new ExceptionConfig(PrinterException.class.getName());
+        ExceptionConfig exception = new ExceptionConfig(ReportException.class.getName());
+        exception.setCauses(Arrays.asList(cause));
+
+        config.setExcludes(Arrays.asList(exception));
+
+        // verify the correct exceptions are excluded
+        assertFalse(config.isExcluded(a));
+        assertTrue(config.isExcluded(b));
+    }
+
+    /**
+     * Tests the {@link ErrorReporterConfig#isExcluded(Throwable)} method for exceptions with particular root cause's
+     * message.
+     */
+    @Test
+    @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+    public void testIsExcludedByCauseMessage() {
+        ErrorReporterConfig config = new ErrorReporterConfig();
+
+        // create some exceptions
+        Throwable a = new ReportException(ReportException.ErrorCode.FailedToGenerateReport);
+        Throwable b = new ReportException(new PrinterException("Printer is not accepting job."),
+                                          ReportException.ErrorCode.FailedToGenerateReport);
+        Throwable c = new ReportException(new PrinterException("Printer not found."),
+                                          ReportException.ErrorCode.FailedToGenerateReport);
+
+        // verify that no exception is excluded from reporting
+        assertFalse(config.isExcluded(a));
+        assertFalse(config.isExcluded(b));
+        assertFalse(config.isExcluded(c));
+
+        // now exclude the "Printer is not accepting job." exception when it is a root cause for ReportException
+        ExceptionConfig cause = new ExceptionConfig(PrinterException.class.getName());
+        cause.setMessages(Arrays.asList("Printer is not accepting job."));
+
+        ExceptionConfig exception = new ExceptionConfig(ReportException.class.getName());
+        exception.setCauses(Arrays.asList(cause));
+
+        config.setExcludes(Arrays.asList(exception));
+
+        // verify the correct exceptions are excluded
+        assertFalse(config.isExcluded(a));
+        assertTrue(config.isExcluded(b));
+        assertFalse(config.isExcluded(c));
     }
 
     /**
@@ -117,19 +220,28 @@ public class ErrorReporterConfigTestCase {
         Throwable ex2 = new OpenVPMSAccessDeniedException(OpenVPMSAccessDeniedException.ErrorCode.AccessDenied);
         Throwable ex3 = new ReportException(ReportException.ErrorCode.FailedToFindSubReport);
         Throwable ex4 = new StatementProcessorException(StatementProcessorException.ErrorCode.InvalidConfiguration);
+        Throwable ex5 = new ReportException(new JRException(new PrinterException("Printer is not accepting job.")),
+                                            ReportException.ErrorCode.FailedToGenerateReport);
 
+        Throwable ex6 = new ReportException(new JRException(new PrinterException("No printer found.")),
+                                            ReportException.ErrorCode.FailedToGenerateReport);
         assertTrue(config.isExcluded(ex1));
         assertTrue(config.isExcluded(ex2));
         assertTrue(config.isExcluded(ex3));
         assertTrue(config.isExcluded(ex4));
+        assertTrue(config.isExcluded(ex5));
+        assertTrue(config.isExcluded(ex6));
 
         Throwable inc1 = new NullPointerException();
         Throwable inc2 = new ReportException(ReportException.ErrorCode.FailedToCreateReport);
         Throwable inc3
                 = new StatementProcessorException(StatementProcessorException.ErrorCode.FailedToProcessStatement);
+        Throwable inc4 = new ReportException(new JRException(new PrinterException("Some error message.")),
+                                             ReportException.ErrorCode.FailedToGenerateReport);
         assertFalse(config.isExcluded(inc1));
         assertFalse(config.isExcluded(inc2));
         assertFalse(config.isExcluded(inc3));
+        assertFalse(config.isExcluded(inc4));
     }
 
     /**
@@ -140,7 +252,7 @@ public class ErrorReporterConfigTestCase {
      */
     private void checkConfig(ExceptionConfig expected, ExceptionConfig actual) {
         assertEquals(expected.getClassName(), actual.getClassName());
-        assertEquals(expected.getExcludes(), actual.getExcludes());
+        assertEquals(expected.getCodes(), actual.getCodes());
     }
 
     /**
@@ -156,7 +268,7 @@ public class ErrorReporterConfigTestCase {
         for (Enum exclude : excludes) {
             list.add(exclude.toString());
         }
-        config.setExcludes(list);
+        config.setCodes(list);
         return config;
     }
 

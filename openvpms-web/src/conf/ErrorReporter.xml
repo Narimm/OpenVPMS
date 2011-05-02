@@ -15,13 +15,18 @@
     </exclude-exception>
     <exclude-exception>
         <className>org.openvpms.report.ReportException</className>
-        <exclude>FailedToFindSubReport</exclude>
-        <exclude>NoTemplateForArchetype</exclude>
-        <exclude>NoPagesToPrint</exclude>
+        <code>FailedToFindSubReport</code>
+        <code>NoTemplateForArchetype</code>
+        <code>NoPagesToPrint</code>
+        <cause>
+            <className>java.awt.print.PrinterException</className>
+            <message>Printer is not accepting job.</message>
+            <message>No printer found.</message>
+        </cause>
     </exclude-exception>
     <exclude-exception>
         <className>org.openvpms.archetype.rules.finance.statement.StatementProcessorException</className>
-        <exclude>InvalidConfiguration</exclude>
+        <code>InvalidConfiguration</code>
     </exclude-exception>
     <exclude-exception>
         <className>org.openvpms.esci.adapter.util.ESCIAdapterException</className>
