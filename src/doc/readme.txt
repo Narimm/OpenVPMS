@@ -6,8 +6,8 @@ OpenVPMS ${pom.version} Release
 1.1 Requirements
 - OpenVPMS requires the following to be installed:
 
-  - Java 1.5.x or higher
-    See http://java.sun.com/javase/downloads/index_jdk5.jsp
+  - Java 1.6.x or higher
+    See http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
   - MySQL 5.0.24a or higher
     See http://www.mysql.org/downloads/mysql/5.0.html
