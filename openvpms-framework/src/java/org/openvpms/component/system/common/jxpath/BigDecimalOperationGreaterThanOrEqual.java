@@ -19,42 +19,33 @@
 
 package org.openvpms.component.system.common.jxpath;
 
-// java core
-import java.math.BigDecimal;
-
-// commons-jxpath
-import org.apache.commons.jxpath.ri.EvalContext;
-import org.apache.commons.jxpath.ri.compiler.CoreOperationGreaterThanOrEqual;
 import org.apache.commons.jxpath.ri.compiler.Expression;
 
+
 /**
- * BigDecimal support
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * Implementation of {@link Expression} for the operation "&gt;=" using BigDecimal.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class BigDecimalOperationGreaterThanOrEqual extends
-        CoreOperationGreaterThanOrEqual {
+public class BigDecimalOperationGreaterThanOrEqual extends BigDecimalOperationRelationalExpression {
 
     /**
-     * Base class constuctor support
-     * 
-     * @param arg1
-     * @param arg2
+     * Constructs a <tt>BigDecimalOperationGreaterThanOrEqual</tt>.
+     *
+     * @param arg1 left operand
+     * @param arg2 right operand
      */
-    public BigDecimalOperationGreaterThanOrEqual(Expression arg1,
-            Expression arg2) {
-        super(arg1, arg2);
+    public BigDecimalOperationGreaterThanOrEqual(Expression arg1, Expression arg2) {
+        super(new Expression[]{arg1, arg2});
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.commons.jxpath.ri.compiler.CoreOperationGreaterThanOrEqual#computeValue(org.apache.commons.jxpath.ri.EvalContext)
-     */
-    @Override
-    public Object computeValue(EvalContext context) {
-        BigDecimal l = TypeConversionUtil.bigDecimalValue(args[0].computeValue(context));
-        BigDecimal r = TypeConversionUtil.bigDecimalValue(args[1].computeValue(context));
-        return l.compareTo(r) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+    protected boolean evaluateCompare(int compare) {
+        return compare >= 0;
+    }
+
+    public String getSymbol() {
+        return ">=";
     }
 
 }

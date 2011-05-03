@@ -47,7 +47,8 @@ public class BigDecimalOperationNotEqual extends CoreOperationNotEqual {
     @Override
     protected boolean equal(Object l, Object r) {
         if ((l instanceof BigDecimal) && (r instanceof BigDecimal)) {
-            return ((BigDecimal) l).compareTo((BigDecimal) r) == 0;
+            // NOTE: superclass implementation inverts the result for != 
+            return !(((BigDecimal) l).compareTo((BigDecimal) r) == 0);
         } else {
             return super.equal(l, r);
         }
