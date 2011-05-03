@@ -50,7 +50,14 @@ import org.openvpms.component.business.dao.hibernate.im.query.QueryContext;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.*;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToDeleteIMObject;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToExecuteNamedQuery;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToExecuteQuery;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToFindIMObjects;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToSaveCollectionOfObjects;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToSaveIMObject;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.InvalidQueryString;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -153,9 +160,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public void save(final IMObject object) {
         try {
-            update(new HibernateCallback() {
-                public Object doInHibernate(Session session)
-                        throws HibernateException {
+            update(new HibernateCallback<Object>() {
+                public Object doInHibernate(Session session) throws HibernateException {
                     save(object, session);
                     return null;
                 }
@@ -174,7 +180,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public void save(final Collection<? extends IMObject> objects) {
         try {
-            update(new HibernateCallback() {
+            update(new HibernateCallback<Object>() {
                 public Object doInHibernate(Session session)
                         throws HibernateException {
                     save(objects, session);
@@ -195,7 +201,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public void delete(final IMObject object) {
         try {
-            update(new HibernateCallback() {
+            update(new HibernateCallback<Object>() {
                 public Object doInHibernate(Session session)
                         throws HibernateException {
                     Context context = getContext(session);
@@ -387,78 +393,69 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             throw new IMObjectDAOException(ClassNameMustBeSpecified);
         }
 
+        StringBuffer queryString = new StringBuffer();
+        List<String> names = new ArrayList<String>();
+        List<Object> params = new ArrayList<Object>();
+        boolean andRequired = false;
+
+        queryString.append("from ");
+        queryString.append(clazz);
+        queryString.append(" as entity");
+
+        // check to see if one or more of the values have been specified
+        if (!StringUtils.isEmpty(shortName) || !StringUtils.isEmpty(instanceName)) {
+            queryString.append(" where ");
+        }
+
+        // process the shortName
+        if (!StringUtils.isEmpty(shortName)) {
+            names.add("shortName");
+            andRequired = true;
+            if (shortName.endsWith("*") || shortName.startsWith("*")) {
+                queryString.append(" entity.archetypeId.shortName like :shortName");
+                params.add(shortName.replace("*", "%"));
+            } else {
+                queryString.append(" entity.archetypeId.shortName = :shortName");
+                params.add(shortName);
+            }
+        }
+
+        // process the instance name
+        if (!StringUtils.isEmpty(instanceName)) {
+            if (andRequired) {
+                queryString.append(" and ");
+            }
+
+            names.add("instanceName");
+            andRequired = true;
+            if (instanceName.endsWith("*") || instanceName.startsWith("*")) {
+                queryString.append(" entity.name like :instanceName");
+                params.add(instanceName.replace("*", "%"));
+            } else {
+                queryString.append(" entity.name = :instanceName");
+                params.add(instanceName);
+            }
+        }
+
+        // determine if we are only interested in active objects
+        if (activeOnly) {
+            if (andRequired) {
+                queryString.append(" and ");
+            }
+            queryString.append(" entity.active = 1");
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Executing " + queryString + " with names "
+                      + names.toString() + " and params " + params.toString());
+        }
+
         try {
-            StringBuffer queryString = new StringBuffer();
-            List<String> names = new ArrayList<String>();
-            List<Object> params = new ArrayList<Object>();
-            boolean andRequired = false;
-
-            queryString.append("from ");
-            queryString.append(clazz);
-            queryString.append(" as entity");
-
-            // check to see if one or more of the values have been specified
-            if (!StringUtils.isEmpty(shortName)
-                || !StringUtils.isEmpty(instanceName)) {
-                queryString.append(" where ");
-            }
-
-            // process the shortName
-            if (!StringUtils.isEmpty(shortName)) {
-                names.add("shortName");
-                andRequired = true;
-                if (shortName.endsWith("*") || shortName.startsWith("*")) {
-                    queryString.append(
-                            " entity.archetypeId.shortName like :shortName");
-                    params.add(shortName.replace("*", "%"));
-                } else {
-                    queryString.append(
-                            " entity.archetypeId.shortName = :shortName");
-                    params.add(shortName);
-                }
-
-            }
-
-            // process the instance name
-            if (!StringUtils.isEmpty(instanceName)) {
-                if (andRequired) {
-                    queryString.append(" and ");
-                }
-
-                names.add("instanceName");
-                andRequired = true;
-                if (instanceName.endsWith("*")
-                    || instanceName.startsWith("*")) {
-                    queryString.append(" entity.name like :instanceName");
-                    params.add(instanceName.replace("*", "%"));
-                } else {
-                    queryString.append(" entity.name = :instanceName");
-                    params.add(instanceName);
-                }
-            }
-
-            // determine if we are only interested in active objects
-            if (activeOnly) {
-                if (andRequired) {
-                    queryString.append(" and ");
-                }
-                queryString.append(" entity.active = 1");
-            }
-
-            if (log.isDebugEnabled()) {
-                log.debug("Executing " + queryString + " with names "
-                          + names.toString() + " and params " + params.toString());
-            }
-
-            HibernateResultCollector<IMObject> collector
-                    = new IMObjectResultCollector();
-            executeQuery(queryString.toString(), new Params(names, params),
-                         collector, firstResult, maxResults, true);
+            HibernateResultCollector<IMObject> collector = new IMObjectResultCollector();
+            executeQuery(queryString.toString(), new Params(names, params), collector, firstResult, maxResults, true);
             return collector.getPage();
         } catch (Exception exception) {
-            throw new IMObjectDAOException(
-                    FailedToFindIMObjects, exception, shortName, instanceName,
-                    clazz);
+            throw new IMObjectDAOException(FailedToFindIMObjects, exception, shortName, instanceName, clazz);
         }
     }
 
@@ -471,8 +468,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public IMObject get(final IMObjectReference reference) {
         // first determine if the object is cached in the transaction context
-        IMObject result = (IMObject) execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) {
+        IMObject result = execute(new HibernateCallback<IMObject>() {
+            public IMObject doInHibernate(Session session) {
                 Context context = getContext(session);
                 DOState state = context.getCached(reference);
                 return (state != null) ? state.getSource() : null;
@@ -562,7 +559,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public void replace(final Lookup source, final Lookup target) {
         try {
-            update(new HibernateCallback() {
+            update(new HibernateCallback<Object>() {
                 public Object doInHibernate(Session session) throws HibernateException {
                     LookupReplacer replacer = new LookupReplacer(cache);
                     replacer.replace(source, target, session);
@@ -609,7 +606,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                               final int firstResult,
                               final int maxResults, final boolean count)
             throws Exception {
-        execute(new HibernateCallback() {
+        execute(new HibernateCallback<Object>() {
 
             public Object doInHibernate(Session session) throws
                                                          HibernateException {
@@ -680,7 +677,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                                    final int firstRow, final int numOfRows,
                                    final HibernateResultCollector collector,
                                    final boolean count) throws Exception {
-        execute(new HibernateCallback() {
+        execute(new HibernateCallback<Object>() {
             @SuppressWarnings("unchecked")
             public Object doInHibernate(Session session)
                     throws HibernateException {
@@ -835,9 +832,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         queryString.append(clazz);
         queryString.append(" as entity where entity.id = :id and entity.archetypeId.shortName = :shortName");
 
-        return (IMObject) execute(new HibernateCallback() {
-            public Object doInHibernate(Session session)
-                    throws HibernateException {
+        return execute(new HibernateCallback<IMObject>() {
+            public IMObject doInHibernate(Session session) throws HibernateException {
                 Query query = session.createQuery(queryString.toString());
                 query.setParameter("id", reference.getId());
                 query.setParameter("shortName", reference.getArchetypeId().getShortName());
@@ -1078,12 +1074,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param callback the callback to execute
      * @return the result of the callback
      */
-    private Object update(final HibernateCallback callback) {
+    private Object update(final HibernateCallback<Object> callback) {
         final HibernateTemplate template = getHibernateTemplate();
         getHibernateTemplate().setExposeNativeSession(true);
-        return txnTemplate.execute(new TransactionCallback() {
+        return txnTemplate.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
-                return template.execute(new HibernateCallback() {
+                return template.execute(new HibernateCallback<Object>() {
                     public Object doInHibernate(Session session)
                             throws HibernateException {
                         checkWriteOperationAllowed(template, session);
@@ -1113,7 +1109,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param callback the callback
      * @return the result of the callback
      */
-    private Object execute(HibernateCallback callback) {
+    private <T> T execute(HibernateCallback<T> callback) {
         final HibernateTemplate template = getHibernateTemplate();
         template.setExposeNativeSession(true);
         return template.execute(callback);
