@@ -104,7 +104,7 @@ public class ReminderRules {
     public ReminderRules(IArchetypeService service,
                          ReminderTypeCache reminderTypes) {
         this.service = service;
-        rules = new PatientRules(service);
+        rules = new PatientRules(service, null, null);
         this.reminderTypes = reminderTypes;
     }
 

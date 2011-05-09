@@ -91,7 +91,7 @@ public class PartyRules {
     public Object getCustomerNode(Act act, String nodeName) {
         Party party = getCustomer(act);
         if (party == null) {
-            party = new PatientRules(service).getOwner(act);
+            party = getOwner(act);
         }
         return getCustomerNode(party, nodeName);
     }
@@ -150,7 +150,7 @@ public class PartyRules {
     public String getFullName(Act act) {
         Party party = getCustomer(act);
         if (party == null) {
-            party = new PatientRules(service).getOwner(act);
+            party = getOwner(act);
         }
         return (party != null) ? getFullName(party) : "";
     }
@@ -248,7 +248,7 @@ public class PartyRules {
     public String getBillingAddress(Act act) {
         Party party = getCustomer(act);
         if (party == null) {
-            party = new PatientRules(service).getOwner(act);
+            party = getOwner(act);
         }
         return (party != null) ? getBillingAddress(party) : "";
     }
@@ -296,7 +296,7 @@ public class PartyRules {
     public String getCorrespondenceAddress(Act act) {
         Party party = getCustomer(act);
         if (party == null) {
-            party = new PatientRules().getOwner(act);
+            party = getOwner(act);
         }
         return (party != null) ? getCorrespondenceAddress(party) : "";
     }
@@ -315,7 +315,7 @@ public class PartyRules {
     public String getCorrespondenceNameAddress(Act act) {
         Party party = getCustomer(act);
         if (party == null) {
-            party = new PatientRules().getOwner(act);
+            party = getOwner(act);
         }
         return (party != null) ? getCorrespondenceNameAddress(party) : "";
     }
@@ -362,7 +362,7 @@ public class PartyRules {
     public String getHomeTelephone(Act act) {
         Party party = getCustomer(act);
         if (party == null) {
-            party = new PatientRules(service).getOwner(act);
+            party = getOwner(act);
         }
         return (party != null) ? getHomeTelephone(party) : "";
     }
@@ -394,7 +394,7 @@ public class PartyRules {
     public String getWorkTelephone(Act act) {
         Party party = getCustomer(act);
         if (party == null) {
-            party = new PatientRules(service).getOwner(act);
+            party = getOwner(act);
         }
         return (party != null) ? getWorkTelephone(party) : "";
     }
@@ -695,6 +695,16 @@ public class PartyRules {
 
     protected IArchetypeService getArchetypeService() {
         return service;
+    }
+
+    /**
+     * Returns the patient owner for the patient referenced by an act.
+     *
+     * @param act the act
+     * @return the patient owner. May be <tt>null</tt>
+     */
+    private Party getOwner(Act act) {
+        return new PatientRules(service, null, null).getOwner(act);
     }
 
     /**

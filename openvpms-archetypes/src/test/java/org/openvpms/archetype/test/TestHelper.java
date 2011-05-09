@@ -205,8 +205,7 @@ public class TestHelper extends Assert {
      */
     public static Party createPatient(Party owner, boolean save) {
         Party patient = createPatient(save);
-        PatientRules rules = new PatientRules(
-                ArchetypeServiceHelper.getArchetypeService());
+        PatientRules rules = new PatientRules(ArchetypeServiceHelper.getArchetypeService(), null, null);
         rules.addPatientOwnerRelationship(owner, patient);
         if (save) {
             save(patient);

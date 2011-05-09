@@ -137,7 +137,7 @@ public class ReminderProcessor
         this.processingDate = processingDate;
         this.service = service;
         rules = new ReminderRules(service, new ReminderTypeCache());
-        patientRules = new PatientRules(service);
+        patientRules = new PatientRules(service, null, null);
         reminderTypes = new ReminderTypeCache(service);
     }
 
