@@ -20,8 +20,8 @@ package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -33,11 +33,14 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceException;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -53,6 +56,11 @@ public class PartyFunctions {
      * The archetype service.
      */
     private IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private ILookupService lookups;
 
     /**
      * The party rules.
@@ -82,22 +90,26 @@ public class PartyFunctions {
     /**
      * Determines if getDefaultContacts() warning already been logged.
      */
-    private boolean defaultContactsWarn =false;
+    private boolean defaultContactsWarn = false;
 
     /**
-     * Constructs a new <tt>PartyFunctions</tt>.
+     * Constructs a <tt>PartyFunctions</tt>.
      */
     public PartyFunctions() {
-        this(null);
+        this(null, null, null);
     }
 
     /**
      * Constructs  a new <tt>PartyFunctions</tt>.
      *
-     * @param service the archetype service. May be <tt>null</tt>
+     * @param service      the archetype service. May be <tt>null</tt>
+     * @param lookups      the lookup service. May be <tt>null</tt>
+     * @param patientRules the patient rules. May be <tt>null</tt>
      */
-    public PartyFunctions(IArchetypeService service) {
+    public PartyFunctions(IArchetypeService service, ILookupService lookups, PatientRules patientRules) {
         this.service = service;
+        this.lookups = lookups;
+        this.patientRules = patientRules;
     }
 
     /**
@@ -114,7 +126,7 @@ public class PartyFunctions {
     /**
      * Returns the specified node of a customer associated with an act.
      *
-     * @param act the act
+     * @param act      the act
      * @param nodeName to node to return
      * @return the node Object, or <tt>null</tt>
      */
@@ -168,11 +180,11 @@ public class PartyFunctions {
         if (value instanceof Party) {
             return getPartyFullName((Party) value);
         } else if (value instanceof Act) {
-        	return getPartyFullName((Act) value);
+            return getPartyFullName((Act) value);
         }
         return null;
     }
- 
+
     /**
      * Returns a formatted name for a party.
      *
@@ -480,9 +492,8 @@ public class PartyFunctions {
         Object value = pointer.getValue();
         if (value instanceof Party) {
             return getFaxNumber((Party) value);
-        }
-        else if(value instanceof Act) {
-        	return getFaxNumber((Act) value);
+        } else if (value instanceof Act) {
+            return getFaxNumber((Act) value);
         }
         return "";
     }
@@ -514,13 +525,13 @@ public class PartyFunctions {
             if (party == null) {
                 party = getPatientRules().getOwner(act);
             }
-	        if (party != null) {
-	            return getPartyRules().getFaxNumber(party);
-	        }
+            if (party != null) {
+                return getPartyRules().getFaxNumber(party);
+            }
         }
         return "";
     }
-    
+
     /**
      * Returns a formatted email address for a party.
      *
@@ -533,9 +544,8 @@ public class PartyFunctions {
         Object value = pointer.getValue();
         if (value instanceof Party) {
             return getEmailAddress((Party) value);
-        }
-        else if(value instanceof Act) {
-        	return getEmailAddress((Act) value);
+        } else if (value instanceof Act) {
+            return getEmailAddress((Act) value);
         }
         return "";
     }
@@ -567,13 +577,13 @@ public class PartyFunctions {
             if (party == null) {
                 party = getPatientRules().getOwner(act);
             }
-	        if (party != null) {
-	            return getPartyRules().getEmailAddress(party);
-	        }
+            if (party != null) {
+                return getPartyRules().getEmailAddress(party);
+            }
         }
         return "";
     }
-    
+
     /**
      * Returns a formatted contact purpose string for the Contact.
      *
@@ -886,7 +896,7 @@ public class PartyFunctions {
      * @return desex status, or an empty string
      */
     public String getPatientDesexStatus(Party party) {
-            return getPatientRules().getPatientDesexStatus(party);
+        return getPatientRules().getPatientDesexStatus(party);
     }
 
     /**
@@ -918,7 +928,7 @@ public class PartyFunctions {
      */
     public String getPracticeAddress() {
         return getPartyRules().getPracticeAddress();
-        
+
     }
 
     /**
@@ -928,7 +938,7 @@ public class PartyFunctions {
      */
     public String getPracticeTelephone() {
         return getPartyRules().getPracticeTelephone();
-        
+
     }
 
     /**
@@ -938,7 +948,7 @@ public class PartyFunctions {
      */
     public String getPracticeFaxNumber() {
         return getPartyRules().getPracticeFaxNumber();
-        
+
     }
 
     /**
@@ -964,14 +974,14 @@ public class PartyFunctions {
     /**
      * Returns a Bpay Id for the Party.
      * Utilises the party uid and adds a check digit using a Luntz 10 algorithm.
-     * 
+     *
      * @param party
      * @return string bpay id
      */
     public String getBpayId(Party party) {
-    	return getPartyRules().getBpayId(party);
+        return getPartyRules().getBpayId(party);
     }
-    
+
     /**
      * Returns the Bpay ID for customer associated with an
      * act via an <em>participation.customer</em> or <em>participation.patient</em>
@@ -996,16 +1006,28 @@ public class PartyFunctions {
      * Returns the archetype service.
      *
      * @return the archetype service
-     * @throws ArchetypeServiceException if no service was provided at
-     *                                   construction and
-     *                                   {@link ArchetypeServiceHelper} hasn't
-     *                                   been initialised
+     * @throws ArchetypeServiceException if no service was provided at construction and {@link ArchetypeServiceHelper}
+     *                                   hasn't been initialised
      */
     protected synchronized IArchetypeService getArchetypeService() {
         if (service == null) {
             service = ArchetypeServiceHelper.getArchetypeService();
         }
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     * @throws LookupServiceException if no service was provided at construction and {@link LookupServiceHelper}
+     *                                hasn't been initialised
+     */
+    protected synchronized ILookupService getLookupService() {
+        if (lookups == null) {
+            lookups = LookupServiceHelper.getLookupService();
+        }
+        return lookups;
     }
 
     /**
@@ -1029,7 +1051,7 @@ public class PartyFunctions {
      */
     protected synchronized PatientRules getPatientRules() {
         if (patientRules == null) {
-            patientRules = new PatientRules(getArchetypeService());
+            patientRules = new PatientRules(getArchetypeService(), getLookupService(), null);
         }
         return patientRules;
     }

@@ -33,6 +33,13 @@
                 <errorMessage>Invalid currency</errorMessage>
             </assertion>
         </node>
+       <node name="patientAgeFormat" path="/details/patientAgeFormat" type="java.lang.String" minCardinality="0">
+           <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.dateformats"/>
+                <errorMessage>Invalid date format</errorMessage>
+            </assertion>
+        </node>
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
