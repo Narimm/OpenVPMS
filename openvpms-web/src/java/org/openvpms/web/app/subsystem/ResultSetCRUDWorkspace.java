@@ -28,7 +28,7 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 
 
 /**
- * A CRUD workspace that provides a {@link org.openvpms.web.component.im.query.QueryBrowser} to display objects, and a {@link ResultSetCRUDWindow}
+ * A CRUD workspace that provides a {@link QueryBrowser} to display objects, and a {@link ResultSetCRUDWindow}
  * to view/edit the objects.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>

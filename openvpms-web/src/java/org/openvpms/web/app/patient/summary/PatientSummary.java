@@ -51,6 +51,7 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.*;
 
@@ -78,7 +79,7 @@ public class PatientSummary extends PartySummary {
      * Constructs a <tt>PatientSummary</tt>.
      */
     public PatientSummary() {
-        rules = new PatientRules();
+        rules = (PatientRules) ServiceHelper.getContext().getBean("patientRules");
         reminderRules = new ReminderRules();
     }
 
@@ -131,7 +132,7 @@ public class PatientSummary extends PartySummary {
         }
         Label ageTitle = LabelFactory.create("patient.age");
         Label age = LabelFactory.create();
-        age.setText(getPatientAge(party));
+        age.setText(rules.getPatientAge(party));
 
         Label weightTitle = LabelFactory.create("patient.weight");
         Label weight = LabelFactory.create();
@@ -212,17 +213,6 @@ public class PatientSummary extends PartySummary {
      */
     private String getPatientSex(Party patient) {
         return rules.getPatientSex(patient);
-    }
-
-    /**
-     * Returns the age for a patient.
-     * todo localise
-     *
-     * @param patient the patient
-     * @return a string representing the patient age
-     */
-    private String getPatientAge(Party patient) {
-        return rules.getPatientAge(patient);
     }
 
     /**
