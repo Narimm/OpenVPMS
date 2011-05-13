@@ -31,7 +31,7 @@ import java.util.Date;
 
 
 /**
- * An {@link DurationFormatter} for dates that configures itself from a <em>lookup.dateformats</em> lookup.
+ * An {@link DurationFormatter} for dates that configures itself from a <em>lookup.durationformats</em> lookup.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
@@ -39,18 +39,19 @@ import java.util.Date;
 public class LookupDateDurationFormatter implements DurationFormatter {
 
     /**
-     * Date formats lookup archetype short name.
+     * Duration formats lookup archetype short name.
      */
-    public static final String DATE_FORMATS = "lookup.dateformats";
-    /**
-     * Date format lookup archetype short name.
-     */
-    public static final String DATE_FORMAT = "lookup.dateformat";
+    public static final String DURATION_FORMATS = "lookup.durationformats";
 
     /**
-     * Date formats lookup relationship archetype short name.
+     * Duration format lookup archetype short name.
      */
-    public static final String DATE_FORMATS_RELATIONSHIP = "lookupRelationship.dateformats";
+    public static final String DURATION_FORMAT = "lookup.durationformat";
+
+    /**
+     * Duration formats lookup relationship archetype short name.
+     */
+    public static final String DURATION_FORMATS_RELATIONSHIP = "lookupRelationship.durationformats";
 
     /**
      * The formatter.
@@ -66,14 +67,14 @@ public class LookupDateDurationFormatter implements DurationFormatter {
     /**
      * Constructs a <tt>LookupDurationFormatter</tt>.
      *
-     * @param formats an <em>lookup.dateformats</em>
+     * @param formats an <em>lookup.durationformats</em>
      * @param service the lookup service
      * @param factory the bean factory
      */
     public LookupDateDurationFormatter(Lookup formats, ILookupService service,
                                        IMObjectBeanFactory factory) {
         formatter = new CompositeDurationFormatter();
-        Collection<Lookup> lookups = service.getTargetLookups(formats, DATE_FORMATS_RELATIONSHIP);
+        Collection<Lookup> lookups = service.getTargetLookups(formats, DURATION_FORMATS_RELATIONSHIP);
         for (Lookup lookup : lookups) {
             IMObjectBean bean = factory.createBean(lookup);
             int interval = bean.getInt("interval");
@@ -86,8 +87,8 @@ public class LookupDateDurationFormatter implements DurationFormatter {
                 formatter.add(interval, units, DateDurationFormatter.create(showYears, showMonths, showWeeks,
                                                                             showDays));
             } else {
-                log.warn("Skipping date format " + lookup.getName() + " (" + lookup.getId()
-                         + "): no date fields displayed");
+                log.warn("Skipping duration format " + lookup.getName() + " (" + lookup.getId()
+                         + "): no fields displayed");
             }
         }
     }

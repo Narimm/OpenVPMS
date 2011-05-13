@@ -145,8 +145,8 @@ public class PatientAgeFormatter implements DurationFormatter {
         CompositeDurationFormatter formatter = new CompositeDurationFormatter();
         formatter.add(7, DateUnits.DAYS, DateDurationFormatter.DAY);
         formatter.add(90, DateUnits.DAYS, DateDurationFormatter.WEEK);
-        formatter.add(2, DateUnits.YEARS, DateDurationFormatter.MONTH);
-        formatter.setDefaultFormatter(DateDurationFormatter.YEAR);
+        formatter.add(23, DateUnits.MONTHS, DateDurationFormatter.MONTH);
+        formatter.add(2, DateUnits.YEARS, DateDurationFormatter.YEAR);
         return formatter;
     }
 
@@ -166,7 +166,7 @@ public class PatientAgeFormatter implements DurationFormatter {
             IMObjectBean bean = factory.createBean(practice);
             String code = bean.getString("patientAgeFormat");
             if (code != null) {
-                Lookup lookup = lookups.getLookup(LookupDateDurationFormatter.DATE_FORMATS, code);
+                Lookup lookup = lookups.getLookup(LookupDateDurationFormatter.DURATION_FORMATS, code);
                 if (lookup != null) {
                     formatter = new LookupDateDurationFormatter(lookup, lookups, factory);
                 }
