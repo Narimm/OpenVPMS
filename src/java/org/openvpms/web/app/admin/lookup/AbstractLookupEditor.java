@@ -32,7 +32,7 @@ import org.openvpms.web.component.property.StringPropertyTransformer;
 /**
  * Abstract editor for lookups.
  * <p/>
- * For lookups where there is are both code and name nodes, and
+ * For lookups where there is both code and name nodes, and
  * the code is hidden, this derives the initial value of code from the name.
  * The derived value is the name with letters converted to uppercase, and
  * anything it is not in the range [A-Z,0-9] replaced with underscores.
@@ -47,8 +47,9 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
      */
     private Component code;
 
+
     /**
-     * Creates a new <tt>AbstractLookupEditor</tt>.
+     * Constructs an <tt>AbstractLookupEditor</tt>.
      *
      * @param object        the object to edit
      * @param parent        the parent object. May be <tt>null</tt>
@@ -59,25 +60,14 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
 
         disableMacroExpansion("code");
 
-        if (object.isNew()) {
-            Property code = getProperty("code");
-            Property name = getProperty("name");
-            if (code != null && name != null) {
-                if (code.isHidden()) {
-                    // derive the code when the name changes
-                    name.addModifiableListener(new ModifiableListener() {
-                        public void modified(Modifiable modifiable) {
-                            updateCode();
-                        }
-                    });
-                }
-            }
+        if (object.isNew() && getProperty("code") != null) {
+            initCode();
         }
 
         Editor codeEditor = getEditor("code");
         if (codeEditor != null) {
-            this.code = codeEditor.getComponent();
-            this.code.setEnabled(object.isNew()); // only enable the code field for new objects
+            code = codeEditor.getComponent();
+            code.setEnabled(object.isNew()); // only enable the code field for new objects
         }
     }
 
@@ -106,6 +96,29 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
             if (property != null) {
                 String code = createCode();
                 property.setValue(code);
+            }
+        }
+    }
+
+    /**
+     * Initialises the code node.
+     * <p/>
+     * This is only invoked if the lookup is new.
+     * <p/>
+     * This implementation registers a listener to invoke {@link #updateCode()} when the name node changes.
+     * If the lookup doesn't have name node, this implementation is a no-op.
+     */
+    protected void initCode() {
+        Property name = getProperty("name");
+        if (name != null) {
+            Property code = getProperty("code");
+            if (code.isHidden()) {
+                // derive the code when the name changes
+                name.addModifiableListener(new ModifiableListener() {
+                    public void modified(Modifiable modifiable) {
+                        updateCode();
+                    }
+                });
             }
         }
     }
@@ -143,5 +156,5 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
             }
         }
     }
-    
+
 }

@@ -310,7 +310,11 @@
                 <entry key="lookup"
                        value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
-                    <bean class="org.openvpms.archetype.function.party.PartyFunctions"/>
+                    <bean class="org.openvpms.archetype.function.party.PartyFunctions">
+                        <constructor-arg ref="archetypeRuleService"/>
+                        <constructor-arg ref="lookupService"/>
+                        <constructor-arg ref="patientRules"/>
+                    </bean>
                 </entry>
                 <entry key="date"
                        value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
@@ -522,6 +526,23 @@
     <!-- ================================================================== -->
     <!--                        MISC                                        -->
     <!-- ================================================================== -->
+
+    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="patientAgeFormatter"/>
+    </bean>
+
+    <bean id="patientAgeFormatter" class="org.openvpms.archetype.rules.patient.RefreshablePatientAgeFormatter">
+        <constructor-arg ref="lookupService"/> 
+        <constructor-arg ref="practiceRules"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="imObjectBeanFactory"/>
+    </bean>
 
     <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
         <constructor-arg ref="archetypeService"/>
