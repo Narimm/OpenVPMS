@@ -36,8 +36,8 @@
        <node name="patientAgeFormat" path="/details/patientAgeFormat" type="java.lang.String" minCardinality="0">
            <assertion name="lookup">
                 <property name="type" value="lookup"/>
-                <property name="source" value="lookup.dateformats"/>
-                <errorMessage>Invalid date format</errorMessage>
+                <property name="source" value="lookup.durationformats"/>
+                <errorMessage>Invalid duration format</errorMessage>
             </assertion>
         </node>
 		<node name="contacts" path="/contacts"

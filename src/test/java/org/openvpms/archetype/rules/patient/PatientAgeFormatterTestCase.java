@@ -21,7 +21,7 @@ package org.openvpms.archetype.rules.patient;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import static org.openvpms.archetype.i18n.time.DurationFormatterTestHelper.addFormat;
-import org.openvpms.archetype.i18n.time.LookupDateDurationFormatter;
+import static org.openvpms.archetype.i18n.time.DurationFormatterTestHelper.createDurationFormats;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -48,33 +48,27 @@ public class PatientAgeFormatterTestCase extends ArchetypeServiceTest {
      * The lookup service.
      */
     @Autowired
-    private ILookupService lookupService;
+    protected ILookupService lookupService;
 
     /**
      * The bean factory.
      */
     @Autowired
-    private IMObjectBeanFactory factory;
+    protected IMObjectBeanFactory factory;
 
     /**
-     * Configures a lookup.dateformat and verifies that LookupDateDurationFormatter formats correctly with it.
+     * Configures a lookup.durationformat and verifies that LookupDateDurationFormatter formats correctly with it.
      */
     @Test
     public void testFormat() {
-        String code = "XTESTDATEFORMATS" + System.currentTimeMillis();
-        Lookup formats = TestHelper.getLookup(LookupDateDurationFormatter.DATE_FORMATS, code);
-        addFormat(formats, 6, DateUnits.DAYS, false, false, false, true);  // show days
+        Lookup formats = createDurationFormats();
+        addFormat(formats, 7, DateUnits.DAYS, false, false, false, true);  // show days
         addFormat(formats, 90, DateUnits.DAYS, false, false, true, false); // weeks
         addFormat(formats, 1, DateUnits.YEARS, false, true, false, false); // months
         addFormat(formats, 2, DateUnits.YEARS, true, true, false, false);  // years, months
 
-        Party practice = TestHelper.getPractice();
-        IMObjectBean bean = factory.createBean(practice);
-        bean.setValue("patientAgeFormat", code);
-        bean.save();
-
-        PracticeRules rules = new PracticeRules();
-        PatientAgeFormatter formatter = new PatientAgeFormatter(lookupService, rules, factory);
+        setPracticeFormat(TestHelper.getPractice(), formats);
+        PatientAgeFormatter formatter = createFormatter();
 
         Date from = getDate("2011-01-01");
         Date to1 = getDate("2011-01-07");
@@ -82,9 +76,52 @@ public class PatientAgeFormatterTestCase extends ArchetypeServiceTest {
         Date to3 = getDate("2012-01-01");
         Date to4 = getDate("2013-02-01");
         checkFormat("6 Days", from, to1, formatter);
-        checkFormat("1 Week", from, to2, formatter);
+        checkFormat("7 Days", from, to2, formatter);
         checkFormat("12 Months", from, to3, formatter);
         checkFormat("2 Years 1 Month", from, to4, formatter);
+    }
+
+    /**
+     * Tests the formatting if the practice has no associated format.
+     */
+    @Test
+    public void testDefaultFormat() {
+        setPracticeFormat(TestHelper.getPractice(), null);
+        PatientAgeFormatter formatter = createFormatter();
+
+        Date from = getDate("2011-01-01");
+        Date to1 = getDate("2011-01-07");
+        Date to2 = getDate("2011-01-08");
+        Date to3 = getDate("2012-01-01");
+        Date to4 = getDate("2013-02-01");
+        checkFormat("6 Days", from, to1, formatter);
+        checkFormat("7 Days", from, to2, formatter);
+        checkFormat("12 Months", from, to3, formatter);
+        checkFormat("2 Years", from, to4, formatter);
+    }
+
+    /**
+     * Sets the format associated with the practice.
+     *
+     * @param practice the practice
+     * @param formats  the <em>lookup.durationformats</em>. May be <tt>null</tt>
+     */
+    protected void setPracticeFormat(Party practice, Lookup formats) {
+        IMObjectBean bean = factory.createBean(practice);
+
+        String code = (formats != null) ? formats.getCode() : null;
+        bean.setValue("patientAgeFormat", code);
+        bean.save();
+    }
+
+    /**
+     * Creates a new formatter.
+     *
+     * @return a new formatter
+     */
+    protected PatientAgeFormatter createFormatter() {
+        PracticeRules rules = new PracticeRules();
+        return new PatientAgeFormatter(lookupService, rules, factory);
     }
 
     /**
@@ -95,7 +132,7 @@ public class PatientAgeFormatterTestCase extends ArchetypeServiceTest {
      * @param to        the to date
      * @param formatter the formatter to use
      */
-    private void checkFormat(String expected, Date from, Date to, PatientAgeFormatter formatter) {
+    protected void checkFormat(String expected, Date from, Date to, PatientAgeFormatter formatter) {
         String result = formatter.format(from, to);
         assertEquals(expected, result);
     }

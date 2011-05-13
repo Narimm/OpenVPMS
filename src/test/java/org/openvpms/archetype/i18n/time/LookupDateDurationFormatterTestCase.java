@@ -21,9 +21,9 @@ package org.openvpms.archetype.i18n.time;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import static org.openvpms.archetype.i18n.time.DurationFormatterTestHelper.addFormat;
+import static org.openvpms.archetype.i18n.time.DurationFormatterTestHelper.createDurationFormats;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
-import org.openvpms.archetype.test.TestHelper;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
@@ -54,12 +54,11 @@ public class LookupDateDurationFormatterTestCase extends ArchetypeServiceTest {
     private IMObjectBeanFactory factory;
 
     /**
-     * Configures a lookup.dateformat and verifies that LookupDateDurationFormatter formats correctly with it.
+     * Configures a lookup.durationformat and verifies that LookupDateDurationFormatter formats correctly with it.
      */
     @Test
     public void testFormat() {
-        String code = "XTESTDATEFORMATS" + System.currentTimeMillis();
-        Lookup formats = TestHelper.getLookup(LookupDateDurationFormatter.DATE_FORMATS, code);
+        Lookup formats = createDurationFormats();
         addFormat(formats, 6, DateUnits.DAYS, false, false, false, true);  // show days
         addFormat(formats, 90, DateUnits.DAYS, false, false, true, false); // weeks
         addFormat(formats, 1, DateUnits.YEARS, false, true, false, false); // months

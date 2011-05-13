@@ -71,8 +71,8 @@ public class RefreshablePatientAgeFormatter extends PatientAgeFormatter {
             }
         };
         service.addListener(PracticeArchetypes.PRACTICE, listener);
-        service.addListener(LookupDateDurationFormatter.DATE_FORMATS, listener);
-        service.addListener(LookupDateDurationFormatter.DATE_FORMAT, listener);
+        service.addListener(LookupDateDurationFormatter.DURATION_FORMATS, listener);
+        service.addListener(LookupDateDurationFormatter.DURATION_FORMAT, listener);
     }
 
     /**
@@ -81,8 +81,8 @@ public class RefreshablePatientAgeFormatter extends PatientAgeFormatter {
     @PreDestroy
     public void dispose() {
         service.removeListener(PracticeArchetypes.PRACTICE, listener);
-        service.removeListener(LookupDateDurationFormatter.DATE_FORMATS, listener);
-        service.removeListener(LookupDateDurationFormatter.DATE_FORMAT, listener);
+        service.removeListener(LookupDateDurationFormatter.DURATION_FORMATS, listener);
+        service.removeListener(LookupDateDurationFormatter.DURATION_FORMAT, listener);
     }
 
 }

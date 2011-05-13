@@ -20,8 +20,8 @@ package org.openvpms.archetype.i18n.time;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.archetype.rules.util.DateUnits;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 
 import java.util.Date;
 
@@ -40,7 +40,7 @@ public class CompositeDurationFormatterTestCase {
     @Test
     public void testFormat() {
         CompositeDurationFormatter formatter = new CompositeDurationFormatter();
-        formatter.add(6, DateUnits.DAYS, new DateDurationFormatter(false, false, false, true)); // show days
+        formatter.add(7, DateUnits.DAYS, new DateDurationFormatter(false, false, false, true)); // show days
         formatter.add(90, DateUnits.DAYS, new DateDurationFormatter(false, false, true, false)); // weeks
         formatter.add(1, DateUnits.YEARS, new DateDurationFormatter(false, true, false, false)); // months
         formatter.add(2, DateUnits.YEARS, new DateDurationFormatter(true, true, false, false)); // years, months
@@ -48,12 +48,14 @@ public class CompositeDurationFormatterTestCase {
         Date from = getDate("2011-01-01");
         Date to1 = getDate("2011-01-07");
         Date to2 = getDate("2011-01-08");
-        Date to3 = getDate("2012-01-01");
-        Date to4 = getDate("2013-02-01");
+        Date to3 = getDate("2011-01-09");
+        Date to4 = getDate("2012-01-01");
+        Date to5 = getDate("2013-02-01");
         checkFormat("6 Days", from, to1, formatter);
-        checkFormat("1 Week", from, to2, formatter);
-        checkFormat("12 Months", from, to3, formatter);
-        checkFormat("2 Years 1 Month", from, to4, formatter);
+        checkFormat("7 Days", from, to2, formatter);
+        checkFormat("1 Week", from, to3, formatter);
+        checkFormat("12 Months", from, to4, formatter);
+        checkFormat("2 Years 1 Month", from, to5, formatter);
     }
 
     /**

@@ -16,9 +16,8 @@
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="lookup.dateformats.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.lookup.Lookup"
-               displayName="Date Formats">
+    <archetype name="lookup.durationformats.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Duration Formats">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="code" path="/code" type="java.lang.String"
               hidden="true" minCardinality="1">
@@ -30,17 +29,16 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name,' ',lookup:isDefault(/defaultLookup))"/>
-        <node displayName="default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"
-              defaultValue="false()"/>
+        <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()" hidden="true"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
 
         <node name="formats" path="/sourceLookupRelationships"
               type="java.util.HashSet" baseName="sourceLookupRelationship"
               minCardinality="0" maxCardinality="*">
-            <assertion name="archetypeRange" filter="lookupRelationship.dateformats">
+            <assertion name="archetypeRange" filter="lookupRelationship.durationformats">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="lookupRelationship.dateformats"/>
+                        <property name="shortName" value="lookupRelationship.durationformats"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
