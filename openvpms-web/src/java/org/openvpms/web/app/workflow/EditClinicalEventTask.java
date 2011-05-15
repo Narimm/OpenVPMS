@@ -31,10 +31,14 @@ import org.openvpms.web.app.patient.mr.SummaryTableBrowser;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DoubleClickMonitor;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.resource.util.Messages;
@@ -141,6 +145,11 @@ public class EditClinicalEventTask extends AbstractTask {
         private static final String EDIT_ID = "edit";
 
         /**
+         * Print button identifer.
+         */
+        private static final String PRINT_ID = "print";
+
+        /**
          * Delete button identifier.
          */
         private static final String DELETE_ID = "delete";
@@ -148,7 +157,7 @@ public class EditClinicalEventTask extends AbstractTask {
         /**
          * The dialog buttons.
          */
-        private static final String[] BUTTONS = {NEW_ID, EDIT_ID, DELETE_ID, OK_ID, CANCEL_ID};
+        private static final String[] BUTTONS = {NEW_ID, EDIT_ID, DELETE_ID, PRINT_ID, OK_ID, CANCEL_ID};
 
 
         /**
@@ -181,7 +190,7 @@ public class EditClinicalEventTask extends AbstractTask {
                     }
                 }
             });
-            enableDelete();
+            enableButtons();
         }
 
         /**
@@ -197,6 +206,8 @@ public class EditClinicalEventTask extends AbstractTask {
                 onCreate();
             } else if (EDIT_ID.equals(button)) {
                 onEdit();
+            } else if (PRINT_ID.equals(button)) {
+                onPrint();
             } else if (DELETE_ID.equals(button)) {
                 onDelete();
             } else {
@@ -230,7 +241,7 @@ public class EditClinicalEventTask extends AbstractTask {
             if (click.isDoubleClick(object.getId())) {
                 onEdit();
             }
-            enableDelete();
+            enableButtons();
         }
 
         /**
@@ -251,6 +262,21 @@ public class EditClinicalEventTask extends AbstractTask {
             window.setObject(getSelected());
             window.setEvent(getEvent());
             window.edit();
+        }
+
+        /**
+         * Prints the selected event.
+         */
+        private void onPrint() {
+            Act act = getSelected();
+            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
+                try {
+                    IMPrinter<Act> printer = IMPrinterFactory.create(act);
+                    new InteractiveIMPrinter<Act>(printer).print();
+                } catch (Throwable exception) {
+                    ErrorHelper.show(exception);
+                }
+            }
         }
 
         /**
@@ -293,13 +319,18 @@ public class EditClinicalEventTask extends AbstractTask {
         }
 
         /**
-         * Determines if the delete button should be enabled or disabled.
-         * <p/>
-         * This prevents deletion of visits.
+         * Determines which buttons should be enabled when an act is selected.
+         * This enables the:
+         * <ul>
+         * <li>print button for visits
+         * <li>delete button for all acts but visits
+         * </ul>
          */
-        private void enableDelete() {
-            Act object = getSelected();
-            boolean enableDelete = object != null && !TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT);
+        private void enableButtons() {
+            Act selected = getSelected();
+            boolean event = TypeHelper.isA(selected, PatientArchetypes.CLINICAL_EVENT);
+            boolean enableDelete = selected != null && !event;
+            getButtons().setEnabled(PRINT_ID, event);
             getButtons().setEnabled(DELETE_ID, enableDelete);
         }
 
