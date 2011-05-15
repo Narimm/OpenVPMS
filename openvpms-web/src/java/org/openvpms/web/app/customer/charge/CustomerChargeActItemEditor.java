@@ -49,7 +49,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.PriceActItemEditor;
 import org.openvpms.web.app.patient.mr.PatientInvestigationActEditor;
 import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
-import org.openvpms.web.app.patient.mr.PatientMedicationActLayoutStrategy;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -64,12 +63,10 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -149,13 +146,6 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Selling units label.
      */
     private Label sellingUnits;
-
-    /**
-     * Layout strategy factory that returns customized instances of
-     * {@link PatientMedicationActLayoutStrategy}.
-     */
-    private static final IMObjectLayoutStrategyFactory FACTORY
-            = new MedicationLayoutStrategyFactory();
 
     /**
      * Dispensing node name.
@@ -506,7 +496,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                     Act act = (Act) dispensing.create();
                     if (act != null) {
                         boolean dispensingLabel = hasDispensingLabel(product);
-                        IMObjectEditor editor = createMedicationEditor(act, dispensingLabel);
+                        IMObjectEditor editor = createMedicationEditor(act);
                         if (dispensingLabel) {
                             // queue editing of the act
                             queuePatientActEditor(editor);
@@ -672,17 +662,17 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Creates a new editor for a medication act.
      *
-     * @param act             the medication act
-     * @param dispensingLabel <tt>true</tt> if a dispensing label is required
+     * @param act the medication act
      * @return a new editor for the act
      */
-    private IMObjectEditor createMedicationEditor(Act act, boolean dispensingLabel) {
+    private IMObjectEditor createMedicationEditor(Act act) {
         LayoutContext context = new DefaultLayoutContext(true);
         context.setContext(getLayoutContext().getContext());
-        if (dispensingLabel) {
-            context.setLayoutStrategyFactory(FACTORY);
-        }
         IMObjectEditor editor = dispensing.createEditor(act, context);
+        if (editor instanceof PatientMedicationActEditor) {
+            // display the product read-only to ensure it is consistent with the charge item
+            ((PatientMedicationActEditor) editor).setProductReadOnly(true);
+        }
         dispensing.addEdited(editor);
         return editor;
     }
@@ -934,28 +924,4 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         return editor;
     }
 
-    /**
-     * Factory that invokes <code>setProductReadOnly(true)</code> on
-     * {@link PatientMedicationActLayoutStrategy} instances.
-     */
-    private static class MedicationLayoutStrategyFactory
-            extends EditLayoutStrategyFactory {
-
-        /**
-         * Creates a new layout strategy for an object.
-         *
-         * @param object the object to create the layout strategy for
-         * @param parent the parent object. May be <code>null</code>
-         */
-        @Override
-        public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {
-            IMObjectLayoutStrategy result = super.create(object, parent);
-            if (result instanceof PatientMedicationActLayoutStrategy) {
-                PatientMedicationActLayoutStrategy strategy
-                        = ((PatientMedicationActLayoutStrategy) result);
-                strategy.setProductReadOnly(true);
-            }
-            return result;
-        }
-    }
 }
