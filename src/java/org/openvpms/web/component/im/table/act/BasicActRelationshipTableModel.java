@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.table.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -40,7 +39,7 @@ public class BasicActRelationshipTableModel
      */
     public BasicActRelationshipTableModel(String[] relationshipTypes,
                                           LayoutContext context) {
-        String[] shortNames = ActHelper.getTargetShortNames(relationshipTypes);
+        String[] shortNames = getTargetShortNames(relationshipTypes);
         setModel(new DefaultActTableModel(shortNames, context));
     }
 }

@@ -20,12 +20,7 @@ package org.openvpms.web.component.im.table.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.im.table.DelegatingIMObjectTableModel;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.openvpms.web.component.im.relationship.DelegatingIMObjectRelationshipTargetTableModel;
 
 
 /**
@@ -37,42 +32,6 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractActRelationshipTableModel<T extends Act>
-        extends DelegatingIMObjectTableModel<ActRelationship, T> {
+        extends DelegatingIMObjectRelationshipTargetTableModel<ActRelationship, T> {
 
-    /**
-     * The act relationships.
-     */
-    private List<ActRelationship> _relationships;
-
-
-    /**
-     * Sets the objects to display.
-     *
-     * @param objects the objects to display
-     */
-    @SuppressWarnings("unchecked")
-    public void setObjects(List<ActRelationship> objects) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        _relationships = objects;
-        List<T> acts = new ArrayList<T>();
-        for (ActRelationship relationship : objects) {
-            if (relationship.getTarget() != null) {
-                T act = (T) service.get(relationship.getTarget());
-                if (act != null) {
-                    acts.add(act);
-                }
-            }
-        }
-        getModel().setObjects(acts);
-    }
-
-    /**
-     * Returns the objects being displayed.
-     *
-     * @return the objects being displayed
-     */
-    public List<ActRelationship> getObjects() {
-        return _relationships;
-    }
 }

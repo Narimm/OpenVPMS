@@ -24,11 +24,11 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.Retryer;
 import org.openvpms.web.resource.util.Messages;
@@ -207,7 +207,7 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
      * @return the archetype shortnames
      */
     private String[] getShortNames(String relationship, String... shortNames) {
-        String[] targets = ActHelper.getTargetShortNames(relationship);
+        String[] targets = RelationshipHelper.getTargetShortNames(relationship);
         String[] result = Arrays.copyOf(targets, targets.length + shortNames.length);
         System.arraycopy(shortNames, 0, result, targets.length, shortNames.length);
         return result;
