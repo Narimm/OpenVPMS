@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -92,8 +91,9 @@ public class ActHelper {
             for (Act act : acts.getResults()) {
                 //Ignore first closing balance
                 if (act.getArchetypeId().getShortName().equalsIgnoreCase(
-                        closingBalanceName))
+                        closingBalanceName)) {
                     continue;
+                }
                 BigDecimal amount = getAmount(act, "amount");
                 balance = balance.add(amount);
                 if (act.getArchetypeId().getShortName().equalsIgnoreCase(
@@ -102,8 +102,9 @@ public class ActHelper {
                     break;
                 }
             }
-            if (finished)
+            if (finished) {
                 break;
+            }
         }
         return balance;
     }
@@ -149,16 +150,6 @@ public class ActHelper {
         ActCalculator calc = new ActCalculator(
                 ArchetypeServiceHelper.getArchetypeService());
         return calc.getAmount(act, node);
-    }
-
-    /**
-     * Returns the valid short names for the target of a set of act
-     * relationships.
-     *
-     * @param relationshipTypes the relationship types
-     */
-    public static String[] getTargetShortNames(String ... relationshipTypes) {
-        return DescriptorHelper.getNodeShortNames(relationshipTypes, "target");
     }
 
 }

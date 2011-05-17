@@ -23,8 +23,7 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.view.IMObjectTableCollectionViewer;
+import org.openvpms.web.component.im.relationship.IMObjectRelationshipCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 
 
@@ -34,9 +33,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActRelationshipCollectionViewer
-        extends IMObjectTableCollectionViewer {
-
+public class ActRelationshipCollectionViewer extends IMObjectRelationshipCollectionViewer {
 
     /**
      * Constructs a new <tt>ActRelationshipCollectionViewer</tt>.
@@ -45,33 +42,8 @@ public class ActRelationshipCollectionViewer
      * @param parent   the parent object
      * @param context  the layout context. May be <tt>null</tt>
      */
-    public ActRelationshipCollectionViewer(CollectionProperty property,
-                                           IMObject parent,
-                                           LayoutContext context) {
+    public ActRelationshipCollectionViewer(CollectionProperty property, IMObject parent, LayoutContext context) {
         super(property, parent, context);
-    }
-
-    /**
-     * Browse an object.
-     *
-     * @param object the object to browse.
-     */
-    @Override
-    protected void browse(IMObject object) {
-        ActRelationship relationship = (ActRelationship) object;
-        Act act = (Act) IMObjectHelper.getObject(relationship.getTarget());
-        if (act != null) {
-            browse(act);
-        }
-    }
-
-    /**
-     * Browse an act.
-     *
-     * @param act the act to browse
-     */
-    protected void browse(Act act) {
-        super.browse(act);
     }
 
     /**
@@ -82,8 +54,6 @@ public class ActRelationshipCollectionViewer
     @Override
     protected ResultSet<IMObject> createResultSet() {
         Act parent = (Act) getObject();
-        return new ActRelationshipResultSet(parent, getObjects(),
-                                            getProperty().getArchetypeRange(),
-                                            ROWS);
+        return new ActRelationshipResultSet(parent, getObjects(), getProperty().getArchetypeRange(), ROWS);
     }
 }

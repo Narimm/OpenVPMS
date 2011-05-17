@@ -28,10 +28,10 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
+import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 
@@ -77,7 +77,7 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
     public PatientSummaryQuery(Party patient) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION,
               new String[]{PatientArchetypes.CLINICAL_EVENT}, Act.class);
-        actItemShortNames = ActHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
+        actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
         allShortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
         selectedShortNames = allShortNames;
         setAuto(true);
