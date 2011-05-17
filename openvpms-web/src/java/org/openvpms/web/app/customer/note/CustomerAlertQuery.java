@@ -80,6 +80,7 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
         super(customer, "customer", "participation.customer", new String[]{CUSTOMER_ALERT}, STATUSES, Act.class);
         LookupQuery source = new ArchetypeLookupQuery("lookup.customerAlertType");
         alertTypes = LookupFieldFactory.create(source, true);
+        alertTypes.setSelected((String) null); // default to all
         alertTypes.addActionListener(new ActionListener() {
             public void onAction(ActionEvent e) {
                 onAlertTypeChanged();
