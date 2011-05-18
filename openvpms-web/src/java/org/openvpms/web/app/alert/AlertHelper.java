@@ -19,7 +19,6 @@
 package org.openvpms.web.app.alert;
 
 import nextapp.echo2.app.Color;
-import nextapp.echo2.app.TextField;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -66,23 +65,4 @@ public class AlertHelper {
         return ColourHelper.getColor(bean.getString("colour"));
     }
 
-    /**
-     * Updates a text field with the supplied alert type's priority and colour.
-     *
-     * @param text      the field to update
-     * @param alertType the alert type. May be <tt>null</tt>
-     */
-    public static void setPriority(TextField text, Lookup alertType) {
-        if (alertType != null) {
-            String priorityName = AlertHelper.getPriorityName(alertType);
-            Color colour = AlertHelper.getColour(alertType);
-            text.setText(priorityName);
-            text.setForeground(ColourHelper.getTextColour(colour));
-            text.setBackground(colour);
-        } else {
-            text.setText(null);
-            text.setForeground(null);
-            text.setBackground(null);
-        }
-    }
 }

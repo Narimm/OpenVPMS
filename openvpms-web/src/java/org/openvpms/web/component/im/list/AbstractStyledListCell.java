@@ -32,7 +32,7 @@ import nextapp.echo2.app.list.StyledListCell;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractStlyedListCell implements StyledListCell {
+public abstract class AbstractStyledListCell implements StyledListCell {
 
     /**
      * The cell value.
@@ -60,7 +60,7 @@ public abstract class AbstractStlyedListCell implements StyledListCell {
      *
      * @param value the cell value
      */
-    public AbstractStlyedListCell(String value) {
+    public AbstractStyledListCell(String value) {
         this.value = value;
     }
 
@@ -72,7 +72,7 @@ public abstract class AbstractStlyedListCell implements StyledListCell {
      * @param foreground the foreground colour. May be <tt>null</tt>
      * @param font       the font. May be <tt>null</tt>
      */
-    public AbstractStlyedListCell(String value, Color background, Color foreground, Font font) {
+    public AbstractStyledListCell(String value, Color background, Color foreground, Font font) {
         this.value = value;
         this.background = background;
         this.foreground = foreground;
@@ -85,7 +85,7 @@ public abstract class AbstractStlyedListCell implements StyledListCell {
      * @param value     the cell value
      * @param styleName the style name
      */
-    public AbstractStlyedListCell(String value, String styleName) {
+    public AbstractStyledListCell(String value, String styleName) {
         this.value = value;
         setStyle(styleName);
     }

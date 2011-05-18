@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusHelper;
@@ -36,6 +37,7 @@ import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.LocalSortResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.ArrayList;
@@ -70,14 +72,23 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
      */
     private static final ActStatuses STATUSES = new ActStatuses(CUSTOMER_ALERT);
 
+    /**
+     * The default sort constraint.
+     */
+    private static final SortConstraint[] DEFAULT_SORT = {
+            new VirtualNodeSortConstraint("alertType.priority", true, AlertPriorityTransformer.INSTANCE),
+            new NodeSortConstraint("id")
+    };
+
 
     /**
-     * Constructs an <tt>AlertQuery</tt>.
+     * Constructs a <tt>CustomerAlertQuery</tt>.
      *
      * @param customer the customer to query alerts for
      */
     public CustomerAlertQuery(Party customer) {
         super(customer, "customer", "participation.customer", new String[]{CUSTOMER_ALERT}, STATUSES, Act.class);
+        setDefaultSortConstraint(DEFAULT_SORT);
         LookupQuery source = new ArchetypeLookupQuery("lookup.customerAlertType");
         alertTypes = LookupFieldFactory.create(source, true);
         alertTypes.setSelected((String) null); // default to all
@@ -165,6 +176,5 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
         alertType = alertTypes.getSelectedCode();
         onQuery();
     }
-
 
 }

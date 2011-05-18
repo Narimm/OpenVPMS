@@ -39,7 +39,7 @@ public class PatientAlertActEditor extends AbstractAlertActEditor {
      * @param context the layout context
      */
     public PatientAlertActEditor(Act act, Act parent, LayoutContext context) {
-        super(act, parent, context, "lookup.patientAlertType");
+        super(act, parent, context);
         initParticipant("patient", context.getContext().getPatient());
     }
 

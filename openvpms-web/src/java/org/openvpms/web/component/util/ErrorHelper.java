@@ -125,7 +125,7 @@ public class ErrorHelper {
      */
     public static void show(Throwable error, boolean log) {
         String message = getError(error);
-        if (!log) {
+        if (log) {
             ErrorHelper.log.error(message, error);
         }
         ErrorHandler.getInstance().error(null, message, error, null);

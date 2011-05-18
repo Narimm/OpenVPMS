@@ -227,7 +227,7 @@ public class AlertsViewer extends PopupDialog {
                     result = getPriority(object);
                     break;
                 case ALERT:
-                    result = object.getAlertType().getName();
+                    result = getAlertType(object);
                     break;
                 case REASON:
                     Act act = object.getAlert();
@@ -252,6 +252,19 @@ public class AlertsViewer extends PopupDialog {
             Label result = LabelFactory.create();
             IMObjectBean bean = new IMObjectBean(alert.getAlertType());
             result.setText(getPriorityName(bean.getString("priority")));
+            return result;
+        }
+
+        /**
+         * Returns a label representing the alert type.
+         *
+         * @param alert the alert
+         * @return a label for the alert type
+         */
+        private Label getAlertType(Alert alert) {
+            Label result = LabelFactory.create();
+            result.setText(alert.getAlertType().getName());
+            IMObjectBean bean = new IMObjectBean(alert.getAlertType());
             Color value = ColourHelper.getColor(bean.getString("colour"));
             if (value != null) {
                 TableLayoutData layout = new TableLayoutData();
