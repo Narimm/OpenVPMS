@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.alert;
 
+import nextapp.echo2.app.Color;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextField;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -30,6 +32,7 @@ import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.util.ColourHelper;
 import org.openvpms.web.component.util.TextComponentFactory;
 
 import java.util.List;
@@ -81,7 +84,14 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
     protected ComponentSet createComponentSet(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties, LayoutContext context) {
         ComponentSet set = super.createComponentSet(object, descriptors, properties, context);
 
-        ComponentState priority = getPriority((Act) object);
+        Lookup lookup = AlertHelper.getAlertType((Act) object);
+
+        ComponentState alertType = set.get("alertType");
+        if (alertType != null) {
+            initAlertType(lookup, alertType.getComponent());
+        }
+
+        ComponentState priority = getPriority(lookup);
         int index = set.indexOf("alertType");
         if (index >= 0) {
             set.add(index + 1, priority);
@@ -92,14 +102,28 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
+     * Sets the background/foreground of the alert type field, if it is a text field.
+     *
+     * @param alertType the alert type
+     * @param component the component to display the alert type
+     */
+    private void initAlertType(Lookup alertType, Component component) {
+        if (component instanceof TextField) {
+            Color background = AlertHelper.getColour(alertType);
+            Color foreground = ColourHelper.getTextColour(background);
+            component.setBackground(background);
+            component.setForeground(foreground);
+        }
+    }
+
+    /**
      * Returns the component state of the priority field.
      *
-     * @param act the act to get the alert type
-     * @return the priority field, populated with the act's alert type
+     * @param alertType the alert type lookup
+     * @return the priority field, populated with the alert type
      */
-    private ComponentState getPriority(Act act) {
-        Lookup alertType = AlertHelper.getAlertType(act);
-        AlertHelper.setPriority(priority, alertType);
+    private ComponentState getPriority(Lookup alertType) {
+        priority.setText(AlertHelper.getPriorityName(alertType));
         String displayName = DescriptorHelper.getDisplayName("lookup.customerAlertType", "priority");
         return new ComponentState(priority, null, null, displayName);
     }

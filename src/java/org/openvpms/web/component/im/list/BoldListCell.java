@@ -24,7 +24,7 @@ package org.openvpms.web.component.im.list;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class BoldListCell extends AbstractStlyedListCell {
+public class BoldListCell extends AbstractStyledListCell {
 
     /**
      * Constructs a <tt>BoldListCell</tt>.

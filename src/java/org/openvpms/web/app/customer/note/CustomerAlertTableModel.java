@@ -23,14 +23,11 @@ import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.apache.commons.collections.Transformer;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
@@ -89,7 +86,7 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         if (column == priorityIndex) {
             return new SortConstraint[]{new VirtualNodeSortConstraint("alertType.priority", ascending,
-                                                                      PriorityTransformer.INSTANCE)};
+                                                                      AlertPriorityTransformer.INSTANCE)};
         } else if (column == alertIndex) {
             return new SortConstraint[]{new VirtualNodeSortConstraint("alertType", ascending)};
         }
@@ -161,13 +158,6 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
         if (lookup != null) {
             IMObjectBean bean = new IMObjectBean(lookup);
             result.setText(getPriorityName(bean.getString("priority")));
-            Color value = AlertHelper.getColour(lookup);
-            if (value != null) {
-                TableLayoutData layout = new TableLayoutData();
-                result.setLayoutData(layout);
-                layout.setBackground(value);
-                result.setForeground(ColourHelper.getTextColour(value));
-            }
         }
         return result;
     }
@@ -183,6 +173,13 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
         Lookup lookup = AlertHelper.getAlertType(act);
         if (lookup != null) {
             result.setText(lookup.getName());
+            Color value = AlertHelper.getColour(lookup);
+            if (value != null) {
+                TableLayoutData layout = new TableLayoutData();
+                result.setLayoutData(layout);
+                layout.setBackground(value);
+                result.setForeground(ColourHelper.getTextColour(value));
+            }
         }
         return result;
     }
@@ -202,38 +199,6 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
             name = code;
         }
         return name;
-    }
-
-    /**
-     * Transformer that returns the priority of an <em>lookup.customerAlertType</em> associated with an act.
-     */
-    private static class PriorityTransformer implements Transformer {
-
-        /**
-         * The singleton instance.
-         */
-        private static final Transformer INSTANCE = new PriorityTransformer();
-
-        /**
-         * Transforms the input object (leaving it unchanged) into some output object.
-         *
-         * @param input the object to be transformed, should be left unchanged
-         * @return a transformed object
-         * @throws ClassCastException       (runtime) if the input is the wrong class
-         * @throws IllegalArgumentException (runtime) if the input is invalid
-         * @throws org.apache.commons.collections.FunctorException
-         *                                  (runtime) if the transform cannot be completed
-         */
-        public Object transform(Object input) {
-            Act act = (Act) input;
-            Lookup lookup = LookupServiceHelper.getLookupService().getLookup(act, "alertType");
-            if (lookup != null) {
-                IMObjectBean bean = new IMObjectBean(lookup);
-                String priority = bean.getString("priority");
-                return priority != null ? Alert.Priority.valueOf(priority) : null;
-            }
-            return null;
-        }
     }
 
 }

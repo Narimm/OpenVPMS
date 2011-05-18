@@ -90,18 +90,18 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
         if (sorted.length != 0) {
             while (iter.hasNext()) {
                 TableColumn column = (TableColumn) iter.next();
-                SortConstraint[] columnConstraint =
-                        getModel().getSortConstraints(column.getModelIndex(),
-                                                      set.isSortedAscending());
+                SortConstraint[] columnConstraint = getModel().getSortConstraints(column.getModelIndex(),
+                                                                                  set.isSortedAscending());
                 boolean match = true;
                 if (columnConstraint != null && sorted.length == columnConstraint.length) {
                     for (int i = 0; i < sorted.length; ++i) {
                         if (!sorted[i].equals(columnConstraint[i])) {
                             match = false;
                             break;
-
                         }
                     }
+                } else {
+                    match = false;
                 }
                 if (match) {
                     sortColumn = column.getModelIndex();

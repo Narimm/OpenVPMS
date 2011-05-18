@@ -40,7 +40,7 @@ public class CustomerAlertActEditor extends AbstractAlertActEditor {
      * @param context the layout context
      */
     public CustomerAlertActEditor(Act act, IMObject parent, LayoutContext context) {
-        super(act, parent, context, "lookup.customerAlertType");
+        super(act, parent, context);
         initParticipant("customer", context.getContext().getCustomer());
     }
 
