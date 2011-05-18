@@ -52,7 +52,7 @@ public class SummaryTableCellRenderer extends AbstractTableCellRenderer {
     @SuppressWarnings("unchecked")
     protected String getStyle(Table table, Object value, int column, int row) {
         String style = DEFAULT_STYLE;
-        if (table instanceof IMTable) {
+        if (table instanceof IMTable && column == 1) {
             style = getStyle((IMTable) table, row);
         }
         return style;

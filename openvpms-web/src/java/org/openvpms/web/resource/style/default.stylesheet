@@ -1018,50 +1018,40 @@
 
     <style name="date.previousWeek" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/navigation/first.png"/>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/navigation/first.png"/>
             </property>
         </properties>
     </style>
 
     <style name="date.previousDay" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/navigation/previous.png"/>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/navigation/previous.png"/>
             </property>
         </properties>
     </style>
 
     <style name="date.currentDay" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/navigation/current.png"/>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/navigation/current.png"/>
             </property>
         </properties>
     </style>
 
     <style name="date.nextDay" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/navigation/next.png"/>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/navigation/next.png"/>
             </property>
         </properties>
     </style>
 
     <style name="date.nextWeek" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/navigation/last.png"/>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/navigation/last.png"/>
             </property>
         </properties>
     </style>
@@ -1072,40 +1062,32 @@
 
     <style name="navigation.first" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/navigation/first.png"/>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/navigation/first.png"/>
             </property>
         </properties>
     </style>
 
     <style name="navigation.previous" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/navigation/previous.png"/>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/navigation/previous.png"/>
             </property>
         </properties>
     </style>
 
     <style name="navigation.next" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/navigation/next.png"/>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/navigation/next.png"/>
             </property>
         </properties>
     </style>
 
     <style name="navigation.last" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/navigation/last.png"/>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/navigation/last.png"/>
             </property>
         </properties>
     </style>

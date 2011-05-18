@@ -18,7 +18,11 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -80,6 +84,11 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
                 (IMObjectTableModel<Act>) model, 2, query.getActItemShortNames());
         PagedIMTable<Act> result = super.createTable(pagedModel);
         IMTable<Act> table = result.getTable();
+        table.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onSelected();
+            }
+        });
         table.setDefaultRenderer(Object.class, new SummaryTableCellRenderer());
         table.setHeaderVisible(false);
         table.setStyleName("MedicalRecordSummary");
@@ -94,5 +103,23 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
      */
     private static IMObjectTableModel<Act> newTableModel() {
         return IMObjectTableModelFactory.create(SummaryTableModel.class, null);
+    }
+
+    /**
+     * Invoked when an act is selected. Highlights the associated visit.
+     */
+    private void onSelected() {
+        IMTable<Act> table = getTable().getTable();
+        int index = table.getSelectionModel().getMinSelectedIndex();
+        while (index >= 0) {
+            Act act = table.getObjects().get(index);
+            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
+                break;
+            } else {
+                --index;
+            }
+        }
+        SummaryTableModel model = (SummaryTableModel) pagedModel.getModel();
+        model.setSelectedVisit(index);
     }
 }

@@ -196,6 +196,15 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
     }
 
     /**
+     * Returns the model to delegate to.
+     *
+     * @return the model
+     */
+    public IMTableModel<K> getModel() {
+        return model;
+    }
+    
+    /**
      * Sets the model to delegate to.
      *
      * @param model the model to delegate to
@@ -207,15 +216,6 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
                 notifyListeners(event);
             }
         });
-    }
-
-    /**
-     * Returns the model to delegate to.
-     *
-     * @return the model
-     */
-    protected IMTableModel<K> getModel() {
-        return model;
     }
 
     /**

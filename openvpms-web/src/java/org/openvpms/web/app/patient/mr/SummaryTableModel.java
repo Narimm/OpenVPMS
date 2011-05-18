@@ -22,6 +22,7 @@ import echopointng.LabelEx;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.HttpImageReference;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.layout.RowLayoutData;
@@ -84,13 +85,40 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     private static final Log log = LogFactory.getLog(SummaryTableModel.class);
 
+    /**
+     * The selected visit row.
+     */
+    private int selectedVisit;
 
     /**
-     * Creates a new <tt>SummaryTableModel</tt>.
+     * Column indicating the selected visit.
+     */
+    private static final int SELECTION_COLUMN = 0;
+
+    /**
+     * Column with the act summary.
+     */
+    private static final int SUMMARY_COLUMN = 1;
+
+    /**
+     * Column used to add a spacer to differentiate the selected row and the coloured visit items.
+     */
+    private static final int SPACER_COLUMN = 2;
+
+    /**
+     * Path of the selected visit icon.
+     */
+    private static final String SELECTED_VISIT_IMAGE = "../images/navigation/next.png";
+
+
+    /**
+     * Constructs a <tt>SummaryTableModel</tt>.
      */
     public SummaryTableModel() {
         TableColumnModel model = new DefaultTableColumnModel();
-        model.addColumn(new TableColumn(0));
+        model.addColumn(new TableColumn(SELECTION_COLUMN, new Extent(16))); // 16px for the icon
+        model.addColumn(new TableColumn(SUMMARY_COLUMN));
+        model.addColumn(new TableColumn(SPACER_COLUMN));
         setTableColumnModel(model);
     }
 
@@ -115,6 +143,27 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     }
 
     /**
+     * Sets the selected visit row.
+     *
+     * @param row the row, or <tt>-1</tt> if no visit is selected
+     */
+    public void setSelectedVisit(int row) {
+        if (selectedVisit != row) {
+            selectedVisit = row;
+            refresh();
+        }
+    }
+
+    /**
+     * Returns the selected visit row.
+     *
+     * @return the row or <tt>-1</tt> if no visit is selected
+     */
+    public int getSelectedVisit() {
+        return selectedVisit;
+    }
+
+    /**
      * Returns the value found at the given coordinate within the table.
      *
      * @param act    the object
@@ -124,14 +173,23 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     protected Object getValue(Act act, TableColumn column, int row) {
         Object result = null;
-        try {
-            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
-                result = formatEvent(act);
-            } else {
-                result = formatItem(act, row);
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+        switch (column.getModelIndex()) {
+            case SELECTION_COLUMN:
+                if (row == selectedVisit) {
+                    return new Label(new HttpImageReference(SELECTED_VISIT_IMAGE));
+                }
+                break;
+            case SUMMARY_COLUMN:
+                try {
+                    if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
+                        result = formatEvent(act);
+                    } else {
+                        result = formatItem(act, row);
+                    }
+                } catch (OpenVPMSException exception) {
+                    ErrorHelper.show(exception);
+                }
+                break;
         }
         return result;
     }
