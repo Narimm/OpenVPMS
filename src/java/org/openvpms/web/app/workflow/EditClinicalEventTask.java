@@ -103,7 +103,6 @@ public class EditClinicalEventTask extends AbstractTask {
             query.setFrom(event.getActivityStartTime());
             query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
             SummaryTableBrowser browser = new SummaryTableBrowser(query);
-            browser.setSelected(event);
             String title = Messages.get("workflow.consult.selectrecord.title");
             BrowserDialog dialog = new ClinicalEventBrowserDialog(title, browser, context);
             dialog.addWindowPaneListener(new PopupDialogListener() {
@@ -118,6 +117,7 @@ public class EditClinicalEventTask extends AbstractTask {
                 }
             });
             dialog.show();
+            browser.setSelected(event);
         } else {
             notifyCancelled();
         }

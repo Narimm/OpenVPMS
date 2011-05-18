@@ -71,6 +71,17 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
     }
 
     /**
+     * Select an object.
+     *
+     * @param object the object to select
+     */
+    @Override
+    public void setSelected(Act object) {
+        super.setSelected(object);
+        onSelected();
+    }
+
+    /**
      * Creates a new paged table.
      *
      * @param model the table model
