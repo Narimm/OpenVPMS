@@ -41,6 +41,7 @@ import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
@@ -124,7 +125,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
         final Lookup lookup = getObject();
         if (lookup != null) {
             String shortName = lookup.getArchetypeId().getShortName();
-            Query<Lookup> query = QueryFactory.create(shortName, null, Lookup.class);
+            Query<Lookup> query = QueryFactory.create(shortName, GlobalContext.getInstance(), Lookup.class);
             query.setAuto(true);
             final ReplaceLookupBrowser browser = new ReplaceLookupBrowser(query, lookup);
             String title = Messages.get("lookup.replace.title");
